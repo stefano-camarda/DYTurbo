@@ -1,0 +1,11 @@
+#!/bin/bash
+
+version=4.2
+rm -r Cuba-${version}
+wget http://www.feynarts.de/cuba/Cuba-${version}.tar.gz
+tar -xzvf Cuba-${version}.tar.gz
+rm Cuba-${version}.tar.gz
+
+cd Cuba-${version}
+./configure
+make

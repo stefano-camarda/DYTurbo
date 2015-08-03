@@ -1,0 +1,55 @@
+#!/bin/bash
+VERSION=6.1.5
+
+rm -r lhapdf6 >& /dev/null
+mkdir -p lhapdf6
+cd lhapdf6
+
+rm pdfinstall.log >& /dev/null
+rm -r bin include lib share LHAPDF-${VERSION} >& /dev/null
+
+echo "Installing LHAPDF version $VERSION"
+
+echo "Downloading tar file..."
+wget http://www.hepforge.org/archive/lhapdf/LHAPDF-${VERSION}.tar.gz >& pdfinstall.log
+tar -xzvf LHAPDF-${VERSION}.tar.gz >& pdfinstall.log
+rm LHAPDF-${VERSION}.tar.gz
+
+cd LHAPDF-${VERSION}
+echo "Configuring..."
+./configure --prefix=`cd .. && pwd` >& ../pdfinstall.log 
+
+if [[ $? != 0 ]]
+then
+    echo "Error on configuration, check pdfinstall.log"
+    exit -1
+fi
+
+echo "Compiling..."
+make >& ../pdfinstall.log
+if [[ $? != 0 ]]
+then
+    echo "Error on compilation, check pdfinstall.log"
+    exit -1
+fi
+
+echo "Installing..."
+make install >& ../pdfinstall.log
+if [[ $? != 0 ]]
+then
+    echo "Error on installation, check pdfinstall.log"
+    exit -1
+fi
+cd ..
+
+echo "LHAPDF software installation completed"
+
+echo "Downloading PDF sets..."
+bin/lhapdf update
+pdflist=`cat ../pdfsets.list`
+
+for pdf in $pdflist
+do
+    bin/lhapdf install $pdf
+    rm share/LHAPDF/${pdf}.tar.gz >& /dev/null
+done

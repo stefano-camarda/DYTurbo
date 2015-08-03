@@ -1,0 +1,17 @@
+7d3                 ! sroot
+1 1                 ! ih1, ih2
+3                   ! nproc
+91.1876d0 91.1876d0 ! mur, muf  
+2.0d0               ! a_param 
+1.0d0               ! g_param
+1                   ! order
+'virt'              ! part 
+.false.              ! zerowidth
+66d0 116d0          ! M_min, M_max
+1 100000          ! itmx1, ncall1
+1 100          ! itmx2, ncall2
+123456                 ! rseed
+92 0                ! set, member (native PDFs)
+'CT10nlo.LHgrid' 0   ! set, member (LHAPDFs)
+'LHC7-Z-nnlo'       ! outputfile
+0                   ! number of last itmx to write on file

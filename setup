@@ -1,0 +1,2 @@
+export PATH=`cd ../../ && pwd`/MCwrap/LHAPDF6/bin:$PATH
+export LD_LIBRARY_PATH=`cd ../../ && pwd`/MCwrap/LHAPDF6/lib:$LD_LIBRARY_PATH
