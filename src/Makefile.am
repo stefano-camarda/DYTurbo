@@ -5,3 +5,5 @@ dyfast_LDADD = ../dyres/libdyres.a ../lib/libcern.a -lgfortran $(CUBA_LDFLAGS) $
 
 dyfin_SOURCES = dyfin.C dyct.C dyrealvirt.C
 dyfin_LDADD = ../dyres/libdyres.a ../lib/libcern.a -lgfortran -L$(srcdir)/../Cuba-4.2 -lcuba $(LHAPDF_LDFLAGS) -lgsl -lgslcblas
+
+#pkginclude_HEADERS = ewinput.f
