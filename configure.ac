@@ -1,4 +1,4 @@
-AC_INIT([dyfast], [0.9], [stefano.camarda@desy.de])
+AC_INIT([dyturbo], [0.9], [stefano.camarda@cern.ch,jakub.cuth@cern.ch])
 AM_INIT_AUTOMAKE([foreign -Wall -Werror])
 
 #By default, install binaries in the current directory
