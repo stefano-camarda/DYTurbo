@@ -20,6 +20,7 @@ install-sh
 missing
 stamp-h1
 bin/
+include/
 */.deps/
 fort.1
 mline.C
