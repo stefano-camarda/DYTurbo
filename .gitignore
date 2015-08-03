@@ -21,3 +21,6 @@ missing
 stamp-h1
 bin/
 */.deps/
+fort.1
+mline.C
+pdffit.grid
