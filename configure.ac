@@ -61,7 +61,20 @@ LHAPDF_LDFLAGS=`${lhapdf_config} --libdir`/libLHAPDF.a
 AC_SUBST(LHAPDF_CPPFLAGS)
 AC_SUBST(LHAPDF_LDFLAGS)
 
-##cuba library
+# check for Cuba installation
+AC_MSG_CHECKING([for Cuba library installation])
+# search in Cuba-4.2
+cubalib=`ls ${PWD}/Cuba-4.2/libcuba.a`
+if test x$cubalib == x; then
+# if not found, install it
+  AC_MSG_RESULT([Install Cuba])
+  ./install-cuba
+fi
+
+CUBA_LDFLAGS="-L ${PWD}/Cuba-4.2 -lcuba"
+AC_SUBST(CUBA_LDFLAGS)
+
+
 #AC_SEARCH_LIBS([vegas],[cuba],[
 #	AC_MSG_RESULT([Using -lcuba])
 #        CUBA_LDFLAGS=-lcuba],
