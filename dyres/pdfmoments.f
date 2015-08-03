@@ -160,3 +160,188 @@ c **************************************
       return
       end
 
+
+      subroutine initmoments
+c     IMPLICIT DOUBLE PRECISION (A - Z)
+      implicit none
+      INTEGER k,ik,NFITMAX
+      COMPLEX*16 uval,dval,usea,dsea,ssea,glu,charm,bot
+      COMPLEX*16 MellinH2qq,MellinH2gg,MellinH2gq
+      
+      COMPLEX*16 QQI, QGF, GQI, GGI, GGF, NS1MI, NS1PI, NS1F,
+     1     QQ1F, QG1F, GQ1I, GQ1F, GG1I, GG1F
+      
+      COMPLEX*16 QQIP(136),QGFP(136), GQIP(136), GGIP(136), GGFP(136),
+     1     NS1MIP(136), NS1PIP(136), NS1FP(136),QQ1FP(136), 
+     2     QG1FP(136), GQ1IP(136), GQ1FP(136), GG1IP(136), GG1FP(136)
+      
+      COMPLEX*16 QQIM(136),QGFM(136), GQIM(136), GGIM(136), GGFM(136),
+     1     NS1MIM(136), NS1PIM(136), NS1FM(136),QQ1FM(136), 
+     2     QG1FM(136), GQ1IM(136), GQ1FM(136), GG1IM(136), GG1FM(136)
+      
+      COMPLEX*16 C2qgMp(136),C2NSqqMp(136),C2SqqbMp(136),
+     .     C2NSqqbMp(136)
+      COMPLEX*16 C2qgMm(136),C2NSqqMm(136),C2SqqbMm(136),
+     .     C2NSqqbMm(136)
+      COMPLEX*16 C2qg,C2NSqq,C2Sqqb,C2NSqqb
+     
+      COMMON / ANOMP/QQIp, QGFp, GQIp, GGIp, GGFp, NS1MIp, NS1PIp, 
+     1          NS1Fp, QQ1Fp, QG1Fp, GQ1Ip, GQ1Fp, GG1Ip, GG1Fp
+      COMMON / ANOMM/QQIm, QGFm, GQIm, GGIm, GGFm, NS1MIm, NS1PIm, 
+     1          NS1Fm, QQ1Fm, QG1Fm, GQ1Im, GQ1Fm, GG1Im, GG1Fm
+       
+      COMMON / H2COEF /C2qgMp,C2NSqqMp,C2SqqbMp,C2NSqqbMp,
+     .     C2qgMm,C2NSqqMm,C2SqqbMm,C2NSqqbMm
+
+c     Common blocks of PDFs mellin moments, where the moments are stored
+      complex*16 UVP(136,30),DVP(136,30),USP(136,30),DSP(136,30),
+     .     SSP(136,30),GLP(136,30),CHP(136,30),BOP(136,30)
+      complex*16 UVM(136,30),DVM(136,30),USM(136,30),DSM(136,30),
+     .     SSM(136,30),GLM(136,30),CHM(136,30),BOM(136,30)
+      complex*16 UVP2(136,30),DVP2(136,30),USP2(136,30),DSP2(136,30),
+     .     SSP2(136,30),GLP2(136,30),CHP2(136,30),BOP2(136,30)
+      complex*16 UVM2(136,30),DVM2(136,30),USM2(136,30),DSM2(136,30),
+     .     SSM2(136,30),GLM2(136,30),CHM2(136,30),BOM2(136,30)
+
+      common / DISTP1/ UVP,DVP,USP,DSP,SSP,GLP,CHP,BOP
+      common / DISTM1/ UVM,DVM,USM,DSM,SSM,GLM,CHM,BOM
+      common / DISTP2/ UVP2,DVP2,USP2,DSP2,SSP2,GLP2,CHP2,BOP2
+      common / DISTM2/ UVM2,DVM2,USM2,DSM2,SSM2,GLM2,CHM2,BOM2
+
+c     Gaussian nodes of the integration contour in the complex plane
+      COMPLEX*16 CCp,CCm, Np(136),Nm(136),XN
+      COMMON / MOMS2    / Np,Nm,CCP,CCm
+
+      common/NFITMAX/NFITMAX
+
+      Write(6,*)'Initialise PDF moments with numerical integration'
+      NFITMAX = 14
+c     calculate Mellin moments of PDFs
+c     Beam 1        
+      do k=1,88
+C     positive branch
+         XN=Np(k)  
+         call pdfmoments(1,XN,uval,dval,usea,dsea,ssea,glu,charm,bot)
+c         print *,'beam 1 positive'
+c         print *,'moment',k,XN
+c         print *,'uval  ',uval
+c         print *,'dval  ',dval
+c         print *,'usea  ',usea
+c         print *,'dsea  ',dsea
+c         print *,'gluon ',glu
+c         print *,'charm ',charm
+c         print *,'bottom',bot
+         do ik=1,NFITMAX
+            UVp(k,ik)= uval
+            DVp(k,ik)= dval
+            USp(k,ik)= usea
+            DSp(k,ik)= dsea
+            SSp(k,ik)= ssea
+            GLp(k,ik)= glu
+            CHp(k,ik)= charm
+            BOp(k,ik)= bot
+         enddo 
+c     negative branch
+         XN=Nm(k)
+         call pdfmoments(1,XN,uval,dval,usea,dsea,ssea,glu,charm,bot)
+         do ik=1,NFITMAX
+            UVm(k,ik)= uval
+            DVm(k,ik)= dval
+            USm(k,ik)= usea
+            DSm(k,ik)= dsea
+            SSm(k,ik)= ssea
+            GLm(k,ik)= glu
+            CHm(k,ik)= charm
+            BOm(k,ik)= bot
+         enddo
+      enddo
+
+c     Beam 2
+      do k=1,88
+c     positive branch
+         XN=Np(k)  
+         call pdfmoments(2,XN,uval,dval,usea,dsea,ssea,glu,charm,bot)
+         do ik=1,NFITMAX
+            UVp2(k,ik)= uval 
+            DVp2(k,ik)= dval 
+            USp2(k,ik)= usea 
+            DSp2(k,ik)= dsea 
+            SSp2(k,ik)= ssea 
+            GLp2(k,ik)= glu  
+            CHp2(k,ik)= charm
+            BOp2(k,ik)= bot  
+         enddo
+c     negative branch
+         XN=Nm(k)
+         call pdfmoments(2,XN,uval,dval,usea,dsea,ssea,glu,charm,bot)
+         do ik=1,NFITMAX
+            UVm2(k,ik)= uval 
+            DVm2(k,ik)= dval 
+            USm2(k,ik)= usea 
+            DSm2(k,ik)= dsea 
+            SSm2(k,ik)= ssea 
+            GLm2(k,ik)= glu  
+            CHm2(k,ik)= charm
+            BOm2(k,ik)= bot  
+         enddo
+      enddo
+
+c     calculate Mellin moments of anomalous dimensions
+      do k=1,88
+c     positive branch
+         XN=Np(k)  
+         CALL ANCALC (QQI, QGF, GQI, GGI, GGF, NS1MI, NS1PI, NS1F,
+     1        QQ1F, QG1F, GQ1I, GQ1F, GG1I, GG1F, XN)
+         QQIp(k) = QQI 
+         QGFp(k) = QGF 
+         GQIp(k) = GQI 
+         GGIp(k) = GGI 
+         GGFp(k) = GGF 
+         NS1MIp(k) = NS1MI  
+         NS1PIp(k) = NS1PI 
+         NS1Fp(k) = NS1F            
+         QQ1Fp(k) = QQ1F 
+         QG1Fp(k) = QG1F 
+         GQ1Ip(k) = GQ1I 
+         GQ1Fp(k) = GQ1F 
+         GG1Ip(k) = GG1I 
+         GG1Fp(k) = GG1F 
+         
+         call H2calc(C2qg,C2NSqqb,C2NSqq,C2Sqqb,XN)
+
+         C2qgMp(k)= C2qg
+         C2NSqqMp(k)= C2NSqq
+         C2SqqbMp(k)= C2Sqqb
+         C2NSqqbMp(k)=  C2NSqqb      
+
+c     negative branch
+         XN=Nm(k)
+         CALL ANCALC (QQI, QGF, GQI, GGI, GGF, NS1MI, NS1PI, NS1F,
+     1        QQ1F, QG1F, GQ1I, GQ1F, GG1I, GG1F, XN)
+         QQIm(k) = QQI 
+         QGFm(k) = QGF 
+         GQIm(k) = GQI 
+         GGIm(k) = GGI 
+         GGFm(k) = GGF
+         NS1MIm(k) = NS1MI  
+         NS1PIm(k) = NS1PI 
+         NS1Fm(k) = NS1F            
+         QQ1Fm(k) = QQ1F 
+         QG1Fm(k) = QG1F 
+         GQ1Im(k) = GQ1I 
+         GQ1Fm(k) = GQ1F 
+         GG1Im(k) = GG1I 
+         GG1Fm(k) = GG1F 
+
+         call H2calc(C2qg,C2NSqqb,C2NSqq,C2Sqqb,XN)
+
+         C2qgMm(k)= C2qg
+         C2NSqqMm(k)= C2NSqq
+         C2SqqbMm(k)= C2Sqqb
+         C2NSqqbMm(k)=  C2NSqqb              
+      enddo
+
+      call cacheanom
+      Write(6,*)'End initialization'
+      return
+      end

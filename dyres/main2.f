@@ -430,13 +430,17 @@ c*****************************************
 c     initialization part
        if(flag.eq.0) then
              
-C Call fitting routine
-          CALL fiteador(x,muf2,etam)
+          if (mod.eq.0.and.approxpdf.eq.1) then
+C     Call fitting routine
+             CALL fiteador(x,muf2,etam)
+C     CALL initialization subroutine for PDFS and Anomalous dimensions
+             CALL INITOFIT
+          else
+C     initialization of exact PDF moments and anomalous dimensions
+             call initmoments
+          endif
 
-C      CALL initialization subroutine for PDFS and Anomalous dimensions
-          CALL INITOFIT
-
-C define points for quadratures integration
+C     define points for quadratures integration
           call intdeoini(lenaw, tiny, 1.0d-2, aw)
 
           flag=1
