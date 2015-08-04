@@ -4,10 +4,10 @@
 
 
 void pdfini_(){
-    printf("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC\n\n");
-    printf("LHAPDF initialization:");
+    printf(" CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC\n\n");
     LHAPDF::initPDFSetByName(opts.LHAPDFset);
     LHAPDF::initPDF(opts.LHAPDFmember);
     // initialization of alphas
     couple_.amz_=LHAPDF::alphasPDF(masses_.zmass_) ;
+    printf("\n");
 }

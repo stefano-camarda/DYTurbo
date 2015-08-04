@@ -296,13 +296,13 @@ c--- the default behaviour is to remove no branching ratio
 
       call cstring(pdfstring)
 
-      if(lhapdfs.eqv.(.false.)) then
-       write(6,*)'CCCCCCCCCC      Parton Distributions    CCCCCCCCCCCC'
-       write(6,*)'C                                                  C'
-       write(6,*)'C       ', pdfstring,'       C'
-       write(6,*)'C                                                  C'
-      endif
-      write(6,*)'CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC'
+C      if(lhapdfs.eqv.(.false.)) then
+C       write(6,*)'CCCCCCCCCC      Parton Distributions    CCCCCCCCCCCC'
+C       write(6,*)'C                                                  C'
+C       write(6,*)'C       ', pdfstring,'       C'
+C       write(6,*)'C                                                  C'
+C      endif
+C      write(6,*)'CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC'
 
       notag=0
       nqcdjets=0
