@@ -1,0 +1,88 @@
+# DYRES -- settings
+sroot        = 7e3            # sroot
+ih1          = 1
+ih2          = 1              # ih1, ih2
+nproc        = 3              # nproc
+mur          = 91.1876e0
+muf          = 91.1876e0      # mur, muf
+a_param      = 2.0e0          # a_param
+g_param      = 1.0e0          # g_param
+order        = 1              # order
+part         = virt           # part
+zerowidth    = false          # zerowidth
+M_min        = 66d0
+M_max        = 116d0          # M_min, M_max
+itmx1        = 1
+ncall1       = 100000         # itmx1, ncall1
+itmx2        = 1
+ncall2       = 100            # itmx2, ncall2
+rseed        = 123456         # rseed
+PDFset       = 92
+PDFmember    = 0              # set,member (native   PDFs)
+LHAPDFset    = CT10nlo.LHgrid
+LHAPDFmember = 0              # set, member (LHAPDFs)
+outputfile   = LHC7-Z-nnlo    # outputfile
+itmxToFile   = 0              # number of last itmx to write on file
+
+
+# DYTURBO settings
+# Z
+# resonance mass and width (used for breit wigner unweighting)
+rmass  = 91.1876
+rwidth = 2.495
+# Set boundaries of integration
+ylow  = 2
+yhigh = 2.4
+mlow  = 66.
+mhigh = 116.
+
+#  # W
+#  # resonance mass and width (used for breit wigner unweighting)
+#  rmass = 80.385;
+#  rwidth = 2.091;
+#  # Set boundaries of integration
+#  ylow = -5.;
+#  yhigh = 5.;
+#  mlow = 10.;
+#  mhigh = 1000.;
+
+# type of integration
+int2d = false
+int3d = true
+int4d = false
+
+# Cuba settings
+cubaverbosity = 0      # Cuba info messsages, from 0 to 3
+niter         = 0      # only for 2d and 3d cuhre integration
+vegasncalls   = 10000  # only for 4d vegas integration
+
+# total or with lepton cuts
+makelepcuts = true
+
+# integration types and settings for costh phi_lep phase space
+cubaint   = true   # integration with Cuba Suave
+trapezint = false  # trapezoidal rule for the phi_lep integration and semi-analytical for costh
+quadint   = false  # quadrature rule for the phi_lep integration and semi-analytical for costh
+
+suavepoints = 1000000 # number of points for suave integration, newpoints is set to suavepoints/10;
+nphitrape   = 1000    # number of steps for trapezoidal rule of phi_lep integration
+quadnphi    = 20      # number of segments for quadrature rule of phi_lep integration
+ncstart     = 1000    # starting sampling for the costh semi-analytical integration (common settings for the trapezoidal and quadrature rules)
+
+# qt-recoil prescriptions
+qtrec_naive = false
+qtrec_cs    = false
+qtrec_kt0   = true
+
+# debug settings
+timeprofile = false  # debug and time profile resummation integration
+verbose     = false  # debug and time profile costh phi_lep integration
+
+# Set to 1 to use the dyres approximation of PDFs and integration contour in the complex plane for the Mellin inversion
+# Set to 0 to use exact PDFs and straight line contour in the complex plane for the Mellin inversion
+opts_approxpdf = 0
+
+
+# binning
+#
+qtbins = [ 0 2 4 6 8 10 12 14 16 18 22 26 30 34 38 42 46 50 54 60 70 80 100 150 200 300 800 ]

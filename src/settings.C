@@ -8,8 +8,6 @@ binning bins;
 
 void settings::init()
 {
-  //read input settings from file
-
   
   //Z
   //resonance mass and width (used for breit wigner unweighting)
@@ -70,6 +68,63 @@ void settings::init()
   opts_.approxpdf_ = 0;
 }
 
+void settings::readfromfile(){
+    //read input settings from file
+    InputParser in("input/CT10nlo_settings.in");
+    sroot          = in.GetNumber ( "sroot"          ); //7e3
+    ih1            = in.GetNumber ( "ih1"            ); //1
+    ih2            = in.GetNumber ( "ih2"            ); //1              # ih1,        ih2
+    nproc          = in.GetNumber ( "nproc"          ); //3              # nproc
+    mur            = in.GetNumber ( "mur"            ); //91.1876e0
+    muf            = in.GetNumber ( "muf"            ); //91.1876e0      # mur,        muf
+    a_param        = in.GetNumber ( "a_param"        ); //2.0e0          # a_param
+    g_param        = in.GetNumber ( "g_param"        ); //1.0e0          # g_param
+    order          = in.GetNumber ( "order"          ); //1              # order
+    part           = in.GetString ( "part"           ); //virt           # part
+    zerowidth      = in.GetBool   ( "zerowidth"      ); //false          # zerowidth
+    M_min          = in.GetNumber ( "M_min"          ); //66d0
+    M_max          = in.GetNumber ( "M_max"          ); //116d0          # M_min,      M_max
+    itmx1          = in.GetNumber ( "itmx1"          ); //1
+    ncall1         = in.GetNumber ( "ncall1"         ); //100000         # itmx1,      ncall1
+    itmx2          = in.GetNumber ( "itmx2"          ); //1
+    ncall2         = in.GetNumber ( "ncall2"         ); //100            # itmx2,      ncall2
+    rseed          = in.GetNumber ( "rseed"          ); //123456         # rseed
+    PDFset         = in.GetNumber ( "PDFset"         ); //92
+    PDFmember      = in.GetNumber ( "PDFmember"      ); //0              # set,member  (native  PDFs)
+    LHAPDFset      = in.GetString ( "LHAPDFset"      ); //CT10nlo.LHgrid
+    LHAPDFmember   = in.GetNumber ( "LHAPDFmember"   ); //0              # set,        member   (LHAPDFs)
+    outputfile     = in.GetString ( "outputfile"     ); //'LHC7-Z-nnlo'  # outputfile
+    itmxToFile     = in.GetNumber ( "itmxToFile"     ); //0              # number      of       last       itmx    to          write           on          file
+    rmass          = in.GetNumber ( "rmass"          ); //91.1876
+    rwidth         = in.GetNumber ( "rwidth"         ); //2.495
+    ylow           = in.GetNumber ( "ylow"           ); //2
+    yhigh          = in.GetNumber ( "yhigh"          ); //2.4
+    mlow           = in.GetNumber ( "mlow"           ); //66.
+    mhigh          = in.GetNumber ( "mhigh"          ); //116.
+    int2d          = in.GetBool   ( "int2d"          ); //false
+    int3d          = in.GetBool   ( "int3d"          ); //true
+    int4d          = in.GetBool   ( "int4d"          ); //false
+    cubaverbosity  = in.GetNumber ( "cubaverbosity"  ); //0              # Cuba        info     messsages, from    0           to              3
+    niter          = in.GetNumber ( "niter"          ); //0              # only        for      2d         and     3d          cuhre           integration
+    vegasncalls    = in.GetNumber ( "vegasncalls"    ); //10000          # only        for      4d         vegas   integration
+    makelepcuts    = in.GetBool   ( "makelepcuts"    ); //true
+    cubaint        = in.GetBool   ( "cubaint"        ); //true           # integration with     Cuba       Suave
+    trapezint      = in.GetBool   ( "trapezint"      ); //false          # trapezoidal rule     for        the     phi_lep     integration     and         semi-analytical for         costh
+    quadint        = in.GetBool   ( "quadint"        ); //false          # quadrature  rule     for        the     phi_lep     integration     and         semi-analytical for         costh
+    suavepoints    = in.GetNumber ( "suavepoints"    ); //1000000        # number      of       points     for     suave       integration,    newpoints   is              set         to    suavepoints/10;
+    nphitrape      = in.GetNumber ( "nphitrape"      ); //1000           # number      of       steps      for     trapezoidal rule            of          phi_lep         integration
+    quadnphi       = in.GetNumber ( "quadnphi"       ); //20             # number      of       segments   for     quadrature  rule            of          phi_lep         integration
+    ncstart        = in.GetNumber ( "ncstart"        ); //1000           # starting    sampling for        the     costh       semi-analytical integration (common         settings    for   the             trapezoidal and quadrature rules)
+    qtrec_naive    = in.GetBool   ( "qtrec_naive"    ); //false
+    qtrec_cs       = in.GetBool   ( "qtrec_cs"       ); //false
+    qtrec_kt0      = in.GetBool   ( "qtrec_kt0"      ); //true
+    timeprofile    = in.GetBool   ( "timeprofile"    ); //false          # debug       and      time       profile resummation integration
+    verbose        = in.GetBool   ( "verbose"        ); //false          # debug       and      time       profile costh       phi_lep         integration
+    opts_.approxpdf_ = in.GetNumber ( "opts_approxpdf" ); //0
+    return ;
+}
+
+
 bool cuts(double p3[4], double p4[4])
 {
   if (!opts.makelepcuts)
@@ -95,6 +150,13 @@ bool cuts(double p3[4], double p4[4])
   //      && fabs (y3) < 2.4 && fabs(y4) < 2.4)
   //    cut = true;
   return true;
+}
+
+void binning::readfromfile(){
+    InputParser in("input/CT10nlo_settings.in");
+    qtbins.clear();
+    in.GetVectorDouble("qtbins",qtbins);
+    return;
 }
 
 void binning::init()
@@ -180,3 +242,112 @@ void binning::init()
   qtbins.push_back(50 );       qtbins.push_back(50.5 ); 
   */
 }
+
+
+// InputParser definitions
+//
+
+#include <stdexcept>
+
+InputParser::InputParser( string _filename, string _charset, string _white):
+    filename ( _filename   ),
+    Ccommnt  ( _charset[0] ),
+    Cassign  ( _charset[1] ),
+    CopenAr  ( _charset[2] ),
+    CdeliAr  ( _charset[3] ),
+    CclosAr  ( _charset[4] ),
+    Swhite   ( _white      )
+{
+    parse_file();
+}
+
+
+InputParser::~InputParser(){
+}
+
+double InputParser::GetNumber(string name){
+    string val = data[name];
+    return stod(val);
+}
+
+string InputParser::GetString(string name){
+    string val = data[name];
+    trim(val);
+    return val;
+}
+
+
+bool InputParser::GetBool(string name){
+    string val = data[name];
+    // lower case
+    std::transform(val.begin(), val.end(), val.begin(), ::tolower);
+    if (val.compare(0,4,"true") || val[0] == '1') return true;
+    return false;
+}
+
+
+void InputParser::GetVectorDouble(string name, vector<double> &vec){
+    string val = data[name];
+    // has open/close array
+    size_t strBegin = val.find(CopenAr,0);
+    size_t strEnd   = val.find(CclosAr,0);
+    // we need both open and close otherwise is something wrong
+    if (strBegin==string::npos || strEnd==string::npos) throw invalid_argument("Missing open/close character.");
+    // parse what is between them
+    val = val.substr(strBegin+1,strEnd-strBegin-1);
+    while (!val.empty()){
+        size_t pos = 0;
+        // find delim
+        pos = val.find(CdeliAr);
+        // get substring
+        string tmp = val.substr(0,pos);
+        trim(tmp);
+        // expecting number otherwise exception
+        if (!tmp.empty()) vec.push_back(stod(tmp));
+        val = val.substr(pos+1);
+    }
+    return;
+}
+
+
+void InputParser::parse_file(){
+    ifstream fstrm(filename.c_str());
+    string line;
+    // line by line
+    while(getline(fstrm,line))   {
+        size_t pos = 0;
+        // check for comments
+        pos = line.find(Ccommnt,pos);
+        if (pos != string::npos) line = line.substr(0,pos);
+        // split string by delim
+        pos = line.find(Cassign,0);
+        if (pos == string::npos || line.empty()) continue;
+        string key  = line.substr(0,pos);
+        string val = line.substr(pos+1);
+        // remove leading / trailing whitespace
+        trim(key);
+        trim(val);
+        /// @todo: Multiline setting. If has CopenAr load until CclosAr
+        // save to map
+        data[key]=val;
+    }
+    fstrm.close();
+    return;
+}
+
+
+void InputParser::trim(string & str){
+    size_t strBegin = str.find_first_not_of(Swhite);
+    if (strBegin == std::string::npos){
+        str="";
+        return ; // no content
+    }
+    size_t strEnd = str.find_last_not_of(Swhite);
+    size_t strRange = strEnd - strBegin + 1;
+    str = str.substr(strBegin, strRange);
+    return;
+}
+
+
+
+

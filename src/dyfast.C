@@ -24,10 +24,16 @@ void integr2d(double &res, double &err);
 void integr3d(double &res, double &err);
 void integr4d(double &res, double &err);
 
+void test_resum_speed(double costh,double m,double qt,double y,int mode);
+
 int main()
 {
   cout << "hello world" << endl;
   clock_t begin_time, end_time;
+
+  //initialise settings
+  //opts.init();
+  opts.readfromfile();
 
   //  lhapdfs_.lhapdfs_ = true;
   //  LHAPDF::initPDFSet("CT10nnlo");
@@ -40,72 +46,37 @@ int main()
   //  cout << a_param_.a_param_ << endl;
   //  std::cout << std::setprecision(15);
 
-  //initialise settings
-  opts.init();
-  
   double costh, m, qt, y;
   double value, error;
   int mode = 0;
-  
+
   costh = 0.3; m = 91; qt = 1; y = 0;
-  begin_time = clock();
-  value = resumm_(costh,m,qt,y,mode);
-  end_time = clock();
-  cout << setw(10) << "Result" << setw(15) << value
-       << setw(10) << "time "  << setw(15) << float(end_time - begin_time) / CLOCKS_PER_SEC << endl;
+  test_resum_speed(costh,m,qt,y,mode);
 
   costh = 0.1; m = 91; qt = 5; y = 0.2;
-  begin_time = clock();
-  value = resumm_(costh,m,qt,y,mode);
-  end_time = clock();
-  cout << setw(10) << "Result" << setw(15) << value
-       << setw(10) << "time "  << setw(15) << float(end_time - begin_time) / CLOCKS_PER_SEC << endl;
+  test_resum_speed(costh,m,qt,y,mode);
 
   costh = 0.5; m = 70; qt = 10; y = 1.5;
-  begin_time = clock();
-  value = resumm_(costh,m,qt,y,mode);
-  end_time = clock();
-  cout << setw(10) << "Result" << setw(15) << value
-       << setw(10) << "time "  << setw(15) << float(end_time - begin_time) / CLOCKS_PER_SEC << endl;
+  test_resum_speed(costh,m,qt,y,mode);
 
   costh = -1.0; m = 110; qt = 20; y = -2.5;
-  begin_time = clock();
-  value = resumm_(costh,m,qt,y,mode);
-  end_time = clock();
-  cout << setw(10) << "Result" << setw(15) << value
-       << setw(10) << "time "  << setw(15) << float(end_time - begin_time) / CLOCKS_PER_SEC << endl;
+  test_resum_speed(costh,m,qt,y,mode);
 
   costh = 0.1; m = 91; qt = 5; y = 1.5;
-  begin_time = clock();
-  value = resumm_(costh,m,qt,y,mode);
-  end_time = clock();
-  cout << setw(10) << "Result" << setw(15) << value
-       << setw(10) << "time "  << setw(15) << float(end_time - begin_time) / CLOCKS_PER_SEC << endl;
+  test_resum_speed(costh,m,qt,y,mode);
 
   costh = 0.1; m = 91; qt = 5; y = 0.2;
-  begin_time = clock();
-  value = resumm_(costh,m,qt,y,mode);
-  end_time = clock();
-  cout << setw(10) << "Result" << setw(15) << value
-       << setw(10) << "time "  << setw(15) << float(end_time - begin_time) / CLOCKS_PER_SEC << endl;
+  test_resum_speed(costh,m,qt,y,mode);
 
   costh = 0.59172160171850774; m = 80.887838188405482;
   qt = 4.0234498520010531; y = 1.0630039379722271;
-  begin_time = clock();
-  value = resumm_(costh,m,qt,y,mode);
-  end_time = clock();
-  cout << setw(10) << "Result" << setw(15) << value
-       << setw(10) << "time "  << setw(15) << float(end_time - begin_time) / CLOCKS_PER_SEC << endl;
+  test_resum_speed(costh,m,qt,y,mode);
 
   costh = 0.76061949271840290; m = 91.557029972501027;
   qt = 4.6388123004847825; y = 0.73501935633317217;
-  begin_time = clock();
-  value = resumm_(costh,m,qt,y,mode);
-  end_time = clock();
-  cout << setw(10) << "Result" << setw(15) << value
-       << setw(10) << "time "  << setw(15) << float(end_time - begin_time) / CLOCKS_PER_SEC << endl;
+  test_resum_speed(costh,m,qt,y,mode);
 
-  
+
   //mline
   int nocuts = (int)true;
   double m1 = 0;
@@ -145,7 +116,8 @@ int main()
 
   //return 0;
   // Cuba integration
-  bins.init();
+  //bins.init();
+  bins.readfromfile();
 
   cout << endl;
   cout << "Start integration" << endl;
@@ -479,4 +451,17 @@ void ptline()
     }
   pf << "gp->Draw();" << endl;
   pf << "}" << endl;
+}
+
+
+
+void test_resum_speed(double costh,double m,double qt,double y,int mode){
+    clock_t begin_time, end_time;
+    double value;
+    begin_time = clock();
+    value = resumm_(costh,m,qt,y,mode);
+    end_time = clock();
+    cout << setw(10) << "Result" << setw(15) << value
+         << setw(10) << "time "  << setw(15) << float(end_time - begin_time) / CLOCKS_PER_SEC << endl;
+    return;
 }

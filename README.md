@@ -17,5 +17,8 @@ make install
 ```
 
  3. have fun
+```
+./bin/dyfast < input/ct10nlo.in
+```
 
 
