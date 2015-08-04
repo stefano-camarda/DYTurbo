@@ -23,6 +23,7 @@ class InputParser {
         // functions
         void parse_file();
         void trim(string & str);
+        void has_key(const string key);
         // data members
         map<string,string> data; ///< Data table.
         string filename; ///< Input file.
@@ -41,6 +42,7 @@ public:
   settings() {};
   void init();
   void readfromfile();
+  void initDyresSettings();
 
   // private:
 

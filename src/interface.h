@@ -20,19 +20,10 @@ extern "C" {
   extern struct {
     double amz_;
   } couple_;
-  
+
   extern struct {
     int nlooprun_;
   } nlooprun_;
-
-  extern struct {
-    double facscale_;
-  } facscale_;
-
-  extern struct {
-    double scale_;
-    double musq_;
-  } scale_;
 
   extern struct {
     int lhapdfs_;
@@ -73,7 +64,7 @@ extern "C" {
 
   extern struct {
       int order_;
-  } order_;
+  } nnlo_;
 
   extern struct {
       char part_[4];

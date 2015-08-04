@@ -28,12 +28,28 @@ void test_resum_speed(double costh,double m,double qt,double y,int mode);
 
 int main()
 {
-  cout << "hello world" << endl;
+
+    cout << endl << endl;
+    cout << " (        )              (           )   " << endl;
+    cout << " )\\ )  ( /(   *   )      )\\ )  (  ( /(   " << endl;
+    cout << "(()/(  )\\())` )  /(   ( (()/(( )\\ )\\())  " << endl;
+    cout << " /(_))((_)\\  ( )(_))  )\\ /(_))((_|(_)\\   " << endl;
+    cout << "(_))___ ((_)(_(_())_ ((_|_))((_)_  ((_)  " << endl;
+    cout << " |   \\ \\ / /|_   _| | | | _ \\| _ )/ _ \\  " << endl;
+    cout << " | |) \\ V /   | | | |_| |   /| _ \\ (_) | " << endl;
+    cout << " |___/ |_|    |_|  \\___/|_|_\\|___/\\___/  " << endl;
+    cout << "                                   v 0.9 " << endl;
+    cout << endl;
+
+
+
   clock_t begin_time, end_time;
 
   //initialise settings
   //opts.init();
   opts.readfromfile();
+  opts.initDyresSettings();
+
 
   //  lhapdfs_.lhapdfs_ = true;
   //  LHAPDF::initPDFSet("CT10nnlo");

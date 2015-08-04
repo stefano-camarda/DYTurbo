@@ -218,23 +218,23 @@ CC    Read a previously saved grid
 
 CC    Read inputfile
 
-      read(*,*) sroot
-      read(*,*) ih1,ih2
-      read(*,*) nproc !decay mode
-      read(*,*) scale,facscale  ! mur,muf!      read(*,*) a_param
-      read(*,*) a_param
-      read(*,*) g_param
-      read(*,*) order        
-      read(*,*) part
-      read(*,*) zerowidth
-      read(*,*) Mwmin,Mwmax
-      read(*,*) itmx1,ncall1
-      read(*,*) itmx2,ncall2
-      read(*,*) rseed          ! seed
-      read(*,*) iset,nset     
-      read(*,*) PDFname,PDFmember
-      read(*,*) runstring
-      read(*,*) pr
+C      read(*,*) sroot
+C      read(*,*) ih1,ih2
+C      read(*,*) nproc !decay mode
+C      read(*,*) scale,facscale  ! mur,muf!      read(*,*) a_param
+C      read(*,*) a_param
+C      read(*,*) g_param
+C      read(*,*) order        
+C      read(*,*) part
+C      read(*,*) zerowidth
+C      read(*,*) Mwmin,Mwmax
+C      read(*,*) itmx1,ncall1
+C      read(*,*) itmx2,ncall2
+C      read(*,*) rseed          ! seed
+C      read(*,*) iset,nset     
+C      read(*,*) PDFname,PDFmember
+C      read(*,*) runstring
+C      read(*,*) pr
 
 CC    Set all factorization scales to facscale
 CC    to avoid problems when dynamicscale=.false.

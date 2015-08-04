@@ -1,4 +1,5 @@
-#include <math.h>
+#include <cmath>
+#include <cstring>
 
 #include "settings.h"
 #include "interface.h"
@@ -95,6 +96,7 @@ void settings::readfromfile(){
     LHAPDFmember   = in.GetNumber ( "LHAPDFmember"   ); //0              # set,        member   (LHAPDFs)
     outputfile     = in.GetString ( "outputfile"     ); //'LHC7-Z-nnlo'  # outputfile
     itmxToFile     = in.GetNumber ( "itmxToFile"     ); //0              # number      of       last       itmx    to          write           on          file
+
     rmass          = in.GetNumber ( "rmass"          ); //91.1876
     rwidth         = in.GetNumber ( "rwidth"         ); //2.495
     ylow           = in.GetNumber ( "ylow"           ); //2
@@ -121,9 +123,39 @@ void settings::readfromfile(){
     timeprofile    = in.GetBool   ( "timeprofile"    ); //false          # debug       and      time       profile resummation integration
     verbose        = in.GetBool   ( "verbose"        ); //false          # debug       and      time       profile costh       phi_lep         integration
     opts_.approxpdf_ = in.GetNumber ( "opts_approxpdf" ); //0
+
+
     return ;
 }
 
+
+void settings::initDyresSettings(){
+    energy_      . sroot_     = sroot        ;         //7e3
+    density_     . ih1_       = ih1          ;         //1
+    density_     . ih2_       = ih2          ;         //1              # ih1,       ih2
+    nproc_       . nproc_     = nproc        ;         //3              # nproc
+    scale_       . scale_     = mur          ;         //91.1876e0
+    facscale_    . facscale_  = muf          ;         //91.1876e0      # mur,       muf
+    a_param_     . a_param_   = a_param      ;         //2.0e0          # a_param
+    g_param_     . g_param_   = g_param      ;         //1.0e0          # g_param
+    nnlo_       . order_     = order        ;         //1              # order
+    zerowidth_   . zerowidth_ = zerowidth    ;         //false          # zerowidth
+    mwminmax_    . Mwmin_     = M_min        ;         //66d0
+    mwminmax_    . Mwmax_     = M_max        ;         //116d0          # M_min,     M_max
+    iterat_      . itmx1_     = itmx1        ;         //1
+    iterat_      . ncall1_    = ncall1       ;         //100000         # itmx1,     ncall1
+    iterat_      . itmx2_     = itmx2        ;         //1
+    iterat_      . ncall2_    = ncall2       ;         //100            # itmx2,     ncall2
+    rseed_       . rseed_     = rseed        ;         //123456         # rseed
+    pdfiset_     . iset_      = PDFset       ;         //92
+    prefix_      . nset_      = PDFmember    ;         //0              # set,member (native PDFs)
+    lhapdf_int_  . PDFmember_ = LHAPDFmember ;         //0              # set,       member  (LHAPDFs)
+    pr_          . pr_        = itmxToFile   ;         //0              # number     of      last      itmx to write on file
+
+    strncpy( part_        . part_      , part         .c_str(), 4); //virt           # part
+    strncpy( lhapdf_char_ . PDFname_   , LHAPDFset    .c_str(), 30); //CT10nlo.LHgrid
+    strncpy( runstring_   . runstring_ , outputfile   .c_str(), 30); //'LHC7-Z-nnlo'  # outputfile
+}
 
 bool cuts(double p3[4], double p4[4])
 {
@@ -266,11 +298,13 @@ InputParser::~InputParser(){
 }
 
 double InputParser::GetNumber(string name){
+    has_key(name);
     string val = data[name];
     return stod(val);
 }
 
 string InputParser::GetString(string name){
+    has_key(name);
     string val = data[name];
     trim(val);
     return val;
@@ -278,15 +312,17 @@ string InputParser::GetString(string name){
 
 
 bool InputParser::GetBool(string name){
+    has_key(name);
     string val = data[name];
     // lower case
     std::transform(val.begin(), val.end(), val.begin(), ::tolower);
-    if (val.compare(0,4,"true") || val[0] == '1') return true;
+    if (val.compare(0,4,"true") == 0 ) return true;
     return false;
 }
 
 
 void InputParser::GetVectorDouble(string name, vector<double> &vec){
+    has_key(name);
     string val = data[name];
     // has open/close array
     size_t strBegin = val.find(CopenAr,0);
@@ -345,6 +381,17 @@ void InputParser::trim(string & str){
     size_t strEnd = str.find_last_not_of(Swhite);
     size_t strRange = strEnd - strBegin + 1;
     str = str.substr(strBegin, strRange);
+    return;
+}
+
+
+void InputParser::has_key(const string key){
+    if ( data.count(key) == 0 ){
+        string msg = "No setting with name '";
+        msg += key;
+        msg += "'";
+        throw invalid_argument(msg.c_str());
+    }
     return;
 }
 
