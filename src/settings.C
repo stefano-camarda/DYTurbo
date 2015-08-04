@@ -152,9 +152,9 @@ void settings::initDyresSettings(){
     lhapdf_int_  . PDFmember_ = LHAPDFmember ;         //0              # set,       member  (LHAPDFs)
     pr_          . pr_        = itmxToFile   ;         //0              # number     of      last      itmx to write on file
 
-    strncpy( part_        . part_      , part         .c_str(), 4); //virt           # part
-    strncpy( lhapdf_char_ . PDFname_   , LHAPDFset    .c_str(), 30); //CT10nlo.LHgrid
-    strncpy( runstring_   . runstring_ , outputfile   .c_str(), 30); //'LHC7-Z-nnlo'  # outputfile
+    strncpy( part_        . part_      , part         .c_str(), part       .size() ); //virt           # part
+    strncpy( lhapdf_char_ . PDFname_   , LHAPDFset    .c_str(), LHAPDFset  .size() ); //CT10nlo.LHgrid
+    strncpy( runstring_   . runstring_ , outputfile   .c_str(), outputfile .size() ); //'LHC7-Z-nnlo'  # outputfile
 }
 
 bool cuts(double p3[4], double p4[4])

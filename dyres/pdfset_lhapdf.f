@@ -27,7 +27,7 @@ c        close(21)
 c      endif
       
       oldPDFname=PDFname
-      validPDF=.false.
+      validPDF=.true.
       i=0
    20 continue
       i=i+1    
@@ -60,7 +60,7 @@ c      endif
       write(6,*) 'CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC'
       write(6,*)
 
-      call InitPDFset('PDFsets/'//PDFname)
+      call InitPDFset('PDFsets/'//trim(PDFname))
       
       if (PDFmember .lt. 0) then
         PDFerrors=.true.

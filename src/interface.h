@@ -1,10 +1,13 @@
 #ifndef interface_h
 #define interface_h
 
+
+
 extern "C" {
   double resumm_(double &costh, double &mm, double &qtt, double &yy, int& mode);
   void setup_();
   void dyinit_();
+  void pdfini_();
   bool cuts_(double p[4][12], int &njet);
 
   void breitw_(double& x1, double& mminsq, double& mmaxsq, double& rmass, double& rwidth, double& msq, double& wt);
@@ -12,6 +15,28 @@ extern "C" {
 
   
   void rapintegrals_(double &ymin,double &ymax, double& mass, int& nocuts);
+
+  extern struct {
+      double md_;
+      double mu_;
+      double ms_;
+      double mc_;
+      double mb_;
+      double mt_;
+      double mel_;
+      double mmu_;
+      double mtau_;
+      double hmass_;
+      double hwidth_;
+      double wmass_;
+      double wwidth_;
+      double zmass_;
+      double zwidth_;
+      double twidth_;
+      double mtausq_;
+      double mcsq_;
+      double mbsq_;
+  } masses_;
 
   extern struct {
     int approxpdf_;
