@@ -6,6 +6,7 @@
 #include <gsl/gsl_integration.h>
 #include <gsl/gsl_math.h>
 #include <ctime>
+#include "settings.h"
 
 using namespace std;
 
@@ -17,6 +18,10 @@ void ptgvar();
 
 int main()
 {
+
+  string conf_file = "input/CT10nlo_settings.in";
+  opts.readfromfile(conf_file.c_str());
+  opts.initDyresSettings();
   dyinit_();
 
   //born level variables (6 dimensions)
