@@ -69,9 +69,9 @@ void settings::init()
   opts_.approxpdf_ = 0;
 }
 
-void settings::readfromfile(){
+void settings::readfromfile(const char * fname){
     //read input settings from file
-    InputParser in("input/CT10nlo_settings.in");
+    InputParser in(fname);
     sroot          = in.GetNumber ( "sroot"          ); //7e3
     ih1            = in.GetNumber ( "ih1"            ); //1
     ih2            = in.GetNumber ( "ih2"            ); //1              # ih1,        ih2
@@ -184,8 +184,8 @@ bool cuts(double p3[4], double p4[4])
   return true;
 }
 
-void binning::readfromfile(){
-    InputParser in("input/CT10nlo_settings.in");
+void binning::readfromfile(const char * fname){
+    InputParser in(fname);
     qtbins.clear();
     in.GetVectorDouble("qtbins",qtbins);
     return;

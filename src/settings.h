@@ -41,7 +41,7 @@ class settings
 public:
   settings() {};
   void init();
-  void readfromfile();
+  void readfromfile(const char * fname);
   void initDyresSettings();
 
   // private:
@@ -115,7 +115,7 @@ class binning
  public:
   binning() {};
   void init();
-  void readfromfile();
+  void readfromfile(const char * fname);
   // private:
   vector <double> qtbins;
 };

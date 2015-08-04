@@ -40,6 +40,7 @@ int main()
     cout << " |___/ |_|    |_|  \\___/|_|_\\|___/\\___/  " << endl;
     cout << "                                   v 0.9 " << endl;
     cout << endl;
+    cout << endl;
 
 
 
@@ -47,7 +48,8 @@ int main()
 
   //initialise settings
   //opts.init();
-  opts.readfromfile();
+  const char * conf_file = "input/CT10nlo_settings.in";
+  opts.readfromfile(conf_file);
   opts.initDyresSettings();
 
 
@@ -133,7 +135,7 @@ int main()
   //return 0;
   // Cuba integration
   //bins.init();
-  bins.readfromfile();
+  bins.readfromfile(conf_file);
 
   cout << endl;
   cout << "Start integration" << endl;

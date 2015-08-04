@@ -1,6 +1,6 @@
 # DYTURBO - fast Drell-Yan Monte-Carlo
-
-Here will be awesome description and "How to"
+DYTURBO is fast Drell-Yan Monte-Carlo based on DYRES code. Several improvements
+has been done to increase the speed of calculation.
 
 ## How to setup
  1. checkout the repository
@@ -8,17 +8,19 @@ Here will be awesome description and "How to"
 git clone https://gitlab.cern.ch/DYdevel/DYTURBO.git
 ```
 
- 2. setup
+ 2. setup/compile
 ```
 autoreconf -i
 ./configure
-make
-make install
+make && make install
 ```
 
  3. have fun
 ```
-./bin/dyfast < input/ct10nlo.in
+./bin/dyfast
 ```
+
+## Description
+ - input files can be found in `input` folder (where else :) )
 
 
