@@ -6,6 +6,7 @@
 #include <ctime>
 #include <cuba.h>
 #include <iomanip>
+#include "config.h"
 
 #include "integr.h"
 #include "settings.h"
@@ -26,7 +27,7 @@ void integr4d(double &res, double &err);
 
 void test_resum_speed(double costh,double m,double qt,double y,int mode);
 
-int main()
+int main( int argc , const char * argv[])
 {
 
     cout << endl << endl;
@@ -38,7 +39,7 @@ int main()
     cout << " |   \\ \\ / /|_   _| | | | _ \\| _ )/ _ \\  " << endl;
     cout << " | |) \\ V /   | | | |_| |   /| _ \\ (_) | " << endl;
     cout << " |___/ |_|    |_|  \\___/|_|_\\|___/\\___/  " << endl;
-    cout << "                                   v 0.9 " << endl;
+    cout << "                                   v " << VERSION << endl;
     cout << endl;
     cout << endl;
 
@@ -48,8 +49,11 @@ int main()
 
   //initialise settings
   //opts.init();
-  const char * conf_file = "input/CT10nlo_settings.in";
-  opts.readfromfile(conf_file);
+  string conf_file = "input/CT10nlo_settings.in";
+  if (argc>1) {
+      conf_file = argv[1];
+  }
+  opts.readfromfile(conf_file.c_str());
   opts.initDyresSettings();
 
 
@@ -135,7 +139,7 @@ int main()
   //return 0;
   // Cuba integration
   //bins.init();
-  bins.readfromfile(conf_file);
+  bins.readfromfile(conf_file.c_str());
 
   cout << endl;
   cout << "Start integration" << endl;

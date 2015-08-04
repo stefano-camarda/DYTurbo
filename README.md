@@ -15,7 +15,7 @@ autoreconf -i
 make && make install
 ```
 
- 3. have fun
+ 3. have fun (by default with CT10NLO)
 ```
 ./bin/dyfast
 ```
