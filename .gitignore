@@ -3,6 +3,8 @@ lhapdf6/
 *.o
 *.a
 *~
+*.swp
+tags
 src/dyfast
 src/dyfin
 Makefile.in
