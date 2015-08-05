@@ -1079,7 +1079,8 @@ integrand_t resintegrand4d(const int &ndim, const double x[], const int &ncomp, 
 	   lowintHst0=jac*tempp;
 	   lowintHst0=lowintHst0*swtch; // SWITCHING
 	 }
-       azloop=azloop+1;
+      //plot(p1,p2,w=weight*lowintHst0/azloopmax)
+      azloop=azloop+1;
     }
 
   lowintHst=lowintHst0*float(azloop)/float(azloopmax);
