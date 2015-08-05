@@ -1,5 +1,4 @@
 #include "integr.h"
-#include "dyfast.h"
 #include "settings.h"
 #include "interface.h"
 

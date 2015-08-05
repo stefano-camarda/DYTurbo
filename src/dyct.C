@@ -1,10 +1,10 @@
 #include <iostream>
 #include <LHAPDF/LHAPDF.h>
-#include <dyct.h>
-#include <dyfin.h>
 #include <gsl/gsl_integration.h>
 #include <gsl/gsl_math.h>
 #include <ctime>
+
+#include "dyct.h"
 #include "interface.h"
 
 using namespace std;

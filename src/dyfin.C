@@ -1,12 +1,13 @@
 #include <iostream>
 #include <LHAPDF/LHAPDF.h>
-#include <dyct.h>
-#include <dyrealvirt.h>
 #include <gsl/gsl_integration.h>
 #include <gsl/gsl_math.h>
 #include <ctime>
+
 #include "settings.h"
 #include "interface.h"
+#include "dyct.h"
+#include "finitemapping.h"
 
 using namespace std;
 

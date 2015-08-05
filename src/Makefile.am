@@ -6,4 +6,4 @@ dyfast_LDADD = ../dyres/libdyres.a ../lib/libcern.a -lgfortran $(CUBA_LDFLAGS) $
 dyfin_SOURCES = dyfin.C dyct.C finitemapping.C integr.C settings.C init.C
 dyfin_LDADD = ../dyres/libdyres.a ../lib/libcern.a -lgfortran -L$(srcdir)/../Cuba-4.2 -lcuba $(LHAPDF_LDFLAGS) -lgsl -lgslcblas
 
-pkginclude_HEADERS = dyct.h  dyrealvirt.h  integr.h  interface.h  settings.h
+pkginclude_HEADERS = dyct.h  integr.h  interface.h  settings.h
