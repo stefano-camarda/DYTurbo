@@ -18,9 +18,8 @@ integrand_t lowintegrand(const int &ndim, const double x[], const int &ncomp, do
   for (int i = 0; i < ndim; i++)
     rlo[i]=x[i];
 
-  double value = lowint_(rlo,wgt);
+  f[0] = lowint_(rlo,wgt);
   
-  f[0] = value;
   return 0;
 }
 
@@ -32,9 +31,8 @@ integrand_t realintegrand(const int &ndim, const double x[], const int &ncomp, d
   for (int i = 0; i < ndim; i++)
     rre[i]=x[i];
 
-  double value = realint_(rre,wgt);
+  f[0] = realint_(rre,wgt);
   
-  f[0] = value;
   return 0;
 }
 
@@ -47,9 +45,8 @@ integrand_t virtintegrand(const int &ndim, const double x[], const int &ncomp, d
     rvi[i]=x[i];
   rvi[9] = rvi[7];
   
-  double value = virtint_(rvi,wgt);
+  f[0]  = virtint_(rvi,wgt);
   
-  f[0] = value;
   return 0;
 }
 
@@ -64,9 +61,8 @@ integrand_t ctintegrand(const int &ndim, const double x[], const int &ncomp, dou
     rct[i]=x[i];
   rct[8] = rct[1];
 
-  double value = countint_(rct,wgt);
+  f[0] = countint_(rct,wgt);
   
-  f[0] = value;
   return 0;
 }
 

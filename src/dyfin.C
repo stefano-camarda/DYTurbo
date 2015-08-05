@@ -309,7 +309,7 @@ int main( int argc , const char * argv[])
   bins.readfromfile(conf_file.c_str());
   clock_t begin_time, end_time;
   double value, error;
-
+  /*
   cout << endl;
   cout << "Start integration of counterterm" << endl;
   begin_time = clock();
@@ -329,7 +329,7 @@ int main( int argc , const char * argv[])
   end_time = clock();
   cout << endl;
   cout << setw(10) << "time "  << setw(15) << float(end_time - begin_time) / CLOCKS_PER_SEC << endl;
-
+  */
   if (opts.order == 1)
     {
       cout << "Start integration of Z+j LO" << endl;
