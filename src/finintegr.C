@@ -10,6 +10,50 @@
 
 using namespace std;
 
+integrand_t lowintegrand(const int &ndim, const double x[], const int &ncomp, double f[])
+{
+  double wgt = 1;
+  
+  double rlo[22];
+  for (int i = 0; i < ndim; i++)
+    rlo[i]=x[i];
+
+  double value = lowint_(rlo,wgt);
+  
+  f[0] = value;
+  return 0;
+}
+
+integrand_t realintegrand(const int &ndim, const double x[], const int &ncomp, double f[])
+{
+  double wgt = 1;
+  
+  double rre[22];
+  for (int i = 0; i < ndim; i++)
+    rre[i]=x[i];
+
+  double value = realint_(rre,wgt);
+  
+  f[0] = value;
+  return 0;
+}
+
+integrand_t virtintegrand(const int &ndim, const double x[], const int &ncomp, double f[])
+{
+  double wgt = 1;
+  
+  double rvi[22];
+  for (int i = 0; i < ndim; i++)
+    rvi[i]=x[i];
+  rvi[9] = rvi[7];
+  
+  double value = virtint_(rvi,wgt);
+  
+  f[0] = value;
+  return 0;
+}
+
+
 integrand_t ctintegrand(const int &ndim, const double x[], const int &ncomp, double f[])
 {
   double wgt = 1;
@@ -24,7 +68,6 @@ integrand_t ctintegrand(const int &ndim, const double x[], const int &ncomp, dou
   f[0] = value;
   return 0;
 }
-
 
 //generate the phase space 4 vectors
 //write a fortran function which calculates the ct as a function of m, qt, y, and costh moments, (and alpha beta)

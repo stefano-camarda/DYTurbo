@@ -150,9 +150,11 @@ extern "C" {
 
 
   double realvirt2_(double r[22], double &wgt);
-  double countint_(double r[22], double &wgt);
+
+  double lowint_(double r[22], double &wgt);
   double realint_(double r[22], double &wgt);
   double virtint_(double r[22], double &wgt);
+  double countint_(double r[22], double &wgt);
   
   double countterm_(double &costh, double &mm, double &qtt, double &yy, double &alfa, double &beta, double &cthmom0, double &cthmom1, double &cthmom2);
 

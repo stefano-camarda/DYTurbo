@@ -44,6 +44,8 @@ c      double precision msqa(-nf:nf,-nf:nf),n(4)
       data p/48*0d0/
       data first/.true./
       save first,rscalestart,fscalestart
+      logical binner
+      external binner
       
       if (first) then
          first=.false.
@@ -60,17 +62,17 @@ c      double precision msqa(-nf:nf,-nf:nf),n(4)
     
       npart=3     
       call gen3(r,p,pswt,*999)
-      print*,p(1,1),p(1,2),p(1,3),p(1,4)
-      print*,p(2,1),p(2,2),p(2,3),p(2,4)
-      print*,p(3,1),p(3,2),p(3,3),p(3,4)
-      print*,p(4,1),p(4,2),p(4,3),p(4,4)
-      print*,'mass',sqrt((p(4,4)+p(3,4))**2
-     +     - (p(4,1)+p(3,1))**2
-     +     - (p(4,2)+p(3,2))**2
-     +     - (p(4,3)+p(3,3))**2)
-      print*,'y',0.5d0*log((p(4,4)+p(3,4) + (p(4,3)+p(3,3)))/
-     +     (p(4,4)+p(3,4) - (p(4,3)+p(3,3))))
-      print*,'pt',sqrt((p(4,1)+p(3,1))**2 + (p(4,2)+p(3,2))**2)
+c      print*,p(1,1),p(1,2),p(1,3),p(1,4)
+c      print*,p(2,1),p(2,2),p(2,3),p(2,4)
+c      print*,p(3,1),p(3,2),p(3,3),p(3,4)
+c      print*,p(4,1),p(4,2),p(4,3),p(4,4)
+c      print*,'mass',sqrt((p(4,4)+p(3,4))**2
+c     +     - (p(4,1)+p(3,1))**2
+c     +     - (p(4,2)+p(3,2))**2
+c     +     - (p(4,3)+p(3,3))**2)
+c      print*,'y',0.5d0*log((p(4,4)+p(3,4) + (p(4,3)+p(3,3)))/
+c     +     (p(4,4)+p(3,4) - (p(4,3)+p(3,3))))
+c      print*,'pt',sqrt((p(4,1)+p(3,1))**2 + (p(4,2)+p(3,2))**2)
 
       qq2=2*dot(p,3,4)
       qt2=p(5,1)**2+p(5,2)**2   
@@ -98,11 +100,11 @@ c--- bother calculating the matrix elements for it, instead bail out
       if (includedipole(0,p) .eqv. .false.) then
         goto 999
       endif
-      
+      if (binner(p(3,:),p(4,:)).eqv..false.) goto 999
+
       
       xx(1)=-2d0*p(1,4)/sqrts
       xx(2)=-2d0*p(2,4)/sqrts
-      print*,xx(1),xx(2)
 
 c--- Calculate the required matrix elements      
 
