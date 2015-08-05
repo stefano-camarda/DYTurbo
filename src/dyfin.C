@@ -6,8 +6,9 @@
 
 #include "settings.h"
 #include "interface.h"
-#include "dyct.h"
+#include "finintegr.h"
 #include "finitemapping.h"
+#include "integr.h"
 
 using namespace std;
 
@@ -16,6 +17,7 @@ void mline();
 void ptline();
 void ptavar();
 void ptgvar();
+void ctintegr(double &res, double &err);
 
 int main()
 {
@@ -62,7 +64,7 @@ int main()
   cout << countterm_(costh,m,qt,y,alpha,beta,cthmom0,cthmom1,cthmom2) << endl;
   */
 
-  return 0;
+  //  return 0;
   //lines
   /*
   //mass line
@@ -160,9 +162,7 @@ int main()
     }
   cjf << "gcj->Draw();" << endl;
   cjf << "}" << endl;
-  */
   
-
   //mass line
   costh = 0.;
   m = 91;
@@ -294,11 +294,40 @@ int main()
     }
   bf << "gb->Draw();" << endl;
   bf << "}" << endl;
+  */
 
 
 
-  //Cuba integration of the counterterm
-  const int ndim = 9;   //dimensions of the integral
+  bins.readfromfile(conf_file.c_str());
+  clock_t begin_time, end_time;
+  double value, error;
+  cout << endl;
+  cout << "Start integration" << endl;
+  begin_time = clock();
+  for (vector<double>::iterator qit = bins.qtbins.begin(); qit != bins.qtbins.end()-1; qit++)
+    {
+      //Set integration boundaries
+      setbounds(opts.mlow, opts.mhigh, *qit, *(qit+1), opts.ylow, opts.yhigh);
+      clock_t b_time = clock();
+      ctintegr(value, error);
+      clock_t e_time = clock();
+      value = value / (*(qit+1) - *qit);
+      error = error / (*(qit+1) - *qit);
+      cout << setw(3) << "bin" << setw(5) << *qit << setw(2) << "-" << setw(5) << *(qit+1)
+	   << setw(10) << value << setw(5) << "+/-" << setw(10) << error
+	   << setw(6) << "time" << setw(10) <<  float(e_time - b_time) / CLOCKS_PER_SEC << endl;
+    }
+  end_time = clock();
+  cout << endl;
+  cout << setw(10) << "time "  << setw(15) << float(end_time - begin_time) / CLOCKS_PER_SEC << endl;
+
+  return 0;
+}
+
+//Cuba integration of the counterterm
+void ctintegr(double &res, double &err)
+{
+  const int ndim = 8;   //dimensions of the integral
   const int ncomp = 1;  //components of the integrand
   void *userdata;
   const int nvec = 1;
@@ -311,9 +340,9 @@ int main()
   double integral[1];
   double error[1];
   double prob[1];
-  const int flags = 7;
+  const int flags = 4+opts.cubaverbosity;
   const int seed = 1;
-  const int mineval = 10000;
+  const int mineval = 1000000;
   const int maxeval = 1000000;
   const int nstart = 5000;
   const int nincrease = 5000;
@@ -327,8 +356,8 @@ int main()
 	gridno, statefile, spin,
 	&neval, &fail,
 	integral, error, prob);
+  res = integral[0];
+  err = error[0];
 
-  cout << "Result " << integral[0] << "  " << error[0] << endl;
-  
-  return 0;
+  return;
 }

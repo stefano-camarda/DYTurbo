@@ -98,6 +98,9 @@ C
       data p/48*0d0/
       data first/.true./
       save first,rscalestart,fscalestart
+
+      logical binner
+      external binner
       if (first) then
          first=.false.
          rscalestart=scale
@@ -237,19 +240,19 @@ CC   Set qtmax (kinematical limit)
 !      write(*,*) "p3",p(3,4)**2-p(3,1)**2-p(3,2)**2-p(3,3)**2
 !      write(*,*) "p4",p(4,4)**2-p(4,1)**2-p(4,2)**2-p(4,3)**2
 
-      print*,'phase space in counterterm'
-      print*,p(1,1),p(1,2),p(1,3),p(1,4)
-      print*,p(2,1),p(2,2),p(2,3),p(2,4)
-      print*,p(3,1),p(3,2),p(3,3),p(3,4)
-      print*,p(4,1),p(4,2),p(4,3),p(4,4)
-      print*,'mass',sqrt((p(4,4)+p(3,4))**2
-     +     - (p(4,1)+p(3,1))**2
-     +     - (p(4,2)+p(3,2))**2
-     +     - (p(4,3)+p(3,3))**2)
-      print*,'y',0.5d0*log((p(4,4)+p(3,4) + (p(4,3)+p(3,3)))/
-     +     (p(4,4)+p(3,4) - (p(4,3)+p(3,3))))
-      print*,'pt',sqrt((p(4,1)+p(3,1))**2 + (p(4,2)+p(3,2))**2)
-      print*
+c      print*,'phase space in counterterm'
+c      print*,p(1,1),p(1,2),p(1,3),p(1,4)
+c      print*,p(2,1),p(2,2),p(2,3),p(2,4)
+c      print*,p(3,1),p(3,2),p(3,3),p(3,4)
+c      print*,p(4,1),p(4,2),p(4,3),p(4,4)
+c      print*,'mass',sqrt((p(4,4)+p(3,4))**2
+c     +     - (p(4,1)+p(3,1))**2
+c     +     - (p(4,2)+p(3,2))**2
+c     +     - (p(4,3)+p(3,3))**2)
+c      print*,'y',0.5d0*log((p(4,4)+p(3,4) + (p(4,3)+p(3,3)))/
+c     +     (p(4,4)+p(3,4) - (p(4,3)+p(3,3))))
+c      print*,'pt',sqrt((p(4,1)+p(3,1))**2 + (p(4,2)+p(3,2))**2)
+c      print*
       
 !      call genCT2(q2,qt2,y34,vector,p,pswt,*999)
 
@@ -261,10 +264,10 @@ CC Compute Born matrix element
       call qqb_w(p,msqc)
 !      call qqb_w(ptrans,msqc)
       endif
-      print *,1,-1,msqc(1,-1)
-      print *,-1,1,msqc(-1,1)
-      print *,2,-2,msqc(2,-2)
-      print *,-2,2,msqc(-2,2)
+c      print *,1,-1,msqc(1,-1)
+c      print *,-1,1,msqc(-1,1)
+c      print *,2,-2,msqc(2,-2)
+c      print *,-2,2,msqc(-2,2)
 
 
 
@@ -275,6 +278,8 @@ CC Here we have to check if the counterevent passes the cuts
        incldip(1)=cuts(p,0)
        if (incldip(1)) goto 999
 
+c     cut function for binning in qt, m, y
+       if (binner(p(3,:),p(4,:)).eqv..false.) goto 999
 
 
 

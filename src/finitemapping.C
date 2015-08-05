@@ -25,8 +25,6 @@ double dyreal(double m, double y, double qt, double phicm, double phiZ, double c
   clock_t begin_time, end_time;
   double value;
   double rre[22];
-  double rvi[22];
-  double rct[22];
   double wgt = 1;
 
   /*
@@ -135,9 +133,7 @@ double dyvirt(double m, double y, double qt, double phicm, double phiZ, double c
   //  std::cout << std::setprecision(15);
   clock_t begin_time, end_time;
   double value;
-  double rre[22];
   double rvi[22];
-  double rct[22];
   double wgt = 1;
 
   /*
@@ -241,8 +237,6 @@ double dyct(double m, double y, double qt, double phicm, double phiZ, double cos
   //  std::cout << std::setprecision(15);
   clock_t begin_time, end_time;
   double value;
-  double rre[22];
-  double rvi[22];
   double rct[22];
   double wgt = 1;
 
