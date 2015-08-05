@@ -46,8 +46,6 @@
       data p/48*0d0/
       data first/.true./
       save first,rscalestart,fscalestart
-      logical binner
-      external binner
 
       if (first) then
          first=.false.
@@ -100,7 +98,6 @@ c--- see whether this point will pass cuts - if it will not, do not
 c--- bother calculating the matrix elements for it, instead set to zero
       includereal=includedipole(0,p)
       incldip(0)=includereal 
-      includereal = includereal.and.binner(pjet(3,:),pjet(4,:))
       
 CC   Dynamic scale: set it only if point passes cuts
 
