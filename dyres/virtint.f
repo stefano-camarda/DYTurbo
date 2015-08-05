@@ -73,17 +73,17 @@ CC
 
       npart=3   
       call gen3(r,p,pswt,*999)
-c      print*,'phase space in virtual'
-c      print*,p(3,1),p(3,2),p(3,3),p(3,4)
-c      print*,p(4,1),p(4,2),p(4,3),p(4,4)
-c      print*,'mass',sqrt((p(4,4)+p(3,4))**2
-c     +     - (p(4,1)+p(3,1))**2
-c     +     - (p(4,2)+p(3,2))**2
-c     +     - (p(4,3)+p(3,3))**2)
-c      print*,'y',0.5d0*log((p(4,4)+p(3,4) + (p(4,3)+p(3,3)))/
-c     +     (p(4,4)+p(3,4) - (p(4,3)+p(3,3))))
-c      print*,'pt',sqrt((p(4,1)+p(3,1))**2 + (p(4,2)+p(3,2))**2)
-c      print*
+      print*,'phase space in virtual'
+      print*,p(3,1),p(3,2),p(3,3),p(3,4)
+      print*,p(4,1),p(4,2),p(4,3),p(4,4)
+      print*,'mass',sqrt((p(4,4)+p(3,4))**2
+     +     - (p(4,1)+p(3,1))**2
+     +     - (p(4,2)+p(3,2))**2
+     +     - (p(4,3)+p(3,3))**2)
+      print*,'y',0.5d0*log((p(4,4)+p(3,4) + (p(4,3)+p(3,3)))/
+     +     (p(4,4)+p(3,4) - (p(4,3)+p(3,3))))
+      print*,'pt',sqrt((p(4,1)+p(3,1))**2 + (p(4,2)+p(3,2))**2)
+      print*
       
       qq2=2*dot(p,3,4)
       qt2=p(5,1)**2+p(5,2)**2  

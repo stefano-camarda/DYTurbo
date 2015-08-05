@@ -141,11 +141,11 @@ extern "C" {
   } pr_;
 
   extern struct {
-    int rtsmin_;
+    double rtsmin_;
   } rtsmin_;
 
   extern struct {
-    int xqtcut_;
+    double xqtcut_;
     } qtcut_;
 
 

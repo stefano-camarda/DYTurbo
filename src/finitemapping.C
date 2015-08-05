@@ -132,17 +132,6 @@ double dyvirt(double m, double y, double qt, double phicm, double phiZ, double c
   double mmax = opts.mhigh;
   double xqtcut = qtcut_.xqtcut_;
 
-  /*
-  double rmass = 91.1876;
-  double rwidth = 2.495;
-  double minmass = 40.;
-  double sqrts = 7000.;
-  double s = sqrts*sqrts;
-  double mmin = 66.;
-  double mmax = 116.;
-  double xqtcut = 0.008;
-  */
-
   //  std::cout << std::setprecision(15);
   clock_t begin_time, end_time;
   double value;
@@ -240,14 +229,14 @@ double dyvirt(double m, double y, double qt, double phicm, double phiZ, double c
 double dyct(double m, double y, double qt, double phicm, double phiZ, double cos_th, double alpha, double beta)
 {
   //set up constants
-  double rmass = opts.rmass;
-  double rwidth = opts.rwidth;
-  double minmass = rtsmin_.rtsmin_;
-  double sqrts = energy_.sroot_;;
+  double rmass = opts.rmass; //91.1876;
+  double rwidth = opts.rwidth; //2.495;
+  double minmass = rtsmin_.rtsmin_; //40.;
+  double sqrts = energy_.sroot_; //7000.;
   double s = sqrts*sqrts;
-  double mmin = opts.mlow;
-  double mmax = opts.mhigh;
-  double xqtcut = qtcut_.xqtcut_;
+  double mmin = opts.mlow; //66.;
+  double mmax = opts.mhigh; //116.;
+  double xqtcut = qtcut_.xqtcut_; //0.008;
 
   //  std::cout << std::setprecision(15);
   clock_t begin_time, end_time;
@@ -290,7 +279,7 @@ double dyct(double m, double y, double qt, double phicm, double phiZ, double cos
   begin_time = clock();
   value = countint_(rct,wgt);
   end_time = clock();
-  //  cout << "Subtraction: " << value << "  " << "time " << float( end_time - begin_time ) /  CLOCKS_PER_SEC << endl;
+  cout << "Counterterm: " << value << "  " << "time " << float( end_time - begin_time ) /  CLOCKS_PER_SEC << endl;
   //******************************************
 
   return value;

@@ -28,7 +28,7 @@ int main()
   //born level variables (6 dimensions)
   double m, qt, y, costh;
   double phicm, phiZ;
-  costh = 0.0;  m = 91.1876;  qt = 5.;  y = 2.0;  phicm = 0.0;  phiZ = 0.;
+  costh = 0.0;  m = 91.1876;  qt = 5.;  y = 0.5;  phicm = 0.0;  phiZ = 0.;
 
   //variables to be integrated (4 dimensions in total)
   //1 collinear PDF dimension, common to real and virtual
@@ -49,16 +49,18 @@ int main()
 
   
   //call function wrappers, which map the variables into the unity hypercube of the vegas integration
-  cout << " check " << endl;
+  cout << " check phase space mapping " << endl;
   dyreal(m, y, qt, phicm, phiZ, costh, zcth, mjj, costhjj, phijj);
   dyvirt(m, y, qt, phicm, phiZ, costh, zcth, vz);
   dyct(m, y, qt, phicm, phiZ, costh, alpha, beta);
 
   //work in progress for rewriting the counterterm with the same integration structure as the resummed part
+  /*
   double cthmom0 = 0;
   double cthmom1 = 0;
   double cthmom2 = 0;
   cout << countterm_(costh,m,qt,y,alpha,beta,cthmom0,cthmom1,cthmom2) << endl;
+  */
 
   return 0;
   //lines
