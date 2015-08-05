@@ -310,7 +310,6 @@ int main( int argc , const char * argv[])
   clock_t begin_time, end_time;
   double value, error;
 
-  /*
   cout << endl;
   cout << "Start integration of counterterm" << endl;
   begin_time = clock();
@@ -330,7 +329,6 @@ int main( int argc , const char * argv[])
   end_time = clock();
   cout << endl;
   cout << setw(10) << "time "  << setw(15) << float(end_time - begin_time) / CLOCKS_PER_SEC << endl;
-  */
 
   if (opts.order == 1)
     {
@@ -355,7 +353,6 @@ int main( int argc , const char * argv[])
     }
   if (opts.order == 2)
     {
-      /*
       cout << endl;
       cout << "Start integration of real" << endl;
       begin_time = clock();
@@ -375,7 +372,7 @@ int main( int argc , const char * argv[])
       end_time = clock();
       cout << endl;
       cout << setw(10) << "time "  << setw(15) << float(end_time - begin_time) / CLOCKS_PER_SEC << endl;
-      */
+
       cout << endl;
       cout << "Start integration of virtual" << endl;
       begin_time = clock();
