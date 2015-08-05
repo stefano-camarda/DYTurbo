@@ -60,7 +60,7 @@ c--- check the lepton cuts
 
         if (makecuts) then
            failedcuts=(cuts(pjet,jets).and.
-     .          binner(pjet(3,:),pjet(4,:)))
+     .          (.not.binner(pjet(3,:),pjet(4,:))))
           if (failedcuts) includedipole=.false.
         endif
  
