@@ -453,10 +453,10 @@ void realintegr(double &res, double &err)
   double prob[1];
   const int flags = 8+4+opts.cubaverbosity;
   const int seed = 1;
-  const int mineval = 10000000;
-  const int maxeval = 10000000;
-  const int nstart = 100000;
-  const int nincrease = 100000;
+  const int mineval = 1000000;
+  const int maxeval = 1000000;
+  const int nstart = 10000;
+  const int nincrease = 10000;
   const int nbatch = 1000;
   const int gridno = 1;
   Vegas(ndim, ncomp, (integrand_t)realintegrand, userdata, nvec,
