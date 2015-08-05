@@ -52,11 +52,6 @@ void setbounds(double m1, double m2, double qt1, double qt2, double y1, double y
   qtmax = qt2;
   ymin = y1;
   ymax = y2;
-  if (qtmin < 0.1)
-    {
-      cout << "Reset minimum qt to 0.1" << endl;
-      qtmin = 0.1;
-    }
     
   //Check ordering
   if (mmin > mmax || qtmin > qtmax || ymin > ymax)
@@ -730,12 +725,17 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
   double dexpmy=exp(-y);
   double cosh2y=pow(((dexpy+dexpmy)*0.5),2);
   double qtmax=sqrt(pow((pow(sqrts,2)+m2),2)/(4.*pow(sqrts,2)*cosh2y) - m2);
-  double qtmin=0.12;
+  double qtmin=0.1;
   double qt=qtmin+qtmax*x[2];
   jac=jac*(qtmax);
   */
 
   //integrate between qtmin and qtmax
+  if (qtmin < 0.1)
+    {
+      cout << "Reset minimum qt to 0.1" << endl;
+      qtmin = 0.1;
+    }
   double qt=qtmin+(qtmax-qtmin)*x[1];
   jac=jac*(qtmax-qtmin);
 
@@ -766,7 +766,7 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
   int mode = 2;
 
   clock_t rbt = clock();
-  if ((qt < qtmin) || (swtch < 0.01))
+  if (swtch < 0.01)
     f[0]=0.;
   else
     f[0]=resumm_(costh,m,qt,y,mode)/(8./3.);
@@ -826,12 +826,17 @@ integrand_t resintegrand3d(const int &ndim, const double x[], const int &ncomp, 
   double dexpmy=exp(-y);
   double cosh2y=pow(((dexpy+dexpmy)*0.5),2);
   double qtmax=sqrt(pow((pow(sqrts,2)+m2),2)/(4.*pow(sqrts,2)*cosh2y) - m2);
-  double qtmin=0.12;
+  double qtmin=0.1;
   double qt=qtmin+qtmax*x[2];
   jac=jac*(qtmax);
   */
 
   //integrate between qtmin and qtmax
+  if (qtmin < 0.1)
+    {
+      cout << "Reset minimum qt to 0.1" << endl;
+      qtmin = 0.1;
+    }
   double qt=qtmin+(qtmax-qtmin)*x[2];
   jac=jac*(qtmax-qtmin);
 
@@ -852,7 +857,7 @@ integrand_t resintegrand3d(const int &ndim, const double x[], const int &ncomp, 
   //Then the epxressions 1, costh and costh^2 in sigmaij are substituted by these costh moments
   double costh = 0;
   int mode = 1;
-  if ((qt < qtmin) || (swtch < 0.01))
+  if (swtch < 0.01)
     f[0]=0.;
   else
     //evaluate the resummed cross section
@@ -943,10 +948,15 @@ integrand_t resintegrand4d(const int &ndim, const double x[], const int &ncomp, 
 
   //   qT kinematical limit
   //  qtmax=sqrt(pow((pow(sqrts,2)+m2),2)/(4.*pow(sqrts,2)*cosh2y) - m2);
-  //  qtmin=0.12;
+  //  qtmin=0.1;
   //  qt=qtmin+qtmax*r[2];
   //  jac=jac*(qtmax);
 
+  if (qtmin < 0.1)
+    {
+      cout << "Reset minimum qt to 0.1" << endl;
+      qtmin = 0.1;
+    }
   double qt=qtmin+(qtmax-qtmin)*r[2];
   jac=jac*(qtmax-qtmin);
 
@@ -1067,7 +1077,7 @@ integrand_t resintegrand4d(const int &ndim, const double x[], const int &ncomp, 
 	  jstop=1;
 
 	  //Call to the resummation part
-	  if ((qt < qtmin) || (swtch < 0.01))
+	  if (swtch < 0.01)
 	    tempp=0.;
 	  else
 	    tempp=resumm_(costh_CS,m,qt,y,mode)/(8./3.);  // CS PRESCRIPTION
