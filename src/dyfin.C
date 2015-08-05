@@ -413,7 +413,7 @@ void lowintegr(double &res, double &err)
   double integral[1];
   double error[1];
   double prob[1];
-  const int flags = 8+opts.cubaverbosity;
+  const int flags = 8+4+opts.cubaverbosity;
   const int seed = 1;
   const int mineval = 10000000;
   const int maxeval = 10000000;
@@ -451,7 +451,7 @@ void realintegr(double &res, double &err)
   double integral[1];
   double error[1];
   double prob[1];
-  const int flags = 8+opts.cubaverbosity;
+  const int flags = 8+4+opts.cubaverbosity;
   const int seed = 1;
   const int mineval = 1000000;
   const int maxeval = 1000000;
@@ -489,7 +489,7 @@ void virtintegr(double &res, double &err)
   double integral[1];
   double error[1];
   double prob[1];
-  const int flags = 8+opts.cubaverbosity;
+  const int flags = 8+4+opts.cubaverbosity;
   const int seed = 1;
   const int mineval = 10000000;
   const int maxeval = 10000000;
@@ -527,7 +527,7 @@ void ctintegr(double &res, double &err)
   double integral[1];
   double error[1];
   double prob[1];
-  const int flags = 8+opts.cubaverbosity;
+  const int flags = 8+4+opts.cubaverbosity;
   const int seed = 1;
   const int mineval = 1000000;
   const int maxeval = 1000000;
