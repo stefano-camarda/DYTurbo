@@ -45,6 +45,11 @@ public:
   void initDyresSettings();
 
   // private:
+  void dumpAll();
+  void dumpI(string var, int    val );
+  void dumpD(string var, double val );
+  void dumpS(string var, string val );
+  void dumpB(string var, bool   val );
 
   //original DYRES settings
   double sroot        ;
