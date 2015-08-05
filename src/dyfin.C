@@ -41,7 +41,7 @@ int main( int argc , const char * argv[])
   costh = 0.0;  m = 91.1876;  qt = 5.;  y = 0.5;  phicm = 0.0;  phiZ = 0.;
 
   //variables to be integrated (4 dimensions in total)
-  //1 collinear PDF dimension, common to real and virtual
+  //1 collinear PDF dimension, common to real, virtual and lowint
   double zcth;
   zcth = 0.5;   //polar angle of Z in the CM frame
   //3 dimensions of real radiation
@@ -397,6 +397,44 @@ int main( int argc , const char * argv[])
   return 0;
 }
 
+//Cuba integration of Z+j LO
+void lowintegr(double &res, double &err)
+{
+  const int ndim = 7;   //dimensions of the integral
+  const int ncomp = 1;  //components of the integrand
+  void *userdata;
+  const int nvec = 1;
+  const double epsrel = 0.;
+  const double epsabs = 0.;
+  const char *statefile = "";
+  void *spin=NULL;
+  int neval;
+  int fail;
+  double integral[1];
+  double error[1];
+  double prob[1];
+  const int flags = 8+opts.cubaverbosity;
+  const int seed = 1;
+  const int mineval = 10000000;
+  const int maxeval = 10000000;
+  const int nstart = 100000;
+  const int nincrease = 100000;
+  const int nbatch = 10000;
+  const int gridno = 1;
+  Vegas(ndim, ncomp, (integrand_t)lowintegrand, userdata, nvec,
+	epsrel, epsabs,
+	flags, seed,
+	mineval, maxeval,
+	nstart, nincrease, nbatch,
+	gridno, statefile, spin,
+	&neval, &fail,
+	integral, error, prob);
+  res = integral[0];
+  err = error[0];
+
+  return;
+}
+
 //Cuba integration of the real part
 void realintegr(double &res, double &err)
 {
@@ -413,7 +451,7 @@ void realintegr(double &res, double &err)
   double integral[1];
   double error[1];
   double prob[1];
-  const int flags = 4+opts.cubaverbosity;
+  const int flags = 8+opts.cubaverbosity;
   const int seed = 1;
   const int mineval = 1000000;
   const int maxeval = 1000000;
@@ -451,7 +489,7 @@ void virtintegr(double &res, double &err)
   double integral[1];
   double error[1];
   double prob[1];
-  const int flags = 4+opts.cubaverbosity;
+  const int flags = 8+opts.cubaverbosity;
   const int seed = 1;
   const int mineval = 10000000;
   const int maxeval = 10000000;
@@ -476,7 +514,7 @@ void virtintegr(double &res, double &err)
 //Cuba integration of the counterterm
 void ctintegr(double &res, double &err)
 {
-  const int ndim = 9;   //dimensions of the integral
+  const int ndim = 8;   //dimensions of the integral
   const int ncomp = 1;  //components of the integrand
   void *userdata;
   const int nvec = 1;
@@ -489,7 +527,7 @@ void ctintegr(double &res, double &err)
   double integral[1];
   double error[1];
   double prob[1];
-  const int flags = 4+opts.cubaverbosity;
+  const int flags = 8+opts.cubaverbosity;
   const int seed = 1;
   const int mineval = 1000000;
   const int maxeval = 1000000;
@@ -498,44 +536,6 @@ void ctintegr(double &res, double &err)
   const int nbatch = 10000;
   const int gridno = 1;
   Vegas(ndim, ncomp, (integrand_t)ctintegrand, userdata, nvec,
-	epsrel, epsabs,
-	flags, seed,
-	mineval, maxeval,
-	nstart, nincrease, nbatch,
-	gridno, statefile, spin,
-	&neval, &fail,
-	integral, error, prob);
-  res = integral[0];
-  err = error[0];
-
-  return;
-}
-
-//Cuba integration of Z+j LO
-void lowintegr(double &res, double &err)
-{
-  const int ndim = 7;   //dimensions of the integral
-  const int ncomp = 1;  //components of the integrand
-  void *userdata;
-  const int nvec = 1;
-  const double epsrel = 0.;
-  const double epsabs = 0.;
-  const char *statefile = "";
-  void *spin=NULL;
-  int neval;
-  int fail;
-  double integral[1];
-  double error[1];
-  double prob[1];
-  const int flags = 4+opts.cubaverbosity;
-  const int seed = 1;
-  const int mineval = 10000000;
-  const int maxeval = 10000000;
-  const int nstart = 100000;
-  const int nincrease = 100000;
-  const int nbatch = 10000;
-  const int gridno = 1;
-  Vegas(ndim, ncomp, (integrand_t)lowintegrand, userdata, nvec,
 	epsrel, epsabs,
 	flags, seed,
 	mineval, maxeval,

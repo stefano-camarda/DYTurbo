@@ -62,6 +62,7 @@ integrand_t ctintegrand(const int &ndim, const double x[], const int &ncomp, dou
   double rct[22];
   for (int i = 0; i < ndim; i++)
     rct[i]=x[i];
+  rct[8] = rct[1];
 
   double value = countint_(rct,wgt);
   
