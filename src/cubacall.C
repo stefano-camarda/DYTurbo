@@ -127,12 +127,12 @@ void lowintegr(double &res, double &err)
   double error[1];
   double prob[1];
   const int flags = 8+4+opts.cubaverbosity;
-  const int seed = 1;
-  const int mineval = 10000000;
-  const int maxeval = 10000000;
-  const int nstart = 100000;
+  const int seed = opts.rseed;
+  const int mineval   = opts.vegasncallsLO;
+  const int maxeval   = opts.vegasncallsLO;
+  const int nstart    = 100000;
   const int nincrease = 100000;
-  const int nbatch = 1000;
+  const int nbatch    = 1000;
   const int gridno = 1;
   Vegas(ndim, ncomp, (integrand_t)lowintegrand, userdata, nvec,
 	epsrel, epsabs,
@@ -165,9 +165,9 @@ void realintegr(double &res, double &err)
   double error[1];
   double prob[1];
   const int flags = 8+4+opts.cubaverbosity;
-  const int seed = 1;
-  const int mineval = 1000000;
-  const int maxeval = 1000000;
+  const int seed = opts.rseed;
+  const int mineval = opts.vegasncallsREAL;
+  const int maxeval = opts.vegasncallsREAL;
   const int nstart = 10000;
   const int nincrease = 10000;
   const int nbatch = 1000;
@@ -203,9 +203,9 @@ void virtintegr(double &res, double &err)
   double error[1];
   double prob[1];
   const int flags = 8+4+opts.cubaverbosity;
-  const int seed = 1;
-  const int mineval = 10000000;
-  const int maxeval = 10000000;
+  const int seed = opts.rseed;
+  const int mineval = vegasncallsVIRT;
+  const int maxeval = vegasncallsVIRT;
   const int nstart = 100000;
   const int nincrease = 100000;
   const int nbatch = 1000;
@@ -241,9 +241,9 @@ void ctintegr(double &res, double &err)
   double error[1];
   double prob[1];
   const int flags = 8+4+opts.cubaverbosity;
-  const int seed = 1;
-  const int mineval = 1000000;
-  const int maxeval = 1000000;
+  const int seed = opts.rseed;
+  const int mineval = opts.vegasncallsCT;
+  const int maxeval = opts.vegasncallsCT;
   const int nstart = 100000;
   const int nincrease = 100000;
   const int nbatch = 1000;

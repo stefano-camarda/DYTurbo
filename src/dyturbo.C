@@ -27,6 +27,7 @@ using namespace std;
 // void ptgvar();
 
 void test_resum_speed(double costh,double m,double qt,double y,int mode);
+void print_result(double val, double err, clock_t btime , clock_t etime);
 
 int main( int argc , const char * argv[])
 {
@@ -60,7 +61,7 @@ int main( int argc , const char * argv[])
   //bins.init();
   bins.readfromfile(conf_file.c_str());
   //force number of cores to 0 (no parallelization)
-  cubacores(4,1000000);
+  cubacores(opts.cubacores,1000000);
   //To do: print out EW parameters and other settings
   // just a check
   //opts.dumpAll();
@@ -68,7 +69,7 @@ int main( int argc , const char * argv[])
   /***********************************/
 
   double costh, m, qt, y;
-  double value, error;
+  double value, error, totval, toterror2;
 
   /**************************************/
   //Checks for resummed cross section
@@ -141,112 +142,94 @@ int main( int argc , const char * argv[])
 
   // return 0;
 
+  // decide what terms to calculate
+  opts.doLO   = (opts.doLO   && opts.order == 1);
+  opts.doREAL = (opts.doREAL && opts.order == 2);
+  opts.doVIRT = (opts.doVIRT && opts.order == 2);
   // Cuba integration
+  cout << endl << "Start integration of";
+  if (opts.doRES  ) cout << " resummation";
+  if (opts.doCT   ) cout << " counterterm";
+  if (opts.doLO   ) cout << " finite order";
+  if (opts.doREAL ) cout << " real part";
+  if (opts.doVIRT ) cout << " virt part";
   cout << endl;
-  cout << "Start integration" << endl;
+
   begin_time = clock();
   for (vector<double>::iterator qit = bins.qtbins.begin(); qit != bins.qtbins.end()-1; qit++)
     {
       //Set integration boundaries
+      totval=toterror2=0;
       setbounds(opts.mlow, opts.mhigh, *qit, *(qit+1), opts.ylow, opts.yhigh);
-      clock_t b_time = clock();
-      if (opts.int2d) integr2d(value, error);
-      if (opts.int3d) integr3d(value, error);
-      if (opts.int4d) integr4d(value, error);
-      clock_t e_time = clock();
-      value = value / (*(qit+1) - *qit);
-      error = error / (*(qit+1) - *qit);
-      cout << setw(3) << "bin" << setw(5) << *qit << setw(2) << "-" << setw(5) << *(qit+1)
-	   << setw(10) << value << setw(5) << "+/-" << setw(10) << error
-	   << setw(6) << "time" << setw(10) <<  float(e_time - b_time) / CLOCKS_PER_SEC << endl;
+      cout << setw(3) << "bin" << setw(5) << *qit << setw(2) << "-" << setw(5) << *(qit+1) << flush;
+      clock_t bb_time = clock();
+
+      // resummation
+      if (opts.doRES) {
+          clock_t b_time = clock();
+          if (opts.int2d) integr2d(value, error);
+          if (opts.int3d) integr3d(value, error);
+          if (opts.int4d) integr4d(value, error);
+          clock_t e_time = clock();
+          value = value / (*(qit+1) - *qit);
+          error = error / (*(qit+1) - *qit);
+          print_result(value,error,b_time,e_time);
+          totval += value;
+          toterror2 += error*error;
+      }
+      // counter term
+      if (opts.doCT) {
+          clock_t b_time = clock();
+          ctintegr(value, error);
+          clock_t e_time = clock();
+          value = value / (*(qit+1) - *qit);
+          error = error / (*(qit+1) - *qit);
+          print_result(value,error,b_time,e_time);
+          totval += value;
+          toterror2 += error*error;
+      }
+      // leading order
+      if (opts.doLO) {
+          clock_t b_time = clock();
+          lowintegr(value, error);
+          clock_t e_time = clock();
+          value = value / (*(qit+1) - *qit);
+          error = error / (*(qit+1) - *qit);
+          print_result(value,error,b_time,e_time);
+          totval += value;
+          toterror2 += error*error;
+      }
+      // real part
+      if (opts.doREAL) {
+          clock_t b_time = clock();
+          realintegr(value, error);
+          clock_t e_time = clock();
+          value = value / (*(qit+1) - *qit);
+          error = error / (*(qit+1) - *qit);
+          print_result(value,error,b_time,e_time);
+          totval += value;
+          toterror2 += error*error;
+      }
+      // virt part
+      if (opts.doVIRT) {
+          clock_t b_time = clock();
+          virtintegr(value, error);
+          clock_t e_time = clock();
+          value = value / (*(qit+1) - *qit);
+          error = error / (*(qit+1) - *qit);
+          print_result(value,error,b_time,e_time);
+          totval += value;
+          toterror2 += error*error;
+      }
+      // total
+      clock_t ee_time = clock();
+      print_result (totval, sqrt(toterror2), bb_time, ee_time);
+      cout << endl;
     }
   end_time = clock();
   cout << endl;
   cout << setw(10) << "time "  << setw(15) << float(end_time - begin_time) / CLOCKS_PER_SEC << endl;
 
-  cout << endl;
-  cout << "Start integration of counterterm" << endl;
-  begin_time = clock();
-  for (vector<double>::iterator qit = bins.qtbins.begin(); qit != bins.qtbins.end()-1; qit++)
-    {
-      //Set integration boundaries
-      setbounds(opts.mlow, opts.mhigh, *qit, *(qit+1), opts.ylow, opts.yhigh);
-      clock_t b_time = clock();
-      ctintegr(value, error);
-      clock_t e_time = clock();
-      value = value / (*(qit+1) - *qit);
-      error = error / (*(qit+1) - *qit);
-      cout << setw(3) << "bin" << setw(5) << *qit << setw(2) << "-" << setw(5) << *(qit+1)
-	   << setw(10) << value << setw(5) << "+/-" << setw(10) << error
-	   << setw(6) << "time" << setw(10) <<  float(e_time - b_time) / CLOCKS_PER_SEC << endl;
-    }
-  end_time = clock();
-  cout << endl;
-  cout << setw(10) << "time "  << setw(15) << float(end_time - begin_time) / CLOCKS_PER_SEC << endl;
-
-  if (opts.order == 1)
-    {
-      cout << "Start integration of Z+j LO" << endl;
-      begin_time = clock();
-      for (vector<double>::iterator qit = bins.qtbins.begin(); qit != bins.qtbins.end()-1; qit++)
-	{
-	  //Set integration boundaries
-	  setbounds(opts.mlow, opts.mhigh, *qit, *(qit+1), opts.ylow, opts.yhigh);
-	  clock_t b_time = clock();
-	  lowintegr(value, error);
-	  clock_t e_time = clock();
-	  value = value / (*(qit+1) - *qit);
-	  error = error / (*(qit+1) - *qit);
-	  cout << setw(3) << "bin" << setw(5) << *qit << setw(2) << "-" << setw(5) << *(qit+1)
-	       << setw(10) << value << setw(5) << "+/-" << setw(10) << error
-	       << setw(6) << "time" << setw(10) <<  float(e_time - b_time) / CLOCKS_PER_SEC << endl;
-	}
-      end_time = clock();
-      cout << endl;
-      cout << setw(10) << "time "  << setw(15) << float(end_time - begin_time) / CLOCKS_PER_SEC << endl;
-    }
-  if (opts.order == 2)
-    {
-      cout << endl;
-      cout << "Start integration of real" << endl;
-      begin_time = clock();
-      for (vector<double>::iterator qit = bins.qtbins.begin(); qit != bins.qtbins.end()-1; qit++)
-	{
-	  //Set integration boundaries
-	  setbounds(opts.mlow, opts.mhigh, *qit, *(qit+1), opts.ylow, opts.yhigh);
-	  clock_t b_time = clock();
-	  realintegr(value, error);
-	  clock_t e_time = clock();
-	  value = value / (*(qit+1) - *qit);
-	  error = error / (*(qit+1) - *qit);
-	  cout << setw(3) << "bin" << setw(5) << *qit << setw(2) << "-" << setw(5) << *(qit+1)
-	       << setw(10) << value << setw(5) << "+/-" << setw(10) << error
-	       << setw(6) << "time" << setw(10) <<  float(e_time - b_time) / CLOCKS_PER_SEC << endl;
-	}
-      end_time = clock();
-      cout << endl;
-      cout << setw(10) << "time "  << setw(15) << float(end_time - begin_time) / CLOCKS_PER_SEC << endl;
-
-      cout << endl;
-      cout << "Start integration of virtual" << endl;
-      begin_time = clock();
-      for (vector<double>::iterator qit = bins.qtbins.begin(); qit != bins.qtbins.end()-1; qit++)
-	{
-	  //Set integration boundaries
-	  setbounds(opts.mlow, opts.mhigh, *qit, *(qit+1), opts.ylow, opts.yhigh);
-	  clock_t b_time = clock();
-	  virtintegr(value, error);
-	  clock_t e_time = clock();
-	  value = value / (*(qit+1) - *qit);
-	  error = error / (*(qit+1) - *qit);
-	  cout << setw(3) << "bin" << setw(5) << *qit << setw(2) << "-" << setw(5) << *(qit+1)
-	       << setw(10) << value << setw(5) << "+/-" << setw(10) << error
-	       << setw(6) << "time" << setw(10) <<  float(e_time - b_time) / CLOCKS_PER_SEC << endl;
-	}
-      end_time = clock();
-      cout << endl;
-      cout << setw(10) << "time "  << setw(15) << float(end_time - begin_time) / CLOCKS_PER_SEC << endl;
-    }
 
   return 0;
 }
@@ -260,4 +243,13 @@ void test_resum_speed(double costh,double m,double qt,double y,int mode){
     cout << setw(10) << "Result" << setw(15) << value
          << setw(10) << "time "  << setw(15) << float(end_time - begin_time) / CLOCKS_PER_SEC << endl;
     return;
+}
+
+void print_result(double val, double err, clock_t btime , clock_t etime){
+    cout << setw(10) << val
+         << setw(4)  << "+/-"
+         << setw(10) << err
+         << setw(3)  << "t="
+         << setw(10) << float(etime - btime) / CLOCKS_PER_SEC
+         << flush;
 }
