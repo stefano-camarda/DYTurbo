@@ -31,11 +31,12 @@ void plotter::fill(double p3[4], double p4[4], double wgt){
 }
 
 void plotter::finalise(){
-    printf(" ploter says: h_l1_pt %p entries %f mean %f RMS %f \n"
+    printf(" ploter says: h_l1_pt %p entries %f mean %f RMS %f integral %f \n"
             , h_l1_pt
             , h_l1_pt->GetEntries()
             , h_l1_pt->GetMean()
             , h_l1_pt->GetRMS()
+            , h_l1_pt->Integral()
             );
     return;
 }

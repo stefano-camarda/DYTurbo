@@ -1081,7 +1081,7 @@ integrand_t resintegrand4d(const int &ndim, const double x[], const int &ncomp, 
 	   lowintHst0=jac*tempp;
 	   lowintHst0=lowintHst0*swtch; // SWITCHING
 	 }
-      //hists.fill(p[3],p[4],weight*lowintHst0/azloopmax);
+      hists.fill(p[3],p[4],weight*lowintHst0/azloopmax);
       azloop=azloop+1;
     }
 
@@ -1089,8 +1089,8 @@ integrand_t resintegrand4d(const int &ndim, const double x[], const int &ncomp, 
   
   f[0] = lowintHst;
 
-  //printf(" ---  end --- \n");
-  //hists.finalise();
+  printf(" ---  end iter %d --- \n", iter);
+  hists.finalise();
 
   return 0;
 }

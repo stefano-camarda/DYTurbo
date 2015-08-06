@@ -54,10 +54,10 @@ int4d = true
 # Cuba settings
 cubaverbosity = 0      # Cuba info messsages, from 0 to 3
 niter         = 0      # only for 2d and 3d cuhre integration
-vegasncalls   = 10000  # only for 4d vegas integration
+vegasncalls   = 100     # only for 4d vegas integration
 
 # total or with lepton cuts
-makelepcuts = true
+makelepcuts = false
 
 # integration types and settings for costh phi_lep phase space
 cubaint   = true   # integration with Cuba Suave
