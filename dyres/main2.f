@@ -106,7 +106,7 @@ c     cached for invres and cachecoeff
       external xsection2
 
       integer flag5,brflag,fnwa
-      common/flags/flag5,brflag,fnwa
+      common/flags2/flag5,brflag,fnwa
 C     
       include 'ewinput.f' 
       include 'masses.f' 
@@ -3258,7 +3258,7 @@ c     setup the sigmaij integrated in costh and rapidity
       double precision m
 
       integer flag5,brflag,fnwa
-      common/flags/flag5,brflag,fnwa
+      common/flags2/flag5,brflag,fnwa
 
       include 'const.h'
       double precision q2
@@ -3474,7 +3474,7 @@ c     setup the sigmaij integrated in costh
       double precision cthmom0,cthmom1,cthmom2
       
       integer flag5,brflag,fnwa
-      common/flags/flag5,brflag,fnwa
+      common/flags2/flag5,brflag,fnwa
 
       include 'const.h'
       double precision q2
