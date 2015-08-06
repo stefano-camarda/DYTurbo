@@ -36,11 +36,23 @@ void settings::init()
   int2d = false;
   int3d = true;
   int4d = false;
+
+  //term switch
+  doRES  = false;
+  doCT   = false;
+  doREAL = false;
+  doVIRT = false;
+  doLO   = false;
   
   //Cuba settings
   cubaverbosity = 0;   //Cuba info messsages, from 0 to 3
+  cubacores = 0;   //parallelization (0 = turn off)
   niter = 0;           //only for 2d and 3d cuhre integration
-  vegasncalls = 10000; //only for 4d vegas integration
+  vegasncallsRES  = 10000; // only for res 4d vegas integration
+  vegasncallsCT   = 10000; // only for lo 8d vegas integration
+  vegasncallsLO   = 10000; // only for lo 7d vegas integration
+  vegasncallsREAL = 10000; // only for real 10d vegas integration
+  vegasncallsVIRT = 10000; // only for virt 8d vegas integration
   
   //total or with lepton cuts
   makelepcuts = true;
@@ -97,31 +109,41 @@ void settings::readfromfile(const char * fname){
     outputfile     = in.GetString ( "outputfile"     ); //'LHC7-Z-nnlo'  # outputfile
     itmxToFile     = in.GetNumber ( "itmxToFile"     ); //0              # number      of       last       itmx    to          write           on          file
 
-    rmass          = in.GetNumber ( "rmass"          ); //91.1876
-    rwidth         = in.GetNumber ( "rwidth"         ); //2.495
-    ylow           = in.GetNumber ( "ylow"           ); //2
-    yhigh          = in.GetNumber ( "yhigh"          ); //2.4
-    mlow           = in.GetNumber ( "mlow"           ); //66.
-    mhigh          = in.GetNumber ( "mhigh"          ); //116.
-    int2d          = in.GetBool   ( "int2d"          ); //false
-    int3d          = in.GetBool   ( "int3d"          ); //true
-    int4d          = in.GetBool   ( "int4d"          ); //false
-    cubaverbosity  = in.GetNumber ( "cubaverbosity"  ); //0              # Cuba        info     messsages, from    0           to              3
-    niter          = in.GetNumber ( "niter"          ); //0              # only        for      2d         and     3d          cuhre           integration
-    vegasncalls    = in.GetNumber ( "vegasncalls"    ); //10000          # only        for      4d         vegas   integration
-    makelepcuts    = in.GetBool   ( "makelepcuts"    ); //true
-    cubaint        = in.GetBool   ( "cubaint"        ); //true           # integration with     Cuba       Suave
-    trapezint      = in.GetBool   ( "trapezint"      ); //false          # trapezoidal rule     for        the     phi_lep     integration     and         semi-analytical for         costh
-    quadint        = in.GetBool   ( "quadint"        ); //false          # quadrature  rule     for        the     phi_lep     integration     and         semi-analytical for         costh
-    suavepoints    = in.GetNumber ( "suavepoints"    ); //1000000        # number      of       points     for     suave       integration,    newpoints   is              set         to    suavepoints/10;
-    nphitrape      = in.GetNumber ( "nphitrape"      ); //1000           # number      of       steps      for     trapezoidal rule            of          phi_lep         integration
-    quadnphi       = in.GetNumber ( "quadnphi"       ); //20             # number      of       segments   for     quadrature  rule            of          phi_lep         integration
-    ncstart        = in.GetNumber ( "ncstart"        ); //1000           # starting    sampling for        the     costh       semi-analytical integration (common         settings    for   the             trapezoidal and quadrature rules)
-    qtrec_naive    = in.GetBool   ( "qtrec_naive"    ); //false
-    qtrec_cs       = in.GetBool   ( "qtrec_cs"       ); //false
-    qtrec_kt0      = in.GetBool   ( "qtrec_kt0"      ); //true
-    timeprofile    = in.GetBool   ( "timeprofile"    ); //false          # debug       and      time       profile resummation integration
-    verbose        = in.GetBool   ( "verbose"        ); //false          # debug       and      time       profile costh       phi_lep         integration
+    rmass           = in.GetNumber ( "rmass"           ); //91.1876
+    rwidth          = in.GetNumber ( "rwidth"          ); //2.495
+    ylow            = in.GetNumber ( "ylow"            ); //2
+    yhigh           = in.GetNumber ( "yhigh"           ); //2.4
+    mlow            = in.GetNumber ( "mlow"            ); //66.
+    mhigh           = in.GetNumber ( "mhigh"           ); //116.
+    int2d           = in.GetBool   ( "int2d"           ); //false
+    int3d           = in.GetBool   ( "int3d"           ); //true
+    int4d           = in.GetBool   ( "int4d"           ); //false
+    doRES           = in.GetBool   ( "doRES"           ); //false
+    doCT            = in.GetBool   ( "doCT"            ); //false
+    doREAL          = in.GetBool   ( "doREAL"          ); //false
+    doVIRT          = in.GetBool   ( "doVIRT"          ); //false
+    doLO            = in.GetBool   ( "doLO"            ); //false
+    cubaverbosity   = in.GetNumber ( "cubaverbosity"   ); //0       # Cuba        info     messsages, from    0           to              3
+    cubacores       = in.GetNumber ( "cubacores"       ); //0
+    niter           = in.GetNumber ( "niter"           ); //0       # only        for      2d         and     3d          cuhre           integration
+    vegasncallsRES  = in.GetNumber ( "vegasncallsRES"  ); //10000
+    vegasncallsCT   = in.GetNumber ( "vegasncallsCT"   ); //10000
+    vegasncallsLO   = in.GetNumber ( "vegasncallsLO"   ); //10000
+    vegasncallsREAL = in.GetNumber ( "vegasncallsREAL" ); //10000
+    vegasncallsVIRT = in.GetNumber ( "vegasncallsVIRT" ); //10000
+    makelepcuts     = in.GetBool   ( "makelepcuts"     ); //true
+    cubaint         = in.GetBool   ( "cubaint"         ); //true    # integration with     Cuba       Suave
+    trapezint       = in.GetBool   ( "trapezint"       ); //false   # trapezoidal rule     for        the     phi_lep     integration     and         semi-analytical for         costh
+    quadint         = in.GetBool   ( "quadint"         ); //false   # quadrature  rule     for        the     phi_lep     integration     and         semi-analytical for         costh
+    suavepoints     = in.GetNumber ( "suavepoints"     ); //1000000 # number      of       points     for     suave       integration,    newpoints   is              set         to    suavepoints/10;
+    nphitrape       = in.GetNumber ( "nphitrape"       ); //1000    # number      of       steps      for     trapezoidal rule            of          phi_lep         integration
+    quadnphi        = in.GetNumber ( "quadnphi"        ); //20      # number      of       segments   for     quadrature  rule            of          phi_lep         integration
+    ncstart         = in.GetNumber ( "ncstart"         ); //1000    # starting    sampling for        the     costh       semi-analytical integration (common         settings    for   the             trapezoidal and quadrature rules)
+    qtrec_naive     = in.GetBool   ( "qtrec_naive"     ); //false
+    qtrec_cs        = in.GetBool   ( "qtrec_cs"        ); //false
+    qtrec_kt0       = in.GetBool   ( "qtrec_kt0"       ); //true
+    timeprofile     = in.GetBool   ( "timeprofile"     ); //false   # debug       and      time       profile resummation integration
+    verbose         = in.GetBool   ( "verbose"         ); //false   # debug       and      time       profile costh       phi_lep         integration
     opts_.approxpdf_ = in.GetNumber ( "opts_approxpdf" ); //0
 
 
@@ -190,6 +212,7 @@ void settings::dumpAll(){
         dumpS ( "outputfile  ",  runstring_   . runstring_  ) ;
         dumpI ( "itmxToFile  ",  pr_          . pr_         ) ;
     }
+
     if (print_inputs) {
         printf("Input settings:\n");
         dumpD("rmass            ", rmass            );
@@ -201,9 +224,19 @@ void settings::dumpAll(){
         dumpB("int2d            ", int2d            );
         dumpB("int3d            ", int3d            );
         dumpB("int4d            ", int4d            );
+        dumpB("doRES            ", doRES            );
+        dumpB("doCT             ", doCT             );
+        dumpB("doREAL           ", doREAL           );
+        dumpB("doVIRT           ", doVIRT           );
+        dumpB("doLO             ", doLO             );
         dumpI("cubaverbosity    ", cubaverbosity    );
+        dumpI("cubacores        ", cubacores        );
         dumpI("niter            ", niter            );
-        dumpD("vegasncalls      ", vegasncalls      );
+        dumpD("vegasncallsRES   ", vegasncallsRES   );
+        dumpD("vegasncallsCT    ", vegasncallsCT    );
+        dumpD("vegasncallsLO    ", vegasncallsLO    );
+        dumpD("vegasncallsREAL  ", vegasncallsREAL  );
+        dumpD("vegasncallsVIRT  ", vegasncallsVIRT  );
         dumpB("makelepcuts      ", makelepcuts      );
         dumpB("cubaint          ", cubaint          );
         dumpB("trapezint        ", trapezint        );

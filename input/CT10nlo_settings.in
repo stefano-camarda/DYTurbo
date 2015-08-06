@@ -51,13 +51,25 @@ int2d = false
 int3d = true
 int4d = false
 
+# term switches
+doRES  = true
+doCT   = true
+doREAL = true
+doVIRT = true
+doLO   = true
+
 # Cuba settings
-cubaverbosity = 0      # Cuba info messsages, from 0 to 3
-niter         = 0      # only for 2d and 3d cuhre integration
-vegasncalls   = 10000  # only for 4d vegas integration
+cubaverbosity    = 0   # Cuba info messsages, from 0 to 3
+cubacores        = 4   # parallelization ( 0 = turn off)
+niter            = 0   # only for 2d and 3d cuhre integration
+vegasncallsRES   = 100 # only for res 4d vegas integration
+vegasncallsCT    = 100 # only for lo 8d vegas integration
+vegasncallsLO    = 100 # only for lo 7d vegas integration
+vegasncallsREAL  = 100 # only for real 10d vegas integration
+vegasncallsVIRT  = 100 # only for virt 8d vegas integration
 
 # total or with lepton cuts
-makelepcuts = true
+makelepcuts = false
 
 # integration types and settings for costh phi_lep phase space
 cubaint   = true   # integration with Cuba Suave
@@ -84,5 +96,6 @@ opts_approxpdf = 0
 
 
 # binning
-#
-qtbins = [ 0 2 4 6 8 10 12 14 16 18 22 26 30 34 38 42 46 50 54 60 70 80 100 150 200 300 800 ]
+
+#qtbins = [ 0 2 4 6 8 10 12 14 16 18 22 26 30 34 38 42 46 50 54 60 70 80 100 150 200 300 800 ]
+qtbins = [ 10  12 ] #  100  800 ]

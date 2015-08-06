@@ -51,28 +51,40 @@ int2d = false
 int3d = true
 int4d = false
 
+# term switches
+doRES  = true
+doCT   = true
+doREAL = true
+doVIRT = true
+doLO   = true
+
 # Cuba settings
-cubaverbosity = 0      # Cuba info messsages, from 0 to 3
-niter         = 0      # only for 2d and 3d cuhre integration
-vegasncalls   = 10000  # only for 4d vegas integration
+cubaverbosity    = 0   # Cuba info messsages, from 0 to 3
+cubacores        = 0   # parallelization ( 0 = turn off)
+niter            = 20   # only for 2d and 3d cuhre integration
+vegasncallsRES   = 1000000 # only for res 4d vegas integration
+vegasncallsCT    = 10000000 # only for lo 8d vegas integration
+vegasncallsLO    = 10000000 # only for lo 7d vegas integration
+vegasncallsREAL  = 100000000 # only for real 10d vegas integration
+vegasncallsVIRT  = 10000000 # only for virt 8d vegas integration
 
 # total or with lepton cuts
-makelepcuts = true
+makelepcuts = false
 
 # integration types and settings for costh phi_lep phase space
-cubaint   = true   # integration with Cuba Suave
+cubaint   = false   # integration with Cuba Suave
 trapezint = false  # trapezoidal rule for the phi_lep integration and semi-analytical for costh
-quadint   = false  # quadrature rule for the phi_lep integration and semi-analytical for costh
+quadint   = true  # quadrature rule for the phi_lep integration and semi-analytical for costh
 
 suavepoints = 1000000 # number of points for suave integration, newpoints is set to suavepoints/10;
 nphitrape   = 1000    # number of steps for trapezoidal rule of phi_lep integration
 quadnphi    = 20      # number of segments for quadrature rule of phi_lep integration
-ncstart     = 1000    # starting sampling for the costh semi-analytical integration (common settings for the trapezoidal and quadrature rules)
+ncstart     = 100     # starting sampling for the costh semi-analytical integration (common settings for the trapezoidal and quadrature rules)
 
 # qt-recoil prescriptions
 qtrec_naive = false
-qtrec_cs    = false
-qtrec_kt0   = true
+qtrec_cs    = true
+qtrec_kt0   = false
 
 # debug settings
 timeprofile = false  # debug and time profile resummation integration
@@ -84,5 +96,6 @@ opts_approxpdf = 0
 
 
 # binning
-#
-qtbins = [ 0 2 4 6 8 10 12 14 16 18 22 26 30 34 38 42 46 50 54 60 70 80 100 150 200 300 800 ]
+
+#qtbins = [ 0 2 4 6 8 10 12 14 16 18 22 26 30 34 38 42 46 50 54 60 70 80 100 150 200 300 800 ]
+qtbins = [ 10  12 ] #  100  800 ]

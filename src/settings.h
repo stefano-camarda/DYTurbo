@@ -88,11 +88,19 @@ public:
 
   //type of integration
   bool int2d, int3d, int4d;
-  
+
+  //term switch
+  bool doRES  , doCT   , doREAL , doVIRT , doLO   ;
+
   //Cuba settings
   int cubaverbosity;
+  int cubacores;
   int niter;
-  int vegasncalls;
+  int vegasncallsRES  ;
+  int vegasncallsCT   ;
+  int vegasncallsLO   ;
+  int vegasncallsREAL ;
+  int vegasncallsVIRT ;
 
   bool makelepcuts;
 
