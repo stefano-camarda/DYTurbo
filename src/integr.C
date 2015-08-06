@@ -731,13 +731,9 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
   */
 
   //integrate between qtmin and qtmax
-  if (qtmin < 0.1)
-    {
-      cout << "Reset minimum qt to 0.1" << endl;
-      qtmin = 0.1;
-    }
-  double qt=qtmin+(qtmax-qtmin)*x[1];
-  jac=jac*(qtmax-qtmin);
+  double qtmn = max(0.1, qtmin);
+  double qt=qtmn+(qtmax-qtmn)*x[1];
+  jac=jac*(qtmax-qtmn);
 
   //set global variables to m, qt
   set(m, qt, 0);
@@ -832,13 +828,9 @@ integrand_t resintegrand3d(const int &ndim, const double x[], const int &ncomp, 
   */
 
   //integrate between qtmin and qtmax
-  if (qtmin < 0.1)
-    {
-      cout << "Reset minimum qt to 0.1" << endl;
-      qtmin = 0.1;
-    }
-  double qt=qtmin+(qtmax-qtmin)*x[2];
-  jac=jac*(qtmax-qtmin);
+  double qtmn = max(0.1, qtmin);
+  double qt=qtmn+(qtmax-qtmn)*x[2];
+  jac=jac*(qtmax-qtmn);
 
   //set global variables to m, qt, y
   set(m, qt, y);
@@ -952,13 +944,9 @@ integrand_t resintegrand4d(const int &ndim, const double x[], const int &ncomp, 
   //  qt=qtmin+qtmax*r[2];
   //  jac=jac*(qtmax);
 
-  if (qtmin < 0.1)
-    {
-      cout << "Reset minimum qt to 0.1" << endl;
-      qtmin = 0.1;
-    }
-  double qt=qtmin+(qtmax-qtmin)*r[2];
-  jac=jac*(qtmax-qtmin);
+  double qtmn = max(0.1, qtmin);
+  double qt=qtmn+(qtmax-qtmn)*r[2];
+  jac=jac*(qtmax-qtmn);
 
   qt2=pow(qt,2);
 
