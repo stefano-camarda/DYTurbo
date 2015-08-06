@@ -26,6 +26,8 @@ void integr2d(double &res, double &err);
 void integr3d(double &res, double &err);
 void integr4d(double &res, double &err);
 
+void expected_entries(const int Sn, const int a1, const int d);
+
 void test_resum_speed(double costh,double m,double qt,double y,int mode);
 
 int main( int argc , const char * argv[])
@@ -148,7 +150,7 @@ int main( int argc , const char * argv[])
   //return 0;
   //
   hists.init();
-  hists.finalise();
+  hists.dump();
 
   cout << endl;
   cout << "Start integration" << endl;
@@ -172,6 +174,7 @@ int main( int argc , const char * argv[])
   cout << endl;
   cout << setw(10) << "time "  << setw(15) << float(end_time - begin_time) / CLOCKS_PER_SEC << endl;
 
+  hists.dump();
   hists.finalise();
 
   return 0;
@@ -353,8 +356,8 @@ void integr4d(double &res, double &err)
   const int seed = 1;
   const int mineval = opts.vegasncalls;
   const int maxeval = opts.vegasncalls;
-  const int nstart = 10;
-  const int nincrease = 10;
+  const int nstart = 100;
+  const int nincrease = 200;
   const int nbatch = 100;
   const int gridno = 1;
   Vegas(ndim, ncomp, (integrand_t)resintegrand4d, userdata, nvec,
@@ -367,7 +370,19 @@ void integr4d(double &res, double &err)
 	integral, error, prob);
   res = integral[0];
   err = error[0];
+  expected_entries( maxeval , nstart , nincrease  );
   return;
+}
+
+void expected_entries(const int Sn, const int a1, const int d){
+    int n = 0;
+    int sum = 0;
+    while (a1+n*d < Sn){
+        sum += a1+n*d;
+        n++;
+    }
+    int azloopmax = 500;
+    printf ("entries expected : %d", sum * 500);
 }
 
 //y line plot

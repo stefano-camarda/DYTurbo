@@ -1090,7 +1090,7 @@ integrand_t resintegrand4d(const int &ndim, const double x[], const int &ncomp, 
   f[0] = lowintHst;
 
   printf(" ---  end iter %d --- \n", iter);
-  hists.finalise();
+  hists.dump();
 
   return 0;
 }
