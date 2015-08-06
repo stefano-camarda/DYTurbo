@@ -5,8 +5,7 @@ lhapdf6/
 *~
 *.swp
 tags
-src/dyfast
-src/dyfin
+src/dyturbo
 Makefile.in
 Makefile
 autom4te.cache/
