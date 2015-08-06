@@ -138,7 +138,7 @@ void settings::initDyresSettings(){
     facscale_    . facscale_  = muf          ;         //91.1876e0      # mur,       muf
     a_param_     . a_param_   = a_param      ;         //2.0e0          # a_param
     g_param_     . g_param_   = g_param      ;         //1.0e0          # g_param
-    nnlo_       . order_     = order        ;         //1              # order
+    nnlo_        . order_     = order        ;         //1              # order
     zerowidth_   . zerowidth_ = zerowidth    ;         //false          # zerowidth
     mwminmax_    . Mwmin_     = M_min        ;         //66d0
     mwminmax_    . Mwmax_     = M_max        ;         //116d0          # M_min,     M_max
@@ -156,6 +156,124 @@ void settings::initDyresSettings(){
     strncpy( lhapdf_char_ . PDFname_   , LHAPDFset    .c_str(), LHAPDFset  .size() ); //CT10nlo.LHgrid
     strncpy( runstring_   . runstring_ , outputfile   .c_str(), outputfile .size() ); //'LHC7-Z-nnlo'  # outputfile
 }
+
+void settings::dumpAll(){
+    printf("==Listing settings==\n");
+    bool print_inputs = true;
+    bool print_inputsDYRES = true;
+    bool print_masses = true;
+
+    if (print_inputsDYRES) {
+        printf("Input DYRES settings:\n");
+        dumpD ( "sroot       ",  energy_      . sroot_      ) ;
+        dumpI ( "ih1         ",  density_     . ih1_        ) ;
+        dumpI ( "ih2         ",  density_     . ih2_        ) ;
+        dumpI ( "nproc       ",  nproc_       . nproc_      ) ;
+        dumpD ( "mur         ",  scale_       . scale_      ) ;
+        dumpD ( "muf         ",  facscale_    . facscale_   ) ;
+        dumpD ( "a_param     ",  a_param_     . a_param_    ) ;
+        dumpD ( "g_param     ",  g_param_     . g_param_    ) ;
+        dumpI ( "order       ",  nnlo_        . order_      ) ;
+        dumpS ( "part        ",  part_        . part_       ) ;
+        dumpB ( "zerowidth   ",  zerowidth_   . zerowidth_  ) ;
+        dumpD ( "M_min       ",  mwminmax_    . Mwmin_      ) ;
+        dumpD ( "M_max       ",  mwminmax_    . Mwmax_      ) ;
+        dumpI ( "itmx1       ",  iterat_      . itmx1_      ) ;
+        dumpI ( "ncall1      ",  iterat_      . ncall1_     ) ;
+        dumpI ( "itmx2       ",  iterat_      . itmx2_      ) ;
+        dumpI ( "ncall2      ",  iterat_      . ncall2_     ) ;
+        dumpI ( "rseed       ",  rseed_       . rseed_      ) ;
+        dumpI ( "PDFset      ",  pdfiset_     . iset_       ) ;
+        dumpI ( "PDFmember   ",  prefix_      . nset_       ) ;
+        dumpS ( "LHAPDFset   ",  lhapdf_char_ . PDFname_    ) ;
+        dumpI ( "LHAPDFmember",  lhapdf_int_  . PDFmember_  ) ;
+        dumpS ( "outputfile  ",  runstring_   . runstring_  ) ;
+        dumpI ( "itmxToFile  ",  pr_          . pr_         ) ;
+    }
+    if (print_inputs) {
+        printf("Input settings:\n");
+        dumpD("rmass            ", rmass            );
+        dumpD("rwidth           ", rwidth           );
+        dumpD("ylow             ", ylow             );
+        dumpD("yhigh            ", yhigh            );
+        dumpD("mlow             ", mlow             );
+        dumpD("mhigh            ", mhigh            );
+        dumpB("int2d            ", int2d            );
+        dumpB("int3d            ", int3d            );
+        dumpB("int4d            ", int4d            );
+        dumpI("cubaverbosity    ", cubaverbosity    );
+        dumpI("niter            ", niter            );
+        dumpD("vegasncalls      ", vegasncalls      );
+        dumpB("makelepcuts      ", makelepcuts      );
+        dumpB("cubaint          ", cubaint          );
+        dumpB("trapezint        ", trapezint        );
+        dumpB("quadint          ", quadint          );
+        dumpI("suavepoints      ", suavepoints      );
+        dumpI("nphitrape        ", nphitrape        );
+        dumpI("quadnphi         ", quadnphi         );
+        dumpI("ncstart          ", ncstart          );
+        dumpB("qtrec_naive      ", qtrec_naive      );
+        dumpB("qtrec_cs         ", qtrec_cs         );
+        dumpB("qtrec_kt0        ", qtrec_kt0        );
+        dumpB("timeprofile      ", timeprofile      );
+        dumpB("verbose          ", verbose          );
+        dumpI("opts_.approxpdf_ ", opts_.approxpdf_ );
+    }
+
+    if (print_masses){
+        printf("Masses and EW constants:\n");
+        dumpD ( "md        " , masses_   . md_        );
+        dumpD ( "mu        " , masses_   . mu_        );
+        dumpD ( "ms        " , masses_   . ms_        );
+        dumpD ( "mc        " , masses_   . mc_        );
+        dumpD ( "mb        " , masses_   . mb_        );
+        dumpD ( "mt        " , masses_   . mt_        );
+        dumpD ( "mel       " , masses_   . mel_       );
+        dumpD ( "mmu       " , masses_   . mmu_       );
+        dumpD ( "mtau      " , masses_   . mtau_      );
+        dumpD ( "hmass     " , masses_   . hmass_     );
+        dumpD ( "hwidth    " , masses_   . hwidth_    );
+        dumpD ( "wmass     " , masses_   . wmass_     );
+        dumpD ( "wwidth    " , masses_   . wwidth_    );
+        dumpD ( "zmass     " , masses_   . zmass_     );
+        dumpD ( "zwidth    " , masses_   . zwidth_    );
+        dumpD ( "twidth    " , masses_   . twidth_    );
+        dumpD ( "mtausq    " , masses_   . mtausq_    );
+        dumpD ( "mcsq      " , masses_   . mcsq_      );
+        dumpD ( "mbsq      " , masses_   . mbsq_      );
+        dumpD ( "Gf_inp    " , ewinput_  . Gf_inp_    );
+        dumpD ( "aemmz_inp " , ewinput_  . aemmz_inp_ );
+        dumpD ( "xw_inp    " , ewinput_  . xw_inp_    );
+        dumpD ( "wmass_inp " , ewinput_  . wmass_inp_ );
+        dumpD ( "zmass_inp " , ewinput_  . zmass_inp_ );
+        dumpI ( "ewscheme  " , ewscheme_ . ewscheme_  );
+        dumpD ( "Vud       " , cabib_    . Vud_       );
+        dumpD ( "Vus       " , cabib_    . Vus_       );
+        dumpD ( "Vub       " , cabib_    . Vub_       );
+        dumpD ( "Vcd       " , cabib_    . Vcd_       );
+        dumpD ( "Vcs       " , cabib_    . Vcs_       );
+        dumpD ( "Vcb       " , cabib_    . Vcb_       );
+        dumpD ( "mb_msbar  " , mb_msbar_ . mb_msbar_  );
+        dumpD ( "epinv     " , epinv_    . epinv_     );
+        dumpD ( "epinv2    " , epinv2_   . epinv2_    );
+    }
+
+    printf("end of setting dump.\n\n");
+}
+
+void settings::dumpI( string var,int    val){
+    printf( " %s = %d\n", var.c_str(), val);
+}
+void settings::dumpD( string var,double val){
+    printf( " %s = %f\n", var.c_str(), val);
+}
+void settings::dumpS( string var,string val){
+    printf( " %s = %s\n", var.c_str(), val.c_str());
+}
+void settings::dumpB( string var,bool val){
+    printf( " %s = %s\n", var.c_str(), val ? "true" : "false" );
+}
+
 
 bool cuts(double p3[4], double p4[4])
 {

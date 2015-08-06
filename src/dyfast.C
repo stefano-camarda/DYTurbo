@@ -141,6 +141,11 @@ int main( int argc , const char * argv[])
   //bins.init();
   bins.readfromfile(conf_file.c_str());
 
+
+  // just a check
+  //opts.dumpAll();
+  //return 0;
+
   cout << endl;
   cout << "Start integration" << endl;
   begin_time = clock();
