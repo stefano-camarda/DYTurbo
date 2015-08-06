@@ -51,9 +51,9 @@ c      endif
       if (m1-m2-m3.lt. 0d0) return 1
 
 
-c S.C. swicth off jbranch switching
       if (jbranch .eq. 1) then
-c        jbranch=2
+c S.C. to swicth off jbranch switching comment the following line
+        jbranch=2
         rtxth=xth**xexp 
         xjac=1d0/(xexp*xth**(xexp-1d0))
       elseif (jbranch .eq. 2) then 
