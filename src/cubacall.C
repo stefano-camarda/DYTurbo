@@ -91,8 +91,8 @@ void integr4d(double &res, double &err)
   double prob[1];
   const int flags = 4+opts.cubaverbosity;
   const int seed = 1;
-  const int mineval = opts.vegasncalls;
-  const int maxeval = opts.vegasncalls;
+  const int mineval = opts.vegasncallsRES;
+  const int maxeval = opts.vegasncallsRES;
   const int nstart = 1000;
   const int nincrease = 1000;
   const int nbatch = 10000;
@@ -204,8 +204,8 @@ void virtintegr(double &res, double &err)
   double prob[1];
   const int flags = 8+4+opts.cubaverbosity;
   const int seed = opts.rseed;
-  const int mineval = vegasncallsVIRT;
-  const int maxeval = vegasncallsVIRT;
+  const int mineval = opts.vegasncallsVIRT;
+  const int maxeval = opts.vegasncallsVIRT;
   const int nstart = 100000;
   const int nincrease = 100000;
   const int nbatch = 1000;

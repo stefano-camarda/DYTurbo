@@ -27,6 +27,9 @@ using namespace std;
 // void ptgvar();
 
 void test_resum_speed(double costh,double m,double qt,double y,int mode);
+void print_head();
+void print_line();
+void print_qtbin(vector<double>::iterator it_qt);
 void print_result(double val, double err, clock_t btime , clock_t etime);
 
 int main( int argc , const char * argv[])
@@ -155,13 +158,14 @@ int main( int argc , const char * argv[])
   if (opts.doVIRT ) cout << " virt part";
   cout << endl;
 
+  print_head();
   begin_time = clock();
   for (vector<double>::iterator qit = bins.qtbins.begin(); qit != bins.qtbins.end()-1; qit++)
     {
       //Set integration boundaries
       totval=toterror2=0;
       setbounds(opts.mlow, opts.mhigh, *qit, *(qit+1), opts.ylow, opts.yhigh);
-      cout << setw(3) << "bin" << setw(5) << *qit << setw(2) << "-" << setw(5) << *(qit+1) << flush;
+      print_qtbin(qit);
       clock_t bb_time = clock();
 
       // resummation
@@ -226,6 +230,7 @@ int main( int argc , const char * argv[])
       print_result (totval, sqrt(toterror2), bb_time, ee_time);
       cout << endl;
     }
+  print_line();
   end_time = clock();
   cout << endl;
   cout << setw(10) << "time "  << setw(15) << float(end_time - begin_time) / CLOCKS_PER_SEC << endl;
@@ -245,11 +250,43 @@ void test_resum_speed(double costh,double m,double qt,double y,int mode){
     return;
 }
 
+void print_head(){
+    print_line();
+    cout << "| " << setw(13) << "qt bin" << " | ";
+    if (opts.doRES ) cout << setw(36) << "resummed "      << " | ";
+    if (opts.doCT  ) cout << setw(36) << "counter term "  << " | ";
+    if (opts.doREAL) cout << setw(36) << "real part "     << " | ";
+    if (opts.doVIRT) cout << setw(36) << "virtual part "  << " | ";
+    if (opts.doLO  ) cout << setw(36) << "Z+j LO "        << " | ";
+    if (true       ) cout << setw(36) << "TOTAL "          << " | ";
+    cout << endl;
+    print_line();
+
+};
+void print_line(){
+    int N = 18;
+    if (opts.doRES ) N += 39;
+    if (opts.doCT  ) N += 39;
+    if (opts.doREAL) N += 39;
+    if (opts.doVIRT) N += 39;
+    if (opts.doLO  ) N += 39;
+    if (true       ) N += 39;
+    cout<<string(N,'-').c_str() <<endl;
+}
+
+void print_qtbin(vector<double>::iterator it_qt){
+    //      2 + 5 + 3 + 5 + 3 = 18
+   cout << "| " << setw(5) << *it_qt << " - " << setw(5) << *(it_qt+1) << " | " <<  flush; 
+}
+
 void print_result(double val, double err, clock_t btime , clock_t etime){
+    // 10 + 4 + 10 + 1 + 10 + 1 + 3 = 39
     cout << setw(10) << val
          << setw(4)  << "+/-"
          << setw(10) << err
-         << setw(3)  << "t="
+         << "("
          << setw(10) << float(etime - btime) / CLOCKS_PER_SEC
+         << ")"
+         << " | "
          << flush;
 }

@@ -48,8 +48,8 @@ mhigh = 116.
 
 # type of integration
 int2d = false
-int3d = false
-int4d = true
+int3d = true
+int4d = false
 
 # term switches
 doRES  = true
