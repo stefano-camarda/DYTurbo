@@ -55,24 +55,26 @@ if test x$lhapdf_config == x; then
 fi
 
 # set up lhapdf flags
-AC_MSG_RESULT([Using $lhapdf_config])
 LHAPDF_CPPFLAGS=`${lhapdf_config} --cppflags`
 LHAPDF_LDFLAGS=`${lhapdf_config} --libdir`/libLHAPDF.a
 AC_SUBST(LHAPDF_CPPFLAGS)
 AC_SUBST(LHAPDF_LDFLAGS)
+AC_MSG_RESULT([Using $lhapdf_config])
 
 # check for Cuba installation
 AC_MSG_CHECKING([for Cuba library installation])
 # search in Cuba-4.2
 cubalib=`ls ${PWD}/Cuba-4.2/libcuba.a`
 if test x$cubalib == x; then
-# if not found, install it
-  AC_MSG_RESULT([Install Cuba])
-  ./install-cuba
+    # if not found, install it
+    AC_MSG_RESULT([Install Cuba])
+    ./install-cuba
 fi
 
 CUBA_LDFLAGS="-L ${PWD}/Cuba-4.2 -lcuba"
 AC_SUBST(CUBA_LDFLAGS)
+cubadir="${PWD}/Cuba-4.2"
+AC_MSG_RESULT([Using $cubadir])
 
 
 #AC_SEARCH_LIBS([vegas],[cuba],[
@@ -84,21 +86,28 @@ AC_SUBST(CUBA_LDFLAGS)
 #        ])
 #AC_SUBST(CUBA_LDFLAGS)
 
-#Set --enable-root option, for linking histograms
-#AC_MSG_CHECKING([for root installation])
-#root_config=`which root-config`
-#if test x$root_config == x; then
-#  AC_MSG_ERROR([Unable to find root-config.])
-#else
-#  AC_MSG_RESULT([Using $root_config])
-#  root_ok=1
-#  ROOT_CFLAGS=`root-config --cflags`
-#  ROOT_LDFLAGS=`root-config --ldflags`
-#  ROOT_LIBS=`root-config --glibs`
-#  AC_SUBST(ROOT_CFLAGS)
-#  AC_SUBST(ROOT_LDFLAGS)
-#  AC_SUBST(ROOT_LIBS)
-#fi
+# Set --enable-root option, for linking histograms
+AC_ARG_ENABLE([root],
+  [AC_HELP_STRING(--enable-root, [Use root for histograming. (default=no)])])
+if test x$enable_root == xyes
+then
+    AC_MSG_CHECKING([for root installation])
+    root_config=`which root-config`
+    if test x$root_config == x;
+    then
+        AC_MSG_ERROR([Unable to find root-config.])
+    else
+        AC_MSG_RESULT([Using $root_config])
+        root_ok=1
+        ROOT_CFLAGS=`root-config --cflags`
+        ROOT_LDFLAGS=`root-config --ldflags`
+        ROOT_LIBS=`root-config --glibs`
+        AC_SUBST(ROOT_CFLAGS)
+        AC_SUBST(ROOT_LDFLAGS)
+        AC_SUBST(ROOT_LIBS)
+        AC_DEFINE(USEROOT, "1",[ Turn on the ROOT for histogramming.] )
+    fi
+fi
 
 
 # Check for trapFPE flag

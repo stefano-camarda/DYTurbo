@@ -11,6 +11,7 @@
 #include "integr.h"
 #include "settings.h"
 #include "interface.h"
+#include "plotter.h"
 
 using namespace std;
 
@@ -143,8 +144,11 @@ int main( int argc , const char * argv[])
 
 
   // just a check
-  //opts.dumpAll();
+  opts.dumpAll();
   //return 0;
+  //
+  hists.init();
+  hists.finalise();
 
   cout << endl;
   cout << "Start integration" << endl;
@@ -153,6 +157,7 @@ int main( int argc , const char * argv[])
     {
       //Set integration boundaries
       setbounds(opts.mlow, opts.mhigh, *qit, *(qit+1), opts.ylow, opts.yhigh);
+      cout << setw(3) << "bin" << setw(5) << *qit << setw(2) << "-" << setw(5) << *(qit+1) << flush;
       clock_t b_time = clock();
       if (opts.int2d) integr2d(value, error);
       if (opts.int3d) integr3d(value, error);
@@ -160,13 +165,14 @@ int main( int argc , const char * argv[])
       clock_t e_time = clock();
       value = value / (*(qit+1) - *qit);
       error = error / (*(qit+1) - *qit);
-      cout << setw(3) << "bin" << setw(5) << *qit << setw(2) << "-" << setw(5) << *(qit+1)
-	   << setw(10) << value << setw(5) << "+/-" << setw(10) << error
+      cout << setw(10) << value << setw(5) << "+/-" << setw(10) << error
 	   << setw(6) << "time" << setw(10) <<  float(e_time - b_time) / CLOCKS_PER_SEC << endl;
     }
   end_time = clock();
   cout << endl;
   cout << setw(10) << "time "  << setw(15) << float(end_time - begin_time) / CLOCKS_PER_SEC << endl;
+
+  hists.finalise();
 
   return 0;
   /*
@@ -329,6 +335,7 @@ void integr3d(double &res, double &err)
 //original integration, can use this to sample phase space and fill histograms
 void integr4d(double &res, double &err)
 {
+
   const int ndim = 4;   //dimensions of the integral
   const int ncomp = 1;  //components of the integrand
   void *userdata;
@@ -346,9 +353,9 @@ void integr4d(double &res, double &err)
   const int seed = 1;
   const int mineval = opts.vegasncalls;
   const int maxeval = opts.vegasncalls;
-  const int nstart = 1000;
-  const int nincrease = 1000;
-  const int nbatch = 10000;
+  const int nstart = 10;
+  const int nincrease = 10;
+  const int nbatch = 100;
   const int gridno = 1;
   Vegas(ndim, ncomp, (integrand_t)resintegrand4d, userdata, nvec,
 	epsrel, epsabs,

@@ -2,6 +2,7 @@
 #include "dyfast.h"
 #include "settings.h"
 #include "interface.h"
+#include "plotter.h"
 
 #include <gsl/gsl_integration.h>
 #include <gsl/gsl_math.h>
@@ -878,6 +879,7 @@ integrand_t resintegrand4d(const int &ndim, const double x[], const int &ncomp, 
 			   void* userdata, const int &nvec, const int &core,
 			   double &weight, const int &iter)
 {
+    //printf(" ---  start resintegrand4d --- ");
   clock_t begin_time, end_time;
 
   //Read this from the input
@@ -1079,13 +1081,16 @@ integrand_t resintegrand4d(const int &ndim, const double x[], const int &ncomp, 
 	   lowintHst0=jac*tempp;
 	   lowintHst0=lowintHst0*swtch; // SWITCHING
 	 }
-      //plot(p[3],p[4],w=weight*lowintHst0/azloopmax)
+      //hists.fill(p[3],p[4],weight*lowintHst0/azloopmax);
       azloop=azloop+1;
     }
 
   lowintHst=lowintHst0*float(azloop)/float(azloopmax);
   
   f[0] = lowintHst;
+
+  //printf(" ---  end --- \n");
+  //hists.finalise();
 
   return 0;
 }
