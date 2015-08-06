@@ -34,7 +34,8 @@ int main( int argc , const char * argv[])
   opts.readfromfile(conf_file.c_str());
   opts.initDyresSettings();
   dyinit_();
-
+  cubacores(0,1000000);
+  
   //born level variables (6 dimensions)
   double m, qt, y, costh;
   double phicm, phiZ;
@@ -73,6 +74,250 @@ int main( int argc , const char * argv[])
   */
 
   //  return 0;
+
+  bins.readfromfile(conf_file.c_str());
+  clock_t begin_time, end_time;
+  double value, error;
+
+  cout << endl;
+  cout << "Start integration of counterterm" << endl;
+  begin_time = clock();
+  for (vector<double>::iterator qit = bins.qtbins.begin(); qit != bins.qtbins.end()-1; qit++)
+    {
+      //Set integration boundaries
+      setbounds(opts.mlow, opts.mhigh, *qit, *(qit+1), opts.ylow, opts.yhigh);
+      clock_t b_time = clock();
+      ctintegr(value, error);
+      clock_t e_time = clock();
+      value = value / (*(qit+1) - *qit);
+      error = error / (*(qit+1) - *qit);
+      cout << setw(3) << "bin" << setw(5) << *qit << setw(2) << "-" << setw(5) << *(qit+1)
+	   << setw(10) << value << setw(5) << "+/-" << setw(10) << error
+	   << setw(6) << "time" << setw(10) <<  float(e_time - b_time) / CLOCKS_PER_SEC << endl;
+    }
+  end_time = clock();
+  cout << endl;
+  cout << setw(10) << "time "  << setw(15) << float(end_time - begin_time) / CLOCKS_PER_SEC << endl;
+
+  if (opts.order == 1)
+    {
+      cout << "Start integration of Z+j LO" << endl;
+      begin_time = clock();
+      for (vector<double>::iterator qit = bins.qtbins.begin(); qit != bins.qtbins.end()-1; qit++)
+	{
+	  //Set integration boundaries
+	  setbounds(opts.mlow, opts.mhigh, *qit, *(qit+1), opts.ylow, opts.yhigh);
+	  clock_t b_time = clock();
+	  lowintegr(value, error);
+	  clock_t e_time = clock();
+	  value = value / (*(qit+1) - *qit);
+	  error = error / (*(qit+1) - *qit);
+	  cout << setw(3) << "bin" << setw(5) << *qit << setw(2) << "-" << setw(5) << *(qit+1)
+	       << setw(10) << value << setw(5) << "+/-" << setw(10) << error
+	       << setw(6) << "time" << setw(10) <<  float(e_time - b_time) / CLOCKS_PER_SEC << endl;
+	}
+      end_time = clock();
+      cout << endl;
+      cout << setw(10) << "time "  << setw(15) << float(end_time - begin_time) / CLOCKS_PER_SEC << endl;
+    }
+  if (opts.order == 2)
+    {
+      cout << endl;
+      cout << "Start integration of real" << endl;
+      begin_time = clock();
+      for (vector<double>::iterator qit = bins.qtbins.begin(); qit != bins.qtbins.end()-1; qit++)
+	{
+	  //Set integration boundaries
+	  setbounds(opts.mlow, opts.mhigh, *qit, *(qit+1), opts.ylow, opts.yhigh);
+	  clock_t b_time = clock();
+	  realintegr(value, error);
+	  clock_t e_time = clock();
+	  value = value / (*(qit+1) - *qit);
+	  error = error / (*(qit+1) - *qit);
+	  cout << setw(3) << "bin" << setw(5) << *qit << setw(2) << "-" << setw(5) << *(qit+1)
+	       << setw(10) << value << setw(5) << "+/-" << setw(10) << error
+	       << setw(6) << "time" << setw(10) <<  float(e_time - b_time) / CLOCKS_PER_SEC << endl;
+	}
+      end_time = clock();
+      cout << endl;
+      cout << setw(10) << "time "  << setw(15) << float(end_time - begin_time) / CLOCKS_PER_SEC << endl;
+
+      cout << endl;
+      cout << "Start integration of virtual" << endl;
+      begin_time = clock();
+      for (vector<double>::iterator qit = bins.qtbins.begin(); qit != bins.qtbins.end()-1; qit++)
+	{
+	  //Set integration boundaries
+	  setbounds(opts.mlow, opts.mhigh, *qit, *(qit+1), opts.ylow, opts.yhigh);
+	  clock_t b_time = clock();
+	  virtintegr(value, error);
+	  clock_t e_time = clock();
+	  value = value / (*(qit+1) - *qit);
+	  error = error / (*(qit+1) - *qit);
+	  cout << setw(3) << "bin" << setw(5) << *qit << setw(2) << "-" << setw(5) << *(qit+1)
+	       << setw(10) << value << setw(5) << "+/-" << setw(10) << error
+	       << setw(6) << "time" << setw(10) <<  float(e_time - b_time) / CLOCKS_PER_SEC << endl;
+	}
+      end_time = clock();
+      cout << endl;
+      cout << setw(10) << "time "  << setw(15) << float(end_time - begin_time) / CLOCKS_PER_SEC << endl;
+    }
+
+  return 0;
+}
+
+//Cuba integration of Z+j LO
+void lowintegr(double &res, double &err)
+{
+  const int ndim = 7;   //dimensions of the integral
+  const int ncomp = 1;  //components of the integrand
+  void *userdata;
+  const int nvec = 1;
+  const double epsrel = 0.;
+  const double epsabs = 0.;
+  const char *statefile = "";
+  void *spin=NULL;
+  int neval;
+  int fail;
+  double integral[1];
+  double error[1];
+  double prob[1];
+  const int flags = 8+4+opts.cubaverbosity;
+  const int seed = 1;
+  const int mineval = 10000000;
+  const int maxeval = 10000000;
+  const int nstart = 100000;
+  const int nincrease = 100000;
+  const int nbatch = 1000;
+  const int gridno = 1;
+  Vegas(ndim, ncomp, (integrand_t)lowintegrand, userdata, nvec,
+	epsrel, epsabs,
+	flags, seed,
+	mineval, maxeval,
+	nstart, nincrease, nbatch,
+	gridno, statefile, spin,
+	&neval, &fail,
+	integral, error, prob);
+  res = integral[0];
+  err = error[0];
+
+  return;
+}
+
+//Cuba integration of the real part
+void realintegr(double &res, double &err)
+{
+  const int ndim = 10;   //dimensions of the integral
+  const int ncomp = 1;  //components of the integrand
+  void *userdata;
+  const int nvec = 1;
+  const double epsrel = 0.;
+  const double epsabs = 0.;
+  const char *statefile = "";
+  void *spin=NULL;
+  int neval;
+  int fail;
+  double integral[1];
+  double error[1];
+  double prob[1];
+  const int flags = 8+4+opts.cubaverbosity;
+  const int seed = 1;
+  const int mineval = 1000000;
+  const int maxeval = 1000000;
+  const int nstart = 10000;
+  const int nincrease = 10000;
+  const int nbatch = 1000;
+  const int gridno = 1;
+  Vegas(ndim, ncomp, (integrand_t)realintegrand, userdata, nvec,
+	epsrel, epsabs,
+	flags, seed,
+	mineval, maxeval,
+	nstart, nincrease, nbatch,
+	gridno, statefile, spin,
+	&neval, &fail,
+	integral, error, prob);
+  res = integral[0];
+  err = error[0];
+
+  return;
+}
+
+//Cuba integration of the virtual part
+void virtintegr(double &res, double &err)
+{
+  const int ndim = 8;   //dimensions of the integral
+  const int ncomp = 1;  //components of the integrand
+  void *userdata;
+  const int nvec = 1;
+  const double epsrel = 0.;
+  const double epsabs = 0.;
+  const char *statefile = "";
+  void *spin=NULL;
+  int neval;
+  int fail;
+  double integral[1];
+  double error[1];
+  double prob[1];
+  const int flags = 8+4+opts.cubaverbosity;
+  const int seed = 1;
+  const int mineval = 10000000;
+  const int maxeval = 10000000;
+  const int nstart = 100000;
+  const int nincrease = 100000;
+  const int nbatch = 1000;
+  const int gridno = 1;
+  Vegas(ndim, ncomp, (integrand_t)virtintegrand, userdata, nvec,
+	epsrel, epsabs,
+	flags, seed,
+	mineval, maxeval,
+	nstart, nincrease, nbatch,
+	gridno, statefile, spin,
+	&neval, &fail,
+	integral, error, prob);
+  res = integral[0];
+  err = error[0];
+
+  return;
+}
+
+//Cuba integration of the counterterm
+void ctintegr(double &res, double &err)
+{
+  const int ndim = 8;   //dimensions of the integral
+  const int ncomp = 1;  //components of the integrand
+  void *userdata;
+  const int nvec = 1;
+  const double epsrel = 0.;
+  const double epsabs = 0.;
+  const char *statefile = "";
+  void *spin=NULL;
+  int neval;
+  int fail;
+  double integral[1];
+  double error[1];
+  double prob[1];
+  const int flags = 8+4+opts.cubaverbosity;
+  const int seed = 1;
+  const int mineval = 1000000;
+  const int maxeval = 1000000;
+  const int nstart = 100000;
+  const int nincrease = 100000;
+  const int nbatch = 1000;
+  const int gridno = 1;
+  Vegas(ndim, ncomp, (integrand_t)ctintegrand, userdata, nvec,
+	epsrel, epsabs,
+	flags, seed,
+	mineval, maxeval,
+	nstart, nincrease, nbatch,
+	gridno, statefile, spin,
+	&neval, &fail,
+	integral, error, prob);
+  res = integral[0];
+  err = error[0];
+
+  return;
+}
+
   //lines
   /*
   //mass line
@@ -303,248 +548,3 @@ int main( int argc , const char * argv[])
   bf << "gb->Draw();" << endl;
   bf << "}" << endl;
   */
-
-
-
-  bins.readfromfile(conf_file.c_str());
-  clock_t begin_time, end_time;
-  double value, error;
-  /*
-  cout << endl;
-  cout << "Start integration of counterterm" << endl;
-  begin_time = clock();
-  for (vector<double>::iterator qit = bins.qtbins.begin(); qit != bins.qtbins.end()-1; qit++)
-    {
-      //Set integration boundaries
-      setbounds(opts.mlow, opts.mhigh, *qit, *(qit+1), opts.ylow, opts.yhigh);
-      clock_t b_time = clock();
-      ctintegr(value, error);
-      clock_t e_time = clock();
-      value = value / (*(qit+1) - *qit);
-      error = error / (*(qit+1) - *qit);
-      cout << setw(3) << "bin" << setw(5) << *qit << setw(2) << "-" << setw(5) << *(qit+1)
-	   << setw(10) << value << setw(5) << "+/-" << setw(10) << error
-	   << setw(6) << "time" << setw(10) <<  float(e_time - b_time) / CLOCKS_PER_SEC << endl;
-    }
-  end_time = clock();
-  cout << endl;
-  cout << setw(10) << "time "  << setw(15) << float(end_time - begin_time) / CLOCKS_PER_SEC << endl;
-  */
-  if (opts.order == 1)
-    {
-      cout << "Start integration of Z+j LO" << endl;
-      begin_time = clock();
-      for (vector<double>::iterator qit = bins.qtbins.begin(); qit != bins.qtbins.end()-1; qit++)
-	{
-	  //Set integration boundaries
-	  setbounds(opts.mlow, opts.mhigh, *qit, *(qit+1), opts.ylow, opts.yhigh);
-	  clock_t b_time = clock();
-	  lowintegr(value, error);
-	  clock_t e_time = clock();
-	  value = value / (*(qit+1) - *qit);
-	  error = error / (*(qit+1) - *qit);
-	  cout << setw(3) << "bin" << setw(5) << *qit << setw(2) << "-" << setw(5) << *(qit+1)
-	       << setw(10) << value << setw(5) << "+/-" << setw(10) << error
-	       << setw(6) << "time" << setw(10) <<  float(e_time - b_time) / CLOCKS_PER_SEC << endl;
-	}
-      end_time = clock();
-      cout << endl;
-      cout << setw(10) << "time "  << setw(15) << float(end_time - begin_time) / CLOCKS_PER_SEC << endl;
-    }
-  if (opts.order == 2)
-    {
-      cout << endl;
-      cout << "Start integration of real" << endl;
-      begin_time = clock();
-      for (vector<double>::iterator qit = bins.qtbins.begin(); qit != bins.qtbins.end()-1; qit++)
-	{
-	  //Set integration boundaries
-	  setbounds(opts.mlow, opts.mhigh, *qit, *(qit+1), opts.ylow, opts.yhigh);
-	  clock_t b_time = clock();
-	  realintegr(value, error);
-	  clock_t e_time = clock();
-	  value = value / (*(qit+1) - *qit);
-	  error = error / (*(qit+1) - *qit);
-	  cout << setw(3) << "bin" << setw(5) << *qit << setw(2) << "-" << setw(5) << *(qit+1)
-	       << setw(10) << value << setw(5) << "+/-" << setw(10) << error
-	       << setw(6) << "time" << setw(10) <<  float(e_time - b_time) / CLOCKS_PER_SEC << endl;
-	}
-      end_time = clock();
-      cout << endl;
-      cout << setw(10) << "time "  << setw(15) << float(end_time - begin_time) / CLOCKS_PER_SEC << endl;
-
-      cout << endl;
-      cout << "Start integration of virtual" << endl;
-      begin_time = clock();
-      for (vector<double>::iterator qit = bins.qtbins.begin(); qit != bins.qtbins.end()-1; qit++)
-	{
-	  //Set integration boundaries
-	  setbounds(opts.mlow, opts.mhigh, *qit, *(qit+1), opts.ylow, opts.yhigh);
-	  clock_t b_time = clock();
-	  virtintegr(value, error);
-	  clock_t e_time = clock();
-	  value = value / (*(qit+1) - *qit);
-	  error = error / (*(qit+1) - *qit);
-	  cout << setw(3) << "bin" << setw(5) << *qit << setw(2) << "-" << setw(5) << *(qit+1)
-	       << setw(10) << value << setw(5) << "+/-" << setw(10) << error
-	       << setw(6) << "time" << setw(10) <<  float(e_time - b_time) / CLOCKS_PER_SEC << endl;
-	}
-      end_time = clock();
-      cout << endl;
-      cout << setw(10) << "time "  << setw(15) << float(end_time - begin_time) / CLOCKS_PER_SEC << endl;
-    }
-
-  return 0;
-}
-
-//Cuba integration of Z+j LO
-void lowintegr(double &res, double &err)
-{
-  const int ndim = 7;   //dimensions of the integral
-  const int ncomp = 1;  //components of the integrand
-  void *userdata;
-  const int nvec = 1;
-  const double epsrel = 0.;
-  const double epsabs = 0.;
-  const char *statefile = "";
-  void *spin=NULL;
-  int neval;
-  int fail;
-  double integral[1];
-  double error[1];
-  double prob[1];
-  const int flags = 8+4+opts.cubaverbosity;
-  const int seed = 1;
-  const int mineval = 10000000;
-  const int maxeval = 10000000;
-  const int nstart = 100000;
-  const int nincrease = 100000;
-  const int nbatch = 1000;
-  const int gridno = 1;
-  Vegas(ndim, ncomp, (integrand_t)lowintegrand, userdata, nvec,
-	epsrel, epsabs,
-	flags, seed,
-	mineval, maxeval,
-	nstart, nincrease, nbatch,
-	gridno, statefile, spin,
-	&neval, &fail,
-	integral, error, prob);
-  res = integral[0];
-  err = error[0];
-
-  return;
-}
-
-//Cuba integration of the real part
-void realintegr(double &res, double &err)
-{
-  const int ndim = 10;   //dimensions of the integral
-  const int ncomp = 1;  //components of the integrand
-  void *userdata;
-  const int nvec = 1;
-  const double epsrel = 0.;
-  const double epsabs = 0.;
-  const char *statefile = "";
-  void *spin=NULL;
-  int neval;
-  int fail;
-  double integral[1];
-  double error[1];
-  double prob[1];
-  const int flags = 8+4+opts.cubaverbosity;
-  const int seed = 1;
-  const int mineval = 1000000;
-  const int maxeval = 1000000;
-  const int nstart = 10000;
-  const int nincrease = 10000;
-  const int nbatch = 1000;
-  const int gridno = 1;
-  Vegas(ndim, ncomp, (integrand_t)realintegrand, userdata, nvec,
-	epsrel, epsabs,
-	flags, seed,
-	mineval, maxeval,
-	nstart, nincrease, nbatch,
-	gridno, statefile, spin,
-	&neval, &fail,
-	integral, error, prob);
-  res = integral[0];
-  err = error[0];
-
-  return;
-}
-
-//Cuba integration of the virtual part
-void virtintegr(double &res, double &err)
-{
-  const int ndim = 8;   //dimensions of the integral
-  const int ncomp = 1;  //components of the integrand
-  void *userdata;
-  const int nvec = 1;
-  const double epsrel = 0.;
-  const double epsabs = 0.;
-  const char *statefile = "";
-  void *spin=NULL;
-  int neval;
-  int fail;
-  double integral[1];
-  double error[1];
-  double prob[1];
-  const int flags = 8+4+opts.cubaverbosity;
-  const int seed = 1;
-  const int mineval = 10000000;
-  const int maxeval = 10000000;
-  const int nstart = 100000;
-  const int nincrease = 100000;
-  const int nbatch = 1000;
-  const int gridno = 1;
-  Vegas(ndim, ncomp, (integrand_t)virtintegrand, userdata, nvec,
-	epsrel, epsabs,
-	flags, seed,
-	mineval, maxeval,
-	nstart, nincrease, nbatch,
-	gridno, statefile, spin,
-	&neval, &fail,
-	integral, error, prob);
-  res = integral[0];
-  err = error[0];
-
-  return;
-}
-
-//Cuba integration of the counterterm
-void ctintegr(double &res, double &err)
-{
-  const int ndim = 8;   //dimensions of the integral
-  const int ncomp = 1;  //components of the integrand
-  void *userdata;
-  const int nvec = 1;
-  const double epsrel = 0.;
-  const double epsabs = 0.;
-  const char *statefile = "";
-  void *spin=NULL;
-  int neval;
-  int fail;
-  double integral[1];
-  double error[1];
-  double prob[1];
-  const int flags = 8+4+opts.cubaverbosity;
-  const int seed = 1;
-  const int mineval = 1000000;
-  const int maxeval = 1000000;
-  const int nstart = 100000;
-  const int nincrease = 100000;
-  const int nbatch = 1000;
-  const int gridno = 1;
-  Vegas(ndim, ncomp, (integrand_t)ctintegrand, userdata, nvec,
-	epsrel, epsabs,
-	flags, seed,
-	mineval, maxeval,
-	nstart, nincrease, nbatch,
-	gridno, statefile, spin,
-	&neval, &fail,
-	integral, error, prob);
-  res = integral[0];
-  err = error[0];
-
-  return;
-}
