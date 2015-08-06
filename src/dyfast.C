@@ -378,8 +378,8 @@ void expected_entries(const int Sn, const int a1, const int d){
     int n = 0;
     int sum = 0;
     while (a1+n*d < Sn){
-        sum += a1+n*d;
         n++;
+        sum += a1+n*d;
     }
     int azloopmax = 500;
     printf ("entries expected : %d", sum * 500);

@@ -85,6 +85,10 @@ void plotter::fill(double p3[4], double p4[4], double wgt){
     return;
 }
 
+void plotter::dump(){
+    return;
+}
+
 void plotter::finalise(){
     return;
 }
