@@ -30,7 +30,11 @@ inline void sety(double yy) {_y = yy;}
 inline void setqt(double qtt) {_qt = qtt;}
 */
 
+//integration boundaries
 extern void setbounds(double m1, double m2, double qt1, double qt2, double y1, double y2);
+extern double mmin, mmax;
+extern double qtmin, qtmax;
+extern double ymin, ymax;
 
 integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, double f[]);
 integrand_t resintegrand3d(const int &ndim, const double x[], const int &ncomp, double f[]);

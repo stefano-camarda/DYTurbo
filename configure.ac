@@ -4,8 +4,8 @@ AM_INIT_AUTOMAKE([foreign -Wall -Werror])
 #By default, install binaries in the current directory
 AC_PREFIX_DEFAULT(${PWD})
 
-CXXFLAGS="${CXXFLAGS} -O3"
-FFLAGS="${FFLAGS} -O3"
+#CXXFLAGS="${CXXFLAGS} -O3"
+#FFLAGS="${FFLAGS} -O3"
 
 #CXXFLAGS="${CXXFLAGS} -Ofast"
 #FFLAGS="${FFLAGS} -Ofast"

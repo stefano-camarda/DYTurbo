@@ -46,6 +46,7 @@
       data p/48*0d0/
       data first/.true./
       save first,rscalestart,fscalestart
+
       if (first) then
          first=.false.
          rscalestart=scale
@@ -97,7 +98,7 @@ c--- see whether this point will pass cuts - if it will not, do not
 c--- bother calculating the matrix elements for it, instead set to zero
       includereal=includedipole(0,p)
       incldip(0)=includereal 
-
+      
 CC   Dynamic scale: set it only if point passes cuts
 
       if(dynamicscale.and.includereal) then

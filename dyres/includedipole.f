@@ -17,6 +17,8 @@
       common/qtcut/xqtcut
       common/isol/isol
       
+      logical binner
+      external binner
 
       includedipole=.true.
 
@@ -57,7 +59,8 @@ CC    Insert here isolation cut
 c--- check the lepton cuts
 
         if (makecuts) then
-          failedcuts=cuts(pjet,jets)
+           failedcuts=(cuts(pjet,jets).or.
+     .          (.not.binner(pjet(3,:),pjet(4,:))))
           if (failedcuts) includedipole=.false.
         endif
  
