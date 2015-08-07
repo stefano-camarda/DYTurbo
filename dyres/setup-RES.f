@@ -404,7 +404,7 @@ C
 
 
        q1=-1
-       q1=0 !switch off the photon
+!       q1=0 !switch off the photon
 
        phot=q1
 
