@@ -26,3 +26,7 @@ include/
 fort.1
 mline.C
 pdffit.grid
+scripts/batch_scripts
+scripts/infiles
+results
+run_dir
