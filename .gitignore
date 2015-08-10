@@ -2,6 +2,7 @@ Cuba-4.2/
 lhapdf6/
 *.o
 *.a
+*.pyc
 *~
 *.swp
 tags
@@ -30,3 +31,4 @@ scripts/batch_scripts
 scripts/infiles
 results
 run_dir
+share
