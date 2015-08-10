@@ -19,12 +19,7 @@
 
 using namespace std;
 
-// void yline();
-// void mline();
-// void costhline();
-// void ptline();
-// void ptavar();
-// void ptgvar();
+#include "lines.C"
 
 void test_resum_speed(double costh,double m,double qt,double y,int mode);
 void print_head();
@@ -96,9 +91,11 @@ int main( int argc , const char * argv[])
   costh = 0.1; m = 91; qt = 5; y = 0.2;
   test_resum_speed(costh,m,qt,y,mode);
 
+  //costhline();
   //ptline();
   //yline();
   //mline();
+  //mlinebw();
   //ptavar();
   //ptgvar();
   /**************************************/
