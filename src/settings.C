@@ -145,6 +145,7 @@ void settings::readfromfile(const char * fname){
     timeprofile     = in.GetBool   ( "timeprofile"     ); //false   # debug       and      time       profile resummation integration
     verbose         = in.GetBool   ( "verbose"         ); //false   # debug       and      time       profile costh       phi_lep         integration
     opts_.approxpdf_ = in.GetNumber ( "opts_approxpdf" ); //0
+    useGamma        = in.GetBool ( "useGamma" );//
 
 
     return ;
@@ -177,6 +178,8 @@ void settings::initDyresSettings(){
     strncpy( part_        . part_      , part         .c_str(), part       .size() ); //virt           # part
     strncpy( lhapdf_char_ . PDFname_   , LHAPDFset    .c_str(), LHAPDFset  .size() ); //CT10nlo.LHgrid
     strncpy( runstring_   . runstring_ , outputfile   .c_str(), outputfile .size() ); //'LHC7-Z-nnlo'  # outputfile
+
+    zcouple_ . q1_ = (useGamma ? 0 :  -1 );
 }
 
 void settings::dumpAll(){

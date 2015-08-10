@@ -13,9 +13,9 @@ zerowidth    = false          # zerowidth
 M_min        = 66d0
 M_max        = 116d0          # M_min, M_max
 itmx1        = 1
-ncall1       = 10000000       # itmx1, ncall1
+ncall1       = 1              # itmx1, ncall1
 itmx2        = 1
-ncall2       = 10000000       # itmx2, ncall2
+ncall2       = 1              # itmx2, ncall2
 rseed        = 123456         # rseed
 PDFset       = 92
 PDFmember    = 0              # set,member (native   PDFs)
@@ -30,6 +30,8 @@ itmxToFile   = 0              # number of last itmx to write on file
 # resonance mass and width (used for breit wigner unweighting)
 rmass  = 91.1876
 rwidth = 2.495
+# include virtual photon
+useGamma = false
 # Set boundaries of integration
 ylow  = 2
 yhigh = 2.4
@@ -45,6 +47,7 @@ mhigh = 116.
 #  yhigh = 5.;
 #  mlow = 10.;
 #  mhigh = 1000.;
+
 
 # type of integration
 int2d = false
@@ -62,11 +65,11 @@ doLO   = true
 cubaverbosity    = 0   # Cuba info messsages, from 0 to 3
 cubacores        = 0   # parallelization ( 0 = turn off)
 niter            = 20   # only for 2d and 3d cuhre integration
-vegasncallsRES   = 1000000 # only for res 4d vegas integration
-vegasncallsCT    = 10000000 # only for lo 8d vegas integration
-vegasncallsLO    = 10000000 # only for lo 7d vegas integration
-vegasncallsREAL  = 100000000 # only for real 10d vegas integration
-vegasncallsVIRT  = 10000000 # only for virt 8d vegas integration
+vegasncallsRES   = 100 #0000 # only for res 4d vegas integration
+vegasncallsCT    = 100 #00000 # only for lo 8d vegas integration
+vegasncallsLO    = 100 #00000 # only for lo 7d vegas integration
+vegasncallsREAL  = 100 #000000 # only for real 10d vegas integration
+vegasncallsVIRT  = 100 #00000 # only for virt 8d vegas integration
 
 # total or with lepton cuts
 makelepcuts = false

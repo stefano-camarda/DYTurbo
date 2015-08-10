@@ -80,6 +80,9 @@ public:
   //resonance mass and width (used for breit wigner unweighting)
   double rmass, rwidth;
 
+  // photon switch
+  bool useGamma;
+
   //integration boundaries
   double ylow;
   double yhigh;
