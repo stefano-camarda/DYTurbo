@@ -2,14 +2,14 @@
 void yline()
 {
   double costh = 0.;
-  double m = 80.385;
+  double m = opts.rmass;
   double qt = 5.;
   double y = 0.0;
-  int mode = 0;
+  int mode = 1;
 
   double y1 = -5;
   double y2 = 5;
-  int ny = 200;
+  int ny = 1000;
 
   ofstream yf("yline.C");
   yf << "{" << endl;
@@ -31,14 +31,14 @@ void yline()
 void mline()
 {
   double costh = 0.1;
-  double m = 80.385;
-  double qt = 5;
-  double y = 1.0;
-  int mode = 0;
+  double m = opts.rmass;
+  double qt = 50.;
+  double y =  (opts.ylow + opts.yhigh)/2.;
+  int mode = 1;
 
-  double m1 = 10;
-  double m2 = 200;
-  int nm = 100;
+  double m1 = opts.mlow;
+  double m2 =  opts.mhigh;
+  int nm = 200;
 
   ofstream mf("mline.C");
   mf << "{" << endl;
@@ -50,6 +50,42 @@ void mline()
       set(m, qt, y);//set global variables to m, qt, y
       genV4p(m, qt, y, 0.);//generate boson 4-momentum, with m, qt, y and phi=0
       mf << "gm->SetPoint(gm->GetN(), " << i*hm+m1 << ", " << resumm_(costh,m,qt,y,mode) << ");" << endl;
+    }
+  mf << "gm->Draw();" << endl;
+  mf << "}" << endl;
+}
+
+void mlinebw()
+{
+  //mline after bret wigner unweighting
+  int nocuts = (int)true;
+  double m1 = 0;
+  double m2 = 1;
+  int nm = 200;
+  setbounds(opts.mlow, opts.mhigh, 0, 10, opts.ylow, opts.yhigh);
+
+  ofstream mf("mlinebw.C");
+  mf << "{" << endl;
+  mf << "TGraph *gm = new TGraph();" << endl;
+  double hm=(m2-m1)/nm;
+  for(int i=0;i<=nm;i++)
+    {
+      double m = i*hm+m1;
+      double ymin = 0.;
+      double ymax = 1.;
+      //      rapintegrals_(ymin,ymax,m,nocuts);
+      double x[4];
+      double f[1];
+      const int ncomp = 1;
+      const int ndim = 4; //3; //2;
+      x[0] = m;
+      x[1] = 0.5;
+      x[2] = 0.5;
+      x[3] = 0.5;
+      //resintegrand2d(ndim, x, ncomp, f);
+      resintegrand3d(ndim, x, ncomp, f);
+      //void* userdata; int nvec; int core; double weight; int iter; resintegrand4d(ndim, x, ncomp, f, userdata, nvec, core, weight, iter);
+      mf << "gm->SetPoint(gm->GetN(), " << i*hm+m1 << ", " << f[0] << ");" << endl;
     }
   mf << "gm->Draw();" << endl;
   mf << "}" << endl;
@@ -91,14 +127,14 @@ void costhline()
 void ptline()
 {
   double costh = 0.;
-  double m = 80.385;
+  double m = opts.rmass;
   double qt = 5.;
   double y = 0.0;
-  int mode = 0;
+  int mode = 1;
 
-  double p1 = 0.1;
+  double p1 = 0.01;
   double p2 = 100;
-  int np = 1998;
+  int np = 1999;
 
   ofstream pf("ptline.C");
   pf << "{" << endl;
@@ -114,38 +150,6 @@ void ptline()
   pf << "gp->Draw();" << endl;
   pf << "}" << endl;
 }
-/*
-  //mline
-  int nocuts = (int)true;
-  double m1 = 0;
-  double m2 = 1;
-  int nm = 1;
-  setbounds(opts.mlow, opts.mhigh, 40, 60, opts.ylow, opts.yhigh);
-
-  ofstream mf("mline.C");
-  mf << "{" << endl;
-  mf << "TGraph *gm = new TGraph();" << endl;
-  double hm=(m2-m1)/nm;
-  for(int i=0;i<=nm;i++)
-    {
-      double m = i*hm+m1;
-      double ymin = 0.;
-      double ymax = 1.;
-      //      rapintegrals_(ymin,ymax,m,nocuts);
-      double x[3];
-      double f[1];
-      const int ncomp = 1;
-      const int ndim = 3;
-      x[0] = m;
-      x[1] = 0.5;
-      x[2] = 0.5;
-      //      resintegrand2d(ndim, x, ncomp, f);
-      resintegrand3d(ndim, x, ncomp, f);
-      mf << "gm->SetPoint(gm->GetN(), " << i*hm+m1 << ", " << f[0] << ");" << endl;
-    }
-  mf << "gm->Draw();" << endl;
-  mf << "}" << endl;
-*/
 
 //lines for finite order part
   //lines

@@ -3461,6 +3461,58 @@ c
      \              )
                sigmaintijp(-3,3,I1,I2)=sigmaintijp(-2,2,I1,I2)
                sigmaintijp(-5,5,I1,I2)=sigmaintijp(-2,2,I1,I2)
+c     negative
+               sigmaintijm(1,-1,I1,I2)=facZ*( 
+     \              ( (gLZu**2+gRZu**2)*(fLZ**2+fRZ**2) 
+     \              +1/4d0*(4d0*pi*aem)**2*(eequ)**2*chi2 
+     \              -1/2d0*(4d0*pi*aem)*eequ*(gLZu+gRZu)*(fLZ+fRZ)*chi1)
+!     
+     \              *(Ith0m(I1,I2)+Ith2m(I1,I2))
+     \              -  ( (gLZu**2-gRZu**2)*(fLZ**2-fRZ**2)
+     \              -1/2d0*(4d0*pi*aem)*eequ*(gLZu-gRZu)*(fLZ-fRZ)*chi1)
+!     
+     \              *(2d0*Ith1m(I1,I2)) 
+     \              )
+               sigmaintijm(4,-4,I1,I2)=sigmaintijm(1,-1,I1,I2)
+               sigmaintijm(-1,1,I1,I2)=facZ*( 
+     \              ( (gLZu**2+gRZu**2)*(fLZ**2+fRZ**2) 
+     \              +1/4d0*(4d0*pi*aem)**2*(eequ)**2*chi2 
+     \              -1/2d0*(4d0*pi*aem)*eequ*(gLZu+gRZu)*(fLZ+fRZ)*chi1)
+!     
+     \              *(Ith0m(I1,I2)+Ith2m(I1,I2))
+     \              +  ( (gLZu**2-gRZu**2)*(fLZ**2-fRZ**2)
+     \              -1/2d0*(4d0*pi*aem)*eequ*(gLZu-gRZu)*(fLZ-fRZ)*chi1)
+!     
+     \              *(2d0*Ith1m(I1,I2)) 
+     \              )
+               sigmaintijm(-4,4,I1,I2)=sigmaintijm(-1,1,I1,I2)
+c     
+               sigmaintijm(2,-2,I1,I2)=facZ*( 
+     \              ( (gLZd**2+gRZd**2)*(fLZ**2+fRZ**2) 
+     \              +1/4d0*(4d0*pi*aem)**2*(eeqd)**2*chi2 
+     \              -1/2d0*(4d0*pi*aem)*eeqd*(gLZd+gRZd)*(fLZ+fRZ)*chi1)
+!     
+     \              *(Ith0m(I1,I2)+Ith2m(I1,I2))
+     \              -  ( (gLZd**2-gRZd**2)*(fLZ**2-fRZ**2)
+     \              -1/2d0*(4d0*pi*aem)*eeqd*(gLZd-gRZd)*(fLZ-fRZ)*chi1)
+!     
+     \              *(2d0*Ith1m(I1,I2)) 
+     \              )
+               sigmaintijm(3,-3,I1,I2)=sigmaintijm(2,-2,I1,I2)
+               sigmaintijm(5,-5,I1,I2)=sigmaintijm(2,-2,I1,I2)
+               sigmaintijm(-2,2,I1,I2)=facZ*( 
+     \              ( (gLZd**2+gRZd**2)*(fLZ**2+fRZ**2) 
+     \              +1/4d0*(4d0*pi*aem)**2*(eeqd)**2*chi2 
+     \              -1/2d0*(4d0*pi*aem)*eeqd*(gLZd+gRZd)*(fLZ+fRZ)*chi1)
+!     
+     \              *(Ith0m(I1,I2)+Ith2m(I1,I2))
+     \              +  ( (gLZd**2-gRZd**2)*(fLZ**2-fRZ**2)
+     \              -1/2d0*(4d0*pi*aem)*eeqd*(gLZd-gRZd)*(fLZ-fRZ)*chi1)
+!     
+     \              *(2d0*Ith1m(I1,I2)) 
+     \              )
+               sigmaintijm(-3,3,I1,I2)=sigmaintijm(-2,2,I1,I2)
+               sigmaintijm(-5,5,I1,I2)=sigmaintijm(-2,2,I1,I2)
             endif      
          enddo
       enddo
