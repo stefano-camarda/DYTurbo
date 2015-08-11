@@ -21,7 +21,7 @@ PDFset       = 92
 PDFmember    = 0              # set,member (native   PDFs)
 LHAPDFset    = CT10nnlo
 LHAPDFmember = 0              # set, member (LHAPDFs)
-outputfile   = LHC7-Z-nnlo    # outputfile
+outputfile   = default        # outputfile
 itmxToFile   = 0              # number of last itmx to write on file
 
 
@@ -63,8 +63,8 @@ doLO   = true
 
 # Cuba settings
 cubaverbosity    = 0   # Cuba info messsages, from 0 to 3
-cubacores        = 0   # parallelization ( 0 = turn off)
-niter            = 1   # only for 2d and 3d cuhre integration
+cubacores        = 8   # parallelization ( 0 = turn off)
+niter            = 2   # only for 2d and 3d cuhre integration
 vegasncallsRES   = 100 #0000 # only for res 4d vegas integration
 vegasncallsCT    = 100 #00000 # only for lo 8d vegas integration
 vegasncallsLO    = 100 #00000 # only for lo 7d vegas integration

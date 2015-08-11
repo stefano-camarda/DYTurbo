@@ -2,7 +2,7 @@
 #include <LHAPDF/LHAPDF.h>
 #include <gsl/gsl_integration.h>
 #include <gsl/gsl_math.h>
-#include <ctime>
+#include <sys/time.h>
 #include <cuba.h>
 #include <iomanip>
 #include "config.h"
@@ -25,7 +25,9 @@ void test_resum_speed(double costh,double m,double qt,double y,int mode);
 void print_head();
 void print_line();
 void print_qtbin(vector<double>::iterator it_qt);
-void print_result(double val, double err, clock_t btime , clock_t etime);
+void print_result(double val, double err, double btime , double etime);
+
+double clock_real();
 
 int main( int argc , const char * argv[])
 {
@@ -43,7 +45,7 @@ int main( int argc , const char * argv[])
   cout << endl;
   cout << endl;
 
-  clock_t begin_time, end_time;
+  double begin_time, end_time;
 
   /***********************************/
   //initialise settings
@@ -59,10 +61,14 @@ int main( int argc , const char * argv[])
   bins.readfromfile(conf_file.c_str());
   //force number of cores to 0 (no parallelization)
   cubacores(opts.cubacores,1000000); // < move this to cubainit
-  //To do: print out EW parameters and other settings
+  ///@todo: print out EW parameters and other settings
   // just a check
   opts.dumpAll();
   //return 0;
+  // decide what terms to calculate
+  opts.doLO   = (opts.doLO   && opts.order == 1);
+  opts.doREAL = (opts.doREAL && opts.order == 2);
+  opts.doVIRT = (opts.doVIRT && opts.order == 2);
   /***********************************/
 
   double costh, m, qt, y;
@@ -141,10 +147,6 @@ int main( int argc , const char * argv[])
 
   // return 0;
 
-  // decide what terms to calculate
-  opts.doLO   = (opts.doLO   && opts.order == 1);
-  opts.doREAL = (opts.doREAL && opts.order == 2);
-  opts.doVIRT = (opts.doVIRT && opts.order == 2);
   // Cuba integration
   cout << endl << "Start integration of";
   if (opts.doRES  ) cout << " resummation";
@@ -155,22 +157,22 @@ int main( int argc , const char * argv[])
   cout << endl;
 
   print_head();
-  begin_time = clock();
+  begin_time = clock_real();
   for (vector<double>::iterator qit = bins.qtbins.begin(); qit != bins.qtbins.end()-1; qit++)
     {
       //Set integration boundaries
       totval=toterror2=0;
       setbounds(opts.mlow, opts.mhigh, *qit, *(qit+1), opts.ylow, opts.yhigh);
       print_qtbin(qit);
-      clock_t bb_time = clock();
+      double  bb_time = clock_real();
 
       // resummation
       if (opts.doRES) {
-          clock_t b_time = clock();
+          double b_time = clock_real();
           if (opts.int2d) integr2d(value, error);
           if (opts.int3d) integr3d(value, error);
           if (opts.int4d) integr4d(value, error);
-          clock_t e_time = clock();
+          double e_time = clock_real();
           value = value / (*(qit+1) - *qit);
           error = error / (*(qit+1) - *qit);
           print_result(value,error,b_time,e_time);
@@ -179,9 +181,9 @@ int main( int argc , const char * argv[])
       }
       // counter term
       if (opts.doCT) {
-          clock_t b_time = clock();
+          double b_time = clock_real();
           ctintegr(value, error);
-          clock_t e_time = clock();
+          double e_time = clock_real();
           value = value / (*(qit+1) - *qit);
           error = error / (*(qit+1) - *qit);
           print_result(value,error,b_time,e_time);
@@ -190,9 +192,9 @@ int main( int argc , const char * argv[])
       }
       // leading order
       if (opts.doLO) {
-          clock_t b_time = clock();
+          double b_time = clock_real();
           lowintegr(value, error);
-          clock_t e_time = clock();
+          double e_time = clock_real();
           value = value / (*(qit+1) - *qit);
           error = error / (*(qit+1) - *qit);
           print_result(value,error,b_time,e_time);
@@ -201,9 +203,9 @@ int main( int argc , const char * argv[])
       }
       // real part
       if (opts.doREAL) {
-          clock_t b_time = clock();
+          double b_time = clock_real();
           realintegr(value, error);
-          clock_t e_time = clock();
+          double e_time = clock_real();
           value = value / (*(qit+1) - *qit);
           error = error / (*(qit+1) - *qit);
           print_result(value,error,b_time,e_time);
@@ -212,9 +214,9 @@ int main( int argc , const char * argv[])
       }
       // virt part
       if (opts.doVIRT) {
-          clock_t b_time = clock();
+          double b_time = clock_real();
           virtintegr(value, error);
-          clock_t e_time = clock();
+          double e_time = clock_real();
           value = value / (*(qit+1) - *qit);
           error = error / (*(qit+1) - *qit);
           print_result(value,error,b_time,e_time);
@@ -222,27 +224,27 @@ int main( int argc , const char * argv[])
           toterror2 += error*error;
       }
       // total
-      clock_t ee_time = clock();
+      double ee_time = clock_real();
       print_result (totval, sqrt(toterror2), bb_time, ee_time);
       cout << endl;
     }
   print_line();
-  end_time = clock();
+  end_time = clock_real();
   cout << endl;
-  cout << setw(10) << "time "  << setw(15) << float(end_time - begin_time) / CLOCKS_PER_SEC << endl;
+  cout << setw(10) << "time "  << setw(15) << float(end_time - begin_time) << endl;
 
 
   return 0;
 }
 
 void test_resum_speed(double costh,double m,double qt,double y,int mode){
-    clock_t begin_time, end_time;
+    double begin_time, end_time;
     double value;
-    begin_time = clock();
+    begin_time = clock_real();
     value = resumm_(costh,m,qt,y,mode);
-    end_time = clock();
+    end_time = clock_real();
     cout << setw(10) << "Result" << setw(15) << value
-         << setw(10) << "time "  << setw(15) << float(end_time - begin_time) / CLOCKS_PER_SEC << endl;
+         << setw(10) << "time "  << setw(15) << float(end_time - begin_time) << endl;
     return;
 }
 
@@ -275,14 +277,20 @@ void print_qtbin(vector<double>::iterator it_qt){
    cout << "| " << setw(5) << *it_qt << " - " << setw(5) << *(it_qt+1) << " | " <<  flush; 
 }
 
-void print_result(double val, double err, clock_t btime , clock_t etime){
+void print_result(double val, double err, double btime , double etime){
     // 10 + 4 + 10 + 1 + 10 + 1 + 3 = 39
     cout << setw(10) << val
          << setw(4)  << "+/-"
          << setw(10) << err
          << "("
-         << setw(10) << float(etime - btime) / CLOCKS_PER_SEC
+         << setw(10) << float(etime - btime)
          << ")"
          << " | "
          << flush;
+}
+
+double clock_real(){
+    struct timeval now;
+    gettimeofday(&now, NULL);
+    return now.tv_sec+(now.tv_usec/1000000.0); // in sec with micro second precission
 }
