@@ -538,8 +538,8 @@ c******************************************
       implicit none
       double precision ymin, ymax
       
-      integer approxpdf,pdfintervals,rapintervals
-      common/opts/approxpdf,pdfintervals,rapintervals
+      integer approxpdf,pdfintervals
+      common/opts/approxpdf,pdfintervals
 
       include 'gauss.inc' 
 
@@ -559,7 +559,7 @@ c******************************************
       
 c     output      
       integer intervals
-      parameter (intervals=10)
+      parameter (intervals=20)
       complex *16 cfpy(136,136,4*intervals)
       complex *16 cfmy(136,136,4*intervals)
       common /cachedrapint/ cfpy,cfmy

@@ -3039,7 +3039,7 @@ c nodes for the gaussian quadrature for the double Mellin inversion
 
 c     cached values from cacheyrapint
       integer intervals
-      parameter (intervals=10)
+      parameter (intervals=20)
       complex *16 cfpy(136,136,4*intervals)
       complex *16 cfmy(136,136,4*intervals)
       common /cachedrapint/ cfpy,cfmy
