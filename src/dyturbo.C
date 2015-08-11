@@ -168,7 +168,7 @@ int main( int argc , const char * argv[])
       // resummation
       if (opts.doRES) {
           clock_t b_time = clock();
-          if (opts.int2d) integr2d(value, error);
+	  if (opts.int2d) {cacheyrapint_(opts.ylow, opts.yhigh); integr2d(value, error);}
           if (opts.int3d) integr3d(value, error);
           if (opts.int4d) integr4d(value, error);
           clock_t e_time = clock();
