@@ -145,6 +145,7 @@ void settings::readfromfile(const char * fname){
     timeprofile     = in.GetBool   ( "timeprofile"     ); //false   # debug       and      time       profile resummation integration
     verbose         = in.GetBool   ( "verbose"         ); //false   # debug       and      time       profile costh       phi_lep         integration
     opts_.approxpdf_ = in.GetNumber ( "opts_approxpdf" ); //0
+    opts_.pdfintervals_ = in.GetNumber ( "opts_pdfintervals" ); //100
 
 
     return ;
@@ -251,6 +252,7 @@ void settings::dumpAll(){
         dumpB("timeprofile      ", timeprofile      );
         dumpB("verbose          ", verbose          );
         dumpI("opts_.approxpdf_ ", opts_.approxpdf_ );
+	dumpI("opts_.pdfintervals_", opts_.pdfintervals_);
     }
 
     if (print_masses){
