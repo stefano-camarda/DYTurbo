@@ -533,3 +533,58 @@ c     More settings of set physics constants, (should do only once in init)
 c******************************************
 
       end
+
+      subroutine cacheyrapint(ymin,ymax)
+      implicit none
+      double precision ymin, ymax
+      
+      integer approxpdf,pdfintervals,rapintervals
+      common/opts/approxpdf,pdfintervals,rapintervals
+
+      include 'gauss.inc' 
+
+      double precision ax1,ax2,xx1,xx2
+      integer nmax1,nmax2
+      common /cxx/ax1,ax2,xx1,xx2,nmax1,nmax2
+
+      double precision  WN(136)
+      COMMON /WEIGHTS2/ WN      
+
+      complex*16 CCp,CCm, Np(136),Nm(136)
+      common /MOMS2/ Np,Nm,CCP,CCm
+
+      integer I1,I2
+      integer i,j
+      double precision y,xc,xm,ya,yb
+      
+c     output      
+      integer intervals
+      parameter (intervals=10)
+      complex *16 cfpy(136,136,4*intervals)
+      complex *16 cfmy(136,136,4*intervals)
+      common /cachedrapint/ cfpy,cfmy
+      
+      NMAX1 = 88
+      NMAX2 = 88
+
+      do i=1,intervals
+         ya = ymin+(ymax-ymin)*(i-1)/intervals
+         yb = ymin+(ymax-ymin)*i/intervals
+         xc=0.5d0*(ya+yb)
+         xm=0.5d0*(yb-ya)
+         do j=1,4
+            y=xc+xm*xxx4(j)
+      do I1 = 1, NMAX1          !136
+         do I2 = 1, NMAX2       !136
+            cfpy(I1,I2,j+(i-1)*4)=exp((-Np(I1)+Np(I2))*y)
+     .           *WN(I1)*WN(I2)*www4(j)*xm
+            cfmy(I1,I2,j+(i-1)*4)=exp((-Np(I1)+Nm(I2))*y)
+     .           *WN(I1)*WN(I2)*www4(j)*xm
+         enddo
+      enddo
+
+      enddo
+      enddo
+      
+      return
+      end
