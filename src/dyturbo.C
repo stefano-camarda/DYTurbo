@@ -47,8 +47,7 @@ int main( int argc , const char * argv[])
 
   /***********************************/
   //initialise settings
-  //opts.init();
-  string conf_file = "input/CT10nlo_settings.in";
+  string conf_file;
   if (argc>1) {
       conf_file = argv[1];
   }
@@ -59,10 +58,10 @@ int main( int argc , const char * argv[])
   //bins.init();
   bins.readfromfile(conf_file.c_str());
   //force number of cores to 0 (no parallelization)
-  cubacores(opts.cubacores,1000000);
+  cubacores(opts.cubacores,1000000); // < move this to cubainit
   //To do: print out EW parameters and other settings
   // just a check
-  //opts.dumpAll();
+  opts.dumpAll();
   //return 0;
   /***********************************/
 

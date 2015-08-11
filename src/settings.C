@@ -81,7 +81,7 @@ void settings::init()
   opts_.approxpdf_ = 0;
 }
 
-void settings::readfromfile(const char * fname){
+void settings::readfromfile(const string fname){
     //read input settings from file
     InputParser in(fname);
     sroot          = in.GetNumber ( "sroot"          ); //7e3
@@ -338,7 +338,7 @@ bool cuts(double p3[4], double p4[4])
   return true;
 }
 
-void binning::readfromfile(const char * fname){
+void binning::readfromfile(const string fname){
     InputParser in(fname);
     qtbins.clear();
     in.GetVectorDouble("qtbins",qtbins);
@@ -444,7 +444,21 @@ InputParser::InputParser( string _filename, string _charset, string _white):
     CclosAr  ( _charset[4] ),
     Swhite   ( _white      )
 {
-    parse_file();
+    // parse default
+    try {
+        parse_file("input/default.in");
+    } catch (invalid_argument &e1){
+        try {
+            parse_file("default.in");
+        } catch (invalid_argument &e2){
+            throw invalid_argument( string( "Can not load default settings:\n")
+                    + string(e1.what()) + string("\n")
+                    + string(e2.what()) + string("\n")
+                    );
+        }
+    }
+    // parse custom settings
+    if (filename.compare("")!=0) parse_file(filename);
 }
 
 
@@ -500,11 +514,12 @@ void InputParser::GetVectorDouble(string name, vector<double> &vec){
 }
 
 
-void InputParser::parse_file(){
-    ifstream fstrm(filename.c_str());
+void InputParser::parse_file(const string fname){
+    ifstream fstrm(fname.c_str());
+    if ( ! fstrm.good() ) throw invalid_argument( string("Uknown file name ") + fname );
     string line;
     // line by line
-    while(getline(fstrm,line))   {
+    while(getline(fstrm,line)) {
         size_t pos = 0;
         // check for comments
         pos = line.find(Ccommnt,pos);
