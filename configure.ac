@@ -71,6 +71,7 @@ if test x$cubalib == x; then
   ./install-cuba
 fi
 
+AC_MSG_RESULT([Using ${PWD}/Cuba-4.2 ])
 CUBA_LDFLAGS="-L ${PWD}/Cuba-4.2 -lcuba"
 AC_SUBST(CUBA_LDFLAGS)
 
@@ -99,6 +100,14 @@ AC_SUBST(CUBA_LDFLAGS)
 #  AC_SUBST(ROOT_LDFLAGS)
 #  AC_SUBST(ROOT_LIBS)
 #fi
+
+AC_ARG_ENABLE([debug],
+  [AC_HELP_STRING(--enable-debug, [Add debug flags. (default=no)])])
+if test x$enable_debug == xyes; then
+  echo "Adding debug symbols."
+  FFLAGS="$FFLAGS -ggdb"
+  CXXFLAGS="$CXXFLAGS -ggdb"
+fi
 
 
 # Check for trapFPE flag
