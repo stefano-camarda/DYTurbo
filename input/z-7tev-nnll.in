@@ -37,8 +37,8 @@ mlow  = 66.
 mhigh = 116.
 
 # type of integration
-int2d = false
-int3d = true
+int2d = true
+int3d = false
 int4d = false
 
 # term switches
@@ -84,6 +84,8 @@ verbose     = false  # debug and time profile costh phi_lep integration
 # Set to 0 to use exact PDFs and straight line contour in the complex plane for the Mellin inversion
 opts_approxpdf = 0
 
+# number of intervals for integration of PDF moments, relevant only for opts_approxpdf = 0
+opts_pdfintervals = 100
 
 # binning
 
