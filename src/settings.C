@@ -145,7 +145,7 @@ void settings::readfromfile(const char * fname){
     timeprofile     = in.GetBool   ( "timeprofile"     ); //false   # debug       and      time       profile resummation integration
     verbose         = in.GetBool   ( "verbose"         ); //false   # debug       and      time       profile costh       phi_lep         integration
     opts_.approxpdf_ = in.GetNumber ( "opts_approxpdf" ); //0
-    useGamma        = in.GetBool ( "useGamma" );//
+    useGamma         = in.GetBool ( "useGamma" );//
 
 
     return ;

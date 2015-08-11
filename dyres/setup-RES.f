@@ -403,7 +403,7 @@ C
        r1=re
 
 
-       q1=-1
+C       q1=-1
 !       q1=0 !switch off the photon
 
        phot=q1
