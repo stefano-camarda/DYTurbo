@@ -40,8 +40,10 @@ cd run_dir
 date
 # cp all resbos stuff
 CP DYTURBOROOTDIR/bin/dyturbo .
+CP DYTURBOROOTDIR/input/default.in .
 CP DYTURBOINPUTFILE input.in
 /usr/bin/time -v ./dyturbo input.in
+CP results.root OUTDIR/JOBNAME.root
 
 
 exit 0
