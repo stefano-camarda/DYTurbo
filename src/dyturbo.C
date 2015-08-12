@@ -253,31 +253,31 @@ void test_resum_speed(double costh,double m,double qt,double y,int mode){
     value = resumm_(costh,m,qt,y,mode);
     end_time = clock_real();
     cout << setw(10) << "Result" << setw(15) << value
-         << setw(10) << "time "  << setw(15) << float(end_time - begin_time) << endl;
+         << setw(10) << "time "  << setw(15) << float(end_time - begin_time) << "s" << endl;
     return;
 }
 
 void print_head(){
     print_line();
     cout << "| " << setw(13) << "qt bin" << " | ";
-    if (opts.doRES ) cout << setw(36) << "resummed "      << " | ";
-    if (opts.doCT  ) cout << setw(36) << "counter term "  << " | ";
-    if (opts.doREAL) cout << setw(36) << "real part "     << " | ";
-    if (opts.doVIRT) cout << setw(36) << "virtual part "  << " | ";
-    if (opts.doLO  ) cout << setw(36) << "Z+j LO "        << " | ";
-    if (true       ) cout << setw(36) << "TOTAL "          << " | ";
+    if (opts.doRES ) cout << setw(38) << "resummed "      << " | ";
+    if (opts.doCT  ) cout << setw(38) << "counter term "  << " | ";
+    if (opts.doREAL) cout << setw(38) << "real part "     << " | ";
+    if (opts.doVIRT) cout << setw(38) << "virtual part "  << " | ";
+    if (opts.doLO  ) cout << setw(38) << "Z+j LO "        << " | ";
+    if (true       ) cout << setw(38) << "TOTAL "          << " | ";
     cout << endl;
     print_line();
 
 };
 void print_line(){
     int N = 18;
-    if (opts.doRES ) N += 39;
-    if (opts.doCT  ) N += 39;
-    if (opts.doREAL) N += 39;
-    if (opts.doVIRT) N += 39;
-    if (opts.doLO  ) N += 39;
-    if (true       ) N += 39;
+    if (opts.doRES ) N += 41;
+    if (opts.doCT  ) N += 41;
+    if (opts.doREAL) N += 41;
+    if (opts.doVIRT) N += 41;
+    if (opts.doLO  ) N += 41;
+    if (true       ) N += 41;
     cout<<string(N,'-').c_str() <<endl;
 }
 
@@ -287,13 +287,13 @@ void print_qtbin(vector<double>::iterator it_qt){
 }
 
 void print_result(double val, double err, double btime , double etime){
-    // 10 + 4 + 10 + 1 + 10 + 1 + 3 = 39
+    // 10 + 4 + 10 + 2 + 10 + 2 + 3 = 39
     cout << setw(10) << val
          << setw(4)  << "+/-"
          << setw(10) << err
-         << "("
+         << " ("
          << setw(10) << float(etime - btime)
-         << ")"
+         << "s)"
          << " | "
          << flush;
 }
