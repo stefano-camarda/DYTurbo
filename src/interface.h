@@ -20,6 +20,7 @@ extern "C" {
     void boost_(double& mass, double p1[],double p_in[], double p_out[]);
 
     void rapintegrals_(double &ymin,double &ymax, double& mass, int& nocuts);
+    void cacheyrapint_(double &ymin,double &ymax);
 
     // fortran common spaces
 
@@ -102,7 +103,8 @@ extern "C" {
 
     // controls
     extern struct {
-        int approxpdf_;
+      int approxpdf_;
+      int pdfintervals_;
     } opts_;
 
     extern struct {

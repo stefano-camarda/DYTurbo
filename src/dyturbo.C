@@ -169,7 +169,10 @@ int main( int argc , const char * argv[])
       // resummation
       if (opts.doRES) {
           double b_time = clock_real();
-          if (opts.int2d) integr2d(value, error);
+          if (opts.int2d) {
+              cacheyrapint_(opts.ylow, opts.yhigh);
+              integr2d(value, error);
+          }
           if (opts.int3d) integr3d(value, error);
           if (opts.int4d) integr4d(value, error);
           double e_time = clock_real();

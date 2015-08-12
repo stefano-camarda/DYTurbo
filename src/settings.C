@@ -144,8 +144,9 @@ void settings::readfromfile(const string fname){
     qtrec_kt0       = in.GetBool   ( "qtrec_kt0"       ); //true
     timeprofile     = in.GetBool   ( "timeprofile"     ); //false   # debug       and      time       profile resummation integration
     verbose         = in.GetBool   ( "verbose"         ); //false   # debug       and      time       profile costh       phi_lep         integration
-    opts_.approxpdf_ = in.GetNumber ( "opts_approxpdf" ); //0
-    useGamma         = in.GetBool ( "useGamma" );//
+    useGamma        = in.GetBool ( "useGamma" );//
+    opts_.approxpdf_    = in.GetNumber ( "opts_approxpdf" ); //0
+    opts_.pdfintervals_ = in.GetNumber ( "opts_pdfintervals" ); //100
 
 
     return ;
@@ -218,42 +219,43 @@ void settings::dumpAll(){
 
     if (print_inputs) {
         printf("Input settings:\n");
-        dumpD("rmass            ", rmass            );
-        dumpD("rwidth           ", rwidth           );
-        dumpD("ylow             ", ylow             );
-        dumpD("yhigh            ", yhigh            );
-        dumpD("mlow             ", mlow             );
-        dumpD("mhigh            ", mhigh            );
-        dumpB("int2d            ", int2d            );
-        dumpB("int3d            ", int3d            );
-        dumpB("int4d            ", int4d            );
-        dumpB("doRES            ", doRES            );
-        dumpB("doCT             ", doCT             );
-        dumpB("doREAL           ", doREAL           );
-        dumpB("doVIRT           ", doVIRT           );
-        dumpB("doLO             ", doLO             );
-        dumpI("cubaverbosity    ", cubaverbosity    );
-        dumpI("cubacores        ", cubacores        );
-        dumpI("niter            ", niter            );
-        dumpD("vegasncallsRES   ", vegasncallsRES   );
-        dumpD("vegasncallsCT    ", vegasncallsCT    );
-        dumpD("vegasncallsLO    ", vegasncallsLO    );
-        dumpD("vegasncallsREAL  ", vegasncallsREAL  );
-        dumpD("vegasncallsVIRT  ", vegasncallsVIRT  );
-        dumpB("makelepcuts      ", makelepcuts      );
-        dumpB("cubaint          ", cubaint          );
-        dumpB("trapezint        ", trapezint        );
-        dumpB("quadint          ", quadint          );
-        dumpI("suavepoints      ", suavepoints      );
-        dumpI("nphitrape        ", nphitrape        );
-        dumpI("quadnphi         ", quadnphi         );
-        dumpI("ncstart          ", ncstart          );
-        dumpB("qtrec_naive      ", qtrec_naive      );
-        dumpB("qtrec_cs         ", qtrec_cs         );
-        dumpB("qtrec_kt0        ", qtrec_kt0        );
-        dumpB("timeprofile      ", timeprofile      );
-        dumpB("verbose          ", verbose          );
-        dumpI("opts_.approxpdf_ ", opts_.approxpdf_ );
+        dumpD("rmass           ", rmass               );
+        dumpD("rwidth          ", rwidth              );
+        dumpD("ylow            ", ylow                );
+        dumpD("yhigh           ", yhigh               );
+        dumpD("mlow            ", mlow                );
+        dumpD("mhigh           ", mhigh               );
+        dumpB("int2d           ", int2d               );
+        dumpB("int3d           ", int3d               );
+        dumpB("int4d           ", int4d               );
+        dumpB("doRES           ", doRES               );
+        dumpB("doCT            ", doCT                );
+        dumpB("doREAL          ", doREAL              );
+        dumpB("doVIRT          ", doVIRT              );
+        dumpB("doLO            ", doLO                );
+        dumpI("cubaverbosity   ", cubaverbosity       );
+        dumpI("cubacores       ", cubacores           );
+        dumpI("niter           ", niter               );
+        dumpD("vegasncallsRES  ", vegasncallsRES      );
+        dumpD("vegasncallsCT   ", vegasncallsCT       );
+        dumpD("vegasncallsLO   ", vegasncallsLO       );
+        dumpD("vegasncallsREAL ", vegasncallsREAL     );
+        dumpD("vegasncallsVIRT ", vegasncallsVIRT     );
+        dumpB("makelepcuts     ", makelepcuts         );
+        dumpB("cubaint         ", cubaint             );
+        dumpB("trapezint       ", trapezint           );
+        dumpB("quadint         ", quadint             );
+        dumpI("suavepoints     ", suavepoints         );
+        dumpI("nphitrape       ", nphitrape           );
+        dumpI("quadnphi        ", quadnphi            );
+        dumpI("ncstart         ", ncstart             );
+        dumpB("qtrec_naive     ", qtrec_naive         );
+        dumpB("qtrec_cs        ", qtrec_cs            );
+        dumpB("qtrec_kt0       ", qtrec_kt0           );
+        dumpB("timeprofile     ", timeprofile         );
+        dumpB("verbose         ", verbose             );
+        dumpI("approxpdf       ", opts_.approxpdf_    );
+        dumpI("pdfintervals    ", opts_.pdfintervals_ );
     }
 
     if (print_masses){
