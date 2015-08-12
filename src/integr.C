@@ -29,7 +29,6 @@ double p3[4];
 
 //CS framework
 double kap1[4];
-double sqrts = 7000.;
 double xax[3];
 double yax[3];
 double zax[3];
@@ -121,12 +120,12 @@ void genV4p(double m, double qt, double y, double phi)
       }
   
   double zeta1=1./m2/2.*(m2+2.*(pV[0]*kt1+pV[1]*kt2)+sqrt(pow((m2+2.*(pV[0]*kt1+pV[1]*kt2)),2)-4.*mt2*(pow(kt1,2)+pow(kt2,2))));
-  double qP1=(pV[3]-pV[2])*sqrts/2.;
-  double qP2=(pV[3]+pV[2])*sqrts/2.;
-  kap1[3]=sqrts/2.*(zeta1*m2/2./qP1+(pow(kt1,2)+pow(kt2,2))/zeta1*qP1/m2/pow(sqrts,2)*2.);
+  double qP1=(pV[3]-pV[2])*energy_.sroot_/2.;
+  double qP2=(pV[3]+pV[2])*energy_.sroot_/2.;
+  kap1[3]=energy_.sroot_/2.*(zeta1*m2/2./qP1+(pow(kt1,2)+pow(kt2,2))/zeta1*qP1/m2/pow(energy_.sroot_,2)*2.);
   kap1[0]=kt1;
   kap1[1]=kt2;
-  kap1[2]=sqrts/2.*(zeta1*m2/2./qP1-(pow(kt1,2)+pow(kt2,2))/zeta1*qP1/m2/pow(sqrts,2)*2.);
+  kap1[2]=energy_.sroot_/2.*(zeta1*m2/2./qP1-(pow(kt1,2)+pow(kt2,2))/zeta1*qP1/m2/pow(energy_.sroot_,2)*2.);
 
   zax[0] = 0.;
   zax[1] = 0.;
@@ -724,14 +723,14 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
   double dexpy=exp(y);
   double dexpmy=exp(-y);
   double cosh2y=pow(((dexpy+dexpmy)*0.5),2);
-  double qtmax=sqrt(pow((pow(sqrts,2)+m2),2)/(4.*pow(sqrts,2)*cosh2y) - m2);
+  double qtmax=sqrt(pow((pow(energy_.sroot_,2)+m2),2)/(4.*pow(energy_.sroot_,2)*cosh2y) - m2);
   double qtmin=0.1;
   double qt=qtmin+qtmax*x[2];
   jac=jac*(qtmax);
   */
 
   //integrate between qtmin and qtmax
-  double qtmn = max(0.1, qtmin);
+  double qtmn = max(0.02, qtmin);
   double qt=qtmn+(qtmax-qtmn)*x[1];
   jac=jac*(qtmax-qtmn);
 
@@ -743,9 +742,16 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
 
   //Perform quadrature rule integration in rapidity and nested costh integration
   int nocuts = !opts.makelepcuts;
+
+  //Limit y boundaries to the kinematic limit in y
+  double ylim = 0.5*log(pow(energy_.sroot_,2)/m2);
+  double ymn = min(max(-ylim, ymin),ylim);
+  double ymx = max(min(ylim, ymax),-ylim);
+
   clock_t ybt, yet;
   ybt = clock();
-  rapintegrals_(ymin,ymax,m,nocuts);
+  //  rapintegrals_(ymin,ymax,m,nocuts);
+  rapintegrals_(ymn,ymx,m,nocuts);
   yet = clock();
   
   set(m, qt, 0);
@@ -758,7 +764,7 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
 
   //Call to the resummation part
   double costh = 0;
-  double y = 0.5*(ymax+ymin); //needed to get the correct IFIT index of the approximate PDF
+  double y = 0.5*(ymx+ymn); //needed to get the correct IFIT index of the approximate PDF
   int mode = 2;
 
   clock_t rbt = clock();
@@ -801,34 +807,76 @@ integrand_t resintegrand3d(const int &ndim, const double x[], const int &ncomp, 
   breitw_(x1,wsqmin,wsqmax,opts.rmass,opts.rwidth,m2,wt);
   double m=sqrt(m2);
   jac=jac*wt;
+
+  /*
+  //split the mass in 3 pieces,
+  //and unweight the breit wigner only from -5 width to +5 width
+  //no sense, I have to split the mass before entering the integration
+  //and set breit wigner unweighting or not
+  double bwmn = opts.rmass -5*opts.rwidth;
+  double bwmx = opts.rmass +5*opts.rwidth;
+  double bwmnsq = pow(bwmn,2);
+  double bwmxsq = pow(bwmx,2);
+  double m,m2,wt;
+  double xl = 0.25;
+  double xu = 0.75;
+  if (x[0] < xl)
+    {
+      double x1=x[0]/(xl-0.);
+      m=mmin+(bwmn-mmin)*x[0];
+      jac=jac*(bwmn-mmin)/(xl-0.);
+    }
+  else if (x[0] > xu)
+    {
+      double x1=(x[0]-xu)/(1.-xu);
+      m=bwmx+(mmax-bwmx)*x1;
+      jac=jac*(mmax-bwmx)/(1.-xu);
+    }
+  else
+    {
+      double xbw=(x[0]-xl)/(xu-xl);
+      breitw_(xbw,bwmnsq,bwmxsq,opts.rmass,opts.rwidth,m2,wt);
+      m=sqrt(m2);
+      wt=wt/(xu-xl);
+      jac=jac*wt;
+    }
+  */
+
+  //  double m=mmin+(mmax-mmin)*x[0];
+  //  jac=jac*(mmax-mmin);
+
   //Dynamic scale (not implemented yet)
   //if(dynamicscale) call scaleset(m2)
 
-  //integrate up to the kinematic limit in y
-  /*
-  double sqrts = 7000.;
-  double ymax=0.5*log(pow(sqrts,2)/m2);
-  double y=-ymax+2.*ymax*x[1];
-  jac=jac*2.*ymax;
-  */
+  //Limit y boundaries to the kinematic limit in y
+  double ylim = 0.5*log(pow(energy_.sroot_,2)/m2);
+  double ymn = min(max(-ylim, ymin),ylim);
+  double ymx = max(min(ylim, ymax),-ylim);
 
   //integrate between ymin and ymax
-  double y=ymin+(ymax-ymin)*x[1];
-  jac=jac*(ymax-ymin);
+  double y=ymn+(ymx-ymn)*x[1];
+  jac=jac*(ymx-ymn);
+
+  /*
+  //Integrate the full phase space
+  double y=-ylim+2.*ylim*x[1];
+  jac=jac*2.*ylim;
+  */
+
 
   //integrate up to the qT kinematical limit
   /*
   double dexpy=exp(y);
   double dexpmy=exp(-y);
   double cosh2y=pow(((dexpy+dexpmy)*0.5),2);
-  double qtmax=sqrt(pow((pow(sqrts,2)+m2),2)/(4.*pow(sqrts,2)*cosh2y) - m2);
+  double qtmax=sqrt(pow((pow(energy_.sroot_,2)+m2),2)/(4.*pow(energy_.sroot_,2)*cosh2y) - m2);
   double qtmin=0.1;
   double qt=qtmin+qtmax*x[2];
   jac=jac*(qtmax);
   */
 
   //integrate between qtmin and qtmax
-  double qtmn = max(0.1, qtmin);
+  double qtmn = max(0.02, qtmin);
   double qt=qtmn+(qtmax-qtmn)*x[2];
   jac=jac*(qtmax-qtmn);
 
@@ -875,9 +923,6 @@ integrand_t resintegrand4d(const int &ndim, const double x[], const int &ncomp, 
 			   double &weight, const int &iter)
 {
   clock_t begin_time, end_time;
-
-  //Read this from the input
-  double sqrts = 7000.;
 
   double r[ndim];
   for (int i = 0; i < ndim; i++)
@@ -927,42 +972,44 @@ integrand_t resintegrand4d(const int &ndim, const double x[], const int &ncomp, 
   //      if(dynamicscale) call scaleset(m2)
 
 
-  //  ymax=0.5*log(pow(sqrts,2)/m2);
-  //  y=-ymax+2.*ymax*r[1];
-  //  jac=jac*2.*ymax;
+  //Limit y boundaries to the kinematic limit in y
+  double ylim = 0.5*log(pow(energy_.sroot_,2)/m2);
+  double ymn = min(max(-ylim, ymin),ylim);
+  double ymx = max(min(ylim, ymax),-ylim);
 
-  double y=ymin+(ymax-ymin)*r[1];
-  jac=jac*(ymax-ymin);
-  
+  //integrate between ymin and ymax
+  double y=ymn+(ymx-ymn)*r[1];
+  jac=jac*(ymx-ymn);
+
   double dexpy=exp(y);
   double dexpmy=exp(-y);
   double cosh2y=pow(((dexpy+dexpmy)*0.5),2);
 
   //   qT kinematical limit
-  //  qtmax=sqrt(pow((pow(sqrts,2)+m2),2)/(4.*pow(sqrts,2)*cosh2y) - m2);
+  //  qtmax=sqrt(pow((pow(energy_.sroot_,2)+m2),2)/(4.*pow(energy_.sroot_,2)*cosh2y) - m2);
   //  qtmin=0.1;
   //  qt=qtmin+qtmax*r[2];
   //  jac=jac*(qtmax);
 
-  double qtmn = max(0.1, qtmin);
+  double qtmn = max(0.02, qtmin);
   double qt=qtmn+(qtmax-qtmn)*r[2];
   jac=jac*(qtmax-qtmn);
 
   qt2=pow(qt,2);
 
-  double xx1=sqrt(m2/pow(sqrts,2))*dexpy;
-  double xx2=sqrt(m2/pow(sqrts,2))*dexpmy;
+  double xx1=sqrt(m2/pow(energy_.sroot_,2))*dexpy;
+  double xx2=sqrt(m2/pow(energy_.sroot_,2))*dexpmy;
 
 
   // incoming quarks
   p[1][1]=0.;
   p[1][2]=0.;
-  p[1][3]=xx1*0.5*sqrts;
-  p[1][4]=xx1*0.5*sqrts;
+  p[1][3]=xx1*0.5*energy_.sroot_;
+  p[1][4]=xx1*0.5*energy_.sroot_;
   p[2][1]=0.;
   p[2][2]=0.;
-  p[2][3]=-xx2*0.5*sqrts;
-  p[2][4]=xx2*0.5*sqrts;
+  p[2][3]=-xx2*0.5*energy_.sroot_;
+  p[2][4]=xx2*0.5*energy_.sroot_;
 
 
   // First lepton direction: Cos of the polar angle
@@ -1030,13 +1077,13 @@ integrand_t resintegrand4d(const int &ndim, const double x[], const int &ncomp, 
 
       zeta1=1./m2/2.*(m2+2.*(pV[0]*kt1+pV[1]*kt2)+sqrt(pow((m2+2.*(pV[0]*kt1+pV[1]*kt2)),2)-4.*mt2*(pow(kt1,2)+pow(kt2,2))));
 
-      qP1=(pV[3]-pV[2])*sqrts/2.;
-      qP2=(pV[3]+pV[2])*sqrts/2.;
+      qP1=(pV[3]-pV[2])*energy_.sroot_/2.;
+      qP2=(pV[3]+pV[2])*energy_.sroot_/2.;
 
-      kap1[4]=sqrts/2.*(zeta1*m2/2./qP1+(pow(kt1,2)+pow(kt2,2))/zeta1*qP1/m2/pow(sqrts,2)*2.);
+      kap1[4]=energy_.sroot_/2.*(zeta1*m2/2./qP1+(pow(kt1,2)+pow(kt2,2))/zeta1*qP1/m2/pow(energy_.sroot_,2)*2.);
       kap1[1]=kt1;
       kap1[2]=kt2;
-      kap1[3]=sqrts/2.*(zeta1*m2/2./qP1-(pow(kt1,2)+pow(kt2,2))/zeta1*qP1/m2/pow(sqrts,2)*2.);
+      kap1[3]=energy_.sroot_/2.*(zeta1*m2/2./qP1-(pow(kt1,2)+pow(kt2,2))/zeta1*qP1/m2/pow(energy_.sroot_,2)*2.);
 
       costh_CS=1.-4.*(kap1[4]*p[4][4]-kap1[3]*p[4][3]-kap1[2]*p[4][2]-kap1[1]*p[4][1])/m2;
 

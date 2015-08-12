@@ -127,8 +127,8 @@ c     include 'constants.f'
       common/density/iih1,iih2
       include 'scale.f'
       include 'facscale.f'
-      integer approxpdf
-      common/opts/approxpdf
+      integer approxpdf,pdfintervals
+      common/opts/approxpdf,pdfintervals
 
       mod = mode
       if(flag.eq.0)  then       !! ONE TIME INITIALIZATION
@@ -2987,64 +2987,8 @@ C     BOTTOM
       implicit none
       double precision ymin,ymax,m
       logical nolepcuts
-      
-c     nodes and weights for the gaussian quadrature
 
-      double precision xxx10(10),www10(10)
-      data xxx10/-0.1488743389816312,0.1488743389816312,
-     .      0.4333953941292472,0.4333953941292472,
-     .      -0.6794095682990244,0.6794095682990244,
-     .      -0.8650633666889845,0.8650633666889845,
-     .      -0.9739065285171717,0.9739065285171717/
-      data www10/0.2955242247147529,0.2955242247147529,
-     .     0.2692667193099963,0.2692667193099963,
-     .     0.2190863625159820,0.2190863625159820,
-     .     0.1494513491505806,0.1494513491505806,
-     .     0.0666713443086881,0.0666713443086881/	
-
-      double precision xxx20(20),www20(20)
-      data xxx20/-0.993128599185d0,-0.963971927278d0,-0.912234428251d0,
-     .  -0.839116971822d0,-0.74633190646d0,-0.636053680727d0,
-     .  -0.510867001951d0,-0.373706088715d0,-0.227785851142d0,
-     .   -0.0765265211335d0,0.0765265211335d0,0.227785851142d0,
-     .   0.373706088715d0,0.510867001951d0,0.636053680727d0,
-     .   0.74633190646d0,0.839116971822d0,0.912234428251d0,
-     .   0.963971927278d0,0.993128599185d0/
-
-      data www20/0.0176140070678d0,0.0406014298819d0,0.0626720482976d0,
-     .   0.0832767415506d0,0.101930119826d0,0.118194531969d0,
-     .   0.131688638458d0,0.142096109327d0,0.149172986482d0,
-     .   0.15275338714d0,0.15275338714d0,0.149172986482d0,
-     .   0.142096109327d0,0.131688638458d0,0.118194531969d0,
-     .   0.101930119826d0,0.0832767415506d0,0.0626720482976d0,
-     .   0.0406014298819d0,0.0176140070678d0/
-
-      double precision xxx24(24),www24(24)
-      data xxx24/-0.0640568928626056,0.0640568928626056,
-     .     -0.1911188674736163,0.1911188674736163,
-     .     -0.3150426796961634,0.3150426796961634,
-     .     -0.4337935076260451,0.4337935076260451,
-     .     -0.5454214713888396,0.5454214713888396,
-     .     -0.6480936519369755,0.6480936519369755,
-     .     -0.7401241915785544,0.7401241915785544,
-     .     -0.8200019859739029,0.8200019859739029,
-     .     -0.8864155270044011,0.8864155270044011,
-     .     -0.9382745520027328,0.9382745520027328,
-     .     -0.9747285559713095,0.9747285559713095,
-     .     -0.9951872199970213,0.9951872199970213/
-      
-      data www24/0.1279381953467522,0.1279381953467522,	
-     .     0.1258374563468283,0.1258374563468283,
-     .     0.1216704729278034,0.1216704729278034,
-     .     0.1155056680537256,0.1155056680537256,
-     .     0.1074442701159656,0.1074442701159656,
-     .     0.0976186521041139,0.0976186521041139,
-     .     0.0861901615319533,0.0861901615319533,
-     .     0.0733464814110803,0.0733464814110803,
-     .     0.0592985849154368,0.0592985849154368,
-     .     0.0442774388174198,0.0442774388174198,
-     .     0.0285313886289337,0.0285313886289337,
-     .     0.0123412297999872,0.0123412297999872/
+      include 'gauss.inc' 
       
 c     store results in the common block
       integer I1,I2
@@ -3055,8 +2999,8 @@ c     store results in the common block
       complex *16 Ith1m(136,136)
       complex *16 Ith2m(136,136)
       common/ITHMOM/Ith0p,Ith1p,Ith2p,Ith0m,Ith1m,Ith2m
-      complex *16 cfpy(136,136)
-      complex *16 cfmy(136,136)
+      complex *16 cfpm(136,136)
+      complex *16 cfmm(136,136)
       
 c nodes for the gaussian quadrature for the double Mellin inversion
       complex*16 CCp,CCm, Np(136),Nm(136)
@@ -3083,77 +3027,28 @@ c nodes for the gaussian quadrature for the double Mellin inversion
       complex *16 yintp,yintm
       complex *16 fpy,fmy
       double precision cthmom0,cthmom1,cthmom2
-      double precision y,xc,xm,s1,s2
-      integer j
+      double precision y,xc,xm
+      integer i,j
+      double precision ya,yb
 
       double precision  WN(136)
       COMMON /WEIGHTS2/ WN      
 
+      integer approxpdf,pdfintervals
+      common/opts/approxpdf,pdfintervals
+
+c     cached values from cacheyrapint
+      integer intervals
+      parameter (intervals=20)
+      complex *16 cfpy(136,136,4*intervals)
+      complex *16 cfmy(136,136,4*intervals)
+      common /cachedrapint/ cfpy,cfmy
+      
 c     print *,'in rapintegrals'
       ax=dlog(m**2/sqs**2)
 
-c     compute normalisation factor
-      s1 = 1d0
-      s2 = 1d0
-c      xc=0.5d0*(ymin+ymax)
-c      xm=0.5d0*(ymax-ymin)
-c      do j=1,20
-c         y=xc+xm*xxx20(j)
-cc     set up sigmaij with the integrated costh moments   
-c         call sety(y)
-c         call genV4p()
-c         call cthmoments(cthmom0,cthmom1,cthmom2)
-c         call initsigmacth(m,cthmom0,cthmom1,cthmom2)
-c
-cc     xsection provides the born xsection computed using exact pdfs
-c         s1=xsection(ax,y,muf,ih1,ih2)*www20(j)*xm
-c
-cc     xsection2 provides the born xsection computed using approx. pdfs
-c
-cc     evaluatekin selects IFIT for the approximate PDF, in the middle of y range
-cc     indeed cannot perform gaussian quadrature across discontinuities
-cc     this means the y integration procedure holds only if performed within the y ranges of IFIT
-c         call evaluatekin(0.5*(ymax+ymin),0,0)
-c         s2=xsection2(ax,y,muf,ih1,ih2)*www20(j)*xm
-c      enddo
-c      print *,s1,s2,s1/s2
-
-c     Evaluate nmax1 nmax2
-      xx1=max(dexp((ax+2*ymin)/2d0),dexp((ax+2*ymax)/2d0))
-      xx2=max(dexp((ax-2*ymin)/2d0),dexp((ax-2*ymax)/2d0))
-
-      if ( xX1 .le. 0.001 ) then                          
-         NMAX1 = 40             ! zmax = 2 
-      else if ( xX1 .le. 0.05 ) then                   
-         NMAX1 = 40             ! zmax = 4  
-      else if ( Xx1 .le. 0.2 ) then                   
-         NMAX1 = 56             ! zmax = 8  
-      else if ( xX1 .le. 0.4 ) then                   
-         NMAX1 = 72             ! zmax = 12 
-      else if ( xX1 .le. 0.7 ) then                   
-         NMAX1 = 88             ! zmax = 18 
-      else                                                          
-c     NMAX1 = 136                ! zmax = 36
-         NMAX1 = 88             ! zmax = 18 
-      end if                  
-      
-      if ( xX2 .le. 0.001 ) then                          
-         NMAX2 = 40             ! zmax = 2 
-      else if ( xX2 .le. 0.05 ) then                   
-         NMAX2 = 40             ! zmax = 4  
-      else if ( xX2 .le. 0.2 ) then                   
-         NMAX2 = 56             ! zmax = 8  
-      else if ( xX2 .le. 0.4 ) then                   
-         NMAX2 = 72             ! zmax = 12 
-      else if ( xX2 .le. 0.7 ) then                   
-         NMAX2 = 88             ! zmax = 18 
-      else                                                          
-c     NMAX2 = 136                ! zmax = 36
-         NMAX2 = 88             ! zmax = 18 
-      end if                  
       NMAX1 = 88
       NMAX2 = 88
-
       
 c     c If there are no cuts on the leptons, calculate the integrals analitically
       if (nolepcuts.eqv..true.) then
@@ -3183,16 +3078,9 @@ c     c If there are no cuts on the leptons, calculate the integrals analiticall
                Ith2m(I1,I2) = 2d0/3d0*yintm*WN(I1)*WN(I2)
             enddo
          enddo
-c     print *,m
-c     do I1 = 1, 2 !136
-c     do I2 = 1, 2  !136
-c     print*,Ith0p(I1,I2)
-c     enddo
-c     enddo
          call initsigmacthy(m)
          return
       endif
-
      
 c     Initialize integrals      
       do I1 = 1, NMAX1             !136
@@ -3206,19 +3094,24 @@ c     Initialize integrals
          enddo
       enddo
 
-c     start integration
-c     cache some of the exponential
+c     cache the mass dependent part (ax) of the exponential
       do I1 = 1, NMAX1          !136
          do I2 = 1, NMAX2       !136
-      cfpy(I1,I2)=(CCp/pi)**2*exp(-(Np(I1)+Np(I2))*ax/2)*WN(I1)*WN(I2)
-      cfmy(I1,I2)=CCp*CCm/pi**2*exp(-(Np(I1)+Nm(I2))*ax/2)*WN(I1)*WN(I2)
+      cfpm(I1,I2)=(CCp/pi)**2*exp(-(Np(I1)+Np(I2))*ax/2)
+      cfmm(I1,I2)=CCp*CCm/pi**2*exp(-(Np(I1)+Nm(I2))*ax/2)
             enddo
       enddo
       
+c     start integration
       xc=0.5d0*(ymin+ymax)
       xm=0.5d0*(ymax-ymin)
-      do j=1,20
-         y=xc+xm*xxx20(j)
+      do i=1,intervals
+         ya = ymin+(ymax-ymin)*(i-1)/intervals
+         yb = ymin+(ymax-ymin)*i/intervals
+         xc=0.5d0*(ya+yb)
+         xm=0.5d0*(yb-ya)
+         do j=1,4
+            y=xc+xm*xxx4(j)
 
 c     calculate costheta moments as a function of y
          call sety(y)
@@ -3227,22 +3120,23 @@ c     calculate costheta moments as a function of y
 c      print *,cthmom0,cthmom1,cthmom2
          do I1 = 1, NMAX1  !136
             do I2 = 1, NMAX2 !136
-c     functions to integrate
-               fpy=cfpy(I1,I2)*exp((-Np(I1)+Np(I2))*y)
-               fmy=cfmy(I1,I2)*exp((-Np(I1)+Nm(I2))*y)
+c     functions to integrate (rapidity part is cached at initialisation)
+               fpy=cfpm(I1,I2)*cfpy(I1,I2,j+(i-1)*4)
+               fmy=cfmm(I1,I2)*cfmy(I1,I2,j+(i-1)*4)
 c     integrals
-               Ith0p(I1,I2)=Ith0p(I1,I2)+fpy*cthmom0*www20(j)*xm*s1/s2
-               Ith1p(I1,I2)=Ith1p(I1,I2)+fpy*cthmom1*www20(j)*xm*s1/s2
-               Ith2p(I1,I2)=Ith2p(I1,I2)+fpy*cthmom2*www20(j)*xm*s1/s2
+               Ith0p(I1,I2)=Ith0p(I1,I2)+fpy*cthmom0
+               Ith1p(I1,I2)=Ith1p(I1,I2)+fpy*cthmom1
+               Ith2p(I1,I2)=Ith2p(I1,I2)+fpy*cthmom2
 
-               Ith0m(I1,I2)=Ith0m(I1,I2)+fmy*cthmom0*www20(j)*xm*s1/s2
-               Ith1m(I1,I2)=Ith1m(I1,I2)+fmy*cthmom1*www20(j)*xm*s1/s2
-               Ith2m(I1,I2)=Ith2m(I1,I2)+fmy*cthmom2*www20(j)*xm*s1/s2
+               Ith0m(I1,I2)=Ith0m(I1,I2)+fmy*cthmom0
+               Ith1m(I1,I2)=Ith1m(I1,I2)+fmy*cthmom1
+               Ith2m(I1,I2)=Ith2m(I1,I2)+fmy*cthmom2
             enddo
          enddo
       enddo
+      enddo
 
-c      print *,
+c     print *,
 c      do I1 = 1, 2 !136
 c         do I2 = 1, 2  !136
 c            print*,Ith0p(I1,I2)
@@ -3461,6 +3355,58 @@ c
      \              )
                sigmaintijp(-3,3,I1,I2)=sigmaintijp(-2,2,I1,I2)
                sigmaintijp(-5,5,I1,I2)=sigmaintijp(-2,2,I1,I2)
+c     negative
+               sigmaintijm(1,-1,I1,I2)=facZ*( 
+     \              ( (gLZu**2+gRZu**2)*(fLZ**2+fRZ**2) 
+     \              +1/4d0*(4d0*pi*aem)**2*(eequ)**2*chi2 
+     \              -1/2d0*(4d0*pi*aem)*eequ*(gLZu+gRZu)*(fLZ+fRZ)*chi1)
+!     
+     \              *(Ith0m(I1,I2)+Ith2m(I1,I2))
+     \              -  ( (gLZu**2-gRZu**2)*(fLZ**2-fRZ**2)
+     \              -1/2d0*(4d0*pi*aem)*eequ*(gLZu-gRZu)*(fLZ-fRZ)*chi1)
+!     
+     \              *(2d0*Ith1m(I1,I2)) 
+     \              )
+               sigmaintijm(4,-4,I1,I2)=sigmaintijm(1,-1,I1,I2)
+               sigmaintijm(-1,1,I1,I2)=facZ*( 
+     \              ( (gLZu**2+gRZu**2)*(fLZ**2+fRZ**2) 
+     \              +1/4d0*(4d0*pi*aem)**2*(eequ)**2*chi2 
+     \              -1/2d0*(4d0*pi*aem)*eequ*(gLZu+gRZu)*(fLZ+fRZ)*chi1)
+!     
+     \              *(Ith0m(I1,I2)+Ith2m(I1,I2))
+     \              +  ( (gLZu**2-gRZu**2)*(fLZ**2-fRZ**2)
+     \              -1/2d0*(4d0*pi*aem)*eequ*(gLZu-gRZu)*(fLZ-fRZ)*chi1)
+!     
+     \              *(2d0*Ith1m(I1,I2)) 
+     \              )
+               sigmaintijm(-4,4,I1,I2)=sigmaintijm(-1,1,I1,I2)
+c     
+               sigmaintijm(2,-2,I1,I2)=facZ*( 
+     \              ( (gLZd**2+gRZd**2)*(fLZ**2+fRZ**2) 
+     \              +1/4d0*(4d0*pi*aem)**2*(eeqd)**2*chi2 
+     \              -1/2d0*(4d0*pi*aem)*eeqd*(gLZd+gRZd)*(fLZ+fRZ)*chi1)
+!     
+     \              *(Ith0m(I1,I2)+Ith2m(I1,I2))
+     \              -  ( (gLZd**2-gRZd**2)*(fLZ**2-fRZ**2)
+     \              -1/2d0*(4d0*pi*aem)*eeqd*(gLZd-gRZd)*(fLZ-fRZ)*chi1)
+!     
+     \              *(2d0*Ith1m(I1,I2)) 
+     \              )
+               sigmaintijm(3,-3,I1,I2)=sigmaintijm(2,-2,I1,I2)
+               sigmaintijm(5,-5,I1,I2)=sigmaintijm(2,-2,I1,I2)
+               sigmaintijm(-2,2,I1,I2)=facZ*( 
+     \              ( (gLZd**2+gRZd**2)*(fLZ**2+fRZ**2) 
+     \              +1/4d0*(4d0*pi*aem)**2*(eeqd)**2*chi2 
+     \              -1/2d0*(4d0*pi*aem)*eeqd*(gLZd+gRZd)*(fLZ+fRZ)*chi1)
+!     
+     \              *(Ith0m(I1,I2)+Ith2m(I1,I2))
+     \              +  ( (gLZd**2-gRZd**2)*(fLZ**2-fRZ**2)
+     \              -1/2d0*(4d0*pi*aem)*eeqd*(gLZd-gRZd)*(fLZ-fRZ)*chi1)
+!     
+     \              *(2d0*Ith1m(I1,I2)) 
+     \              )
+               sigmaintijm(-3,3,I1,I2)=sigmaintijm(-2,2,I1,I2)
+               sigmaintijm(-5,5,I1,I2)=sigmaintijm(-2,2,I1,I2)
             endif      
          enddo
       enddo

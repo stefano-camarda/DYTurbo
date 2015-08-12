@@ -1,7 +1,11 @@
 #ifndef interface_h
 #define interface_h
 
-
+// constants.f
+#define NF 5
+#define FN -5
+#define NLOOP 2
+#define mxpart 12
 
 extern "C" {
 
@@ -16,8 +20,26 @@ extern "C" {
     void boost_(double& mass, double p1[],double p_in[], double p_out[]);
 
     void rapintegrals_(double &ymin,double &ymax, double& mass, int& nocuts);
+    void cacheyrapint_(double &ymin,double &ymax);
 
     // fortran common spaces
+
+    // z coupling
+    extern struct {
+        double l_[NF];
+        double r_[NF];
+        double q1_;
+        double l1_;
+        double r1_;
+        double q2_;
+        double l2_;
+        double r2_;
+        double le_;
+        double ln_;
+        double re_;
+        double rn_;
+        double sin2w_;
+    } zcouple_;
 
     // masses
     extern struct {
@@ -81,7 +103,8 @@ extern "C" {
 
     // controls
     extern struct {
-        int approxpdf_;
+      int approxpdf_;
+      int pdfintervals_;
     } opts_;
 
     extern struct {

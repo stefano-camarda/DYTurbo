@@ -12,7 +12,7 @@ using namespace std;
 class InputParser {
     public:
         // constructor
-        InputParser( string _filename = "config.ini", string _charset="#=[ ]", string _white=" \t");
+        InputParser( string _filename = "", string _charset="#=[ ]", string _white=" \t");
         ~InputParser();
         // getters
         double GetNumber(string name);
@@ -21,7 +21,7 @@ class InputParser {
         void GetVectorDouble(string name, vector<double> &vec);
     private :
         // functions
-        void parse_file();
+        void parse_file(const string fname);
         void trim(string & str);
         void has_key(const string key);
         // data members
@@ -41,7 +41,7 @@ class settings
 public:
   settings() {};
   void init();
-  void readfromfile(const char * fname);
+  void readfromfile(const string fname);
   void initDyresSettings();
 
   // private:
@@ -79,6 +79,9 @@ public:
 
   //resonance mass and width (used for breit wigner unweighting)
   double rmass, rwidth;
+
+  // photon switch
+  bool useGamma;
 
   //integration boundaries
   double ylow;
@@ -128,7 +131,7 @@ class binning
  public:
   binning() {};
   void init();
-  void readfromfile(const char * fname);
+  void readfromfile(const string fname);
   // private:
   vector <double> qtbins;
 };

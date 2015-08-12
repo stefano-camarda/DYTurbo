@@ -81,7 +81,7 @@ void settings::init()
   opts_.approxpdf_ = 0;
 }
 
-void settings::readfromfile(const char * fname){
+void settings::readfromfile(const string fname){
     //read input settings from file
     InputParser in(fname);
     sroot          = in.GetNumber ( "sroot"          ); //7e3
@@ -144,7 +144,9 @@ void settings::readfromfile(const char * fname){
     qtrec_kt0       = in.GetBool   ( "qtrec_kt0"       ); //true
     timeprofile     = in.GetBool   ( "timeprofile"     ); //false   # debug       and      time       profile resummation integration
     verbose         = in.GetBool   ( "verbose"         ); //false   # debug       and      time       profile costh       phi_lep         integration
-    opts_.approxpdf_ = in.GetNumber ( "opts_approxpdf" ); //0
+    useGamma        = in.GetBool ( "useGamma" );//
+    opts_.approxpdf_    = in.GetNumber ( "opts_approxpdf" ); //0
+    opts_.pdfintervals_ = in.GetNumber ( "opts_pdfintervals" ); //100
 
 
     return ;
@@ -177,6 +179,8 @@ void settings::initDyresSettings(){
     strncpy( part_        . part_      , part         .c_str(), part       .size() ); //virt           # part
     strncpy( lhapdf_char_ . PDFname_   , LHAPDFset    .c_str(), LHAPDFset  .size() ); //CT10nlo.LHgrid
     strncpy( runstring_   . runstring_ , outputfile   .c_str(), outputfile .size() ); //'LHC7-Z-nnlo'  # outputfile
+
+    zcouple_ . q1_ = (useGamma ? 0 :  -1 );
 }
 
 void settings::dumpAll(){
@@ -215,42 +219,43 @@ void settings::dumpAll(){
 
     if (print_inputs) {
         printf("Input settings:\n");
-        dumpD("rmass            ", rmass            );
-        dumpD("rwidth           ", rwidth           );
-        dumpD("ylow             ", ylow             );
-        dumpD("yhigh            ", yhigh            );
-        dumpD("mlow             ", mlow             );
-        dumpD("mhigh            ", mhigh            );
-        dumpB("int2d            ", int2d            );
-        dumpB("int3d            ", int3d            );
-        dumpB("int4d            ", int4d            );
-        dumpB("doRES            ", doRES            );
-        dumpB("doCT             ", doCT             );
-        dumpB("doREAL           ", doREAL           );
-        dumpB("doVIRT           ", doVIRT           );
-        dumpB("doLO             ", doLO             );
-        dumpI("cubaverbosity    ", cubaverbosity    );
-        dumpI("cubacores        ", cubacores        );
-        dumpI("niter            ", niter            );
-        dumpD("vegasncallsRES   ", vegasncallsRES   );
-        dumpD("vegasncallsCT    ", vegasncallsCT    );
-        dumpD("vegasncallsLO    ", vegasncallsLO    );
-        dumpD("vegasncallsREAL  ", vegasncallsREAL  );
-        dumpD("vegasncallsVIRT  ", vegasncallsVIRT  );
-        dumpB("makelepcuts      ", makelepcuts      );
-        dumpB("cubaint          ", cubaint          );
-        dumpB("trapezint        ", trapezint        );
-        dumpB("quadint          ", quadint          );
-        dumpI("suavepoints      ", suavepoints      );
-        dumpI("nphitrape        ", nphitrape        );
-        dumpI("quadnphi         ", quadnphi         );
-        dumpI("ncstart          ", ncstart          );
-        dumpB("qtrec_naive      ", qtrec_naive      );
-        dumpB("qtrec_cs         ", qtrec_cs         );
-        dumpB("qtrec_kt0        ", qtrec_kt0        );
-        dumpB("timeprofile      ", timeprofile      );
-        dumpB("verbose          ", verbose          );
-        dumpI("opts_.approxpdf_ ", opts_.approxpdf_ );
+        dumpD("rmass           ", rmass               );
+        dumpD("rwidth          ", rwidth              );
+        dumpD("ylow            ", ylow                );
+        dumpD("yhigh           ", yhigh               );
+        dumpD("mlow            ", mlow                );
+        dumpD("mhigh           ", mhigh               );
+        dumpB("int2d           ", int2d               );
+        dumpB("int3d           ", int3d               );
+        dumpB("int4d           ", int4d               );
+        dumpB("doRES           ", doRES               );
+        dumpB("doCT            ", doCT                );
+        dumpB("doREAL          ", doREAL              );
+        dumpB("doVIRT          ", doVIRT              );
+        dumpB("doLO            ", doLO                );
+        dumpI("cubaverbosity   ", cubaverbosity       );
+        dumpI("cubacores       ", cubacores           );
+        dumpI("niter           ", niter               );
+        dumpD("vegasncallsRES  ", vegasncallsRES      );
+        dumpD("vegasncallsCT   ", vegasncallsCT       );
+        dumpD("vegasncallsLO   ", vegasncallsLO       );
+        dumpD("vegasncallsREAL ", vegasncallsREAL     );
+        dumpD("vegasncallsVIRT ", vegasncallsVIRT     );
+        dumpB("makelepcuts     ", makelepcuts         );
+        dumpB("cubaint         ", cubaint             );
+        dumpB("trapezint       ", trapezint           );
+        dumpB("quadint         ", quadint             );
+        dumpI("suavepoints     ", suavepoints         );
+        dumpI("nphitrape       ", nphitrape           );
+        dumpI("quadnphi        ", quadnphi            );
+        dumpI("ncstart         ", ncstart             );
+        dumpB("qtrec_naive     ", qtrec_naive         );
+        dumpB("qtrec_cs        ", qtrec_cs            );
+        dumpB("qtrec_kt0       ", qtrec_kt0           );
+        dumpB("timeprofile     ", timeprofile         );
+        dumpB("verbose         ", verbose             );
+        dumpI("approxpdf       ", opts_.approxpdf_    );
+        dumpI("pdfintervals    ", opts_.pdfintervals_ );
     }
 
     if (print_masses){
@@ -335,7 +340,7 @@ bool cuts(double p3[4], double p4[4])
   return true;
 }
 
-void binning::readfromfile(const char * fname){
+void binning::readfromfile(const string fname){
     InputParser in(fname);
     qtbins.clear();
     in.GetVectorDouble("qtbins",qtbins);
@@ -441,7 +446,21 @@ InputParser::InputParser( string _filename, string _charset, string _white):
     CclosAr  ( _charset[4] ),
     Swhite   ( _white      )
 {
-    parse_file();
+    // parse default
+    try {
+        parse_file("input/default.in");
+    } catch (invalid_argument &e1){
+        try {
+            parse_file("default.in");
+        } catch (invalid_argument &e2){
+            throw invalid_argument( string( "Can not load default settings:\n")
+                    + string(e1.what()) + string("\n")
+                    + string(e2.what()) + string("\n")
+                    );
+        }
+    }
+    // parse custom settings
+    if (filename.compare("")!=0) parse_file(filename);
 }
 
 
@@ -497,11 +516,12 @@ void InputParser::GetVectorDouble(string name, vector<double> &vec){
 }
 
 
-void InputParser::parse_file(){
-    ifstream fstrm(filename.c_str());
+void InputParser::parse_file(const string fname){
+    ifstream fstrm(fname.c_str());
+    if ( ! fstrm.good() ) throw invalid_argument( string("Uknown file name ") + fname );
     string line;
     // line by line
-    while(getline(fstrm,line))   {
+    while(getline(fstrm,line)) {
         size_t pos = 0;
         // check for comments
         pos = line.find(Ccommnt,pos);
