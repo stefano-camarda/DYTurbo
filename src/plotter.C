@@ -36,13 +36,14 @@ plotter::~plotter(){
 
 void plotter::Init(){
 
-    *gcounter = 0;
+    //*gcounter = 0;
 
     qt_resum .SetName ( "qt_resum" );
     qt_ct    .SetName ( "qt_ct"    );
     qt_lo    .SetName ( "qt_lo"    );
     qt_real  .SetName ( "qt_real"  );
     qt_virt  .SetName ( "qt_virt"  );
+    qt_total .SetName ( "qt_total" );
 
     h_l1_pt = new TH1D ("l1_pt", "lep1 pt", 10, 0,100 );
     h_l1_pt->Sumw2();
@@ -50,7 +51,7 @@ void plotter::Init(){
 }
 
 void plotter::FillEvent(double p3[4], double p4[4], double wgt){
-    *gcounter = (*gcounter)+1;
+    //*gcounter = (*gcounter)+1;
     double l1_pt = sqrt( pow(p3[0],2) + pow(p3[1],2) );
     h_l1_pt->Fill(l1_pt,wgt);
     return;
@@ -64,6 +65,7 @@ void plotter::FillResult(TermType term, double binlo, double binhi, double int_v
         case LO    : gr = & qt_lo    ; break;
         case Real  : gr = & qt_real  ; break;
         case Virt  : gr = & qt_virt  ; break;
+        case Total : gr = & qt_total ; break;
     }
     int n = gr->GetN();
     double qt_val   = (binhi+binlo)/2;
@@ -75,7 +77,7 @@ void plotter::FillResult(TermType term, double binlo, double binhi, double int_v
 
 void plotter::Dump(){
     printf(" ploter says count (%d) : h_l1_pt %p entries %f mean %f RMS %f integral %f \n"
-            , *gcounter
+            , 0 //*gcounter
             , h_l1_pt
             , h_l1_pt->GetEntries()
             , h_l1_pt->GetMean()
@@ -99,6 +101,7 @@ void plotter::Finalise(){
     qt_lo    .Write();
     qt_real  .Write();
     qt_virt  .Write();
+    qt_total .Write();
     // close
     outf->Write();
     outf->Close();

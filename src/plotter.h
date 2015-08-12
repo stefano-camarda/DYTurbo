@@ -13,7 +13,7 @@ class plotter {
         plotter();
         ~plotter();
 
-        enum TermType { Resum, CT, LO, Real, Virt };
+        enum TermType { Resum, CT, LO, Real, Virt, Total };
 
         void Init();
         void FillEvent(double p3[4], double p4[4], double wgt);
@@ -30,6 +30,7 @@ class plotter {
         TGraphErrors qt_lo    ;
         TGraphErrors qt_real  ;
         TGraphErrors qt_virt  ;
+        TGraphErrors qt_total ;
 #endif // USEROOT
 
 };
