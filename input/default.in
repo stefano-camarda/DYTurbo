@@ -49,10 +49,11 @@ mhigh = 116.
 #  mhigh = 1000.;
 
 
-# type of integration
-int2d = false
-int3d = true
-int4d = false
+# dimension of integration
+intDimRes = 2
+#int2d = false
+#int3d = true
+#int4d = false
 
 # term switches
 doRES  = true

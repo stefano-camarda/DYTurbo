@@ -66,10 +66,6 @@ int main( int argc , const char * argv[])
   // just a check
   opts.dumpAll();
   //return 0;
-  // decide what terms to calculate
-  opts.doLO   = (opts.doLO   && opts.order == 1);
-  opts.doREAL = (opts.doREAL && opts.order == 2);
-  opts.doVIRT = (opts.doVIRT && opts.order == 2);
   // histogram output
   hists.Init();
   /***********************************/

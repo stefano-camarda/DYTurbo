@@ -31,8 +31,8 @@ itmxToFile   = 0              # number of last itmx to write on file
 rmass  = 91.1876
 rwidth = 2.495
 # Set boundaries of integration
-ylow  = 2
-yhigh = 2.4
+ylow  = -3.0
+yhigh = 3.0
 mlow  = 66.
 mhigh = 116.
 
@@ -47,9 +47,7 @@ mhigh = 116.
 #  mhigh = 1000.;
 
 # type of integration
-int2d = false
-int3d = true
-int4d = false
+intDimRes = 2
 
 # term switches
 doRES  = true
@@ -69,7 +67,7 @@ vegasncallsREAL  = 100000000 # only for real 10d vegas integration
 vegasncallsVIRT  = 10000000 # only for virt 8d vegas integration
 
 # total or with lepton cuts
-makelepcuts = false
+makelepcuts = true
 
 # integration types and settings for costh phi_lep phase space
 cubaint   = false   # integration with Cuba Suave

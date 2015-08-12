@@ -49,10 +49,11 @@ mhigh = 116.
 #  mhigh = 1000.;
 
 
-# type of integration
-int2d = false
-int3d = true
-int4d = false
+# dimension of integration
+intDimRes = 3
+#int2d = false
+#int3d = true
+#int4d = false
 
 # term switches
 doRES  = true
@@ -65,11 +66,11 @@ doLO   = true
 cubaverbosity    = 0   # Cuba info messsages, from 0 to 3
 cubacores        = 0   # parallelization ( 0 = turn off)
 niter            = 20   # only for 2d and 3d cuhre integration
-vegasncallsRES   = 100 #0000 # only for res 4d vegas integration
-vegasncallsCT    = 100 #00000 # only for lo 8d vegas integration
-vegasncallsLO    = 100 #00000 # only for lo 7d vegas integration
-vegasncallsREAL  = 100 #000000 # only for real 10d vegas integration
-vegasncallsVIRT  = 100 #00000 # only for virt 8d vegas integration
+vegasncallsRES   = 1000000 # only for res 4d vegas integration
+vegasncallsCT    = 10000000 # only for lo 8d vegas integration
+vegasncallsLO    = 10000000 # only for lo 7d vegas integration
+vegasncallsREAL  = 100000000 # only for real 10d vegas integration
+vegasncallsVIRT  = 10000000 # only for virt 8d vegas integration
 
 # total or with lepton cuts
 makelepcuts = false
@@ -96,7 +97,6 @@ verbose     = false  # debug and time profile costh phi_lep integration
 # Set to 1 to use the dyres approximation of PDFs and integration contour in the complex plane for the Mellin inversion
 # Set to 0 to use exact PDFs and straight line contour in the complex plane for the Mellin inversion
 opts_approxpdf = 0
-
 # number of intervals for integration of PDF moments, relevant only for opts_approxpdf = 0
 opts_pdfintervals = 100
 
