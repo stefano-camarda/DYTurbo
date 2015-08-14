@@ -225,161 +225,19 @@ c     mass dependent part (cache mass value)
          changedmass=.true.
          q=mm
          q2=q**2
-         facZ=1/9d0/pi*q2/((q2-Mz**2)**2+Mz**2*zw**2)*gevfb
-         facW=1/9d0/pi*q2/((q2-Mw**2)**2+Mw**2*ww**2)*gevfb
-         chi1=(q2-Mz**2)/q2
-         chi2=((q2-Mz**2)**2+Mz**2*zw**2)/q2/q2
       endif
 c******************************************
 
 
 c******************************************
-c     mass and costh dependent part (cache mass and costh values)
+c     Initialise the born-level matrix elements sigmaij
 c     ---> sigmaij depends on mass and costh
-c     when costh is integrated and costh moments are provided, sigmaij depends also on rapidity      
+c     when costh is integrated and costh moments are provided, sigmaij
+c     are convoluted with the rapidity depent expression
+c      and they depend also on rapidity
 c.....Born cross sections
       if (mod.eq.0) then
-c         call initsigma(m,costh)
-
-      if (flag5.eq.3) then
-         sigmaij(1,-1)=facZ*( 
-     \        (gLZu**2+gRZu**2)*(fLZ**2+fRZ**2)*(1d0+costh**2)
-     \        -   (gLZu**2-gRZu**2)*(fLZ**2-fRZ**2)*(2d0*costh)   )
-         sigmaij(4,-4)=sigmaij(1,-1)
-c     
-         sigmaij(-1,1)=facZ*( 
-     \        (gLZu**2+gRZu**2)*(fLZ**2+fRZ**2)*(1d0+costh**2)
-     \        +   (gLZu**2-gRZu**2)*(fLZ**2-fRZ**2)*(2d0*costh)   )
-         sigmaij(-4,4)=sigmaij(-1,1)
-c     
-         sigmaij(2,-2)=facZ*( 
-     \        (gLZd**2+gRZd**2)*(fLZ**2+fRZ**2)*(1d0+costh**2)
-     \        -   (gLZd**2-gRZd**2)*(fLZ**2-fRZ**2)*(2d0*costh)   )
-         sigmaij(3,-3)=sigmaij(2,-2)
-         sigmaij(5,-5)=sigmaij(2,-2)
-c
-         sigmaij(-2,2)=facZ*( 
-     \        (gLZd**2+gRZd**2)*(fLZ**2+fRZ**2)*(1d0+costh**2)
-     \        +   (gLZd**2-gRZd**2)*(fLZ**2-fRZ**2)*(2d0*costh)   )
-         sigmaij(-3,3)=sigmaij(-2,2)
-         sigmaij(-5,5)=sigmaij(-2,2)
-
-      elseif(flag5.eq.21) then
-         sigmaij(1,-2)=facW/16d0*vud**2*gLW**2*fLW**2*(1d0-costh)**2
-         sigmaij(-2,1)=facW/16d0*vud**2*gLW**2*fLW**2*(1d0+costh)**2
-         sigmaij(1,-3)=facW/16d0*vus**2*gLW**2*fLW**2*(1d0-costh)**2
-         sigmaij(-3,1)=facW/16d0*vus**2*gLW**2*fLW**2*(1d0+costh)**2
-         sigmaij(1,-5)=facW/16d0*vub**2*gLW**2*fLW**2*(1d0-costh)**2
-         sigmaij(-5,1)=facW/16d0*vub**2*gLW**2*fLW**2*(1d0+costh)**2
-         sigmaij(4,-3)=facW/16d0*vcs**2*gLW**2*fLW**2*(1d0-costh)**2
-         sigmaij(-3,4)=facW/16d0*vcs**2*gLW**2*fLW**2*(1d0+costh)**2
-         sigmaij(4,-2)=facW/16d0*vcd**2*gLW**2*fLW**2*(1d0-costh)**2
-         sigmaij(-2,4)=facW/16d0*vcd**2*gLW**2*fLW**2*(1d0+costh)**2
-         sigmaij(4,-5)=facW/16d0*vcb**2*gLW**2*fLW**2*(1d0-costh)**2
-         sigmaij(-5,4)=facW/16d0*vcb**2*gLW**2*fLW**2*(1d0+costh)**2
-      elseif(flag5.eq.22) then  ! CHECK IT    !!!!!
-         sigmaij(2,-1)=facW/16d0*vud**2*gLW**2*fLW**2*(1d0-costh)**2
-         sigmaij(-1,2)=facW/16d0*vud**2*gLW**2*fLW**2*(1d0+costh)**2
-         sigmaij(3,-1)=facW/16d0*vus**2*gLW**2*fLW**2*(1d0-costh)**2
-         sigmaij(-1,3)=facW/16d0*vus**2*gLW**2*fLW**2*(1d0+costh)**2
-         sigmaij(5,-1)=facW/16d0*vub**2*gLW**2*fLW**2*(1d0-costh)**2
-         sigmaij(-1,5)=facW/16d0*vub**2*gLW**2*fLW**2*(1d0+costh)**2
-         sigmaij(3,-4)=facW/16d0*vcs**2*gLW**2*fLW**2*(1d0-costh)**2
-         sigmaij(-4,3)=facW/16d0*vcs**2*gLW**2*fLW**2*(1d0+costh)**2
-         sigmaij(2,-4)=facW/16d0*vcd**2*gLW**2*fLW**2*(1d0-costh)**2
-         sigmaij(-4,2)=facW/16d0*vcd**2*gLW**2*fLW**2*(1d0+costh)**2
-         sigmaij(5,-4)=facW/16d0*vcb**2*gLW**2*fLW**2*(1d0-costh)**2
-         sigmaij(-4,5)=facW/16d0*vcb**2*gLW**2*fLW**2*(1d0+costh)**2
-      elseif(flag5.eq.2) then   ! CHECK IT     !!!!!
-         sigmaij(1,-2)=facW/16d0*vud**2*gLW**2*fLW**2*(1d0-costh)**2
-         sigmaij(-2,1)=facW/16d0*vud**2*gLW**2*fLW**2*(1d0+costh)**2
-         sigmaij(1,-3)=facW/16d0*vus**2*gLW**2*fLW**2*(1d0-costh)**2
-         sigmaij(-3,1)=facW/16d0*vus**2*gLW**2*fLW**2*(1d0+costh)**2
-         sigmaij(1,-5)=facW/16d0*vub**2*gLW**2*fLW**2*(1d0-costh)**2
-         sigmaij(-5,1)=facW/16d0*vub**2*gLW**2*fLW**2*(1d0+costh)**2
-         sigmaij(4,-3)=facW/16d0*vcs**2*gLW**2*fLW**2*(1d0-costh)**2
-         sigmaij(-3,4)=facW/16d0*vcs**2*gLW**2*fLW**2*(1d0+costh)**2
-         sigmaij(4,-2)=facW/16d0*vcd**2*gLW**2*fLW**2*(1d0-costh)**2
-         sigmaij(-2,4)=facW/16d0*vcd**2*gLW**2*fLW**2*(1d0+costh)**2
-         sigmaij(4,-5)=facW/16d0*vcb**2*gLW**2*fLW**2*(1d0-costh)**2
-         sigmaij(-5,4)=facW/16d0*vcb**2*gLW**2*fLW**2*(1d0+costh)**2
-         sigmaij(2,-1)=facW/16d0*vud**2*gLW**2*fLW**2*(1d0-costh)**2
-         sigmaij(-1,2)=facW/16d0*vud**2*gLW**2*fLW**2*(1d0+costh)**2
-         sigmaij(3,-1)=facW/16d0*vus**2*gLW**2*fLW**2*(1d0-costh)**2
-         sigmaij(-1,3)=facW/16d0*vus**2*gLW**2*fLW**2*(1d0+costh)**2
-         sigmaij(5,-1)=facW/16d0*vub**2*gLW**2*fLW**2*(1d0-costh)**2
-         sigmaij(-1,5)=facW/16d0*vub**2*gLW**2*fLW**2*(1d0+costh)**2
-         sigmaij(3,-4)=facW/16d0*vcs**2*gLW**2*fLW**2*(1d0-costh)**2
-         sigmaij(-4,3)=facW/16d0*vcs**2*gLW**2*fLW**2*(1d0+costh)**2
-         sigmaij(2,-4)=facW/16d0*vcd**2*gLW**2*fLW**2*(1d0-costh)**2
-         sigmaij(-4,2)=facW/16d0*vcd**2*gLW**2*fLW**2*(1d0+costh)**2
-         sigmaij(5,-4)=facW/16d0*vcb**2*gLW**2*fLW**2*(1d0-costh)**2
-         sigmaij(-4,5)=facW/16d0*vcb**2*gLW**2*fLW**2*(1d0+costh)**2
-      elseif (flag5.eq.5) then  !  T=TYPO in hep-ph/9704239 !!!!!
-            sigmaij(1,-1)=facZ*( 
-     \         ( (gLZu**2+gRZu**2)*(fLZ**2+fRZ**2) 
-!T     \          +4d0*(4d0*pi*aem)**2*(eequ)**2*chi2 
-!T     \          -2d0*(4d0*pi*aem)*eequ*(gLZu+gRZu)*(fLZ+fRZ)*chi1 )
-     \          +1/4d0*(4d0*pi*aem)**2*(eequ)**2*chi2 
-     \          -1/2d0*(4d0*pi*aem)*eequ*(gLZu+gRZu)*(fLZ+fRZ)*chi1 )
-!
-     \          *(1d0+costh**2)
-     \      -  ( (gLZu**2-gRZu**2)*(fLZ**2-fRZ**2)
-!T     \          -2d0*(4d0*pi*aem)*eequ*(gLZu-gRZu)*(fLZ-fRZ)*chi1 )
-     \          -1/2d0*(4d0*pi*aem)*eequ*(gLZu-gRZu)*(fLZ-fRZ)*chi1 )
-!
-     \          *(2d0*costh) 
-     \           )
-            sigmaij(4,-4)=sigmaij(1,-1)
-            sigmaij(-1,1)=facZ*( 
-     \         ( (gLZu**2+gRZu**2)*(fLZ**2+fRZ**2) 
-!     \          +4d0*(4d0*pi*aem)**2*(eequ)**2*chi2 
-!     \          -2d0*(4d0*pi*aem)*eequ*(gLZu+gRZu)*(fLZ+fRZ)*chi1 )
-     \          +1/4d0*(4d0*pi*aem)**2*(eequ)**2*chi2 
-     \          -1/2d0*(4d0*pi*aem)*eequ*(gLZu+gRZu)*(fLZ+fRZ)*chi1 )
-!
-     \          *(1d0+costh**2)
-     \      +  ( (gLZu**2-gRZu**2)*(fLZ**2-fRZ**2)
-!T     \          -2d0*(4d0*pi*aem)*eequ*(gLZu-gRZu)*(fLZ-fRZ)*chi1 )
-     \          -1/2d0*(4d0*pi*aem)*eequ*(gLZu-gRZu)*(fLZ-fRZ)*chi1 )
-!
-     \          *(2d0*costh) 
-     \           )
-            sigmaij(-4,4)=sigmaij(-1,1)
-c
-            sigmaij(2,-2)=facZ*( 
-     \         ( (gLZd**2+gRZd**2)*(fLZ**2+fRZ**2) 
-!     \          +4d0*(4d0*pi*aem)**2*(eeqd)**2*chi2 
-!     \          -2d0*(4d0*pi*aem)*eeqd*(gLZd+gRZd)*(fLZ+fRZ)*chi1 )
-     \          +1/4d0*(4d0*pi*aem)**2*(eeqd)**2*chi2 
-     \          -1/2d0*(4d0*pi*aem)*eeqd*(gLZd+gRZd)*(fLZ+fRZ)*chi1 )
-!
-     \          *(1d0+costh**2)
-     \      -  ( (gLZd**2-gRZd**2)*(fLZ**2-fRZ**2)
-!     \          -2d0*(4d0*pi*aem)*eeqd*(gLZd-gRZd)*(fLZ-fRZ)*chi1 )
-     \          -1/2d0*(4d0*pi*aem)*eeqd*(gLZd-gRZd)*(fLZ-fRZ)*chi1 )
-!
-     \          *(2d0*costh) 
-     \           )
-            sigmaij(3,-3)=sigmaij(2,-2)
-            sigmaij(5,-5)=sigmaij(2,-2)
-            sigmaij(-2,2)=facZ*( 
-     \         ( (gLZd**2+gRZd**2)*(fLZ**2+fRZ**2) 
-!     \          +4d0*(4d0*pi*aem)**2*(eeqd)**2*chi2 
-!     \          -2d0*(4d0*pi*aem)*eeqd*(gLZd+gRZd)*(fLZ+fRZ)*chi1 )
-     \          +1/4d0*(4d0*pi*aem)**2*(eeqd)**2*chi2 
-     \          -1/2d0*(4d0*pi*aem)*eeqd*(gLZd+gRZd)*(fLZ+fRZ)*chi1 )
-!
-     \          *(1d0+costh**2)
-     \      +  ( (gLZd**2-gRZd**2)*(fLZ**2-fRZ**2)
-!     \          -2d0*(4d0*pi*aem)*eeqd*(gLZd-gRZd)*(fLZ-fRZ)*chi1 )
-     \          -1/2d0*(4d0*pi*aem)*eeqd*(gLZd-gRZd)*(fLZ-fRZ)*chi1 )
-!
-     \          *(2d0*costh) 
-     \           )
-            sigmaij(-3,3)=sigmaij(-2,2)
-            sigmaij(-5,5)=sigmaij(-2,2)
-      endif
+         call initsigma(mm,costh)
       elseif (mod.eq.1) then
          call cthmoments(cthmom0,cthmom1,cthmom2)
          call initsigmacth(mm,cthmom0,cthmom1,cthmom2)
@@ -775,11 +633,11 @@ c part of the coefficients calculation is hoisted in the previous I loop
 c merge positive and negative branch
         if (mod.eq.0.or.mod.eq.1) then
 C     COMPUTE POSITIVE BRANCH
-           CALL INTERESnew (HCRN, I1, I2, 1 ,SCALE2)
+           CALL INTERESnew (HCRN, I1, I2, 1)
            INT1= (HCRN * cCEX2p(I2))
             
 C     COMPUTE NEGATIVE BRANCH
-           CALL INTERESnew (HCRN, I1, I2, -1, SCALE2)
+           CALL INTERESnew (HCRN, I1, I2, -1)
            INT2= (HCRN * cCEX2m(I2))
             
            FZ=-DBLE( 1./2*(INT1-INT2)*cCEX1(I1)*WN(I1)*WN(I2)*factorfin)
@@ -794,13 +652,13 @@ c     ccex(I1,I2) is rapidity and mass dependent
 c     sigma_ij is costh and mass dependent, but becomes rapidity dependent after integration of the costh moments
 c     The integrals are solved analitically when no cuts on the leptons are applied
             
-            CALL INTERESnew (HCRN, I1, I2, 1 ,SCALE2)
+            CALL INTERESnew (HCRN, I1, I2, 1)
             int1p1m1=shcrn(1,-1)*sigmaintijp(1,-1,I1,I2)
             int1p2m2=shcrn(2,-2)*sigmaintijp(2,-2,I1,I2)
             int1m1p1=shcrn(-1,1)*sigmaintijp(-1,1,I1,I2)
             int1m2p2=shcrn(-2,2)*sigmaintijp(-2,2,I1,I2)
             
-            CALL INTERESnew (HCRN, I1, I2, -1, SCALE2)
+            CALL INTERESnew (HCRN, I1, I2, -1)
             int2p1m1=shcrn(1,-1)*sigmaintijm(1,-1,I1,I2)
             int2p2m2=shcrn(2,-2)*sigmaintijm(2,-2,I1,I2)
             int2m1p1=shcrn(-1,1)*sigmaintijm(-1,1,I1,I2)
@@ -942,16 +800,15 @@ c input I1 I2, scale2(b)
 c output HCRN (function of what? b, rapidity, I1, I2)
 c do positive and negative in the same loop
 c break coefficient calculation, which is not dependent on sigmaij
-       SUBROUTINE INTERESnew (HCRN, I1,I2, isign,SCALE2)
+       SUBROUTINE INTERESnew (HCRN, I1,I2, isign)
 c       IMPLICIT DOUBLE COMPLEX (A - Z)
        implicit none
-       double complex HCRN,scale2
-       DOUBLE PRECISION  ALPQF, ALPQR
+       double complex HCRN
        DOUBLE PRECISION aass
        DOUBLE PRECISION aassh,aasshsq
        DOUBLE COMPLEX aexpqq1,aexpqq2,aexpqg1,aexpqg2
        DOUBLE PRECISION sigmaij(-5:5,-5:5)
-       complex *16 CCp,CCm, Np(136),Nm(136)
+
        complex *16 FX1(-5:5), FX2(-5:5)
        complex *16 GGN,QGN_1,QGN_2,QQBN_1,QQBN_2,QQBN_3,QQBN_4
        complex *16 sGGN(-2:2,-2:2),sQGN_1(-2:2,-2:2),sQGN_2(-2:2,-2:2)
@@ -965,23 +822,15 @@ c       IMPLICIT DOUBLE COMPLEX (A - Z)
        INTEGER I,J,flag1,I1,I2,isign,ih1,ih2,sig
        INTEGER SI,SJ,SK
        COMMON/aass/aass
-       COMMON / COUPL  / ALPQF, ALPQR
        include 'const.h'
        include 'scales.h'
-       real *8 a_param,b0p,xlog0,xlog1,xlog2,xlog3,
-     .         xxlog0,xxlog1,xxlog2,xxlog3
-       COMMON/a_param/a_param,b0p
+
        COMMON/flag1/flag1
-       COMMON / MOMS2    / Np,Nm,CCp,CCm
+
        COMMON/collider/ih1,ih2
        double complex aexp,aexpB
        COMMON/exponent/aexp,aexpB
        COMMON/SIGMAIJ/SIGMAIJ
-       DOUBLE PRECISION XL, XL1, SALP
-       DOUBLE COMPLEX alpq,ALPr
-       COMMON/alphasldata/XL,XL1,SALP,alpq,ALPr
-       double complex loga,logmuf2q2,logq2muf2,logq2mur2
-       common/clogs/loga,logmuf2q2,logq2muf2,logq2mur2
 
       integer nproc
       common/nproc/nproc
@@ -2990,7 +2839,7 @@ C     BOTTOM
 
       include 'gauss.inc' 
       
-c     store results in the common block
+c     store integration results in the common block, they are passed to initsigmacthy
       integer I1,I2
       complex *16 Ith0p(136,136)
       complex *16 Ith1p(136,136)
@@ -2999,8 +2848,6 @@ c     store results in the common block
       complex *16 Ith1m(136,136)
       complex *16 Ith2m(136,136)
       common/ITHMOM/Ith0p,Ith1p,Ith2p,Ith0m,Ith1m,Ith2m
-      complex *16 cfpm(136,136)
-      complex *16 cfmm(136,136)
       
 c nodes for the gaussian quadrature for the double Mellin inversion
       complex*16 CCp,CCm, Np(136),Nm(136)
@@ -3031,6 +2878,10 @@ c nodes for the gaussian quadrature for the double Mellin inversion
       integer i,j
       double precision ya,yb
 
+      complex *16 cfpm(136,136)
+      complex *16 cfmm(136,136)
+
+c     weights of the gaussian quadrature
       double precision  WN(136)
       COMMON /WEIGHTS2/ WN      
 
@@ -3166,7 +3017,11 @@ c     setup the sigmaij integrated in costh and rapidity
       double precision gevfb
       data gevfb/3.8937966d11/
 
-c     integrated costh moments
+      double precision ax1,ax2,xx1,xx2
+      integer nmax1,nmax2
+      common /cxx/ax1,ax2,xx1,xx2,nmax1,nmax2
+      
+c     Input: integrated costh moments
       integer I1,I2
       complex *16 Ith0p(136,136)
       complex *16 Ith1p(136,136)
@@ -3175,15 +3030,11 @@ c     integrated costh moments
       complex *16 Ith1m(136,136)
       complex *16 Ith2m(136,136)
       common/ITHMOM/Ith0p,Ith1p,Ith2p,Ith0m,Ith1m,Ith2m
-      
-c     integrated matrix elements
+
+c     Output: rapidity and costh integrated born-level matrix elements
       complex *16 sigmaintijp(-5:5,-5:5,136,136)
       complex *16 sigmaintijm(-5:5,-5:5,136,136)
       common/sigmaint/sigmaintijp,sigmaintijm
-
-      double precision ax1,ax2,xx1,xx2
-      integer nmax1,nmax2
-      common /cxx/ax1,ax2,xx1,xx2,nmax1,nmax2
 
       q2=m**2
       facZ=1/9d0/pi*q2/((q2-Mz**2)**2+Mz**2*zw**2)*gevfb
@@ -3567,6 +3418,178 @@ c
      \        )
          sigmaij(-3,3)=sigmaij(-2,2)
          sigmaij(-5,5)=sigmaij(-2,2)
+      endif
+      return
+      end
+
+
+c     setup the sigmaij integrated in costh
+      subroutine initsigma(m,costh)
+      implicit none
+      double precision m,costh
+      
+      integer flag5,brflag,fnwa
+      common/flags2/flag5,brflag,fnwa
+
+      include 'const.h'
+      double precision q2
+
+      double precision facZ,facW,chi1,chi2
+      common/vcoup/facZ,facW,chi1,chi2
+
+      double precision Vud,Vus,Vub,Vcd,Vcs,Vcb
+      common/cabib/Vud,Vus,Vub,Vcd,Vcs,Vcb
+
+      double precision gevfb
+      data gevfb/3.8937966d11/
+
+      COMMON/SIGMAIJ/SIGMAIJ
+      double precision sigmaij(-5:5,-5:5)
+
+      q2=m**2
+      facZ=1/9d0/pi*q2/((q2-Mz**2)**2+Mz**2*zw**2)*gevfb
+      facW=1/9d0/pi*q2/((q2-Mw**2)**2+Mw**2*ww**2)*gevfb
+      chi1=(q2-Mz**2)/q2
+      chi2=((q2-Mz**2)**2+Mz**2*zw**2)/q2/q2
+      
+      if (flag5.eq.3) then
+         sigmaij(1,-1)=facZ*( 
+     \        (gLZu**2+gRZu**2)*(fLZ**2+fRZ**2)*(1d0+costh**2)
+     \        -   (gLZu**2-gRZu**2)*(fLZ**2-fRZ**2)*(2d0*costh)   )
+         sigmaij(4,-4)=sigmaij(1,-1)
+c     
+         sigmaij(-1,1)=facZ*( 
+     \        (gLZu**2+gRZu**2)*(fLZ**2+fRZ**2)*(1d0+costh**2)
+     \        +   (gLZu**2-gRZu**2)*(fLZ**2-fRZ**2)*(2d0*costh)   )
+         sigmaij(-4,4)=sigmaij(-1,1)
+c     
+         sigmaij(2,-2)=facZ*( 
+     \        (gLZd**2+gRZd**2)*(fLZ**2+fRZ**2)*(1d0+costh**2)
+     \        -   (gLZd**2-gRZd**2)*(fLZ**2-fRZ**2)*(2d0*costh)   )
+         sigmaij(3,-3)=sigmaij(2,-2)
+         sigmaij(5,-5)=sigmaij(2,-2)
+c
+         sigmaij(-2,2)=facZ*( 
+     \        (gLZd**2+gRZd**2)*(fLZ**2+fRZ**2)*(1d0+costh**2)
+     \        +   (gLZd**2-gRZd**2)*(fLZ**2-fRZ**2)*(2d0*costh)   )
+         sigmaij(-3,3)=sigmaij(-2,2)
+         sigmaij(-5,5)=sigmaij(-2,2)
+
+      elseif(flag5.eq.21) then
+         sigmaij(1,-2)=facW/16d0*vud**2*gLW**2*fLW**2*(1d0-costh)**2
+         sigmaij(-2,1)=facW/16d0*vud**2*gLW**2*fLW**2*(1d0+costh)**2
+         sigmaij(1,-3)=facW/16d0*vus**2*gLW**2*fLW**2*(1d0-costh)**2
+         sigmaij(-3,1)=facW/16d0*vus**2*gLW**2*fLW**2*(1d0+costh)**2
+         sigmaij(1,-5)=facW/16d0*vub**2*gLW**2*fLW**2*(1d0-costh)**2
+         sigmaij(-5,1)=facW/16d0*vub**2*gLW**2*fLW**2*(1d0+costh)**2
+         sigmaij(4,-3)=facW/16d0*vcs**2*gLW**2*fLW**2*(1d0-costh)**2
+         sigmaij(-3,4)=facW/16d0*vcs**2*gLW**2*fLW**2*(1d0+costh)**2
+         sigmaij(4,-2)=facW/16d0*vcd**2*gLW**2*fLW**2*(1d0-costh)**2
+         sigmaij(-2,4)=facW/16d0*vcd**2*gLW**2*fLW**2*(1d0+costh)**2
+         sigmaij(4,-5)=facW/16d0*vcb**2*gLW**2*fLW**2*(1d0-costh)**2
+         sigmaij(-5,4)=facW/16d0*vcb**2*gLW**2*fLW**2*(1d0+costh)**2
+      elseif(flag5.eq.22) then  ! CHECK IT    !!!!!
+         sigmaij(2,-1)=facW/16d0*vud**2*gLW**2*fLW**2*(1d0-costh)**2
+         sigmaij(-1,2)=facW/16d0*vud**2*gLW**2*fLW**2*(1d0+costh)**2
+         sigmaij(3,-1)=facW/16d0*vus**2*gLW**2*fLW**2*(1d0-costh)**2
+         sigmaij(-1,3)=facW/16d0*vus**2*gLW**2*fLW**2*(1d0+costh)**2
+         sigmaij(5,-1)=facW/16d0*vub**2*gLW**2*fLW**2*(1d0-costh)**2
+         sigmaij(-1,5)=facW/16d0*vub**2*gLW**2*fLW**2*(1d0+costh)**2
+         sigmaij(3,-4)=facW/16d0*vcs**2*gLW**2*fLW**2*(1d0-costh)**2
+         sigmaij(-4,3)=facW/16d0*vcs**2*gLW**2*fLW**2*(1d0+costh)**2
+         sigmaij(2,-4)=facW/16d0*vcd**2*gLW**2*fLW**2*(1d0-costh)**2
+         sigmaij(-4,2)=facW/16d0*vcd**2*gLW**2*fLW**2*(1d0+costh)**2
+         sigmaij(5,-4)=facW/16d0*vcb**2*gLW**2*fLW**2*(1d0-costh)**2
+         sigmaij(-4,5)=facW/16d0*vcb**2*gLW**2*fLW**2*(1d0+costh)**2
+      elseif(flag5.eq.2) then   ! CHECK IT     !!!!!
+         sigmaij(1,-2)=facW/16d0*vud**2*gLW**2*fLW**2*(1d0-costh)**2
+         sigmaij(-2,1)=facW/16d0*vud**2*gLW**2*fLW**2*(1d0+costh)**2
+         sigmaij(1,-3)=facW/16d0*vus**2*gLW**2*fLW**2*(1d0-costh)**2
+         sigmaij(-3,1)=facW/16d0*vus**2*gLW**2*fLW**2*(1d0+costh)**2
+         sigmaij(1,-5)=facW/16d0*vub**2*gLW**2*fLW**2*(1d0-costh)**2
+         sigmaij(-5,1)=facW/16d0*vub**2*gLW**2*fLW**2*(1d0+costh)**2
+         sigmaij(4,-3)=facW/16d0*vcs**2*gLW**2*fLW**2*(1d0-costh)**2
+         sigmaij(-3,4)=facW/16d0*vcs**2*gLW**2*fLW**2*(1d0+costh)**2
+         sigmaij(4,-2)=facW/16d0*vcd**2*gLW**2*fLW**2*(1d0-costh)**2
+         sigmaij(-2,4)=facW/16d0*vcd**2*gLW**2*fLW**2*(1d0+costh)**2
+         sigmaij(4,-5)=facW/16d0*vcb**2*gLW**2*fLW**2*(1d0-costh)**2
+         sigmaij(-5,4)=facW/16d0*vcb**2*gLW**2*fLW**2*(1d0+costh)**2
+         sigmaij(2,-1)=facW/16d0*vud**2*gLW**2*fLW**2*(1d0-costh)**2
+         sigmaij(-1,2)=facW/16d0*vud**2*gLW**2*fLW**2*(1d0+costh)**2
+         sigmaij(3,-1)=facW/16d0*vus**2*gLW**2*fLW**2*(1d0-costh)**2
+         sigmaij(-1,3)=facW/16d0*vus**2*gLW**2*fLW**2*(1d0+costh)**2
+         sigmaij(5,-1)=facW/16d0*vub**2*gLW**2*fLW**2*(1d0-costh)**2
+         sigmaij(-1,5)=facW/16d0*vub**2*gLW**2*fLW**2*(1d0+costh)**2
+         sigmaij(3,-4)=facW/16d0*vcs**2*gLW**2*fLW**2*(1d0-costh)**2
+         sigmaij(-4,3)=facW/16d0*vcs**2*gLW**2*fLW**2*(1d0+costh)**2
+         sigmaij(2,-4)=facW/16d0*vcd**2*gLW**2*fLW**2*(1d0-costh)**2
+         sigmaij(-4,2)=facW/16d0*vcd**2*gLW**2*fLW**2*(1d0+costh)**2
+         sigmaij(5,-4)=facW/16d0*vcb**2*gLW**2*fLW**2*(1d0-costh)**2
+         sigmaij(-4,5)=facW/16d0*vcb**2*gLW**2*fLW**2*(1d0+costh)**2
+      elseif (flag5.eq.5) then  !  T=TYPO in hep-ph/9704239 !!!!!
+            sigmaij(1,-1)=facZ*( 
+     \         ( (gLZu**2+gRZu**2)*(fLZ**2+fRZ**2) 
+!T     \          +4d0*(4d0*pi*aem)**2*(eequ)**2*chi2 
+!T     \          -2d0*(4d0*pi*aem)*eequ*(gLZu+gRZu)*(fLZ+fRZ)*chi1 )
+     \          +1/4d0*(4d0*pi*aem)**2*(eequ)**2*chi2 
+     \          -1/2d0*(4d0*pi*aem)*eequ*(gLZu+gRZu)*(fLZ+fRZ)*chi1 )
+!
+     \          *(1d0+costh**2)
+     \      -  ( (gLZu**2-gRZu**2)*(fLZ**2-fRZ**2)
+!T     \          -2d0*(4d0*pi*aem)*eequ*(gLZu-gRZu)*(fLZ-fRZ)*chi1 )
+     \          -1/2d0*(4d0*pi*aem)*eequ*(gLZu-gRZu)*(fLZ-fRZ)*chi1 )
+!
+     \          *(2d0*costh) 
+     \           )
+            sigmaij(4,-4)=sigmaij(1,-1)
+            sigmaij(-1,1)=facZ*( 
+     \         ( (gLZu**2+gRZu**2)*(fLZ**2+fRZ**2) 
+!     \          +4d0*(4d0*pi*aem)**2*(eequ)**2*chi2 
+!     \          -2d0*(4d0*pi*aem)*eequ*(gLZu+gRZu)*(fLZ+fRZ)*chi1 )
+     \          +1/4d0*(4d0*pi*aem)**2*(eequ)**2*chi2 
+     \          -1/2d0*(4d0*pi*aem)*eequ*(gLZu+gRZu)*(fLZ+fRZ)*chi1 )
+!
+     \          *(1d0+costh**2)
+     \      +  ( (gLZu**2-gRZu**2)*(fLZ**2-fRZ**2)
+!T     \          -2d0*(4d0*pi*aem)*eequ*(gLZu-gRZu)*(fLZ-fRZ)*chi1 )
+     \          -1/2d0*(4d0*pi*aem)*eequ*(gLZu-gRZu)*(fLZ-fRZ)*chi1 )
+!
+     \          *(2d0*costh) 
+     \           )
+            sigmaij(-4,4)=sigmaij(-1,1)
+c
+            sigmaij(2,-2)=facZ*( 
+     \         ( (gLZd**2+gRZd**2)*(fLZ**2+fRZ**2) 
+!     \          +4d0*(4d0*pi*aem)**2*(eeqd)**2*chi2 
+!     \          -2d0*(4d0*pi*aem)*eeqd*(gLZd+gRZd)*(fLZ+fRZ)*chi1 )
+     \          +1/4d0*(4d0*pi*aem)**2*(eeqd)**2*chi2 
+     \          -1/2d0*(4d0*pi*aem)*eeqd*(gLZd+gRZd)*(fLZ+fRZ)*chi1 )
+!
+     \          *(1d0+costh**2)
+     \      -  ( (gLZd**2-gRZd**2)*(fLZ**2-fRZ**2)
+!     \          -2d0*(4d0*pi*aem)*eeqd*(gLZd-gRZd)*(fLZ-fRZ)*chi1 )
+     \          -1/2d0*(4d0*pi*aem)*eeqd*(gLZd-gRZd)*(fLZ-fRZ)*chi1 )
+!
+     \          *(2d0*costh) 
+     \           )
+            sigmaij(3,-3)=sigmaij(2,-2)
+            sigmaij(5,-5)=sigmaij(2,-2)
+            sigmaij(-2,2)=facZ*( 
+     \         ( (gLZd**2+gRZd**2)*(fLZ**2+fRZ**2) 
+!     \          +4d0*(4d0*pi*aem)**2*(eeqd)**2*chi2 
+!     \          -2d0*(4d0*pi*aem)*eeqd*(gLZd+gRZd)*(fLZ+fRZ)*chi1 )
+     \          +1/4d0*(4d0*pi*aem)**2*(eeqd)**2*chi2 
+     \          -1/2d0*(4d0*pi*aem)*eeqd*(gLZd+gRZd)*(fLZ+fRZ)*chi1 )
+!
+     \          *(1d0+costh**2)
+     \      +  ( (gLZd**2-gRZd**2)*(fLZ**2-fRZ**2)
+!     \          -2d0*(4d0*pi*aem)*eeqd*(gLZd-gRZd)*(fLZ-fRZ)*chi1 )
+     \          -1/2d0*(4d0*pi*aem)*eeqd*(gLZd-gRZd)*(fLZ-fRZ)*chi1 )
+!
+     \          *(2d0*costh) 
+     \           )
+            sigmaij(-3,3)=sigmaij(-2,2)
+            sigmaij(-5,5)=sigmaij(-2,2)
       endif
       return
       end
