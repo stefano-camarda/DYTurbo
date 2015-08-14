@@ -47,7 +47,7 @@ void settings::init()
   //Cuba settings
   cubaverbosity = 0;   //Cuba info messsages, from 0 to 3
   cubacores = 0;   //parallelization (0 = turn off)
-  niter = 0;           //only for 2d and 3d cuhre integration
+  niterRES = 0;           //only for 2d and 3d cuhre integration
   vegasncallsRES  = 10000; // only for res 4d vegas integration
   vegasncallsCT   = 10000; // only for lo 8d vegas integration
   vegasncallsLO   = 10000; // only for lo 7d vegas integration
@@ -118,6 +118,8 @@ void settings::readfromfile(const string fname){
     int2d           = in.GetBool   ( "int2d"           ); //false
     int3d           = in.GetBool   ( "int3d"           ); //true
     int4d           = in.GetBool   ( "int4d"           ); //false
+    ctint3d         = in.GetBool   ( "ctint3d"         ); //true
+    ctintvegas      = in.GetBool   ( "ctintvegas"      ); //false
     doRES           = in.GetBool   ( "doRES"           ); //false
     doCT            = in.GetBool   ( "doCT"            ); //false
     doREAL          = in.GetBool   ( "doREAL"          ); //false
@@ -125,7 +127,8 @@ void settings::readfromfile(const string fname){
     doLO            = in.GetBool   ( "doLO"            ); //false
     cubaverbosity   = in.GetNumber ( "cubaverbosity"   ); //0       # Cuba        info     messsages, from    0           to              3
     cubacores       = in.GetNumber ( "cubacores"       ); //0
-    niter           = in.GetNumber ( "niter"           ); //0       # only        for      2d         and     3d          cuhre           integration
+    niterRES        = in.GetNumber ( "niterRES"        ); //0       # only        for      2d         and     3d          cuhre           integration
+    niterCT         = in.GetNumber ( "niterCT"         ); //0       # only        for      3d          cuhre           integration
     vegasncallsRES  = in.GetNumber ( "vegasncallsRES"  ); //10000
     vegasncallsCT   = in.GetNumber ( "vegasncallsCT"   ); //10000
     vegasncallsLO   = in.GetNumber ( "vegasncallsLO"   ); //10000
@@ -228,6 +231,8 @@ void settings::dumpAll(){
         dumpB("int2d           ", int2d               );
         dumpB("int3d           ", int3d               );
         dumpB("int4d           ", int4d               );
+        dumpB("ctint3d         ", ctint3d             );
+        dumpB("ctintvegas      ", ctintvegas          );
         dumpB("doRES           ", doRES               );
         dumpB("doCT            ", doCT                );
         dumpB("doREAL          ", doREAL              );
@@ -235,7 +240,8 @@ void settings::dumpAll(){
         dumpB("doLO            ", doLO                );
         dumpI("cubaverbosity   ", cubaverbosity       );
         dumpI("cubacores       ", cubacores           );
-        dumpI("niter           ", niter               );
+        dumpI("niterRES        ", niterRES            );
+	dumpI("niterCT         ", niterCT             );
         dumpD("vegasncallsRES  ", vegasncallsRES      );
         dumpD("vegasncallsCT   ", vegasncallsCT       );
         dumpD("vegasncallsLO   ", vegasncallsLO       );

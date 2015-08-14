@@ -49,10 +49,14 @@ mhigh = 116.
 #  mhigh = 1000.;
 
 
-# type of integration
+# type of integration for resummed part
 int2d = false
 int3d = true
 int4d = false
+
+# type of integration for counter term
+ctint3d = true
+ctintvegas = false
 
 # term switches
 doRES  = true
@@ -64,7 +68,8 @@ doLO   = true
 # Cuba settings
 cubaverbosity    = 0   # Cuba info messsages, from 0 to 3
 cubacores        = 8   # parallelization ( 0 = turn off)
-niter            = 2   # only for 2d and 3d cuhre integration
+niterRES         = 10   # only for 2d and 3d cuhre integration of resummed part
+niterCT          = 10   # only for 3d cuhre integration of counter term
 vegasncallsRES   = 100 #0000 # only for res 4d vegas integration
 vegasncallsCT    = 100 #00000 # only for lo 8d vegas integration
 vegasncallsLO    = 100 #00000 # only for lo 7d vegas integration
