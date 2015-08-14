@@ -221,7 +221,7 @@ extern "C" {
   double virtint_(double r[22], double &wgt);
   double countint_(double r[22], double &wgt);
   
-  double countterm_(double &costh, double &mm, double &qtt, double &yy, double &alfa, double &beta, double &cthmom0, double &cthmom1, double &cthmom2);
+  double countterm_(double &costh, double &mm, double &qtt, double &yy, int &mode);
 
   int binner_(double p3[4], double p4[4]);
 }
