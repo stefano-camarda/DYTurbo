@@ -9,5 +9,6 @@ void lowintegr(double &res, double &err);
 void realintegr(double &res, double &err);
 void virtintegr(double &res, double &err);
 void ctintegr(double &res, double &err);
+void ctintegr3d(double &res, double &err);
 
 #endif
