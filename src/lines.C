@@ -9,7 +9,7 @@ void yline()
 
   double y1 = -5;
   double y2 = 5;
-  int ny = 1000;
+  int ny = 200;
 
   ofstream yf("yline.C");
   yf << "{" << endl;
@@ -19,9 +19,10 @@ void yline()
   for(int i=0;i<=ny;i++)
     {
       double y = i*hy+y1;
-      set(m, qt, y);//set global variables to m, qt, y
+      set(costh, m, qt, y);//set global variables to costh, m, qt, y
       genV4p(m, qt, y, 0.);//generate boson 4-momentum, with m, qt, y and phi=0
-      yf << "gy->SetPoint(gy->GetN(), " << i*hy+y1 << ", " << resumm_(costh,m,qt,y,mode) << ");" << endl;
+      //      yf << "gy->SetPoint(gy->GetN(), " << i*hy+y1 << ", " << resumm_(costh,m,qt,y,mode) << ");" << endl;
+      yf << "gy->SetPoint(gy->GetN(), " << i*hy+y1 << ", " << countterm_(costh,m,qt,y,mode) << ");" << endl;
     }
   yf << "gy->Draw();" << endl;
   yf << "}" << endl;
@@ -47,9 +48,10 @@ void mline()
   for(int i=0;i<=nm;i++)
     {
       double m = i*hm+m1;
-      set(m, qt, y);//set global variables to m, qt, y
+      set(costh, m, qt, y);//set global variables to costh, m, qt, y
       genV4p(m, qt, y, 0.);//generate boson 4-momentum, with m, qt, y and phi=0
-      mf << "gm->SetPoint(gm->GetN(), " << i*hm+m1 << ", " << resumm_(costh,m,qt,y,mode) << ");" << endl;
+      //      mf << "gm->SetPoint(gm->GetN(), " << i*hm+m1 << ", " << resumm_(costh,m,qt,y,mode) << ");" << endl;
+      mf << "gm->SetPoint(gm->GetN(), " << i*hm+m1 << ", " << countterm_(costh,m,qt,y,mode) << ");" << endl;
     }
   mf << "gm->Draw();" << endl;
   mf << "}" << endl;
@@ -61,8 +63,8 @@ void mlinebw()
   int nocuts = (int)true;
   double m1 = 0;
   double m2 = 1;
-  int nm = 200;
-  setbounds(opts.mlow, opts.mhigh, 0, 10, opts.ylow, opts.yhigh);
+  int nm = 100;
+  setbounds(opts.mlow, opts.mhigh, 0, 2, opts.ylow, opts.yhigh);
 
   ofstream mf("mlinebw.C");
   mf << "{" << endl;
@@ -78,12 +80,13 @@ void mlinebw()
       double f[1];
       const int ncomp = 1;
       const int ndim = 4; //3; //2;
-      x[0] = m;
-      x[1] = 0.5;
-      x[2] = 0.5;
+      x[0] = 0.5;
+      x[1] = 0.1;
+      x[2] = m;
       x[3] = 0.5;
       //resintegrand2d(ndim, x, ncomp, f);
-      resintegrand3d(ndim, x, ncomp, f);
+      //      resintegrand3d(ndim, x, ncomp, f);
+      ctintegrand3d(ndim, x, ncomp, f);
       //void* userdata; int nvec; int core; double weight; int iter; resintegrand4d(ndim, x, ncomp, f, userdata, nvec, core, weight, iter);
       mf << "gm->SetPoint(gm->GetN(), " << i*hm+m1 << ", " << f[0] << ");" << endl;
     }
@@ -134,7 +137,7 @@ void ptline()
 
   double p1 = 0.01;
   double p2 = 100;
-  int np = 1999;
+  int np = 199;
 
   ofstream pf("ptline.C");
   pf << "{" << endl;
@@ -143,9 +146,10 @@ void ptline()
   for(int i=0;i<=np;i++)
     {
       double qt = i*hp+p1;
-      set(m, qt, y);//set global variables to m, qt, y
+      set(costh, m, qt, y);//set global variables to costh, m, qt, y
       genV4p(m, qt, y, 0.);//generate boson 4-momentum, with m, qt, y and phi=0
-      pf << "gp->SetPoint(gp->GetN(), " << i*hp+p1 << ", " << resumm_(costh,m,qt,y,mode) << ");" << endl;
+      //      pf << "gp->SetPoint(gp->GetN(), " << i*hp+p1 << ", " << resumm_(costh,m,qt,y,mode) << ");" << endl;
+      pf << "gp->SetPoint(gp->GetN(), " << i*hp+p1 << ", " << countterm_(costh,m,qt,y,mode) << ");" << endl;
     }
   pf << "gp->Draw();" << endl;
   pf << "}" << endl;

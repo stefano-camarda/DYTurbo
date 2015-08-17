@@ -134,17 +134,7 @@ int main( int argc , const char * argv[])
   dyreal(m, y, qt, phicm, phiZ, costh, zcth, mjj, costhjj, phijj);
   dyvirt(m, y, qt, phicm, phiZ, costh, zcth, vz);
   dyct(m, y, qt, phicm, phiZ, costh, alpha, beta);
-
-  //work in progress for rewriting the counterterm with the same integration structure as the resummed part
-  /*
-  double cthmom0 = 0;
-  double cthmom1 = 0;
-  double cthmom2 = 0;
-  cout << countterm_(costh,m,qt,y,alpha,beta,cthmom0,cthmom1,cthmom2) << endl;
-  */
   /**************************************/
-
-  // return 0;
 
   // Cuba integration
   cout << endl << "Start integration of";
@@ -185,7 +175,8 @@ int main( int argc , const char * argv[])
       // counter term
       if (opts.doCT) {
           double b_time = clock_real();
-          ctintegr(value, error);
+          if (opts.ctint3d) ctintegr3d(value, error);
+          if (opts.ctintvegas) ctintegr(value, error);
           double e_time = clock_real();
           value = value / (*(qit+1) - *qit);
           error = error / (*(qit+1) - *qit);

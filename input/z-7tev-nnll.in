@@ -31,27 +31,32 @@ itmxToFile   = 0              # number of last itmx to write on file
 rmass  = 91.1876
 rwidth = 2.495
 # Set boundaries of integration
-ylow  = -3.0
-yhigh = 3.0
+ylow  = -2.4
+yhigh = 2.4
 mlow  = 66.
 mhigh = 116.
 
 # dimension of integration
 intDimRes = 2
 
+# type of integration for counter term
+ctint3d = true
+ctintvegas = false
+
 # term switches
 doRES  = true
 doCT   = true
-doREAL = true
-doVIRT = true
-doLO   = true
+doREAL = false
+doVIRT = false
+doLO   = false
 
 # Cuba settings
 cubaverbosity    = 0   # Cuba info messsages, from 0 to 3
-cubacores        = 24   # parallelization ( 0 = turn off)
-niter            = 20   # only for 2d and 3d cuhre integration
+cubacores        = 0   # parallelization ( 0 = turn off)
+niterRES         = 10   # only for 2d and 3d cuhre integration
+niterCT          = 10   # only for 2d and 3d cuhre integration
 vegasncallsRES   = 0        # only for res 4d vegas integration
-vegasncallsCT    = 100000000 # only for lo 8d vegas integration
+vegasncallsCT    = 1000000 # only for lo 8d vegas integration
 vegasncallsLO    = 0         # only for lo 7d vegas integration
 vegasncallsREAL  = 1000000000 # only for real 10d vegas integration
 vegasncallsVIRT  = 100000000 # only for virt 8d vegas integration

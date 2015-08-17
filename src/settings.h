@@ -93,13 +93,17 @@ public:
   int intDimRes;
   bool int2d, int3d, int4d;
 
+  //type of integration for the counterterm
+  bool ctint3d, ctintvegas;
+
   //term switch
   bool doRES  , doCT   , doREAL , doVIRT , doLO   ;
 
   //Cuba settings
   int cubaverbosity;
   int cubacores;
-  int niter;
+  int niterRES;
+  int niterCT;
   int vegasncallsRES  ;
   int vegasncallsCT   ;
   int vegasncallsLO   ;

@@ -31,7 +31,8 @@ c-----------------------------------------------------
       double precision dfbGeV2,fbGeV2,pbGeV2,nbGeV2,overa
       parameter(nbGeV2=0.389379d6)
       parameter(pbGeV2=0.389379d9)
-      parameter(fbGeV2=0.389379d12)
+c      parameter(fbGeV2=0.389379d12)
+      parameter(fbGeV2=0.38937966d12)
 c----decifemtobarns
       parameter(dfbGeV2=0.389379d13)
       parameter(overa=pbGeV2/xn/256d0/pi)

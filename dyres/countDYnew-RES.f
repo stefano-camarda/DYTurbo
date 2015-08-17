@@ -650,6 +650,8 @@ CC Include as/pi factors and sum O(as) and O(as^2) contributions
 CC Include iacobians
 
       xmsq(1)=xmsq(1)*xjacqt2*xjacq2*q2/shad/Vol
+CC do not Include iacobians
+c        xmsq(1)=xmsq(1)*q2/shad/Vol
 
 
       countint=0d0
@@ -659,6 +661,9 @@ CC Include iacobians
 C Multiply by BORN phase space weight
 
         xmsq(1)=xmsq(1)*fluxborn*pswt0/BrnRat
+
+C     do not Include iacobians
+c       xmsq(1)=xmsq(1)*fluxborn/BrnRat*((one/4d0/pi)**3)
 
 ! SWITCHING
         xmsq(1)=xmsq(1)*switch
