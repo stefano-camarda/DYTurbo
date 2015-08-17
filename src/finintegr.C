@@ -7,6 +7,7 @@
 #include "interface.h"
 #include "finintegr.h"
 #include "integr.h"
+#include "settings.h"
 
 using namespace std;
 
@@ -66,19 +67,92 @@ integrand_t ctintegrand(const int &ndim, const double x[], const int &ncomp, dou
   return 0;
 }
 
-//generate the phase space 4 vectors
-//write a fortran function which calculates the ct as a function of m, qt, y, and costh moments, (and alpha beta)
-//perform the integration in alpha and beta
-double dyctint(double m, double y, double qt, double phicm, double phiZ, double costh)
+integrand_t ctintegrand3d(const int &ndim, const double x[], const int &ncomp, double f[])
+//Generates the phase space 4 vectors
+//Calculates the ct integrand as a function of m, qt, y
+//dOmega integration is factorised in the costh moments
+//The integration in alpha and beta is performed inside countdy
 {
+  clock_t begin_time, end_time;
 
-  double cthmom0 = 0;
-  double cthmom1 = 0;
-  double cthmom2 = 0;
-  double alpha = 0.5;
-  double beta = 0.5;
-  countterm_(costh,m,qt,y,alpha,beta,cthmom0,cthmom1,cthmom2);
+  begin_time = clock();
 
+  //Jacobian of the change of variables from the unitary hypercube x[3] to the m, y, qt boundaries
+  double jac = 1.;
+
+  // Generate the boson invariant mass between the integration boundaries
+  double wsqmin = pow(mmin,2);
+  double wsqmax = pow(mmax,2);
+  double x1=x[0];
+  double m2,wt;
+  breitw_(x1,wsqmin,wsqmax,opts.rmass,opts.rwidth,m2,wt);
+  double m=sqrt(m2);
+  jac=jac*wt;
+
+  //Dynamic scale (not implemented yet)
+  //if(dynamicscale) call scaleset(m2)
+
+  //Limit y boundaries to the kinematic limit in y
+  double ylim = 0.5*log(pow(energy_.sroot_,2)/m2);
+  double ymn = min(max(-ylim, ymin),ylim);
+  double ymx = max(min(ylim, ymax),-ylim);
+
+  //integrate between ymin and ymax
+  double y=ymn+(ymx-ymn)*x[1];
+  jac=jac*(ymx-ymn);
+  
+  //integrate between qtmin and qtmax
+  //use qt2 to get the correct jacobian!
+  double qtcut = qtcut_.xqtcut_*m;
+  double qtmn = max(qtcut, qtmin);
+  double qtmn2 = pow(qtmn,2);
+  double qtmx2 = pow(qtmax,2);
+
+  double tiny = 1E-5;
+  double a = 1./(1+log(qtmx2/tiny));
+  double b = 1./(1+log(qtmn2/tiny));
+  double x2 = a + (b-a) * x[2];
+  jac = jac * (b-a);
+  double qt2=tiny*exp(1./x2 - 1);
+  jac=jac*qt2/pow(x2,2);
+  
+  double qt=sqrt(qt2);
+  
+  //set global variables to costh, m, qt, y
+  set(0, m, qt, y);
+
+  //generate boson 4-momentum, with m, qt, y and phi=0
+  genV4p(m, qt, y, 0.);
+
+  //  SWITCHING FUNCTIONS
+  double swtch=1.;
+  if (qt >= m*3/4.)  swtch=exp(-pow((m*3/4.-qt),2)/pow((m/2.),2)); // GAUSS SWITCH
+  if (swtch <= 0.01) swtch = 0;
+
+  //In this point of phase space (m, qt, y) the costh integration is performed by 
+  //calculating the 0, 1 and 2 moments of costh
+  //that are the integrals int(dcosth dphi1 dphi2), int(costh dcosth dphi1 dphi2), and int(costh^2 dcosth dphi1 dphi2) convoluted with cuts
+  //Then the epxressions 1, costh and costh^2 in sigmaij are substituted by these costh moments
+  double costh = 0;
+  int mode = 1;
+  if (swtch < 0.01)
+    f[0]=0.;
+  else
+    //evaluate the resummed cross section
+    f[0]=countterm_(costh,m,qt,y,mode);
+
+  if (f[0] != f[0])
+    f[0]=0.;  //avoid nans
+	   
+  f[0] = f[0]*jac*swtch;
+
+  end_time = clock();
+  if (opts.timeprofile)
+    cout << setw (3) << "m" << setw(10) << m << setw(4) << "qt" << setw(10) <<  qt
+	 << setw(8) << "result" << setw(10) << f[0]
+	 << setw(10) << "tot time" << setw(10) << float( end_time - begin_time ) /  CLOCKS_PER_SEC
+	 << endl;
+  return 0;
 }
 
 int binner_(double p3[4], double p4[4])

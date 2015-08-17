@@ -13,6 +13,7 @@
 #include "finintegr.h"
 #include "finitemapping.h"
 #include "cubacall.h"
+#include "plotter.h"
 
 
 
@@ -69,6 +70,8 @@ int main( int argc , const char * argv[])
   opts.doLO   = (opts.doLO   && opts.order == 1);
   opts.doREAL = (opts.doREAL && opts.order == 2);
   opts.doVIRT = (opts.doVIRT && opts.order == 2);
+  // histogram output
+  hists.Init();
   /***********************************/
 
   double costh, m, qt, y;
@@ -135,17 +138,7 @@ int main( int argc , const char * argv[])
   dyreal(m, y, qt, phicm, phiZ, costh, zcth, mjj, costhjj, phijj);
   dyvirt(m, y, qt, phicm, phiZ, costh, zcth, vz);
   dyct(m, y, qt, phicm, phiZ, costh, alpha, beta);
-
-  //work in progress for rewriting the counterterm with the same integration structure as the resummed part
-  /*
-  double cthmom0 = 0;
-  double cthmom1 = 0;
-  double cthmom2 = 0;
-  cout << countterm_(costh,m,qt,y,alpha,beta,cthmom0,cthmom1,cthmom2) << endl;
-  */
   /**************************************/
-
-  // return 0;
 
   // Cuba integration
   cout << endl << "Start integration of";
@@ -179,17 +172,20 @@ int main( int argc , const char * argv[])
           value = value / (*(qit+1) - *qit);
           error = error / (*(qit+1) - *qit);
           print_result(value,error,b_time,e_time);
+          hists.FillResult( plotter::Resum , *qit, *(qit+1), value, error, e_time-b_time );
           totval += value;
           toterror2 += error*error;
       }
       // counter term
       if (opts.doCT) {
           double b_time = clock_real();
-          ctintegr(value, error);
+          if (opts.ctint3d) ctintegr3d(value, error);
+          if (opts.ctintvegas) ctintegr(value, error);
           double e_time = clock_real();
           value = value / (*(qit+1) - *qit);
           error = error / (*(qit+1) - *qit);
           print_result(value,error,b_time,e_time);
+          hists.FillResult( plotter::CT , *qit, *(qit+1), value, error, e_time-b_time );
           totval += value;
           toterror2 += error*error;
       }
@@ -201,6 +197,7 @@ int main( int argc , const char * argv[])
           value = value / (*(qit+1) - *qit);
           error = error / (*(qit+1) - *qit);
           print_result(value,error,b_time,e_time);
+          hists.FillResult( plotter::LO , *qit, *(qit+1), value, error, e_time-b_time );
           totval += value;
           toterror2 += error*error;
       }
@@ -212,6 +209,7 @@ int main( int argc , const char * argv[])
           value = value / (*(qit+1) - *qit);
           error = error / (*(qit+1) - *qit);
           print_result(value,error,b_time,e_time);
+          hists.FillResult( plotter::Real , *qit, *(qit+1), value, error, e_time-b_time );
           totval += value;
           toterror2 += error*error;
       }
@@ -223,12 +221,14 @@ int main( int argc , const char * argv[])
           value = value / (*(qit+1) - *qit);
           error = error / (*(qit+1) - *qit);
           print_result(value,error,b_time,e_time);
+          hists.FillResult( plotter::Virt , *qit, *(qit+1), value, error, e_time-b_time );
           totval += value;
           toterror2 += error*error;
       }
       // total
       double ee_time = clock_real();
       print_result (totval, sqrt(toterror2), bb_time, ee_time);
+      hists.FillResult( plotter::Total , *qit, *(qit+1) , totval, sqrt(toterror2), ee_time-bb_time );
       cout << endl;
     }
   print_line();
@@ -236,6 +236,7 @@ int main( int argc , const char * argv[])
   cout << endl;
   cout << setw(10) << "time "  << setw(15) << float(end_time - begin_time) << endl;
 
+  hists.Finalise();
 
   return 0;
 }
