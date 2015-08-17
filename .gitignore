@@ -30,5 +30,6 @@ pdffit.grid
 scripts/batch_scripts
 scripts/infiles
 results
+results_merge
 run_dir
 share
