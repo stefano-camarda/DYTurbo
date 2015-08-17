@@ -13,9 +13,9 @@
 #BSUB -L /bin/bash
 #BSUB -o OUTDIR/JOBNAME.out
 #BSUB -e OUTDIR/JOBNAME.err
-#BSUB -q atlaslong
-# #BSUB -q etapshort
-# #BSUB -W 5:00
+# #BSUB -q atlaslong
+#BSUB -q atlasshort
+#BSUB -W 5:00
 #BSUB -app Reserve5G
 #BSUB -n 10
 #BSUB -R 'rusage[atlasio=0]'

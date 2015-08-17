@@ -13,12 +13,12 @@ import sys,os,re
 # for batch add -b before first ROOT calling 
 sys.argv.append('-b') # run in batch
 
+#from PlotTools import *
+from ROOT  import TGraphErrors, TFile
+#import asciitable
 
-from PlotTools import *
-from ROOT  import TGraphErrors
-
-import asciitable
 def plot_pt(fname):
+
     TABLE = asciitable.read(fname, delimiter=",")
     gr = TGraphErrors()
 
@@ -48,12 +48,42 @@ def plot_pt(fname):
     pl.Save()
     pass
 
+def print_results():
+    for variation in [str(x) for x in range(0,51)] + ["g_05", "g_15", "as_0117", "as_0119"]:
+        fname = "results_merge/dyturbo_z0_lhc7_CT10nnlo_{0}_qtMerge_100101.root".format(variation)
+        tf = TFile.Open(fname,"read")
+        for term in ["resum" , "ct"]:
+            gr = tf.Get("qt_"+term)
+            print
+            print " {0:^13} : {1:^29}".format("bin",term+" "+variation)
+            print "-"*(1+ 5 +3+ 5 +3+ 12 +5+ 12)
+            lobin = -1
+            hibin = -1
+            #for ibin in [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 22, 26, 30, 34, 38, 42, 46, 50, 54, 60, 70, 80, 100, 150, 200, 300, 800]:
+            #if lobin < 0 :
+            #lobin=ibin
+            #continue
+            for i in range(gr.GetN()):
+
+                lobin = gr.GetX()[i] - gr.GetEX()[i]
+                hibin = gr.GetX()[i] + gr.GetEX()[i]
+                val = gr.GetY ()[i]
+                err = gr.GetEY()[i]
+                print " {0:5} - {1:5} : {2:12e} +/- {3:12e}".format(lobin,hibin,val,err)
+                #lobin=ibin
+                pass
+            print
+            pass
+        tf.Close()
+    pass
+
 
 ## Documentation for main
 #
 # More details. 
 if __name__ == '__main__' :
-    plot_pt("results/pt_table_CT10nnlo.txt")
+    print_results();
+    #plot_pt("results/pt_table_CT10nnlo.txt")
     pass
 
 

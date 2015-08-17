@@ -101,10 +101,10 @@ submit_Z_dyturbo(){
             lobin=$ibin
             continue
         fi
+        hibin=$ibin
+        qtregion=qt${lobin}${hibin}
         for variation in `seq 0 50` g_05 g_15 as_0117 as_0119
         do
-            hibin=$ibin
-            qtregion=qt${lobin}${hibin}
             prepare_script
             $DRYRUN submit_job
         done
