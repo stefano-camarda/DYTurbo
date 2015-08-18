@@ -93,9 +93,9 @@ void integr4d(double &res, double &err)
   const int seed = 1;
   const int mineval = opts.vegasncallsRES;
   const int maxeval = opts.vegasncallsRES;
-  const int nstart = 1000;
-  const int nincrease = 1000;
-  const int nbatch = 10000;
+  const int nstart = max(10, int(opts.vegasncallsRES/10));
+  const int nincrease = max(10, int(opts.vegasncallsRES/10));
+  const int nbatch = 1000;
   const int gridno = 1;
   Vegas(ndim, ncomp, (integrand_t)resintegrand4d, userdata, nvec,
 	epsrel, epsabs,
@@ -130,8 +130,8 @@ void lowintegr(double &res, double &err)
   const int seed = opts.rseed;
   const int mineval   = opts.vegasncallsLO;
   const int maxeval   = opts.vegasncallsLO;
-  const int nstart    = 100000;
-  const int nincrease = 100000;
+  const int nstart    = max(10, int(opts.vegasncallsLO/10));
+  const int nincrease = max(10, int(opts.vegasncallsLO/10));
   const int nbatch    = 1000;
   const int gridno = 1;
   Vegas(ndim, ncomp, (integrand_t)lowintegrand, userdata, nvec,
@@ -168,8 +168,8 @@ void realintegr(double &res, double &err)
   const int seed = opts.rseed;
   const int mineval = opts.vegasncallsREAL;
   const int maxeval = opts.vegasncallsREAL;
-  const int nstart = 10000;
-  const int nincrease = 10000;
+  const int nstart = max(10, int(opts.vegasncallsREAL/10));
+  const int nincrease = max(10, int(opts.vegasncallsREAL/10));
   const int nbatch = 1000;
   const int gridno = 1;
   Vegas(ndim, ncomp, (integrand_t)realintegrand, userdata, nvec,
@@ -206,8 +206,8 @@ void virtintegr(double &res, double &err)
   const int seed = opts.rseed;
   const int mineval = opts.vegasncallsVIRT;
   const int maxeval = opts.vegasncallsVIRT;
-  const int nstart = 100000;
-  const int nincrease = 100000;
+  const int nstart = max(10, int(opts.vegasncallsVIRT/10));
+  const int nincrease = max(10, int(opts.vegasncallsVIRT/10));
   const int nbatch = 1000;
   const int gridno = 1;
   Vegas(ndim, ncomp, (integrand_t)virtintegrand, userdata, nvec,
@@ -244,8 +244,8 @@ void ctintegr(double &res, double &err)
   const int seed = opts.rseed;
   const int mineval = opts.vegasncallsCT;
   const int maxeval = opts.vegasncallsCT;
-  const int nstart = 100000;
-  const int nincrease = 100000;
+  const int nstart = max(10, int(opts.vegasncallsCT/10));
+  const int nincrease = max(10, int(opts.vegasncallsCT/10));
   const int nbatch = 1000;
   const int gridno = 1;
   Vegas(ndim, ncomp, (integrand_t)ctintegrand, userdata, nvec,
