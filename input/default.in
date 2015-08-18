@@ -49,10 +49,11 @@ mhigh = 116.
 #  mhigh = 1000.;
 
 
-# type of integration for resummed part
-int2d = false
-int3d = true
-int4d = false
+# dimension of integration
+intDimRes = 2
+#int2d = false
+#int3d = true
+#int4d = false
 
 # type of integration for counter term
 ctint3d = true

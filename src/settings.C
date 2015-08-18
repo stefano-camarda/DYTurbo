@@ -115,9 +115,10 @@ void settings::readfromfile(const string fname){
     yhigh           = in.GetNumber ( "yhigh"           ); //2.4
     mlow            = in.GetNumber ( "mlow"            ); //66.
     mhigh           = in.GetNumber ( "mhigh"           ); //116.
-    int2d           = in.GetBool   ( "int2d"           ); //false
-    int3d           = in.GetBool   ( "int3d"           ); //true
-    int4d           = in.GetBool   ( "int4d"           ); //false
+    intDimRes       = in.GetNumber ( "intDimRes"       ); //3
+    //int2d           = in.GetBool   ( "int2d"           ); //false
+    //int3d           = in.GetBool   ( "int3d"           ); //true
+    //int4d           = in.GetBool   ( "int4d"           ); //false
     ctint3d         = in.GetBool   ( "ctint3d"         ); //true
     ctintvegas      = in.GetBool   ( "ctintvegas"      ); //false
     doRES           = in.GetBool   ( "doRES"           ); //false
@@ -151,6 +152,20 @@ void settings::readfromfile(const string fname){
     opts_.approxpdf_    = in.GetNumber ( "opts_approxpdf" ); //0
     opts_.pdfintervals_ = in.GetNumber ( "opts_pdfintervals" ); //100
 
+
+    // additional conditions
+    opts.doLO   = (opts.doLO   && opts.order == 1);
+    opts.doREAL = (opts.doREAL && opts.order == 2);
+    opts.doVIRT = (opts.doVIRT && opts.order == 2);
+    if (intDimRes<5 && intDimRes>1){
+        int2d = (intDimRes == 2);
+        int3d = (intDimRes == 3);
+        int4d = (intDimRes == 4);
+    } else {
+        int2d = false;
+        int3d = true;
+        int4d = false;
+    }
 
     return ;
 }
@@ -228,6 +243,7 @@ void settings::dumpAll(){
         dumpD("yhigh           ", yhigh               );
         dumpD("mlow            ", mlow                );
         dumpD("mhigh           ", mhigh               );
+        dumpI("intDimRes       ", intDimRes           );
         dumpB("int2d           ", int2d               );
         dumpB("int3d           ", int3d               );
         dumpB("int4d           ", int4d               );

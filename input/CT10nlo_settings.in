@@ -8,7 +8,7 @@ muf          = 91.1876e0      # mur, muf
 a_param      = 2.0e0          # a_param
 g_param      = 1.0e0          # g_param
 order        = 1              # order
-part         = virt           # part
+part         = tota           # part
 zerowidth    = false          # zerowidth
 M_min        = 66d0
 M_max        = 116d0          # M_min, M_max
@@ -30,6 +30,8 @@ itmxToFile   = 0              # number of last itmx to write on file
 # resonance mass and width (used for breit wigner unweighting)
 rmass  = 91.1876
 rwidth = 2.495
+# include virtual photon
+useGamma = true
 # Set boundaries of integration
 ylow  = 2
 yhigh = 2.4
@@ -46,10 +48,12 @@ mhigh = 116.
 #  mlow = 10.;
 #  mhigh = 1000.;
 
-# type of integration
-int2d = false
-int3d = true
-int4d = false
+
+# dimension of integration
+intDimRes = 3
+#int2d = false
+#int3d = true
+#int4d = false
 
 # term switches
 doRES  = true
@@ -62,29 +66,29 @@ doLO   = true
 cubaverbosity    = 0   # Cuba info messsages, from 0 to 3
 cubacores        = 4   # parallelization ( 0 = turn off)
 niter            = 0   # only for 2d and 3d cuhre integration
-vegasncallsRES   = 100 # only for res 4d vegas integration
-vegasncallsCT    = 100 # only for lo 8d vegas integration
-vegasncallsLO    = 100 # only for lo 7d vegas integration
-vegasncallsREAL  = 100 # only for real 10d vegas integration
-vegasncallsVIRT  = 100 # only for virt 8d vegas integration
+vegasncallsRES   = 1000000 # only for res 4d vegas integration
+vegasncallsCT    = 10000000 # only for lo 8d vegas integration
+vegasncallsLO    = 10000000 # only for lo 7d vegas integration
+vegasncallsREAL  = 100000000 # only for real 10d vegas integration
+vegasncallsVIRT  = 10000000 # only for virt 8d vegas integration
 
 # total or with lepton cuts
 makelepcuts = false
 
 # integration types and settings for costh phi_lep phase space
-cubaint   = true   # integration with Cuba Suave
+cubaint   = false   # integration with Cuba Suave
 trapezint = false  # trapezoidal rule for the phi_lep integration and semi-analytical for costh
-quadint   = false  # quadrature rule for the phi_lep integration and semi-analytical for costh
+quadint   = true  # quadrature rule for the phi_lep integration and semi-analytical for costh
 
 suavepoints = 1000000 # number of points for suave integration, newpoints is set to suavepoints/10;
 nphitrape   = 1000    # number of steps for trapezoidal rule of phi_lep integration
 quadnphi    = 20      # number of segments for quadrature rule of phi_lep integration
-ncstart     = 1000    # starting sampling for the costh semi-analytical integration (common settings for the trapezoidal and quadrature rules)
+ncstart     = 100    # starting sampling for the costh semi-analytical integration (common settings for the trapezoidal and quadrature rules)
 
 # qt-recoil prescriptions
 qtrec_naive = false
-qtrec_cs    = false
-qtrec_kt0   = true
+qtrec_cs    = true
+qtrec_kt0   = false
 
 # debug settings
 timeprofile = false  # debug and time profile resummation integration
@@ -93,7 +97,6 @@ verbose     = false  # debug and time profile costh phi_lep integration
 # Set to 1 to use the dyres approximation of PDFs and integration contour in the complex plane for the Mellin inversion
 # Set to 0 to use exact PDFs and straight line contour in the complex plane for the Mellin inversion
 opts_approxpdf = 0
-
 # number of intervals for integration of PDF moments, relevant only for opts_approxpdf = 0
 opts_pdfintervals = 100
 

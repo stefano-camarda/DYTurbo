@@ -13,9 +13,9 @@
 #BSUB -L /bin/bash
 #BSUB -o OUTDIR/JOBNAME.out
 #BSUB -e OUTDIR/JOBNAME.err
-#BSUB -q atlaslong
-# #BSUB -q etapshort
-# #BSUB -W 5:00
+# #BSUB -q atlaslong
+#BSUB -q atlasshort
+#BSUB -W 5:00
 #BSUB -app Reserve5G
 #BSUB -n 10
 #BSUB -R 'rusage[atlasio=0]'
@@ -40,8 +40,10 @@ cd run_dir
 date
 # cp all resbos stuff
 CP DYTURBOROOTDIR/bin/dyturbo .
+CP DYTURBOROOTDIR/input/default.in .
 CP DYTURBOINPUTFILE input.in
 /usr/bin/time -v ./dyturbo input.in
+CP results.root OUTDIR/JOBNAME.root
 
 
 exit 0

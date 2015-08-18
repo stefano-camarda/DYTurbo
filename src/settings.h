@@ -89,7 +89,8 @@ public:
   double mlow;
   double mhigh;
 
-  //type of integration
+  //dimension of integration
+  int intDimRes;
   bool int2d, int3d, int4d;
 
   //type of integration for the counterterm
