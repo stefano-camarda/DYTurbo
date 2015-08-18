@@ -5,7 +5,7 @@
 
 #ifdef USEROOT
 #include <TH1D.h>
-#include <TGraphErrors.h>
+#include <TH2D.h>
 #endif // USEROOT
 
 class plotter {
@@ -17,20 +17,21 @@ class plotter {
 
         void Init();
         void FillEvent(double p3[4], double p4[4], double wgt);
-        void FillResult(TermType term, double binlo, double binhi, double qt_val, double qt_error, double time);
+        void FillResult(TermType term, double int_val, double int_error, double time);
         void Dump();
         void Finalise();
         static int *gcounter;
 
     private :
 #ifdef USEROOT
+        /// @todo: use one object instead
         TH1D * h_l1_pt;
-        TGraphErrors qt_resum ;
-        TGraphErrors qt_ct    ;
-        TGraphErrors qt_lo    ;
-        TGraphErrors qt_real  ;
-        TGraphErrors qt_virt  ;
-        TGraphErrors qt_total ;
+        TH2D* qt_y_resum ;
+        TH2D* qt_y_ct    ;
+        TH2D* qt_y_lo    ;
+        TH2D* qt_y_real  ;
+        TH2D* qt_y_virt  ;
+        TH2D* qt_y_total ;
 #endif // USEROOT
 
 };

@@ -119,8 +119,9 @@ void settings::readfromfile(const string fname){
     //int2d           = in.GetBool   ( "int2d"           ); //false
     //int3d           = in.GetBool   ( "int3d"           ); //true
     //int4d           = in.GetBool   ( "int4d"           ); //false
-    ctint3d         = in.GetBool   ( "ctint3d"         ); //true
-    ctintvegas      = in.GetBool   ( "ctintvegas"      ); //false
+    intDimCT        = in.GetNumber ( "intDimCT"        ); //3
+    //ctint3d         = in.GetBool   ( "ctint3d"         ); //true
+    //ctintvegas      = in.GetBool   ( "ctintvegas"      ); //false
     doRES           = in.GetBool   ( "doRES"           ); //false
     doCT            = in.GetBool   ( "doCT"            ); //false
     doREAL          = in.GetBool   ( "doREAL"          ); //false
@@ -154,9 +155,11 @@ void settings::readfromfile(const string fname){
 
 
     // additional conditions
+    // finite order (NLO vs NNLO)
     opts.doLO   = (opts.doLO   && opts.order == 1);
     opts.doREAL = (opts.doREAL && opts.order == 2);
     opts.doVIRT = (opts.doVIRT && opts.order == 2);
+    // counter term integration dimension
     if (intDimRes<5 && intDimRes>1){
         int2d = (intDimRes == 2);
         int3d = (intDimRes == 3);
@@ -165,6 +168,14 @@ void settings::readfromfile(const string fname){
         int2d = false;
         int3d = true;
         int4d = false;
+    }
+    // counter term integration dimension
+    if (intDimRes==3){
+        ctint3d = true;
+        ctintvegas = false;
+    } else {
+        ctint3d = false;
+        ctintvegas = true;
     }
 
     return ;
@@ -247,6 +258,7 @@ void settings::dumpAll(){
         dumpB("int2d           ", int2d               );
         dumpB("int3d           ", int3d               );
         dumpB("int4d           ", int4d               );
+        dumpB("intDimCT        ", intDimCT            );
         dumpB("ctint3d         ", ctint3d             );
         dumpB("ctintvegas      ", ctintvegas          );
         dumpB("doRES           ", doRES               );
@@ -364,8 +376,10 @@ bool cuts(double p3[4], double p4[4])
 
 void binning::readfromfile(const string fname){
     InputParser in(fname);
-    qtbins.clear();
-    in.GetVectorDouble("qtbins",qtbins);
+    qtbins       .clear(); in.GetVectorDouble( "qtbins"      , qtbins       );
+    ybins        .clear(); in.GetVectorDouble( "ybins"       , ybins        );
+    hist_qt_bins .clear(); in.GetVectorDouble( "plot_qtbins" , hist_qt_bins );
+    hist_y_bins  .clear(); in.GetVectorDouble( "plot_ybins"  , hist_y_bins  );
     return;
 }
 

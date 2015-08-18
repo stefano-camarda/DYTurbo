@@ -94,6 +94,7 @@ public:
   bool int2d, int3d, int4d;
 
   //type of integration for the counterterm
+  int intDimCT;
   bool ctint3d, ctintvegas;
 
   //term switch
@@ -139,6 +140,9 @@ class binning
   void readfromfile(const string fname);
   // private:
   vector <double> qtbins;
+  vector <double> ybins;
+  vector <double> hist_qt_bins;
+  vector <double> hist_y_bins;
 };
 
 

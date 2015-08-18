@@ -25,8 +25,10 @@ using namespace std;
 void test_resum_speed(double costh,double m,double qt,double y,int mode);
 void print_head();
 void print_line();
-void print_qtbin(vector<double>::iterator it_qt);
+void print_qtbin();
+void print_ybin();
 void print_result(double val, double err, double btime , double etime);
+void normalise_result(double &value, double &error);
 
 double clock_real();
 
@@ -147,28 +149,31 @@ int main( int argc , const char * argv[])
 
   print_head();
   begin_time = clock_real();
-  for (vector<double>::iterator qit = bins.qtbins.begin(); qit != bins.qtbins.end()-1; qit++)
-    {
+  for (vector<double>::iterator yit = bins.ybins.begin(); yit != bins.ybins.end()-1; yit++)
+  {
+      for (vector<double>::iterator qit = bins.qtbins.begin(); qit != bins.qtbins.end()-1; qit++)
+      {
+
       //Set integration boundaries
       totval=toterror2=0;
-      setbounds(opts.mlow, opts.mhigh, *qit, *(qit+1), opts.ylow, opts.yhigh);
-      print_qtbin(qit);
+      setbounds(opts.mlow, opts.mhigh, *qit, *(qit+1), *yit, *(yit+1) );//  opts.ylow, opts.yhigh);
+      print_qtbin();
+      print_ybin();
       double  bb_time = clock_real();
 
       // resummation
       if (opts.doRES) {
           double b_time = clock_real();
           if (opts.int2d) {
-              cacheyrapint_(opts.ylow, opts.yhigh);
+              cacheyrapint_(ymin, ymax);
               integr2d(value, error);
           }
           if (opts.int3d) integr3d(value, error);
           if (opts.int4d) integr4d(value, error);
           double e_time = clock_real();
-          value = value / (*(qit+1) - *qit);
-          error = error / (*(qit+1) - *qit);
+          normalise_result(value,error);
           print_result(value,error,b_time,e_time);
-          hists.FillResult( plotter::Resum , *qit, *(qit+1), value, error, e_time-b_time );
+          hists.FillResult( plotter::Resum , value, error, e_time-b_time );
           totval += value;
           toterror2 += error*error;
       }
@@ -178,10 +183,9 @@ int main( int argc , const char * argv[])
           if (opts.ctint3d) ctintegr3d(value, error);
           if (opts.ctintvegas) ctintegr(value, error);
           double e_time = clock_real();
-          value = value / (*(qit+1) - *qit);
-          error = error / (*(qit+1) - *qit);
+          normalise_result(value,error);
           print_result(value,error,b_time,e_time);
-          hists.FillResult( plotter::CT , *qit, *(qit+1), value, error, e_time-b_time );
+          hists.FillResult( plotter::CT , value, error, e_time-b_time );
           totval += value;
           toterror2 += error*error;
       }
@@ -190,10 +194,9 @@ int main( int argc , const char * argv[])
           double b_time = clock_real();
           lowintegr(value, error);
           double e_time = clock_real();
-          value = value / (*(qit+1) - *qit);
-          error = error / (*(qit+1) - *qit);
+          normalise_result(value,error);
           print_result(value,error,b_time,e_time);
-          hists.FillResult( plotter::LO , *qit, *(qit+1), value, error, e_time-b_time );
+          hists.FillResult( plotter::LO , value, error, e_time-b_time );
           totval += value;
           toterror2 += error*error;
       }
@@ -202,10 +205,9 @@ int main( int argc , const char * argv[])
           double b_time = clock_real();
           realintegr(value, error);
           double e_time = clock_real();
-          value = value / (*(qit+1) - *qit);
-          error = error / (*(qit+1) - *qit);
+          normalise_result(value,error);
           print_result(value,error,b_time,e_time);
-          hists.FillResult( plotter::Real , *qit, *(qit+1), value, error, e_time-b_time );
+          hists.FillResult( plotter::Real , value, error, e_time-b_time );
           totval += value;
           toterror2 += error*error;
       }
@@ -214,18 +216,18 @@ int main( int argc , const char * argv[])
           double b_time = clock_real();
           virtintegr(value, error);
           double e_time = clock_real();
-          value = value / (*(qit+1) - *qit);
-          error = error / (*(qit+1) - *qit);
+          normalise_result(value,error);
           print_result(value,error,b_time,e_time);
-          hists.FillResult( plotter::Virt , *qit, *(qit+1), value, error, e_time-b_time );
+          hists.FillResult( plotter::Virt , value, error, e_time-b_time );
           totval += value;
           toterror2 += error*error;
       }
       // total
       double ee_time = clock_real();
       print_result (totval, sqrt(toterror2), bb_time, ee_time);
-      hists.FillResult( plotter::Total , *qit, *(qit+1) , totval, sqrt(toterror2), ee_time-bb_time );
+      hists.FillResult( plotter::Total ,  totval, sqrt(toterror2), ee_time-bb_time );
       cout << endl;
+      }
     }
   print_line();
   end_time = clock_real();
@@ -248,21 +250,30 @@ void test_resum_speed(double costh,double m,double qt,double y,int mode){
     return;
 }
 
+void normalise_result(double &value, double &error){
+    value /= qtmax - qtmin;
+    error /= qtmax - qtmin;
+    value /= ymax  - ymin;
+    error /= ymax  - ymin;
+}
+
 void print_head(){
     print_line();
-    cout << "| " << setw(13) << "qt bin" << " | ";
+    cout << "| ";
+    cout << setw(13) << "qt bin" << " | ";
+    cout << setw(13) << "y bin"  << " | ";
     if (opts.doRES ) cout << setw(38) << "resummed "      << " | ";
     if (opts.doCT  ) cout << setw(38) << "counter term "  << " | ";
     if (opts.doREAL) cout << setw(38) << "real part "     << " | ";
     if (opts.doVIRT) cout << setw(38) << "virtual part "  << " | ";
     if (opts.doLO  ) cout << setw(38) << "Z+j LO "        << " | ";
-    if (true       ) cout << setw(38) << "TOTAL "          << " | ";
+    if (true       ) cout << setw(38) << "TOTAL "         << " | ";
     cout << endl;
     print_line();
 
 };
 void print_line(){
-    int N = 18;
+    int N = 18+18;
     if (opts.doRES ) N += 41;
     if (opts.doCT  ) N += 41;
     if (opts.doREAL) N += 41;
@@ -272,10 +283,15 @@ void print_line(){
     cout<<string(N,'-').c_str() <<endl;
 }
 
-void print_qtbin(vector<double>::iterator it_qt){
+void print_qtbin(){
     //      2 + 5 + 3 + 5 + 3 = 18
-   cout << "| " << setw(5) << *it_qt << " - " << setw(5) << *(it_qt+1) << " | " <<  flush; 
+   cout << "| " << setw(5) << qtmin << " - " << setw(5) << qtmax << " | " <<  flush; 
 }
+void print_ybin(){
+    //      2 + 5 + 3 + 5 + 3 = 18
+   cout << setw(5) << ymin << " - " << setw(5) << ymax << " | " <<  flush; 
+}
+
 
 void print_result(double val, double err, double btime , double etime){
     // 10 + 4 + 10 + 2 + 10 + 2 + 3 = 39

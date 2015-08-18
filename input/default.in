@@ -50,14 +50,15 @@ mhigh = 116.
 
 
 # dimension of integration
-intDimRes = 2
+intDimRes = 4
 #int2d = false
 #int3d = true
 #int4d = false
 
 # type of integration for counter term
-ctint3d = true
-ctintvegas = false
+intDimCT = 8 # 3 or 8
+#ctint3d = true
+#ctintvegas = false
 
 # term switches
 doRES  = true
@@ -69,8 +70,8 @@ doLO   = true
 # Cuba settings
 cubaverbosity    = 0   # Cuba info messsages, from 0 to 3
 cubacores        = 8   # parallelization ( 0 = turn off)
-niterRES         = 10   # only for 2d and 3d cuhre integration of resummed part
-niterCT          = 10   # only for 3d cuhre integration of counter term
+niterRES         = 2   # only for 2d and 3d cuhre integration of resummed part
+niterCT          = 2   # only for 3d cuhre integration of counter term
 vegasncallsRES   = 100 #0000 # only for res 4d vegas integration
 vegasncallsCT    = 100 #00000 # only for lo 8d vegas integration
 vegasncallsLO    = 100 #00000 # only for lo 7d vegas integration
@@ -109,3 +110,8 @@ opts_pdfintervals = 100
 
 #qtbins = [ 0 2 4 6 8 10 12 14 16 18 22 26 30 34 38 42 46 50 54 60 70 80 100 150 200 300 800 ]
 qtbins = [ 10  12 ] #  100  800 ]
+ybins = [ 1 2 ] #  100  800 ]
+
+plot_qtbins =  [ 0 2 4 6 8 10 12 14 16 18 22 26 30 34 38 42 46 50 54 60 70 80 100 150 200 300 800 ]
+plot_ybins  =  [ -4 -3 -2 -1 0 1 2 3 4 ]
+
