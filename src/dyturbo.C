@@ -253,8 +253,8 @@ void test_resum_speed(double costh,double m,double qt,double y,int mode){
 void normalise_result(double &value, double &error){
     value /= qtmax - qtmin;
     error /= qtmax - qtmin;
-    value /= ymax  - ymin;
-    error /= ymax  - ymin;
+    //value /= ymax  - ymin;
+    //error /= ymax  - ymin;
 }
 
 void print_head(){
