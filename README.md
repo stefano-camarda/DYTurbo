@@ -20,7 +20,23 @@ make && make install
 ./bin/dyfast
 ```
 
-## Description
+## Description of project
+ - autotools are used for building project
+ - on first configuration `LHAPDF` and `Cuba` will be downloaded and installed
+     (if not found already)
+ - additional option to configuration:
+     - `--enable-debug` to compile with GDB debug symbols
+     - `--enable-root` to save outputs in ROOT histograms
+ - `dyres` contains optimised Fortran code
+ - `src` contains DYTURBO C++ code which is steering the calculations and
+     running the Fortran procedures
+ - `scripts` contains scripts for plotting and submitting to 
  - input files can be found in `input` folder (where else :) )
+
+
+## Customization
+ - two files can be change to customize output of the calculation:
+     - `src/plotter.C` for histograms
+     - `src/settings.C` function `cuts` for changing cuts
 
 
