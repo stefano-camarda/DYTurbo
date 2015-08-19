@@ -156,9 +156,11 @@ void settings::readfromfile(const string fname){
 
 
     // additional conditions
+    // finite order (NLO vs NNLO)
     opts.doLO   = (opts.doLO   && opts.order == 1);
     opts.doREAL = (opts.doREAL && opts.order == 2);
     opts.doVIRT = (opts.doVIRT && opts.order == 2);
+    // resummation term integration dimension
     if (intDimRes<5 && intDimRes>1){
         int2d = (intDimRes == 2);
         int3d = (intDimRes == 3);
@@ -169,6 +171,7 @@ void settings::readfromfile(const string fname){
         int4d = true;
     }
 
+    // counter term integration dimension
     if (intDimCT<4 && intDimCT>1){
         ctint2d = (intDimCT == 2);
         ctint3d = (intDimCT == 3);
@@ -210,7 +213,7 @@ void settings::initDyresSettings(){
     strncpy( lhapdf_char_ . PDFname_   , LHAPDFset    .c_str(), LHAPDFset  .size() ); //CT10nlo.LHgrid
     strncpy( runstring_   . runstring_ , outputfile   .c_str(), outputfile .size() ); //'LHC7-Z-nnlo'  # outputfile
 
-    zcouple_ . q1_ = (useGamma ? 0 :  -1 );
+    zcouple_ . q1_ = (useGamma ? -1 :  0 );
 }
 
 void settings::dumpAll(){
@@ -378,8 +381,10 @@ bool cuts(double p3[4], double p4[4])
 
 void binning::readfromfile(const string fname){
     InputParser in(fname);
-    qtbins.clear();
-    in.GetVectorDouble("qtbins",qtbins);
+    qtbins       .clear(); in.GetVectorDouble( "qtbins"      , qtbins       );
+    ybins        .clear(); in.GetVectorDouble( "ybins"       , ybins        );
+    hist_qt_bins .clear(); in.GetVectorDouble( "plot_qtbins" , hist_qt_bins );
+    hist_y_bins  .clear(); in.GetVectorDouble( "plot_ybins"  , hist_y_bins  );
     return;
 }
 

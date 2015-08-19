@@ -140,6 +140,9 @@ class binning
   void readfromfile(const string fname);
   // private:
   vector <double> qtbins;
+  vector <double> ybins;
+  vector <double> hist_qt_bins;
+  vector <double> hist_y_bins;
 };
 
 
