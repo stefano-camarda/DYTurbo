@@ -56,8 +56,10 @@ intDimRes = 2
 #int4d = false
 
 # type of integration for counter term
-ctint3d = true
-ctintvegas = false
+intDimCT = 2
+#ctint2d = true
+#ctint3d = false
+#ctintvegas = false
 
 # term switches
 doRES  = true
