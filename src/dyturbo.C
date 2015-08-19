@@ -23,6 +23,7 @@ using namespace std;
 #include "lines.C"
 
 void test_resum_speed(double costh,double m,double qt,double y,int mode);
+void test_ct_speed(double costh,double m,double qt,double y,int mode);
 void print_head();
 void print_line();
 void print_qtbin();
@@ -96,6 +97,9 @@ int main( int argc , const char * argv[])
 
   costh = 0.1; m = 91; qt = 5; y = 0.2;
   test_resum_speed(costh,m,qt,y,mode);
+
+  costh = 0.1; m = 91; qt = 5; y = 0.2;
+  test_ct_speed(costh,m,qt,y,mode);
 
   //costhline();
   //ptline();
@@ -250,12 +254,25 @@ void test_resum_speed(double costh,double m,double qt,double y,int mode){
     return;
 }
 
+
 void normalise_result(double &value, double &error){
     value /= qtmax - qtmin;
     error /= qtmax - qtmin;
     //value /= ymax  - ymin;
     //error /= ymax  - ymin;
 }
+
+void test_ct_speed(double costh,double m,double qt,double y,int mode){
+    double begin_time, end_time;
+    double value;
+    begin_time = clock_real();
+    value = countterm_(costh,m,qt,y,mode);
+    end_time = clock_real();
+    cout << setw(10) << "Result" << setw(15) << value
+         << setw(10) << "time "  << setw(15) << float(end_time - begin_time) << "s" << endl;
+    return;
+}
+
 
 void print_head(){
     print_line();

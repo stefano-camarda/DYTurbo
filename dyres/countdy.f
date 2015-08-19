@@ -117,7 +117,46 @@ C
       double precision betaa,betab,betac,betam
       include 'gauss.inc'
 
-      
+c common block form ctquadinit
+      integer ctintervals,ctrule,ctdim
+      parameter (ctintervals=20)
+      parameter (ctrule=10)
+      parameter (ctdim=ctrule*ctintervals)
+      double precision ctx(ctdim)
+      double precision ctw(ctdim)
+      integer quadpoints
+      common/ctweights/ctx,ctw,quadpoints
+
+c     cached variables for fast integration
+      integer ii,jj
+      double precision cz1(ctdim),cz2(ctdim)
+      double precision cfx1p(-nf:nf,ctdim)
+      double precision cfx2p(-nf:nf,ctdim)
+      double precision oz1(ctdim),oz2(ctdim)
+      double precision Pqqint1,Pqqint2
+      double precision D0intx1,D0intx2
+      double precision D1intx1,D1intx2
+      double precision log1z1(ctdim),log1z2(ctdim)
+      double precision Cqqz1(ctdim),Cqqz2(ctdim)
+      double precision Pqqz1(ctdim),Pqqz2(ctdim)
+      double precision Pqggqz1(ctdim),Pqggqz2(ctdim)
+      double precision Pqqqqz1(ctdim),Pqqqqz2(ctdim)
+      double precision Pqqqgz1(ctdim),Pqqqgz2(ctdim)
+      double precision Pqgggz1(ctdim),Pqgggz2(ctdim)
+      double precision CqgPgqz1(ctdim),CqgPgqz2(ctdim)
+      double precision CqqPqqz1(ctdim),CqqPqqz2(ctdim)
+      double precision CqgPggz1(ctdim),CqgPggz2(ctdim)
+      double precision CqqPqgz1(ctdim),CqqPqgz2(ctdim)
+      double precision P2qqVz1(ctdim),P2qqVz2(ctdim)
+      double precision P2qqbVz1(ctdim),P2qqbVz2(ctdim)
+      double precision P2qqSz1(ctdim),P2qqSz2(ctdim)
+      double precision P2qgz1(ctdim),P2qgz2(ctdim)
+      if(first)  then           !! ONE TIME INITIALIZATION
+         print *, 'first call to countterm'
+         call ctquadinit
+         first = .false.
+      end if
+
       countterm=0d0 
       do nd=0,1
          xmsq(nd)=0d0
@@ -131,10 +170,10 @@ C
       
 C     C   Set qtcut limit
       qtcut=xqtcut*dsqrt(q2)
-      if (qt.lt.qtcut)  goto 999
+      if (qt.lt.qtcut) return
 
 C     C   Set qtmax (kinematical limit)
-      if(qt2.gt.((sqrts**2+q2)**2/(4d0*sqrts**2)-q2)) goto 999
+      if(qt2.gt.((sqrts**2+q2)**2/(4d0*sqrts**2)-q2)) return
 
 !     SWITCHING FUNCTIONS
       switch=1d0
@@ -148,11 +187,11 @@ C     C   Set qtmax (kinematical limit)
 !      if(qt.ge.m/2d0)        switch=(dcos(pi/50d0*(qt-45.6d0))+1d0)/2d0    ! COS SWITCH
 !      if(qt.ge.95.6)         switch=0d0                                    ! COS SWITCH
 
-      if(switch.le.0.01d0)    goto 999    ! 
+      if(switch.le.0.01d0) return
 
       shad=sqrts**2
 
-c used in besselkfast
+c used in besselkfast for Itilde
       xmio=dsqrt(qt2/(q2/a_param**2))
       
       Vol=1d0
@@ -175,8 +214,6 @@ CC   In this way normalization is fixed to dsigma/dqt2
       LL3=Itilde(3)/q2**2*a_param**2
       LL4=Itilde(4)/q2**2*a_param**2
 
-c     *****************************************
-c     Rewritten phase space generation
       mt=dsqrt(q2+qt2)
       xx0(1)=dsqrt(q2/sqrts**2)*dexp(+yy)
       xx0(2)=dsqrt(q2/sqrts**2)*dexp(-yy)
@@ -187,97 +224,99 @@ c---check if x is out of normal range
      & .or. (xx0(1) .lt. xmin)
      & .or. (xx0(2) .lt. xmin)) return
 
-c     generate p3 and p4 4-momenta
-      phi = twopi*0.25d0
-      phi_lep = 0.5d0*twopi
-       mt2=q2+qt2
-
-       pV(1)=qt*dcos(phi)
-       pV(2)=qt*dsin(phi)
-       pV(3)=0.5d0*dsqrt(mt2)*(dexp(yy)-dexp(-yy))
-       pV(4)=0.5d0*dsqrt(mt2)*(dexp(yy)+dexp(-yy))
-
-c     CS FRAME PRESCRIPTION
-c      kt1=pV(1)/2d0
-c      kt2=pV(2)/2d0
-
-c     naive prescription  
-       kt1=(1d0+pV(3)/(sqrt(q2)+pV(4)))*pV(1)/2d0;
-       kt2=(1d0+pV(3)/(sqrt(q2)+pV(4)))*pV(2)/2d0;
-
-       
-       zeta1=1d0/q2/2d0*(q2+2d0*(pV(1)*kt1+pV(2)*kt2)
-     &      +dsqrt((q2+2d0*(pV(1)*kt1+pV(2)*kt2))**2
-     &      -4d0*mt**2*(kt1**2+kt2**2)))
-
-       qP1=(pV(4)-pV(3))*sqrts/2d0
-       qP2=(pV(4)+pV(3))*sqrts/2d0
-
-! incoming quarks
-       p(1,4)=sqrts/2d0*(zeta1*q2/2d0/qP1
-     &      +(kt1**2+kt2**2)/zeta1*qP1/q2/sqrts**2*2d0)
-       p(1,1)=kt1
-       p(1,2)=kt2
-       p(1,3)=sqrts/2d0*(zeta1*q2/2d0/qP1
-     &      -(kt1**2+kt2**2)/zeta1*qP1/q2/sqrts**2*2d0)
-
-       p(2,4)=pV(4)-p(1,4)
-       p(2,1)=pV(1)-p(1,1)
-       p(2,2)=pV(2)-p(1,2)
-       p(2,3)=pV(3)-p(1,3)
-
-       p4cm(4)=m/2d0
-       p4cm(1)=p4cm(4)*dsin(dacos(costh))*dsin(phi_lep)
-       p4cm(2)=p4cm(4)*dsin(dacos(costh))*dcos(phi_lep)
-       p4cm(3)=p4cm(4)*costh
-
-!     Boost to go in the Lab frame
-       call boost(m,pV,p4cm,ptemp)
-       p(3,1)=ptemp(1)
-       p(3,2)=ptemp(2)
-       p(3,3)=ptemp(3)
-       p(3,4)=ptemp(4)
-
-!  momentum of the second lepton
-       p(4,4)=pV(4)-p(3,4)
-       p(4,1)=pV(1)-p(3,1)
-       p(4,2)=pV(2)-p(3,2)
-       p(4,3)=pV(3)-p(3,3)
-
-c      print*,'phase space in counterterm'
-c      print*,p(1,1),p(1,2),p(1,3),p(1,4)
-c      print*,p(2,1),p(2,2),p(2,3),p(2,4)
-c      print*,p(3,1),p(3,2),p(3,3),p(3,4)
-c      print*,p(4,1),p(4,2),p(4,3),p(4,4)
-c      print*,'mass',sqrt((p(4,4)+p(3,4))**2
-c     +     - (p(4,1)+p(3,1))**2
-c     +     - (p(4,2)+p(3,2))**2
-c     +     - (p(4,3)+p(3,3))**2)
-c      print*,'y',0.5d0*log((p(4,4)+p(3,4) + (p(4,3)+p(3,3)))/
-c     +     (p(4,4)+p(3,4) - (p(4,3)+p(3,3))))
-c      print*,'pt',sqrt((p(4,1)+p(3,1))**2 + (p(4,2)+p(3,2))**2)
-c      print*
-c     End of phase space generation
-c     *****************************************
-
-           
 CC    Generate event to be binned
       y34=yy
       cosh2y34=((dexp(y34)+dexp(-y34))*0.5d0)**2
 
 CC   Set qtmax (kinematical limit)
-      if(qt2.gt.((sqrts**2+q2)**2/(4d0*sqrts**2*(cosh2y34)-q2)))goto 999
-
+      if(qt2.gt.((sqrts**2+q2)**2/(4d0*sqrts**2*(cosh2y34)-q2))) return
 
       
-C     C Compute Born matrix element
-      if(nproc.eq.3)then
-         call qqb_z(p,msqc)
-      else
-         call qqb_w(p,msqc)
-      endif
-
-c **************** Check matrix element calculation (works only with naive prescription)
+cc **************** Check matrix element calculation (works only with naive prescription)
+cc     Rewritten phase space generation
+cc     *****************************************
+cc     generate p3 and p4 4-momenta
+c
+cc     pick whatever value of phi and phi_lep
+c      phi = twopi*0.25d0
+c      phi_lep = 0.5d0*twopi
+c      mt2=q2+qt2
+c
+c      pV(1)=qt*dcos(phi)
+c      pV(2)=qt*dsin(phi)
+c      pV(3)=0.5d0*dsqrt(mt2)*(dexp(yy)-dexp(-yy))
+c      pV(4)=0.5d0*dsqrt(mt2)*(dexp(yy)+dexp(-yy))
+c
+cc     CS FRAME PRESCRIPTION
+cc      kt1=pV(1)/2d0
+cc      kt2=pV(2)/2d0
+c
+cc     naive prescription  
+c      kt1=(1d0+pV(3)/(sqrt(q2)+pV(4)))*pV(1)/2d0;
+c      kt2=(1d0+pV(3)/(sqrt(q2)+pV(4)))*pV(2)/2d0;
+c
+c      zeta1=1d0/q2/2d0*(q2+2d0*(pV(1)*kt1+pV(2)*kt2)
+c     &     +dsqrt((q2+2d0*(pV(1)*kt1+pV(2)*kt2))**2
+c     &     -4d0*mt**2*(kt1**2+kt2**2)))
+c      
+c      qP1=(pV(4)-pV(3))*sqrts/2d0
+c      qP2=(pV(4)+pV(3))*sqrts/2d0
+c
+c! incoming quarks
+c      p(1,4)=sqrts/2d0*(zeta1*q2/2d0/qP1
+c     &     +(kt1**2+kt2**2)/zeta1*qP1/q2/sqrts**2*2d0)
+c      p(1,1)=kt1
+c      p(1,2)=kt2
+c      p(1,3)=sqrts/2d0*(zeta1*q2/2d0/qP1
+c     &     -(kt1**2+kt2**2)/zeta1*qP1/q2/sqrts**2*2d0)
+c      
+c      p(2,4)=pV(4)-p(1,4)
+c      p(2,1)=pV(1)-p(1,1)
+c      p(2,2)=pV(2)-p(1,2)
+c      p(2,3)=pV(3)-p(1,3)
+c
+c      p4cm(4)=m/2d0
+c      p4cm(1)=p4cm(4)*dsin(dacos(costh))*dsin(phi_lep)
+c      p4cm(2)=p4cm(4)*dsin(dacos(costh))*dcos(phi_lep)
+c      p4cm(3)=p4cm(4)*costh
+c
+c!     Boost to go in the Lab frame
+c      call boost(m,pV,p4cm,ptemp)
+c      p(3,1)=ptemp(1)
+c      p(3,2)=ptemp(2)
+c      p(3,3)=ptemp(3)
+c      p(3,4)=ptemp(4)
+c
+c!  momentum of the second lepton
+c      p(4,4)=pV(4)-p(3,4)
+c      p(4,1)=pV(1)-p(3,1)
+c      p(4,2)=pV(2)-p(3,2)
+c      p(4,3)=pV(3)-p(3,3)
+c
+cc      print*,'phase space in counterterm'
+cc      print*,p(1,1),p(1,2),p(1,3),p(1,4)
+cc      print*,p(2,1),p(2,2),p(2,3),p(2,4)
+cc      print*,p(3,1),p(3,2),p(3,3),p(3,4)
+cc      print*,p(4,1),p(4,2),p(4,3),p(4,4)
+cc      print*,'mass',sqrt((p(4,4)+p(3,4))**2
+cc     +     - (p(4,1)+p(3,1))**2
+cc     +     - (p(4,2)+p(3,2))**2
+cc     +     - (p(4,3)+p(3,3))**2)
+cc      print*,'y',0.5d0*log((p(4,4)+p(3,4) + (p(4,3)+p(3,3)))/
+cc     +     (p(4,4)+p(3,4) - (p(4,3)+p(3,3))))
+cc      print*,'pt',sqrt((p(4,1)+p(3,1))**2 + (p(4,2)+p(3,2))**2)
+cc      print*
+c
+cc     End of phase space generation
+cc     *****************************************
+c      
+cC     C Compute Born matrix element
+c      if(nproc.eq.3)then
+c         call qqb_z(p,msqc)
+c      else
+c         call qqb_w(p,msqc)
+c      endif
+c
 c      call initsigma(m,-costh)
 c      print *,1,-1,sigmaij(2,-2)
 c      print *,-1,1,sigmaij(-2,2)
@@ -294,7 +333,10 @@ c      print *,4,-4,(msqc(4,-4))/(sigmaij(4,-4)*pi*6d0/fbGeV2*(2*q2))
 c      print *,-4,4,(msqc(-4,4))/(sigmaij(-4,4)*pi*6d0/fbGeV2*(2*q2))
 c      print *,5,-5,(msqc(5,-5))/(sigmaij(5,-5)*pi*6d0/fbGeV2*(2*q2))
 c      print *,-5,5,(msqc(-5,5))/(sigmaij(-5,5)*pi*6d0/fbGeV2*(2*q2))
-
+c
+cc     End of ME check
+cc*******************************************************
+      
       if (mode.eq.0) then
          call initsigma(mm,-costh)
       elseif (mode.eq.1) then
@@ -330,418 +372,279 @@ c---  calculate PDF's
       logxx10=dlog(xx10)
       logxx20=dlog(xx20)
       
-!      if(xx10.lt.1d-5)write(*,*) "q2,xx1",q2,xx10
-!      if(xx20.lt.1d-5)write(*,*) "q2,xx1",q2,xx20!
-
       call fdist(ih1,xx10,facscale,fx10)
       call fdist(ih2,xx20,facscale,fx20)
       
 C Scaled momentum fractions
-      cut=1d-7
 
-c     start the alfa beta integration
-      alfaintervals = 20
-      betaintervals = 20
-      do ai=1,alfaintervals
-         alfaa = 0d0+(1d0-0d0)*(ai-1)/alfaintervals
-         alfab = 0d0+(1d0-0d0)*ai/alfaintervals
-         alfac=0.5d0*(alfaa+alfab)
-         alfam=0.5d0*(alfab-alfaa)
-         do aj=1,4
-            alfa=alfac+alfam*xxx4(aj)
-            alfa=cut+(1-cut)*alfa
-      z2=xx20**alfa
-      call fdist(ih2,xx20**(1-alfa),facscale,fx2p)
-
-
-
-      do bi=1,betaintervals
-         betaa = 0d0+(1d0-0d0)*(bi-1)/betaintervals
-         betab = 0d0+(1d0-0d0)*bi/betaintervals
-         betac=0.5d0*(betaa+betab)
-         betam=0.5d0*(betab-betaa)
-         do bj=1,4
-            beta=betac+betam*xxx4(bj)
-            beta=cut+(1-cut)*beta
-            
-      z1=xx10**beta
-      call fdist(ih1,xx10**(1-beta),facscale,fx1p)
-
-CC Switch off gluon !!
-
-      if(noglue) then
-        fx10(0)=0d0
-        fx20(0)=0d0
-        fx1p(0)=0d0
-        fx2p(0)=0d0
-      endif
-
-CC Gluon only !
-
-      if(ggonly) then
-       do j=1,5
-       fx10(j)=0d0
-       fx10(-j)=0d0
-       fx1p(j)=0d0
-       fx1p(-j)=0d0
-       fx20(j)=0d0
-       fx20(-j)=0d0
-       fx2p(j)=0d0
-       fx2p(-j)=0d0
-       enddo
-      endif
-
-       flgq=1
-       if(gqonly)flgq=0
-
-
-
-
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-
-CC Start construction of the counterterm
-
-        tdelta=0d0
-        tH1st=0d0
-        tH1stF=0d0
-        tH1stQ=0d0
-        tgaga=0d0
-        tcga=0d0
-        tgamma2=0d0
-
-        diffc10=0d0
-        diffc1f=0d0
-        diffc20=0d0
-        diffc2f=0d0
-
-        diffg10=0d0
-        diffg1f=0d0
-        diffg20=0d0
-        diffg2f=0d0
-
-        sig1=0d0
-        sig2=0d0
-
-        sig11=0d0
-        sig12=0d0
-        sig21=0d0      
-        sig22=0d0
-        sig23=0d0
-        sig24=0d0
-
+      Pqqint1 = Pqqint(xx10)
+      Pqqint2 = Pqqint(xx20)
+      D0intx1 = D0int(xx10)
+      D0intx2 = D0int(xx20)
+      D1intx1 = D1int(xx10)
+      D1intx2 = D1int(xx20)
       
+c     Preliminary loop for caching
+      do ii=1,quadpoints
+         z1 = xx10**ctx(ii)
+         z2 = xx20**ctx(ii)
+         oz1(ii) = 1d0/(1d0-z1)
+         oz2(ii) = 1d0/(1d0-z2)
+         z2 = xx20**ctx(ii)
+         cz1(ii) = z1
+         cz2(ii) = z2
+         log1z1(ii) = dlog(1-z1)
+         log1z2(ii) = dlog(1-z2)
+         call fdist(ih1,xx10**(1-ctx(ii)),facscale,fx1p)
+         call fdist(ih2,xx20**(1-ctx(ii)),facscale,fx2p)
+         cfx1p(:,ii)=fx1p
+         cfx2p(:,ii)=fx2p
+         Cqqz1(ii) = Cqq(z1)
+         Cqqz2(ii) = Cqq(z2)
+c         Cqgz1(ii) = Cqg(z1)
+c         Cqgz2(ii) = Cqg(z2)
+         Pqqz1(ii) = Pqq(z1)
+         Pqqz2(ii) = Pqq(z2)
+c         Pqgz1(ii) = Pqg(z1)
+c         Pqgz2(ii) = Pqg(z2)
+         Pqggqz1(ii) = Pqggq(z1)
+         Pqggqz2(ii) = Pqggq(z2)
+         Pqqqqz1(ii) = Pqqqq(z1)
+         Pqqqqz2(ii) = Pqqqq(z2)
+         Pqqqgz1(ii) = Pqqqg(z1)
+         Pqqqgz2(ii) = Pqqqg(z2)
+         Pqgggz1(ii) = Pqggg(z1)
+         Pqgggz2(ii) = Pqggg(z2)
+         CqgPgqz1(ii) = CqgPgq(z1)
+         CqgPgqz2(ii) = CqgPgq(z2)
+         CqqPqqz1(ii) = CqqPqq(z1)
+         CqqPqqz2(ii) = CqqPqq(z2)
+         CqgPggz1(ii) = CqgPgg(z1)
+         CqgPggz2(ii) = CqgPgg(z2)
+         CqqPqgz1(ii) = CqqPqg(z1)
+         CqqPqgz2(ii) = CqqPqg(z2)
+         P2qqVz1(ii) = P2qqV(z1)
+         P2qqVz2(ii) = P2qqV(z2)
+         P2qqbVz1(ii) = P2qqbV(z1)
+         P2qqbVz2(ii) = P2qqbV(z2)
+         P2qqSz1(ii) = P2qqS(z1)
+         P2qqSz2(ii) = P2qqS(z2)
+         P2qgz1(ii) = P2qg(z1)
+         P2qgz2(ii) = P2qg(z2)
+      enddo
+      flgq=1
+c     start the fast alfa beta integration
+      do ii=1,quadpoints
+         z2=cz2(ii)
+         fx2p=cfx2p(:,ii)
+         do jj=1,quadpoints
+            z1=cz1(jj)
+            fx1p=cfx1p(:,jj)
+C     Start construction of the counterterm
+            tdelta=0d0
+            tH1st=0d0
+            tH1stF=0d0
+            tH1stQ=0d0
+            tgaga=0d0
+            tcga=0d0
+            tgamma2=0d0
+            diffc10=0d0
+            diffc1f=0d0
+            diffc20=0d0
+            diffc2f=0d0
+            diffg10=0d0
+            diffg1f=0d0
+            diffg20=0d0
+            diffg2f=0d0
+            sig1=0d0
+            sig2=0d0
+            sig11=0d0
+            sig12=0d0
+            sig21=0d0      
+            sig22=0d0
+            sig23=0d0
+            sig24=0d0
+            
       do j=-nf,nf
       do k=-nf,nf
-
-      if(msqc(j,k).eq.0d0) goto 75
-
-
+c         k = -j
+      if(msqc(j,k).eq.0d0) cycle
 C     Simplest term without convolutions
-  
       tdelta=tdelta+fx10(j)*fx20(k)*msqc(j,k)*flgq
-
 C     Start H1st: to be used later
-
 C     H1st delta term
-
       tH1st=tH1st+2*C1qqdelta*fx10(j)*fx20(k)*msqc(j,k)*flgq
-
 !add resummation scale dependence
-
       tH1stQ=tH1stQ-(B1q+A1q/2d0*LQ)*LQ*fx10(j)*fx20(k)*msqc(j,k)*flgq
-
 C     H1st: non delta terms, first leg
-
-
-      tH1st=tH1st+(fx1p(j)*Cqq(z1)*flgq+fx1p(0)*Cqg(z1))
+      tH1st=tH1st+(fx1p(j)*Cqqz1(jj)*flgq+fx1p(0)*Cqg(z1))
      & *(-logxx10)*fx20(k)*msqc(j,k)
-
-
 C     H1st: non delta terms, second leg
-
-
-      tH1st=tH1st+(fx2p(k)*Cqq(z2)*flgq+fx2p(0)*Cqg(z2))         
+      tH1st=tH1st+(fx2p(k)*Cqqz2(ii)*flgq+fx2p(0)*Cqg(z2))         
      & *(-logxx20)*fx10(j)*msqc(j,k)
-      
-
 C     H1st: muf dependence (LF factor to be added at the end)
-
-
 c     gammaqq and gammaqg: first leg      
-
-
       diff=-logxx10
-     &  *((fx1p(j)-fx10(j)*xx10**beta)*Pqq(z1)*flgq+fx1p(0)*Pqg(z1))
+     &  *((fx1p(j)-fx10(j)*z1)*Pqqz1(jj)*flgq+fx1p(0)*Pqg(z1))
       tH1stF=tH1stF+diff*fx20(k)*msqc(j,k)
-      tH1stF=tH1stF-Pqqint(xx10)*fx10(j)*fx20(k)*msqc(j,k)*flgq
-
+      tH1stF=tH1stF-Pqqint1*fx10(j)*fx20(k)*msqc(j,k)*flgq
 c     gammaqq and gammaqg: second leg   
-
-
       diff=-logxx20
-     &  *((fx2p(k)-fx20(k)*xx20**alfa)*Pqq(z2)*flgq+fx2p(0)*Pqg(z2))
+     &  *((fx2p(k)-fx20(k)*z2)*Pqqz2(ii)*flgq+fx2p(0)*Pqg(z2))
       tH1stF=tH1stF+diff*fx10(j)*msqc(j,k)
-      tH1stF=tH1stF-Pqqint(xx20)*fx10(j)*fx20(k)*msqc(j,k)*flgq
-
+      tH1stF=tH1stF-Pqqint2*fx10(j)*fx20(k)*msqc(j,k)*flgq
 CC    End of H1st
-
-      if(order.eq.1) goto 75
-
+      if(order.eq.1) continue
 CC    Now (gamma+gamma)*(gamma+gamma) term: to be used later
-
 C     First part: one gamma for each leg: FLGQ here is non trivial ! DONE
-
-
-      diffg1f=-logxx10*(fx1p(j)-fx10(j)*xx10**beta)*Pqq(z1)
-     &  - Pqqint(xx10)*fx10(j)
-
-
+      diffg1f=-logxx10*(fx1p(j)-fx10(j)*z1)*Pqqz1(jj)
+     &  - Pqqint1*fx10(j)
       diffg10=-logxx10*fx1p(0)*Pqg(z1)
-
-      diffg2f=-logxx20*(fx2p(k)-fx20(k)*xx20**alfa)*Pqq(z2)
-     &  - Pqqint(xx20)*fx20(k)
-
-
+      diffg2f=-logxx20*(fx2p(k)-fx20(k)*z2)*Pqqz2(ii)
+     &  - Pqqint2*fx20(k)
       diffg20=-logxx20*fx2p(0)*Pqg(z2)
-
-
       tgaga=tgaga+2*
-     #   (flgq*diffg10*diffg20+flgq*diffg1f*diffg2f
-     #   +diffg10*diffg2f+diffg1f*diffg20)*msqc(j,k)
-
-
+     &   (flgq*diffg10*diffg20+flgq*diffg1f*diffg2f
+     &   +diffg10*diffg2f+diffg1f*diffg20)*msqc(j,k)
 CC     Second part: gamma*gamma terms
-
 c     Pij * Pjk = D1ijjk (log(1-z)/(1-z))_+ + D0ijjk/(1-z)_+ 
 c              + Pijjk(z) + Deltaijjk delta(1-z)
-
 C     First leg
-
-      
-      diff1=-logxx10*(flgq*(fx1p(j)-fx10(j)*xx10**beta)
-     &    *(D0qqqq/(1-z1)+D1qqqq*dlog(1-z1)/(1-z1))
-     &    +fx1p(j)*Pqqqq(z1)*flgq+fx1p(0)*(Pqqqg(z1)+Pqggg(z1)))
-     &    +(Deltaqqqq-D0qqqq*D0int(xx10)-D1qqqq*D1int(xx10))
+      diff1=-logxx10*(flgq*(fx1p(j)-fx10(j)*z1)
+     &    *(D0qqqq*oz1(jj)+D1qqqq*log1z1(jj)*oz1(jj))
+     &    +fx1p(j)*Pqqqqz1(jj)*flgq+fx1p(0)*(Pqqqgz1(jj)+Pqgggz1(jj)))
+     &    +(Deltaqqqq-D0qqqq*D0intx1-D1qqqq*D1intx1)
      &    *fx10(j)*flgq
-
-
 C    Second leg
-
-      
-      diff2=-logxx20*(flgq*(fx2p(k)-fx20(k)*xx20**alfa)
-     &    *(D0qqqq/(1-z2)+D1qqqq*dlog(1-z2)/(1-z2))
-     &    +fx2p(k)*Pqqqq(z2)*flgq+fx2p(0)*(Pqqqg(z2)+Pqggg(z2)))
-     &    +(Deltaqqqq-D0qqqq*D0int(xx20)-D1qqqq*D1int(xx20))
+      diff2=-logxx20*(flgq*(fx2p(k)-fx20(k)*z2)
+     &    *(D0qqqq*oz2(ii)+D1qqqq*log1z2(ii)*oz2(ii))
+     &    +fx2p(k)*Pqqqqz2(ii)*flgq+fx2p(0)*(Pqqqgz2(ii)+Pqgggz2(ii)))
+     &    +(Deltaqqqq-D0qqqq*D0intx2-D1qqqq*D1intx2)
      &    *fx20(k)*flgq
-
-
 C     Include Pqggq
-
       do l=1,nf
-      diff1=diff1-logxx10*(fx1p(l)+fx1p(-l))*Pqggq(z1)*flgq
-      diff2=diff2-logxx20*(fx2p(l)+fx2p(-l))*Pqggq(z2)*flgq
+      diff1=diff1-logxx10*(fx1p(l)+fx1p(-l))*Pqggqz1(jj)*flgq
+      diff2=diff2-logxx20*(fx2p(l)+fx2p(-l))*Pqggqz2(ii)*flgq
       enddo
-
       tgaga=tgaga+diff1*fx20(k)*msqc(j,k)
       tgaga=tgaga+diff2*fx10(j)*msqc(j,k)
-
-
-
 C    End of (gamma+gamma)*(gamma+gamma) term: FLGQ non trivial here ! DONE
-
 C    Start  (C+C)*(gamma+gamma) term
-
 c    gamma first leg, C second leg
-
-
-      diffc2f=-logxx20*fx2p(k)*Cqq(z2)+C1qqdelta*fx20(k)
-
+      diffc2f=-logxx20*fx2p(k)*Cqqz2(ii)+C1qqdelta*fx20(k)
       diffc20=-logxx20*fx2p(0)*Cqg(z2)
-
-
       tcga=tcga+msqc(j,k)*
      # (flgq*diffg10*diffc20+flgq*diffg1f*diffc2f
      #          +diffg10*diffc2f+diffg1f*diffc20)
-
-
 c    C first leg, gamma second leg
-
-      diffc1f=-logxx10*fx1p(j)*Cqq(z1)+C1qqdelta*fx10(j)
-
+      diffc1f=-logxx10*fx1p(j)*Cqqz1(jj)+C1qqdelta*fx10(j)
       diffc10=-logxx10*fx1p(0)*Cqg(z1)
-
       tcga=tcga+msqc(j,k)*
      # (flgq*diffc10*diffg20+flgq*diffc1f*diffg2f
      #          +diffc10*diffg2f+diffc1f*diffg20)
-    
-
 c    C*gamma: first leg (ignore delta term in Cqq: taken into account with tH1stF)
-
       tcga=tcga
-     &     +(fx1p(j)*CqqPqq(z1)*flgq+fx1p(0)*(CqqPqg(z1)+CqgPgg(z1)))
-     &     *(-logxx10)*fx20(k)*msqc(j,k) 
-
+     &  +(fx1p(j)*CqqPqqz1(jj)*flgq+fx1p(0)*(CqqPqgz1(jj)+CqgPggz1(jj)))
+     &  *(-logxx10)*fx20(k)*msqc(j,k) 
 c    C*gamma: second leg (ignore delta term in Cqq: taken into account with tH1stF)
-
       tcga=tcga
-     &     +(fx2p(k)*CqqPqq(z2)*flgq+fx2p(0)*(CqqPqg(z2)+CqgPgg(z2)))
-     &     *(-logxx20)*fx10(j)*msqc(j,k) 
-
+     &  +(fx2p(k)*CqqPqqz2(ii)*flgq+fx2p(0)*(CqqPqgz2(ii)+CqgPggz2(ii)))
+     &  *(-logxx20)*fx10(j)*msqc(j,k) 
 c    Add Cqg*Pgq contribution
-
       do l=1,nf
-      tcga=tcga+(fx1p(l)+fx1p(-l))*CqgPgq(z1)
+      tcga=tcga+(fx1p(l)+fx1p(-l))*CqgPgqz1(jj)
      &           *(-logxx10)*fx20(k)*msqc(j,k)*flgq 
-      tcga=tcga+(fx2p(l)+fx2p(-l))*CqgPgq(z2)
+      tcga=tcga+(fx2p(l)+fx2p(-l))*CqgPgqz2(ii)
      &           *(-logxx20)*fx10(j)*msqc(j,k)*flgq 
       enddo
-
 CC  Start 2-loop AP
-
 C   Gluon + pure singlet
-
-
       do l=-nf,nf
       if(l.eq.0) then
-      tgamma2=tgamma2+fx1p(0)*P2qg(z1)
+      tgamma2=tgamma2+fx1p(0)*P2qgz1(jj)
      & *(-logxx10)*fx20(k)*msqc(j,k)
-      tgamma2=tgamma2+fx2p(0)*P2qg(z2)
+      tgamma2=tgamma2+fx2p(0)*P2qgz2(ii)
      & *(-logxx20)*fx10(j)*msqc(j,k)
       else
-      tgamma2=tgamma2+fx1p(l)*P2qqS(z1)
+      tgamma2=tgamma2+fx1p(l)*P2qqSz1(jj)
      & *(-logxx10)*fx20(k)*msqc(j,k)*flgq
-      tgamma2=tgamma2+fx2p(l)*P2qqS(z2)
+      tgamma2=tgamma2+fx2p(l)*P2qqSz2(ii)
      & *(-logxx20)*fx10(j)*msqc(j,k)*flgq
       endif
       enddo
-
-
 C   P2qq non-singlet: regular part
-
-      tgamma2=tgamma2+fx1p(j)*P2qqV(z1)
+      tgamma2=tgamma2+fx1p(j)*P2qqVz1(jj)
      & *(-logxx10)*fx20(k)*msqc(j,k)*flgq
-      tgamma2=tgamma2+fx2p(k)*P2qqV(z2)
+      tgamma2=tgamma2+fx2p(k)*P2qqVz2(ii)
      & *(-logxx20)*fx10(j)*msqc(j,k)*flgq
-
-
 C   P2qq non-singlet: 1/(1-z)_+
-
-
       diff=-logxx10
-     &  *(fx1p(j)-fx10(j)*xx10**beta)/(1-z1)
-     &  - D0int(xx10)*fx10(j)      
-  
+     &  *(fx1p(j)-fx10(j)*z1)*oz1(jj)
+     &  - D0intx1*fx10(j)      
       tgamma2=tgamma2+2d0/3*Kappa*diff*fx20(k)*msqc(j,k)*flgq
-
-
       diff=-logxx20
-     &  *(fx2p(k)-fx20(k)*xx20**alfa)/(1-z2)
-     &  - D0int(xx20)*fx20(k)      
-  
+     &  *(fx2p(k)-fx20(k)*z2)*oz2(ii)
+     &  - D0intx2*fx20(k)      
       tgamma2=tgamma2+2d0/3*Kappa*diff*fx10(j)*msqc(j,k)*flgq
-
-      
-
 C   P2qqb non singlet
-
-      tgamma2=tgamma2+fx1p(-j)*P2qqbV(z1)
+      tgamma2=tgamma2+fx1p(-j)*P2qqbVz1(jj)
      & *(-logxx10)*fx20(k)*msqc(j,k)*flgq
-
-      tgamma2=tgamma2+fx2p(-k)*P2qqbV(z2)
+      tgamma2=tgamma2+fx2p(-k)*P2qqbVz2(ii)
      & *(-logxx20)*fx10(j)*msqc(j,k)*flgq
-
- 75   continue
-
       enddo
       enddo
-
 CM 7/11  Resummation scale dependence added 
-
-
 CC   First order
-
       sig12=-0.5d0*A1q*tdelta
       sig11=-(B1q+A1q*LQ)*tdelta-tH1stF
-
 CC   Second order
-
       sig24=(A1q)**2/8*tdelta
-       
       sig23=-beta0*A1q/3*tdelta-0.5d0*A1q*sig11
-
-      sig22=0.5d0*(beta0*A1q*(LR-LQ)-A2q)*tdelta!
-     &     -0.5d0*A1q*(tH1st+tH1stQ+(LF-LQ)*tH1stF)!
-     &     -0.5d0*(B1q+A1q*LQ-beta0)*sig11!
-     &     +0.5d0*(B1q+A1q*LQ)*tH1stF!
-     &     +0.5d0*tgaga!
-
-
+      sig22=0.5d0*(beta0*A1q*(LR-LQ)-A2q)*tdelta
+     &     -0.5d0*A1q*(tH1st+tH1stQ+(LF-LQ)*tH1stF)
+     &     -0.5d0*(B1q+A1q*LQ-beta0)*sig11
+     &     +0.5d0*(B1q+A1q*LQ)*tH1stF
+     &     +0.5d0*tgaga
       sig21=-beta0*(LR-LQ)*sig11
      &     -(B1q+A1q*LQ)*(tH1st+tH1stQ+(LF-LQ)*tH1stF)
      &     -(LF-LQ)*tgaga-(B2q+A2q*LQ)*tdelta+beta0*tH1st-tcga-tgamma2
      &     +(B1q+0.5d0*A1q*LQ)*LQ*tH1stF  
-
-
 c     Include missing delta term from C*gamma (no factor 2 here !)
-
       sig21=sig21-C1qqdelta*tH1stF
-
 C     Include missing term from contact term in 2 loop AP
-
       sig21=sig21-2*Delta2qq*tdelta
-
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-
-
 CC Include as/pi factors and sum O(as) and O(as^2) contributions
-
       sig1=sig12*LL2+sig11*LL1
       sig2=sig24*LL4+sig23*LL3+sig22*LL2+sig21*LL1
-
-
-        sig1=sig1*ason2pi*2
-        sig2=sig2*(ason2pi*2)**2
-
-        if(order.eq.1)then
-           xmsq(1)=xmsq(1)-sig1*www4(aj)*www4(bj)*alfam*betam
-        else
-           xmsq(1)=xmsq(1)-(sig1+sig2)*www4(aj)*www4(bj)*alfam*betam
-        endif
-c        print *, alfa,beta, (sig1+sig2)
+      sig1=sig1*ason2pi*2
+      sig2=sig2*(ason2pi*2)**2
+      if(order.eq.1)then
+         xmsq(1)=xmsq(1)-sig1*ctw(ii)*ctw(jj)
+      else
+         xmsq(1)=xmsq(1)-(sig1+sig2)*ctw(ii)*ctw(jj)
+      endif
       enddo
       enddo
-c      print *,alfa, (sig1+sig2)
-      enddo
-      enddo
-c     end of alfa beta integration
       
 CC Include iacobians (do not include jacobians)
-
       xmsq(1)=xmsq(1)*q2/shad/Vol
-
 
       countterm=0d0
       xint=0d0
 
-
 C Flux for Born cross section
-       fluxborn=fbGeV2/(2*q2)
+      fluxborn=fbGeV2/(2*q2)
 C Multiply by BORN phase space weight
-        xmsq(1)=xmsq(1)*fluxborn/BrnRat*((one/4d0/pi)**3)
+      xmsq(1)=xmsq(1)*fluxborn/BrnRat*((one/4d0/pi)**3)
 
 ! SWITCHING
-        xmsq(1)=xmsq(1)*switch
+      xmsq(1)=xmsq(1)*switch
 
 
- 77    continue
-
+ 77   continue
 
 c---Add to total
-
-        xint=xmsq(1)
-        val=xmsq(1)*wgt
+      xint=xmsq(1)
         
       countterm=xint
 c      print *, qtt, mm, yy, countterm
@@ -750,11 +653,6 @@ c      print *, qtt, mm, yy, countterm
       xreal2=xreal2+(xint*wgt)**2/dfloat(itmx)
       
 
-      return
-
- 999  countterm=0d0
-      ntotzero=ntotzero+1
- 
       return
       end
 
@@ -1036,3 +934,39 @@ c
 c      S2=-2*myli2(-x)+0.5d0*dlog(x)**2-2*dlog(x)*dlog(1+x)-pi**2/6
 c      return
 c      end
+
+c initialize the points of the gaussian quadrature
+      subroutine ctquadinit
+      implicit none
+      double precision min,max
+      double precision a,b,c,m
+      integer i,j
+      include 'gauss.inc'
+c     Common block (output)
+      integer ctintervals,ctrule,ctdim
+      parameter (ctintervals=20)
+      parameter (ctrule=10)
+      parameter (ctdim=ctrule*ctintervals)
+      double precision ctx(ctdim)
+      double precision ctw(ctdim)
+      integer quadpoints
+      common/ctweights/ctx,ctw,quadpoints
+
+      min = 1d-7
+      max = 1d0
+      quadpoints = ctrule*ctintervals
+      do i=1,ctintervals
+c         a = min+(max-min)*(i-1)/ctintervals
+c         b = min+(max-min)*i/ctintervals
+         a = min*((max/min)**(real(i-1, 8)/real(ctintervals,8)))
+         b = min*((max/min)**(real(i,8)/real(ctintervals,8)))
+         c=0.5d0*(a+b)
+         m=0.5d0*(b-a)
+         do j=1,ctrule
+            ctx(j+(i-1)*ctrule)=c+m*xxx10(j)
+            ctw(j+(i-1)*ctrule)=www10(j)*m
+         enddo
+      enddo
+      
+      return
+      end
