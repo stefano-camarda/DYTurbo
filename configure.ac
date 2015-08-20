@@ -1,4 +1,4 @@
-AC_INIT([dyturbo], [0.9], [stefano.camarda@cern.ch,jakub.cuth@cern.ch])
+AC_INIT([dyturbo], [0.9.1], [stefano.camarda@cern.ch,jakub.cuth@cern.ch])
 AM_INIT_AUTOMAKE([foreign -Wall -Werror])
 
 #Suppress verbose output when compiling
