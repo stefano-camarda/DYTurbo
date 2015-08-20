@@ -9,7 +9,7 @@
 ## @date 2014-12-02
 
 DRYRUN=echo 
-DRYRUN=
+#DRYRUN=
 
 
 # define directories
@@ -28,8 +28,10 @@ sh_file=unset
 process=unset
 collider=unset
 random_seed=unset
-lobin=unset
-hibin=unset
+loqtbin=unset
+hiqtbin=unset
+loybin=unset
+hiybin=unset
 sample=unset
 member=unset
 
@@ -64,13 +66,15 @@ prepare_in(){
     member=0
     re='^[0-9]+$'
     pdfsetname=$pdfset
-    if [[ $variation == g_05  ]]; then member=0; gpar=0.5e0;                        fi;
-    if [[ $variation == g_15  ]]; then member=0; gpar=1.5e0;                        fi;
-    if [[ $variation == as_*  ]]; then member=0; pdfsetname=${pdfset}_${variation}; fi;
-    if [[ $variation =~ $re   ]]; then member=$variation;                           fi;
+    if [[ $variation == g_05  ]]; then gpar=0.5e0;                        fi;
+    if [[ $variation == g_15  ]]; then gpar=1.5e0;                        fi;
+    if [[ $variation == as_*  ]]; then pdfsetname=${pdfset}_${variation}; fi;
+    if [[ $variation =~ $re   ]]; then member=$variation;                 fi;
     cp $dyturbo_in_tmpl tmp
-    sed -i "s|LOQTBIN|$lobin|g        " tmp
-    sed -i "s|HIQTBIN|$hibin|g        " tmp
+    sed -i "s|LOQTBIN|$loqtbin|g        " tmp
+    sed -i "s|HIQTBIN|$hiqtbin|g        " tmp
+    sed -i "s|LOYBIN|$loybin|g        " tmp
+    sed -i "s|HIYBIN|$hiybin|g        " tmp
     sed -i "s|SETPDFSET|$pdfsetname|g " tmp
     sed -i "s|SETMEMBER|$member|g     " tmp
     sed -i "s|SETORDER|$order|g       " tmp
@@ -88,36 +92,58 @@ jobsDone(){
 }
 
 submit_Z_dyturbo(){
+    DRYRUN=echo 
+    read -p "Do you want to submit results ? " -n 1 -r
+    echo    # (optional) move to a new line
+    if [[ $REPLY =~ ^[Yy]$ ]]
+    then
+        DRYRUN=
+    fi
     process=z0
     pdfset=CT10nnlo
     random_seed=100101
-    lobin=unset
-    hibin=unset
+    loqtbin=unset
+    hiqtbin=unset
     collider=lhc7
-    for ibin in 0 2 4 6 8 10 12 14 16 18 22 26 30 34 38 42 46 50 54 60 70 80 100 150 200 300 800
+    for iqtbin in 0 2 4 6 8 10 12 14 16 18 22 26 30 34 38 42 46 50 54 60 70 80 100 150 200 300 800
     do
-        if [[ $lobin == unset ]]
-        then
-            lobin=$ibin
-            continue
-        fi
-        hibin=$ibin
-        qtregion=qt${lobin}${hibin}
-        for variation in `seq 0 50` g_05 g_15 as_0117 as_0119
+        if [[ $loqtbin == unset ]]; then loqtbin=$iqtbin; continue; fi; hiqtbin=$iqtbin
+        for iybin in 0 1 2 2.4
         do
-            prepare_script
-            $DRYRUN submit_job
+            if [[ $loybin == unset ]]; then loybin=$iybin; continue; fi; hiybin=$iybin
+            qtregion=qt${loqtbin}${hiqtbin}y${loybin}${hiybin}
+            for variation in `seq 0 50` g_05 g_15 as_0117 as_0119
+            do
+                prepare_script
+                $DRYRUN submit_job
+            done
+            loybin=$iybin
         done
-        lobin=$ibin
+        loybin=unset
+        hiybin=unset
+        loqtbin=$iqtbin
     done
     $DRYRUN jobsDone
 }
 
 clear_files(){
-    rm -rf scripts/batch_scripts/*.sh
-    rm -rf scripts/infiles/*.in
+    echo "Clearing setup files"
+    rm -f scripts/batch_scripts/*.sh
+    rm -f scripts/infiles/*.in
+    echo "Done"
+}
+
+clear_results(){
+    read -p "Are you sure you want to delete all current results ? " -n 1 -r
+    echo    # (optional) move to a new line
+    if [[ $REPLY =~ ^[Yy]$ ]]
+    then
+        rm -f results/*.{root,out,err}
+    fi
+    echo "Done"
 }
 
 # MAIN
 clear_files
+#clear_results
 submit_Z_dyturbo
