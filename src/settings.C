@@ -489,7 +489,7 @@ InputParser::InputParser( string _filename, string _charset, string _white):
 {
     // parse default
     try {
-        parse_file("input/default.in");
+        parse_file("share/dyturbo/default.in");
     } catch (invalid_argument &e1){
         try {
             parse_file("default.in");

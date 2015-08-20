@@ -6,7 +6,7 @@ libdyturbo_la_SOURCES = integr.C settings.C init.C finintegr.C finitemapping.C c
 
 bin_PROGRAMS = dyturbo
 dyturbo_SOURCES = dyturbo.C #integr.C settings.C init.C finintegr.C finitemapping.C cubacall.C plotter.C
-dyturbo_LDADD = libdyturbo.la ../dyres/libdyres.a ../cernlib/libcern.a -lgfortran \
+dyturbo_LDADD = libdyturbo.la ../dyres/libdyres.la ../cernlib/libcern.la -lgfortran \
 	$(CUBA_LDFLAGS) $(LHAPDF_LDFLAGS) -lgsl -lgslcblas $(ROOT_LDFLAGS) $(ROOT_LIBS) #-lifcore -limf -lifport -lintlc -lquadmath
 
-pkginclude_HEADERS = finintegr.h  integr.h  interface.h  settings.h cubacall.h plotter.h
+pkginclude_HEADERS = finintegr.h integr.h interface.h settings.h cubacall.h plotter.h finitemapping.h lines.C

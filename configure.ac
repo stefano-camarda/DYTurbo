@@ -1,19 +1,27 @@
 AC_INIT([dyturbo], [0.9], [stefano.camarda@cern.ch,jakub.cuth@cern.ch])
 AM_INIT_AUTOMAKE([foreign -Wall -Werror])
 
+#Suppress verbose output when compiling
+m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
+
 #By default, install binaries in the current directory
 AC_PREFIX_DEFAULT(${PWD})
 
 #Use libtoolize to build dyturbo libraries
-AM_PROG_LIBTOOL
+#AM_PROG_LIBTOOL
 LT_INIT
 AC_CONFIG_MACRO_DIR([m4])
 
-#CXXFLAGS="${CXXFLAGS} -O3"
-#FFLAGS="${FFLAGS} -O3"
-
-#CXXFLAGS="${CXXFLAGS} -Ofast"
-#FFLAGS="${FFLAGS} -Ofast"
+#optimisation flags, O3 or Ofast (set this by passing options to configure)
+AC_ARG_ENABLE([fast],
+  [AC_HELP_STRING(--enable-fast, [Use compiler optimization flags. (default=no)])])
+  if test x$enable_fast == xyes
+then
+  CXXFLAGS="${CXXFLAGS} -O3"
+  FFLAGS="${FFLAGS} -O3"
+  #CXXFLAGS="${CXXFLAGS} -Ofast"
+  #FFLAGS="${FFLAGS} -Ofast"
+fi
 
 #c++11 flag is needed for the random number generator function
 #CXXFLAGS="${CXXFLAGS} -std=c++11"
@@ -21,13 +29,6 @@ AC_CONFIG_MACRO_DIR([m4])
 #older compilers needs c++0x instead
 CXXFLAGS="${CXXFLAGS} -std=c++0x"
 
-
-#optimisation flags, O3 or Ofast (set this by passing options to configure)
-#: ${CXXFLAGS+=-O3}
-#: ${FFLAGS=-O3}
-
-#: ${CXXFLAGS=-Ofast}
-#: ${FFLAGS=-Ofast}
 
 AC_PROG_CC
 #AM_PROG_AR
