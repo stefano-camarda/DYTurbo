@@ -1,6 +1,12 @@
 AM_CPPFLAGS = -fpermissive -I$(srcdir)/../include -I$(srcdir)/../Cuba-4.2 -I$(srcdir)/../dequad $(LHAPDF_CPPFLAGS) $(ROOT_CFLAGS)
 bin_PROGRAMS = dyturbo
 dyturbo_SOURCES = dyturbo.C integr.C settings.C init.C finintegr.C finitemapping.C cubacall.C plotter.C
-dyturbo_LDADD = ../dyres/libdyres.a ../lib/libcern.a -lgfortran $(CUBA_LDFLAGS) $(LHAPDF_LDFLAGS) -lgsl -lgslcblas $(ROOT_LDFLAGS) $(ROOT_LIBS) #-lifcore -limf -lifport -lintlc -lquadmath
+dyturbo_LDADD = ../dyres/libdyres.a ../cernlib/libcern.a -lgfortran $(CUBA_LDFLAGS) $(LHAPDF_LDFLAGS) -lgsl -lgslcblas $(ROOT_LDFLAGS) $(ROOT_LIBS) #-lifcore -limf -lifport -lintlc -lquadmath
 
 pkginclude_HEADERS = finintegr.h  integr.h  interface.h  settings.h cubacall.h plotter.h
+
+AUTOMAKE_OPTIONS = foreign
+#noinst_LIBRARIES = libdyturbo.a
+lib_LIBRARIES = libdyturbo.a
+libdyturbo_a_SOURCES = integr.C settings.C init.C finintegr.C finitemapping.C cubacall.C plotter.C
+#libdyturbo_a_CXXFLAGS = -I$(srcdir)/../include -I$(srcdir)/../Cuba-4.2 -I$(srcdir)/../dequad $(LHAPDF_CPPFLAGS) $(ROOT_CFLAGS)

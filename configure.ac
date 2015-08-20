@@ -137,5 +137,5 @@ fi
 
 
 AC_CONFIG_HEADERS([config.h])
-AC_CONFIG_FILES([Makefile src/Makefile dyres/Makefile lib/Makefile ])
+AC_CONFIG_FILES([Makefile src/Makefile dyres/Makefile cernlib/Makefile ])
 AC_OUTPUT
