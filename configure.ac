@@ -4,6 +4,11 @@ AM_INIT_AUTOMAKE([foreign -Wall -Werror])
 #By default, install binaries in the current directory
 AC_PREFIX_DEFAULT(${PWD})
 
+#Use libtoolize to build dyturbo libraries
+AM_PROG_LIBTOOL
+LT_INIT
+AC_CONFIG_MACRO_DIR([m4])
+
 #CXXFLAGS="${CXXFLAGS} -O3"
 #FFLAGS="${FFLAGS} -O3"
 
@@ -25,7 +30,6 @@ CXXFLAGS="${CXXFLAGS} -std=c++0x"
 #: ${FFLAGS=-Ofast}
 
 AC_PROG_CC
-AC_PROG_RANLIB
 #AM_PROG_AR
 
 #use intel compilers (set this by passing options to configure)
@@ -72,7 +76,7 @@ if test x$cubalib == x; then
 fi
 
 AC_MSG_RESULT([Using ${PWD}/Cuba-4.2 ])
-CUBA_LDFLAGS="-L ${PWD}/Cuba-4.2 -lcuba"
+CUBA_LDFLAGS="-L${PWD}/Cuba-4.2 -lcuba"
 AC_SUBST(CUBA_LDFLAGS)
 cubadir="${PWD}/Cuba-4.2"
 AC_MSG_RESULT([Using $cubadir])
@@ -137,5 +141,5 @@ fi
 
 
 AC_CONFIG_HEADERS([config.h])
-AC_CONFIG_FILES([Makefile src/Makefile dyres/Makefile cernlib/Makefile ])
+AC_CONFIG_FILES([Makefile src/Makefile dyres/Makefile cernlib/Makefile dyturbo-config])
 AC_OUTPUT
