@@ -119,8 +119,9 @@ void settings::readfromfile(const string fname){
     //int2d           = in.GetBool   ( "int2d"           ); //false
     //int3d           = in.GetBool   ( "int3d"           ); //true
     //int4d           = in.GetBool   ( "int4d"           ); //false
-    intDimCT        = in.GetNumber ( "intDimCT"        ); //3
-    //ctint3d         = in.GetBool   ( "ctint3d"         ); //true
+    intDimCT        = in.GetNumber ( "intDimCT"       ); //3
+    //ctint2d         = in.GetBool   ( "ctint2d"         ); //true
+    //ctint3d         = in.GetBool   ( "ctint3d"         ); //false
     //ctintvegas      = in.GetBool   ( "ctintvegas"      ); //false
     doRES           = in.GetBool   ( "doRES"           ); //false
     doCT            = in.GetBool   ( "doCT"            ); //false
@@ -159,21 +160,24 @@ void settings::readfromfile(const string fname){
     opts.doLO   = (opts.doLO   && opts.order == 1);
     opts.doREAL = (opts.doREAL && opts.order == 2);
     opts.doVIRT = (opts.doVIRT && opts.order == 2);
-    // counter term integration dimension
+    // resummation term integration dimension
     if (intDimRes<5 && intDimRes>1){
         int2d = (intDimRes == 2);
         int3d = (intDimRes == 3);
         int4d = (intDimRes == 4);
     } else {
         int2d = false;
-        int3d = true;
-        int4d = false;
+        int3d = false;
+        int4d = true;
     }
+
     // counter term integration dimension
-    if (intDimRes==3){
-        ctint3d = true;
+    if (intDimCT<4 && intDimCT>1){
+        ctint2d = (intDimCT == 2);
+        ctint3d = (intDimCT == 3);
         ctintvegas = false;
     } else {
+        ctint2d = false;
         ctint3d = false;
         ctintvegas = true;
     }
@@ -258,8 +262,9 @@ void settings::dumpAll(){
         dumpB("int2d           ", int2d               );
         dumpB("int3d           ", int3d               );
         dumpB("int4d           ", int4d               );
-        dumpB("intDimCT        ", intDimCT            );
-        dumpB("ctint3d         ", ctint3d             );
+        dumpI("intDimCT        ", intDimCT            );
+        dumpB("ctint2d         ", ctint2d             );
+	dumpB("ctint3d         ", ctint3d             );
         dumpB("ctintvegas      ", ctintvegas          );
         dumpB("doRES           ", doRES               );
         dumpB("doCT            ", doCT                );

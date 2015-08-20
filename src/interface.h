@@ -22,6 +22,8 @@ extern "C" {
     void rapintegrals_(double &ymin,double &ymax, double& mass, int& nocuts);
     void cacheyrapint_(double &ymin,double &ymax);
 
+    void ctqtint_(double &m, double &y, double &qtmin, double &qtmax);
+
     // fortran common spaces
 
     // z coupling

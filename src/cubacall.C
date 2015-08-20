@@ -295,3 +295,37 @@ void ctintegr3d(double &res, double &err)
   err = error[0];
   return;
 }
+
+void ctintegr2d(double &res, double &err)
+{
+  const int ndim = 2;     //dimensions of the integral
+  const int ncomp = 1;  //components of the integrand
+  void *userdata;
+  const int nvec = 1;
+  const double epsrel = 0.;
+  const double epsabs = 0.;
+  const char *statefile = "";
+  void *spin=NULL;
+  int neval;
+  int fail;
+  double integral[1];
+  double error[1];
+  double prob[1];
+  const int flags = 0+opts.cubaverbosity;
+  const int mineval = 65+2*65*opts.niterCT;
+  const int maxeval = 65+2*65*opts.niterCT;
+  const int key = 13;
+  int nregions;
+  Cuhre(ndim, ncomp,
+	(integrand_t) ctintegrand2d, userdata, nvec,
+	epsrel, epsabs,
+	flags,
+	mineval, maxeval,
+	key, statefile, NULL,
+	&nregions, &neval, &fail,
+  	integral, error, prob);
+
+  res = integral[0];
+  err = error[0];
+  return;
+}

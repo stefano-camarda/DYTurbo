@@ -56,8 +56,9 @@ intDimRes = 4
 #int4d = false
 
 # type of integration for counter term
-intDimCT = 8 # 3 or 8
-#ctint3d = true
+intDimCT = 8 # 2, 3 or 8
+#ctint2d = true
+#ctint3d = false
 #ctintvegas = false
 
 # term switches

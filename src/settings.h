@@ -95,7 +95,7 @@ public:
 
   //type of integration for the counterterm
   int intDimCT;
-  bool ctint3d, ctintvegas;
+  bool ctint2d, ctint3d, ctintvegas;
 
   //term switch
   bool doRES  , doCT   , doREAL , doVIRT , doLO   ;

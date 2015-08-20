@@ -184,7 +184,8 @@ int main( int argc , const char * argv[])
       // counter term
       if (opts.doCT) {
           double b_time = clock_real();
-          if (opts.ctint3d) ctintegr3d(value, error);
+	  if (opts.ctint2d) ctintegr2d(value, error);
+	  if (opts.ctint3d) ctintegr3d(value, error);
           if (opts.ctintvegas) ctintegr(value, error);
           double e_time = clock_real();
           normalise_result(value,error);
