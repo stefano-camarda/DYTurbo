@@ -44,7 +44,7 @@ CC
       common/nproc/nproc
 !      common/mlimits/wsqmin,wsqmax
       common/flag/flag
-      common/photon/phot
+      common/dyphoton/phot
 !
       double precision xqtcut
       common/qtcut/xqtcut
@@ -292,7 +292,7 @@ c--- the default behaviour is to remove no branching ratio
 
       BrnRat=1d0
 
-      call coupling
+      call dycoupling
 
       call cstring(pdfstring)
 

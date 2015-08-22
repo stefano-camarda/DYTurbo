@@ -66,7 +66,7 @@ c     COMMON/binteg/phi2,min,max
       common/sigmaij/sigmaij
       double precision g
       common/NP/g
-      common/photon/phot
+      common/dyphoton/phot
       double complex loga,logmuf2q2,logq2muf2,logq2mur2
       common/clogs/loga,logmuf2q2,logq2muf2,logq2mur2
       double precision rloga,rlogq2mur2

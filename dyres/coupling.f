@@ -1,4 +1,4 @@
-      subroutine coupling
+      subroutine dycoupling
       implicit none
       include 'constants.f'
       include 'masses.f'
