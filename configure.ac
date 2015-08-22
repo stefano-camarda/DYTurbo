@@ -8,7 +8,7 @@ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 AC_PREFIX_DEFAULT(${PWD})
 
 AC_PROG_CC
-AM_PROG_AR
+m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 
 #Use libtoolize to build dyturbo libraries
 #AM_PROG_LIBTOOL
