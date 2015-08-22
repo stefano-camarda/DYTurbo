@@ -1,4 +1,4 @@
-      DOUBLE PRECISION FUNCTION ALPHAS(Q,AMZ,NLOOP)
+      DOUBLE PRECISION FUNCTION dyALPHAS(Q,AMZ,NLOOP)
 c     Evaluation of strong coupling constant alpha_S
 c     Author: R.K. Ellis
 
@@ -62,7 +62,7 @@ c--- evaluate strong coupling at scale q
       T=2D0*DLOG(Q/ZMASS)
       CALL NEWTON1(T,AMZ,AS_OUT,NLOOP,NF5)
       ENDIF
-      ALPHAS=AS_OUT
+      dyALPHAS=AS_OUT
       RETURN
       END
 
@@ -71,7 +71,8 @@ c--- evaluate strong coupling at scale q
       IMPLICIT NONE
       DOUBLE PRECISION BETA(3:5),B0(3:5),C1(3:5),C2(3:5)
       INTEGER NLOOP,J
-      DOUBLE PRECISION Q,QP,QM,AMZ,CMASS,BMASS,X1,X2,X3,EP,DIFF1,ALPHAS
+      DOUBLE PRECISION Q,QP,QM,AMZ,CMASS,BMASS,X1,X2,X3,EP,DIFF1
+     .     ,dyALPHAS
       COMMON/QMASS/CMASS,BMASS
 C---     B0=(11.-2.*F/3.)/4./PI
       DATA B0/0.716197243913527D0,0.66314559621623D0,0.61009394851893D0/
@@ -82,9 +83,9 @@ C---     /16.D0/PI**2/(11.D0-2.D0/3.D0*F)
       DATA C2/0.453013579178645D0,0.30879037953664D0,0.14942733137107D0/
 C---     DEL=SQRT(4*C2-C1**2)
 
-      X1=ALPHAS(Q,AMZ,1)
-      X2=ALPHAS(Q,AMZ,2)
-      X3=ALPHAS(Q,AMZ,3)
+      X1=dyALPHAS(Q,AMZ,1)
+      X2=dyALPHAS(Q,AMZ,2)
+      X3=dyALPHAS(Q,AMZ,3)
       J=3
       IF (Q .GT. CMASS) J=4
       IF (Q .GT. BMASS) J=5
@@ -93,15 +94,15 @@ C---     DEL=SQRT(4*C2-C1**2)
       QM=Q*(1D0-EP)
       IF (NLOOP .EQ.1) THEN 
       BETA(J)=-B0(J)*X1**2
-      DIFF1=(ALPHAS(QP,AMZ,1)-ALPHAS(QM,AMZ,1))/4d0/EP/BETA(J)
+      DIFF1=(dyALPHAS(QP,AMZ,1)-dyALPHAS(QM,AMZ,1))/4d0/EP/BETA(J)
       ENDIF
       IF (NLOOP .EQ.2) THEN 
       BETA(J)=-B0(J)*X2**2*(1D0+C1(J)*X2)
-      DIFF1=(ALPHAS(QP,AMZ,2)-ALPHAS(QM,AMZ,2))/4d0/EP/BETA(J)
+      DIFF1=(dyALPHAS(QP,AMZ,2)-dyALPHAS(QM,AMZ,2))/4d0/EP/BETA(J)
       ENDIF
       IF (NLOOP .EQ.3) THEN 
       BETA(J)=-B0(J)*X3**2*(1D0+C1(J)*X3+C2(J)*X3**2)
-      DIFF1=(ALPHAS(QP,AMZ,3)-ALPHAS(QM,AMZ,3))/4d0/EP/BETA(J)
+      DIFF1=(dyALPHAS(QP,AMZ,3)-dyALPHAS(QM,AMZ,3))/4d0/EP/BETA(J)
       ENDIF
       WRITE(6,*) Q,DIFF1,NLOOP
       RETURN

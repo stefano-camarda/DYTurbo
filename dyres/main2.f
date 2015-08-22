@@ -97,8 +97,8 @@ c     cached for invres and cachecoeff
 
       double precision xborn,xborn2,xnorm,xnormal
 
-      double precision alphas
-      external alphas
+      double precision dyalphas
+      external dyalphas
 
       double precision xsection
       external xsection
@@ -156,7 +156,7 @@ C     Scales
          q2muf=muf2
 
 C   ALPQR = ALPHA AT RENORMALIZATION SCALE
-         ALPQR=alphas(dsqrt(q2mur),amz,nlooprun)/4d0/pi
+         ALPQR=dyalphas(dsqrt(q2mur),amz,nlooprun)/4d0/pi
 C as = ALPHAS/PI
          aass = ALPQR*4d0
 
@@ -266,7 +266,7 @@ C     Limit eta_max to avoid reaching the end of phase space
 C...  COUPLING CONSTANTS AT INPUT SCALE = ALPHAS/4/PI
 C     ALPQF = ALPHA AT RESUMMATION SCALE (used to start evolution,
 
-         ALPQF=alphas(dsqrt(q2s),amz,nlooprun)/4d0/pi
+         ALPQF=dyalphas(dsqrt(q2s),amz,nlooprun)/4d0/pi
          
 c     precompute scales
          logmuf2q2=log(muf2/q2)

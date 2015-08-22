@@ -97,7 +97,7 @@ C     Labels that identify the charged leptons
       double precision ran2,randummy
       double precision cmass,bmass
       double precision mass2,width2,mass3,width3
-      double precision amz,alphas
+      double precision amz,dyalphas
       double precision brwen,brzee,brtau,brtop
       
       character *3 str1
@@ -501,7 +501,7 @@ c--- check that we have a valid value of 'part'
 
 
 
-        as=alphas(scale,amz,nlooprun)
+        as=dyalphas(scale,amz,nlooprun)
         ason2pi=as/twopi
         ason4pi=as/fourpi
         gsq=fourpi*as
