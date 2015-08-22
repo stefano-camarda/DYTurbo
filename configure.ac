@@ -7,6 +7,9 @@ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 #By default, install binaries in the current directory
 AC_PREFIX_DEFAULT(${PWD})
 
+AC_PROG_CC
+AM_PROG_AR
+
 #Use libtoolize to build dyturbo libraries
 #AM_PROG_LIBTOOL
 LT_INIT
@@ -29,9 +32,6 @@ fi
 #older compilers needs c++0x instead
 CXXFLAGS="${CXXFLAGS} -std=c++0x"
 
-
-AC_PROG_CC
-#AM_PROG_AR
 
 #use intel compilers (set this by passing options to configure)
 #AC_PROG_CXX([icc2015])

@@ -31,7 +31,7 @@ c      common/qmassq/mtausq,mcsq,mbsq
      . twidth,
      . tauwidth,
      . mtausq,mcsq,mbsq
-      common/masses/
+      common/dymasses/
      . md,mu,ms,mc,mb,mt,
      . mel,mmu,mtau,
      . hmass,hwidth,

@@ -64,7 +64,7 @@ extern "C" {
         double mtausq_;
         double mcsq_;
         double mbsq_;
-    } masses_;
+    } dymasses_;
 
     // ewinput
     extern struct {

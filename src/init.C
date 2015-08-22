@@ -8,6 +8,6 @@ void pdfini_(){
     LHAPDF::initPDFSetByName(opts.LHAPDFset);
     LHAPDF::initPDF(opts.LHAPDFmember);
     // initialization of alphas
-    couple_.amz_=LHAPDF::alphasPDF(masses_.zmass_) ;
+    couple_.amz_=LHAPDF::alphasPDF(dymasses_.zmass_) ;
     printf("\n");
 }

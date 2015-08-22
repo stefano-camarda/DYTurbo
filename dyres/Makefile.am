@@ -1,4 +1,5 @@
 AUTOMAKE_OPTIONS = foreign
+
 noinst_LTLIBRARIES = libdyres.la
 libdyres_la_SOURCES = main2.f intde2.f  lowintHst-RES.f  varios.f alfamz.f csection.f integration.f mellinh2.f newton1.f a06.f a09.f setup-RES.f coupling.f strcat.f ckmfill.f ran1.f branch.f couplz.f dyinit.f plotter.f mbook.f ptyrap.f evtwriter.f mdata.f pdf_lhapdf.f resinit.f besselkfast.f realvirt2.f realint.f virtint.f lowint_incldip.f countDYnew-RES.f gen4MIO.f dot.f dotem.f masscuts.f smalls.f includedipole.f qqb_w1jet_z.f qqb_w1jet_v.f qqb_w1jet_gs.f getptildejet.f qqb_z2jet.f qqb_z1jet_z.f qqb_z1jet_v.f qqb_z1jet_gs.f qqb_z1jet.f gen3.f qqb_w_g.f qqb_w2jet.f scaleset.f qqb_z_g.f myli2.f genBORN2qT.f qqb_w.f cuts.f phase4.f qqb_z.f dipoles.f genclust2.f isolation.f spinoru.f virt5.f qqb_w_gvec.f dipolesub.f ampqqb_qqb.f z2jetsq.f storecsz.f qqb_z_gvec.f phase3.f aqqb_zbb.f w2jetsq.f phi1_2.f phi3m0.f genclust_cone.f genclust_kt.f r.f A5NLO.f zeromsq.f transform.f storeptilde.f subqcd.f phi1_2m.f boost.f breitw.f deltarj.f getet.f miscclust.f swapjet.f A51.f A52.f lnrat.f lfunctions.f ddilog.f i3m.f dclaus.f countdy.f pdfmoments.f
 

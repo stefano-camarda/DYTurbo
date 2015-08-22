@@ -8,7 +8,7 @@ exec_prefix=@exec_prefix@
 
 if [[ $# -eq 0 || -n $( echo $* | egrep -- "--help|-h" ) ]]; then
     echo
-    echo "apfel-config: configuration tool for DYTURBO: A fast implentation of DYRES"
+    echo "dyturbo-config: configuration tool for DYTURBO: A fast implentation of DYRES"
     echo "              webpage: https://gitlab.cern.ch/DYdevel/DYTURBO"
     echo
     echo "Usage: dyturbo-config [[--help|-h] | [--prefix] | [--ldflags]]"
@@ -38,7 +38,7 @@ tmp=$( echo "$*" | egrep -- '--\<libdir\>')
 test -n "$tmp" && OUT="$OUT @libdir@"
 
 tmp=$( echo "$*" | egrep -- '--\<ldflags\>')
-test -n "$tmp" && OUT="$OUT -L@libdir@ -ldyturbo"
+test -n "$tmp" && OUT="$OUT -L@libdir@ -ldyturbo -lcuba"
 
 tmp=$( echo "$*" | egrep -- '--\<version\>')
 test -n "$tmp" && OUT="$OUT @PACKAGE_VERSION@"
