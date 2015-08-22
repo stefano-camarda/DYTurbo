@@ -38,7 +38,7 @@ tmp=$( echo "$*" | egrep -- '--\<libdir\>')
 test -n "$tmp" && OUT="$OUT @libdir@"
 
 tmp=$( echo "$*" | egrep -- '--\<ldflags\>')
-test -n "$tmp" && OUT="$OUT -L@libdir@ -ldyturbo -lcuba"
+test -n "$tmp" && OUT="$OUT -L@libdir@ -ldyturbo"
 
 tmp=$( echo "$*" | egrep -- '--\<version\>')
 test -n "$tmp" && OUT="$OUT @PACKAGE_VERSION@"
