@@ -77,7 +77,9 @@ if test x$cubalib == x; then
 fi
 
 AC_MSG_RESULT([Using ${PWD}/Cuba-4.2 ])
+CUBA_CPPFLAGS="-I${PWD}/Cuba-4.2"
 CUBA_LDFLAGS="-L${PWD}/Cuba-4.2 -lcuba"
+AC_SUBST(CUBA_CPPFLAGS)
 AC_SUBST(CUBA_LDFLAGS)
 cubadir="${PWD}/Cuba-4.2"
 AC_MSG_RESULT([Using $cubadir])

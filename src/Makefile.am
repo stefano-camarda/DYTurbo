@@ -1,5 +1,5 @@
 AUTOMAKE_OPTIONS = foreign
-AM_CPPFLAGS = -fpermissive -I$(srcdir)/../include -I$(srcdir)/../Cuba-4.2 -I$(srcdir)/../dequad $(LHAPDF_CPPFLAGS) $(ROOT_CFLAGS)
+AM_CPPFLAGS = -fpermissive -I$(srcdir)/../include -I$(srcdir)/../dequad $(CUBA_CPPFLAGS) $(LHAPDF_CPPFLAGS) $(ROOT_CFLAGS)
 
 lib_LTLIBRARIES = libdyturbo.la
 libdyturbo_la_SOURCES = integr.C settings.C init.C finintegr.C finitemapping.C cubacall.C plotter.C
