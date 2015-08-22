@@ -24,6 +24,7 @@ extern "C" {
 
     void ctqtint_(double &m, double &y, double &qtmin, double &qtmax);
 
+    void initmoments_();
     // fortran common spaces
 
     // z coupling
