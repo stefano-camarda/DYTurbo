@@ -46,3 +46,4 @@ ltmain.sh
 m4/
 src/.libs/
 dyturbo-config
+.deps/
