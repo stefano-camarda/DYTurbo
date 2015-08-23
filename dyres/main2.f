@@ -145,6 +145,7 @@ c     Initialization of redundant variables
 c     Choose pp or ppbar collider
          ih1=iih1               !1
          ih2=iih2               !1
+
 c     Set factorization and renormalization scales (to work with dynamic scale need to move this outside init stage)
          mur=scale
          muf=facscale
@@ -154,11 +155,6 @@ C     Scales
 
          q2mur=mur2
          q2muf=muf2
-
-C   ALPQR = ALPHA AT RENORMALIZATION SCALE
-         ALPQR=dyalphas(dsqrt(q2mur),amz,nlooprun)/4d0/pi
-C as = ALPHAS/PI
-         aass = ALPQR*4d0
 
 C non-perturbative parameter
          g=g_param
@@ -212,6 +208,12 @@ c     flag1 is the order of calculation (carbon copy of order, 1=NLO+NLL, 2=NNLO
          endif
 
       endif                     ! end initialization
+
+
+C   ALPQR = ALPHA AT RENORMALIZATION SCALE
+      ALPQR=dyalphas(dsqrt(q2mur),amz,nlooprun)/4d0/pi
+C as = ALPHAS/PI
+      aass = ALPQR*4d0
 
       g=g_param
       loga=log(a_param)
