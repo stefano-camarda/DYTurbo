@@ -300,6 +300,7 @@ c         call qqb_w(p,msqc)
 c      endif
 c
 c      call initsigma(m,-costh)
+c
 c      print *,1,-1,sigmaij(2,-2)
 c      print *,-1,1,sigmaij(-2,2)
 c      print *,2,-2,sigmaij(1,-1)
@@ -315,6 +316,24 @@ c      print *,4,-4,(msqc(4,-4))/(sigmaij(4,-4)*pi*6d0/fbGeV2*(2*q2))
 c      print *,-4,4,(msqc(-4,4))/(sigmaij(-4,4)*pi*6d0/fbGeV2*(2*q2))
 c      print *,5,-5,(msqc(5,-5))/(sigmaij(5,-5)*pi*6d0/fbGeV2*(2*q2))
 c      print *,-5,5,(msqc(-5,5))/(sigmaij(-5,5)*pi*6d0/fbGeV2*(2*q2))
+
+c      print *,costh
+c      print *,2,-1,msqc(2,-1),(sigmaij(1,-2)*pi*6d0/fbGeV2*(2*q2))
+c      print *,-1,2,msqc(-1,2),(sigmaij(-2,1)*pi*6d0/fbGeV2*(2*q2))
+c
+c      print *,2,-1,msqc(2,-1)/(sigmaij(1,-2)*pi*6d0/fbGeV2*(2*q2))
+c      print *,-1,2,msqc(-1,2)/(sigmaij(-2,1)*pi*6d0/fbGeV2*(2*q2))
+c      print *,2,-3,msqc(2,-3)/(sigmaij(1,-3)*pi*6d0/fbGeV2*(2*q2))
+c      print *,-3,2,msqc(-3,2)/(sigmaij(-3,1)*pi*6d0/fbGeV2*(2*q2))
+c      print *,2,-5,msqc(2,-5)/(sigmaij(1,-5)*pi*6d0/fbGeV2*(2*q2))
+c      print *,-5,2,msqc(-5,2)/(sigmaij(-5,1)*pi*6d0/fbGeV2*(2*q2))
+c      print *,4,-3,msqc(4,-3)/(sigmaij(4,-3)*pi*6d0/fbGeV2*(2*q2))
+c      print *,-3,4,msqc(-3,4)/(sigmaij(-3,4)*pi*6d0/fbGeV2*(2*q2))
+c      print *,4,-1,msqc(4,-1)/(sigmaij(4,-2)*pi*6d0/fbGeV2*(2*q2))
+c      print *,-1,4,msqc(-1,4)/(sigmaij(-2,4)*pi*6d0/fbGeV2*(2*q2))
+c      print *,4,-5,msqc(4,-5)/(sigmaij(4,-5)*pi*6d0/fbGeV2*(2*q2))
+c      print *,-5,4,msqc(-5,4)/(sigmaij(-5,4)*pi*6d0/fbGeV2*(2*q2))
+
 c
 cc     End of ME check
 cc*******************************************************
@@ -346,6 +365,32 @@ cc*******************************************************
             msqc(-4,4)=sigmaij(-4,4)*pi*6d0/fbGeV2*(2*q2)
             msqc(5,-5)=sigmaij(5,-5)*pi*6d0/fbGeV2*(2*q2)
             msqc(-5,5)=sigmaij(-5,5)*pi*6d0/fbGeV2*(2*q2)
+         elseif(nproc.eq.1) then
+            msqc(2,-1)=sigmaij(1,-2)*pi*6d0/fbGeV2*(2*q2)
+            msqc(-1,2)=sigmaij(-2,1)*pi*6d0/fbGeV2*(2*q2)
+            msqc(2,-3)=sigmaij(1,-3)*pi*6d0/fbGeV2*(2*q2)
+            msqc(-3,2)=sigmaij(-3,1)*pi*6d0/fbGeV2*(2*q2)
+            msqc(2,-5)=sigmaij(1,-5)*pi*6d0/fbGeV2*(2*q2)
+            msqc(-5,2)=sigmaij(-5,1)*pi*6d0/fbGeV2*(2*q2)
+            msqc(4,-3)=sigmaij(4,-3)*pi*6d0/fbGeV2*(2*q2)
+            msqc(-3,4)=sigmaij(-3,4)*pi*6d0/fbGeV2*(2*q2)
+            msqc(4,-1)=sigmaij(4,-2)*pi*6d0/fbGeV2*(2*q2)
+            msqc(-1,4)=sigmaij(-2,4)*pi*6d0/fbGeV2*(2*q2)
+            msqc(4,-5)=sigmaij(4,-5)*pi*6d0/fbGeV2*(2*q2)
+            msqc(-5,4)=sigmaij(-5,4)*pi*6d0/fbGeV2*(2*q2)
+         elseif(nproc.eq.2) then
+            msqc(1,-2)=sigmaij(2,-1)*pi*6d0/fbGeV2*(2*q2)
+            msqc(-2,1)=sigmaij(-1,2)*pi*6d0/fbGeV2*(2*q2)
+            msqc(3,-2)=sigmaij(3,-1)*pi*6d0/fbGeV2*(2*q2)
+            msqc(-2,3)=sigmaij(-1,3)*pi*6d0/fbGeV2*(2*q2)
+            msqc(5,-2)=sigmaij(5,-1)*pi*6d0/fbGeV2*(2*q2)
+            msqc(-2,5)=sigmaij(-1,5)*pi*6d0/fbGeV2*(2*q2)
+            msqc(3,-4)=sigmaij(3,-4)*pi*6d0/fbGeV2*(2*q2)
+            msqc(-4,3)=sigmaij(-4,3)*pi*6d0/fbGeV2*(2*q2)
+            msqc(1,-4)=sigmaij(2,-4)*pi*6d0/fbGeV2*(2*q2)
+            msqc(-4,1)=sigmaij(-4,2)*pi*6d0/fbGeV2*(2*q2)
+            msqc(5,-4)=sigmaij(5,-4)*pi*6d0/fbGeV2*(2*q2)
+            msqc(-4,5)=sigmaij(-4,5)*pi*6d0/fbGeV2*(2*q2)
          endif
       endif
 CC  
@@ -991,6 +1036,32 @@ c     xmio is used in besselkfast for Itilde
                msqc(-4,4)=sigmaij(-4,4)*pi*6d0/fbGeV2*(2*q2)
                msqc(5,-5)=sigmaij(5,-5)*pi*6d0/fbGeV2*(2*q2)
                msqc(-5,5)=sigmaij(-5,5)*pi*6d0/fbGeV2*(2*q2)
+            elseif(nproc.eq.1) then
+               msqc(2,-1)=sigmaij(1,-2)*pi*6d0/fbGeV2*(2*q2)
+               msqc(-1,2)=sigmaij(-2,1)*pi*6d0/fbGeV2*(2*q2)
+               msqc(2,-3)=sigmaij(1,-3)*pi*6d0/fbGeV2*(2*q2)
+               msqc(-3,2)=sigmaij(-3,1)*pi*6d0/fbGeV2*(2*q2)
+               msqc(2,-5)=sigmaij(1,-5)*pi*6d0/fbGeV2*(2*q2)
+               msqc(-5,2)=sigmaij(-5,1)*pi*6d0/fbGeV2*(2*q2)
+               msqc(4,-3)=sigmaij(4,-3)*pi*6d0/fbGeV2*(2*q2)
+               msqc(-3,4)=sigmaij(-3,4)*pi*6d0/fbGeV2*(2*q2)
+               msqc(4,-1)=sigmaij(4,-2)*pi*6d0/fbGeV2*(2*q2)
+               msqc(-1,4)=sigmaij(-2,4)*pi*6d0/fbGeV2*(2*q2)
+               msqc(4,-5)=sigmaij(4,-5)*pi*6d0/fbGeV2*(2*q2)
+               msqc(-5,4)=sigmaij(-5,4)*pi*6d0/fbGeV2*(2*q2)
+            elseif(nproc.eq.2) then
+               msqc(1,-2)=sigmaij(2,-1)*pi*6d0/fbGeV2*(2*q2)
+               msqc(-2,1)=sigmaij(-1,2)*pi*6d0/fbGeV2*(2*q2)
+               msqc(3,-2)=sigmaij(3,-1)*pi*6d0/fbGeV2*(2*q2)
+               msqc(-2,3)=sigmaij(-1,3)*pi*6d0/fbGeV2*(2*q2)
+               msqc(5,-2)=sigmaij(5,-1)*pi*6d0/fbGeV2*(2*q2)
+               msqc(-2,5)=sigmaij(-1,5)*pi*6d0/fbGeV2*(2*q2)
+               msqc(3,-4)=sigmaij(3,-4)*pi*6d0/fbGeV2*(2*q2)
+               msqc(-4,3)=sigmaij(-4,3)*pi*6d0/fbGeV2*(2*q2)
+               msqc(1,-4)=sigmaij(2,-4)*pi*6d0/fbGeV2*(2*q2)
+               msqc(-4,1)=sigmaij(-4,2)*pi*6d0/fbGeV2*(2*q2)
+               msqc(5,-4)=sigmaij(5,-4)*pi*6d0/fbGeV2*(2*q2)
+               msqc(-4,5)=sigmaij(-4,5)*pi*6d0/fbGeV2*(2*q2)
             endif
             
             do jj=-nf,nf
