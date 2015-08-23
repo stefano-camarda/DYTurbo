@@ -16,15 +16,22 @@ m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 LT_INIT
 AC_CONFIG_MACRO_DIR([m4])
 
-#optimisation flags, O3 or Ofast
+#optimisation flags O3
 AC_ARG_ENABLE([fast],
-  [AC_HELP_STRING(--enable-fast, [Use compiler optimization flags. (default=no)])])
+  [AC_HELP_STRING(--enable-O3, [Use compiler optimization flags -O3. (default=no)])])
 if test x$enable_fast == xyes
 then
   CXXFLAGS="${CXXFLAGS} -O3"
   FFLAGS="${FFLAGS} -O3"
-  #CXXFLAGS="${CXXFLAGS} -Ofast"
-  #FFLAGS="${FFLAGS} -Ofast"
+fi
+
+#optimisation flags, O3 or Ofast
+AC_ARG_ENABLE([turbo],
+  [AC_HELP_STRING(--enable-Ofast, [Use unsafe compiler optimization flags -Ofast. (default=no)])])
+if test x$enable_turbo == xyes
+then
+  CXXFLAGS="${CXXFLAGS} -Ofast"
+  FFLAGS="${FFLAGS} -Ofast"
 fi
 
 #c++11 flag is needed for the random number generator function
