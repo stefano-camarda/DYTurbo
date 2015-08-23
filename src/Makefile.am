@@ -11,4 +11,4 @@ dyturbo_SOURCES = dyturbo.C
 dyturbo_LDADD = libdyturbo.la ../Cuba-4.2/libcuba.a ../cernlib/libcern.la -lgfortran \
 	$(CUBA_LDFLAGS) $(LHAPDF_LDFLAGS) -lgsl -lgslcblas $(ROOT_LDFLAGS) $(ROOT_LIBS) #-lifcore -limf -lifport -lintlc -lquadmath
 
-pkginclude_HEADERS = finintegr.h integr.h interface.h settings.h cubacall.h plotter.h finitemapping.h lines.C
+pkginclude_HEADERS = finintegr.h integr.h interface.h settings.h cubacall.h plotter.h finitemapping.h lines.C init.h
