@@ -1,4 +1,5 @@
 AC_INIT([dyturbo], [0.9.1], [stefano.camarda@cern.ch,jakub.cuth@cern.ch])
+AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE([foreign -Wall -Werror])
 
 #Suppress verbose output when compiling
@@ -15,10 +16,10 @@ m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 LT_INIT
 AC_CONFIG_MACRO_DIR([m4])
 
-#optimisation flags, O3 or Ofast (set this by passing options to configure)
+#optimisation flags, O3 or Ofast
 AC_ARG_ENABLE([fast],
   [AC_HELP_STRING(--enable-fast, [Use compiler optimization flags. (default=no)])])
-  if test x$enable_fast == xyes
+if test x$enable_fast == xyes
 then
   CXXFLAGS="${CXXFLAGS} -O3"
   FFLAGS="${FFLAGS} -O3"
@@ -32,13 +33,21 @@ fi
 #older compilers needs c++0x instead
 CXXFLAGS="${CXXFLAGS} -std=c++0x"
 
+#use intel compilers
+#AC_ARG_ENABLE([ifort],
+#  [AC_HELP_STRING(--enable-ifort, [Use ifort2015 and icc2015 compilers. (default=no)])])
+#if test x$enable_ifort == xyes
+#then
+#  AC_PROG_CXX([icc2015])
+#  AC_PROG_F77([ifort2015])
+#  AC_PROG_FC([ifort2015])
+#else  
+##use gfortran compilers
+# AC_PROG_CXX
+# AC_PROG_F77([gfortran])
+# AC_PROG_FC
+#fi
 
-#use intel compilers (set this by passing options to configure)
-#AC_PROG_CXX([icc2015])
-#AC_PROG_F77([ifort2015])
-#AC_PROG_FC([ifort2015])
-
-#use gfortran compilers
 AC_PROG_CXX
 AC_PROG_F77([gfortran])
 AC_PROG_FC
@@ -143,6 +152,5 @@ if test x$enable_checkBounds == xyes; then
 fi
 
 
-AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile src/Makefile dyres/Makefile cernlib/Makefile dyturbo-config])
 AC_OUTPUT
