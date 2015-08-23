@@ -17,7 +17,7 @@ LT_INIT
 AC_CONFIG_MACRO_DIR([m4])
 
 #optimisation flags O3
-AC_ARG_ENABLE([fast],
+AC_ARG_ENABLE([O3],
   [AC_HELP_STRING(--enable-O3, [Use compiler optimization flags -O3. (default=no)])])
 if test x$enable_fast == xyes
 then
@@ -26,7 +26,7 @@ then
 fi
 
 #optimisation flags, O3 or Ofast
-AC_ARG_ENABLE([turbo],
+AC_ARG_ENABLE([Ofast],
   [AC_HELP_STRING(--enable-Ofast, [Use unsafe compiler optimization flags -Ofast. (default=no)])])
 if test x$enable_turbo == xyes
 then
