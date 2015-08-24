@@ -621,9 +621,9 @@ c          PHI = 3.141592654 * 3./4.
 c     Modified settings to allow numerical integration of PDFs melling moment (need real part of moments always > 0)
       CPOINT = 1d0
       PHI = 3.141592654 * 1./2.
-       
-c      min = 1d-4
+      
       min = 0
+c     upper limit for the mellin integration in the complex plane (z). Above 50 the integral becomes unstable (precision issue?)
       max = 27d0
       
 c     initialise to 0

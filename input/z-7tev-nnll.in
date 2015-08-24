@@ -45,7 +45,7 @@ intDimRes = 2
 intDimCT = 2
 
 # term switches
-doRES  = false
+doRES  = true
 doCT   = true
 doREAL = false
 doVIRT = false
