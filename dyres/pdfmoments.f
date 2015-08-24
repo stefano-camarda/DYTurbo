@@ -7,6 +7,8 @@ C     Computes the complex N Mellin moments of pdfs
       integer ih1,ih2
       common/collider/ih1,ih2
 
+      include 'facscale.f'
+      
       complex(8) UV,DV,US,DS,SS,GL,CH,BO
 
       real(8) fx(-5:5)
@@ -24,7 +26,7 @@ C     Computes the complex N Mellin moments of pdfs
 
       integer approxpdf,pdfintervals
       common/opts/approxpdf,pdfintervals
-      
+
 c     select beam
       if (beam.eq.1) then
          hadron = ih1
@@ -32,7 +34,7 @@ c     select beam
          hadron = ih2
       endif
 c     factorization scale
-      muf=91.1876d0
+      muf=facscale
 c     muf=2D0
 
 c     boundaries of integration      
