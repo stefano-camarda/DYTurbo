@@ -669,8 +669,7 @@ c       COMPLEX*16 H2QQm(136),H2QGm(136),H2GQm(136),H2GGm(136)
      .                  C2qgMm,C2NSqqMm,C2SqqbMm,C2NSqqbMm
 
 c       COMMON / H2COEF /H2QQp,H2QGp,H2GQp,H2GGp,H2QQm,H2QGm,H2GQm,H2GGm
-       integer approxpdf,pdfintervals
-       common/opts/approxpdf,pdfintervals
+       include 'quadrules.f'
 
       Write(6,*)'Start initialization'
 
@@ -825,8 +824,7 @@ c n=8 gaussian quadrature
 c       DATA DOWN/0d0,0.5d0,1d0,2d0,3d0,4d0,
 c     .      6d0,8d0,10d0,14d0,18D0,22d0,
 c     .      36d0,42d0,48d0,54d0,62d0/
-       integer approxpdf,pdfintervals
-       common/opts/approxpdf,pdfintervals
+       include 'quadrules.f'
 C     
 c     C is the starting point on the real axis for the positive and negative part of the integration path
 c     D is a scaling factor for the total length of the integration path

@@ -127,9 +127,7 @@ c     include 'constants.f'
       common/density/iih1,iih2
       include 'scale.f'
       include 'facscale.f'
-      integer approxpdf,pdfintervals
-      common/opts/approxpdf,pdfintervals
-      include 'mellinquad.inc'
+      include 'quadrules.f'
       
       mod = mode
       if(flag.eq.0)  then       !! ONE TIME INITIALIZATION
@@ -2843,8 +2841,8 @@ C     BOTTOM
       double precision ymin,ymax,m
       logical nolepcuts
 
-      include 'gauss.inc' 
-      include 'mellinquad.inc'
+      include 'quadrules.f'
+      include 'gauss.f' 
       
 c     store integration results in the common block, they are passed to initsigmacthy
       integer I1,I2
@@ -2892,13 +2890,7 @@ c     weights of the gaussian quadrature
       double precision  WN(136)
       COMMON /WEIGHTS2/ WN      
 
-      integer approxpdf,pdfintervals
-      common/opts/approxpdf,pdfintervals
-
 c     cached values from cacheyrapint
-      integer yintervals,yrule
-      parameter (yintervals=1)
-      parameter (yrule=20)
       complex *16 cfpy(136,136,yrule*yintervals)
       complex *16 cfmy(136,136,yrule*yintervals)
       common /cachedrapint/ cfpy,cfmy
@@ -2970,7 +2962,7 @@ c     start integration
          xc=0.5d0*(ya+yb)
          xm=0.5d0*(yb-ya)
          do j=1,yrule
-            y=xc+xm*xxx20(j)
+            y=xc+xm*xxx(yrule,j)
 
 c     calculate costheta moments as a function of y
          call sety(y)

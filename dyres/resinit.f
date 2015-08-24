@@ -80,10 +80,8 @@ c     temporary variables
       parameter(pi=3.14159265358979d0)
       integer nf
       
-      include 'mellinquad.inc'
+      include 'quadrules.f'
       integer nmax
-      integer approxpdf,pdfintervals
-      common/opts/approxpdf,pdfintervals
 c      include 'const.h' 
 c      include 'constants.f' 
       if (approxpdf.eq.1) then
@@ -548,11 +546,8 @@ c******************************************
       implicit none
       double precision ymin, ymax
       
-      integer approxpdf,pdfintervals
-      common/opts/approxpdf,pdfintervals
-
-      include 'gauss.inc'
-      include 'mellinquad.inc' 
+      include 'quadrules.f'
+      include 'gauss.f'
 
       double precision ax1,ax2,xx1,xx2
       integer nmax1,nmax2
@@ -569,9 +564,6 @@ c******************************************
       double precision y,xc,xm,ya,yb
       
 c     output      
-      integer yintervals,yrule
-      parameter (yintervals=1)
-      parameter (yrule=20)
       complex *16 cfpy(136,136,yrule*yintervals)
       complex *16 cfmy(136,136,yrule*yintervals)
       common /cachedrapint/ cfpy,cfmy
@@ -585,13 +577,13 @@ c     output
          xc=0.5d0*(ya+yb)
          xm=0.5d0*(yb-ya)
          do j=1,yrule
-            y=xc+xm*xxx20(j)
+            y=xc+xm*xxx(yrule,j)
       do I1 = 1, NMAX1
          do I2 = 1, NMAX2
             cfpy(I1,I2,j+(i-1)*yrule)=exp((-Np(I1)+Np(I2))*y)
-     .           *WN(I1)*WN(I2)*www20(j)*xm
+     .           *WN(I1)*WN(I2)*www(yrule,j)*xm
             cfmy(I1,I2,j+(i-1)*yrule)=exp((-Np(I1)+Nm(I2))*y)
-     .           *WN(I1)*WN(I2)*www20(j)*xm
+     .           *WN(I1)*WN(I2)*www(yrule,j)*xm
          enddo
       enddo
 
@@ -610,14 +602,14 @@ c n=8 gaussian quadrature
       double precision CPOINT,PHI
       double precision CO,SI
       
-      include 'mellinquad.inc'
+      include 'quadrules.f'
+      include 'gauss.f'
       
 c      output: weights and nodes for gaussian quadrature
       double precision WN(136)
       complex*16 Np(136),Nm(136),CCp,CCm
       common/WEIGHTS2/WN
       common/MOMS2/Np,Nm,CCP,CCm
-      include 'gauss.inc'
 c     CPOINT is the starting point on the real axis for the positive and negative part of the integration path
 c     PHI is the angle in the complex plane of the positive part of the integration path
        
@@ -651,15 +643,11 @@ c positive branch
          c=0.5d0*(a+b)
          m=0.5d0*(b-a)
          do j=1,mellinrule
-            x=c+m*xxx50(j)
-c            t=min+(max-min)*x
-c            jac=max-min
+            x=c+m*xxx(mellinrule,j)
             t=min+(max-min)*x
             jac=max-min
-c            t=min*(max/min)**x
-c            jac=t*log(max/min)
             Np(j+(i-1)*mellinrule)=cmplx(CPOINT+CO*t+1d0,SI*t)
-            WN(j+(i-1)*mellinrule)=www50(j)*m*jac
+            WN(j+(i-1)*mellinrule)=www(mellinrule,j)*m*jac
 c            print *,t,Np(j+(i-1)*mellinrule),WN(j+(i-1)*mellinrule)
          enddo
       enddo
@@ -674,10 +662,8 @@ c negative branch
          c=0.5d0*(a+b)
          m=0.5d0*(b-a)
          do j=1,mellinrule
-            x=c+m*xxx50(j)
-c           t=min+(max-min)*x
+            x=c+m*xxx(mellinrule,j)
             t=min+(max-min)*x
-c            t=min*(max/min)**x
             Nm(j+(i-1)*mellinrule)=cmplx(CPOINT+CO*t+1d0,SI*t)
          enddo
       enddo
