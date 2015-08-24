@@ -129,16 +129,21 @@ c     include 'constants.f'
       include 'facscale.f'
       integer approxpdf,pdfintervals
       common/opts/approxpdf,pdfintervals
-
+      include 'mellinquad.inc'
+      
       mod = mode
       if(flag.eq.0)  then       !! ONE TIME INITIALIZATION
          print *, 'first call to resum'
          call resummconst
          call reno2const
      
-C Initialization for Gauss inversion 
-         call INITO 
-
+C     Initialization for Gauss inversion
+         if (approxpdf.eq.0) then
+            call initmellingauss ! higher order quadrature rule
+         else
+            call INITO           ! dyres original quadrature rule
+         endif
+         print *,'done'
 c     Initialization of redundant variables       
          flag1=order            ! set flag1 to order of calculation (carbon copy of order, 1=NLO+NLL, 2=NNLO+NNLL)
          nloop=nlooprun         ! set nloop to order of running of alphas (carbon copy of nlooprun, not used)
@@ -381,12 +386,12 @@ c     NMAX2 = 136                ! zmax = 36
 c     In costh and rapidity integrated modes remove rapidity dependences
 c     Also the integration path in the complex plane is in this case along the imaginary axis,
 c     need to integrate up to higher z max 18 (22)
-         NMAX1 = 88
-         NMAX2 = 88
+         NMAX1 = mdim
+         NMAX2 = mdim
       end if
 c***************************************
 c rapidity (and mass) dependence in ax1 ax2        
-        do I = 1, max(NMAX1,NMAX2) !136
+      do I = 1, max(NMAX1,NMAX2) !136
       cCEX1(I) = EXP (-Np(I) * AX1) / pi * CCp
       cCEX2p(I) = EXP (-Np(I) * AX2) / pi * CCp
       cCEX2m(I) = EXP (-Nm(I) * AX2) / pi * CCm
@@ -643,7 +648,7 @@ C     COMPUTE NEGATIVE BRANCH
            INT2= (HCRN * cCEX2m(I2))
             
            FZ=-DBLE( 1./2*(INT1-INT2)*cCEX1(I1)*WN(I1)*WN(I2)*factorfin)
-           FUN= FUN + FZ 
+           FUN= FUN + FZ
 
         elseif (mod.eq.2) then
 c     Rapidity integrated mode:
@@ -675,7 +680,6 @@ c     The integrals are solved analitically when no cuts on the leptons are appl
         
  10   CONTINUE
  100  CONTINUE
-c     print *,'done'
 c     ***************************
       if (mod.eq.0.or.mod.eq.1) then
          INVRES = fun
@@ -2840,6 +2844,7 @@ C     BOTTOM
       logical nolepcuts
 
       include 'gauss.inc' 
+      include 'mellinquad.inc'
       
 c     store integration results in the common block, they are passed to initsigmacthy
       integer I1,I2
@@ -2900,8 +2905,8 @@ c     cached values from cacheyrapint
 c     print *,'in rapintegrals'
       ax=dlog(m**2/sqs**2)
 
-      NMAX1 = 88
-      NMAX2 = 88
+      NMAX1 = mdim
+      NMAX2 = mdim
       
 c     c If there are no cuts on the leptons, calculate the integrals analitically
       if (nolepcuts.eqv..true.) then

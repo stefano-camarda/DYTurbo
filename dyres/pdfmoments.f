@@ -8,6 +8,7 @@ C     Computes the complex N Mellin moments of pdfs
       common/collider/ih1,ih2
 
       include 'facscale.f'
+      include 'mellinquad.inc'
       
       complex(8) UV,DV,US,DS,SS,GL,CH,BO
 
@@ -197,7 +198,7 @@ c     Gaussian nodes of the integration contour in the complex plane
       NFITMAX = 14
 c     calculate Mellin moments of PDFs
 c     Beam 1        
-      do k=1,88
+      do k=1,mdim
 C     positive branch
          XN=Np(k)  
          call pdfmoments(1,XN,uval,dval,usea,dsea,ssea,glu,charm,bot)
@@ -236,7 +237,7 @@ c     negative branch
       enddo
 
 c     Beam 2
-      do k=1,88
+      do k=1,mdim
 c     positive branch
          XN=Np(k)  
          call pdfmoments(2,XN,uval,dval,usea,dsea,ssea,glu,charm,bot)
@@ -266,7 +267,7 @@ c     negative branch
       enddo
 
 c     calculate Mellin moments of anomalous dimensions
-      do k=1,88
+      do k=1,mdim
 c     positive branch
          XN=Np(k)  
          CALL ANCALC (QQI, QGF, GQI, GGI, GGF, NS1MI, NS1PI, NS1F,

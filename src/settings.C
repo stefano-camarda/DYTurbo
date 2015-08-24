@@ -182,6 +182,14 @@ void settings::readfromfile(const string fname){
         ctintvegas = true;
     }
 
+    if (opts_.approxpdf_ == 1)
+      {
+	cout << "DYRES-style approximate PDF requested, enforce vegas integration for the resummed cross section" << endl;
+	int2d = false;
+	int3d = false;
+	int4d = true;
+      }
+
     return ;
 }
 

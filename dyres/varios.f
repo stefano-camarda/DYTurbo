@@ -679,33 +679,6 @@ c Beam 1
 C POSITIVE BRANCH
        XN=Np(k)  
        call F0MOMENTS1(XN,UV,DV,US,DS,SS,GL,CH,BO)
-cc**************************************************
-       if (approxpdf.eq.0) then
-c Calculate exact moments       
-          if (k.le.88) then
-            call pdfmoments(1,XN,uval,dval,usea,dsea,ssea,glu,charm,bot)
-c          print *,'beam 1 positive'
-c          print *,'moment',k,XN
-c          print *,'uval  ',UV(1),uval
-c          print *,'dval  ',DV(1),dval
-c          print *,'usea  ',US(1),usea
-c          print *,'dsea  ',DS(1),dsea
-c          print *,'gluon ',GL(1),glu
-c          print *,'charm ',CH(1),charm
-c          print *,'bottom',BO(1),bot
-             do ik=1,NFITMAX
-                UV(ik)=uval
-                DV(ik)=dval
-                US(ik)=usea
-                DS(ik)=dsea
-                SS(ik)=ssea
-                GL(ik)=glu
-                CH(ik)=charm
-                BO(ik)=bot
-             enddo
-          endif
-       endif
-c**************************************************
        do ik=1,NFITMAX
         UVp(k,ik)= UV(ik)
         DVp(k,ik)= DV(ik)
@@ -749,24 +722,6 @@ c        H2GGp(k)=MellinH2gg(XN)
 C NEGATIVE BRANCH
          XN=Nm(k)
        call F0MOMENTS1(XN,UV,DV,US,DS,SS,GL,CH,BO)
-c**************************************************
-       if (approxpdf.eq.0) then
-c     Calculate exact moments       
-          if (k.le.88) then
-            call pdfmoments(1,XN,uval,dval,usea,dsea,ssea,glu,charm,bot)
-             do ik=1,NFITMAX
-                UV(ik)=uval
-                DV(ik)=dval
-                US(ik)=usea
-                DS(ik)=dsea
-                SS(ik)=ssea
-                GL(ik)=glu
-                CH(ik)=charm
-                BO(ik)=bot
-             enddo
-          endif
-       endif
-c**************************************************
        do ik=1,NFITMAX
         UVm(k,ik)= UV(ik)
         DVm(k,ik)= DV(ik)
@@ -813,24 +768,6 @@ c Beam 2
 C POSITIVE BRANCH
        XN=Np(k)  
        call F0MOMENTS2(XN,UV,DV,US,DS,SS,GL,CH,BO)
-c**************************************************
-       if (approxpdf.eq.0) then
-c     Calculate exact moments       
-          if (k.le.88) then
-            call pdfmoments(2,XN,uval,dval,usea,dsea,ssea,glu,charm,bot)
-             do ik=1,NFITMAX
-                UV(ik)=uval
-                DV(ik)=dval
-                US(ik)=usea
-                DS(ik)=dsea
-                SS(ik)=ssea
-                GL(ik)=glu
-                CH(ik)=charm
-                BO(ik)=bot
-             enddo
-          endif
-       endif
-c**************************************************
        do ik=1,NFITMAX
         UVp2(k,ik)= UV(ik)
         DVp2(k,ik)= DV(ik)
@@ -844,24 +781,6 @@ c**************************************************
 C NEGATIVE BRANCH
       XN=Nm(k)
       call F0MOMENTS2(XN,UV,DV,US,DS,SS,GL,CH,BO)
-c**************************************************
-      if (approxpdf.eq.0) then
-c     Calculate exact moments       
-         if (k.le.88) then
-            call pdfmoments(2,XN,uval,dval,usea,dsea,ssea,glu,charm,bot)
-            do ik=1,NFITMAX
-               UV(ik)=uval
-               DV(ik)=dval
-               US(ik)=usea
-               DS(ik)=dsea
-               SS(ik)=ssea
-               GL(ik)=glu
-               CH(ik)=charm
-               BO(ik)=bot
-            enddo
-         endif
-      endif
-c**************************************************
        do ik=1,NFITMAX
         UVm2(k,ik)= UV(ik)
         DVm2(k,ik)= DV(ik)
@@ -914,7 +833,6 @@ c     D is a scaling factor for the total length of the integration path
 c     PHI is the angle in the complex plane of the positive part of the integration path
        
 c     C = 2.3d0       
-
 c**********************************
        if (approxpdf.eq.1) then
 c     Original settings
@@ -929,7 +847,7 @@ c     Modified settings to allow numerical integration of PDFs melling moment (n
        endif
 c**********************************
        
-       CO = C*DCOS (PHI)
+       CO = D*DCOS (PHI)
        SI = D*DSIN (PHI)
        CCp = CMPLX (CO, SI)
        DO 31 I1 = 1, 16
@@ -946,10 +864,10 @@ c**********************************
          K = K + 1
          Z = 0.5 * (SUM + DIFF * ZS(I3))
          WN(K) = DIFF / 2.* WZ(I3) 
-         Np(K)  = CMPLX (C+CO*Z+1.,SI*Z)         
+         Np(K)  = CMPLX (C+CO*Z+1.,SI*Z)
   3    CONTINUE
   2    CONTINUE 
-       CO = C*DCOS (PHI)
+       CO = D*DCOS (PHI)
        SI = -D*DSIN (PHI)
        CCm = CMPLX (CO, SI)
        DO 1 I1 = 1, 16
