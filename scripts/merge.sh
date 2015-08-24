@@ -21,9 +21,8 @@ do
     do
         ls `echo $i | sed "s/_0_/_${variation}_/; s/.out/.root/"` > /dev/null
     done
-    lobin=$ibin
     echo
-    outfile=results_merge/dyturbo_z0_lhc7_CT10nnlo_${variation}_qtyMergeRESUM_100101.root
+    outfile=results_merge/dyturbo_z0_lhc7_CT10nnlo_${variation}_qtyMergeCT_100101.root
     $DRYRUN hadd -f $outfile $inlist
 done
 

@@ -8,7 +8,7 @@
 ## @author cuto <Jakub.Cuth@cern.ch>
 ## @date 2014-12-02
 
-DRYRUN=echo 
+DRYRUN=echo
 #DRYRUN=
 
 
@@ -61,6 +61,22 @@ prepare_in(){
     order=1
     if [[ $pdfset == CT10nlo  ]]; then order=1; fi;
     if [[ $pdfset == CT10nnlo ]]; then order=2; fi;
+    if [[ $pdfset == CTZPT2   ]]; then order=2; fi;
+    # process (default z0)
+    lomass=66.
+    himass=116.
+    rmass=91.1876
+    width=2.495
+    nproc=3
+    if [[ $process =~ ^w[pm]$ ]]
+    then
+        lomass=10.
+        himass=1000.
+        rmass=80.385
+        width=2.091
+    fi
+    if [[ $process =~ ^wp$ ]]; then nproc=1; fi;
+    if [[ $process =~ ^wm$ ]]; then nproc=2; fi;
     # variations
     gpar=1e0
     member=0
@@ -71,16 +87,20 @@ prepare_in(){
     if [[ $variation == as_*  ]]; then pdfsetname=${pdfset}_${variation}; fi;
     if [[ $variation =~ $re   ]]; then member=$variation;                 fi;
     cp $dyturbo_in_tmpl tmp
-    sed -i "s|LOQTBIN|$loqtbin|g        " tmp
-    sed -i "s|HIQTBIN|$hiqtbin|g        " tmp
+    sed -i "s|LOQTBIN|$loqtbin|g      " tmp
+    sed -i "s|HIQTBIN|$hiqtbin|g      " tmp
     sed -i "s|LOYBIN|$loybin|g        " tmp
     sed -i "s|HIYBIN|$hiybin|g        " tmp
+    sed -i "s|SETMLO|$lomass|g        " tmp
+    sed -i "s|SETMHI|$himass|g        " tmp
+    sed -i "s|SETRMASS|$rmass|g       " tmp
+    sed -i "s|SETWIDTH|$width|g       " tmp
+    sed -i "s|SETNPROC|$nproc|g       " tmp
     sed -i "s|SETPDFSET|$pdfsetname|g " tmp
     sed -i "s|SETMEMBER|$member|g     " tmp
     sed -i "s|SETORDER|$order|g       " tmp
     sed -i "s|SETGPAR|$gpar|g         " tmp
     mv tmp $in_file
-
 }
 
 submit_job(){
@@ -91,6 +111,20 @@ jobsDone(){
     bsub < scripts/send_mail.sh
 }
 
+make_range(){
+    lobin=$1
+    hibin=$2
+    Nbins=$3
+    make_range=""
+    for i in `seq 0 $Nbins`
+    do
+        step=` echo "scale=1; ($hibin - $lobin) / $Nbins" | bc ` #$((   ))
+        val=` echo "scale=1; $lobin + $i * $step" | bc -l | sed -r "s/^\./0./g" ` # bc <<< "$lobin + $i * $step"` #$((   )) $(( $lobin + $i * $step ))
+        make_range="$make_range $val"
+    done
+    echo -n $make_range
+}
+
 submit_Z_dyturbo(){
     DRYRUN=echo 
     read -p "Do you want to submit results ? " -n 1 -r
@@ -99,20 +133,35 @@ submit_Z_dyturbo(){
     then
         DRYRUN=
     fi
-    process=z0
-    pdfset=CT10nnlo
+    #process=z0
+    process=wp
+    #pdfset=CT10nnlo
+    pdfset=CTZPT2
     random_seed=100101
     loqtbin=unset
     hiqtbin=unset
     collider=lhc7
-    for iqtbin in 0 2 4 6 8 10 12 14 16 18 22 26 30 34 38 42 46 50 54 60 70 80 100 150 200 300 800
+    # Z0
+    qtbinlist="0 2 4 6 8 10 12 14 16 18 22 26 30 34 38 42 46 50 54 60 70 80 100 150 200 300 800"
+    ybinlist="0 1 2 2.4"
+    variationList=" `seq 0 50` g_05 g_15 as_0117 as_0119"
+    # WPM
+    if [[ $process =~ ^w[pm]$ ]]
+    then
+        qtbinlist=`make_range 0.0 100.0 200.0`
+        ybinlist=`make_range 0.0 5.0 25.0`
+        variationList="0"
+    fi
+    echo $qtbinlist
+    echo $ybinlist
+    for iqtbin in $qtbinlist
     do
         if [[ $loqtbin == unset ]]; then loqtbin=$iqtbin; continue; fi; hiqtbin=$iqtbin
-        for iybin in 0 1 2 2.4
+        for iybin in $ybinlist
         do
             if [[ $loybin == unset ]]; then loybin=$iybin; continue; fi; hiybin=$iybin
-            qtregion=qt${loqtbin}${hiqtbin}y${loybin}${hiybin}
-            for variation in `seq 0 50` g_05 g_15 as_0117 as_0119
+            qtregion=`echo qt${loqtbin}${hiqtbin}y${loybin}${hiybin} | sed "s/\.//g"`
+            for variation in $variationList
             do
                 prepare_script
                 $DRYRUN submit_job
@@ -145,5 +194,5 @@ clear_results(){
 
 # MAIN
 clear_files
-#clear_results
+clear_results
 submit_Z_dyturbo

@@ -17,7 +17,7 @@
 #BSUB -q atlasshort
 #BSUB -W 5:00
 #BSUB -app Reserve5G
-#BSUB -n 10
+#BSUB -n 20
 #BSUB -R 'rusage[atlasio=0]'
 
 alias CP='rsync -avPL'
