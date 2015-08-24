@@ -569,28 +569,29 @@ c******************************************
       double precision y,xc,xm,ya,yb
       
 c     output      
-      integer intervals
-      parameter (intervals=20)
-      complex *16 cfpy(136,136,4*intervals)
-      complex *16 cfmy(136,136,4*intervals)
+      integer yintervals,yrule
+      parameter (yintervals=1)
+      parameter (yrule=20)
+      complex *16 cfpy(136,136,yrule*yintervals)
+      complex *16 cfmy(136,136,yrule*yintervals)
       common /cachedrapint/ cfpy,cfmy
       
       NMAX1 = mdim
       NMAX2 = mdim
 
-      do i=1,intervals
-         ya = ymin+(ymax-ymin)*(i-1)/intervals
-         yb = ymin+(ymax-ymin)*i/intervals
+      do i=1,yintervals
+         ya = ymin+(ymax-ymin)*(i-1)/yintervals
+         yb = ymin+(ymax-ymin)*i/yintervals
          xc=0.5d0*(ya+yb)
          xm=0.5d0*(yb-ya)
-         do j=1,4
-            y=xc+xm*xxx4(j)
+         do j=1,yrule
+            y=xc+xm*xxx20(j)
       do I1 = 1, NMAX1
          do I2 = 1, NMAX2
-            cfpy(I1,I2,j+(i-1)*4)=exp((-Np(I1)+Np(I2))*y)
-     .           *WN(I1)*WN(I2)*www4(j)*xm
-            cfmy(I1,I2,j+(i-1)*4)=exp((-Np(I1)+Nm(I2))*y)
-     .           *WN(I1)*WN(I2)*www4(j)*xm
+            cfpy(I1,I2,j+(i-1)*yrule)=exp((-Np(I1)+Np(I2))*y)
+     .           *WN(I1)*WN(I2)*www20(j)*xm
+            cfmy(I1,I2,j+(i-1)*yrule)=exp((-Np(I1)+Nm(I2))*y)
+     .           *WN(I1)*WN(I2)*www20(j)*xm
          enddo
       enddo
 

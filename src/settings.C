@@ -1,5 +1,6 @@
 #include <cmath>
 #include <cstring>
+#include <iostream>
 
 #include "settings.h"
 #include "interface.h"

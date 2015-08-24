@@ -2896,10 +2896,11 @@ c     weights of the gaussian quadrature
       common/opts/approxpdf,pdfintervals
 
 c     cached values from cacheyrapint
-      integer intervals
-      parameter (intervals=20)
-      complex *16 cfpy(136,136,4*intervals)
-      complex *16 cfmy(136,136,4*intervals)
+      integer yintervals,yrule
+      parameter (yintervals=1)
+      parameter (yrule=20)
+      complex *16 cfpy(136,136,yrule*yintervals)
+      complex *16 cfmy(136,136,yrule*yintervals)
       common /cachedrapint/ cfpy,cfmy
       
 c     print *,'in rapintegrals'
@@ -2963,13 +2964,13 @@ c     cache the mass dependent part (ax) of the exponential
 c     start integration
       xc=0.5d0*(ymin+ymax)
       xm=0.5d0*(ymax-ymin)
-      do i=1,intervals
-         ya = ymin+(ymax-ymin)*(i-1)/intervals
-         yb = ymin+(ymax-ymin)*i/intervals
+      do i=1,yintervals
+         ya = ymin+(ymax-ymin)*(i-1)/yintervals
+         yb = ymin+(ymax-ymin)*i/yintervals
          xc=0.5d0*(ya+yb)
          xm=0.5d0*(yb-ya)
-         do j=1,4
-            y=xc+xm*xxx4(j)
+         do j=1,yrule
+            y=xc+xm*xxx20(j)
 
 c     calculate costheta moments as a function of y
          call sety(y)
@@ -2979,8 +2980,8 @@ c      print *,cthmom0,cthmom1,cthmom2
          do I1 = 1, NMAX1  !136
             do I2 = 1, NMAX2 !136
 c     functions to integrate (rapidity part is cached at initialisation)
-               fpy=cfpm(I1,I2)*cfpy(I1,I2,j+(i-1)*4)
-               fmy=cfmm(I1,I2)*cfmy(I1,I2,j+(i-1)*4)
+               fpy=cfpm(I1,I2)*cfpy(I1,I2,j+(i-1)*yrule)
+               fmy=cfmm(I1,I2)*cfmy(I1,I2,j+(i-1)*yrule)
 c     integrals
                Ith0p(I1,I2)=Ith0p(I1,I2)+fpy*cthmom0
                Ith1p(I1,I2)=Ith1p(I1,I2)+fpy*cthmom1

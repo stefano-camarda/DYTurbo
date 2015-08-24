@@ -193,6 +193,7 @@ c     Gaussian nodes of the integration contour in the complex plane
       COMMON / MOMS2    / Np,Nm,CCP,CCm
 
       common/NFITMAX/NFITMAX
+      include 'mellinquad.inc'
 
       Write(6,*)'Initialise PDF moments with numerical integration'
       NFITMAX = 14
