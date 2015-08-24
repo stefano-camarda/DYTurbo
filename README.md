@@ -11,6 +11,7 @@ git clone https://gitlab.cern.ch/DYdevel/DYTURBO.git
  2. setup/compile
 ```
 autoreconf -i
+(optional PATH=<lhapdfdir>:$PATH if you want to use your version of lhapdf previously installed in <lhapdfdir>)
 ./configure
 make && make install
 ```
@@ -27,7 +28,9 @@ make && make install
  - additional option to configuration:
      - `--enable-debug` to compile with GDB debug symbols
      - `--enable-root` to save outputs in ROOT histograms
- - `dyres` contains optimised Fortran code
+     - `--enable-fast`  use compiler optimization flags -O3
+
+- `dyres` contains optimised Fortran code
  - `src` contains DYTURBO C++ code which is steering the calculations and
      running the Fortran procedures
  - `scripts` contains scripts for plotting and submitting to 

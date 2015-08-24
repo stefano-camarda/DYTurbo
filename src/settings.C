@@ -299,25 +299,25 @@ void settings::dumpAll(){
 
     if (print_masses){
         printf("Masses and EW constants:\n");
-        dumpD ( "md        " , masses_   . md_        );
-        dumpD ( "mu        " , masses_   . mu_        );
-        dumpD ( "ms        " , masses_   . ms_        );
-        dumpD ( "mc        " , masses_   . mc_        );
-        dumpD ( "mb        " , masses_   . mb_        );
-        dumpD ( "mt        " , masses_   . mt_        );
-        dumpD ( "mel       " , masses_   . mel_       );
-        dumpD ( "mmu       " , masses_   . mmu_       );
-        dumpD ( "mtau      " , masses_   . mtau_      );
-        dumpD ( "hmass     " , masses_   . hmass_     );
-        dumpD ( "hwidth    " , masses_   . hwidth_    );
-        dumpD ( "wmass     " , masses_   . wmass_     );
-        dumpD ( "wwidth    " , masses_   . wwidth_    );
-        dumpD ( "zmass     " , masses_   . zmass_     );
-        dumpD ( "zwidth    " , masses_   . zwidth_    );
-        dumpD ( "twidth    " , masses_   . twidth_    );
-        dumpD ( "mtausq    " , masses_   . mtausq_    );
-        dumpD ( "mcsq      " , masses_   . mcsq_      );
-        dumpD ( "mbsq      " , masses_   . mbsq_      );
+        dumpD ( "md        " , dymasses_   . md_        );
+        dumpD ( "mu        " , dymasses_   . mu_        );
+        dumpD ( "ms        " , dymasses_   . ms_        );
+        dumpD ( "mc        " , dymasses_   . mc_        );
+        dumpD ( "mb        " , dymasses_   . mb_        );
+        dumpD ( "mt        " , dymasses_   . mt_        );
+        dumpD ( "mel       " , dymasses_   . mel_       );
+        dumpD ( "mmu       " , dymasses_   . mmu_       );
+        dumpD ( "mtau      " , dymasses_   . mtau_      );
+        dumpD ( "hmass     " , dymasses_   . hmass_     );
+        dumpD ( "hwidth    " , dymasses_   . hwidth_    );
+        dumpD ( "wmass     " , dymasses_   . wmass_     );
+        dumpD ( "wwidth    " , dymasses_   . wwidth_    );
+        dumpD ( "zmass     " , dymasses_   . zmass_     );
+        dumpD ( "zwidth    " , dymasses_   . zwidth_    );
+        dumpD ( "twidth    " , dymasses_   . twidth_    );
+        dumpD ( "mtausq    " , dymasses_   . mtausq_    );
+        dumpD ( "mcsq      " , dymasses_   . mcsq_      );
+        dumpD ( "mbsq      " , dymasses_   . mbsq_      );
         dumpD ( "Gf_inp    " , ewinput_  . Gf_inp_    );
         dumpD ( "aemmz_inp " , ewinput_  . aemmz_inp_ );
         dumpD ( "xw_inp    " , ewinput_  . xw_inp_    );
@@ -489,7 +489,7 @@ InputParser::InputParser( string _filename, string _charset, string _white):
 {
     // parse default
     try {
-        parse_file("input/default.in");
+      parse_file((string)SHAREDIR+"/default.in");
     } catch (invalid_argument &e1){
         try {
             parse_file("default.in");

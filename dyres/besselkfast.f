@@ -247,7 +247,7 @@ C     Interpolated form from z=1 to z=5
      &             4.99339955491d-2,4.17404598909d-2,3.48623147904d-2,
      &             2.90952007636d-2,2.42648469315d-2,2.02230672273d-2/
   
-         call locate(xa,21,x,j)
+         call dylocate(xa,21,x,j)
          if (j.lt.2) j=2
          if (j.gt.20) j=20
          do i=1,4
@@ -275,7 +275,7 @@ C     Interpolated form from z=1 to z=5
      &             1.11596760859d-2,8.92745154154d-3,7.14911062331d-3,
      &             5.73042291729d-3,4.59724631672d-3,3.69109833404d-3/
   
-         call locate(xa,21,x,j)
+         call dylocate(xa,21,x,j)
          if (j.lt.2) j=2
          if (j.gt.20) j=20
          do i=1,4
@@ -304,7 +304,7 @@ C     Interpolated form from z=1 to z=5
      &             1.35127158151d-2,1.07324867217d-2,8.53760219545d-3,
      &             6.80120891232d-3,5.42495329856d-3,4.33228989306d-3/ 
 
-         call locate(xa,21,x,j)
+         call dylocate(xa,21,x,j)
          if (j.lt.2) j=2
          if (j.gt.20) j=20
          do i=1,4
@@ -333,7 +333,7 @@ C     Interpolated form from z=1 to z=5
      &             7.53015239679d-3,5.76215402177d-3,4.42230076800d-3,
      &             3.40318600534d-3,2.62543960976d-3,2.03008127036d-3/
 
-         call locate(xa,21,x,j)
+         call dylocate(xa,21,x,j)
          if (j.lt.2) j=2
          if (j.gt.20) j=20
          do i=1,4
@@ -349,7 +349,7 @@ C     Interpolated form from z=1 to z=5
 
 
 
-       SUBROUTINE LOCATE(XX,N,X,J)
+       SUBROUTINE DYLOCATE(XX,N,X,J)
        INTEGER J,N,JL,JM,JU
        DOUBLE PRECISION X,XX(N)
        JL=0

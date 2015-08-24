@@ -66,7 +66,7 @@ c     COMMON/binteg/phi2,min,max
       common/sigmaij/sigmaij
       double precision g
       common/NP/g
-      common/photon/phot
+      common/dyphoton/phot
       double complex loga,logmuf2q2,logq2muf2,logq2mur2
       common/clogs/loga,logmuf2q2,logq2muf2,logq2mur2
       double precision rloga,rlogq2mur2
@@ -97,8 +97,8 @@ c     cached for invres and cachecoeff
 
       double precision xborn,xborn2,xnorm,xnormal
 
-      double precision alphas
-      external alphas
+      double precision dyalphas
+      external dyalphas
 
       double precision xsection
       external xsection
@@ -145,6 +145,7 @@ c     Initialization of redundant variables
 c     Choose pp or ppbar collider
          ih1=iih1               !1
          ih2=iih2               !1
+
 c     Set factorization and renormalization scales (to work with dynamic scale need to move this outside init stage)
          mur=scale
          muf=facscale
@@ -154,11 +155,6 @@ C     Scales
 
          q2mur=mur2
          q2muf=muf2
-
-C   ALPQR = ALPHA AT RENORMALIZATION SCALE
-         ALPQR=alphas(dsqrt(q2mur),amz,nlooprun)/4d0/pi
-C as = ALPHAS/PI
-         aass = ALPQR*4d0
 
 C non-perturbative parameter
          g=g_param
@@ -213,6 +209,12 @@ c     flag1 is the order of calculation (carbon copy of order, 1=NLO+NLL, 2=NNLO
 
       endif                     ! end initialization
 
+
+C   ALPQR = ALPHA AT RENORMALIZATION SCALE
+      ALPQR=dyalphas(dsqrt(q2mur),amz,nlooprun)/4d0/pi
+C as = ALPHAS/PI
+      aass = ALPQR*4d0
+
       g=g_param
       loga=log(a_param)
       rloga=log(a_param)
@@ -266,7 +268,7 @@ C     Limit eta_max to avoid reaching the end of phase space
 C...  COUPLING CONSTANTS AT INPUT SCALE = ALPHAS/4/PI
 C     ALPQF = ALPHA AT RESUMMATION SCALE (used to start evolution,
 
-         ALPQF=alphas(dsqrt(q2s),amz,nlooprun)/4d0/pi
+         ALPQF=dyalphas(dsqrt(q2s),amz,nlooprun)/4d0/pi
          
 c     precompute scales
          logmuf2q2=log(muf2/q2)

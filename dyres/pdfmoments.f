@@ -29,14 +29,14 @@ c     select beam
       if (beam.eq.1) then
          hadron = ih1
       elseif (beam.eq.2) then
-         hadron = ih1
+         hadron = ih2
       endif
 c     factorization scale
       muf=91.1876d0
 c     muf=2D0
 
 c     boundaries of integration      
-      xa = 1D-10
+      xa = 1D-8
       xb = 1
 
 c     initialise

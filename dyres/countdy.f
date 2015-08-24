@@ -47,7 +47,7 @@ CC
       double precision fx10(-nf:nf),fx20(-nf:nf)
       double precision fx1p(-nf:nf),fx2p(-nf:nf)
       double precision log1x,logz1,logz2
-      double precision alfa,beta,diff,Pqq,Pqg,Pqqint,Cqq,Cqg
+      double precision alfa,beta,diff,Pqq,dyPqg,Pqqint,Cqq,Cqg
       double precision xmio,fluxborn,xmioOLD
       double precision shad,yq,zmax,tauh,Vol,y3
       double precision xx0(2),xx10,xx20,y34,cosh2y34
@@ -71,7 +71,7 @@ CC
       double precision P2qg,P2qqV,P2qqbV,P2qqS
       double precision diffg10,diffg20,diffc10,diffc20
       double precision diffg1f,diffg2f,diffc1f,diffc2f
-      external Itilde,Pqq,Pqg,Cqq,Cqg,Pqqint,D0int,D1int
+      external Itilde,Pqq,dyPqg,Cqq,Cqg,Pqqint,D0int,D1int
       external Pqqqq,Pqqqg,Pqggq,Pqggg,CqqPqq,CqqPqg,CqgPgq,CqgPgg
       external P2qqV,P2qqbV,P2qg,P2qqS
 
@@ -300,6 +300,7 @@ c         call qqb_w(p,msqc)
 c      endif
 c
 c      call initsigma(m,-costh)
+c
 c      print *,1,-1,sigmaij(2,-2)
 c      print *,-1,1,sigmaij(-2,2)
 c      print *,2,-2,sigmaij(1,-1)
@@ -315,6 +316,24 @@ c      print *,4,-4,(msqc(4,-4))/(sigmaij(4,-4)*pi*6d0/fbGeV2*(2*q2))
 c      print *,-4,4,(msqc(-4,4))/(sigmaij(-4,4)*pi*6d0/fbGeV2*(2*q2))
 c      print *,5,-5,(msqc(5,-5))/(sigmaij(5,-5)*pi*6d0/fbGeV2*(2*q2))
 c      print *,-5,5,(msqc(-5,5))/(sigmaij(-5,5)*pi*6d0/fbGeV2*(2*q2))
+
+c      print *,costh
+c      print *,2,-1,msqc(2,-1),(sigmaij(1,-2)*pi*6d0/fbGeV2*(2*q2))
+c      print *,-1,2,msqc(-1,2),(sigmaij(-2,1)*pi*6d0/fbGeV2*(2*q2))
+c
+c      print *,2,-1,msqc(2,-1)/(sigmaij(1,-2)*pi*6d0/fbGeV2*(2*q2))
+c      print *,-1,2,msqc(-1,2)/(sigmaij(-2,1)*pi*6d0/fbGeV2*(2*q2))
+c      print *,2,-3,msqc(2,-3)/(sigmaij(1,-3)*pi*6d0/fbGeV2*(2*q2))
+c      print *,-3,2,msqc(-3,2)/(sigmaij(-3,1)*pi*6d0/fbGeV2*(2*q2))
+c      print *,2,-5,msqc(2,-5)/(sigmaij(1,-5)*pi*6d0/fbGeV2*(2*q2))
+c      print *,-5,2,msqc(-5,2)/(sigmaij(-5,1)*pi*6d0/fbGeV2*(2*q2))
+c      print *,4,-3,msqc(4,-3)/(sigmaij(4,-3)*pi*6d0/fbGeV2*(2*q2))
+c      print *,-3,4,msqc(-3,4)/(sigmaij(-3,4)*pi*6d0/fbGeV2*(2*q2))
+c      print *,4,-1,msqc(4,-1)/(sigmaij(4,-2)*pi*6d0/fbGeV2*(2*q2))
+c      print *,-1,4,msqc(-1,4)/(sigmaij(-2,4)*pi*6d0/fbGeV2*(2*q2))
+c      print *,4,-5,msqc(4,-5)/(sigmaij(4,-5)*pi*6d0/fbGeV2*(2*q2))
+c      print *,-5,4,msqc(-5,4)/(sigmaij(-5,4)*pi*6d0/fbGeV2*(2*q2))
+
 c
 cc     End of ME check
 cc*******************************************************
@@ -346,6 +365,32 @@ cc*******************************************************
             msqc(-4,4)=sigmaij(-4,4)*pi*6d0/fbGeV2*(2*q2)
             msqc(5,-5)=sigmaij(5,-5)*pi*6d0/fbGeV2*(2*q2)
             msqc(-5,5)=sigmaij(-5,5)*pi*6d0/fbGeV2*(2*q2)
+         elseif(nproc.eq.1) then
+            msqc(2,-1)=sigmaij(1,-2)*pi*6d0/fbGeV2*(2*q2)
+            msqc(-1,2)=sigmaij(-2,1)*pi*6d0/fbGeV2*(2*q2)
+            msqc(2,-3)=sigmaij(1,-3)*pi*6d0/fbGeV2*(2*q2)
+            msqc(-3,2)=sigmaij(-3,1)*pi*6d0/fbGeV2*(2*q2)
+            msqc(2,-5)=sigmaij(1,-5)*pi*6d0/fbGeV2*(2*q2)
+            msqc(-5,2)=sigmaij(-5,1)*pi*6d0/fbGeV2*(2*q2)
+            msqc(4,-3)=sigmaij(4,-3)*pi*6d0/fbGeV2*(2*q2)
+            msqc(-3,4)=sigmaij(-3,4)*pi*6d0/fbGeV2*(2*q2)
+            msqc(4,-1)=sigmaij(4,-2)*pi*6d0/fbGeV2*(2*q2)
+            msqc(-1,4)=sigmaij(-2,4)*pi*6d0/fbGeV2*(2*q2)
+            msqc(4,-5)=sigmaij(4,-5)*pi*6d0/fbGeV2*(2*q2)
+            msqc(-5,4)=sigmaij(-5,4)*pi*6d0/fbGeV2*(2*q2)
+         elseif(nproc.eq.2) then
+            msqc(1,-2)=sigmaij(2,-1)*pi*6d0/fbGeV2*(2*q2)
+            msqc(-2,1)=sigmaij(-1,2)*pi*6d0/fbGeV2*(2*q2)
+            msqc(3,-2)=sigmaij(3,-1)*pi*6d0/fbGeV2*(2*q2)
+            msqc(-2,3)=sigmaij(-1,3)*pi*6d0/fbGeV2*(2*q2)
+            msqc(5,-2)=sigmaij(5,-1)*pi*6d0/fbGeV2*(2*q2)
+            msqc(-2,5)=sigmaij(-1,5)*pi*6d0/fbGeV2*(2*q2)
+            msqc(3,-4)=sigmaij(3,-4)*pi*6d0/fbGeV2*(2*q2)
+            msqc(-4,3)=sigmaij(-4,3)*pi*6d0/fbGeV2*(2*q2)
+            msqc(1,-4)=sigmaij(2,-4)*pi*6d0/fbGeV2*(2*q2)
+            msqc(-4,1)=sigmaij(-4,2)*pi*6d0/fbGeV2*(2*q2)
+            msqc(5,-4)=sigmaij(5,-4)*pi*6d0/fbGeV2*(2*q2)
+            msqc(-4,5)=sigmaij(-4,5)*pi*6d0/fbGeV2*(2*q2)
          endif
       endif
 CC  
@@ -488,12 +533,12 @@ C     H1st: non delta terms, second leg
 C     H1st: muf dependence (LF factor to be added at the end)
 c     gammaqq and gammaqg: first leg      
       diff=-logxx10
-     &  *((fx1p(j)-fx10(j)*z1)*Pqqz1(jj)*flgq+fx1p(0)*Pqg(z1))
+     &  *((fx1p(j)-fx10(j)*z1)*Pqqz1(jj)*flgq+fx1p(0)*dyPqg(z1))
       tH1stF=tH1stF+diff*fx20(k)*msqc(j,k)
       tH1stF=tH1stF-Pqqint1*fx10(j)*fx20(k)*msqc(j,k)*flgq
 c     gammaqq and gammaqg: second leg   
       diff=-logxx20
-     &  *((fx2p(k)-fx20(k)*z2)*Pqqz2(ii)*flgq+fx2p(0)*Pqg(z2))
+     &  *((fx2p(k)-fx20(k)*z2)*Pqqz2(ii)*flgq+fx2p(0)*dyPqg(z2))
       tH1stF=tH1stF+diff*fx10(j)*msqc(j,k)
       tH1stF=tH1stF-Pqqint2*fx10(j)*fx20(k)*msqc(j,k)*flgq
 CC    End of H1st
@@ -502,10 +547,10 @@ CC    Now (gamma+gamma)*(gamma+gamma) term: to be used later
 C     First part: one gamma for each leg: FLGQ here is non trivial ! DONE
       diffg1f=-logxx10*(fx1p(j)-fx10(j)*z1)*Pqqz1(jj)
      &  - Pqqint1*fx10(j)
-      diffg10=-logxx10*fx1p(0)*Pqg(z1)
+      diffg10=-logxx10*fx1p(0)*dyPqg(z1)
       diffg2f=-logxx20*(fx2p(k)-fx20(k)*z2)*Pqqz2(ii)
      &  - Pqqint2*fx20(k)
-      diffg20=-logxx20*fx2p(0)*Pqg(z2)
+      diffg20=-logxx20*fx2p(0)*dyPqg(z2)
       tgaga=tgaga+2*
      &   (flgq*diffg10*diffg20+flgq*diffg1f*diffg2f
      &   +diffg10*diffg2f+diffg1f*diffg20)*msqc(j,k)
@@ -642,12 +687,12 @@ C     H1st: non delta terms, second leg
 C     H1st: muf dependence (LF factor to be added at the end)
 c     gammaqq and gammaqg: first leg      
       diff=-logxx10
-     &  *((fx1p(j)-fx10(j)*z1)*Pqqz1(jj)*flgq+fx1p(0)*Pqg(z1))
+     &  *((fx1p(j)-fx10(j)*z1)*Pqqz1(jj)*flgq+fx1p(0)*dyPqg(z1))
       tH1stFjk(j,k)=diff*fx20(k)
       tH1stFjk(j,k)=tH1stFjk(j,k)-Pqqint1*fx10(j)*fx20(k)*flgq
 c     gammaqq and gammaqg: second leg   
       diff=-logxx20
-     &  *((fx2p(k)-fx20(k)*z2)*Pqqz2(ii)*flgq+fx2p(0)*Pqg(z2))
+     &  *((fx2p(k)-fx20(k)*z2)*Pqqz2(ii)*flgq+fx2p(0)*dyPqg(z2))
       tH1stFjk(j,k)=tH1stFjk(j,k)+diff*fx10(j)
       tH1stFjk(j,k)=tH1stFjk(j,k)-Pqqint2*fx10(j)*fx20(k)*flgq
 CC    End of H1st
@@ -656,10 +701,10 @@ CC    Now (gamma+gamma)*(gamma+gamma) term: to be used later
 C     First part: one gamma for each leg: FLGQ here is non trivial ! DONE
       diffg1f=-logxx10*(fx1p(j)-fx10(j)*z1)*Pqqz1(jj)
      &  - Pqqint1*fx10(j)
-      diffg10=-logxx10*fx1p(0)*Pqg(z1)
+      diffg10=-logxx10*fx1p(0)*dyPqg(z1)
       diffg2f=-logxx20*(fx2p(k)-fx20(k)*z2)*Pqqz2(ii)
      &  - Pqqint2*fx20(k)
-      diffg20=-logxx20*fx2p(0)*Pqg(z2)
+      diffg20=-logxx20*fx2p(0)*dyPqg(z2)
       tgagajk(j,k)=2*
      &   (flgq*diffg10*diffg20+flgq*diffg1f*diffg2f
      &   +diffg10*diffg2f+diffg1f*diffg20)
@@ -991,6 +1036,32 @@ c     xmio is used in besselkfast for Itilde
                msqc(-4,4)=sigmaij(-4,4)*pi*6d0/fbGeV2*(2*q2)
                msqc(5,-5)=sigmaij(5,-5)*pi*6d0/fbGeV2*(2*q2)
                msqc(-5,5)=sigmaij(-5,5)*pi*6d0/fbGeV2*(2*q2)
+            elseif(nproc.eq.1) then
+               msqc(2,-1)=sigmaij(1,-2)*pi*6d0/fbGeV2*(2*q2)
+               msqc(-1,2)=sigmaij(-2,1)*pi*6d0/fbGeV2*(2*q2)
+               msqc(2,-3)=sigmaij(1,-3)*pi*6d0/fbGeV2*(2*q2)
+               msqc(-3,2)=sigmaij(-3,1)*pi*6d0/fbGeV2*(2*q2)
+               msqc(2,-5)=sigmaij(1,-5)*pi*6d0/fbGeV2*(2*q2)
+               msqc(-5,2)=sigmaij(-5,1)*pi*6d0/fbGeV2*(2*q2)
+               msqc(4,-3)=sigmaij(4,-3)*pi*6d0/fbGeV2*(2*q2)
+               msqc(-3,4)=sigmaij(-3,4)*pi*6d0/fbGeV2*(2*q2)
+               msqc(4,-1)=sigmaij(4,-2)*pi*6d0/fbGeV2*(2*q2)
+               msqc(-1,4)=sigmaij(-2,4)*pi*6d0/fbGeV2*(2*q2)
+               msqc(4,-5)=sigmaij(4,-5)*pi*6d0/fbGeV2*(2*q2)
+               msqc(-5,4)=sigmaij(-5,4)*pi*6d0/fbGeV2*(2*q2)
+            elseif(nproc.eq.2) then
+               msqc(1,-2)=sigmaij(2,-1)*pi*6d0/fbGeV2*(2*q2)
+               msqc(-2,1)=sigmaij(-1,2)*pi*6d0/fbGeV2*(2*q2)
+               msqc(3,-2)=sigmaij(3,-1)*pi*6d0/fbGeV2*(2*q2)
+               msqc(-2,3)=sigmaij(-1,3)*pi*6d0/fbGeV2*(2*q2)
+               msqc(5,-2)=sigmaij(5,-1)*pi*6d0/fbGeV2*(2*q2)
+               msqc(-2,5)=sigmaij(-1,5)*pi*6d0/fbGeV2*(2*q2)
+               msqc(3,-4)=sigmaij(3,-4)*pi*6d0/fbGeV2*(2*q2)
+               msqc(-4,3)=sigmaij(-4,3)*pi*6d0/fbGeV2*(2*q2)
+               msqc(1,-4)=sigmaij(2,-4)*pi*6d0/fbGeV2*(2*q2)
+               msqc(-4,1)=sigmaij(-4,2)*pi*6d0/fbGeV2*(2*q2)
+               msqc(5,-4)=sigmaij(5,-4)*pi*6d0/fbGeV2*(2*q2)
+               msqc(-4,5)=sigmaij(-4,5)*pi*6d0/fbGeV2*(2*q2)
             endif
             
             do jj=-nf,nf

@@ -1,3 +1,4 @@
+#include "config.h"
 #include <iostream>
 #include <LHAPDF/LHAPDF.h>
 #include <gsl/gsl_integration.h>
@@ -5,7 +6,6 @@
 #include <sys/time.h>
 #include <cuba.h>
 #include <iomanip>
-#include "config.h"
 
 #include "integr.h"
 #include "settings.h"
