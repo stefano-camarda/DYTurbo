@@ -285,7 +285,6 @@ c 998  continue
 
 C     Fill only if it's last iteration
       if (doFill.ne.0) then
-      endif
           call hists_fill(p(3,:),p(4,:),xint*wgt)
       endif
       realint=xint
