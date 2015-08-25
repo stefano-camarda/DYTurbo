@@ -55,22 +55,22 @@ intDimRes = 3
 intDimCT = 8 # 3 or 8
 
 # term switches
-doRES  = true
-doCT   = true
-doREAL = false
-doVIRT = false
-doLO   = false
+doRES  = SETDORES
+doCT   = SETDOCTM
+doREAL = SETDOREA
+doVIRT = SETDOVIR
+doLO   = SETDOLOR
 
 # Cuba settings
 cubaverbosity    = 0   # Cuba info messsages, from 0 to 3
-cubacores        = 8   # parallelization ( 0 = turn off)
+cubacores        = SETCUBACORES   # parallelization ( 0 = turn off)
 niterRES         = 20   # only for 2d and 3d cuhre integration of resummed part
 niterCT          = 200  # only for 3d cuhre integration of counter term
 vegasncallsRES   = 10000000 # only for res 4d vegas integration
 vegasncallsCT    = 50000000 # only for lo 8d vegas integration
 vegasncallsLO    = 100000000 # only for lo 7d vegas integration
-vegasncallsREAL  = 500000000 # only for real 10d vegas integration
-vegasncallsVIRT  = 100000000 # only for virt 8d vegas integration
+vegasncallsREAL  = 5000000 # only for real 10d vegas integration
+vegasncallsVIRT  = 1000000 # only for virt 8d vegas integration
 
 # total or with lepton cuts
 makelepcuts = false
@@ -93,6 +93,7 @@ qtrec_kt0   = false
 # debug settings
 timeprofile = false  # debug and time profile resummation integration
 verbose     = false  # debug and time profile costh phi_lep integration
+HackBinnerToFiller = False
 
 # Set to 1 to use the dyres approximation of PDFs and integration contour in the complex plane for the Mellin inversion
 # Set to 0 to use exact PDFs and straight line contour in the complex plane for the Mellin inversion

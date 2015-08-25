@@ -22,6 +22,7 @@ batch_template=$dyturbo_project/scripts/run_DYTURBO_TMPL.sh
 dyturbo_in_tmpl=$dyturbo_project/scripts/DYTURBO_TMPL.in
 
 
+cubacores=unset
 job_name=unset
 in_file=unset
 sh_file=unset
@@ -29,6 +30,7 @@ process=unset
 collider=unset
 random_seed=unset
 loqtbin=unset
+terms=ALL
 hiqtbin=unset
 loybin=unset
 hiybin=unset
@@ -45,11 +47,14 @@ prepare_script(){
     # prepare in
     prepare_in
     # prepare script
+    nprocessors=$(($cubacores+1))
+    #
     cp $batch_template tmp
     sed -i "s|JOBNAME|$job_name|g               " tmp
     sed -i "s|OUTDIR|$result_dir|g              " tmp
     sed -i "s|DYTURBOROOTDIR|$dyturbo_project|g " tmp
     sed -i "s|DYTURBOINPUTFILE|$in_file|g       " tmp
+    sed -i "s|SETNPROCESSORS|$nprocessors|g       " tmp
     mv tmp $sh_file
     chmod +x $sh_file
 }
@@ -57,6 +62,25 @@ prepare_script(){
 prepare_in(){
     mkdir -p $in_files_dir
     in_file=$in_files_dir/$job_name.in
+    # terms
+    doRES="false"
+    doCTM="false"
+    doREA="false"
+    doVIR="false"
+    doLOR="false"
+    if [[ $terms =~ ^ALL$ ]]
+    then
+        doRES="true"
+        doCTM="true"
+        doREA="true"
+        doVIR="true"
+        doLOR="true"
+    fi;
+    if [[ $terms =~ RES  ]]; then doRES="true"; fi;
+    if [[ $terms =~ CT   ]]; then doCTM="true"; fi;
+    if [[ $terms =~ REAL ]]; then doREA="true"; fi;
+    if [[ $terms =~ VIRT ]]; then doVIR="true"; fi;
+    if [[ $terms =~ LO   ]]; then doLOR="true"; fi;
     # order check
     order=1
     if [[ $pdfset == CT10nlo  ]]; then order=1; fi;
@@ -100,6 +124,12 @@ prepare_in(){
     sed -i "s|SETMEMBER|$member|g     " tmp
     sed -i "s|SETORDER|$order|g       " tmp
     sed -i "s|SETGPAR|$gpar|g         " tmp
+    sed -i "s|SETDORES|$doRES|g         " tmp
+    sed -i "s|SETDOCTM|$doCTM|g         " tmp
+    sed -i "s|SETDOREA|$doREA|g         " tmp
+    sed -i "s|SETDOVIR|$doVIR|g         " tmp
+    sed -i "s|SETDOLOR|$doLOR|g         " tmp
+    sed -i "s|SETCUBACORES|$cubacores|g " tmp
     mv tmp $in_file
 }
 
@@ -133,14 +163,23 @@ submit_Z_dyturbo(){
     then
         DRYRUN=
     fi
-    #process=z0
+    # PROC SWITCH
+    process=z0
     process=wp
-    #pdfset=CT10nnlo
+    # TERM SWITCH
+    terms=RESCT
+    terms=REAL
+    terms=VIRT
+    # PDF SWITCH
+    pdfset=CT10nnlo
     pdfset=CTZPT2
+    # defaults
+    cubacores=8
     random_seed=100101
     loqtbin=unset
     hiqtbin=unset
     collider=lhc7
+    seedlist=100101
     # Z0
     qtbinlist="0 2 4 6 8 10 12 14 16 18 22 26 30 34 38 42 46 50 54 60 70 80 100 150 200 300 800"
     ybinlist="0 1 2 2.4"
@@ -149,31 +188,43 @@ submit_Z_dyturbo(){
     if [[ $process =~ ^w[pm]$ ]]
     then
         qtbinlist=`make_range 0.0 100.0 200.0`
-        ybinlist=`make_range 0.0 5.0 25.0`
+        ybinlist="0 5" #`make_range 0.0 5.0 25.0`
         variationList="0"
+    fi
+    if [[ $terms =~ REAL|VIRT ]]
+    then
+        qtbinlist="0.0 2.0 "
+        ybinlist="0 5"
+        seedlist=`seq 100101 100121`
+        cubacores=0
     fi
     echo $qtbinlist
     echo $ybinlist
-    for iqtbin in $qtbinlist
+    for random_seed in $seedlist
     do
-        if [[ $loqtbin == unset ]]; then loqtbin=$iqtbin; continue; fi; hiqtbin=$iqtbin
-        for iybin in $ybinlist
+        loqtbin=unset
+        for iqtbin in $qtbinlist
         do
-            if [[ $loybin == unset ]]; then loybin=$iybin; continue; fi; hiybin=$iybin
-            qtregion=`echo qt${loqtbin}${hiqtbin}y${loybin}${hiybin} | sed "s/\.//g"`
-            for variation in $variationList
+            if [[ $loqtbin == unset ]]; then loqtbin=$iqtbin; continue; fi; hiqtbin=$iqtbin
+            for iybin in $ybinlist
             do
-                prepare_script
-                $DRYRUN submit_job
+                if [[ $loybin == unset ]]; then loybin=$iybin; continue; fi; hiybin=$iybin
+                qtregion=`echo qt${loqtbin}${hiqtbin}y${loybin}${hiybin}t${terms} | sed "s/\.//g"`
+                for variation in $variationList
+                do
+                    prepare_script
+                    $DRYRUN submit_job
+                done
+                loybin=$iybin
             done
-            loybin=$iybin
+            loybin=unset
+            hiybin=unset
+            loqtbin=$iqtbin
         done
-        loybin=unset
-        hiybin=unset
-        loqtbin=$iqtbin
     done
-    $DRYRUN jobsDone
+    #$DRYRUN jobsDone
 }
+
 
 clear_files(){
     echo "Clearing setup files"
@@ -193,6 +244,6 @@ clear_results(){
 }
 
 # MAIN
-clear_files
+#clear_files
 clear_results
 submit_Z_dyturbo

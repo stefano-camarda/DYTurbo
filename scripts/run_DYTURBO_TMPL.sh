@@ -17,7 +17,7 @@
 #BSUB -q atlasshort
 #BSUB -W 5:00
 #BSUB -app Reserve5G
-#BSUB -n 20
+#BSUB -n SETNPROCESSORS
 #BSUB -R 'rusage[atlasio=0]'
 
 alias CP='rsync -avPL'
@@ -34,9 +34,9 @@ localSetupROOT # 5.34.25-x86_64-slc6-gcc48-opt
 # run the code
 printenv
 cd /jobdir/$LSB_JOBID || echo local run: staying in `pwd`
-rm -rf run_dir
-mkdir run_dir
-cd run_dir
+rm -rf run_dir2
+mkdir run_dir2
+cd run_dir2
 date
 # cp all resbos stuff
 CP DYTURBOROOTDIR/bin/dyturbo .
