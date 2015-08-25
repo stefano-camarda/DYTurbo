@@ -1,4 +1,4 @@
-      double precision function realint(vector,wgt)
+      double precision function realint(vector,wgt,doFill)
       implicit none
       include 'constants.f'
       include 'realonly.f'
@@ -14,7 +14,7 @@
       include 'process.f'
       include 'dynamicscale.f'
       include 'dipolescale.f'
-      integer ih1,ih2,j,k,nd,nmax,nmin,nvec
+      integer ih1,ih2,j,k,nd,nmax,nmin,nvec,doFill
       double precision vector(mxdim),W,val,xint
       double precision sqrts,fx1(-nf:nf),fx2(-nf:nf)
       double precision p(mxpart,4),pjet(mxpart,4),p1ext(4),p2ext(4)
@@ -41,11 +41,14 @@
       integer nproc
       common/nproc/nproc
 
+      external hists_fill
+
       integer ii,jj,kk
 
       data p/48*0d0/
       data first/.true./
       save first,rscalestart,fscalestart
+
 
       if (first) then
          first=.false.
@@ -280,6 +283,11 @@ c---otherwise, skip contribution
 c 998  continue
 
 
+C     Fill only if it's last iteration
+      if (doFill.ne.0) then
+      endif
+          call hists_fill(p(3,:),p(4,:),xint*wgt)
+      endif
       realint=xint
 
       xreal=xreal+xint*wgt/dfloat(itmx)
@@ -289,6 +297,7 @@ c 998  continue
       return
 
  999  realint=0d0
+
       ntotzero=ntotzero+1
  
       return

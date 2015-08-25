@@ -5,7 +5,7 @@ C     Version that allows to separate also qg channel
 
 C     Scale dependence included up to NNLO
 
-      double precision function countint(vector,wgt)
+      double precision function countint(vector,wgt,doFill)
       implicit none
       include 'constants.f'
       include 'realonly.f'
@@ -27,7 +27,7 @@ C
       include 'rescoeff.f'
       include 'dynamicscale.f'
 C
-      integer ih1,ih2,j,k,l,nd,nmax,nmin,nvec,order
+      integer ih1,ih2,j,k,l,nd,nmax,nmin,nvec,order,doFill
       integer nproc
       common/nproc/nproc
       double precision vector(mxdim),W,val,xint
@@ -101,6 +101,8 @@ C
 
       logical binner
       external binner
+      external hists_fill
+
       if (first) then
          first=.false.
          rscalestart=scale
@@ -689,7 +691,10 @@ c---if we're binning, add to histo too
         npart=npart+1
         endif
 
-     
+C     Fill only if it's last iteration
+      if (doFill.ne.0) then
+          call hists_fill(p(3,:),p(4,:),xint*wgt)
+      endif
       countint=xint
      
       xreal=xreal+xint*wgt/dfloat(itmx)

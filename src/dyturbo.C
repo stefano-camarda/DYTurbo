@@ -153,7 +153,7 @@ int main( int argc , const char * argv[])
 
   print_head();
   begin_time = clock_real();
-  double TotXSec = 0.
+  double TotXSec = 0.;
   for (vector<double>::iterator yit = bins.ybins.begin(); yit != bins.ybins.end()-1; yit++)
   {
       for (vector<double>::iterator qit = bins.qtbins.begin(); qit != bins.qtbins.end()-1; qit++)
