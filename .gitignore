@@ -35,6 +35,7 @@ scripts/infiles
 results
 results_merge
 run_dir
+run_dir2
 share
 
 ar-lib
