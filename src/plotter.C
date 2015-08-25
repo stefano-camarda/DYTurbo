@@ -1,5 +1,6 @@
 #include "plotter.h"
 #include "integr.h"
+#include "interface.h"
 #include "settings.h"
 
 #include <sys/mman.h>
@@ -14,7 +15,9 @@ int * plotter::gcounter;
 #include "TFile.h"
 
 plotter::plotter() :
+    N(0),
     h_l1_pt(0),
+    h_qt(0),
     qt_y_resum (0),
     qt_y_ct    (0),
     qt_y_lo    (0),
@@ -37,7 +40,8 @@ plotter::plotter() :
 }
 
 plotter::~plotter(){
-    if (!h_l1_pt) delete h_l1_pt;
+    if (!h_l1_pt ) delete h_l1_pt;
+    if (!h_qt    ) delete h_qt;
     if(!qt_y_resum ) delete qt_y_resum ;
     if(!qt_y_ct    ) delete qt_y_ct    ;
     if(!qt_y_lo    ) delete qt_y_lo    ;
@@ -65,13 +69,23 @@ void plotter::Init(){
     qt_y_total = new TH2D ( "qt_y_total" ,"qt_y_total" , qt_n, qt_array, y_n, y_array );
 
     h_l1_pt = new TH1D ("l1_pt", "lep1 pt", 10, 0,100 );
+    h_qt    = new TH1D ("h_qt", "VB qt", 200, 0,100 );
     return;
 }
 
 void plotter::FillEvent(double p3[4], double p4[4], double wgt){
     //*gcounter = (*gcounter)+1;
-    double l1_pt = sqrt( pow(p3[0],2) + pow(p3[1],2) );
-    h_l1_pt->Fill(l1_pt,wgt);
+    //double l1_pt = sqrt( pow(p3[0],2) + pow(p3[1],2) );
+    //h_l1_pt->Fill(l1_pt,wgt);
+    N++;
+    double qt = sqrt((float)pow(p3[0]+p4[0],2)+pow(p3[1]+p4[1],2));
+    h_qt->Fill(qt,wgt);
+    return;
+}
+
+// fortran interface to Root
+void hists_fill_(double p3[4], double p4[4], double weight){
+    hists.FillEvent(p3,p4,weight);
     return;
 }
 
@@ -105,15 +119,20 @@ void plotter::Dump(){
     return;
 }
 
-void plotter::Finalise(){
+void plotter::Finalise(double xsection){
+    if(xsection!=0.) N = h_qt->Integral()/xsection;
     //munmap(gcounter,sizeof *gcounter); //< HAVETO DO -- otherwise you need to reboot
-    
+    if (N!=0){
+        h_qt->Scale(1./N);
+    }
     // create result dir
     // get name from options
     const char * outfname = "results.root";
     // open file
     TFile *outf = TFile::Open(outfname, "recreate");
     // write
+    h_qt -> Write();
+    // results
     qt_y_resum -> Write();
     qt_y_ct    -> Write();
     qt_y_lo    -> Write();
@@ -152,7 +171,7 @@ void plotter::Dump(){
     return;
 }
 
-void plotter::Finalise(){
+void plotter::Finalise(double xsection){
     return;
 }
 #endif //USEROOT

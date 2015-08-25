@@ -153,6 +153,7 @@ int main( int argc , const char * argv[])
 
   print_head();
   begin_time = clock_real();
+  double TotXSec = 0.
   for (vector<double>::iterator yit = bins.ybins.begin(); yit != bins.ybins.end()-1; yit++)
   {
       for (vector<double>::iterator qit = bins.qtbins.begin(); qit != bins.qtbins.end()-1; qit++)
@@ -232,6 +233,7 @@ int main( int argc , const char * argv[])
       print_result (totval, sqrt(toterror2), bb_time, ee_time);
       hists.FillResult( plotter::Total ,  totval, sqrt(toterror2), ee_time-bb_time );
       cout << endl;
+      TotXSec+=totval;
       }
     }
   print_line();
@@ -239,7 +241,7 @@ int main( int argc , const char * argv[])
   cout << endl;
   cout << setw(10) << "time "  << setw(15) << float(end_time - begin_time) << endl;
 
-  hists.Finalise();
+  hists.Finalise(TotXSec);
 
   return 0;
 }
