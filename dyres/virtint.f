@@ -1,4 +1,4 @@
-      double precision function virtint(r,wgt,doFill)
+      double precision function virtint(r,wgt)
       implicit none
       include 'constants.f'
       include 'noglue.f'
@@ -54,6 +54,7 @@ CC
       common/mypart/mypart
       integer nproc
       common/nproc/nproc
+      common/doFill/doFill
 
       data p/48*0d0/
       data nshot/1/

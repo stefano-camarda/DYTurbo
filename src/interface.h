@@ -225,13 +225,17 @@ extern "C" {
     double xqtcut_;
     } qtcut_;
 
+  extern struct {
+    int doFill_;
+    } dofill_;
+
 
   double realvirt2_(double r[22], double &wgt);
 
   double lowint_(double r[22], double &wgt);
-  double realint_(double r[22], double &wgt, int doFill=0);
-  double virtint_(double r[22], double &wgt, int doFill=0);
-  double countint_(double r[22], double &wgt, int doFill=0);
+  double realint_(double r[22], double &wgt);
+  double virtint_(double r[22], double &wgt);
+  double countint_(double r[22], double &wgt);
   
   double countterm_(double &costh, double &mm, double &qtt, double &yy, int &mode);
 

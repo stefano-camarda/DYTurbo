@@ -1,4 +1,4 @@
-      double precision function realint(vector,wgt,doFill)
+      double precision function realint(vector,wgt)
       implicit none
       include 'constants.f'
       include 'realonly.f'
@@ -22,7 +22,7 @@
       double precision s(mxpart,mxpart),wgt,msq(-nf:nf,-nf:nf)
       double precision msqc(maxd,-nf:nf,-nf:nf),xmsq(0:maxd),xmsqjk
       double precision flux,BrnRat,xreal,xreal2
-      double precision xx1,xx2,q(mxpart,4),dot,q2
+      double precision xx1,xx2,q(mxpart,4),dot,q2,qt2,xqtcut
       integer n2,n3
       double precision mass2,width2,mass3,width3
       common/breit/n2,n3,mass2,width2,mass3,width3
@@ -40,8 +40,13 @@
       common/incldip/incldip
       integer nproc
       common/nproc/nproc
+      common/qtcut/xqtcut
 
+      common/doFill/doFill
       external hists_fill
+
+      logical binner
+      external binner
 
       integer ii,jj,kk
 
@@ -86,6 +91,7 @@ c      print*
       nvec=npart+2
 
       q2=2*dot(p,3,4)
+      qt2=(p(3,1)+p(4,1))**2+(p(3,2)+p(4,2))**2
 
       call dotem(nvec,p,s)
       
@@ -118,6 +124,10 @@ CC   Dynamic scale: set it only if point passes cuts
         enddo
       endif
       
+C---- binner cut
+C      if (binner(p(3,:),p(4,:)).eqv..false.) goto 999
+C---- min qt cut
+C      if(dsqrt(qt2/q2).lt.xqtcut) goto 999
       
 c---- generate collinear points that satisy the jet cuts (for checking)
 c      call singgen(p,s,*998)

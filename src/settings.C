@@ -216,6 +216,8 @@ void settings::initDyresSettings(){
     strncpy( runstring_   . runstring_ , outputfile   .c_str(), outputfile .size() ); //'LHC7-Z-nnlo'  # outputfile
 
     zcouple_ . q1_ = (useGamma ? -1 :  0 );
+
+    dofill_.doFill_ = 0;
 }
 
 void settings::dumpAll(){

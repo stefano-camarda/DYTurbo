@@ -37,8 +37,8 @@ integrand_t realintegrand(const int &ndim, const double x[], const int &ncomp, d
   for (int i = 0; i < ndim; i++)
     rre[i]=x[i];
 
-  int doFill = int(iter==last_iter);
-  f[0] = realint_(rre,weight,doFill);
+  dofill_.doFill_ = int(iter==last_iter);
+  f[0] = realint_(rre,weight);
   
   return 0;
 }
@@ -53,8 +53,8 @@ integrand_t virtintegrand(const int &ndim, const double x[], const int &ncomp, d
     rvi[i]=x[i];
   rvi[9] = rvi[7];
   
-  int doFill = int(iter==last_iter);
-  f[0]  = virtint_(rvi,weight,doFill);
+  dofill_.doFill_ = int(iter==last_iter);
+  f[0]  = virtint_(rvi,weight);
   
   return 0;
 }
@@ -72,8 +72,8 @@ integrand_t ctintegrand(const int &ndim, const double x[], const int &ncomp, dou
     rct[i]=x[i];
   rct[8] = rct[1];
 
-  int doFill = int(iter==last_iter);
-  f[0] = countint_(rct,weight,doFill);
+  dofill_.doFill_ = int(iter==last_iter);
+  f[0] = countint_(rct,weight);
 
   return 0;
 }

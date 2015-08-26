@@ -5,7 +5,7 @@ C     Version that allows to separate also qg channel
 
 C     Scale dependence included up to NNLO
 
-      double precision function countint(vector,wgt,doFill)
+      double precision function countint(vector,wgt)
       implicit none
       include 'constants.f'
       include 'realonly.f'
@@ -99,6 +99,7 @@ C
       data first/.true./
       save first,rscalestart,fscalestart
 
+      common/doFill/doFill
       logical binner
       external binner
       external hists_fill
