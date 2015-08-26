@@ -157,7 +157,7 @@ make_range(){
 
 submit_Z_dyturbo(){
     DRYRUN=echo 
-    read -p "Do you want to submit results ? " -n 1 -r
+    read -p "Do you want to submit jobs ? " -n 1 -r
     echo    # (optional) move to a new line
     if [[ $REPLY =~ ^[Yy]$ ]]
     then
@@ -168,8 +168,8 @@ submit_Z_dyturbo(){
     process=wp
     # TERM SWITCH
     terms=RESCT
-    terms=REAL
     terms=VIRT
+    terms=REAL
     # PDF SWITCH
     pdfset=CT10nnlo
     pdfset=CTZPT2
@@ -195,31 +195,33 @@ submit_Z_dyturbo(){
     then
         qtbinlist="0.0 2.0 "
         ybinlist="0 5"
-        seedlist=`seq 100101 100121`
+        seedlist=`seq 100101 100101`
         cubacores=0
     fi
-    echo $qtbinlist
-    echo $ybinlist
-    for random_seed in $seedlist
+    for terms in REAL VIRT 
     do
-        loqtbin=unset
-        for iqtbin in $qtbinlist
+        for random_seed in $seedlist
         do
-            if [[ $loqtbin == unset ]]; then loqtbin=$iqtbin; continue; fi; hiqtbin=$iqtbin
-            for iybin in $ybinlist
+            loqtbin=unset
+            for iqtbin in $qtbinlist
             do
-                if [[ $loybin == unset ]]; then loybin=$iybin; continue; fi; hiybin=$iybin
-                qtregion=`echo qt${loqtbin}${hiqtbin}y${loybin}${hiybin}t${terms} | sed "s/\.//g"`
-                for variation in $variationList
+                if [[ $loqtbin == unset ]]; then loqtbin=$iqtbin; continue; fi; hiqtbin=$iqtbin
+                for iybin in $ybinlist
                 do
-                    prepare_script
-                    $DRYRUN submit_job
+                    if [[ $loybin == unset ]]; then loybin=$iybin; continue; fi; hiybin=$iybin
+                    qtregion=`echo qt${loqtbin}${hiqtbin}y${loybin}${hiybin}t${terms} | sed "s/\.//g"`
+                    for variation in $variationList
+                    do
+                        prepare_script
+                        $DRYRUN submit_job
+                        #. $sh_file
+                    done
+                    loybin=$iybin
                 done
-                loybin=$iybin
+                loybin=unset
+                hiybin=unset
+                loqtbin=$iqtbin
             done
-            loybin=unset
-            hiybin=unset
-            loqtbin=$iqtbin
         done
     done
     #$DRYRUN jobsDone
