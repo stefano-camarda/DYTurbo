@@ -33,6 +33,8 @@ void normalise_result(double &value, double &error);
 
 double clock_real();
 
+double TotXSec ;
+
 int main( int argc , const char * argv[])
 {
 
@@ -153,7 +155,7 @@ int main( int argc , const char * argv[])
 
   print_head();
   begin_time = clock_real();
-  double TotXSec = 0.;
+  TotXSec = 0.;
   for (vector<double>::iterator yit = bins.ybins.begin(); yit != bins.ybins.end()-1; yit++)
   {
       for (vector<double>::iterator qit = bins.qtbins.begin(); qit != bins.qtbins.end()-1; qit++)
@@ -233,7 +235,6 @@ int main( int argc , const char * argv[])
       print_result (totval, sqrt(toterror2), bb_time, ee_time);
       hists.FillResult( plotter::Total ,  totval, sqrt(toterror2), ee_time-bb_time );
       cout << endl;
-      TotXSec+=totval;
       }
     }
   print_line();
@@ -259,6 +260,7 @@ void test_resum_speed(double costh,double m,double qt,double y,int mode){
 
 
 void normalise_result(double &value, double &error){
+    TotXSec+=value;
     value /= qtmax - qtmin;
     error /= qtmax - qtmin;
     //value /= ymax  - ymin;

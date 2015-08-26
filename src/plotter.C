@@ -125,6 +125,14 @@ void plotter::Finalise(double xsection){
     if (N!=0){
         h_qt->Scale(1./N);
     }
+    // correct qt to binwidth
+    for (int ibin=0; ibin<=h_qt->GetNbinsX()+1; ibin++ ){
+        double width = h_qt->GetBinWidth   (ibin);
+        double val   = h_qt->GetBinContent (ibin);
+        double err   = h_qt->GetBinError   (ibin);
+        h_qt->SetBinContent (ibin, val/width);
+        h_qt->SetBinError   (ibin, err/width);
+    }
     // create result dir
     // get name from options
     const char * outfname = "results.root";
