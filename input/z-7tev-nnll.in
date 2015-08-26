@@ -53,7 +53,7 @@ doLO   = false
 
 # Cuba settings
 cubaverbosity    = 0   # Cuba info messsages, from 0 to 3
-cubacores        = 4   # parallelization ( 0 = turn off)
+cubacores        = 0   # parallelization ( 0 = turn off)
 niterRES         = 0   # only for 2d and 3d cuhre integration
 niterCT          = 0   # only for 2d and 3d cuhre integration
 vegasncallsRES   = 0        # only for res 4d vegas integration
@@ -88,7 +88,7 @@ verbose     = false  # debug and time profile costh phi_lep integration
 # Set to 0 to use exact PDFs and straight line contour in the complex plane for the Mellin inversion
 opts_approxpdf = 0
 # number of intervals for integration of PDF moments, relevant only for opts_approxpdf = 0
-opts_pdfintervals = 100
+opts_pdfintervals = 20
 
 # binning
 

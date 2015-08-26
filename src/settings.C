@@ -1,5 +1,6 @@
 #include <cmath>
 #include <cstring>
+#include <iostream>
 
 #include "settings.h"
 #include "interface.h"
@@ -183,6 +184,14 @@ void settings::readfromfile(const string fname){
         ctint3d = false;
         ctintvegas = true;
     }
+
+    if (opts_.approxpdf_ == 1)
+      {
+	cout << "DYRES-style approximate PDF requested, enforce vegas integration for the resummed cross section" << endl;
+	int2d = false;
+	int3d = false;
+	int4d = true;
+      }
 
     return ;
 }

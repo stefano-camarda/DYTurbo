@@ -112,17 +112,8 @@ C
       integer alfaintervals,betaintervals
       double precision alfaa,alfab,alfac,alfam
       double precision betaa,betab,betac,betam
-      include 'gauss.inc'
-
-c common block form ctquadinit
-      integer ctintervals,ctrule,ctdim
-      parameter (ctintervals=20)
-      parameter (ctrule=10)
-      parameter (ctdim=ctrule*ctintervals)
-      double precision ctx(ctdim)
-      double precision ctw(ctdim)
-      integer quadpoints
-      common/ctweights/ctx,ctw,quadpoints
+      include 'gauss.f'
+      include 'quadrules.f'
 
 c     cached variables for fast integration
       integer ii,jj
@@ -421,7 +412,7 @@ C Scaled momentum fractions
       D1intx2 = D1int(xx20)
 
 c     Preliminary loop for caching
-      do ii=1,quadpoints
+      do ii=1,ctdim
          z1 = xx10**ctx(ii)
          z2 = xx20**ctx(ii)
          oz1(ii) = 1d0/(1d0-z1)
@@ -473,10 +464,10 @@ c         Pqgz2(ii) = Pqg(z2)
       enddo
       flgq=1
 c     start the fast alfa beta integration
-      do ii=1,quadpoints
+      do ii=1,ctdim
          z2=cz2(ii)
          fx2p=cfx2p(:,ii)
-         do jj=1,quadpoints
+         do jj=1,ctdim
             z1=cz1(jj)
             fx1p=cfx1p(:,jj)
 
@@ -875,31 +866,13 @@ c initialize the points of the gaussian quadrature for the alfa and beta integra
       double precision min,max
       double precision a,b,c,m,x,t,jac
       integer i,j
-      include 'gauss.inc'
+      include 'gauss.f'
+      include 'quadrules.f'
 
-c     Common block (output)
-      integer ctintervals,ctrule,ctdim
-      parameter (ctintervals=20)
-      parameter (ctrule=10)
-      parameter (ctdim=ctrule*ctintervals)
-      double precision ctx(ctdim)
-      double precision ctw(ctdim)
-      integer quadpoints
-      common/ctweights/ctx,ctw,quadpoints
+c     the output is stired in the common block: /ctweights/ctx,ctw
 
       min = 1d-7
       max = 1d0
-      quadpoints = ctrule*ctintervals
-c      do i=1,ctintervals
-c         a = min*((max/min)**(real(i-1, 8)/real(ctintervals,8)))
-c         b = min*((max/min)**(real(i,8)/real(ctintervals,8)))
-c         c=0.5d0*(a+b)
-c         m=0.5d0*(b-a)
-c         do j=1,ctrule
-c            ctx(j+(i-1)*ctrule)=c+m*xxx10(j)
-c            ctw(j+(i-1)*ctrule)=www10(j)*m
-c         enddo
-c      enddo
 
       do i=1,ctintervals
          a = min+(max-min)*(i-1)/ctintervals
@@ -907,11 +880,11 @@ c      enddo
          c=0.5d0*(a+b)
          m=0.5d0*(b-a)
          do j=1,ctrule
-            x=c+m*xxx10(j)
+            x=c+m*xxx(ctrule,j)
             t=min*(max/min)**x
             jac=t*log(max/min)
             ctx(j+(i-1)*ctrule)=t
-            ctw(j+(i-1)*ctrule)=www10(j)*m*jac
+            ctw(j+(i-1)*ctrule)=www(ctrule,j)*m*jac
          enddo
       enddo
       
@@ -932,9 +905,6 @@ c perform qt integration
       double precision x,w
       double precision switch,xmio
       common/xmio/xmio
-      integer qtintervals,qtrule
-      parameter (qtintervals=2)
-      parameter (qtrule=4)
       integer i,j
 
       double precision Itilde
@@ -952,7 +922,8 @@ c perform qt integration
       integer nproc
       common/nproc/nproc
 
-      include 'gauss.inc'
+      include 'gauss.f'
+      include 'quadrules.f'
 c     Common block (output)
       double precision LL1,LL2,LL3,LL4
       double precision LL1jk(-nf:nf,-nf:nf),LL2jk(-nf:nf,-nf:nf)
@@ -981,12 +952,11 @@ c     Common block (output)
          xc=0.5d0*(xa+xb)
          xm=0.5d0*(xb-xa)
          do j=1,qtrule
-            x=xc+xm*xxx4(j)
+            x=xc+xm*xxx(qtrule,j)
             qtx = qta + (qtb-qta) * x
             qt2=tiny*exp(1d0/qtx - 1d0)
             jac=(qtb-qta)*qt2/qtx**2
-
-            w=www4(j)*xm*jac
+            w=www(qtrule,j)*xm*jac
 
             qt = sqrt(qt2)
 

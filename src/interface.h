@@ -14,6 +14,7 @@ extern "C" {
     void setup_();
     void dyinit_();
     void pdfini_();
+    void gaussinit_();
     double dyalphas_(double &q, double &amz, int &nloop);
     bool cuts_(double p[4][12], int &njet);
 

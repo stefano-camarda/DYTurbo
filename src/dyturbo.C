@@ -61,6 +61,7 @@ int main( int argc , const char * argv[])
   }
   opts.readfromfile(conf_file.c_str());
   opts.initDyresSettings();
+  gaussinit_();
   dyinit_();
   //  setup_();
   //bins.init();
@@ -94,7 +95,10 @@ int main( int argc , const char * argv[])
   costh = -1.0; m = 110; qt = 20; y = -2.5;
   test_resum_speed(costh,m,qt,y,mode);
 
-  costh = 0.1; m = 91; qt = 5; y = 1.5;
+  costh = 0.1; m = 91; qt = 5; y = 3.5;
+  test_resum_speed(costh,m,qt,y,mode);
+
+  costh = 0.1; m = 91; qt = 5; y = 4.0;
   test_resum_speed(costh,m,qt,y,mode);
 
   costh = 0.1; m = 91; qt = 5; y = 0.2;
