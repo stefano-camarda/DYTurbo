@@ -125,9 +125,9 @@ CC   Dynamic scale: set it only if point passes cuts
       endif
       
 C---- binner cut
-      if (binner(p(3,:),p(4,:)).eqv..false.) goto 999
+C      if (binner(p(3,:),p(4,:)).eqv..false.) goto 999
 C---- min qt cut
-      if(dsqrt(qt2/q2).lt.xqtcut) goto 999
+C      if(dsqrt(qt2/q2).lt.xqtcut) goto 999
       
 c---- generate collinear points that satisy the jet cuts (for checking)
 c      call singgen(p,s,*998)
