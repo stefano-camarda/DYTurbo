@@ -66,7 +66,7 @@ c     COMMON/binteg/phi2,min,max
       common/sigmaij/sigmaij
       double precision g
       common/NP/g
-      common/photon/phot
+      common/dyphoton/phot
       double complex loga,logmuf2q2,logq2muf2,logq2mur2
       common/clogs/loga,logmuf2q2,logq2muf2,logq2mur2
       double precision rloga,rlogq2mur2
@@ -97,8 +97,8 @@ c     cached for invres and cachecoeff
 
       double precision xborn,xborn2,xnorm,xnormal
 
-      double precision alphas
-      external alphas
+      double precision dyalphas
+      external dyalphas
 
       double precision xsection
       external xsection
@@ -127,24 +127,28 @@ c     include 'constants.f'
       common/density/iih1,iih2
       include 'scale.f'
       include 'facscale.f'
-      integer approxpdf,pdfintervals
-      common/opts/approxpdf,pdfintervals
-
+      include 'quadrules.f'
+      
       mod = mode
       if(flag.eq.0)  then       !! ONE TIME INITIALIZATION
          print *, 'first call to resum'
          call resummconst
          call reno2const
      
-C Initialization for Gauss inversion 
-         call INITO 
-
+C     Initialization for Gauss inversion
+         if (approxpdf.eq.0) then
+            call initmellingauss ! higher order quadrature rule
+         else
+            call INITO           ! dyres original quadrature rule
+         endif
+         print *,'done'
 c     Initialization of redundant variables       
          flag1=order            ! set flag1 to order of calculation (carbon copy of order, 1=NLO+NLL, 2=NNLO+NNLL)
          nloop=nlooprun         ! set nloop to order of running of alphas (carbon copy of nlooprun, not used)
 c     Choose pp or ppbar collider
          ih1=iih1               !1
          ih2=iih2               !1
+
 c     Set factorization and renormalization scales (to work with dynamic scale need to move this outside init stage)
          mur=scale
          muf=facscale
@@ -154,11 +158,6 @@ C     Scales
 
          q2mur=mur2
          q2muf=muf2
-
-C   ALPQR = ALPHA AT RENORMALIZATION SCALE
-         ALPQR=alphas(dsqrt(q2mur),amz,nlooprun)/4d0/pi
-C as = ALPHAS/PI
-         aass = ALPQR*4d0
 
 C non-perturbative parameter
          g=g_param
@@ -213,6 +212,12 @@ c     flag1 is the order of calculation (carbon copy of order, 1=NLO+NLL, 2=NNLO
 
       endif                     ! end initialization
 
+
+C   ALPQR = ALPHA AT RENORMALIZATION SCALE
+      ALPQR=dyalphas(dsqrt(q2mur),amz,nlooprun)/4d0/pi
+C as = ALPHAS/PI
+      aass = ALPQR*4d0
+
       g=g_param
       loga=log(a_param)
       rloga=log(a_param)
@@ -266,7 +271,7 @@ C     Limit eta_max to avoid reaching the end of phase space
 C...  COUPLING CONSTANTS AT INPUT SCALE = ALPHAS/4/PI
 C     ALPQF = ALPHA AT RESUMMATION SCALE (used to start evolution,
 
-         ALPQF=alphas(dsqrt(q2s),amz,nlooprun)/4d0/pi
+         ALPQF=dyalphas(dsqrt(q2s),amz,nlooprun)/4d0/pi
          
 c     precompute scales
          logmuf2q2=log(muf2/q2)
@@ -379,12 +384,12 @@ c     NMAX2 = 136                ! zmax = 36
 c     In costh and rapidity integrated modes remove rapidity dependences
 c     Also the integration path in the complex plane is in this case along the imaginary axis,
 c     need to integrate up to higher z max 18 (22)
-         NMAX1 = 88
-         NMAX2 = 88
+         NMAX1 = mdim
+         NMAX2 = mdim
       end if
 c***************************************
 c rapidity (and mass) dependence in ax1 ax2        
-        do I = 1, max(NMAX1,NMAX2) !136
+      do I = 1, max(NMAX1,NMAX2) !136
       cCEX1(I) = EXP (-Np(I) * AX1) / pi * CCp
       cCEX2p(I) = EXP (-Np(I) * AX2) / pi * CCp
       cCEX2m(I) = EXP (-Nm(I) * AX2) / pi * CCm
@@ -641,7 +646,7 @@ C     COMPUTE NEGATIVE BRANCH
            INT2= (HCRN * cCEX2m(I2))
             
            FZ=-DBLE( 1./2*(INT1-INT2)*cCEX1(I1)*WN(I1)*WN(I2)*factorfin)
-           FUN= FUN + FZ 
+           FUN= FUN + FZ
 
         elseif (mod.eq.2) then
 c     Rapidity integrated mode:
@@ -673,7 +678,6 @@ c     The integrals are solved analitically when no cuts on the leptons are appl
         
  10   CONTINUE
  100  CONTINUE
-c     print *,'done'
 c     ***************************
       if (mod.eq.0.or.mod.eq.1) then
          INVRES = fun
@@ -2837,7 +2841,8 @@ C     BOTTOM
       double precision ymin,ymax,m
       logical nolepcuts
 
-      include 'gauss.inc' 
+      include 'quadrules.f'
+      include 'gauss.f' 
       
 c     store integration results in the common block, they are passed to initsigmacthy
       integer I1,I2
@@ -2885,21 +2890,16 @@ c     weights of the gaussian quadrature
       double precision  WN(136)
       COMMON /WEIGHTS2/ WN      
 
-      integer approxpdf,pdfintervals
-      common/opts/approxpdf,pdfintervals
-
 c     cached values from cacheyrapint
-      integer intervals
-      parameter (intervals=20)
-      complex *16 cfpy(136,136,4*intervals)
-      complex *16 cfmy(136,136,4*intervals)
+      complex *16 cfpy(136,136,yrule*yintervals)
+      complex *16 cfmy(136,136,yrule*yintervals)
       common /cachedrapint/ cfpy,cfmy
       
 c     print *,'in rapintegrals'
       ax=dlog(m**2/sqs**2)
 
-      NMAX1 = 88
-      NMAX2 = 88
+      NMAX1 = mdim
+      NMAX2 = mdim
       
 c     c If there are no cuts on the leptons, calculate the integrals analitically
       if (nolepcuts.eqv..true.) then
@@ -2956,13 +2956,13 @@ c     cache the mass dependent part (ax) of the exponential
 c     start integration
       xc=0.5d0*(ymin+ymax)
       xm=0.5d0*(ymax-ymin)
-      do i=1,intervals
-         ya = ymin+(ymax-ymin)*(i-1)/intervals
-         yb = ymin+(ymax-ymin)*i/intervals
+      do i=1,yintervals
+         ya = ymin+(ymax-ymin)*(i-1)/yintervals
+         yb = ymin+(ymax-ymin)*i/yintervals
          xc=0.5d0*(ya+yb)
          xm=0.5d0*(yb-ya)
-         do j=1,4
-            y=xc+xm*xxx4(j)
+         do j=1,yrule
+            y=xc+xm*xxx(yrule,j)
 
 c     calculate costheta moments as a function of y
          call sety(y)
@@ -2972,8 +2972,8 @@ c      print *,cthmom0,cthmom1,cthmom2
          do I1 = 1, NMAX1  !136
             do I2 = 1, NMAX2 !136
 c     functions to integrate (rapidity part is cached at initialisation)
-               fpy=cfpm(I1,I2)*cfpy(I1,I2,j+(i-1)*4)
-               fmy=cfmm(I1,I2)*cfmy(I1,I2,j+(i-1)*4)
+               fpy=cfpm(I1,I2)*cfpy(I1,I2,j+(i-1)*yrule)
+               fmy=cfmm(I1,I2)*cfmy(I1,I2,j+(i-1)*yrule)
 c     integrals
                Ith0p(I1,I2)=Ith0p(I1,I2)+fpy*cthmom0
                Ith1p(I1,I2)=Ith1p(I1,I2)+fpy*cthmom1

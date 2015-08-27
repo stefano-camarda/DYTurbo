@@ -1,5 +1,6 @@
 #include <cmath>
 #include <cstring>
+#include <iostream>
 
 #include "settings.h"
 #include "interface.h"
@@ -75,6 +76,7 @@ void settings::init()
   //debug settings
   timeprofile = false; //debug and time profile resummation integration
   verbose = false; //debug and time profile costh phi_lep integration
+  HackBinnerToFiller = false; //debug distributions
 
   //Set to 1 to use the dyres approximation of PDFs and integration contour in the complex plane for the Mellin inversion
   //Set to 0 to use exact PDFs and straight line contour in the complex plane for the Mellin inversion
@@ -109,47 +111,49 @@ void settings::readfromfile(const string fname){
     outputfile     = in.GetString ( "outputfile"     ); //'LHC7-Z-nnlo'  # outputfile
     itmxToFile     = in.GetNumber ( "itmxToFile"     ); //0              # number      of       last       itmx    to          write           on          file
 
-    rmass           = in.GetNumber ( "rmass"           ); //91.1876
-    rwidth          = in.GetNumber ( "rwidth"          ); //2.495
-    ylow            = in.GetNumber ( "ylow"            ); //2
-    yhigh           = in.GetNumber ( "yhigh"           ); //2.4
-    mlow            = in.GetNumber ( "mlow"            ); //66.
-    mhigh           = in.GetNumber ( "mhigh"           ); //116.
-    intDimRes       = in.GetNumber ( "intDimRes"       ); //3
-    //int2d           = in.GetBool   ( "int2d"           ); //false
-    //int3d           = in.GetBool   ( "int3d"           ); //true
-    //int4d           = in.GetBool   ( "int4d"           ); //false
-    intDimCT        = in.GetNumber ( "intDimCT"        ); //3
-    //ctint3d         = in.GetBool   ( "ctint3d"         ); //true
-    //ctintvegas      = in.GetBool   ( "ctintvegas"      ); //false
-    doRES           = in.GetBool   ( "doRES"           ); //false
-    doCT            = in.GetBool   ( "doCT"            ); //false
-    doREAL          = in.GetBool   ( "doREAL"          ); //false
-    doVIRT          = in.GetBool   ( "doVIRT"          ); //false
-    doLO            = in.GetBool   ( "doLO"            ); //false
-    cubaverbosity   = in.GetNumber ( "cubaverbosity"   ); //0       # Cuba        info     messsages, from    0           to              3
-    cubacores       = in.GetNumber ( "cubacores"       ); //0
-    niterRES        = in.GetNumber ( "niterRES"        ); //0       # only        for      2d         and     3d          cuhre           integration
-    niterCT         = in.GetNumber ( "niterCT"         ); //0       # only        for      3d          cuhre           integration
-    vegasncallsRES  = in.GetNumber ( "vegasncallsRES"  ); //10000
-    vegasncallsCT   = in.GetNumber ( "vegasncallsCT"   ); //10000
-    vegasncallsLO   = in.GetNumber ( "vegasncallsLO"   ); //10000
-    vegasncallsREAL = in.GetNumber ( "vegasncallsREAL" ); //10000
-    vegasncallsVIRT = in.GetNumber ( "vegasncallsVIRT" ); //10000
-    makelepcuts     = in.GetBool   ( "makelepcuts"     ); //true
-    cubaint         = in.GetBool   ( "cubaint"         ); //true    # integration with     Cuba       Suave
-    trapezint       = in.GetBool   ( "trapezint"       ); //false   # trapezoidal rule     for        the     phi_lep     integration     and         semi-analytical for         costh
-    quadint         = in.GetBool   ( "quadint"         ); //false   # quadrature  rule     for        the     phi_lep     integration     and         semi-analytical for         costh
-    suavepoints     = in.GetNumber ( "suavepoints"     ); //1000000 # number      of       points     for     suave       integration,    newpoints   is              set         to    suavepoints/10;
-    nphitrape       = in.GetNumber ( "nphitrape"       ); //1000    # number      of       steps      for     trapezoidal rule            of          phi_lep         integration
-    quadnphi        = in.GetNumber ( "quadnphi"        ); //20      # number      of       segments   for     quadrature  rule            of          phi_lep         integration
-    ncstart         = in.GetNumber ( "ncstart"         ); //1000    # starting    sampling for        the     costh       semi-analytical integration (common         settings    for   the             trapezoidal and quadrature rules)
-    qtrec_naive     = in.GetBool   ( "qtrec_naive"     ); //false
-    qtrec_cs        = in.GetBool   ( "qtrec_cs"        ); //false
-    qtrec_kt0       = in.GetBool   ( "qtrec_kt0"       ); //true
-    timeprofile     = in.GetBool   ( "timeprofile"     ); //false   # debug       and      time       profile resummation integration
-    verbose         = in.GetBool   ( "verbose"         ); //false   # debug       and      time       profile costh       phi_lep         integration
-    useGamma        = in.GetBool ( "useGamma" );//
+    rmass              = in.GetNumber ( "rmass"           ); //91.1876
+    rwidth             = in.GetNumber ( "rwidth"          ); //2.495
+    ylow               = in.GetNumber ( "ylow"            ); //2
+    yhigh              = in.GetNumber ( "yhigh"           ); //2.4
+    mlow               = in.GetNumber ( "mlow"            ); //66.
+    mhigh              = in.GetNumber ( "mhigh"           ); //116.
+    intDimRes          = in.GetNumber ( "intDimRes"       ); //3
+    //int2d              = in.GetBool   ( "int2d"           ); //false
+    //int3d              = in.GetBool   ( "int3d"           ); //true
+    //int4d              = in.GetBool   ( "int4d"           ); //false
+    intDimCT           = in.GetNumber ( "intDimCT"       ); //3
+    //ctint2d            = in.GetBool   ( "ctint2d"         ); //true
+    //ctint3d            = in.GetBool   ( "ctint3d"         ); //false
+    //ctintvegas         = in.GetBool   ( "ctintvegas"      ); //false
+    doRES              = in.GetBool   ( "doRES"           ); //false
+    doCT               = in.GetBool   ( "doCT"            ); //false
+    doREAL             = in.GetBool   ( "doREAL"          ); //false
+    doVIRT             = in.GetBool   ( "doVIRT"          ); //false
+    doLO               = in.GetBool   ( "doLO"            ); //false
+    cubaverbosity      = in.GetNumber ( "cubaverbosity"   ); //0       # Cuba        info     messsages, from    0           to              3
+    cubacores          = in.GetNumber ( "cubacores"       ); //0
+    niterRES           = in.GetNumber ( "niterRES"        ); //0       # only        for      2d         and     3d          cuhre           integration
+    niterCT            = in.GetNumber ( "niterCT"         ); //0       # only        for      3d          cuhre           integration
+    vegasncallsRES     = in.GetNumber ( "vegasncallsRES"  ); //10000
+    vegasncallsCT      = in.GetNumber ( "vegasncallsCT"   ); //10000
+    vegasncallsLO      = in.GetNumber ( "vegasncallsLO"   ); //10000
+    vegasncallsREAL    = in.GetNumber ( "vegasncallsREAL" ); //10000
+    vegasncallsVIRT    = in.GetNumber ( "vegasncallsVIRT" ); //10000
+    makelepcuts        = in.GetBool   ( "makelepcuts"     ); //true
+    cubaint            = in.GetBool   ( "cubaint"         ); //true    # integration with     Cuba       Suave
+    trapezint          = in.GetBool   ( "trapezint"       ); //false   # trapezoidal rule     for        the     phi_lep     integration     and         semi-analytical for         costh
+    quadint            = in.GetBool   ( "quadint"         ); //false   # quadrature  rule     for        the     phi_lep     integration     and         semi-analytical for         costh
+    suavepoints        = in.GetNumber ( "suavepoints"     ); //1000000 # number      of       points     for     suave       integration,    newpoints   is              set         to    suavepoints/10;
+    nphitrape          = in.GetNumber ( "nphitrape"       ); //1000    # number      of       steps      for     trapezoidal rule            of          phi_lep         integration
+    quadnphi           = in.GetNumber ( "quadnphi"        ); //20      # number      of       segments   for     quadrature  rule            of          phi_lep         integration
+    ncstart            = in.GetNumber ( "ncstart"         ); //1000    # starting    sampling for        the     costh       semi-analytical integration (common         settings    for   the             trapezoidal and quadrature rules)
+    qtrec_naive        = in.GetBool   ( "qtrec_naive"     ); //false
+    qtrec_cs           = in.GetBool   ( "qtrec_cs"        ); //false
+    qtrec_kt0          = in.GetBool   ( "qtrec_kt0"       ); //true
+    timeprofile        = in.GetBool   ( "timeprofile"     ); //false   # debug       and      time       profile resummation integration
+    verbose            = in.GetBool   ( "verbose"         ); //false   # debug       and      time       profile costh       phi_lep         integration
+    HackBinnerToFiller = in.GetBool   ( "HackBinnerToFiller"         ); //false   # debug       and      time       profile costh       phi_lep         integration
+    useGamma           = in.GetBool ( "useGamma" );//
     opts_.approxpdf_    = in.GetNumber ( "opts_approxpdf" ); //0
     opts_.pdfintervals_ = in.GetNumber ( "opts_pdfintervals" ); //100
 
@@ -159,24 +163,35 @@ void settings::readfromfile(const string fname){
     opts.doLO   = (opts.doLO   && opts.order == 1);
     opts.doREAL = (opts.doREAL && opts.order == 2);
     opts.doVIRT = (opts.doVIRT && opts.order == 2);
-    // counter term integration dimension
+    // resummation term integration dimension
     if (intDimRes<5 && intDimRes>1){
         int2d = (intDimRes == 2);
         int3d = (intDimRes == 3);
         int4d = (intDimRes == 4);
     } else {
         int2d = false;
-        int3d = true;
-        int4d = false;
+        int3d = false;
+        int4d = true;
     }
+
     // counter term integration dimension
-    if (intDimRes==3){
-        ctint3d = true;
+    if (intDimCT<4 && intDimCT>1){
+        ctint2d = (intDimCT == 2);
+        ctint3d = (intDimCT == 3);
         ctintvegas = false;
     } else {
+        ctint2d = false;
         ctint3d = false;
         ctintvegas = true;
     }
+
+    if (opts_.approxpdf_ == 1)
+      {
+	cout << "DYRES-style approximate PDF requested, enforce vegas integration for the resummed cross section" << endl;
+	int2d = false;
+	int3d = false;
+	int4d = true;
+      }
 
     return ;
 }
@@ -210,6 +225,8 @@ void settings::initDyresSettings(){
     strncpy( runstring_   . runstring_ , outputfile   .c_str(), outputfile .size() ); //'LHC7-Z-nnlo'  # outputfile
 
     zcouple_ . q1_ = (useGamma ? -1 :  0 );
+
+    dofill_.doFill_ = 0;
 }
 
 void settings::dumpAll(){
@@ -248,71 +265,73 @@ void settings::dumpAll(){
 
     if (print_inputs) {
         printf("Input settings:\n");
-        dumpD("rmass           ", rmass               );
-        dumpD("rwidth          ", rwidth              );
-        dumpD("ylow            ", ylow                );
-        dumpD("yhigh           ", yhigh               );
-        dumpD("mlow            ", mlow                );
-        dumpD("mhigh           ", mhigh               );
-        dumpI("intDimRes       ", intDimRes           );
-        dumpB("int2d           ", int2d               );
-        dumpB("int3d           ", int3d               );
-        dumpB("int4d           ", int4d               );
-        dumpB("intDimCT        ", intDimCT            );
-        dumpB("ctint3d         ", ctint3d             );
-        dumpB("ctintvegas      ", ctintvegas          );
-        dumpB("doRES           ", doRES               );
-        dumpB("doCT            ", doCT                );
-        dumpB("doREAL          ", doREAL              );
-        dumpB("doVIRT          ", doVIRT              );
-        dumpB("doLO            ", doLO                );
-        dumpI("cubaverbosity   ", cubaverbosity       );
-        dumpI("cubacores       ", cubacores           );
-        dumpI("niterRES        ", niterRES            );
-	dumpI("niterCT         ", niterCT             );
-        dumpD("vegasncallsRES  ", vegasncallsRES      );
-        dumpD("vegasncallsCT   ", vegasncallsCT       );
-        dumpD("vegasncallsLO   ", vegasncallsLO       );
-        dumpD("vegasncallsREAL ", vegasncallsREAL     );
-        dumpD("vegasncallsVIRT ", vegasncallsVIRT     );
-        dumpB("makelepcuts     ", makelepcuts         );
-        dumpB("cubaint         ", cubaint             );
-        dumpB("trapezint       ", trapezint           );
-        dumpB("quadint         ", quadint             );
-        dumpI("suavepoints     ", suavepoints         );
-        dumpI("nphitrape       ", nphitrape           );
-        dumpI("quadnphi        ", quadnphi            );
-        dumpI("ncstart         ", ncstart             );
-        dumpB("qtrec_naive     ", qtrec_naive         );
-        dumpB("qtrec_cs        ", qtrec_cs            );
-        dumpB("qtrec_kt0       ", qtrec_kt0           );
-        dumpB("timeprofile     ", timeprofile         );
-        dumpB("verbose         ", verbose             );
-        dumpI("approxpdf       ", opts_.approxpdf_    );
-        dumpI("pdfintervals    ", opts_.pdfintervals_ );
+        dumpD("rmass              ", rmass               );
+        dumpD("rwidth             ", rwidth              );
+        dumpD("ylow               ", ylow                );
+        dumpD("yhigh              ", yhigh               );
+        dumpD("mlow               ", mlow                );
+        dumpD("mhigh              ", mhigh               );
+        dumpI("intDimRes          ", intDimRes           );
+        dumpB("int2d              ", int2d               );
+        dumpB("int3d              ", int3d               );
+        dumpB("int4d              ", int4d               );
+        dumpI("intDimCT           ", intDimCT            );
+        dumpB("ctint2d            ", ctint2d             );
+        dumpB("ctint3d            ", ctint3d             );
+        dumpB("ctintvegas         ", ctintvegas          );
+        dumpB("doRES              ", doRES               );
+        dumpB("doCT               ", doCT                );
+        dumpB("doREAL             ", doREAL              );
+        dumpB("doVIRT             ", doVIRT              );
+        dumpB("doLO               ", doLO                );
+        dumpI("cubaverbosity      ", cubaverbosity       );
+        dumpI("cubacores          ", cubacores           );
+        dumpI("niterRES           ", niterRES            );
+        dumpI("niterCT            ", niterCT             );
+        dumpD("vegasncallsRES     ", vegasncallsRES      );
+        dumpD("vegasncallsCT      ", vegasncallsCT       );
+        dumpD("vegasncallsLO      ", vegasncallsLO       );
+        dumpD("vegasncallsREAL    ", vegasncallsREAL     );
+        dumpD("vegasncallsVIRT    ", vegasncallsVIRT     );
+        dumpB("makelepcuts        ", makelepcuts         );
+        dumpB("cubaint            ", cubaint             );
+        dumpB("trapezint          ", trapezint           );
+        dumpB("quadint            ", quadint             );
+        dumpI("suavepoints        ", suavepoints         );
+        dumpI("nphitrape          ", nphitrape           );
+        dumpI("quadnphi           ", quadnphi            );
+        dumpI("ncstart            ", ncstart             );
+        dumpB("qtrec_naive        ", qtrec_naive         );
+        dumpB("qtrec_cs           ", qtrec_cs            );
+        dumpB("qtrec_kt0          ", qtrec_kt0           );
+        dumpB("timeprofile        ", timeprofile         );
+        dumpB("verbose            ", verbose             );
+        dumpB("HackBinnerToFiller ", HackBinnerToFiller  );
+        dumpI("approxpdf          ", opts_.approxpdf_    );
+        dumpI("pdfintervals       ", opts_.pdfintervals_ );
     }
 
     if (print_masses){
         printf("Masses and EW constants:\n");
-        dumpD ( "md        " , masses_   . md_        );
-        dumpD ( "mu        " , masses_   . mu_        );
-        dumpD ( "ms        " , masses_   . ms_        );
-        dumpD ( "mc        " , masses_   . mc_        );
-        dumpD ( "mb        " , masses_   . mb_        );
-        dumpD ( "mt        " , masses_   . mt_        );
-        dumpD ( "mel       " , masses_   . mel_       );
-        dumpD ( "mmu       " , masses_   . mmu_       );
-        dumpD ( "mtau      " , masses_   . mtau_      );
-        dumpD ( "hmass     " , masses_   . hmass_     );
-        dumpD ( "hwidth    " , masses_   . hwidth_    );
-        dumpD ( "wmass     " , masses_   . wmass_     );
-        dumpD ( "wwidth    " , masses_   . wwidth_    );
-        dumpD ( "zmass     " , masses_   . zmass_     );
-        dumpD ( "zwidth    " , masses_   . zwidth_    );
-        dumpD ( "twidth    " , masses_   . twidth_    );
-        dumpD ( "mtausq    " , masses_   . mtausq_    );
-        dumpD ( "mcsq      " , masses_   . mcsq_      );
-        dumpD ( "mbsq      " , masses_   . mbsq_      );
+        dumpD ( "md        " , dymasses_   . md_        );
+        dumpD ( "mu        " , dymasses_   . mu_        );
+        dumpD ( "ms        " , dymasses_   . ms_        );
+        dumpD ( "mc        " , dymasses_   . mc_        );
+        dumpD ( "mb        " , dymasses_   . mb_        );
+        dumpD ( "mt        " , dymasses_   . mt_        );
+        dumpD ( "mel       " , dymasses_   . mel_       );
+        dumpD ( "mmu       " , dymasses_   . mmu_       );
+        dumpD ( "mtau      " , dymasses_   . mtau_      );
+        dumpD ( "hmass     " , dymasses_   . hmass_     );
+        dumpD ( "hwidth    " , dymasses_   . hwidth_    );
+        dumpD ( "wmass     " , dymasses_   . wmass_     );
+        dumpD ( "wwidth    " , dymasses_   . wwidth_    );
+        dumpD ( "zmass     " , dymasses_   . zmass_     );
+        dumpD ( "zwidth    " , dymasses_   . zwidth_    );
+        dumpD ( "twidth    " , dymasses_   . twidth_    );
+        dumpD ( "mtausq    " , dymasses_   . mtausq_    );
+        dumpD ( "mcsq      " , dymasses_   . mcsq_      );
+        dumpD ( "mbsq      " , dymasses_   . mbsq_      );
         dumpD ( "Gf_inp    " , ewinput_  . Gf_inp_    );
         dumpD ( "aemmz_inp " , ewinput_  . aemmz_inp_ );
         dumpD ( "xw_inp    " , ewinput_  . xw_inp_    );
@@ -484,7 +503,7 @@ InputParser::InputParser( string _filename, string _charset, string _white):
 {
     // parse default
     try {
-        parse_file("input/default.in");
+      parse_file((string)SHAREDIR+"/default.in");
     } catch (invalid_argument &e1){
         try {
             parse_file("default.in");

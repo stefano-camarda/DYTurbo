@@ -1,14 +1,38 @@
-AC_INIT([dyturbo], [0.9], [stefano.camarda@cern.ch,jakub.cuth@cern.ch])
+AC_INIT([dyturbo], [0.9.1], [stefano.camarda@cern.ch,jakub.cuth@cern.ch])
+AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE([foreign -Wall -Werror])
+
+#Suppress verbose output when compiling
+m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 #By default, install binaries in the current directory
 AC_PREFIX_DEFAULT(${PWD})
 
-#CXXFLAGS="${CXXFLAGS} -O3"
-#FFLAGS="${FFLAGS} -O3"
+AC_PROG_CC
+m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 
-#CXXFLAGS="${CXXFLAGS} -Ofast"
-#FFLAGS="${FFLAGS} -Ofast"
+#Use libtoolize to build dyturbo libraries
+#AM_PROG_LIBTOOL
+LT_INIT
+AC_CONFIG_MACRO_DIR([m4])
+
+#optimisation flags O3
+AC_ARG_ENABLE([O3],
+  [AC_HELP_STRING(--enable-O3, [Use compiler optimization flags -O3. (default=no)])])
+if test x$enable_O3 == xyes
+then
+  CXXFLAGS="${CXXFLAGS} -O3"
+  FFLAGS="${FFLAGS} -O3"
+fi
+
+#optimisation flags, O3 or Ofast
+AC_ARG_ENABLE([Ofast],
+  [AC_HELP_STRING(--enable-Ofast, [Use unsafe compiler optimization flags -Ofast. (default=no)])])
+if test x$enable_Ofast == xyes
+then
+  CXXFLAGS="${CXXFLAGS} -Ofast"
+  FFLAGS="${FFLAGS} -Ofast"
+fi
 
 #c++11 flag is needed for the random number generator function
 #CXXFLAGS="${CXXFLAGS} -std=c++11"
@@ -16,24 +40,21 @@ AC_PREFIX_DEFAULT(${PWD})
 #older compilers needs c++0x instead
 CXXFLAGS="${CXXFLAGS} -std=c++0x"
 
+#use intel compilers
+#AC_ARG_ENABLE([ifort],
+#  [AC_HELP_STRING(--enable-ifort, [Use ifort2015 and icc2015 compilers. (default=no)])])
+#if test x$enable_ifort == xyes
+#then
+#  AC_PROG_CXX([icc2015])
+#  AC_PROG_F77([ifort2015])
+#  AC_PROG_FC([ifort2015])
+#else  
+##use gfortran compilers
+# AC_PROG_CXX
+# AC_PROG_F77([gfortran])
+# AC_PROG_FC
+#fi
 
-#optimisation flags, O3 or Ofast (set this by passing options to configure)
-#: ${CXXFLAGS+=-O3}
-#: ${FFLAGS=-O3}
-
-#: ${CXXFLAGS=-Ofast}
-#: ${FFLAGS=-Ofast}
-
-AC_PROG_CC
-AC_PROG_RANLIB
-#AM_PROG_AR
-
-#use intel compilers (set this by passing options to configure)
-#AC_PROG_CXX([icc2015])
-#AC_PROG_F77([ifort2015])
-#AC_PROG_FC([ifort2015])
-
-#use gfortran compilers
 AC_PROG_CXX
 AC_PROG_F77([gfortran])
 AC_PROG_FC
@@ -72,7 +93,9 @@ if test x$cubalib == x; then
 fi
 
 AC_MSG_RESULT([Using ${PWD}/Cuba-4.2 ])
-CUBA_LDFLAGS="-L ${PWD}/Cuba-4.2 -lcuba"
+CUBA_CPPFLAGS="-I${PWD}/Cuba-4.2"
+CUBA_LDFLAGS="-L${PWD}/Cuba-4.2 -lcuba"
+AC_SUBST(CUBA_CPPFLAGS)
 AC_SUBST(CUBA_LDFLAGS)
 cubadir="${PWD}/Cuba-4.2"
 AC_MSG_RESULT([Using $cubadir])
@@ -136,6 +159,5 @@ if test x$enable_checkBounds == xyes; then
 fi
 
 
-AC_CONFIG_HEADERS([config.h])
-AC_CONFIG_FILES([Makefile src/Makefile dyres/Makefile lib/Makefile ])
+AC_CONFIG_FILES([Makefile src/Makefile dyres/Makefile cernlib/Makefile dyturbo-config])
 AC_OUTPUT

@@ -1,3 +1,4 @@
+#include "config.h"
 #include <iostream>
 #include <LHAPDF/LHAPDF.h>
 #include <gsl/gsl_integration.h>
@@ -5,7 +6,6 @@
 #include <sys/time.h>
 #include <cuba.h>
 #include <iomanip>
-#include "config.h"
 
 #include "integr.h"
 #include "settings.h"
@@ -33,6 +33,8 @@ void normalise_result(double &value, double &error);
 
 double clock_real();
 
+double TotXSec ;
+
 int main( int argc , const char * argv[])
 {
 
@@ -59,6 +61,7 @@ int main( int argc , const char * argv[])
   }
   opts.readfromfile(conf_file.c_str());
   opts.initDyresSettings();
+  gaussinit_();
   dyinit_();
   //  setup_();
   //bins.init();
@@ -92,7 +95,10 @@ int main( int argc , const char * argv[])
   costh = -1.0; m = 110; qt = 20; y = -2.5;
   test_resum_speed(costh,m,qt,y,mode);
 
-  costh = 0.1; m = 91; qt = 5; y = 1.5;
+  costh = 0.1; m = 91; qt = 5; y = 3.5;
+  test_resum_speed(costh,m,qt,y,mode);
+
+  costh = 0.1; m = 91; qt = 5; y = 4.0;
   test_resum_speed(costh,m,qt,y,mode);
 
   costh = 0.1; m = 91; qt = 5; y = 0.2;
@@ -153,6 +159,7 @@ int main( int argc , const char * argv[])
 
   print_head();
   begin_time = clock_real();
+  TotXSec = 0.;
   for (vector<double>::iterator yit = bins.ybins.begin(); yit != bins.ybins.end()-1; yit++)
   {
       for (vector<double>::iterator qit = bins.qtbins.begin(); qit != bins.qtbins.end()-1; qit++)
@@ -184,7 +191,8 @@ int main( int argc , const char * argv[])
       // counter term
       if (opts.doCT) {
           double b_time = clock_real();
-          if (opts.ctint3d) ctintegr3d(value, error);
+	  if (opts.ctint2d) ctintegr2d(value, error);
+	  if (opts.ctint3d) ctintegr3d(value, error);
           if (opts.ctintvegas) ctintegr(value, error);
           double e_time = clock_real();
           normalise_result(value,error);
@@ -238,7 +246,7 @@ int main( int argc , const char * argv[])
   cout << endl;
   cout << setw(10) << "time "  << setw(15) << float(end_time - begin_time) << endl;
 
-  hists.Finalise();
+  hists.Finalise(TotXSec);
 
   return 0;
 }
@@ -256,6 +264,7 @@ void test_resum_speed(double costh,double m,double qt,double y,int mode){
 
 
 void normalise_result(double &value, double &error){
+    TotXSec+=value;
     value /= qtmax - qtmin;
     error /= qtmax - qtmin;
     //value /= ymax  - ymin;

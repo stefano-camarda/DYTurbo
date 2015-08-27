@@ -79,9 +79,17 @@ c     temporary variables
       double precision pi
       parameter(pi=3.14159265358979d0)
       integer nf
+      
+      include 'quadrules.f'
+      integer nmax
 c      include 'const.h' 
 c      include 'constants.f' 
-
+      if (approxpdf.eq.1) then
+         nmax = 88
+      else
+         nmax = mdim
+      endif
+      
 C...  ANOMALOUS DIMENSIONS AND RELATED QUANTITIES IN LEADING ORDER :
       F = 5
       NF = F
@@ -89,7 +97,7 @@ C...  ANOMALOUS DIMENSIONS AND RELATED QUANTITIES IN LEADING ORDER :
       B04 = 11.- 2./3.* F
       B02 = 2.* B04
       do s=1,2
-         do I=1,136
+         do I=1,nmax
             if (s.eq.1) then
                QQI = QQIp(I)                    
                QGF = QGFp(I) 
@@ -538,10 +546,8 @@ c******************************************
       implicit none
       double precision ymin, ymax
       
-      integer approxpdf,pdfintervals
-      common/opts/approxpdf,pdfintervals
-
-      include 'gauss.inc' 
+      include 'quadrules.f'
+      include 'gauss.f'
 
       double precision ax1,ax2,xx1,xx2
       integer nmax1,nmax2
@@ -558,33 +564,109 @@ c******************************************
       double precision y,xc,xm,ya,yb
       
 c     output      
-      integer intervals
-      parameter (intervals=20)
-      complex *16 cfpy(136,136,4*intervals)
-      complex *16 cfmy(136,136,4*intervals)
+      complex *16 cfpy(136,136,yrule*yintervals)
+      complex *16 cfmy(136,136,yrule*yintervals)
       common /cachedrapint/ cfpy,cfmy
       
-      NMAX1 = 88
-      NMAX2 = 88
+      NMAX1 = mdim
+      NMAX2 = mdim
 
-      do i=1,intervals
-         ya = ymin+(ymax-ymin)*(i-1)/intervals
-         yb = ymin+(ymax-ymin)*i/intervals
+      do i=1,yintervals
+         ya = ymin+(ymax-ymin)*(i-1)/yintervals
+         yb = ymin+(ymax-ymin)*i/yintervals
          xc=0.5d0*(ya+yb)
          xm=0.5d0*(yb-ya)
-         do j=1,4
-            y=xc+xm*xxx4(j)
-      do I1 = 1, NMAX1          !136
-         do I2 = 1, NMAX2       !136
-            cfpy(I1,I2,j+(i-1)*4)=exp((-Np(I1)+Np(I2))*y)
-     .           *WN(I1)*WN(I2)*www4(j)*xm
-            cfmy(I1,I2,j+(i-1)*4)=exp((-Np(I1)+Nm(I2))*y)
-     .           *WN(I1)*WN(I2)*www4(j)*xm
+         do j=1,yrule
+            y=xc+xm*xxx(yrule,j)
+      do I1 = 1, NMAX1
+         do I2 = 1, NMAX2
+            cfpy(I1,I2,j+(i-1)*yrule)=exp((-Np(I1)+Np(I2))*y)
+     .           *WN(I1)*WN(I2)*www(yrule,j)*xm
+            cfmy(I1,I2,j+(i-1)*yrule)=exp((-Np(I1)+Nm(I2))*y)
+     .           *WN(I1)*WN(I2)*www(yrule,j)*xm
          enddo
       enddo
 
       enddo
       enddo
       
+      return
+      end
+
+c n=8 gaussian quadrature
+      subroutine initmellingauss
+      implicit none
+      double precision min,max
+      double precision a,b,c,m,x,t,jac
+      integer i,j
+      double precision CPOINT,PHI
+      double precision CO,SI
+      
+      include 'quadrules.f'
+      include 'gauss.f'
+      
+c      output: weights and nodes for gaussian quadrature
+      double precision WN(136)
+      complex*16 Np(136),Nm(136),CCp,CCm
+      common/WEIGHTS2/WN
+      common/MOMS2/Np,Nm,CCP,CCm
+c     CPOINT is the starting point on the real axis for the positive and negative part of the integration path
+c     PHI is the angle in the complex plane of the positive part of the integration path
+       
+c     CPOINT = 2.3d0
+
+c     Original settings
+c          CPOINT = 1d0
+c          PHI = 3.141592654 * 3./4.
+c     Modified settings to allow numerical integration of PDFs melling moment (need real part of moments always > 0)
+      CPOINT = 1d0
+      PHI = 3.141592654 * 1./2.
+      
+      min = 0
+c     upper limit for the mellin integration in the complex plane (z). Above 50 the integral becomes unstable (precision issue?)
+      max = 27d0
+      
+c     initialise to 0
+      do i=1,mdim
+         Np(i)=cmplx(CPOINT+1d0,0d0)
+         Nm(i)=cmplx(CPOINT+1d0,0d0)
+         WN(i)=0
+      enddo
+
+c positive branch      
+      CO = dcos(PHI)
+      SI = dsin(PHI)
+      CCp = cmplx(CO, SI)
+      do i=1,mellinintervals
+         a = 0d0+(1d0-0d0)*(i-1)/mellinintervals
+         b = 0d0+(1d0-0d0)*i/mellinintervals
+         c=0.5d0*(a+b)
+         m=0.5d0*(b-a)
+         do j=1,mellinrule
+            x=c+m*xxx(mellinrule,j)
+            t=min+(max-min)*x
+            jac=max-min
+            Np(j+(i-1)*mellinrule)=cmplx(CPOINT+CO*t+1d0,SI*t)
+            WN(j+(i-1)*mellinrule)=www(mellinrule,j)*m*jac
+c            print *,t,Np(j+(i-1)*mellinrule),WN(j+(i-1)*mellinrule)
+         enddo
+      enddo
+      
+c negative branch
+      CO = dcos(PHI)
+      SI = -dsin(PHI)
+      CCm = cmplx(CO, SI)
+      do i=1,mellinintervals
+         a = 0d0+(1d0-0d0)*(i-1)/mellinintervals
+         b = 0d0+(1d0-0d0)*i/mellinintervals
+         c=0.5d0*(a+b)
+         m=0.5d0*(b-a)
+         do j=1,mellinrule
+            x=c+m*xxx(mellinrule,j)
+            t=min+(max-min)*x
+            Nm(j+(i-1)*mellinrule)=cmplx(CPOINT+CO*t+1d0,SI*t)
+         enddo
+      enddo
+
       return
       end

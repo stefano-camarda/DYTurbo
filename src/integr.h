@@ -7,6 +7,7 @@
 extern "C" {
   void cthmoments_(double &cthmom0, double &cthmom1, double &cthmom2);
   void sety_(double &yy);
+  void setqt_(double &qtt);
   void genv4p_();
 }
 

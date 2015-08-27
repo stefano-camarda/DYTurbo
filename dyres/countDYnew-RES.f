@@ -27,7 +27,7 @@ C
       include 'rescoeff.f'
       include 'dynamicscale.f'
 C
-      integer ih1,ih2,j,k,l,nd,nmax,nmin,nvec,order
+      integer ih1,ih2,j,k,l,nd,nmax,nmin,nvec,order,doFill
       integer nproc
       common/nproc/nproc
       double precision vector(mxdim),W,val,xint
@@ -45,7 +45,7 @@ CC
       double precision q2,qt2,shat,Itilde
       double precision fx10(-nf:nf),fx20(-nf:nf)
       double precision fx1p(-nf:nf),fx2p(-nf:nf)
-      double precision alfa,beta,diff,Pqq,Pqg,Pqqint,Cqq,Cqg
+      double precision alfa,beta,diff,Pqq,dyPqg,Pqqint,Cqq,Cqg
       double precision xjacq2,xjacqt2,xth,x3,almin,almax
       double precision xmio,fluxborn,pswt0,xmioOLD
       double precision shad,yq,zmax,tauh,Vol,y3
@@ -62,7 +62,7 @@ CC
       double precision P2qg,P2qqV,P2qqbV,P2qqS
       double precision diffg10,diffg20,diffc10,diffc20
       double precision diffg1f,diffg2f,diffc1f,diffc2f
-      external Itilde,Pqq,Pqg,Cqq,Cqg,Pqqint,D0int,D1int
+      external Itilde,Pqq,dyPqg,Cqq,Cqg,Pqqint,D0int,D1int
       external Pqqqq,Pqqqg,Pqggq,Pqggg,CqqPqq,CqqPqg,CqgPgq,CqgPgg
       external P2qqV,P2qqbV,P2qg,P2qqS
 
@@ -99,8 +99,11 @@ C
       data first/.true./
       save first,rscalestart,fscalestart
 
+      common/doFill/doFill
       logical binner
       external binner
+      external hists_fill
+
       if (first) then
          first=.false.
          rscalestart=scale
@@ -407,7 +410,7 @@ c     gammaqq and gammaqg: first leg
 
 
       diff=-dlog(xx10)
-     &  *((fx1p(j)-fx10(j)*xx10**beta)*Pqq(z1)*flgq+fx1p(0)*Pqg(z1))
+     &  *((fx1p(j)-fx10(j)*xx10**beta)*Pqq(z1)*flgq+fx1p(0)*dyPqg(z1))
       tH1stF=tH1stF+diff*fx20(k)*msqc(j,k)
       tH1stF=tH1stF-Pqqint(xx10)*fx10(j)*fx20(k)*msqc(j,k)*flgq
 
@@ -415,7 +418,7 @@ c     gammaqq and gammaqg: second leg
 
 
       diff=-dlog(xx20)
-     &  *((fx2p(k)-fx20(k)*xx20**alfa)*Pqq(z2)*flgq+fx2p(0)*Pqg(z2))
+     &  *((fx2p(k)-fx20(k)*xx20**alfa)*Pqq(z2)*flgq+fx2p(0)*dyPqg(z2))
       tH1stF=tH1stF+diff*fx10(j)*msqc(j,k)
       tH1stF=tH1stF-Pqqint(xx20)*fx10(j)*fx20(k)*msqc(j,k)*flgq
 
@@ -432,13 +435,13 @@ C     First part: one gamma for each leg: FLGQ here is non trivial ! DONE
      &  - Pqqint(xx10)*fx10(j)
 
 
-      diffg10=-dlog(xx10)*fx1p(0)*Pqg(z1)
+      diffg10=-dlog(xx10)*fx1p(0)*dyPqg(z1)
 
       diffg2f=-dlog(xx20)*(fx2p(k)-fx20(k)*xx20**alfa)*Pqq(z2)
      &  - Pqqint(xx20)*fx20(k)
 
 
-      diffg20=-dlog(xx20)*fx2p(0)*Pqg(z2)
+      diffg20=-dlog(xx20)*fx2p(0)*dyPqg(z2)
 
 
       tgaga=tgaga+2*
@@ -689,7 +692,10 @@ c---if we're binning, add to histo too
         npart=npart+1
         endif
 
-     
+C     Fill only if it's last iteration
+      if (doFill.ne.0) then
+          call hists_fill(p(3,:),p(4,:),xint*wgt)
+      endif
       countint=xint
      
       xreal=xreal+xint*wgt/dfloat(itmx)
@@ -719,10 +725,10 @@ CC qq splitting function (with asopi normalization)
 
 CC qg splitting function (with asopi normalization)
 
-      function Pqg(z)
+      function dyPqg(z)
       implicit none
-      real *8 Pqg,z
-      Pqg=0.25d0*(1-2*z*(1-z))
+      real *8 dyPqg,z
+      dyPqg=0.25d0*(1-2*z*(1-z))
       return
       end
 
@@ -814,15 +820,15 @@ CC Full Pqg*Pgg (checked !)
 
       function Pqggg(z)
       implicit none
-      real *8 Pqggg,z,beta0,Pqg
+      real *8 Pqggg,z,beta0,dyPqg
       integer nf
-      external Pqg
+      external dyPqg
       nf=5
       beta0=(33-2*nf)/12d0
       Pqggg=1.5d0*(1/3d0/z+(z**2-z+0.5d0)*dlog(1-z)
      &     +(2*z+0.5d0)*dlog(z)+0.25d0+2*z-31d0/12*z**2)
 
-      Pqggg=Pqggg+beta0*Pqg(z)
+      Pqggg=Pqggg+beta0*dyPqg(z)
       return
       end
 
@@ -927,19 +933,19 @@ C    Pqg Singlet: Eq. (4.110) ESW (ESW Pqg is 4 times my Pqg)
 
       function P2qg(x)
       implicit none
-      real *8 x,P2qg,Pqg,pi,S2,logx,logomxsx
-      external Pqg,S2
+      real *8 x,P2qg,dyPqg,pi,S2,logx,logomxsx
+      external dyPqg,S2
 
       pi=3.14159265358979d0
       logx=dlog(x)
       logomxsx=dlog((1-x)/x)
 
       P2qg=2d0/3*(4-9*x-(1-4*x)*logx-(1-2*x)*logx**2+4*dlog(1-x)
-     &    +(2*logomxsx**2-4*logomxsx-2d0/3*pi**2+10d0)*4*Pqg(x))
+     &    +(2*logomxsx**2-4*logomxsx-2d0/3*pi**2+10d0)*4*dyPqg(x))
      &    +1.5d0*(182d0/9+14d0/9*x+40d0/9/x+(136d0/3*x-38d0/3)*logx
-     &    -4*dlog(1-x)-(2+8*x)*logx**2+8*Pqg(-x)*S2(x)
+     &    -4*dlog(1-x)-(2+8*x)*logx**2+8*dyPqg(-x)*S2(x)
      &    +(-logx**2+44d0/3*logx-2*dlog(1-x)**2+4*dlog(1-x)+pi**2/3
-     &    -218d0/9)*4*Pqg(x))
+     &    -218d0/9)*4*dyPqg(x))
 
 c     Change to as/pi normalization
 

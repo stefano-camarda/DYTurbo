@@ -41,6 +41,7 @@ C
       write(*,*) 'C                                                  C'
 
       call setup
+C     Initialize filling control
 
 C Initialize efficiency variables      
       njetzero=0
@@ -82,6 +83,7 @@ C Set-up incoming beams and PS integration cut-offs
       p(j,k)=0d0
       enddo
       enddo 
+
 
            
 

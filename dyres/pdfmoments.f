@@ -7,37 +7,34 @@ C     Computes the complex N Mellin moments of pdfs
       integer ih1,ih2
       common/collider/ih1,ih2
 
+      include 'gauss.f'
+      include 'facscale.f'
+      include 'quadrules.f'
+      
       complex(8) UV,DV,US,DS,SS,GL,CH,BO
 
       real(8) fx(-5:5)
       real(8) fxtemp(-2:2)
       real (8) mu
 
-      real(8) x
-
-      real(8) xmin,xmax,xc,xm,xa,xb
-
-      include 'gauss.inc'
-
-      integer intervals,i,j
+      integer i,j
       double precision muf
+      double precision xmin,xmax
+      double precision a,b,c,m,x,t,jac
 
-      integer approxpdf,pdfintervals
-      common/opts/approxpdf,pdfintervals
-      
 c     select beam
       if (beam.eq.1) then
          hadron = ih1
       elseif (beam.eq.2) then
-         hadron = ih1
+         hadron = ih2
       endif
 c     factorization scale
-      muf=91.1876d0
+      muf=facscale
 c     muf=2D0
 
 c     boundaries of integration      
-      xa = 1D-10
-      xb = 1
+      xmin = 1D-8
+      xmax = 1
 
 c     initialise
       uv = 0d0
@@ -48,33 +45,27 @@ c     initialise
       gl = 0d0
       ch = 0d0
       bo = 0d0
-      
 
-      intervals=pdfintervals
-      do i=1,intervals
-         xmin = xa*((xb/xa)**(real(i-1, 8)/real(intervals,8)))
-         xmax = xa*((xb/xa)**(real(i,8)/real(intervals,8)))
-c         xmin = xa+(xb-xa)*(i-1)/intervals
-c         xmax = xa+(xb-xa)*i/intervals
-         xc=0.5d0*(xmin+xmax)
-         xm=0.5d0*(xmax-xmin)
-
-         do j=1,24
-            x=xc+xm*xxx24(j)
-            call fdist(hadron,x,muf,fx)
+      do i=1,pdfintervals
+         a = 0d0+(1d0-0d0)*(i-1)/pdfintervals
+         b = 0d0+(1d0-0d0)*i/pdfintervals
+         c=0.5d0*(a+b)
+         m=0.5d0*(b-a)
+         do j=1,pdfrule
+            x=c+m*xxx(pdfrule,j)
+            t=xmin*(xmax/xmin)**x
+            jac=t*log(xmax/xmin)
+            call fdist(hadron,t,muf,fx)
             
-c     call distributions1(x,fx(1),fx(2),fx(-1),fx(-2),
-c     .           fx(3),fx(0),fx(4),fx(5))
-
 c     integral_0^1{ x^(N-1) fx dx}
-            uv = uv+x**(N-1)*(fx(2)-fx(-2))*www24(j)*xm
-            dv = dv+x**(N-1)*(fx(1)-fx(-1))*www24(j)*xm
-            us = us+x**(N-1)*(fx(-1))*www24(j)*xm
-            ds = ds+x**(N-1)*(fx(-2))*www24(j)*xm
-            ss = ss+x**(N-1)*(fx(-3))*www24(j)*xm
-            gl = gl+x**(N-1)*(fx(0))*www24(j)*xm
-            ch = ch+x**(N-1)*(fx(-4))*www24(j)*xm
-            bo = bo+x**(N-1)*(fx(-4))*www24(j)*xm
+            uv = uv+t**(N-1)*(fx(2)-fx(-2))*www(pdfrule,j)*jac*m
+            dv = dv+t**(N-1)*(fx(1)-fx(-1))*www(pdfrule,j)*jac*m
+            us = us+t**(N-1)*(fx(-1))*www(pdfrule,j)*jac*m
+            ds = ds+t**(N-1)*(fx(-2))*www(pdfrule,j)*jac*m
+            ss = ss+t**(N-1)*(fx(-3))*www(pdfrule,j)*jac*m
+            gl = gl+t**(N-1)*(fx(0))*www(pdfrule,j)*jac*m
+            ch = ch+t**(N-1)*(fx(-4))*www(pdfrule,j)*jac*m
+            bo = bo+t**(N-1)*(fx(-5))*www(pdfrule,j)*jac*m
          enddo
       enddo
 c      print *,'doub'
@@ -190,12 +181,13 @@ c     Gaussian nodes of the integration contour in the complex plane
       COMMON / MOMS2    / Np,Nm,CCP,CCm
 
       common/NFITMAX/NFITMAX
+      include 'quadrules.f'
 
       Write(6,*)'Initialise PDF moments with numerical integration'
       NFITMAX = 14
 c     calculate Mellin moments of PDFs
 c     Beam 1        
-      do k=1,88
+      do k=1,mdim
 C     positive branch
          XN=Np(k)  
          call pdfmoments(1,XN,uval,dval,usea,dsea,ssea,glu,charm,bot)
@@ -234,7 +226,7 @@ c     negative branch
       enddo
 
 c     Beam 2
-      do k=1,88
+      do k=1,mdim
 c     positive branch
          XN=Np(k)  
          call pdfmoments(2,XN,uval,dval,usea,dsea,ssea,glu,charm,bot)
@@ -264,7 +256,7 @@ c     negative branch
       enddo
 
 c     calculate Mellin moments of anomalous dimensions
-      do k=1,88
+      do k=1,mdim
 c     positive branch
          XN=Np(k)  
          CALL ANCALC (QQI, QGF, GQI, GGI, GGF, NS1MI, NS1PI, NS1F,

@@ -185,13 +185,66 @@ def w_pt():
     pass
 
 
+# add by hand
+# dyturbo_z0_lhc7_CT10nnlo_9_qt1214y12_100101
+# |    12 -    14 |     1 -     2 |   -2585.71 +/-0.000531072 (   1360.85s) | -2585.71 +/-0.000531072 (   1360.85s) |
+# dyturbo_z0_lhc7_CT10nnlo_12_qt1416y22.4_100101
+# |    14 -    16 |     2 -   2.4 |   -187.808 +/-1.76105e-06 (   1353.08s) | -187.808 +/-1.76105e-06 (   1353.08s) |
+
+def getHistRename(name,fname,hname):
+    ff = TFile(fname,"READ")
+    o = ff.Get(hname)
+    h = o.Clone(name)
+    h.SetTitle(name)
+    h.SetDirectory(0)
+    return h
+
+def fixJob(hist, binX, binY, val, err):
+    bin = hist.FindBin(binX,binY)
+    print "BEFORE ", hist.GetBinContent (bin), hist.GetBinError   (bin)
+    hist.SetBinContent (bin, val)
+    hist.SetBinError   (bin, err)
+    print "AFTER ", hist.GetBinContent (bin), hist.GetBinError   (bin)
+    return hist
+
+def merge_all_hist():
+    hlist = list()
+    for merge in ["RESUM", "CT"] :
+        for variation in [str(x) for x in range(0,51)] + ["g_05", "g_15", "as_0117", "as_0119"]:
+            fname = "results_merge/dyturbo_z0_lhc7_CT10nnlo_{0}_qtyMerge{1}_100101.root".format(variation,merge)
+            hname = "qt_y_{0}".format(merge.lower())
+            name = hname+"_"+variation
+            h =  getHistRename(name, fname, hname)
+            if "CT" in merge :
+                if "9" == variation :
+                    h = fixJob(h,13,1.5,-2585.71,0.000531072)
+                if "12" == variation :
+                    h = fixJob(h,15,2.2,-187.808 , 1.76105e-06)
+            hlist.append ( h )
+            pass
+        pass
+    # write outfile
+    ff = TFile.Open("results_merge/merge_RESUM_CT.root","RECREATE")
+    for h in hlist :
+        h.Write()
+        pass
+    ff.Write()
+    ff.Close()
+    pass
+
+
+
 ## Documentation for main
 #
 # More details. 
 if __name__ == '__main__' :
     #print_results();
+<<<<<<< HEAD
     #print_table();
     w_pt();
+=======
+    merge_all_hist()
+>>>>>>> f3cb52dbc7874f7d13a343eb67beb8b0b9029ff1
     #plot_pt("results/pt_table_CT10nnlo.txt")
     pass
 

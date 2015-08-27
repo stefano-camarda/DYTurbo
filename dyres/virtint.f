@@ -34,7 +34,7 @@ CC
       common/count/qt2,qq2,shat
 CC
 
-      integer ih1,ih2,j,k,cs,nvec,is,ia,ib,ic
+      integer ih1,ih2,j,k,cs,nvec,is,ia,ib,ic,doFill
       double precision p(mxpart,4),pjet(mxpart,4),r(mxdim),W,sqrts,xmsq,
      . val,fx1(-nf:nf),fx2(-nf:nf),fx1z(-nf:nf),fx2z(-nf:nf)
       double precision pswt,xjac,rscalestart,fscalestart,
@@ -54,6 +54,7 @@ CC
       common/mypart/mypart
       integer nproc
       common/nproc/nproc
+      common/doFill/doFill
 
       data p/48*0d0/
       data nshot/1/
@@ -61,6 +62,7 @@ CC
       save first,rscalestart,fscalestart
       logical binner
       external binner
+      external hists_fill
 
       if (first) then
          first=.false.
@@ -421,6 +423,10 @@ c          write(6,*) 'Poles cancelled!'
       call dotem(nvec,pjet,s)
 
 
+C     Fill only if it's last iteration
+      if (doFill.ne.0) then
+          call hists_fill(p(3,:),p(4,:),virtint*wgt)
+      endif
       val=virtint*wgt 
 c--- update the maximum weight so far, if necessary
       if (val .gt. wtmax) then

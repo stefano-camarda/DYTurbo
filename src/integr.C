@@ -340,6 +340,7 @@ void setm(double mm) {_m = mm;}
 void sety(double yy) {_y = yy;}
 void sety_(double &yy) {_y = yy;}
 void setqt(double qtt) {_qt = qtt;}
+void setqt_(double &qtt) {_qt = qtt;}
 
 double resy(double y, void* param)
 {

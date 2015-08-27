@@ -2,7 +2,9 @@ Cuba-4.2/
 lhapdf6/
 *.root
 *.o
+*.lo
 *.a
+*.la
 *.pyc
 *~
 *.swp
@@ -33,4 +35,16 @@ scripts/infiles
 results
 results_merge
 run_dir
+run_dir2
 share
+
+ar-lib
+config.guess
+config.sub
+lib/
+libtool
+ltmain.sh
+m4/
+src/.libs/
+dyturbo-config
+.deps/

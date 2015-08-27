@@ -14,6 +14,8 @@ extern "C" {
     void setup_();
     void dyinit_();
     void pdfini_();
+    void gaussinit_();
+    double dyalphas_(double &q, double &amz, int &nloop);
     bool cuts_(double p[4][12], int &njet);
 
     void breitw_(double& x1, double& mminsq, double& mmaxsq, double& rmass, double& rwidth, double& msq, double& wt);
@@ -22,6 +24,9 @@ extern "C" {
     void rapintegrals_(double &ymin,double &ymax, double& mass, int& nocuts);
     void cacheyrapint_(double &ymin,double &ymax);
 
+    void ctqtint_(double &m, double &y, double &qtmin, double &qtmax);
+
+    void initmoments_();
     // fortran common spaces
 
     // z coupling
@@ -62,7 +67,7 @@ extern "C" {
         double mtausq_;
         double mcsq_;
         double mbsq_;
-    } masses_;
+    } dymasses_;
 
     // ewinput
     extern struct {
@@ -86,6 +91,14 @@ extern "C" {
         double Vcs_;
         double Vcb_;
     } cabib_;
+
+    //QCD coupling
+    extern struct {
+      double gsq_;
+      double as_;
+      double ason2pi_;
+      double ason4pi_;
+    } qcdcouple_;
 
     // H+b mb msbar value
     extern struct {
@@ -213,6 +226,10 @@ extern "C" {
     double xqtcut_;
     } qtcut_;
 
+  extern struct {
+    int doFill_;
+    } dofill_;
+
 
   double realvirt2_(double r[22], double &wgt);
 
@@ -224,6 +241,7 @@ extern "C" {
   double countterm_(double &costh, double &mm, double &qtt, double &yy, int &mode);
 
   int binner_(double p3[4], double p4[4]);
+  void hists_fill_(double p3[4], double p4[4], double weight);
 }
 
 #endif

@@ -100,11 +100,12 @@ C     Cuts for W production
       endif
 
       if((nproc.eq.1).or.(nproc.eq.2)) then
-       if(pte.lt.30d0) cuts=.true.
-       if(ptmiss.lt.30d0) cuts=.true.
-       if(dabs(etae).gt.2.4d0) cuts=.true.
-       if(tmass.lt.60d0) cuts=.true.
-       if(pt34.gt.30d0) cuts=.true.
+!       if(pte.lt.30d0) cuts=.true.
+!       if(ptmiss.lt.30d0) cuts=.true.
+!       if(dabs(etae).gt.2.4d0) cuts=.true.
+!       if(tmass.lt.60d0) cuts=.true.
+!       if(pt34.gt.30d0) cuts=.true.
+       cuts=.false.
       endif
 
 

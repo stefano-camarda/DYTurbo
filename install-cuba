@@ -7,5 +7,6 @@ tar -xzvf Cuba-${version}.tar.gz
 rm Cuba-${version}.tar.gz
 
 cd Cuba-${version}
+sed -i "s/MINSLICE 10/MINSLICE 1/" src/common/Parallel.c
 ./configure
 make

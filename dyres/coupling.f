@@ -1,4 +1,4 @@
-      subroutine coupling
+      subroutine dycoupling
       implicit none
       include 'constants.f'
       include 'masses.f'
@@ -12,7 +12,7 @@
       character*4 part,mypart
       common/part/part
       integer i,order
-      double precision aemmz,alphas,amz,cmass,bmass
+      double precision aemmz,dyalphas,amz,cmass,bmass
       double precision Vud,Vus,Vub,Vcd,Vcs,Vcb
       double precision xsq,topwidth
       character*3 inlabel(10)
@@ -97,7 +97,7 @@ c--- if it hasn't been set by pdfini already
       endif
 
 c--- initialize alpha_s
-      as=alphas(abs(scale),amz,nlooprun)
+      as=dyalphas(abs(scale),amz,nlooprun)
 
       ason2pi=as/twopi
       ason4pi=as/fourpi

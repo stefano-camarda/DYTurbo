@@ -30,6 +30,8 @@ itmxToFile   = 0              # number of last itmx to write on file
 # resonance mass and width (used for breit wigner unweighting)
 rmass  = 91.1876
 rwidth = 2.495
+# include virtual photon
+useGamma = true
 # Set boundaries of integration
 ylow  = -2.4
 yhigh = 2.4
@@ -40,8 +42,7 @@ mhigh = 116.
 intDimRes = 2
 
 # type of integration for counter term
-ctint3d = true
-ctintvegas = false
+intDimCT = 2
 
 # term switches
 doRES  = true
@@ -53,8 +54,8 @@ doLO   = false
 # Cuba settings
 cubaverbosity    = 0   # Cuba info messsages, from 0 to 3
 cubacores        = 0   # parallelization ( 0 = turn off)
-niterRES         = 10   # only for 2d and 3d cuhre integration
-niterCT          = 10   # only for 2d and 3d cuhre integration
+niterRES         = 0   # only for 2d and 3d cuhre integration
+niterCT          = 0   # only for 2d and 3d cuhre integration
 vegasncallsRES   = 0        # only for res 4d vegas integration
 vegasncallsCT    = 1000000 # only for lo 8d vegas integration
 vegasncallsLO    = 0         # only for lo 7d vegas integration
@@ -87,8 +88,9 @@ verbose     = false  # debug and time profile costh phi_lep integration
 # Set to 0 to use exact PDFs and straight line contour in the complex plane for the Mellin inversion
 opts_approxpdf = 0
 # number of intervals for integration of PDF moments, relevant only for opts_approxpdf = 0
-opts_pdfintervals = 100
+opts_pdfintervals = 20
 
 # binning
 
 qtbins = [ 0 2 4 6 8 10 12 14 16 18 22 26 30 34 38 42 46 50 54 60 70 80 100 150 200 300 800 ]
+ybins = [ -2.4 2.4 ]

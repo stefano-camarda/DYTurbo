@@ -8,7 +8,7 @@
       include 'facscale.f'
       include 'nlooprun.f'
 
-      double precision q2,scalemax,amz,alphas
+      double precision q2,scalemax,amz,dyalphas
       common/couple/amz
       
       scale=dsqrt(q2)
@@ -24,7 +24,7 @@ c--- catch absurdly large scales
        
 
 c--- run alpha_s
-      as=alphas(scale,amz,nlooprun)
+      as=dyalphas(scale,amz,nlooprun)
         
       ason2pi=as/twopi
       ason4pi=as/fourpi

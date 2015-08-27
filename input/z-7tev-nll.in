@@ -42,8 +42,7 @@ mhigh = 116.
 intDimRes = 2
 
 # type of integration for counter term
-ctint3d = true
-ctintvegas = false
+intDimCT = 2
 
 # term switches
 doRES  = true
