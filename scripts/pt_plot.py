@@ -77,12 +77,121 @@ def print_results():
         tf.Close()
     pass
 
+from PlotTools import *
+def print_table() :
+    pl = PlotTools()
+    fname = "results_merge/merge_RESUM_CT.root"
+    hname="qt_y_{}_{}"
+    htmp = pl.GetHistSetName("dummy",fname,hname.format("resum","0"))
+    xbinlist = range(1,htmp.GetNbinsX() +1)
+    ybinlist = range(1,htmp.GetNbinsY() +1)
+    #header
+    line = "* lobin hibin"
+    for variation in [str(x) for x in range(0,51)] + ["g_05", "g_15", "as_0117", "as_0119"]:
+        line+=" "
+        line+=variation
+        pass
+    print line
+    #table
+    for xbin in xbinlist :
+        line = "";
+        binlo = htmp.GetXaxis().GetBinLowEdge(xbin)
+        binhi = htmp.GetXaxis().GetBinUpEdge(xbin)
+        line += str(binlo) + " " + str(binhi)
+        for variation in [str(x) for x in range(0,51)] + ["g_05", "g_15", "as_0117", "as_0119"]:
+            val=0
+            err2=0
+            for term in ["resum" , "ct"] :
+                h=pl.GetHist(fname,hname.format(term,variation))
+                for ybin in ybinlist :
+                    ibin = h.GetBin(xbin,ybin)
+                    val+=      h.GetBinContent(ibin)
+                    err2+= pow(h.GetBinError  (ibin),2)
+                pass
+            line += " " + str(val)
+            #line += " " + str(sqrt(err2))
+            pass
+        print line
+        pass
+    pass
+
+def w_pt():
+    pl = PlotTools()
+    fname = "results_merge/dyturbo_wp_lhc7_CTZPT2_0_qtyMerget{}_100101.root"
+    ftmpreal= "dyturbo_wp_lhc7_CTZPT2_0_qt0020y05tREAL_100101.root"
+    ftmpvirt= "dyturbo_wp_lhc7_CTZPT2_0_qt0020y05tVIRT_100101.root"
+    # get histograms
+    resum = pl.GetHistSetName( "res2D"      ,fname.format("RESCT"), "qt_y_resum" ).ProjectionX( "wp_resum_pt", 10, 15)
+    ct    = pl.GetHistSetName( "ct2D"       ,fname.format("RESCT"), "qt_y_ct"    ).ProjectionX( "wp_ct_pt",    10, 15)
+    real  = pl.GetHistSetName( "wp_real_pt" ,ftmpreal,  "h_qt"       )
+    virt  = pl.GetHistSetName( "wp_virt_pt" ,ftmpvirt,  "h_qt"       )
+    # fix them :D
+    #realorig = real.Clone("wp_real_pt_NOCORR")
+    #realorig.SetTitle("real before correction")
+    # real from 4 - 6 GeV
+    # bin_start = 10
+    # bin_end = 11
+    # val_start = real.GetBinContent(bin_start-1)
+    # val_end = real.GetBinContent(bin_end+1)
+    # slope = val_end-val_start
+    # binlist = range (bin_start,bin_end+1)
+    # N = len(binlist)
+    # for i,ibin in enumerate(binlist):
+    #     newval = val_start + slope * i / N
+    #     real.SetBinContent(ibin,newval)
+    #     pass
+    # fix the normalization
+    real.Scale(1)
+    virt.Scale(1)
+    # sum them
+    total = resum.Clone("wp_total_qt")
+    total.Add(ct   )
+    total.Add(real )
+    total.Add(virt )
+    finite = ct.Clone("wp_finite_qt")
+    finite.Add(real)
+    finite.Add(virt)
+    # set colors
+    f = TFile("wpt.root","RECREATE")
+    hists = [ total, resum , finite, ct    , real  , virt  ]
+    N = len(hists)
+    for i,h in enumerate(hists):
+        h.SetTitle(h.GetName())
+        h.SetLineColor( pl.AutoCompareColor(i,N) )
+        h.SetMarkerColor( pl.AutoCompareColor(i,N) )
+        h.SetMarkerStyle(20+i)
+        h.SetMarkerSize(1)
+        h.SetDrawOption("E0")
+        my_integral = 0
+        print h.GetName()
+        for ibin,binval in enumerate(h):
+            print ibin,binval
+            if ibin == 5 : break
+            my_integral+=binval
+            pass
+        print " integral {}".format(my_integral)
+        print
+        h.Write()
+        pass
+    # compare all
+    MAXX=3
+    pl.CompareHistsInList("wp_qt_allterms"  , hists     , doStyle=False, maxX=MAXX)
+    pl.CompareHistsInList("wp_qt_resct"     , hists[1:4], doStyle=False, maxX=MAXX)
+    pl.CompareHistsInList("wp_qt_ctrealvirt", hists[2:] , doStyle=False, maxX=MAXX)
+    pl.CompareHistsInList("wp_qt_totres"    , hists[0:2], doStyle=False, maxX=MAXX)
+    pl.CompareHistsInList("wp_qt_total"     , hists[0:1], doStyle=False, maxX=MAXX)
+    #pl.CompareHistsInList("wp_qt_realorig"  , [realorig], doStyle=False, maxX=MAXX)
+    pl.MakePreviewFromList(0,"wp_qt")
+    pass
+
 
 ## Documentation for main
 #
 # More details. 
 if __name__ == '__main__' :
-    print_results();
+    #print_results();
+    #print_table();
+    w_pt();
     #plot_pt("results/pt_table_CT10nnlo.txt")
     pass
 
