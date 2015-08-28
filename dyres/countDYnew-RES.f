@@ -27,7 +27,7 @@ C
       include 'rescoeff.f'
       include 'dynamicscale.f'
 C
-      integer ih1,ih2,j,k,l,nd,nmax,nmin,nvec,order
+      integer ih1,ih2,j,k,l,nd,nmax,nmin,nvec,order,doFill
       integer nproc
       common/nproc/nproc
       double precision vector(mxdim),W,val,xint
@@ -99,8 +99,11 @@ C
       data first/.true./
       save first,rscalestart,fscalestart
 
+      common/doFill/doFill
       logical binner
       external binner
+      external hists_fill
+
       if (first) then
          first=.false.
          rscalestart=scale
@@ -689,7 +692,10 @@ c---if we're binning, add to histo too
         npart=npart+1
         endif
 
-     
+C     Fill only if it's last iteration
+      if (doFill.ne.0) then
+          call hists_fill(p(3,:),p(4,:),xint*wgt)
+      endif
       countint=xint
      
       xreal=xreal+xint*wgt/dfloat(itmx)

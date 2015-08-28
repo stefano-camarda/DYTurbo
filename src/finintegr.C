@@ -11,50 +11,60 @@
 
 using namespace std;
 
-integrand_t lowintegrand(const int &ndim, const double x[], const int &ncomp, double f[])
+const int last_iter=4;
+
+integrand_t lowintegrand(const int &ndim, const double x[], const int &ncomp, double f[],
+                        void* userdata, const int &nvec, const int &core,
+                        double &weight, const int &iter)
 {
-  double wgt = 1;
   
   double rlo[22];
   for (int i = 0; i < ndim; i++)
     rlo[i]=x[i];
 
-  f[0] = lowint_(rlo,wgt);
+
+  f[0] = lowint_(rlo,weight);
   
   return 0;
 }
 
-integrand_t realintegrand(const int &ndim, const double x[], const int &ncomp, double f[])
+integrand_t realintegrand(const int &ndim, const double x[], const int &ncomp, double f[],
+                        void* userdata, const int &nvec, const int &core,
+                        double &weight, const int &iter)
 {
-  double wgt = 1;
   
   double rre[22];
   for (int i = 0; i < ndim; i++)
     rre[i]=x[i];
 
-  f[0] = realint_(rre,wgt);
+  dofill_.doFill_ = int(iter==last_iter);
+  f[0] = realint_(rre,weight);
   
   return 0;
 }
 
-integrand_t virtintegrand(const int &ndim, const double x[], const int &ncomp, double f[])
+integrand_t virtintegrand(const int &ndim, const double x[], const int &ncomp, double f[],
+                        void* userdata, const int &nvec, const int &core,
+                        double &weight, const int &iter)
 {
-  double wgt = 1;
   
   double rvi[22];
   for (int i = 0; i < ndim; i++)
     rvi[i]=x[i];
   rvi[9] = rvi[7];
   
-  f[0]  = virtint_(rvi,wgt);
+  dofill_.doFill_ = int(iter==last_iter);
+  f[0]  = virtint_(rvi,weight);
   
   return 0;
 }
 
 
-integrand_t ctintegrand(const int &ndim, const double x[], const int &ncomp, double f[])
+integrand_t ctintegrand(const int &ndim, const double x[], const int &ncomp, double f[],
+                        void* userdata, const int &nvec, const int &core,
+                        double &weight, const int &iter)
 {
-  double wgt = 1;
+    //double wgt = 1;
   //here generate the phase space according to x[], and pass the p vector to countint_
   
   double rct[22];
@@ -62,8 +72,9 @@ integrand_t ctintegrand(const int &ndim, const double x[], const int &ncomp, dou
     rct[i]=x[i];
   rct[8] = rct[1];
 
-  f[0] = countint_(rct,wgt);
-  
+  dofill_.doFill_ = int(iter==last_iter);
+  f[0] = countint_(rct,weight);
+
   return 0;
 }
 
@@ -254,14 +265,19 @@ integrand_t ctintegrand2d(const int &ndim, const double x[], const int &ncomp, d
 
 int binner_(double p3[4], double p4[4])
 {
-  double qt = sqrt((float)pow(p3[0]+p4[0],2)+pow(p3[1]+p4[1],2));
-  if (qt < qtmin || qt > qtmax)
-    return false;
+    if (opts.HackBinnerToFiller) {
+        return true;
+    } else {
 
-  double y = 0.5 *log((p3[3] + p4[3] + p3[2] + p4[2]) / (p3[3] + p4[3] - p3[2] - p4[2]));
-  if (y < ymin || y > ymax)
-    return false;
+        double qt = sqrt((float)pow(p3[0]+p4[0],2)+pow(p3[1]+p4[1],2));
+        if (qt < qtmin || qt > qtmax)
+            return false;
 
-  //  cout << "qt " << qt << " y " << y << endl;
-  return true;
+        double y = 0.5 *log((p3[3] + p4[3] + p3[2] + p4[2]) / (p3[3] + p4[3] - p3[2] - p4[2]));
+        if (y < ymin || y > ymax)
+            return false;
+
+        //  cout << "qt " << qt << " y " << y << endl;
+    }
+    return true;
 }

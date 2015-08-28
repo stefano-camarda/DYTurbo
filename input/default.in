@@ -100,6 +100,7 @@ qtrec_kt0   = false
 # debug settings
 timeprofile = false  # debug and time profile resummation integration
 verbose     = false  # debug and time profile costh phi_lep integration
+HackBinnerToFiller = false # debug the integration (need no parallelization, full phase-space integration)
 
 # Set to 1 to use the dyres approximation of PDFs and integration contour in the complex plane for the Mellin inversion
 # Set to 0 to use exact PDFs and straight line contour in the complex plane for the Mellin inversion

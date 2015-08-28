@@ -19,13 +19,15 @@ class plotter {
         void FillEvent(double p3[4], double p4[4], double wgt);
         void FillResult(TermType term, double int_val, double int_error, double time);
         void Dump();
-        void Finalise();
+        void Finalise(double xsection=0);
         static int *gcounter;
 
     private :
 #ifdef USEROOT
         /// @todo: use one object instead
+        double N;
         TH1D * h_l1_pt;
+        TH1D * h_qt;
         TH2D* qt_y_resum ;
         TH2D* qt_y_ct    ;
         TH2D* qt_y_lo    ;

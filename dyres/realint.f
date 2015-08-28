@@ -14,7 +14,7 @@
       include 'process.f'
       include 'dynamicscale.f'
       include 'dipolescale.f'
-      integer ih1,ih2,j,k,nd,nmax,nmin,nvec
+      integer ih1,ih2,j,k,nd,nmax,nmin,nvec,doFill
       double precision vector(mxdim),W,val,xint
       double precision sqrts,fx1(-nf:nf),fx2(-nf:nf)
       double precision p(mxpart,4),pjet(mxpart,4),p1ext(4),p2ext(4)
@@ -22,7 +22,7 @@
       double precision s(mxpart,mxpart),wgt,msq(-nf:nf,-nf:nf)
       double precision msqc(maxd,-nf:nf,-nf:nf),xmsq(0:maxd),xmsqjk
       double precision flux,BrnRat,xreal,xreal2
-      double precision xx1,xx2,q(mxpart,4),dot,q2
+      double precision xx1,xx2,q(mxpart,4),dot,q2,qt2,xqtcut
       integer n2,n3
       double precision mass2,width2,mass3,width3
       common/breit/n2,n3,mass2,width2,mass3,width3
@@ -40,12 +40,20 @@
       common/incldip/incldip
       integer nproc
       common/nproc/nproc
+      common/qtcut/xqtcut
+
+      common/doFill/doFill
+      external hists_fill
+
+      logical binner
+      external binner
 
       integer ii,jj,kk
 
       data p/48*0d0/
       data first/.true./
       save first,rscalestart,fscalestart
+
 
       if (first) then
          first=.false.
@@ -83,6 +91,7 @@ c      print*
       nvec=npart+2
 
       q2=2*dot(p,3,4)
+      qt2=(p(3,1)+p(4,1))**2+(p(3,2)+p(4,2))**2
 
       call dotem(nvec,p,s)
       
@@ -115,6 +124,10 @@ CC   Dynamic scale: set it only if point passes cuts
         enddo
       endif
       
+C---- binner cut
+C      if (binner(p(3,:),p(4,:)).eqv..false.) goto 999
+C---- min qt cut
+C      if(dsqrt(qt2/q2).lt.xqtcut) goto 999
       
 c---- generate collinear points that satisy the jet cuts (for checking)
 c      call singgen(p,s,*998)
@@ -280,6 +293,10 @@ c---otherwise, skip contribution
 c 998  continue
 
 
+C     Fill only if it's last iteration
+      if (doFill.ne.0) then
+          call hists_fill(p(3,:),p(4,:),xint*wgt)
+      endif
       realint=xint
 
       xreal=xreal+xint*wgt/dfloat(itmx)
@@ -289,6 +306,7 @@ c 998  continue
       return
 
  999  realint=0d0
+
       ntotzero=ntotzero+1
  
       return

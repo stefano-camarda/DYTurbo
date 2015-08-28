@@ -130,6 +130,7 @@ public:
   //debug settings
   bool timeprofile;
   bool verbose;
+  bool HackBinnerToFiller;
 };
 
 class binning

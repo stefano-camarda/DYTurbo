@@ -33,6 +33,8 @@ void normalise_result(double &value, double &error);
 
 double clock_real();
 
+double TotXSec ;
+
 int main( int argc , const char * argv[])
 {
 
@@ -157,6 +159,7 @@ int main( int argc , const char * argv[])
 
   print_head();
   begin_time = clock_real();
+  TotXSec = 0.;
   for (vector<double>::iterator yit = bins.ybins.begin(); yit != bins.ybins.end()-1; yit++)
   {
       for (vector<double>::iterator qit = bins.qtbins.begin(); qit != bins.qtbins.end()-1; qit++)
@@ -243,7 +246,7 @@ int main( int argc , const char * argv[])
   cout << endl;
   cout << setw(10) << "time "  << setw(15) << float(end_time - begin_time) << endl;
 
-  hists.Finalise();
+  hists.Finalise(TotXSec);
 
   return 0;
 }
@@ -261,6 +264,7 @@ void test_resum_speed(double costh,double m,double qt,double y,int mode){
 
 
 void normalise_result(double &value, double &error){
+    TotXSec+=value;
     value /= qtmax - qtmin;
     error /= qtmax - qtmin;
     //value /= ymax  - ymin;

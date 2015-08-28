@@ -6,6 +6,8 @@
 #include "settings.h"
 #include "interface.h"
 
+double clock_real();
+
 using namespace std;
 
 //these function wrappers map the variables into the unity hypercube of the vegas integration
@@ -22,7 +24,7 @@ double dyreal(double m, double y, double qt, double phicm, double phiZ, double c
   double xqtcut = qtcut_.xqtcut_;
 
   //  std::cout << std::setprecision(15);
-  clock_t begin_time, end_time;
+  double begin_time, end_time;
   double value;
   double rre[22];
   double wgt = 1;
@@ -109,10 +111,10 @@ double dyreal(double m, double y, double qt, double phicm, double phiZ, double c
   rre[0] = mjj*mjj / (mtot*mtot);                  //mjj
   rre[4] = phijj;                                  //phi jj
   rre[5] = costhjj;                                //costh jj
-  begin_time = clock();
+  begin_time = clock_real();
   value = realint_(rre,wgt);
-  end_time = clock();
-  cout << "Real: " << value << "  " << "time " << float( end_time - begin_time ) /  CLOCKS_PER_SEC << endl;
+  end_time = clock_real();
+  cout << "Real: " << value << "  " << "time " << end_time - begin_time << "s" << endl;
   //******************************************
 
   return value;
@@ -131,7 +133,7 @@ double dyvirt(double m, double y, double qt, double phicm, double phiZ, double c
   double xqtcut = qtcut_.xqtcut_;
 
   //  std::cout << std::setprecision(15);
-  clock_t begin_time, end_time;
+  double begin_time, end_time;
   double value;
   double rvi[22];
   double wgt = 1;
@@ -216,10 +218,10 @@ double dyvirt(double m, double y, double qt, double phicm, double phiZ, double c
   rvi[1] = (zcth + 1.)/2.;                           //cos th of Z in CM frame
   //virtual dimension to be integrated
   rvi[9] = vz;
-  begin_time = clock();
+  begin_time = clock_real();
   value = virtint_(rvi,wgt);
-  end_time = clock();
-  cout << "Virt: " << value << "  " << "time " << float( end_time - begin_time ) /  CLOCKS_PER_SEC << endl;
+  end_time = clock_real();
+  cout << "Virt: " << value << "  " << "time " << end_time - begin_time << "s" << endl;
   //******************************************
 }
 double dyct(double m, double y, double qt, double phicm, double phiZ, double cos_th, double alpha, double beta)
@@ -235,7 +237,7 @@ double dyct(double m, double y, double qt, double phicm, double phiZ, double cos
   double xqtcut = qtcut_.xqtcut_; //0.008;
 
   //  std::cout << std::setprecision(15);
-  clock_t begin_time, end_time;
+  double begin_time, end_time;
   double value;
   double rct[22];
   double wgt = 1;
@@ -270,10 +272,10 @@ double dyct(double m, double y, double qt, double phicm, double phiZ, double cos
   //dimensions to be integrated (alpha and beta of the counterterm)
   rct[7] = beta;
   rct[8] = alpha;
-  begin_time = clock();
+  begin_time = clock_real();
   value = countint_(rct,wgt);
-  end_time = clock();
-  cout << "Counterterm: " << value << "  " << "time " << float( end_time - begin_time ) /  CLOCKS_PER_SEC << endl;
+  end_time = clock_real();
+  cout << "Counterterm: " << value << "  " << "time " << end_time - begin_time << "s" << endl;
   //******************************************
 
   return value;
