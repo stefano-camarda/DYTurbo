@@ -109,8 +109,13 @@ integrand_t ctintegrand3d(const int &ndim, const double x[], const int &ncomp, d
   double qtlim = sqrt(pow(pow(energy_.sroot_,2)+m*m,2)/(4*pow(energy_.sroot_,2)*cosh2y34)-m*m);
   double qtmx = min(qtlim, qtmax);
   double qtmn2 = pow(qtmn,2);
-  double qtmx2 = pow(qtmax,2);
-
+  double qtmx2 = pow(qtmx,2);
+  if (qtmn >= qtmx)
+    {
+      f[0]=0.;
+      return 0;
+    }
+  
   double tiny = 1E-5;
   double a = 1./(1+log(qtmx2/tiny));
   double b = 1./(1+log(qtmn2/tiny));
@@ -141,7 +146,7 @@ integrand_t ctintegrand3d(const int &ndim, const double x[], const int &ncomp, d
   if (swtch < 0.01)
     f[0]=0.;
   else
-    //evaluate the resummed cross section
+    //evaluate the fixed order expansion of the resummed cross section
     f[0]=countterm_(costh,m,qt,y,mode);
 
   if (f[0] != f[0])
@@ -199,7 +204,12 @@ integrand_t ctintegrand2d(const int &ndim, const double x[], const int &ncomp, d
   double cosh2y34=pow((exp(y)+exp(-y))*0.5,2);
   double qtlim = sqrt(pow(pow(energy_.sroot_,2)+m*m,2)/(4*pow(energy_.sroot_,2)*cosh2y34)-m*m);
   double qtmx = min(qtlim, qtmax);
-
+  if (qtmn >= qtmx)
+    {
+      f[0]=0.;
+      return 0;
+    }
+  
   //set global variables to costh, m, qt, y
   set(0, m, (qtmn+qtmx)/2., y);
 
@@ -218,7 +228,7 @@ integrand_t ctintegrand2d(const int &ndim, const double x[], const int &ncomp, d
   double costh = 0;
   int mode = 2;
 
-  //evaluate the resummed cross section
+  //evaluate the fixed order expansion of the resummed cross section
   double qt = (qtmn+qtmx)/2.;
   clock_t cbt = clock();
   f[0]=countterm_(costh,m,qt,y,mode);
