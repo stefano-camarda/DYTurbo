@@ -239,12 +239,9 @@ def merge_all_hist():
 # More details. 
 if __name__ == '__main__' :
     #print_results();
-<<<<<<< HEAD
     #print_table();
     w_pt();
-=======
-    merge_all_hist()
->>>>>>> f3cb52dbc7874f7d13a343eb67beb8b0b9029ff1
+    #merge_all_hist()
     #plot_pt("results/pt_table_CT10nnlo.txt")
     pass
 
