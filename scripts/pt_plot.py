@@ -116,15 +116,20 @@ def print_table() :
     pass
 
 def w_pt():
+    proc="wp"
+    #proc="z0"
     pl = PlotTools()
-    fname = "results_merge/dyturbo_wp_lhc7_CTZPT2_0_qtyMerget{}_100101.root"
-    ftmpreal= "dyturbo_wp_lhc7_CTZPT2_0_qt0020y05tREAL_100101.root"
-    ftmpvirt= "dyturbo_wp_lhc7_CTZPT2_0_qt0020y05tVIRT_100101.root"
+    fname = "results_merge/dyturbo_{}_lhc7_CTZPT2_0_qtyMerget{}_100101.root"
+    #fname = "results/dyturbo_wp_lhc7_CTZPT2_0_qt0020y05t{}_100101.root"
+    ftmpres = fname.format(proc,"RESCT")
+    ftmpct  = fname.format(proc,"RESCT")
+    ftmpreal= fname.format(proc,"REAL") # "dyturbo_wp_lhc7_CTZPT2_0_qt0020y05tREAL_100101.root"
+    ftmpvirt= fname.format(proc,"VIRT") # "dyturbo_wp_lhc7_CTZPT2_0_qt0020y05tVIRT_100101.root"
     # get histograms
-    resum = pl.GetHistSetName( "res2D"      ,fname.format("RESCT"), "qt_y_resum" ).ProjectionX( "wp_resum_pt", 10, 15)
-    ct    = pl.GetHistSetName( "ct2D"       ,fname.format("RESCT"), "qt_y_ct"    ).ProjectionX( "wp_ct_pt",    10, 15)
-    real  = pl.GetHistSetName( "wp_real_pt" ,ftmpreal,  "h_qt"       )
-    virt  = pl.GetHistSetName( "wp_virt_pt" ,ftmpvirt,  "h_qt"       )
+    resum = pl.GetHistSetName( "res2D"      ,   ftmpres , "qt_y_resum" ).ProjectionX( proc+"_resum_pt", 10, 15)
+    ct    = pl.GetHistSetName( "ct2D"       ,   ftmpct  , "qt_y_ct"    ).ProjectionX( proc+"_ct_pt",    10, 15)
+    real  = pl.GetHistSetName( proc+"_real_pt" ,ftmpreal,  "h_qt"       )
+    virt  = pl.GetHistSetName( proc+"_virt_pt" ,ftmpvirt,  "h_qt"       )
     # fix them :D
     #realorig = real.Clone("wp_real_pt_NOCORR")
     #realorig.SetTitle("real before correction")
@@ -144,15 +149,15 @@ def w_pt():
     real.Scale(1)
     virt.Scale(1)
     # sum them
-    total = resum.Clone("wp_total_qt")
+    total = resum.Clone(proc+"_total_qt")
     total.Add(ct   )
     total.Add(real )
     total.Add(virt )
-    finite = ct.Clone("wp_finite_qt")
+    finite = ct.Clone(proc+"_finite_qt")
     finite.Add(real)
     finite.Add(virt)
     # set colors
-    f = TFile("wpt.root","RECREATE")
+    f = TFile(proc+"qt.root","RECREATE")
     hists = [ total, resum , finite, ct    , real  , virt  ]
     N = len(hists)
     for i,h in enumerate(hists):
@@ -163,25 +168,31 @@ def w_pt():
         h.SetMarkerSize(1)
         h.SetDrawOption("E0")
         my_integral = 0
+        my_interr2 = 0
         print h.GetName()
         for ibin,binval in enumerate(h):
-            print ibin,binval
+            errval = h.GetBinError(ibin)
+            perc = 0. if binval==0 else abs(errval/binval*100)
+            print ibin,binval,errval, "{:.2}%".format(perc)
             if ibin == 5 : break
             my_integral+=binval
+            my_interr2+=pow(errval,2)
             pass
-        print " integral {}".format(my_integral)
+        errval = pow(my_interr2,.5)
+        perc = 0. if my_integral==0. else abs(errval/my_integral*100)
+        print " integral {} +- {} ({}%)".format(my_integral,errval,perc)
         print
         h.Write()
         pass
     # compare all
     MAXX=3
-    pl.CompareHistsInList("wp_qt_allterms"  , hists     , doStyle=False, maxX=MAXX)
-    pl.CompareHistsInList("wp_qt_resct"     , hists[1:4], doStyle=False, maxX=MAXX)
-    pl.CompareHistsInList("wp_qt_ctrealvirt", hists[2:] , doStyle=False, maxX=MAXX)
-    pl.CompareHistsInList("wp_qt_totres"    , hists[0:2], doStyle=False, maxX=MAXX)
-    pl.CompareHistsInList("wp_qt_total"     , hists[0:1], doStyle=False, maxX=MAXX)
-    #pl.CompareHistsInList("wp_qt_realorig"  , [realorig], doStyle=False, maxX=MAXX)
-    pl.MakePreviewFromList(0,"wp_qt")
+    pl.CompareHistsInList(proc+"_qt_allterms"  , hists     , doStyle=False, maxX=MAXX)
+    pl.CompareHistsInList(proc+"_qt_resct"     , hists[1:4], doStyle=False, maxX=MAXX)
+    pl.CompareHistsInList(proc+"_qt_ctrealvirt", hists[2:] , doStyle=False, maxX=MAXX)
+    pl.CompareHistsInList(proc+"_qt_totres"    , hists[0:2], doStyle=False, maxX=MAXX)
+    pl.CompareHistsInList(proc+"_qt_total"     , hists[0:1], doStyle=False, maxX=MAXX)
+    #pl.CompareHistsInList(proc+"_qt_realorig"  , [realorig], doStyle=False, maxX=MAXX)
+    pl.MakePreviewFromList(0,proc+"_qt")
     pass
 
 

@@ -20,6 +20,8 @@
 #BSUB -n SETNPROCESSORS
 #BSUB -R 'rusage[atlasio=0]'
 
+shopt -s expand_aliases
+
 alias CP='rsync -avPL'
 
 #source ATLAS + ROOT
@@ -42,7 +44,7 @@ date
 CP DYTURBOROOTDIR/bin/dyturbo .
 CP DYTURBOROOTDIR/input/default.in .
 CP DYTURBOINPUTFILE input.in
-/usr/bin/time -v ./dyturbo input.in
+/usr/bin/time -v ./dyturbo input.in | tee OUTDIR/JOBNAME.log
 CP results.root OUTDIR/JOBNAME.root
 
 

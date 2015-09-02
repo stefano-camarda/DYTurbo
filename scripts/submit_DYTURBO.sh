@@ -13,7 +13,7 @@ DRYRUN=echo
 
 
 # define directories
-dyturbo_project=/etapfs03/atlashpc/cuth/DYTURBO
+dyturbo_project=`pwd`
 batch_script_dir=$dyturbo_project/scripts/batch_scripts
 in_files_dir=$dyturbo_project/scripts/infiles
 result_dir=$dyturbo_project/results
@@ -180,26 +180,26 @@ submit_Z_dyturbo(){
     hiqtbin=unset
     collider=lhc7
     seedlist=100101
-    # Z0
-    qtbinlist="0 2 4 6 8 10 12 14 16 18 22 26 30 34 38 42 46 50 54 60 70 80 100 150 200 300 800"
-    ybinlist="0 1 2 2.4"
-    variationList=" `seq 0 50` g_05 g_15 as_0117 as_0119"
-    # WPM
-    if [[ $process =~ ^w[pm]$ ]]
-    then
-        qtbinlist=`make_range 0.0 100.0 200.0`
-        ybinlist="0 5" #`make_range 0.0 5.0 25.0`
-        variationList="0"
-    fi
-    if [[ $terms =~ REAL|VIRT ]]
-    then
-        qtbinlist="0.0 2.0 "
-        ybinlist="0 5"
-        seedlist=`seq 100101 100101`
-        cubacores=0
-    fi
-    for terms in REAL VIRT 
+    for terms in RESCT REAL VIRT 
     do
+        # Z0
+        #qtbinlist="0 2 4 6 8 10 12 14 16 18 22 26 30 34 38 42 46 50 54 60 70 80 100 150 200 300 800"
+        #ybinlist="0 1 2 2.4"
+        #variationList=" `seq 0 50` g_05 g_15 as_0117 as_0119"
+        # WPM
+        #if [[ $process =~ ^w[pm]$ ]]
+        #then
+            qtbinlist="0 2" # `make_range 0.0 2.0 4.0` #`make_range 0.0 100.0 200.0`
+            ybinlist="0 5" #`make_range 0.0 5.0 25.0`
+            variationList="0"
+        #fi
+        if [[ $terms =~ REAL|VIRT ]]
+        then
+            qtbinlist="0.0 2.0"
+            ybinlist="0 5"
+            seedlist=`seq 100101 100101`
+            cubacores=8
+        fi
         for random_seed in $seedlist
         do
             loqtbin=unset
@@ -214,7 +214,7 @@ submit_Z_dyturbo(){
                     do
                         prepare_script
                         $DRYRUN submit_job
-                        #. $sh_file
+                        bash -x $sh_file
                     done
                     loybin=$iybin
                 done
@@ -240,12 +240,12 @@ clear_results(){
     echo    # (optional) move to a new line
     if [[ $REPLY =~ ^[Yy]$ ]]
     then
-        rm -f results/*.{root,out,err}
+        rm -f results/*.{root,log,out,err}
     fi
     echo "Done"
 }
 
 # MAIN
-#clear_files
+clear_files
 clear_results
 submit_Z_dyturbo
