@@ -18,6 +18,8 @@ plotter::plotter() :
     N(0),
     h_l1_pt(0),
     h_qt(0),
+    h_y (0),
+    h_qtVy (0),
     qt_y_resum (0),
     qt_y_ct    (0),
     qt_y_lo    (0),
@@ -42,6 +44,8 @@ plotter::plotter() :
 plotter::~plotter(){
     if (!h_l1_pt ) delete h_l1_pt;
     if (!h_qt    ) delete h_qt;
+    if (!h_y     ) delete h_y ;
+    if (!h_qtVy  ) delete h_qtVy ;
     if(!qt_y_resum ) delete qt_y_resum ;
     if(!qt_y_ct    ) delete qt_y_ct    ;
     if(!qt_y_lo    ) delete qt_y_lo    ;
@@ -70,6 +74,8 @@ void plotter::Init(){
 
     h_l1_pt = new TH1D ("l1_pt", "lep1 pt", 10, 0,100 );
     h_qt    = new TH1D ("h_qt", "VB qt", 200, 0,100 );
+    h_y     = new TH1D ("h_y" , "VB y" , 25, 0,5 );
+    h_qtVy  = new TH2D ("h_qtVy" , "VB qtVy", 200, 0,100  , 25, 0,5 );
     return;
 }
 
@@ -79,7 +85,10 @@ void plotter::FillEvent(double p3[4], double p4[4], double wgt){
     //h_l1_pt->Fill(l1_pt,wgt);
     N++;
     double qt = sqrt((float)pow(p3[0]+p4[0],2)+pow(p3[1]+p4[1],2));
-    h_qt->Fill(qt,wgt);
+    double y = 0.5 *log(float((p3[3]+p4[3] +p3[2]+p4[2]) / (p3[3]+p4[3] -p3[2]-p4[2])));
+    h_qt   ->Fill(qt,wgt);
+    h_y    ->Fill(y,wgt);
+    h_qtVy ->Fill(qt,y,wgt);
     return;
 }
 
@@ -123,10 +132,12 @@ void plotter::Finalise(double xsection){
     if(xsection!=0.) N = h_qt->Integral()/xsection;
     //munmap(gcounter,sizeof *gcounter); //< HAVETO DO -- otherwise you need to reboot
     if (N!=0){
-        h_qt->Scale(1./N);
+        h_qt   ->Scale(1./N);
+        h_y    ->Scale(1./N);
+        h_qtVy ->Scale(1./N);
     }
     // correct qt to binwidth
-    for (int ibin=0; ibin<=h_qt->GetNbinsX()+1; ibin++ ){
+    if(false) for (int ibin=0; ibin<=h_qt->GetNbinsX()+1; ibin++ ){
         double width = h_qt->GetBinWidth   (ibin);
         double val   = h_qt->GetBinContent (ibin);
         double err   = h_qt->GetBinError   (ibin);
@@ -139,7 +150,9 @@ void plotter::Finalise(double xsection){
     // open file
     TFile *outf = TFile::Open(outfname, "recreate");
     // write
-    h_qt -> Write();
+    h_qt   -> Write();
+    h_y    -> Write();
+    h_qtVy -> Write();
     // results
     qt_y_resum -> Write();
     qt_y_ct    -> Write();

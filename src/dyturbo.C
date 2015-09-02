@@ -265,8 +265,8 @@ void test_resum_speed(double costh,double m,double qt,double y,int mode){
 
 void normalise_result(double &value, double &error){
     TotXSec+=value;
-    value /= qtmax - qtmin;
-    error /= qtmax - qtmin;
+    //value /= qtmax - qtmin;
+    //error /= qtmax - qtmin;
     //value /= ymax  - ymin;
     //error /= ymax  - ymin;
 }
