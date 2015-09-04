@@ -134,7 +134,12 @@ prepare_in(){
 }
 
 submit_job(){
-    bsub < $sh_file
+    if [[ `hostname` =~ cuth-dell  ]]
+    then
+        bash -x $sh_file
+    else
+        bsub < $sh_file
+    fi
 }
 
 jobsDone(){
@@ -180,9 +185,9 @@ submit_Z_dyturbo(){
     hiqtbin=unset
     collider=lhc7
     seedlist=100101
-    for process in z0 wp
+    for process in wp
     do
-        for terms in RES CT REAL VIRT 
+        for terms in RES # RES CT REAL VIRT 
         do
             # Z0
             #qtbinlist="0 2 4 6 8 10 12 14 16 18 22 26 30 34 38 42 46 50 54 60 70 80 100 150 200 300 800"
@@ -216,7 +221,6 @@ submit_Z_dyturbo(){
                                 do
                                     prepare_script
                                     $DRYRUN submit_job
-                                    #bash -x $sh_file
                                 done
                             loybin=$iybin
                         done
