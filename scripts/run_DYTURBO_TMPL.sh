@@ -45,7 +45,8 @@ CP DYTURBOROOTDIR/bin/dyturbo .
 CP DYTURBOROOTDIR/input/default.in .
 CP DYTURBOINPUTFILE input.in
 /usr/bin/time -v ./dyturbo input.in | tee OUTDIR/JOBNAME.log
-CP results.root OUTDIR/JOBNAME.root
+hadd -f results_merge.root results*.root
+CP results_merge.root OUTDIR/JOBNAME.root
 
 
 exit 0
