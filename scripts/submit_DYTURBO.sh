@@ -182,7 +182,7 @@ submit_Z_dyturbo(){
     seedlist=100101
     for process in z0 wp
     do
-        for terms in RESCT REAL VIRT 
+        for terms in RES CT REAL VIRT 
         do
             # Z0
             #qtbinlist="0 2 4 6 8 10 12 14 16 18 22 26 30 34 38 42 46 50 54 60 70 80 100 150 200 300 800"
