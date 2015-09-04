@@ -8,6 +8,9 @@
 #include <TH2D.h>
 #endif // USEROOT
 
+#include<memory>
+#include<mutex>
+
 class plotter {
     public :
         plotter();
@@ -18,18 +21,23 @@ class plotter {
         void Init();
         void FillEvent(double p3[4], double p4[4], double wgt);
         void FillResult(TermType term, double int_val, double int_error, double time);
+        void Merge();
         void Dump();
         void Finalise(double xsection=0);
         static int *gcounter;
 
     private :
 #ifdef USEROOT
+        /// shared space
+        std::shared_ptr<int> sh_N;
+        std::mutex m;
+
         /// @todo: use one object instead
         double N;
         TH1D * h_l1_pt;
         TH1D * h_qt;
         TH1D * h_y ;
-        TH2D * h_qtVy ;
+        TH2D * h_qtVy;
         TH2D* qt_y_resum ;
         TH2D* qt_y_ct    ;
         TH2D* qt_y_lo    ;
