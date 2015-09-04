@@ -252,37 +252,64 @@ def print_res(name, var, err):
 def check_cancelation():
     pl = PlotTools()
     terms=[
-       [ "RESCT" , "resum" ] ,
-       [ "RESCT" , "ct"    ] ,
+       #[ "RESCT" , "resum" ] ,
+       [ "CT" , "ct"    ] ,
        [ "REAL"  , "real"  ] ,
        [ "VIRT"  , "virt"  ] ,
     ]
     processes= [ "z0" , "wp" ]
     filetmp="results/dyturbo_{}_lhc7_CTZPT2_0_qt0020y05t{}_100101.root"
     #histtmp="qt_y_virt"
+    hists=list()
     for proc in processes :
         print proc
         fin = 0
         err2fin = 0
         tot = 0
         err2tot= 0
+        htot=0
+        hfin=0
         for term in terms :
-            histname="qt_y_"+term[1]
-            h =  pl.GetHistSetName(term[1], filetmp.format(proc,term[0]),histname)
+            histname="h_qt"
+            histname="h_qtVy"
+            histname="h_y"
+            #histname="qt_y_"+term[1]
+            fname=filetmp.format(proc,term[0])
+            h =  pl.GetHistSetName(proc+"_"+term[1], fname ,histname)
+            hists.append(h)
+            #print time.ctime(os.path.getmtime(fname))
             #
-            ibin = h.GetBin(1,1)
-            val = h.GetBinContent(ibin)
-            err = h.GetBinError  (ibin)
-            err2 = err*err
+            val=0
+            err=0
+            isResultHist=False
+            if isResultHist :
+                ibin = h.GetBin(1,1)
+                val = h.GetBinContent(ibin)
+                err = h.GetBinError  (ibin)
+                pass
+            else :
+                err = Double()
+                if h.GetDimension()==2 :
+                    val = h.IntegralAndError(-1,-1,-1,-1,err) 
+                else :
+                    val = h.IntegralAndError(-1,-1,err) 
+            err2 = float(err*err)
             #
             print_res(term[1], val, err)
             #
-            if tot!=0 :
+            if htot != 0:
+                htot .Add(h)
+                if(term[1]!="resum") : hfin .Add(h)
+            if htot == 0:
+                htot = h.Clone(proc+"_"+"tot")
+                hfin = h.Clone(proc+"_"+"fin")
+            if term[1]!="resum" :
                 fin+=val
                 err2fin += err2
             tot += val
             err2tot+= err2
             pass
+
         print_res("fin" , fin, sqrt(err2fin))
         print_res("tot" , tot, sqrt(err2tot))
         pass
