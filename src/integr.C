@@ -1125,7 +1125,7 @@ integrand_t resintegrand4d(const int &ndim, const double x[], const int &ncomp, 
 	   lowintHst0=jac*tempp;
 	   lowintHst0=lowintHst0*swtch; // SWITCHING
 	 }
-      if (dofill_.doFill_!=0) hists_fill_(p[3],p[4],weight*lowintHst0/azloopmax);
+      if (iter==4) hists_fill_(p[3],p[4],weight*lowintHst0/azloopmax);
       azloop=azloop+1;
     }
 
