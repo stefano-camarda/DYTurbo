@@ -29,6 +29,7 @@ class plotter {
         TH1D * h_l1_pt;
         TH1D * h_qt;
         TH1D * h_y ;
+        TH2D * h_qtVy ;
         TH2D* qt_y_resum ;
         TH2D* qt_y_ct    ;
         TH2D* qt_y_lo    ;
