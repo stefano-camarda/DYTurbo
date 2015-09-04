@@ -85,6 +85,7 @@ void plotter::Init(){
 }
 
 void plotter::FillEvent(double p3[4], double p4[4], double wgt){
+    if (wgt == 0) return;
     //*gcounter = (*gcounter)+1;
     //double l1_pt = sqrt( pow(p3[0],2) + pow(p3[1],2) );
     //h_l1_pt->Fill(l1_pt,wgt);
