@@ -180,52 +180,55 @@ submit_Z_dyturbo(){
     hiqtbin=unset
     collider=lhc7
     seedlist=100101
-    for terms in RESCT REAL VIRT 
+    for process in z0 wp
     do
-        # Z0
-        #qtbinlist="0 2 4 6 8 10 12 14 16 18 22 26 30 34 38 42 46 50 54 60 70 80 100 150 200 300 800"
-        #ybinlist="0 1 2 2.4"
-        #variationList=" `seq 0 50` g_05 g_15 as_0117 as_0119"
-        # WPM
-        #if [[ $process =~ ^w[pm]$ ]]
-        #then
-            qtbinlist="0 2" # `make_range 0.0 2.0 4.0` #`make_range 0.0 100.0 200.0`
+        for terms in RESCT REAL VIRT 
+        do
+            # Z0
+            #qtbinlist="0 2 4 6 8 10 12 14 16 18 22 26 30 34 38 42 46 50 54 60 70 80 100 150 200 300 800"
+            #ybinlist="0 1 2 2.4"
+            #variationList=" `seq 0 50` g_05 g_15 as_0117 as_0119"
+            # WPM
+            #if [[ $process =~ ^w[pm]$ ]]
+            #then
+            qtbinlist="0.0 2.0" #`make_range 0.0 2.0 4.0` #`make_range 0.0 100.0 200.0`
             ybinlist="0 5" #`make_range 0.0 5.0 25.0`
             variationList="0"
-        #fi
-        if [[ $terms =~ REAL|VIRT ]]
-        then
-            qtbinlist="0.0 2.0"
-            ybinlist="0 5"
-            seedlist=`seq 100101 100101`
-            cubacores=8
-        fi
-        for random_seed in $seedlist
-        do
-            loqtbin=unset
-            for iqtbin in $qtbinlist
+            #fi
+            if [[ $terms =~ REAL|VIRT ]]
+            then
+                qtbinlist="0.0 2.0"
+                ybinlist="0 5"
+                seedlist=`seq 100101 100101`
+                cubacores=8
+            fi
+            for random_seed in $seedlist
             do
-                if [[ $loqtbin == unset ]]; then loqtbin=$iqtbin; continue; fi; hiqtbin=$iqtbin
-                for iybin in $ybinlist
+                loqtbin=unset
+                for iqtbin in $qtbinlist
                 do
-                    if [[ $loybin == unset ]]; then loybin=$iybin; continue; fi; hiybin=$iybin
-                    qtregion=`echo qt${loqtbin}${hiqtbin}y${loybin}${hiybin}t${terms} | sed "s/\.//g"`
-                    for variation in $variationList
-                    do
-                        prepare_script
-                        $DRYRUN submit_job
-                        bash -x $sh_file
+                    if [[ $loqtbin == unset ]]; then loqtbin=$iqtbin; continue; fi; hiqtbin=$iqtbin
+                        for iybin in $ybinlist
+                        do
+                            if [[ $loybin == unset ]]; then loybin=$iybin; continue; fi; hiybin=$iybin
+                                qtregion=`echo qt${loqtbin}${hiqtbin}y${loybin}${hiybin}t${terms} | sed "s/\.//g"`
+                                for variation in $variationList
+                                do
+                                    prepare_script
+                                    $DRYRUN submit_job
+                                    #bash -x $sh_file
+                                done
+                            loybin=$iybin
+                        done
+                        loybin=unset
+                        hiybin=unset
+                        loqtbin=$iqtbin
                     done
-                    loybin=$iybin
                 done
-                loybin=unset
-                hiybin=unset
-                loqtbin=$iqtbin
             done
         done
-    done
-    #$DRYRUN jobsDone
-}
+        #$DRYRUN jobsDone
+    }
 
 
 clear_files(){
