@@ -244,6 +244,49 @@ def merge_all_hist():
     pass
 
 
+def print_res(name, var, err):
+    errpc = 0 if err==0 else abs(err/var)*100
+    print " {:10} : {:>+15.4f} +- {:>15.4f} ({:.2}%) ".format( name, var, err, errpc )
+    pass
+
+def check_cancelation():
+    pl = PlotTools()
+    terms=[
+       [ "RESCT" , "resum" ] ,
+       [ "RESCT" , "ct"    ] ,
+       [ "REAL"  , "real"  ] ,
+       [ "VIRT"  , "virt"  ] ,
+    ]
+    processes= [ "z0" , "wp" ]
+    filetmp="results/dyturbo_{}_lhc7_CTZPT2_0_qt0020y05t{}_100101.root"
+    #histtmp="qt_y_virt"
+    for proc in processes :
+        print proc
+        fin = 0
+        err2fin = 0
+        tot = 0
+        err2tot= 0
+        for term in terms :
+            histname="qt_y_"+term[1]
+            h =  pl.GetHistSetName(term[1], filetmp.format(proc,term[0]),histname)
+            #
+            ibin = h.GetBin(1,1)
+            val = h.GetBinContent(ibin)
+            err = h.GetBinError  (ibin)
+            err2 = err*err
+            #
+            print_res(term[1], val, err)
+            #
+            if tot!=0 :
+                fin+=val
+                err2fin += err2
+            tot += val
+            err2tot+= err2
+            pass
+        print_res("fin" , fin, sqrt(err2fin))
+        print_res("tot" , tot, sqrt(err2tot))
+        pass
+    pass
 
 ## Documentation for main
 #
@@ -251,7 +294,8 @@ def merge_all_hist():
 if __name__ == '__main__' :
     #print_results();
     #print_table();
-    w_pt();
+    check_cancelation()
+    #w_pt();
     #merge_all_hist()
     #plot_pt("results/pt_table_CT10nnlo.txt")
     pass
