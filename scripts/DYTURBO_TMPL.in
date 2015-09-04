@@ -49,7 +49,7 @@ mhigh = SETMHI
 #  mhigh = 1000.;
 
 # Resumation integral dimension
-intDimRes = 3
+intDimRes = 4
 
 # CT integeral dimension
 intDimCT = 8 # 3 or 8
@@ -64,13 +64,13 @@ doLO   = SETDOLOR
 # Cuba settings
 cubaverbosity    = 0   # Cuba info messsages, from 0 to 3
 cubacores        = SETCUBACORES   # parallelization ( 0 = turn off)
-niterRES         = 8 #20   # only for 2d and 3d cuhre integration of resummed part
+niterRES         = 10 #20   # only for 2d and 3d cuhre integration of resummed part
 niterCT          = 8 #200  # only for 3d cuhre integration of counter term
-vegasncallsRES   = 100 #00000 # only for res 4d vegas integration
-vegasncallsCT    = 5000000 #00 # only for lo 8d vegas integration
+vegasncallsRES   = 50000000 #00000 # only for res 4d vegas integration
+vegasncallsCT    = 50000000 #00 # only for lo 8d vegas integration
 vegasncallsLO    = 100 #000000 # only for lo 7d vegas integration
-vegasncallsREAL  = 5000000 #00 # only for real 10d vegas integration
-vegasncallsVIRT  = 1000000 #00 # only for virt 8d vegas integration
+vegasncallsREAL  = 100000000 #00 # only for real 10d vegas integration
+vegasncallsVIRT  = 50000000 #00 # only for virt 8d vegas integration
 
 # total or with lepton cuts
 makelepcuts = false
