@@ -4,6 +4,7 @@
 #include "settings.h"
 #include "integr.h"
 #include "finintegr.h"
+#include "plotter.h"
 
 void integr2d(double &res, double &err)
 {
@@ -328,4 +329,10 @@ void ctintegr2d(double &res, double &err)
   res = integral[0];
   err = error[0];
   return;
+}
+
+void exitfun(void * input, const int &core){
+    hists.Finalise(core);
+    //hists.Merge();
+    printf(" WORKER exit process %d\n", core);
 }

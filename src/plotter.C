@@ -5,6 +5,7 @@
 
 #include <sys/mman.h>
 #include <sys/types.h>
+#include <cmath>
 //#include <sys/wait.h>
 //#include <unistd.h>
 
@@ -13,6 +14,7 @@ int * plotter::gcounter;
 
 #ifdef USEROOT
 #include "TFile.h"
+#include "TString.h"
 
 plotter::plotter() :
     N(0),
@@ -76,6 +78,9 @@ void plotter::Init(){
     h_qt    = new TH1D ("h_qt", "VB qt", 200, 0,100 );
     h_y     = new TH1D ("h_y" , "VB y" , 25, 0,5 );
     h_qtVy  = new TH2D ("h_qtVy" , "VB qtVy", 200, 0,100  , 25, 0,5 );
+
+    // create shared pointer
+    sh_N = make_shared<int>(0);
     return;
 }
 
@@ -117,19 +122,34 @@ void plotter::FillResult(TermType term, double int_val, double int_error, double
 }
 
 void plotter::Dump(){
-    printf(" ploter says count (%d) : h_l1_pt %p entries %f mean %f RMS %f integral %f \n"
-            , 0 //*gcounter
-            , h_l1_pt
-            , h_l1_pt->GetEntries()
-            , h_l1_pt->GetMean()
-            , h_l1_pt->GetRMS()
-            , h_l1_pt->Integral()
+    printf(" ploter says count %f, shared count %d (use %ld) : h_qt %p entries %f mean %f RMS %f integral %f \n"
+            , N
+            , *sh_N
+            , sh_N.use_count() //*gcounter
+            , h_qt
+            , h_qt->GetEntries()
+            , h_qt->GetMean()
+            , h_qt->GetRMS()
+            , h_qt->Integral()
             );
     return;
 }
 
+// as defined in Cuba
+void plotter::Merge(){
+        std::lock_guard<std::mutex> lock(m);
+        (*sh_N) += N;
+        Dump();
+}
+
 void plotter::Finalise(double xsection){
-    if(xsection!=0.) N = h_qt->Integral()/xsection;
+    //shared memory
+    //
+    sh_N.reset(); //release from main
+    //
+    double intpart;
+    bool isworker = ( std::modf(xsection,&intpart) == 0);
+    if(!isworker && xsection!=0.) N = h_qt->Integral()/xsection;
     //munmap(gcounter,sizeof *gcounter); //< HAVETO DO -- otherwise you need to reboot
     if (N!=0){
         h_qt   ->Scale(1./N);
@@ -146,9 +166,11 @@ void plotter::Finalise(double xsection){
     }
     // create result dir
     // get name from options
-    const char * outfname = "results.root";
+    TString outfname = "results";
+    if (isworker) outfname+=int(intpart);
+    outfname+= ".root";
     // open file
-    TFile *outf = TFile::Open(outfname, "recreate");
+    TFile *outf = TFile::Open(outfname.Data(), "recreate");
     // write
     h_qt   -> Write();
     h_y    -> Write();
