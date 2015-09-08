@@ -160,9 +160,9 @@ void settings::readfromfile(const string fname){
 
     // additional conditions
     // finite order (NLO vs NNLO)
-    opts.doLO   = (opts.doLO   && opts.order == 1);
-    opts.doREAL = (opts.doREAL && opts.order == 2);
-    opts.doVIRT = (opts.doVIRT && opts.order == 2);
+    if (opts.doLO     && opts.order != 1) throw invalid_argument( "You are trying to run LO term calculation, but order is not 1. Check your input file.") ;
+    if (opts.doREAL   && opts.order != 2) throw invalid_argument( "You are trying to run REAL term calculation, but order is not 2. Check your input file.") ;
+    if (opts.doVIRT   && opts.order != 2) throw invalid_argument( "You are trying to run VIRT term calculation, but order is not 2. Check your input file.") ;
     // resummation term integration dimension
     if (intDimRes<5 && intDimRes>1){
         int2d = (intDimRes == 2);
@@ -541,8 +541,9 @@ bool InputParser::GetBool(string name){
     string val = data[name];
     // lower case
     std::transform(val.begin(), val.end(), val.begin(), ::tolower);
-    if (val.compare(0,4,"true") == 0 ) return true;
-    return false;
+    bool result = (val.compare(0,4,"true") == 0);
+    //printf(" InputParser::GetBool processing key `%s` with value `%s` as result `%d`\n", name.c_str(), val.c_str(), result);
+    return result;
 }
 
 

@@ -334,5 +334,5 @@ void ctintegr2d(double &res, double &err)
 void exitfun(void * input, const int &core){
     hists.Finalise(core);
     //hists.Merge();
-    printf(" WORKER exit process %d\n", core);
+    //printf(" WORKER exit process %d\n", core);
 }
