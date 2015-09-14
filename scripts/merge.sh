@@ -32,10 +32,11 @@ merge_w_pt(){
     proc=z0
     #resumct
     echo
-    outfile=results_merge/dyturbo_${proc}_lhc7_CTZPT2_0_qtyMergetRESCT_100101.root
-    inlist=`echo results/dyturbo_${proc}_lhc7_CTZPT2_0_qt*y*tRESCT_100101.root`
-    inlist=`echo results/dyturbo_${proc}_lhc7_CTZPT2_0_qt*y05tRESCT_100101.root`
+    outfile=results_merge/dyturbo_${proc}_lhc7_CTZPT2_0_qtyMergetRES3DCT_100101.root
+    #inlist=`echo results/dyturbo_${proc}_lhc7_CTZPT2_0_qt*y05tRESCT_100101.root`
+    inlist=`echo results/dyturbo_${proc}_lhc7_CTZPT2_0_qt*y*tRES3DCT_100101.root`
     $DRYRUN hadd -f $outfile $inlist
+    exit 0
     #real
     echo
     outfile=results_merge/dyturbo_${proc}_lhc7_CTZPT2_0_qtyMergetREAL_100101.root

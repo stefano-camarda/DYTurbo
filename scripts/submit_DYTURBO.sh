@@ -13,7 +13,7 @@ DRYRUN=echo
 
 
 # define directories
-dyturbo_project=`pwd`
+dyturbo_project=`pwd -P`
 batch_script_dir=$dyturbo_project/scripts/batch_scripts
 in_files_dir=$dyturbo_project/scripts/infiles
 result_dir=$dyturbo_project/results
@@ -81,11 +81,15 @@ prepare_in(){
     if [[ $terms =~ REAL ]]; then doREA="true"; fi;
     if [[ $terms =~ VIRT ]]; then doVIR="true"; fi;
     if [[ $terms =~ LO   ]]; then doLOR="true"; fi;
+    # special 3d
+    resumdim=4
+    if [[ $terms =~ RES3D  ]]; then resumdim=3; fi;
     # order check
     order=1
-    if [[ $pdfset == CT10nlo  ]]; then order=1; fi;
-    if [[ $pdfset == CT10nnlo ]]; then order=2; fi;
-    if [[ $pdfset == CTZPT2   ]]; then order=2; fi;
+    if [[ $pdfset == CT10nlo   ]]; then order=1; fi;
+    if [[ $pdfset == CT10nnlo  ]]; then order=2; fi;
+    if [[ $pdfset == CTZPT2    ]]; then order=2; fi;
+    if [[ $pdfset == ZPT-CT10  ]]; then order=2; fi;
     # process (default z0)
     lomass=66.
     himass=116.
@@ -115,6 +119,7 @@ prepare_in(){
     sed -i "s|HIQTBIN|$hiqtbin|g      " tmp
     sed -i "s|LOYBIN|$loybin|g        " tmp
     sed -i "s|HIYBIN|$hiybin|g        " tmp
+    sed -i "s|SETSEED|$random_seed|g  " tmp
     sed -i "s|SETMLO|$lomass|g        " tmp
     sed -i "s|SETMHI|$himass|g        " tmp
     sed -i "s|SETRMASS|$rmass|g       " tmp
@@ -130,6 +135,7 @@ prepare_in(){
     sed -i "s|SETDOVIR|$doVIR|g         " tmp
     sed -i "s|SETDOLOR|$doLOR|g         " tmp
     sed -i "s|SETCUBACORES|$cubacores|g " tmp
+    sed -i "s|SETRESUMDIM|$resumdim|g   " tmp
     mv tmp $in_file
 }
 
@@ -178,6 +184,7 @@ submit_Z_dyturbo(){
     # PDF SWITCH
     pdfset=CT10nnlo
     pdfset=CTZPT2
+    pdfset=ZPT-CT10
     # defaults
     cubacores=8
     random_seed=100101
@@ -185,9 +192,9 @@ submit_Z_dyturbo(){
     hiqtbin=unset
     collider=lhc7
     seedlist=100101
-    for process in wp
+    for process in z0 # z0 wp
     do
-        for terms in RES # RES CT REAL VIRT 
+        for terms in RES CT REAL VIRT # REAL # RES CT VIRT  # RES3D CT REAL VIRT
         do
             # Z0
             #qtbinlist="0 2 4 6 8 10 12 14 16 18 22 26 30 34 38 42 46 50 54 60 70 80 100 150 200 300 800"
@@ -196,43 +203,87 @@ submit_Z_dyturbo(){
             # WPM
             #if [[ $process =~ ^w[pm]$ ]]
             #then
-            qtbinlist="0.0 2.0" #`make_range 0.0 2.0 4.0` #`make_range 0.0 100.0 200.0`
-            ybinlist="0 5" #`make_range 0.0 5.0 25.0`
+            qtbinlist=`make_range 0.0 10.0 20.0` #`make_range 0.0 100.0 200.0`
+            jqtbinmax=5
+            ybinlist=`make_range 0.0 2.0 10.0` #`make_range 0.0 5.0 25.0`
+            jybinmax=5
             variationList="0"
             #fi
-            if [[ $terms =~ REAL|VIRT ]]
+            if [[ $terms =~ RES|CT|REAL|VIRT ]]
             then
-                qtbinlist="0.0 2.0"
-                ybinlist="0 5"
+                qtbinlist=`make_range 0.0 100.0 50.0` #`make_range 0.0 100.0 50.0`
+                ybinlist="0 1 2 3 4 5" #"0 1 2 3 4 5"
                 seedlist=`seq 100101 100101`
                 cubacores=8
+                jqtbinmax=1
+                jybinmax=1
             fi
+            # special run full space
+            qtbinlist="0 100"
+            ybinlist="0 5" #"0 1 2 3 4 5"
+            seedlist=`seq 100101 100101`
+            cubacores=8
+            jqtbinmax=1
+            jybinmax=1
             for random_seed in $seedlist
             do
                 loqtbin=unset
+                jqtbin=1
+                allqtbins=""
                 for iqtbin in $qtbinlist
                 do
-                    if [[ $loqtbin == unset ]]; then loqtbin=$iqtbin; continue; fi; hiqtbin=$iqtbin
-                        for iybin in $ybinlist
+                    if [[ $loqtbin == unset ]]; then
+                        loqtbin=$iqtbin;
+                        continue;
+                    fi;
+                    # merge pt bins
+                    allqtbins="$allqtbins $iqtbin"
+                    if [[ $jqtbin != "$jqtbinmax" ]]; then
+                        jqtbin=$(( $jqtbin + 1 ))
+                        continue;
+                    fi;
+                    hiqtbin=$allqtbins
+                    jqtbin=1
+                    allqtbins=""
+                    # end merge pt bins
+                    #
+                    loybin=unset
+                    jybin=1
+                    allybins=""
+                    for iybin in $ybinlist
+                    do
+                        if [[ $loybin == unset ]]; then
+                            loybin=$iybin;
+                            continue;
+                        fi;
+                        # merge y bins
+                        allybins="$allybins $iybin"
+                        if [[ $jybin != "$jybinmax" ]]; then
+                            jybin=$(( $jybin + 1 ))
+                            continue;
+                        fi;
+                        hiybin=$allybins
+                        jybin=1
+                        allybins=""
+                        # end merge y bins
+                        #
+                        qtregion=`echo qt${loqtbin}${iqtbin}y${loybin}${iybin}t${terms} | sed "s/\.//g;s/ //g"`
+                        for variation in $variationList
                         do
-                            if [[ $loybin == unset ]]; then loybin=$iybin; continue; fi; hiybin=$iybin
-                                qtregion=`echo qt${loqtbin}${hiqtbin}y${loybin}${hiybin}t${terms} | sed "s/\.//g"`
-                                for variation in $variationList
-                                do
-                                    prepare_script
-                                    $DRYRUN submit_job
-                                done
-                            loybin=$iybin
+                            prepare_script
+                            $DRYRUN submit_job
                         done
-                        loybin=unset
-                        hiybin=unset
-                        loqtbin=$iqtbin
+                        loybin=$iybin
                     done
+                    loybin=unset
+                    hiybin=unset
+                    loqtbin=$iqtbin
                 done
             done
         done
-        #$DRYRUN jobsDone
-    }
+    done
+    #$DRYRUN jobsDone
+}
 
 
 clear_files(){

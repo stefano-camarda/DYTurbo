@@ -17,6 +17,9 @@ sys.argv.append('-b') # run in batch
 from ROOT  import TGraphErrors, TFile
 #import asciitable
 
+from PlotTools import *
+pl=PlotTools()
+
 def plot_pt(fname):
 
     TABLE = asciitable.read(fname, delimiter=",")
@@ -34,7 +37,7 @@ def plot_pt(fname):
         gr.SetPointError(i,xerr,yerr)
         i+=1
         pass
-    pl = PlotTools()
+    #pl = PlotTools()
     pl.NewCanvas("dyturbo_qt_CT10nnlo");
     pl.SetFrameStyle1D([gr],minX=0,maxX=100)
     #gPad.SetLogy()
@@ -77,9 +80,10 @@ def print_results():
         tf.Close()
     pass
 
-from PlotTools import *
+
+
 def print_table() :
-    pl = PlotTools()
+    #pl = PlotTools()
     fname = "results_merge/merge_RESUM_CT.root"
     hname="qt_y_{}_{}"
     htmp = pl.GetHistSetName("dummy",fname,hname.format("resum","0"))
@@ -115,10 +119,85 @@ def print_table() :
         pass
     pass
 
-def w_pt():
-    proc="wp"
+def draw_projections(hlist,proj):
+    resum = 0
+    ct    = 0
+    real  = 0
+    virt  = 0
+    varname="qt"
+    MAXX=3
+    #
+    proc = hlist[0].GetName().split("_")[0]
+    #
+    if "X" in proj :
+        varname="qt"
+        MAXX=30
+        resum = hlist[0].ProjectionX("{}_{}_{}".format (proc, "resum", varname ))
+        ct    = hlist[1].ProjectionX("{}_{}_{}".format (proc, "ct",    varname ))
+        real  = hlist[2].ProjectionX("{}_{}_{}".format (proc, "real",  varname ))
+        virt  = hlist[3].ProjectionX("{}_{}_{}".format (proc, "virt",  varname ))
+    elif "Y" in proj :
+        varname="y"
+        MAXX=4
+        resum = hlist[0].ProjectionY("{}_{}_{}".format (proc, "resum", varname ))
+        ct    = hlist[1].ProjectionY("{}_{}_{}".format (proc, "ct",    varname ))
+        real  = hlist[2].ProjectionY("{}_{}_{}".format (proc, "real",  varname ))
+        virt  = hlist[3].ProjectionY("{}_{}_{}".format (proc, "virt",  varname ))
+    else :
+        resum = hlist[0]
+        ct    = hlist[1]
+        real  = hlist[2]
+        virt  = hlist[3]
+    # sum them
+    total = resum.Clone("{}_{}_{}".format (proc, "tot",  varname ))
+    total.Add(ct   )
+    total.Add(real )
+    total.Add(virt )
+    finite = ct.Clone("{}_{}_{}".format (proc, "fin",  varname ))
+    finite.Add(real)
+    finite.Add(virt)
+    # set colors
+    #f = TFile(proc+"qt.root","RECREATE")
+    hists = [ total, resum , finite, ct    , real  , virt  ]
+    N = len(hists)
+    for i,h in enumerate(hists):
+        h.SetTitle(h.GetName())
+        h.SetLineColor( pl.AutoCompareColor(i,N) )
+        h.SetMarkerColor( pl.AutoCompareColor(i,N) )
+        h.SetMarkerStyle(20+i)
+        h.SetMarkerSize(1)
+        h.SetDrawOption("E0")
+        h.GetYAxis().SetTitle("d#sigma / d"+varname+"[pb]")
+        my_integral = 0
+        my_interr2 = 0
+        print h.GetName()
+        for ibin,binval in enumerate(h):
+            errval = h.GetBinError(ibin)
+            perc = 0. if binval==0 else abs(errval/binval*100)
+            print ibin,binval,errval, "{:.2}%".format(perc)
+            if ibin == 5 : break
+            my_integral+=binval
+            my_interr2+=pow(errval,2)
+            pass
+        errval = pow(my_interr2,.5)
+        perc = 0. if my_integral==0. else abs(errval/my_integral*100)
+        print " integral {} +- {} ({}%)".format(my_integral,errval,perc)
+        print
+        #h.Write()
+        pass
+    # compare all
+    pl.CompareHistsInList("{}_{}_{}".format (proc, varname, "allterms"  ) , hists     , compareType="ratio", doStyle=False, maxX=MAXX)
+    pl.CompareHistsInList("{}_{}_{}".format (proc, varname, "resct"     ) , hists[1:4], compareType="ratio", doStyle=False, maxX=MAXX)
+    pl.CompareHistsInList("{}_{}_{}".format (proc, varname, "ctrealvirt") , hists[2:] , compareType="ratio", doStyle=False, maxX=MAXX)
+    pl.CompareHistsInList("{}_{}_{}".format (proc, varname, "totres"    ) , hists[0:2], compareType="ratio", doStyle=False, maxX=MAXX)
+    pl.CompareHistsInList("{}_{}_{}".format (proc, varname, "total"     ) , hists[0:1], compareType="ratio", doStyle=False, maxX=MAXX)
+    #pl.CompareHistsInList(proc+"_qt_realorig"  , [realorig], doStyle=False, maxX=MAXX)
+    pass
+
+def w_pt(proc="wp"):
+    #proc="wp"
     #proc="z0"
-    pl = PlotTools()
+    #pl = PlotTools()
     fname = "results_merge/dyturbo_{}_lhc7_CTZPT2_0_qtyMerget{}_100101.root"
     #fname = "results/dyturbo_wp_lhc7_CTZPT2_0_qt0020y05t{}_100101.root"
     ftmpres = fname.format(proc,"RESCT")
@@ -148,51 +227,79 @@ def w_pt():
     # fix the normalization
     real.Scale(1)
     virt.Scale(1)
-    # sum them
-    total = resum.Clone(proc+"_total_qt")
-    total.Add(ct   )
-    total.Add(real )
-    total.Add(virt )
-    finite = ct.Clone(proc+"_finite_qt")
-    finite.Add(real)
-    finite.Add(virt)
-    # set colors
-    f = TFile(proc+"qt.root","RECREATE")
-    hists = [ total, resum , finite, ct    , real  , virt  ]
-    N = len(hists)
-    for i,h in enumerate(hists):
-        h.SetTitle(h.GetName())
-        h.SetLineColor( pl.AutoCompareColor(i,N) )
-        h.SetMarkerColor( pl.AutoCompareColor(i,N) )
-        h.SetMarkerStyle(20+i)
-        h.SetMarkerSize(1)
-        h.SetDrawOption("E0")
-        my_integral = 0
-        my_interr2 = 0
-        print h.GetName()
-        for ibin,binval in enumerate(h):
-            errval = h.GetBinError(ibin)
-            perc = 0. if binval==0 else abs(errval/binval*100)
-            print ibin,binval,errval, "{:.2}%".format(perc)
-            if ibin == 5 : break
-            my_integral+=binval
-            my_interr2+=pow(errval,2)
-            pass
-        errval = pow(my_interr2,.5)
-        perc = 0. if my_integral==0. else abs(errval/my_integral*100)
-        print " integral {} +- {} ({}%)".format(my_integral,errval,perc)
-        print
-        h.Write()
-        pass
-    # compare all
-    MAXX=3
-    pl.CompareHistsInList(proc+"_qt_allterms"  , hists     , doStyle=False, maxX=MAXX)
-    pl.CompareHistsInList(proc+"_qt_resct"     , hists[1:4], doStyle=False, maxX=MAXX)
-    pl.CompareHistsInList(proc+"_qt_ctrealvirt", hists[2:] , doStyle=False, maxX=MAXX)
-    pl.CompareHistsInList(proc+"_qt_totres"    , hists[0:2], doStyle=False, maxX=MAXX)
-    pl.CompareHistsInList(proc+"_qt_total"     , hists[0:1], doStyle=False, maxX=MAXX)
-    #pl.CompareHistsInList(proc+"_qt_realorig"  , [realorig], doStyle=False, maxX=MAXX)
+    hists= [ resum, ct, real, virt]
+    draw_projections(hists,"none")
     pl.MakePreviewFromList(0,proc+"_qt")
+    pass
+
+def getFromFiles(proc, term):
+    MIN_QT=0
+    MIN_Y =0
+    MAX_QT=10
+    MAX_Y =2
+    hout=0
+    term_def = {
+            #"resum" : "RES3D",
+            "resum" : "RES",
+            "ct"    : "CT",
+            "real"  : "REAL",
+            "virt"  : "VIRT",
+            }
+    hname    ="h_qtVy"
+    hnameNorm="qt_y_"+term
+    name="{}_{}_{}".format(proc,"qty",term)
+    dir="results/"
+    fterm =  term_def[term]
+    matchstring=r'.*dyturbo_'+proc+'_.*t'+fterm+'_.*\.root'
+    matchstring=r'.*dyturbo_'+proc+'_.*qt0100y05t'+fterm+'_.*\.root'
+    files =  [dir+f for f in os.listdir(dir) if re.match(matchstring, f) ]
+    files.sort()
+    print files
+    for i,fname in enumerate(files) :
+        si = "_" +str(i)
+        # get all files histograms
+        h2      = pl.GetHistSetName(name+si,fname,hname)
+        h2_norm = pl.GetHistSetName(name+"_norm"+si,fname,hnameNorm)
+        if "blablabla" in term :
+            h2 = h2_norm
+        else :
+            #normalise and check
+            Ih2,err = getIntegralError(h2)
+            print_res(h2.GetName(),Ih2,err)
+            Inorm,err = getIntegralError(h2_norm)
+            print_res(h2_norm.GetName(),Inorm,err)
+            h2.Scale(Inorm/Ih2)
+            Ih2,err = getIntegralError(h2)
+            print_res(h2.GetName(),Ih2,err)
+        if hout==0 :
+            hout = h2.Clone(name)
+        else :
+            hout.Add(h2)
+        pass
+    return hout
+
+def w_pt_y():
+    proc="wp"
+    #proc="z0"
+    # 
+    h_resum = getFromFiles(proc,"resum")
+    h_ct    = getFromFiles(proc,"ct")
+    h_real  = getFromFiles(proc,"real")
+    h_virt  = getFromFiles(proc,"virt")
+    #
+    # h_fin = h_resum.Clone("fin")
+    # h_fin .Add(h_ct   )
+    # h_fin .Add(h_real )
+    # h_fin .Add(h_virt )
+    # h_tot = h_ct   .Clone("tot")
+    # h_tot .Add(h_real )
+    # h_tot .Add(h_virt )
+    #
+    hists2D = [h_resum, h_ct, h_real, h_virt]
+    #
+    draw_projections(hists2D,"X")
+    draw_projections(hists2D,"Y")
+    pl.MakePreviewFromList(0,proc+"_qty")
     pass
 
 
@@ -249,11 +356,21 @@ def print_res(name, var, err):
     print " {:10} : {:>+15.4f} +- {:>15.4f} ({:.2}%) ".format( name, var, err, errpc )
     pass
 
+def getIntegralError(h):
+    val=0
+    err = Double(0.)
+    if h.GetDimension()==2 :
+        val = h.IntegralAndError(-1,-1,-1,-1,err) 
+    else :
+        val = h.IntegralAndError(-1,-1,err) 
+        pass
+    return val,float(err)
+
 def check_cancelation():
     pl = PlotTools()
     terms=[
-       #[ "RESCT" , "resum" ] ,
-       [ "CT" , "ct"    ] ,
+       [ "RES3DCT" , "resum" ] ,
+       [ "CT"    , "ct"    ] ,
        [ "REAL"  , "real"  ] ,
        [ "VIRT"  , "virt"  ] ,
     ]
@@ -272,31 +389,29 @@ def check_cancelation():
         for term in terms :
             histname="h_qt"
             histname="h_qtVy"
-            histname="h_y"
-            #histname="qt_y_"+term[1]
+            #histname="h_y"
+            histres="qt_y_"+term[1]
             fname=filetmp.format(proc,term[0])
+            if "resum" in term[1] :
+                fname="results_merge/dyturbo_{}_lhc7_CTZPT2_0_qtyMerget{}_100101.root".format(proc,term[0])
+                histname=histres
+                pass
             h =  pl.GetHistSetName(proc+"_"+term[1], fname ,histname)
-            hists.append(h)
+            hres =  pl.GetHistSetName(proc+"norm_"+term[1], fname ,histres)
             #print time.ctime(os.path.getmtime(fname))
             #
             val=0
             err=0
-            isResultHist=False
-            if isResultHist :
-                ibin = h.GetBin(1,1)
-                val = h.GetBinContent(ibin)
-                err = h.GetBinError  (ibin)
-                pass
-            else :
-                err = Double()
-                if h.GetDimension()==2 :
-                    val = h.IntegralAndError(-1,-1,-1,-1,err) 
-                else :
-                    val = h.IntegralAndError(-1,-1,err) 
+            #normalize properly
+            val,err = getIntegralError(h)
+            norm,normerr = getIntegralError(hres)
+            h.Scale(norm/val)
+            val,err = getIntegralError(h)
             err2 = float(err*err)
             #
             print_res(term[1], val, err)
             #
+            hists.append(h)
             if htot != 0:
                 htot .Add(h)
                 if(term[1]!="resum") : hfin .Add(h)
@@ -309,10 +424,13 @@ def check_cancelation():
             tot += val
             err2tot+= err2
             pass
-
+        hists.append(fin)
+        hists.append(tot)
+        #
         print_res("fin" , fin, sqrt(err2fin))
         print_res("tot" , tot, sqrt(err2tot))
-        pass
+        #
+        w_pt(proc,hists)
     pass
 
 ## Documentation for main
@@ -321,8 +439,9 @@ def check_cancelation():
 if __name__ == '__main__' :
     #print_results();
     #print_table();
-    check_cancelation()
+    #check_cancelation()
     #w_pt();
+    w_pt_y();
     #merge_all_hist()
     #plot_pt("results/pt_table_CT10nnlo.txt")
     pass
