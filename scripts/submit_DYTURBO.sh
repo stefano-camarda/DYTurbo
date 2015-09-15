@@ -36,12 +36,13 @@ loybin=unset
 hiybin=unset
 sample=unset
 member=unset
+program=unset
 
 prepare_script(){
     mkdir -p $batch_script_dir
     mkdir -p $result_dir
     sample=${pdfset}_${variation}
-    job_name=dyturbo_${process}_${collider}_${sample}_${qtregion}_${random_seed}
+    job_name=${program}_${process}_${collider}_${sample}_${qtregion}_${random_seed}
     sh_file=$batch_script_dir/$job_name.sh
     echo $job_name
     # prepare in
@@ -75,12 +76,13 @@ prepare_in(){
         doREA="true"
         doVIR="true"
         doLOR="true"
+        termstring="tota"
     fi;
-    if [[ $terms =~ RES  ]]; then doRES="true"; fi;
-    if [[ $terms =~ CT   ]]; then doCTM="true"; fi;
-    if [[ $terms =~ REAL ]]; then doREA="true"; fi;
-    if [[ $terms =~ VIRT ]]; then doVIR="true"; fi;
-    if [[ $terms =~ LO   ]]; then doLOR="true"; fi;
+    if [[ $terms =~ RES  ]]; then doRES="true"; termstring="none"; fi;
+    if [[ $terms =~ CT   ]]; then doCTM="true"; termstring="none"; fi;
+    if [[ $terms =~ REAL ]]; then doREA="true"; termstring="real"; fi;
+    if [[ $terms =~ VIRT ]]; then doVIR="true"; termstring="virt"; fi;
+    if [[ $terms =~ LO   ]]; then doLOR="true"; termstring="lord"; fi;
     # special 3d
     resumdim=4
     if [[ $terms =~ RES3D  ]]; then resumdim=3; fi;
@@ -90,21 +92,23 @@ prepare_in(){
     if [[ $pdfset == CT10nnlo  ]]; then order=2; fi;
     if [[ $pdfset == CTZPT2    ]]; then order=2; fi;
     if [[ $pdfset == ZPT-CT10  ]]; then order=2; fi;
+    if [[ $pdfset == CT14      ]]; then order=2; fi;
     # process (default z0)
     lomass=66.
     himass=116.
     rmass=91.1876
     width=2.495
-    nproc=3
+    nproc=3 
+    nprocmcfm=41
     if [[ $process =~ ^w[pm]$ ]]
     then
-        lomass=10.
-        himass=1000.
+        lomass=66 # for while 10.
+        himass=100 # for while 1000.
         rmass=80.385
         width=2.091
     fi
-    if [[ $process =~ ^wp$ ]]; then nproc=1; fi;
-    if [[ $process =~ ^wm$ ]]; then nproc=2; fi;
+    if [[ $process =~ ^wp$ ]]; then nproc=1; nprocmcfm=22; fi;
+    if [[ $process =~ ^wm$ ]]; then nproc=2; nprocmcfm=27; fi;
     # variations
     gpar=1e0
     member=0
@@ -114,7 +118,12 @@ prepare_in(){
     if [[ $variation == g_15  ]]; then gpar=1.5e0;                        fi;
     if [[ $variation == as_*  ]]; then pdfsetname=${pdfset}_${variation}; fi;
     if [[ $variation =~ $re   ]]; then member=$variation;                 fi;
-    cp $dyturbo_in_tmpl tmp
+    # set correct input template
+    in_tmpl=$dyturbo_in_tmpl
+    if [[ $job_name =~ ^dyturbo_ ]]; then in_tmpl=$dyturbo_project/scripts/DYTURBO_TMPL.in; fi;
+    if [[ $job_name =~ ^dyres_   ]]; then in_tmpl=$dyturbo_project/scripts/DYRES_TMPL.in;   fi;
+    if [[ $job_name =~ ^mcfm_    ]]; then in_tmpl=$dyturbo_project/scripts/MCFM_TMPL.in;    fi;
+    cp $in_tmpl tmp
     sed -i "s|LOQTBIN|$loqtbin|g      " tmp
     sed -i "s|HIQTBIN|$hiqtbin|g      " tmp
     sed -i "s|LOYBIN|$loybin|g        " tmp
@@ -136,6 +145,8 @@ prepare_in(){
     sed -i "s|SETDOLOR|$doLOR|g         " tmp
     sed -i "s|SETCUBACORES|$cubacores|g " tmp
     sed -i "s|SETRESUMDIM|$resumdim|g   " tmp
+    sed -i "s|SETMCFMPROC|$nprocmcfm|g   " tmp
+    sed -i "s|SETTERMSTRING|$termstring|g   " tmp
     mv tmp $in_file
 }
 
@@ -174,6 +185,7 @@ submit_Z_dyturbo(){
     then
         DRYRUN=
     fi
+    program=dyturbo
     # PROC SWITCH
     process=z0
     process=wp
@@ -285,6 +297,57 @@ submit_Z_dyturbo(){
     #$DRYRUN jobsDone
 }
 
+submit_allProg(){
+    # ask about running/submitting
+    DRYRUN=echo 
+    read -p "Do you want to submit jobs ? " -n 1 -r
+    echo    # (optional) move to a new line
+    if [[ $REPLY =~ ^[Yy]$ ]]
+    then
+        DRYRUN=
+    fi
+    # full phase space
+    loqtbin=0
+    hiqtbin=100
+    loybin=0
+    hiybin=5
+    collider=lhc7
+    random_seed=100101
+    cubacores=8
+    variation=0
+    for program in dyturbo dyres mcfm
+    do
+        for process in wp z0
+        do
+            for order in 1 2
+            do
+                # set terms
+                termlist="ALL"
+                if [[ $program =~ ^dyturbo ]] 
+                then
+                    termlist="RES CT LO"
+                    if [[ $order == 2 ]]; then termlist="RES CT REAL VIRT"; fi;
+                fi
+                if [[ $program =~ ^(dyres|mcfm) ]] 
+                then
+                    termlist="LO"
+                    if [[ $order == 2 ]]; then termlist="REAL VIRT"; fi;
+                fi
+                # set PDF ?
+                pdfset=CT10nlo
+                if [[ $order == 2 ]]; then pdfset=CT10nnlo; fi;
+                #
+                for terms in $termlist
+                do
+                    qtregion=`echo qt${loqtbin}${hiqtbin}y${loybin}${hiybin}t${terms} | sed "s/\.//g;s/ //g"`
+                    prepare_script
+                    $DRYRUN submit_job
+                done
+            done
+        done
+    done
+}
+
 
 clear_files(){
     echo "Clearing setup files"
@@ -306,4 +369,5 @@ clear_results(){
 # MAIN
 clear_files
 clear_results
-submit_Z_dyturbo
+#submit_Z_dyturbo
+submit_allProg

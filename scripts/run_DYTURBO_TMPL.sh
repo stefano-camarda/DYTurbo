@@ -30,6 +30,10 @@ source ${ATLAS_LOCAL_ROOT_BASE}/user/atlasLocalSetup.sh
 localSetupROOT # 5.34.25-x86_64-slc6-gcc48-opt
 # setup lhapdf
 #export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/etapfs03/atlashpc/cuth/resbos/lhapdf/LHAPDF-6.1.4/install/lib/
+#LD_LIBRARY_PATH=$LD_LIBRARY_PATH:DYTURBOROOTDIR/../RESBOS/lhapdf/lhapdf-5.6.0/install/lib/
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:DYTURBOROOTDIR/lhapdf6/lib/
+#mkdir PDFsets/
+
 
 
 
@@ -40,13 +44,34 @@ rm -rf run_dir
 mkdir run_dir
 cd run_dir
 date
-# cp all resbos stuff
+# cp all stuff
+# bins
 CP DYTURBOROOTDIR/bin/dyturbo .
+CP DYTURBOROOTDIR/../DYRES/bin/dyres .
+CP DYTURBOROOTDIR/../MCFM/Bin/mcfm .
+
+# config files
 CP DYTURBOROOTDIR/input/default.in .
+CP DYTURBOROOTDIR/../MCFM/Bin/process.DAT .
 CP DYTURBOINPUTFILE input.in
-/usr/bin/time -v ./dyturbo input.in | tee OUTDIR/JOBNAME.log
-hadd -f results_merge.root results*.root
-CP results_merge.root OUTDIR/JOBNAME.root
+ln -sf input.in infile
+ln -sf input.in input.DAT
+# run
+if [[ JOBNAME =~ ^dyturbo_ ]]
+then
+    /usr/bin/time -v ./dyturbo input.in | tee OUTDIR/JOBNAME.log
+    hadd -f results_merge.root results*.root
+    CP results_merge.root OUTDIR/JOBNAME.root
+elif [[ JOBNAME =~ ^dyres_ ]]
+then
+    /usr/bin/time -v ./dyres < infile | tee OUTDIR/JOBNAME.log
+    #hadd -f results_merge.root results*.root
+    #CP results_merge.root OUTDIR/JOBNAME.root
+elif [[ JOBNAME =~ ^mcfm_ ]]
+then
+    /usr/bin/time -v ./mcfm | tee OUTDIR/JOBNAME.log
+    CP *.C OUTDIR/JOBNAME.C
+fi
 
 
 exit 0
