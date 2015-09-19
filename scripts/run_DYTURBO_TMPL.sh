@@ -66,11 +66,13 @@ elif [[ JOBNAME =~ ^dyres_ ]]
 then
     /usr/bin/time -v ./dyres < infile | tee OUTDIR/JOBNAME.log
     #hadd -f results_merge.root results*.root
-    #CP results_merge.root OUTDIR/JOBNAME.root
+    CP result.top OUTDIR/JOBNAME.top
 elif [[ JOBNAME =~ ^mcfm_ ]]
 then
     /usr/bin/time -v ./mcfm | tee OUTDIR/JOBNAME.log
     CP *.C OUTDIR/JOBNAME.C
+    hadd -f results_merge.root results*.root
+    CP results_merge.root OUTDIR/JOBNAME.root
 fi
 
 

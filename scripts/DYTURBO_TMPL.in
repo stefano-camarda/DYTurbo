@@ -68,11 +68,11 @@ cubaverbosity    = 0   # Cuba info messsages, from 0 to 3
 cubacores        = SETCUBACORES   # parallelization ( 0 = turn off)
 niterRES         = 18 #20   # only for 2d and 3d cuhre integration of resummed part
 niterCT          = 8 #200  # only for 3d cuhre integration of counter term
-vegasncallsRES   = 10000 #00    #00000 # only for res 4d vegas integration
-vegasncallsCT    = 10000 #000   #00 # only for lo 8d vegas integration
-vegasncallsLO    = 10000 #000   #000000 # only for lo 7d vegas integration
-vegasncallsREAL  = 10000 #0000  #00 # only for real 10d vegas integration
-vegasncallsVIRT  = 10000 #0000  #00 # only for virt 8d vegas integration
+vegasncallsRES   = 10    #00000 # only for res 4d vegas integration
+vegasncallsCT    = 100   #00 # only for lo 8d vegas integration
+vegasncallsLO    = 1000   #000000 # only for lo 7d vegas integration
+vegasncallsREAL  = 1000  #00 # only for real 10d vegas integration
+vegasncallsVIRT  = 1000  #00 # only for virt 8d vegas integration
 
 # total or with lepton cuts
 makelepcuts = false

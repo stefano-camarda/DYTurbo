@@ -156,6 +156,7 @@ submit_job(){
         bash -x $sh_file
     else
         bsub < $sh_file
+        #bash -x $sh_file
     fi
 }
 
@@ -315,9 +316,9 @@ submit_allProg(){
     random_seed=100101
     cubacores=8
     variation=0
-    for program in dyturbo dyres mcfm
+    for program in dyturbo # dyturbo dyres mcfm
     do
-        for process in wp z0
+        for process in z0 # wp z0
         do
             for order in 1 2
             do
@@ -328,10 +329,15 @@ submit_allProg(){
                     termlist="RES CT LO"
                     if [[ $order == 2 ]]; then termlist="RES CT REAL VIRT"; fi;
                 fi
-                if [[ $program =~ ^(dyres|mcfm) ]] 
+                if [[ $program =~ ^dyres ]] 
                 then
-                    termlist="LO"
-                    if [[ $order == 2 ]]; then termlist="REAL VIRT"; fi;
+                    termlist=""
+                    if [[ $order == 2 ]]; then termlist="ALL REAL VIRT"; fi;
+                fi
+                if [[ $program =~ ^mcfm ]] 
+                then
+                    termlist="ALL LO"
+                    if [[ $order == 2 ]]; then termlist="ALL REAL VIRT"; fi;
                 fi
                 # set PDF ?
                 pdfset=CT10nlo

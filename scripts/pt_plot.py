@@ -433,6 +433,59 @@ def check_cancelation():
         w_pt(proc,hists)
     pass
 
+def addIntegralError(v1,e1,v2,e2):
+    return v1+v2, sqrt(e1*e1+e2*e2)
+
+def root_file_integral():
+    filetmp="results/dyturbo_z0_lhc7_CT10nnlo_0_qt0100y05t{}_100101.root"
+    hist="h_qtVy"
+    TERMS=[ "RES", "REAL", "VIRT", "CT"]
+    tot=0
+    toterr=0
+    print "z0 dyturbo from integral"
+    for term in TERMS :
+        h = pl.GetHist(filetmp.format(term),hist)
+        integ , inerr = getIntegralError(h)
+        tot,toterr = addIntegralError(tot,toterr, integ,inerr)
+        print_res(term,integ,inerr)
+        pass
+    print_res("tot",tot,toterr)
+
+def quick_calc():
+    pb="pb"
+    print "nnlo"
+    print "z0 mcfm fb"
+    print_res("real", -846121.25, 1568.0395)
+    print_res("virt", 2129394.3 , 775.93249)
+    mytot,myerr=addIntegralError(-846121.25, 1568.0395, 2129394.3 , 775.93249 )
+    print_res("myto",  mytot, myerr)
+    print_res("tota",  1283273.0886 ,  1749.5196 )
+    print "z0 dyturbo"
+    mytot,myerr= 0,0
+    print_res( "ct"   , -288420 , 180.135 ); mytot,myerr = addIntegralError(mytot,myerr, -288420 , 180.135 )
+    print_res( "real" , -412256 , 3149.67 ); mytot,myerr = addIntegralError(mytot,myerr, -412256 , 3149.67 )
+    print_res( "virt" , 710744  , 230.544 ); mytot,myerr = addIntegralError(mytot,myerr, 710744  , 230.544 )
+    print_res( "fin"  , mytot,myerr )
+    print_res( "res"  , 450026  , 153.251 ); mytot,myerr = addIntegralError(mytot,myerr, 450026  , 153.251 )
+    print_res( "tot"  , mytot,myerr )
+    print "nlo"
+    print "z0 mcfm fb"
+    print_res("real", -846121.25, 1568.0395)
+    print_res("virt", 2129394.3 , 775.93249)
+    mytot,myerr=addIntegralError(-846121.25, 1568.0395, 2129394.3 , 775.93249 )
+    print_res("myto",  mytot, myerr)
+    print_res("tota",  1283273.0886 ,  1749.5196 )
+    print "z0 dyturbo"
+    mytot,myerr= 0,0
+    print_res( "ct"   , -421637 ,   138.485 ); mytot,myerr = addIntegralError(mytot,myerr, -288420 , 180.135 )
+    print_res( "lord" , 435281 ,    128.38 ); mytot,myerr = addIntegralError(mytot,myerr, -412256 , 3149.67 )
+    print_res( "fin"  , mytot,myerr )
+    print_res( "res"  ,  442687 ,   163.995); mytot,myerr = addIntegralError(mytot,myerr, 450026  , 153.251 )
+    print_res( "tot"  , mytot,myerr )
+    pass
+
+
+
 ## Documentation for main
 #
 # More details. 
@@ -441,9 +494,11 @@ if __name__ == '__main__' :
     #print_table();
     #check_cancelation()
     #w_pt();
-    w_pt_y();
+    #w_pt_y();
     #merge_all_hist()
     #plot_pt("results/pt_table_CT10nnlo.txt")
+    quick_calc()
+    root_file_integral()
     pass
 
 
