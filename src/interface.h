@@ -241,7 +241,7 @@ extern "C" {
   double countterm_(double &costh, double &mm, double &qtt, double &yy, int &mode);
 
   int binner_(double p3[4], double p4[4]);
-  void hists_fill_(double p3[4], double p4[4], double weight);
+  void hists_fill_(double p3[4], double p4[4], double *weight);
 }
 
 #endif

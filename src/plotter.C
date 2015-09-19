@@ -99,6 +99,7 @@ void plotter::FillEvent(double p3[4], double p4[4], double wgt){
     //h_l1_pt->Fill(l1_pt,wgt);
     // commenting out because of total number of vegas entries
     //N++; 
+    // dividing weight
     if (!N) wgt/=N;
     double qt = sqrt((float)pow(p3[0]+p4[0],2)+pow(p3[1]+p4[1],2));
     double y = 0.5 *log(float((p3[3]+p4[3] +p3[2]+p4[2]) / (p3[3]+p4[3] -p3[2]-p4[2])));
@@ -109,8 +110,19 @@ void plotter::FillEvent(double p3[4], double p4[4], double wgt){
 }
 
 // fortran interface to Root
-void hists_fill_(double p3[4], double p4[4], double weight){
-    hists.FillEvent(p3,p4,weight);
+void hists_fill_(double p3[4], double p4[4], double *weight){
+    printf("wt %g\np3 %g %g %g %g\np4 %g %g %g %g\n",
+            *weight,
+            p3[0],
+            p3[1],
+            p3[2],
+            p3[3],
+            p4[0],
+            p4[1],
+            p4[2],
+            p4[3]
+            );
+    hists.FillEvent(p3,p4,*weight);
     return;
 }
 

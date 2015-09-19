@@ -284,6 +284,13 @@ c---if we're binning, add to histo too
               npart=npart+1
          endif
         endif
+C     Fill only if it's last iteration
+        if (doFill.ne.0) then
+            print*,'fort wt', val
+            print*,'fort p3', p(3,1), p(3,2), p(3,3), p(3,4)
+            print*,'fort p4', p(4,1), p(4,2), p(4,3), p(4,4)
+            call hists_fill(p(3,:),p(4,:),val)
+        endif
 c---otherwise, skip contribution
  997    continue
       enddo
@@ -293,10 +300,6 @@ c---otherwise, skip contribution
 c 998  continue
 
 
-C     Fill only if it's last iteration
-      if (doFill.ne.0) then
-          call hists_fill(p(3,:),p(4,:),xint*wgt)
-      endif
       realint=xint
 
       xreal=xreal+xint*wgt/dfloat(itmx)
