@@ -353,16 +353,24 @@ def merge_all_hist():
 
 def print_res(name, var, err):
     errpc = 0 if err==0 else abs(err/var)*100
-    print " {:10} : {:>+15.4f} +- {:>15.4f} ({:.2}%) ".format( name, var, err, errpc )
+    print " {:10} : {:>+15.4f} +- {:>15.4f} ({:.2}%) ".format( name, float(var), float(err), float(errpc) )
     pass
 
 def getIntegralError(h):
+    # integral
     val=0
     err = Double(0.)
+    doFull = False
     if h.GetDimension()==2 :
-        val = h.IntegralAndError(-1,-1,-1,-1,err) 
+        xmin= -1 if doFull else 1
+        xmax= -1 if doFull else h.GetNbinsX()+1
+        ymin= -1 if doFull else 1
+        ymax= -1 if doFull else h.GetNbinsY()+1
+        val = h.IntegralAndError( xmin, xmax, ymin, ymax, err)
     else :
-        val = h.IntegralAndError(-1,-1,err) 
+        xmin= -1 if doFull else 0
+        xmax= -1 if doFull else h.GetNbinsX()+1
+        val = h.IntegralAndError( xmin, xmax, err)
         pass
     return val,float(err)
 
@@ -437,17 +445,37 @@ def addIntegralError(v1,e1,v2,e2):
     return v1+v2, sqrt(e1*e1+e2*e2)
 
 def root_file_integral():
-    filetmp="results/dyturbo_z0_lhc7_CT10nnlo_0_qt0100y05t{}_100101.root"
+    #filetmp="results/dyturbo_z0_lhc7_CT10nlo_0_qt0100y05t{}_100101.root"
+    #filetmp="results/dyturbo_z0_lhc7_CT10nnlo_0_qt0100y05t{}_100101.root"
+
+    filetmp="results/mcfm_z0_lhc7_CT10nlo_0_qt0100y05t{}_100101.root"
+    #filetmp="results/mcfm_z0_lhc7_CT10nnlo_0_qt0100y05t{}_100101.root"
+
+    #filetmp="run_dir/results4.root"
+    #filetmp="results/dyturbo_z0_lhc7_CT10nnlo_0_qt010y01t{}_100101.root"
     hist="h_qtVy"
-    TERMS=[ "RES", "REAL", "VIRT", "CT"]
+    hist_integr="qt_y_{}"
+    TERMS=[ 
+            #( "RES"  , "resum" ),
+            #( "CT"   , "ct"    ),
+            ( "LO"   , "lo"    ),
+            ( "REAL" , "real"  ),
+            ( "VIRT" , "virt"  ),
+            ( "ALL"  , "total" ),
+            ] 
     tot=0
     toterr=0
     print "z0 dyturbo from integral"
-    for term in TERMS :
+    for term,term_lowcas in TERMS :
+        hist_res_term = "total" if "mcfm_" in filetmp else term_lowcas
         h = pl.GetHist(filetmp.format(term),hist)
         integ , inerr = getIntegralError(h)
         tot,toterr = addIntegralError(tot,toterr, integ,inerr)
         print_res(term,integ,inerr)
+        # from full phase space
+        h = pl.GetHist(filetmp.format(term),hist_integr.format(hist_res_term))
+        integr , ineer = getIntegralError(h)
+        print_res(term_lowcas,integr,ineer)
         pass
     print_res("tot",tot,toterr)
 
@@ -497,7 +525,7 @@ if __name__ == '__main__' :
     #w_pt_y();
     #merge_all_hist()
     #plot_pt("results/pt_table_CT10nnlo.txt")
-    quick_calc()
+    #quick_calc()
     root_file_integral()
     pass
 
