@@ -100,6 +100,7 @@ prepare_in(){
     width=2.495
     nproc=3 
     nprocmcfm=41
+    if [[ $order == 2 ]]; then nprocmcfm=44; fi;
     if [[ $process =~ ^w[pm]$ ]]
     then
         lomass=66 # for while 10.
@@ -107,8 +108,18 @@ prepare_in(){
         rmass=80.385
         width=2.091
     fi
-    if [[ $process =~ ^wp$ ]]; then nproc=1; nprocmcfm=22; fi;
-    if [[ $process =~ ^wm$ ]]; then nproc=2; nprocmcfm=27; fi;
+    if [[ $process =~ ^wp$ ]];
+    then
+        nproc=1;
+        nprocmcfm=22;
+        if [[ $order == 1 ]]; then nprocmcfm=11; fi;
+    fi;
+    if [[ $process =~ ^wm$ ]];
+    then
+        nproc=2;
+        nprocmcfm=27;
+        if [[ $order == 1 ]]; then nprocmcfm=16; fi;
+    fi;
     # variations
     gpar=1e0
     member=0
@@ -316,7 +327,7 @@ submit_allProg(){
     random_seed=100101
     cubacores=8
     variation=0
-    for program in dyturbo # dyturbo dyres mcfm
+    for program in dyturbo mcfm # dyturbo dyres mcfm
     do
         for process in z0 # wp z0
         do
@@ -331,13 +342,13 @@ submit_allProg(){
                 fi
                 if [[ $program =~ ^dyres ]] 
                 then
-                    termlist=""
+                    termlist="ALL"
                     if [[ $order == 2 ]]; then termlist="ALL REAL VIRT"; fi;
                 fi
                 if [[ $program =~ ^mcfm ]] 
                 then
-                    termlist="ALL LO"
-                    if [[ $order == 2 ]]; then termlist="ALL REAL VIRT"; fi;
+                    termlist="LO REAL VIRT"
+                    #if [[ $order == 2 ]]; then termlist="ALL REAL VIRT"; fi;
                 fi
                 # set PDF ?
                 pdfset=CT10nlo
