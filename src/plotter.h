@@ -32,6 +32,8 @@ class plotter {
         std::shared_ptr<int> sh_N;
         std::mutex m;
 
+        std::vector<double> v_wgt;
+
         /// @todo: use one object instead
         double N;
         TH1D * h_l1_pt;

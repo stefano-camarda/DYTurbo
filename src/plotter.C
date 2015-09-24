@@ -6,6 +6,7 @@
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <cmath>
+#include <algorithm>
 //#include <sys/wait.h>
 //#include <unistd.h>
 
@@ -88,40 +89,44 @@ void plotter::Init(){
     if (opts.doCT   ) N = opts.vegasncallsCT   ;
     if (opts.doREAL ) N = opts.vegasncallsREAL ;
     if (opts.doVIRT ) N = opts.vegasncallsVIRT ;
-    N = 0;
+    N = 1;
+
+    // vector of weights
+    v_wgt.clear();
     return;
 }
 
 void plotter::FillEvent(double p3[4], double p4[4], double wgt){
-    if (wgt == 0) return;
+    if (wgt == 0 ) return;
     //*gcounter = (*gcounter)+1;
     //double l1_pt = sqrt( pow(p3[0],2) + pow(p3[1],2) );
     //h_l1_pt->Fill(l1_pt,wgt);
     // commenting out because of total number of vegas entries
     //N++; 
     // dividing weight
-    if (!N) wgt/=N;
+    if (N!=0) wgt/=N;
     double qt = sqrt((float)pow(p3[0]+p4[0],2)+pow(p3[1]+p4[1],2));
     double y = 0.5 *log(float((p3[3]+p4[3] +p3[2]+p4[2]) / (p3[3]+p4[3] -p3[2]-p4[2])));
     h_qt   ->Fill(qt,wgt);
     h_y    ->Fill(y,wgt);
     h_qtVy ->Fill(qt,y,wgt);
+    //v_wgt .push_back( wgt );
     return;
 }
 
 // fortran interface to Root
 void hists_fill_(double p3[4], double p4[4], double *weight){
-    printf("wt %g\np3 %g %g %g %g\np4 %g %g %g %g\n",
-            *weight,
-            p3[0],
-            p3[1],
-            p3[2],
-            p3[3],
-            p4[0],
-            p4[1],
-            p4[2],
-            p4[3]
-            );
+    //printf("wt %g\np3 %g %g %g %g\np4 %g %g %g %g\n",
+            //*weight,
+            //p3[0],
+            //p3[1],
+            //p3[2],
+            //p3[3],
+            //p4[0],
+            //p4[1],
+            //p4[2],
+            //p4[3]
+          //);
     hists.FillEvent(p3,p4,*weight);
     return;
 }
@@ -145,16 +150,36 @@ void plotter::FillResult(TermType term, double int_val, double int_error, double
 }
 
 void plotter::Dump(){
-    printf(" ploter says count %f, shared count %d (use %ld) : h_qt %p entries %f mean %f RMS %f integral %f \n"
-            , N
-            , *sh_N
-            , sh_N.use_count() //*gcounter
-            , h_qt
-            , h_qt->GetEntries()
-            , h_qt->GetMean()
-            , h_qt->GetRMS()
-            , h_qt->Integral()
-            );
+    //printf(" ploter says count %f, shared count %d (use %ld) : h_qt %p entries %f mean %f RMS %f integral %f \n"
+            //, N
+            //, *sh_N
+            //, sh_N.use_count() //*gcounter
+            //, h_qt
+            //, h_qt->GetEntries()
+            //, h_qt->GetMean()
+            //, h_qt->GetRMS()
+            //, h_qt->Integral()
+            //);
+    //dump weights
+    std::vector<double>::iterator v_b = v_wgt.begin ();
+    std::vector<double>::iterator v_e = v_wgt.end   ();
+    int Nw = v_wgt.size();
+    double dNw   = Nw==0 ? 0.0 : Nw;
+    double sumw  = Nw==0 ? 0.0 : std::accumulate(v_b, v_e, 0.0);
+    double sumw2 = Nw==0 ? 0.0 :  std::inner_product(v_b, v_e, v_b, 0.0);
+    double meanw = Nw==0 ? 0.0 : sumw / dNw;
+    double rmsw  = Nw==0 ? 0.0 : std::sqrt(sumw2/dNw - meanw*meanw );
+    double minw  = Nw==0 ? 0.0 : (* std::min_element(v_b,v_e) ) ;
+    double maxw  = Nw==0 ? 0.0 : (* std::max_element(v_b,v_e) ) ;
+    printf(" ploter says count %d, sumw %g, sumw2 %g, meanw %g, RMSw %g, minw %g, maxw %g \n",
+            Nw,
+            sumw,
+            sumw2,
+            meanw,
+            rmsw,
+            minw,
+            maxw
+          );
     return;
 }
 
@@ -170,6 +195,7 @@ void plotter::Finalise(double xsection){
     //
     //sh_N.reset(); //release from main
     //
+    //Dump();
     ///@note: Sending the process id number instead of xsection. This is for
     ///       saving separate file name per each worker.
     double intpart; // < this will serve as file index
@@ -209,6 +235,9 @@ void plotter::Finalise(double xsection){
     qt_y_real  -> Write();
     qt_y_virt  -> Write();
     qt_y_total -> Write();
+    // tree
+    //t_tree->Write();
+    
     // close
     outf->Write();
     outf->Close();
