@@ -1,6 +1,7 @@
 #include <cmath>
 #include <cstring>
 #include <iostream>
+#include <stdexcept>
 
 #include "settings.h"
 #include "interface.h"
@@ -490,7 +491,6 @@ void binning::init()
 // InputParser definitions
 //
 
-#include <stdexcept>
 
 InputParser::InputParser( string _filename, string _charset, string _white):
     filename ( _filename   ),
