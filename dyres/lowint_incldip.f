@@ -46,6 +46,10 @@ c      double precision msqa(-nf:nf,-nf:nf),n(4)
       save first,rscalestart,fscalestart
       logical binner
       external binner
+
+      double precision doFill
+      common/doFill/doFill
+      external hists_fill
       
       if (first) then
          first=.false.
@@ -188,6 +192,10 @@ c      if (bin) then
 c        val=val/dfloat(itmx)
 c          call plotter(pjet,val,2)
 c      endif
+        if (doFill.ne.0) then
+            val=lowint*wgt
+            call hists_fill(pjet(3,:),pjet(4,:),val)
+        endif
 
 
       return

@@ -5,6 +5,8 @@
 
 #include <sys/mman.h>
 #include <sys/types.h>
+#include <cmath>
+#include <algorithm>
 //#include <sys/wait.h>
 //#include <unistd.h>
 
@@ -13,11 +15,14 @@ int * plotter::gcounter;
 
 #ifdef USEROOT
 #include "TFile.h"
+#include "TString.h"
 
 plotter::plotter() :
     N(0),
     h_l1_pt(0),
     h_qt(0),
+    h_y (0),
+    h_qtVy (0),
     qt_y_resum (0),
     qt_y_ct    (0),
     qt_y_lo    (0),
@@ -42,6 +47,8 @@ plotter::plotter() :
 plotter::~plotter(){
     if (!h_l1_pt ) delete h_l1_pt;
     if (!h_qt    ) delete h_qt;
+    if (!h_y     ) delete h_y ;
+    if (!h_qtVy  ) delete h_qtVy ;
     if(!qt_y_resum ) delete qt_y_resum ;
     if(!qt_y_ct    ) delete qt_y_ct    ;
     if(!qt_y_lo    ) delete qt_y_lo    ;
@@ -70,22 +77,57 @@ void plotter::Init(){
 
     h_l1_pt = new TH1D ("l1_pt", "lep1 pt", 10, 0,100 );
     h_qt    = new TH1D ("h_qt", "VB qt", 200, 0,100 );
+    h_y     = new TH1D ("h_y" , "VB y" , 25, 0,5 );
+    h_qtVy  = new TH2D ("h_qtVy" , "VB qtVy", 200, 0,100  , 25, 0,5 );
+
+    // create shared pointer
+    sh_N = make_shared<int>(0);
+    //
+    /// Trying to calculate final number of vegas calls
+    // consider this part as new function: when I will run all terms at once it can be recalculated
+    if (opts.doRES  ) N = opts.vegasncallsRES  ;
+    if (opts.doCT   ) N = opts.vegasncallsCT   ;
+    if (opts.doREAL ) N = opts.vegasncallsREAL ;
+    if (opts.doVIRT ) N = opts.vegasncallsVIRT ;
+    N = 1;
+
+    // vector of weights
+    v_wgt.clear();
     return;
 }
 
 void plotter::FillEvent(double p3[4], double p4[4], double wgt){
+    if (wgt == 0 ) return;
     //*gcounter = (*gcounter)+1;
     //double l1_pt = sqrt( pow(p3[0],2) + pow(p3[1],2) );
     //h_l1_pt->Fill(l1_pt,wgt);
-    N++;
+    // commenting out because of total number of vegas entries
+    //N++; 
+    // dividing weight
+    if (N!=0) wgt/=N;
     double qt = sqrt((float)pow(p3[0]+p4[0],2)+pow(p3[1]+p4[1],2));
-    h_qt->Fill(qt,wgt);
+    double y = 0.5 *log(float((p3[3]+p4[3] +p3[2]+p4[2]) / (p3[3]+p4[3] -p3[2]-p4[2])));
+    h_qt   ->Fill(qt,wgt);
+    h_y    ->Fill(y,wgt);
+    h_qtVy ->Fill(qt,y,wgt);
+    //v_wgt .push_back( wgt );
     return;
 }
 
 // fortran interface to Root
-void hists_fill_(double p3[4], double p4[4], double weight){
-    hists.FillEvent(p3,p4,weight);
+void hists_fill_(double p3[4], double p4[4], double *weight){
+    //printf("wt %g\np3 %g %g %g %g\np4 %g %g %g %g\n",
+            //*weight,
+            //p3[0],
+            //p3[1],
+            //p3[2],
+            //p3[3],
+            //p4[0],
+            //p4[1],
+            //p4[2],
+            //p4[3]
+          //);
+    hists.FillEvent(p3,p4,*weight);
     return;
 }
 
@@ -108,25 +150,67 @@ void plotter::FillResult(TermType term, double int_val, double int_error, double
 }
 
 void plotter::Dump(){
-    printf(" ploter says count (%d) : h_l1_pt %p entries %f mean %f RMS %f integral %f \n"
-            , 0 //*gcounter
-            , h_l1_pt
-            , h_l1_pt->GetEntries()
-            , h_l1_pt->GetMean()
-            , h_l1_pt->GetRMS()
-            , h_l1_pt->Integral()
-            );
+    //printf(" ploter says count %f, shared count %d (use %ld) : h_qt %p entries %f mean %f RMS %f integral %f \n"
+            //, N
+            //, *sh_N
+            //, sh_N.use_count() //*gcounter
+            //, h_qt
+            //, h_qt->GetEntries()
+            //, h_qt->GetMean()
+            //, h_qt->GetRMS()
+            //, h_qt->Integral()
+            //);
+    //dump weights
+    std::vector<double>::iterator v_b = v_wgt.begin ();
+    std::vector<double>::iterator v_e = v_wgt.end   ();
+    int Nw = v_wgt.size();
+    double dNw   = Nw==0 ? 0.0 : Nw;
+    double sumw  = Nw==0 ? 0.0 : std::accumulate(v_b, v_e, 0.0);
+    double sumw2 = Nw==0 ? 0.0 :  std::inner_product(v_b, v_e, v_b, 0.0);
+    double meanw = Nw==0 ? 0.0 : sumw / dNw;
+    double rmsw  = Nw==0 ? 0.0 : std::sqrt(sumw2/dNw - meanw*meanw );
+    double minw  = Nw==0 ? 0.0 : (* std::min_element(v_b,v_e) ) ;
+    double maxw  = Nw==0 ? 0.0 : (* std::max_element(v_b,v_e) ) ;
+    printf(" ploter says count %d, sumw %g, sumw2 %g, meanw %g, RMSw %g, minw %g, maxw %g \n",
+            Nw,
+            sumw,
+            sumw2,
+            meanw,
+            rmsw,
+            minw,
+            maxw
+          );
     return;
 }
 
+void plotter::Merge(){
+    // shared pointer from std doesn't work for fork!'
+    //std::lock_guard<std::mutex> lock(m);
+    //(*sh_N) += N;
+    //Dump();
+}
+
 void plotter::Finalise(double xsection){
-    if(xsection!=0.) N = h_qt->Integral()/xsection;
+    //shared memory
+    //
+    //sh_N.reset(); //release from main
+    //
+    //Dump();
+    ///@note: Sending the process id number instead of xsection. This is for
+    ///       saving separate file name per each worker.
+    double intpart; // < this will serve as file index
+    bool isworker = ( std::modf(xsection,&intpart) == 0);
+    // change the N to serve as normalizing factor: integral of all bins would
+    // be normalized to total xsection
+    if(!isworker && xsection!=0.) N = h_qt->Integral()/xsection;
     //munmap(gcounter,sizeof *gcounter); //< HAVETO DO -- otherwise you need to reboot
     if (N!=0){
-        h_qt->Scale(1./N);
+        h_qt   ->Scale(1./N);
+        h_y    ->Scale(1./N);
+        h_qtVy ->Scale(1./N);
     }
     // correct qt to binwidth
-    for (int ibin=0; ibin<=h_qt->GetNbinsX()+1; ibin++ ){
+    if(false) for (int ibin=0; ibin<=h_qt->GetNbinsX()+1; ibin++ ){
         double width = h_qt->GetBinWidth   (ibin);
         double val   = h_qt->GetBinContent (ibin);
         double err   = h_qt->GetBinError   (ibin);
@@ -135,11 +219,15 @@ void plotter::Finalise(double xsection){
     }
     // create result dir
     // get name from options
-    const char * outfname = "results.root";
+    TString outfname = "results";
+    if (isworker) outfname+=int(intpart);
+    outfname+= ".root";
     // open file
-    TFile *outf = TFile::Open(outfname, "recreate");
+    TFile *outf = TFile::Open(outfname.Data(), "recreate");
     // write
-    h_qt -> Write();
+    h_qt   -> Write();
+    h_y    -> Write();
+    h_qtVy -> Write();
     // results
     qt_y_resum -> Write();
     qt_y_ct    -> Write();
@@ -147,6 +235,9 @@ void plotter::Finalise(double xsection){
     qt_y_real  -> Write();
     qt_y_virt  -> Write();
     qt_y_total -> Write();
+    // tree
+    //t_tree->Write();
+    
     // close
     outf->Write();
     outf->Close();

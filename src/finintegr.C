@@ -23,6 +23,7 @@ integrand_t lowintegrand(const int &ndim, const double x[], const int &ncomp, do
     rlo[i]=x[i];
 
 
+  dofill_.doFill_ = int(iter==last_iter);
   f[0] = lowint_(rlo,weight);
   
   return 0;

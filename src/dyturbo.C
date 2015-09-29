@@ -68,6 +68,7 @@ int main( int argc , const char * argv[])
   bins.readfromfile(conf_file.c_str());
   //force number of cores to 0 (no parallelization)
   cubacores(opts.cubacores,1000000); // < move this to cubainit
+  cubaexit(exitfun,NULL); //< merge at the end of the run
   ///@todo: print out EW parameters and other settings
   // just a check
   opts.dumpAll();
@@ -265,8 +266,8 @@ void test_resum_speed(double costh,double m,double qt,double y,int mode){
 
 void normalise_result(double &value, double &error){
     TotXSec+=value;
-    value /= qtmax - qtmin;
-    error /= qtmax - qtmin;
+    //value /= qtmax - qtmin;
+    //error /= qtmax - qtmin;
     //value /= ymax  - ymin;
     //error /= ymax  - ymin;
 }

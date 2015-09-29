@@ -13,7 +13,7 @@ DRYRUN=echo
 
 
 # define directories
-dyturbo_project=/etapfs03/atlashpc/cuth/DYTURBO
+dyturbo_project=`pwd -P`
 batch_script_dir=$dyturbo_project/scripts/batch_scripts
 in_files_dir=$dyturbo_project/scripts/infiles
 result_dir=$dyturbo_project/results
@@ -36,12 +36,13 @@ loybin=unset
 hiybin=unset
 sample=unset
 member=unset
+program=unset
 
 prepare_script(){
     mkdir -p $batch_script_dir
     mkdir -p $result_dir
     sample=${pdfset}_${variation}
-    job_name=dyturbo_${process}_${collider}_${sample}_${qtregion}_${random_seed}
+    job_name=${program}_${process}_${collider}_${sample}_${qtregion}_${random_seed}
     sh_file=$batch_script_dir/$job_name.sh
     echo $job_name
     # prepare in
@@ -75,32 +76,50 @@ prepare_in(){
         doREA="true"
         doVIR="true"
         doLOR="true"
+        termstring="tota"
     fi;
-    if [[ $terms =~ RES  ]]; then doRES="true"; fi;
-    if [[ $terms =~ CT   ]]; then doCTM="true"; fi;
-    if [[ $terms =~ REAL ]]; then doREA="true"; fi;
-    if [[ $terms =~ VIRT ]]; then doVIR="true"; fi;
-    if [[ $terms =~ LO   ]]; then doLOR="true"; fi;
+    if [[ $terms =~ RES  ]]; then doRES="true"; termstring="none"; fi;
+    if [[ $terms =~ CT   ]]; then doCTM="true"; termstring="none"; fi;
+    if [[ $terms =~ REAL ]]; then doREA="true"; termstring="real"; fi;
+    if [[ $terms =~ VIRT ]]; then doVIR="true"; termstring="virt"; fi;
+    if [[ $terms =~ LO   ]]; then doLOR="true"; termstring="lord"; fi;
+    # special 3d
+    resumdim=4
+    if [[ $terms =~ RES3D  ]]; then resumdim=3; fi;
     # order check
     order=1
-    if [[ $pdfset == CT10nlo  ]]; then order=1; fi;
-    if [[ $pdfset == CT10nnlo ]]; then order=2; fi;
-    if [[ $pdfset == CTZPT2   ]]; then order=2; fi;
+    if [[ $pdfset == CT10nlo   ]]; then order=1; fi;
+    if [[ $pdfset == CT10nnlo  ]]; then order=2; fi;
+    if [[ $pdfset == CTZPT2    ]]; then order=2; fi;
+    if [[ $pdfset == ZPT-CT10  ]]; then order=2; fi;
+    if [[ $pdfset == CT14      ]]; then order=2; fi;
     # process (default z0)
     lomass=66.
     himass=116.
     rmass=91.1876
     width=2.495
-    nproc=3
+    nproc=3 
+    nprocmcfm=41
+    if [[ $order == 2 ]]; then nprocmcfm=44; fi;
     if [[ $process =~ ^w[pm]$ ]]
     then
-        lomass=10.
-        himass=1000.
+        lomass=66 # for while 10.
+        himass=100 # for while 1000.
         rmass=80.385
         width=2.091
     fi
-    if [[ $process =~ ^wp$ ]]; then nproc=1; fi;
-    if [[ $process =~ ^wm$ ]]; then nproc=2; fi;
+    if [[ $process =~ ^wp$ ]];
+    then
+        nproc=1;
+        nprocmcfm=22;
+        if [[ $order == 1 ]]; then nprocmcfm=11; fi;
+    fi;
+    if [[ $process =~ ^wm$ ]];
+    then
+        nproc=2;
+        nprocmcfm=27;
+        if [[ $order == 1 ]]; then nprocmcfm=16; fi;
+    fi;
     # variations
     gpar=1e0
     member=0
@@ -110,11 +129,17 @@ prepare_in(){
     if [[ $variation == g_15  ]]; then gpar=1.5e0;                        fi;
     if [[ $variation == as_*  ]]; then pdfsetname=${pdfset}_${variation}; fi;
     if [[ $variation =~ $re   ]]; then member=$variation;                 fi;
-    cp $dyturbo_in_tmpl tmp
+    # set correct input template
+    in_tmpl=$dyturbo_in_tmpl
+    if [[ $job_name =~ ^dyturbo_ ]]; then in_tmpl=$dyturbo_project/scripts/DYTURBO_TMPL.in; fi;
+    if [[ $job_name =~ ^dyres_   ]]; then in_tmpl=$dyturbo_project/scripts/DYRES_TMPL.in;   fi;
+    if [[ $job_name =~ ^mcfm_    ]]; then in_tmpl=$dyturbo_project/scripts/MCFM_TMPL.in;    fi;
+    cp $in_tmpl tmp
     sed -i "s|LOQTBIN|$loqtbin|g      " tmp
     sed -i "s|HIQTBIN|$hiqtbin|g      " tmp
     sed -i "s|LOYBIN|$loybin|g        " tmp
     sed -i "s|HIYBIN|$hiybin|g        " tmp
+    sed -i "s|SETSEED|$random_seed|g  " tmp
     sed -i "s|SETMLO|$lomass|g        " tmp
     sed -i "s|SETMHI|$himass|g        " tmp
     sed -i "s|SETRMASS|$rmass|g       " tmp
@@ -130,11 +155,20 @@ prepare_in(){
     sed -i "s|SETDOVIR|$doVIR|g         " tmp
     sed -i "s|SETDOLOR|$doLOR|g         " tmp
     sed -i "s|SETCUBACORES|$cubacores|g " tmp
+    sed -i "s|SETRESUMDIM|$resumdim|g   " tmp
+    sed -i "s|SETMCFMPROC|$nprocmcfm|g   " tmp
+    sed -i "s|SETTERMSTRING|$termstring|g   " tmp
     mv tmp $in_file
 }
 
 submit_job(){
-    bsub < $sh_file
+    if [[ `hostname` =~ cuth-dell  ]]
+    then
+        bash -x $sh_file
+    else
+        bsub < $sh_file
+        #bash -x $sh_file
+    fi
 }
 
 jobsDone(){
@@ -163,6 +197,7 @@ submit_Z_dyturbo(){
     then
         DRYRUN=
     fi
+    program=dyturbo
     # PROC SWITCH
     process=z0
     process=wp
@@ -173,6 +208,7 @@ submit_Z_dyturbo(){
     # PDF SWITCH
     pdfset=CT10nnlo
     pdfset=CTZPT2
+    pdfset=ZPT-CT10
     # defaults
     cubacores=8
     random_seed=100101
@@ -180,51 +216,153 @@ submit_Z_dyturbo(){
     hiqtbin=unset
     collider=lhc7
     seedlist=100101
-    # Z0
-    qtbinlist="0 2 4 6 8 10 12 14 16 18 22 26 30 34 38 42 46 50 54 60 70 80 100 150 200 300 800"
-    ybinlist="0 1 2 2.4"
-    variationList=" `seq 0 50` g_05 g_15 as_0117 as_0119"
-    # WPM
-    if [[ $process =~ ^w[pm]$ ]]
-    then
-        qtbinlist=`make_range 0.0 100.0 200.0`
-        ybinlist="0 5" #`make_range 0.0 5.0 25.0`
-        variationList="0"
-    fi
-    if [[ $terms =~ REAL|VIRT ]]
-    then
-        qtbinlist="0.0 2.0 "
-        ybinlist="0 5"
-        seedlist=`seq 100101 100101`
-        cubacores=0
-    fi
-    for terms in REAL VIRT 
+    for process in z0 # z0 wp
     do
-        for random_seed in $seedlist
+        for terms in RES CT REAL VIRT # REAL # RES CT VIRT  # RES3D CT REAL VIRT
         do
-            loqtbin=unset
-            for iqtbin in $qtbinlist
+            # Z0
+            #qtbinlist="0 2 4 6 8 10 12 14 16 18 22 26 30 34 38 42 46 50 54 60 70 80 100 150 200 300 800"
+            #ybinlist="0 1 2 2.4"
+            #variationList=" `seq 0 50` g_05 g_15 as_0117 as_0119"
+            # WPM
+            #if [[ $process =~ ^w[pm]$ ]]
+            #then
+            qtbinlist=`make_range 0.0 10.0 20.0` #`make_range 0.0 100.0 200.0`
+            jqtbinmax=5
+            ybinlist=`make_range 0.0 2.0 10.0` #`make_range 0.0 5.0 25.0`
+            jybinmax=5
+            variationList="0"
+            #fi
+            if [[ $terms =~ RES|CT|REAL|VIRT ]]
+            then
+                qtbinlist=`make_range 0.0 100.0 50.0` #`make_range 0.0 100.0 50.0`
+                ybinlist="0 1 2 3 4 5" #"0 1 2 3 4 5"
+                seedlist=`seq 100101 100101`
+                cubacores=8
+                jqtbinmax=1
+                jybinmax=1
+            fi
+            # special run full space
+            qtbinlist="0 100"
+            ybinlist="0 5" #"0 1 2 3 4 5"
+            seedlist=`seq 100101 100101`
+            cubacores=8
+            jqtbinmax=1
+            jybinmax=1
+            for random_seed in $seedlist
             do
-                if [[ $loqtbin == unset ]]; then loqtbin=$iqtbin; continue; fi; hiqtbin=$iqtbin
-                for iybin in $ybinlist
+                loqtbin=unset
+                jqtbin=1
+                allqtbins=""
+                for iqtbin in $qtbinlist
                 do
-                    if [[ $loybin == unset ]]; then loybin=$iybin; continue; fi; hiybin=$iybin
-                    qtregion=`echo qt${loqtbin}${hiqtbin}y${loybin}${hiybin}t${terms} | sed "s/\.//g"`
-                    for variation in $variationList
+                    if [[ $loqtbin == unset ]]; then
+                        loqtbin=$iqtbin;
+                        continue;
+                    fi;
+                    # merge pt bins
+                    allqtbins="$allqtbins $iqtbin"
+                    if [[ $jqtbin != "$jqtbinmax" ]]; then
+                        jqtbin=$(( $jqtbin + 1 ))
+                        continue;
+                    fi;
+                    hiqtbin=$allqtbins
+                    jqtbin=1
+                    allqtbins=""
+                    # end merge pt bins
+                    #
+                    loybin=unset
+                    jybin=1
+                    allybins=""
+                    for iybin in $ybinlist
                     do
-                        prepare_script
-                        $DRYRUN submit_job
-                        #. $sh_file
+                        if [[ $loybin == unset ]]; then
+                            loybin=$iybin;
+                            continue;
+                        fi;
+                        # merge y bins
+                        allybins="$allybins $iybin"
+                        if [[ $jybin != "$jybinmax" ]]; then
+                            jybin=$(( $jybin + 1 ))
+                            continue;
+                        fi;
+                        hiybin=$allybins
+                        jybin=1
+                        allybins=""
+                        # end merge y bins
+                        #
+                        qtregion=`echo qt${loqtbin}${iqtbin}y${loybin}${iybin}t${terms} | sed "s/\.//g;s/ //g"`
+                        for variation in $variationList
+                        do
+                            prepare_script
+                            $DRYRUN submit_job
+                        done
+                        loybin=$iybin
                     done
-                    loybin=$iybin
+                    loybin=unset
+                    hiybin=unset
+                    loqtbin=$iqtbin
                 done
-                loybin=unset
-                hiybin=unset
-                loqtbin=$iqtbin
             done
         done
     done
     #$DRYRUN jobsDone
+}
+
+submit_allProg(){
+    # ask about running/submitting
+    DRYRUN=echo 
+    read -p "Do you want to submit jobs ? " -n 1 -r
+    echo    # (optional) move to a new line
+    if [[ $REPLY =~ ^[Yy]$ ]]
+    then
+        DRYRUN=
+    fi
+    # full phase space
+    loqtbin=0
+    hiqtbin=100
+    loybin=0
+    hiybin=5
+    collider=lhc7
+    random_seed=100101
+    cubacores=8
+    variation=0
+    for program in dyturbo mcfm # dyturbo dyres mcfm
+    do
+        for process in z0 # wp z0
+        do
+            for order in 1 2
+            do
+                # set terms
+                termlist="ALL"
+                if [[ $program =~ ^dyturbo ]] 
+                then
+                    termlist="RES CT LO"
+                    if [[ $order == 2 ]]; then termlist="RES CT REAL VIRT"; fi;
+                fi
+                if [[ $program =~ ^dyres ]] 
+                then
+                    termlist="ALL"
+                    if [[ $order == 2 ]]; then termlist="ALL REAL VIRT"; fi;
+                fi
+                if [[ $program =~ ^mcfm ]] 
+                then
+                    termlist="LO REAL VIRT"
+                    #if [[ $order == 2 ]]; then termlist="ALL REAL VIRT"; fi;
+                fi
+                # set PDF ?
+                pdfset=CT10nlo
+                if [[ $order == 2 ]]; then pdfset=CT10nnlo; fi;
+                #
+                for terms in $termlist
+                do
+                    qtregion=`echo qt${loqtbin}${hiqtbin}y${loybin}${hiybin}t${terms} | sed "s/\.//g;s/ //g"`
+                    prepare_script
+                    $DRYRUN submit_job
+                done
+            done
+        done
+    done
 }
 
 
@@ -240,12 +378,13 @@ clear_results(){
     echo    # (optional) move to a new line
     if [[ $REPLY =~ ^[Yy]$ ]]
     then
-        rm -f results/*.{root,out,err}
+        rm -f results/*.{root,log,out,err}
     fi
     echo "Done"
 }
 
 # MAIN
-#clear_files
+clear_files
 clear_results
-submit_Z_dyturbo
+#submit_Z_dyturbo
+submit_allProg
