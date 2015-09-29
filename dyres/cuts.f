@@ -1,4 +1,5 @@
-      logical function cuts(pjet,njets)
+      logical function cutsOLD(pjet,njets)
+      logical cuts
       implicit none
       include 'constants.f'
       include 'masses.f'
