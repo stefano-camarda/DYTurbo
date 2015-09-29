@@ -366,6 +366,16 @@ void settings::dumpB( string var,bool val){
     printf( " %s = %s\n", var.c_str(), val ? "true" : "false" );
 }
 
+bool cuts_(double p[4][12], int &njet){
+    double p3[4];
+    double p4[4];
+    for (int i=0; i<4; i++){
+        p3[i] = p[i][3];
+        p4[i] = p[i][4];
+    }
+    // because dyres expects oposite logic false=accept event
+    return !cuts(p3,p4);
+}
 
 bool cuts(double p3[4], double p4[4])
 {
