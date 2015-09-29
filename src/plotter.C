@@ -273,4 +273,8 @@ void plotter::Dump(){
 void plotter::Finalise(double xsection){
     return;
 }
+
+void hists_fill_(double p3[4], double p4[4], double *weight){
+    return;
+}
 #endif //USEROOT
