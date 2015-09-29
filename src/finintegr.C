@@ -96,6 +96,11 @@ integrand_t ctintegrand3d(const int &ndim, const double x[], const int &ncomp, d
   double mcut = qtmax/qtcut_.xqtcut_;
   double wsqmin = pow(mmin,2);
   double wsqmax = pow(min(mmax,mcut),2);
+  if (wsqmin >= wsqmax)
+    {
+      f[0]=0.;
+      return 0;
+    }
   double x1=x[0];
   double m2,wt;
   breitw_(x1,wsqmin,wsqmax,opts.rmass,opts.rwidth,m2,wt);
@@ -193,6 +198,11 @@ integrand_t ctintegrand2d(const int &ndim, const double x[], const int &ncomp, d
   double mcut = qtmax/qtcut_.xqtcut_;
   double wsqmin = pow(mmin,2);
   double wsqmax = pow(min(mmax,mcut),2);
+  if (wsqmin >= wsqmax)
+    {
+      f[0]=0.;
+      return 0;
+    }
   double x1=x[0];
   double m2,wt;
   breitw_(x1,wsqmin,wsqmax,opts.rmass,opts.rwidth,m2,wt);
