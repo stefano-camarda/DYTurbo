@@ -913,17 +913,19 @@ integrand_t resintegrand3d(const int &ndim, const double x[], const int &ncomp, 
 
   end_time = clock();
 
-  // not for normal running
-  // { // filling event
-  //     double p3[4] = {0., 0., 0., 0.};
-  //     double p4[4] = {0., 0., 0., 0.};  // dont need it
-  //     p3[0] = qt;  // just x component
-  //     p3[3] = 1.0;  // don't need to calculate E yet
-  //     // rapidity = -.5 log (E+z/E-z) let E=1 just need z
-  //     double e2y = exp(-2*y);
-  //     p3[2] = p3[3]*(1-e2y)/(1+e2y);
-  //     hists_fill_(p3,p4,f[0]);
-  // }
+  { // filling event
+      // only VB information pt and y
+      double p3[4] = {0., 0., 0., 0.};
+      double p4[4] = {0., 0., 0., 0.};  // dont need this
+      p3[0] = qt;  // just x component
+      // rapidity = -.5 log (E+z/E-z) let E=1 just need z
+      double e2y = exp(-2*y);
+      double sqY = pow( (1-e2y)/(1+e2y), 2);
+      double pz2 = (m*m + qt*qt) * sqY/(1-sqY);
+      p3[2] = sqrt(pz2);
+      p3[3] = sqrt(m*m + qt*qt + pz2);
+      hists_fill_(p3,p4,f);
+  }
 
   if (opts.timeprofile)
     cout << setw (3) << "m" << setw(10) << m << setw(4) << "qt" << setw(10) <<  qt
