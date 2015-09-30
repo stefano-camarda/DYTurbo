@@ -370,8 +370,8 @@ bool cuts_(double p[4][12], int &njet){
     double p3[4];
     double p4[4];
     for (int i=0; i<4; i++){
-        p3[i] = p[i][3];
-        p4[i] = p[i][4];
+        p3[i] = p[i][2];
+        p4[i] = p[i][3];
     }
     // because dyres expects oposite logic false=accept event
     return !cuts(p3,p4);
@@ -382,15 +382,26 @@ bool cuts(double p3[4], double p4[4])
   if (!opts.makelepcuts)
     return true;
   double pt3 = sqrt((float)pow(p3[0],2)+pow(p3[1],2));
+  //if (pt3 < 20)
+    //return false;
+  double pt4 = sqrt((float)pow(p4[0],2)+pow(p4[1],2));
+  //if (pt4 < 20)
+    //return false;
+  double y3 = 0.5 *log((p3[3] + p3[2]) / (p3[3] - p3[2]));
+  //if (fabs(y3) > 2.4)
+    //return false;
+  double y4 = 0.5 *log((p4[3] + p4[2]) / (p4[3] - p4[2]));
+  //if (fabs(y4) > 2.4)
+    //return false;
+
+  printf("c++ cuts %f %f %f %f  \n", pt3, pt4, y3, y4);
+
   if (pt3 < 20)
     return false;
-  double pt4 = sqrt((float)pow(p4[0],2)+pow(p4[1],2));
   if (pt4 < 20)
     return false;
-  double y3 = 0.5 *log((p3[3] + p3[2]) / (p3[3] - p3[2]));
   if (fabs(y3) > 2.4)
     return false;
-  double y4 = 0.5 *log((p4[3] + p4[2]) / (p4[3] - p4[2]));
   if (fabs(y4) > 2.4)
     return false;
 

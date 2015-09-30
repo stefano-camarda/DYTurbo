@@ -1,8 +1,8 @@
       logical function cutsOLD(pjet,njets)
-      logical cuts
       implicit none
       include 'constants.f'
       include 'masses.f'
+      logical cuts
       integer i,j,k,njets
       double precision pjet(mxpart,4),etvec(4)
       double precision pt,etarap
@@ -85,8 +85,9 @@ C     Cuts for Z production
        if(pt4.lt.20d0) cuts=.true.
        if(dabs(eta3).gt.2.4d0) cuts=.true.
        if(dabs(eta4).gt.2.4d0) cuts=.true.
-       if(m34.lt.66d0.or.m34.gt.116d0) cuts=.true.
+C       if(m34.lt.66d0.or.m34.gt.116d0) cuts=.true.
 !       if(pt34.gt.600d0) cuts=.true.
+       print*,'fort cuts', pt3,pt4,eta3,eta4,cuts
       endif
 C     Cuts for W production
 
@@ -108,6 +109,8 @@ C     Cuts for W production
 !       if(pt34.gt.30d0) cuts=.true.
        cuts=.false.
       endif
+
+      cutsOLD=cuts
 
 
 !!!!!!!! NO CUTS !!!!!!!!
