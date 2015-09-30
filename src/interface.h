@@ -16,8 +16,8 @@ extern "C" {
     void pdfini_();
     void gaussinit_();
     double dyalphas_(double &q, double &amz, int &nloop);
-    bool cuts_(double p[4][12], int &njet);
-    bool cutsold_(double p[4][12], int &njet);
+    int cuts_(double p[4][12], int &njet);
+    int cutsold_(double p[4][12], int &njet);
 
     void breitw_(double& x1, double& mminsq, double& mmaxsq, double& rmass, double& rwidth, double& msq, double& wt);
     void boost_(double& mass, double p1[],double p_in[], double p_out[]);
