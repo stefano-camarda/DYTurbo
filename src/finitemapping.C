@@ -2,11 +2,12 @@
 #include <LHAPDF/LHAPDF.h>
 #include <gsl/gsl_integration.h>
 #include <gsl/gsl_math.h>
+#include <sys/time.h>
 #include <ctime>
 #include "settings.h"
 #include "interface.h"
+#include "finitemapping.h"
 
-double clock_real();
 
 using namespace std;
 
@@ -279,4 +280,10 @@ double dyct(double m, double y, double qt, double phicm, double phiZ, double cos
   //******************************************
 
   return value;
+}
+
+double clock_real(){
+    struct timeval now;
+    gettimeofday(&now, NULL);
+    return now.tv_sec+(now.tv_usec/1000000.0); // in sec with micro second precission
 }

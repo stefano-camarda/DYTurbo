@@ -5,4 +5,6 @@ extern double dyreal(double m, double y, double qt, double phicm, double phiZ, d
 extern double dyvirt(double m, double y, double qt, double phicm, double phiZ, double cos_th, double zcth, double vz);
 extern double dyct(double m, double y, double qt, double phicm, double phiZ, double cos_th, double alpha, double beta);
 
+double clock_real();
+
 #endif

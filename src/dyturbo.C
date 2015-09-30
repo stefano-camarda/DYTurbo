@@ -3,7 +3,6 @@
 #include <LHAPDF/LHAPDF.h>
 #include <gsl/gsl_integration.h>
 #include <gsl/gsl_math.h>
-#include <sys/time.h>
 #include <cuba.h>
 #include <iomanip>
 
@@ -31,7 +30,6 @@ void print_ybin();
 void print_result(double val, double err, double btime , double etime);
 void normalise_result(double &value, double &error);
 
-double clock_real();
 
 double TotXSec ;
 
@@ -332,8 +330,3 @@ void print_result(double val, double err, double btime , double etime){
          << flush;
 }
 
-double clock_real(){
-    struct timeval now;
-    gettimeofday(&now, NULL);
-    return now.tv_sec+(now.tv_usec/1000000.0); // in sec with micro second precission
-}
