@@ -1,7 +1,7 @@
 # DYRES -- settings
-sroot        = 7e3            # sroot
-ih1          = 1
-ih2          = 1              # ih1, ih2
+sroot        = SETSROOT            # sroot
+ih1          = SETIH1
+ih2          = SETIH1              # ih1, ih2
 nproc        = SETNPROC       # nproc
 mur          = 91.1876e0
 muf          = 91.1876e0      # mur, muf
