@@ -52,7 +52,7 @@ mhigh = SETMHI
 intDimRes = SETRESUMDIM
 
 # CT integeral dimension
-intDimCT = 8 # 3 or 8
+intDimCT = SETCTDIM # 3 or 8
 
 # term switches
 doRES  = SETDORES
@@ -67,15 +67,16 @@ doLO   = SETDOLOR
 cubaverbosity    = 0   # Cuba info messsages, from 0 to 3
 cubacores        = SETCUBACORES   # parallelization ( 0 = turn off)
 niterRES         = 18 #20   # only for 2d and 3d cuhre integration of resummed part
-niterCT          = 8 #200  # only for 3d cuhre integration of counter term
-vegasncallsRES   = 10    #00000 # only for res 4d vegas integration
-vegasncallsCT    = 100   #00 # only for lo 8d vegas integration
-vegasncallsLO    = 1000   #000000 # only for lo 7d vegas integration
-vegasncallsREAL  = 1000  #00 # only for real 10d vegas integration
-vegasncallsVIRT  = 1000  #00 # only for virt 8d vegas integration
+niterCT          = 10 #200  # only for 3d cuhre integration of counter term
+vegasncallsRES   = 1e5  # only for res 4d vegas integration
+vegasncallsCT    = 1e6  # only for lo 8d vegas integration
+vegasncallsLO    = 1e7  # only for lo 7d vegas integration
+vegasncallsREAL  = 1e8  # only for real 10d vegas integration
+vegasncallsVIRT  = 1e6  # only for virt 8d vegas integration
 
 # total or with lepton cuts
 makelepcuts = false
+fiducial = SETDETFIDUCIAL
 
 # integration types and settings for costh phi_lep phase space
 cubaint   = false   # integration with Cuba Suave

@@ -37,6 +37,7 @@ hiybin=unset
 sample=unset
 member=unset
 program=unset
+detfiducial=0
 
 prepare_script(){
     mkdir -p $batch_script_dir
@@ -85,7 +86,10 @@ prepare_in(){
     if [[ $terms =~ LO   ]]; then doLOR="true"; termstring="lord"; fi;
     # special 3d
     resumdim=4
+    ctdim=8
     if [[ $terms =~ RES3D  ]]; then resumdim=3; fi;
+    if [[ $terms =~ CT3D   ]]; then    ctdim=3; fi;
+    if [[ $terms =~ CT2D   ]]; then    ctdim=2; fi;
     # order check
     order=1
     if [[ $pdfset == CT10nlo   ]]; then order=1; fi;
@@ -100,25 +104,26 @@ prepare_in(){
     width=2.495
     nproc=3 
     nprocmcfm=41
-    if [[ $order == 2 ]]; then nprocmcfm=44; fi;
+    #nprocmcfm=41
+    #if [[ $order == 2 ]]; then nprocmcfm=44; fi;
     if [[ $process =~ ^w[pm]$ ]]
     then
-        lomass=66 # for while 10.
-        himass=100 # for while 1000.
+        lomass=10 # for while 10.
+        himass=1000 # for while 1000.
         rmass=80.385
         width=2.091
     fi
     if [[ $process =~ ^wp$ ]];
     then
         nproc=1;
-        nprocmcfm=22;
-        if [[ $order == 1 ]]; then nprocmcfm=11; fi;
+        nprocmcfm=11;
+        #if [[ $order == 1 ]]; then nprocmcfm=11; fi;
     fi;
     if [[ $process =~ ^wm$ ]];
     then
         nproc=2;
-        nprocmcfm=27;
-        if [[ $order == 1 ]]; then nprocmcfm=16; fi;
+        nprocmcfm=16;
+        #if [[ $order == 1 ]]; then nprocmcfm=16; fi;
     fi;
     # variations
     gpar=1e0
@@ -156,8 +161,10 @@ prepare_in(){
     sed -i "s|SETDOLOR|$doLOR|g         " tmp
     sed -i "s|SETCUBACORES|$cubacores|g " tmp
     sed -i "s|SETRESUMDIM|$resumdim|g   " tmp
+    sed -i "s|SETCTDIM|$ctdim|g   " tmp
     sed -i "s|SETMCFMPROC|$nprocmcfm|g   " tmp
     sed -i "s|SETTERMSTRING|$termstring|g   " tmp
+    sed -i "s|SETDETFIDUCIAL|$detfiducial|g         " tmp
     mv tmp $in_file
 }
 
@@ -309,6 +316,25 @@ submit_Z_dyturbo(){
     #$DRYRUN jobsDone
 }
 
+submit_Wwidth(){
+    for process in z0 wp # wm
+    do
+        for order in 1 2
+        do
+            for fiducial in FULL D0 CDF ATLAS CMS
+            do
+                colliderlist="tev1 tev2 lhc7 lhc8"
+                for collider in $colliderlist
+                do
+                    for term in $termlist
+                    do
+                    done
+                done
+            done
+        done
+    done
+}
+
 submit_allProg(){
     # ask about running/submitting
     DRYRUN=echo 
@@ -329,7 +355,7 @@ submit_allProg(){
     variation=0
     for program in dyturbo mcfm # dyturbo dyres mcfm
     do
-        for process in z0 # wp z0
+        for process in z0 wp # wp wm z0
         do
             for order in 1 2
             do
@@ -337,8 +363,8 @@ submit_allProg(){
                 termlist="ALL"
                 if [[ $program =~ ^dyturbo ]] 
                 then
-                    termlist="RES CT LO"
-                    if [[ $order == 2 ]]; then termlist="RES CT REAL VIRT"; fi;
+                    termlist="RES CT RES3D CT3D LO" &&
+                    if [[ $order == 2 ]]; then termlist="RES CT RES3D CT3D REAL VIRT"; fi;
                 fi
                 if [[ $program =~ ^dyres ]] 
                 then
@@ -347,8 +373,9 @@ submit_allProg(){
                 fi
                 if [[ $program =~ ^mcfm ]] 
                 then
-                    termlist="LO REAL VIRT"
-                    #if [[ $order == 2 ]]; then termlist="ALL REAL VIRT"; fi;
+                    cubacores=1
+                    termlist="LO"
+                    if [[ $order == 2 ]]; then termlist="REAL VIRT"; fi;
                 fi
                 # set PDF ?
                 pdfset=CT10nlo
