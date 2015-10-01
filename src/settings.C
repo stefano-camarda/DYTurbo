@@ -58,6 +58,7 @@ void settings::init()
   
   //total or with lepton cuts
   makelepcuts = true;
+  fiducial = static_cast<settings::DetFiducial>(0);
 
   //integration types and settings for costh phi_lep phase space
   cubaint = true;    //integration with Cuba Suave
@@ -155,6 +156,7 @@ void settings::readfromfile(const string fname){
     verbose            = in.GetBool   ( "verbose"         ); //false   # debug       and      time       profile costh       phi_lep         integration
     HackBinnerToFiller = in.GetBool   ( "HackBinnerToFiller"         ); //false   # debug       and      time       profile costh       phi_lep         integration
     useGamma           = in.GetBool ( "useGamma" );//
+    fiducial           = static_cast<settings::DetFiducial>( in.GetNumber( "fiducial" )); //0
     opts_.approxpdf_    = in.GetNumber ( "opts_approxpdf" ); //0
     opts_.pdfintervals_ = in.GetNumber ( "opts_pdfintervals" ); //100
 
@@ -295,6 +297,7 @@ void settings::dumpAll(){
         dumpD("vegasncallsREAL    ", vegasncallsREAL     );
         dumpD("vegasncallsVIRT    ", vegasncallsVIRT     );
         dumpB("makelepcuts        ", makelepcuts         );
+        dumpI("fiducial           ", fiducial            );
         dumpB("cubaint            ", cubaint             );
         dumpB("trapezint          ", trapezint           );
         dumpB("quadint            ", quadint             );
@@ -377,22 +380,106 @@ int cuts_(double p[4][12], int &njet){
     return !cuts(p3,p4);
 }
 
+
+/// fiducial cuts
+double getPt(double p[4]){
+    return sqrt((float)pow(p[0],2)+pow(p[1],2));
+}
+double getY(double p[4]){
+    return 0.5 *log((p[3] + p[2]) / (p[3] - p[2]));
+}
+double getEta(double p[4]){
+    return atanh(p[2]/sqrt((float) p[0]*p[0] + p[1]*p[1] + p[2]*p[2]));
+}
+double getMt(double p3[4], double p4[4]){
+    double p[4];
+    p[2]=p3[2]+p4[2];
+    p[3]=p3[3]+p4[3];
+    return sqrt((float)pow(p[3],2)-pow(p[2],2));
+}
+
+bool fiducial_D0(double p3[4], double p4[4]){
+    double pt3 = getPt(p3);
+    if (pt3<20) return false;
+    double aeta3 = fabs(getEta(p3));
+    if (aeta3>2.5 || (aeta3>1.1 && aeta3<1.5) ) return false;
+    double pt4 = getPt(p4);
+    if (opts.nproc==3){ // z
+        if (pt4<20) return false;
+        double aeta4 = fabs(getEta(p4));
+        if (aeta4>2.5 || (aeta4>1.1 && aeta4<1.5) ) return false;
+    } else { // W
+        if (pt4<25) return false;
+    }
+    return true; // keep
+}
+
+bool fiducial_CDF(double p3[4], double p4[4]){
+    double pt3 = getPt(p3);
+    if (pt3<20) return false;
+    double aeta3 = fabs(getEta(p3));
+    if (aeta3>2.0 || (aeta3>1.0 && aeta3<1.2) ) return false;
+    if (aeta3<1.0 && pt3<25) return false;
+    double pt4 = getPt(p4);
+    if (opts.nproc==3){ // z
+        if (pt4<20) return false;
+        double aeta4 = fabs(getEta(p4));
+        if (aeta4>2.0 || (aeta4>1.0 && aeta3<1.2) ) return false;
+        if (aeta4<1.0 && pt4<25) return false;
+    } else { // W
+        if (pt4<25) return false;
+    }
+    return true; // keep
+}
+
+bool fiducial_ATLAS(double p3[4], double p4[4]){
+    double pt3 = getPt(p3);
+    if (pt3<20) return false;
+    double aeta3 = fabs(getEta(p3));
+    if (aeta3>2.5 ) return false;
+    double pt4 = getPt(p4);
+    if (opts.nproc==3){ // z
+        if (pt4<20) return false;
+        double aeta4 = fabs(getEta(p4));
+        if (aeta4>2.5 ) return false;
+    } else { // W
+        if (pt4<25) return false;
+        double mt = getMt(p3,p4);
+        if (mt<40) return false;
+    }
+    return true; // keep
+}
+
+bool fiducial_CMS(double p3[4], double p4[4]){
+    return fiducial_CDF(p3,p4);
+}
+
 bool cuts(double p3[4], double p4[4])
 {
   if (!opts.makelepcuts)
     return true;
-  double pt3 = sqrt((float)pow(p3[0],2)+pow(p3[1],2));
-  if (pt3 < 20)
-      return false;
-  double pt4 = sqrt((float)pow(p4[0],2)+pow(p4[1],2));
-  if (pt4 < 20)
-      return false;
-  double y3 = 0.5 *log((p3[3] + p3[2]) / (p3[3] - p3[2]));
-  if (fabs(y3) > 2.4)
-      return false;
-  double y4 = 0.5 *log((p4[3] + p4[2]) / (p4[3] - p4[2]));
-  if (fabs(y4) > 2.4)
-      return false;
+  switch (opts.fiducial){
+      case settings::D0    : fiducial_D0    (p3,p4); break;
+      case settings::CDF   : fiducial_CDF   (p3,p4); break;
+      case settings::ATLAS : fiducial_ATLAS (p3,p4); break;
+      case settings::CMS   : fiducial_CMS   (p3,p4); break;
+      case settings::GENEXP :
+      default:
+          double pt3 = sqrt((float)pow(p3[0],2)+pow(p3[1],2));
+          if (pt3 < 20)
+              return false;
+          double pt4 = sqrt((float)pow(p4[0],2)+pow(p4[1],2));
+          if (pt4 < 20)
+              return false;
+          double y3 = 0.5 *log((p3[3] + p3[2]) / (p3[3] - p3[2]));
+          if (fabs(y3) > 2.4)
+              return false;
+          double y4 = 0.5 *log((p4[3] + p4[2]) / (p4[3] - p4[2]));
+          if (fabs(y4) > 2.4)
+              return false;
+  }
+
+
 
   //printf("c++ cuts %f %f %f %f  \n", pt3, pt4, y3, y4);
 
