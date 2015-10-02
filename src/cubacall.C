@@ -91,13 +91,13 @@ void integr4d(double &res, double &err)
   double error[1];
   double prob[1];
   const int flags = 4+opts.cubaverbosity;
-  const int seed = 1;
+  const int seed = opts.rseed;
   const int mineval = opts.vegasncallsRES;
   const int maxeval = opts.vegasncallsRES;
   const int nstart = max(10, int(opts.vegasncallsRES/10));
   const int nincrease = max(10, int(opts.vegasncallsRES/10));
   const int nbatch = 1000;
-  const int gridno = 1;
+  const int gridno = 0;
   Vegas(ndim, ncomp, (integrand_t)resintegrand4d, userdata, nvec,
 	epsrel, epsabs,
 	flags, seed,
@@ -134,7 +134,7 @@ void lowintegr(double &res, double &err)
   const int nstart    = max(10, int(opts.vegasncallsLO/10));
   const int nincrease = max(10, int(opts.vegasncallsLO/10));
   const int nbatch    = 1000;
-  const int gridno = 1;
+  const int gridno = 0;
   Vegas(ndim, ncomp, (integrand_t)lowintegrand, userdata, nvec,
 	epsrel, epsabs,
 	flags, seed,
@@ -172,7 +172,7 @@ void realintegr(double &res, double &err)
   const int nstart = max(10, int(opts.vegasncallsREAL/10));
   const int nincrease = max(10, int(opts.vegasncallsREAL/10));
   const int nbatch = 1000;
-  const int gridno = 1;
+  const int gridno = 0;
   Vegas(ndim, ncomp, (integrand_t)realintegrand, userdata, nvec,
 	epsrel, epsabs,
 	flags, seed,
@@ -210,7 +210,7 @@ void virtintegr(double &res, double &err)
   const int nstart = max(10, int(opts.vegasncallsVIRT/10));
   const int nincrease = max(10, int(opts.vegasncallsVIRT/10));
   const int nbatch = 1000;
-  const int gridno = 1;
+  const int gridno = 0;
   Vegas(ndim, ncomp, (integrand_t)virtintegrand, userdata, nvec,
 	epsrel, epsabs,
 	flags, seed,
@@ -248,7 +248,7 @@ void ctintegr(double &res, double &err)
   const int nstart = max(10, int(opts.vegasncallsCT/10));
   const int nincrease = max(10, int(opts.vegasncallsCT/10));
   const int nbatch = 1000;
-  const int gridno = 1;
+  const int gridno = 0;
   Vegas(ndim, ncomp, (integrand_t)ctintegrand, userdata, nvec,
 	epsrel, epsabs,
 	flags, seed,
