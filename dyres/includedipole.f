@@ -30,41 +30,35 @@
 
 CC    Compute qt2,Q2
 
-       qt2=(ptrans(3,1)+ptrans(4,1))**2+(ptrans(3,2)+ptrans(4,2))**2      
+      qt2=(ptrans(3,1)+ptrans(4,1))**2+(ptrans(3,2)+ptrans(4,2))**2      
 
-       Q2=(ptrans(3,4)+ptrans(4,4))**2
+      Q2=(ptrans(3,4)+ptrans(4,4))**2
      #    -(ptrans(3,1)+ptrans(4,1))**2      
      #    -(ptrans(3,2)+ptrans(4,2))**2      
      #    -(ptrans(3,3)+ptrans(4,3))**2 
 
 
       if(dsqrt(qt2/Q2).lt.xqtcut) then
-       includedipole=.false.
-      else
+         includedipole=.false.
+         return
+      endif
 
-       call genclust2(ptrans,rcut,pjet,isub)
-       do j=1,4
-        do i=1,npart+2
-        ptildejet(nd,i,j)=pjet(i,j)
-        enddo
-       enddo
-
+      do j=1,4
+         do i=1,npart+2 !i=3,4
+            ptildejet(nd,i,j)=ptrans(i,j)
+            pjet(i,j)=ptrans(i,j)
+         enddo
+      enddo
 
 CC    Insert here isolation cut
-
       if(isol) then
        if(isolation(ptrans).eqv..false.) includedipole=.false.
       endif 
  
 c--- check the lepton cuts
-
-        if (makecuts) then
-           failedcuts=(cuts(pjet,jets).or.
-     .          (.not.binner(pjet(3,:),pjet(4,:))))
-          if (failedcuts) includedipole=.false.
-        endif
- 
-      endif
+      failedcuts=(cuts(pjet,jets))
+      if (failedcuts) includedipole=.false.
+      if (.not.binner(pjet(3,:),pjet(4,:))) includedipole=.false.
       
       return
       end
