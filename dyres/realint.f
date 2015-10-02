@@ -10,10 +10,10 @@
       include 'scale.f'
       include 'facscale.f'
       include 'efficiency.f'
-      include 'maxwt.f'
       include 'process.f'
       include 'dynamicscale.f'
       include 'dipolescale.f'
+      include 'jetlabel.f'
       integer ih1,ih2,j,k,nd,nmax,nmin,nvec,doFill
       double precision vector(mxdim),W,val,xint
       double precision sqrts,fx1(-nf:nf),fx2(-nf:nf)
@@ -21,18 +21,16 @@
       double precision pswt,rscalestart,fscalestart
       double precision s(mxpart,mxpart),wgt,msq(-nf:nf,-nf:nf)
       double precision msqc(maxd,-nf:nf,-nf:nf),xmsq(0:maxd),xmsqjk
-      double precision flux,BrnRat,xreal,xreal2
+      double precision flux,BrnRat
       double precision xx1,xx2,q(mxpart,4),dot,q2,qt2,xqtcut
       integer n2,n3
       double precision mass2,width2,mass3,width3
       common/breit/n2,n3,mass2,width2,mass3,width3
-      common/xreal/xreal,xreal2
-      logical bin,first,failed
+      logical first
       logical incldip(0:maxd),includedipole,includereal
       external qqb_z2jet,qqb_z1jet_gs,qqb_w2jet,qqb_w1jet_gs
       common/density/ih1,ih2
       common/energy/sqrts
-      common/bin/bin
       common/Pext/p1ext,p2ext
       common/nmax/nmax
       common/BrnRat/BrnRat
@@ -44,9 +42,6 @@
 
       common/doFill/doFill
       external hists_fill
-
-      logical binner
-      external binner
 
       integer ii,jj,kk
 
@@ -60,18 +55,11 @@
          rscalestart=scale
          fscalestart=facscale
       endif
-      ntotshot=ntotshot+1
+
       pswt=0d0
       realint=0d0      
 
       W=sqrts**2
-      
-      if (first) then
-         write(6,*)
-         write(6,*) 'nmin=',nmin,',nmax=',nmax
-         write(6,*)
-         first=.false.
-      endif
       
       npart=4
       call gen4(vector,p,pswt,*999)
@@ -98,23 +86,19 @@ c      print*
 c---impose cuts on final state
       call masscuts(s,*999)
 
-
 c----reject event if any s(i,j) is too small
       call smalls(s,npart,*999)
       
-
 c--- see whether this point will pass cuts - if it will not, do not
 c--- bother calculating the matrix elements for it, instead set to zero
       includereal=includedipole(0,p)
       incldip(0)=includereal 
       
 CC   Dynamic scale: set it only if point passes cuts
-
       if(dynamicscale.and.includereal) then
        call scaleset(q2)
        dipscale(0)=facscale
       endif
-
 
       if (includereal .eqv. .false.) then
         do j=-nf,nf
@@ -123,11 +107,6 @@ CC   Dynamic scale: set it only if point passes cuts
         enddo
         enddo
       endif
-      
-C---- binner cut
-C      if (binner(p(3,:),p(4,:)).eqv..false.) goto 999
-C---- min qt cut
-C      if(dsqrt(qt2/q2).lt.xqtcut) goto 999
       
 c---- generate collinear points that satisy the jet cuts (for checking)
 c      call singgen(p,s,*998)
@@ -143,8 +122,6 @@ c----calculate the x's for the incoming partons from generated momenta
          return
       endif
 
-
-
 c--- Calculate the required matrix elements    
 
       if(nproc.eq.3) then
@@ -155,15 +132,13 @@ c--- Calculate the required matrix elements
        call qqb_w1jet_gs(p,msqc)
       endif 
 
-      do nd=0,ndmax
-      xmsq(nd)=0d0
-      enddo
-      
-            
       flux=fbGeV2/(two*xx1*xx2*W)
 
+      if(.not.dynamicscale) then
+         call fdist(ih1,xx1,dipscale(0),fx1)
+         call fdist(ih2,xx2,dipscale(0),fx2)
+      endif
 
-  777 continue    
       do nd=0,ndmax
       xmsq(nd)=0d0
       enddo
@@ -172,37 +147,13 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       do nd=0,ndmax
 
-      call fdist(ih1,xx1,dipscale(nd),fx1)
-      call fdist(ih2,xx2,dipscale(nd),fx2)
+         if(dynamicscale) then
+            call fdist(ih1,xx1,dipscale(nd),fx1)
+            call fdist(ih2,xx2,dipscale(nd),fx2)
+         endif
       
       do j=-nf,nf
       do k=-nf,nf
-
-      if (ggonly) then
-      if ((j.ne.0) .or. (k.ne.0)) goto 20
-      endif
-
-      if (gqonly) then
-      if (((j.eq.0).and.(k.eq.0)) .or. ((j.ne.0).and.(k.ne.0))) goto 20
-      endif      
-      
-      if (noglue) then 
-      if ((j.eq.0) .or. (k.eq.0)) goto 20
-      endif
-
-      if (realonly) then 
-        if(nd.eq.0) then
-         xmsq(0)=xmsq(0)+fx1(j)*fx2(k)*msq(j,k)
-        else
-         xmsq(nd)=0d0
-        endif
-      elseif (virtonly) then
-        if(nd.eq.0) then
-         xmsq(0)=0d0
-        else
-         xmsq(nd)=xmsq(nd)+fx1(j)*fx2(k)*(-msqc(nd,j,k))
-        endif
-      else
 
         if(nd.eq.0) then
          xmsqjk=fx1(j)*fx2(k)*msq(j,k)
@@ -212,9 +163,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
         xmsq(nd)=xmsq(nd)+xmsqjk         
 
-      endif
-
- 20   continue
       enddo
       enddo
 
@@ -227,63 +175,28 @@ c---trial with weight of real alone
 c---first set up all dipole contributions
 c---this is the value of integral including subtractions
       do nd=0,ndmax
+c--- if this dipole has no contribution, go to end of loop
+        if (xmsq(nd) .eq. 0d0) cycle
+
         xmsq(nd)=xmsq(nd)*flux*pswt/BrnRat
-        failed=.false.
-        
-c--- if this dipole has no contribution, go to end of loop
-c        if (xmsq(nd) .eq. 0d0) goto 997         
          
-        if (nd .eq. 0) then
-c---if there's no real contribution, record the event as failing to pass cuts
-          if (xmsq(nd) .eq. 0d0) then
-             failed=.true.
-             goto 996
-          endif
-        else
-c--- if this dipole has no contribution, go to end of loop
-          if (xmsq(nd) .eq. 0d0) goto 997         
+        if (nd .ne. 0) then
 c---check whether each counter-event passes the cuts
-          do j=1,mxpart
+c     do j=1,mxpart
+           do j=3,4
           do k=1,4
           q(j,k)=ptilde(nd,j,k)
           enddo
           enddo
           incldip(nd)=includedipole(nd,q)
-          if (incldip(nd) .eqv. .false.) failed=.true.
+          if (incldip(nd).eqv..false.) cycle
         endif
 
- 996    if (failed) then
-          if (nd .eq. 0) then
-            ncutzero=ncutzero+1
-            ntotzero=ntotzero+1
-          endif
-          call dotem(nvec,p,s)
-          xmsq(nd)=0d0
-          goto 997         
-        endif
-c---if it does, add to total
+c---  add to total
         xint=xint+xmsq(nd)
 
         val=xmsq(nd)*wgt
-                
-c--- update the maximum weight so far, if necessary
-        if (dabs(val) .gt. wtmax) then
-          wtmax=dabs(val)
-        endif
 
-c---if we're binning, add to histo too
-C        if (bin) then
-C          call getptildejet(nd,pjet)
-C          call dotem(nvec,pjet,s)
-C          val=val/dfloat(itmx)
-C          if (nd .eq. 0) then
-C            call plotter(pjet,val,3+nd)
-C          else
-C              npart=npart-1
-C           call plotter(pjet,val,3+nd)
-C              npart=npart+1
-C         endif
-C        endif
 C       Fill only if it's last iteration
         if (doFill.ne.0) then
             call getptildejet(nd,pjet)
@@ -294,13 +207,7 @@ C            print*,'fort p3', pjet(3,1), pjet(3,2), pjet(3,3), pjet(3,4)
 C            print*,'fort p4', pjet(4,1), pjet(4,2), pjet(4,3), pjet(4,4)
             call hists_fill(pjet(3,:),pjet(4,:),val)
         endif
-c---otherwise, skip contribution
- 997    continue
       enddo
-
-      call dotem(nvec,p,s)
-
-c 998  continue
 
 C     Fill only if it's last iteration
 C        if (doFill.ne.0) then
@@ -311,31 +218,9 @@ C        endif
 
       realint=xint
 
-      xreal=xreal+xint*wgt/dfloat(itmx)
-      xreal2=xreal2+(xint*wgt)**2/dfloat(itmx)
-      
-
       return
 
  999  realint=0d0
 
-      ntotzero=ntotzero+1
- 
       return
       end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
