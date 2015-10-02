@@ -348,6 +348,7 @@ submit_Wwidth(){
         DRYRUN=
     fi
     # general setup
+    program=dyturbo
     loqtbin=0
     hiqtbin=1000
     loybin=-5
@@ -377,7 +378,7 @@ submit_Wwidth(){
                 if [[ $fiducial == CMS   ]]; then colliderlist=lhc8; fi;
                 for collider in $colliderlist
                 do
-                    for term in $termlist
+                    for terms in $termlist
                     do
                         qtregion=`echo f${fiducial}qt${loqtbin}${hiqtbin}y${loybin}${hiybin}t${terms} | sed "s/\.//g;s/ //g"`
                         prepare_script
@@ -407,7 +408,7 @@ submit_allProg(){
     random_seed=100101
     cubacores=8
     variation=0
-    for program in dyturbo mcfm # dyturbo dyres mcfm
+    for program in dyturbo # mcfm # dyturbo dyres mcfm
     do
         for process in z0 wp # wp wm z0
         do
@@ -437,9 +438,13 @@ submit_allProg(){
                 #
                 for terms in $termlist
                 do
-                    qtregion=`echo qt${loqtbin}${hiqtbin}y${loybin}${hiybin}t${terms} | sed "s/\.//g;s/ //g"`
-                    prepare_script
-                    $DRYRUN submit_job
+                    for random_seed in `seq 100101 100200`
+                    do
+                        #if [[ $terms != REAL ]]; then continue; fi;
+                        qtregion=`echo qt${loqtbin}${hiqtbin}y${loybin}${hiybin}t${terms} | sed "s/\.//g;s/ //g"`
+                        prepare_script
+                        $DRYRUN submit_job
+                    done
                 done
             done
         done
@@ -468,5 +473,5 @@ clear_results(){
 clear_files
 clear_results
 #submit_Z_dyturbo
-#submit_allProg
-submit_Wwidth
+submit_allProg
+#submit_Wwidth
