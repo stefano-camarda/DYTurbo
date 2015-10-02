@@ -51,6 +51,7 @@ public:
   void dumpS(string var, string val );
   void dumpB(string var, bool   val );
 
+
   //original DYRES settings
   double sroot        ;
   int    ih1          ;
@@ -131,6 +132,10 @@ public:
   bool timeprofile;
   bool verbose;
   bool HackBinnerToFiller;
+
+  // fiducial switches
+  enum DetFiducial { GENEXP=0, D0=1, CDF=2, ATLAS=3, CMS=4};
+  DetFiducial fiducial;
 };
 
 class binning

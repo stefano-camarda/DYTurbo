@@ -368,7 +368,7 @@ def getIntegralError(h):
         ymax= -1 if doFull else h.GetNbinsY()+1
         val = h.IntegralAndError( xmin, xmax, ymin, ymax, err)
     else :
-        xmin= -1 if doFull else 0
+        xmin= -1 if doFull else 1
         xmax= -1 if doFull else h.GetNbinsX()+1
         val = h.IntegralAndError( xmin, xmax, err)
         pass
@@ -377,7 +377,7 @@ def getIntegralError(h):
 def check_cancelation():
     pl = PlotTools()
     terms=[
-       [ "RES3DCT" , "resum" ] ,
+       [ "RES"   , "resum" ] ,
        [ "CT"    , "ct"    ] ,
        [ "REAL"  , "real"  ] ,
        [ "VIRT"  , "virt"  ] ,
@@ -447,37 +447,104 @@ def addIntegralError(v1,e1,v2,e2):
 def root_file_integral():
     #filetmp="results/dyturbo_z0_lhc7_CT10nlo_0_qt0100y05t{}_100101.root"
     #filetmp="results/dyturbo_z0_lhc7_CT10nnlo_0_qt0100y05t{}_100101.root"
-
     filetmp="results/mcfm_z0_lhc7_CT10nlo_0_qt0100y05t{}_100101.root"
     #filetmp="results/mcfm_z0_lhc7_CT10nnlo_0_qt0100y05t{}_100101.root"
-
     #filetmp="run_dir/results4.root"
     #filetmp="results/dyturbo_z0_lhc7_CT10nnlo_0_qt010y01t{}_100101.root"
+    #
+    processes = ["wp", "z0"]
+    programs  = ["dyturbo", "mcfm"]
+    orders    = ["CT10nlo", "CT10nnlo"]
+    filetmp="results/{}_{}_lhc7_{}_0_qt0100y05t{}_100101.root"
     hist="h_qtVy"
     hist_integr="qt_y_{}"
     TERMS=[ 
-            #( "RES"  , "resum" ),
-            #( "CT"   , "ct"    ),
+            ( "RES"  , "resum" ),
+            ( "RES3D", "resum" ),
+            ( "CT"   , "ct"    ),
+            ( "CT3D" , "ct"    ),
             ( "LO"   , "lo"    ),
             ( "REAL" , "real"  ),
             ( "VIRT" , "virt"  ),
-            ( "ALL"  , "total" ),
+            #( "ALL"  , "total" ),
             ] 
-    tot=0
-    toterr=0
-    print "z0 dyturbo from integral"
-    for term,term_lowcas in TERMS :
-        hist_res_term = "total" if "mcfm_" in filetmp else term_lowcas
-        h = pl.GetHist(filetmp.format(term),hist)
-        integ , inerr = getIntegralError(h)
-        tot,toterr = addIntegralError(tot,toterr, integ,inerr)
-        print_res(term,integ,inerr)
-        # from full phase space
-        h = pl.GetHist(filetmp.format(term),hist_integr.format(hist_res_term))
-        integr , ineer = getIntegralError(h)
-        print_res(term_lowcas,integr,ineer)
+    for proc in processes :
+        for prog in programs :
+            for pdf in orders:
+                print " {} {} {}".format(prog,proc,pdf)
+                tot=0
+                toterr=0
+                htot=0
+                fin=0
+                finerr=0
+                hfin=0
+                hlist=list()
+                titltmp="{}_{}_{}_{}_{}"
+                for term,term_lowcas in TERMS :
+                    hist_res_term = "total" if "mcfm" in prog else term_lowcas
+                    try :
+                        h = pl.GetHist(filetmp.format(prog,proc,pdf,term),hist)
+                    except ValueError:
+                        continue
+                    except :
+                        raise
+                    titl=titltmp.format(prog,proc,pdf,term,"qty")
+                    h.SetName(titl)
+                    h.SetTitle(titl)
+                    # clone grandtotal hist
+                    if htot==0 :
+                        titl=titltmp.format(prog,proc,pdf,"tota","qty")
+                        htot = h.Clone(titl)
+                        htot.SetTitle(titl)
+                        htot.Reset()
+                    if hfin==0 :
+                        titl=titltmp.format(prog,proc,pdf,"fin","qty")
+                        hfin = h.Clone(titl)
+                        hfin.SetTitle(titl)
+                        hfin.Reset()
+                    # zero the total (mcfm summing only real+virt)
+                    if "mcfm" in prog and "REAL" in term :
+                        tot =0
+                        toterr=0
+                        htot.Reset()
+                        fin =0
+                        finerr=0
+                        hfin.Reset()
+                        pass
+                    integ , inerr = getIntegralError(h)
+                    print_res(term,integ,inerr)
+                    # from full phase space
+                    hres = pl.GetHist(filetmp.format(prog,proc,pdf,term),hist_integr.format(hist_res_term))
+                    integr , ineer = getIntegralError(hres)
+                    print_res(term_lowcas,integr,ineer)
+                    if not "3D" in term: 
+                        hlist.append(h)
+                        tot,toterr = addIntegralError(tot,toterr, integr,ineer)
+                        htot.Add(h)
+                        if not "RES" in term:
+                            fin,finerr = addIntegralError(fin,finerr, integr,ineer)
+                            hfin.Add(h)
+                    pass
+                # after all terms
+                integ , inerr = getIntegralError(hfin)
+                print_res("FIN",integ,inerr)
+                print_res("fin",fin,finerr)
+                #
+                integ , inerr = getIntegralError(htot)
+                print_res("TOT",integ,inerr)
+                print_res("tot",tot,toterr)
+                #
+                hlist.insert(0,hfin)
+                hlist.insert(0,htot)
+                hlqt = [ x.ProjectionX(x.GetName()+"_qt") for x in hlist ]
+                hly  = [ x.ProjectionY(x.GetName()+"_y" ) for x in hlist ]
+                pl.CompareHistsInList( titltmp.format(prog,proc,pdf,"all","qt") , hlqt, maxX=30, compareType="ratio" )
+                pl.CompareHistsInList( titltmp.format(prog,proc,pdf,"all","y" )  , hly , maxX=30, compareType="ratio" )
+                pass
+            pass
         pass
-    print_res("tot",tot,toterr)
+    pl.MakePreviewFromList(0,"all_compare")
+    pass
 
 def quick_calc():
     pb="pb"

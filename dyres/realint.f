@@ -272,26 +272,28 @@ c--- update the maximum weight so far, if necessary
         endif
 
 c---if we're binning, add to histo too
-        if (bin) then
-          call getptildejet(nd,pjet)
-          call dotem(nvec,pjet,s)
-          val=val/dfloat(itmx)
-          if (nd .eq. 0) then
-            call plotter(pjet,val,3+nd)
-          else
-              npart=npart-1
-           call plotter(pjet,val,3+nd)
-              npart=npart+1
-         endif
-        endif
-CC     Fill only if it's last iteration
-C        if (doFill.ne.0) then
-C            val=xmsq(nd)*wgt
-CC            print*,'fort wt', val
-CC            print*,'fort p3', p(3,1), p(3,2), p(3,3), p(3,4)
-CC            print*,'fort p4', p(4,1), p(4,2), p(4,3), p(4,4)
-C            call hists_fill(p(3,:),p(4,:),val)
+C        if (bin) then
+C          call getptildejet(nd,pjet)
+C          call dotem(nvec,pjet,s)
+C          val=val/dfloat(itmx)
+C          if (nd .eq. 0) then
+C            call plotter(pjet,val,3+nd)
+C          else
+C              npart=npart-1
+C           call plotter(pjet,val,3+nd)
+C              npart=npart+1
+C         endif
 C        endif
+C       Fill only if it's last iteration
+        if (doFill.ne.0) then
+            call getptildejet(nd,pjet)
+            call dotem(nvec,pjet,s)
+            val=xmsq(nd)*wgt
+C            print*,'fort wt', val
+C            print*,'fort p3', pjet(3,1), pjet(3,2), pjet(3,3), pjet(3,4)
+C            print*,'fort p4', pjet(4,1), pjet(4,2), pjet(4,3), pjet(4,4)
+            call hists_fill(pjet(3,:),pjet(4,:),val)
+        endif
 c---otherwise, skip contribution
  997    continue
       enddo
@@ -301,10 +303,10 @@ c---otherwise, skip contribution
 c 998  continue
 
 C     Fill only if it's last iteration
-        if (doFill.ne.0) then
-            val=xint*wgt
-            call hists_fill(p(3,:),p(4,:),val)
-        endif
+C        if (doFill.ne.0) then
+C            val=xint*wgt
+C            call hists_fill(p(3,:),p(4,:),val)
+C        endif
 
 
       realint=xint
