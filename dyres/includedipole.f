@@ -37,6 +37,7 @@ CC    Compute qt2,Q2
      #    -(ptrans(3,2)+ptrans(4,2))**2      
      #    -(ptrans(3,3)+ptrans(4,3))**2 
 
+c      print *,nd, q2, qt2
 
       if(dsqrt(qt2/Q2).lt.xqtcut) then
          includedipole=.false.

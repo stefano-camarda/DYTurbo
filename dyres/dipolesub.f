@@ -34,7 +34,7 @@ c      include 'initialscales.f'
       double precision msq(-nf:nf,-nf:nf),msqv(-nf:nf,-nf:nf),vtilde,q2d
       integer nd,ip,jp,kp,nu,j,k
       integer ndec
-c--      logical includedipole
+      logical includedipole
       logical incldip(0:maxd)
       common/incldip/incldip
       external subr_born,subr_corr
@@ -76,9 +76,9 @@ C---Modification so that only close to singular subtracted
         call storeptilde(nd,ptrans)
         
 c-- Check to see if this dipole will be included
-c        incldip(nd)=includedipole(nd,ptrans)
+        incldip(nd)=includedipole(nd,ptrans)
 C--if not return
-c        if (incldip(nd) .eqv. .false.) return
+        if (incldip(nd) .eqv. .false.) return
         
         do nu=1,4
           vec(nu)=p(jp,nu)-vtilde*p(kp,nu)
@@ -116,9 +116,9 @@ C---transform the momenta so that only the first npart+1 are filled
         call storeptilde(nd,ptrans)
 
 c-- Check to see if this dipole will be included
-c        incldip(nd)=includedipole(nd,ptrans)
+        incldip(nd)=includedipole(nd,ptrans)
 C-- if not return
-c        if (incldip(nd) .eqv. .false.) return
+        if (incldip(nd) .eqv. .false.) return
 
 c--- if using a dynamic scale, set that scale with dipole kinematics                                                                                        
         q2d=2*dot(ptrans,3,4)
@@ -157,7 +157,7 @@ c--- do nothing
 ***********************************************************************
 c-- Check to see if this dipole will be included - should have been
 c-- already determined at this point in the initial-final phase
-c        if (incldip(nd) .eqv. .false.) return
+        if (incldip(nd) .eqv. .false.) return
         
 c--- note, here we assume that msq kinematics are already taken care of
 c--- for msq, although msqv must be recalculated each time

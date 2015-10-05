@@ -79,7 +79,7 @@ c      print*
       nvec=npart+2
 
       q2=2*dot(p,3,4)
-      qt2=(p(3,1)+p(4,1))**2+(p(3,2)+p(4,2))**2
+c      qt2=(p(3,1)+p(4,1))**2+(p(3,2)+p(4,2))**2
 
       call dotem(nvec,p,s)
       
@@ -132,6 +132,18 @@ c--- Calculate the required matrix elements
        call qqb_w1jet_gs(p,msqc)
       endif 
 
+c If the real and all the dipole are 0, exit
+      if (.not.incldip(0).and.
+     +     .not.incldip(1).and.
+     +     .not.incldip(2).and.
+     +     .not.incldip(3).and.
+     +     .not.incldip(4).and.
+     +     .not.incldip(5).and.
+     +     .not.incldip(6)) then
+         realint=0d0
+         return
+      endif
+      
       flux=fbGeV2/(two*xx1*xx2*W)
 
       if(.not.dynamicscale) then
@@ -140,11 +152,9 @@ c--- Calculate the required matrix elements
       endif
 
       do nd=0,ndmax
-      xmsq(nd)=0d0
+         xmsq(nd)=0d0
       enddo
            
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-
       do nd=0,ndmax
 
          if(dynamicscale) then
