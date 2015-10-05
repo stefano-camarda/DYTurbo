@@ -53,6 +53,7 @@ C---Initialize the dipoles to zero
       enddo
       subv=0d0
       call zeromsq(msq,msqv)
+      if (incldip(nd) .eqv. .false.) return
       
       sij=two*dot(p,ip,jp)
       sik=two*dot(p,ip,kp)
@@ -72,13 +73,18 @@ C---Modification so that only close to singular subtracted
            return
         endif
         
-        call transform(p,ptrans,x,ip,jp,kp)
-        call storeptilde(nd,ptrans)
+c        call transform(p,ptrans,x,ip,jp,kp)
+c        call storeptilde(nd,ptrans)
+        do j=1,mxpart
+           do k=1,4
+              ptrans(j,k)=ptilde(nd,j,k)
+           enddo
+        enddo
         
 c-- Check to see if this dipole will be included
-        incldip(nd)=includedipole(nd,ptrans)
+c        incldip(nd)=includedipole(nd,ptrans)
 C--if not return
-        if (incldip(nd) .eqv. .false.) return
+c        if (incldip(nd) .eqv. .false.) return
         
         do nu=1,4
           vec(nu)=p(jp,nu)-vtilde*p(kp,nu)
@@ -112,13 +118,18 @@ c--- if using a dynamic scale, set that scale with dipole kinematics
         omu=sik/(sij+sik)
 C---npart is the number of particles in the final state
 C---transform the momenta so that only the first npart+1 are filled
-        call transform(p,ptrans,x,ip,jp,kp)
-        call storeptilde(nd,ptrans)
+c        call transform(p,ptrans,x,ip,jp,kp)
+c        call storeptilde(nd,ptrans)
+        do j=1,mxpart
+           do k=1,4
+              ptrans(j,k)=ptilde(nd,j,k)
+           enddo
+        enddo
 
 c-- Check to see if this dipole will be included
-        incldip(nd)=includedipole(nd,ptrans)
+c        incldip(nd)=includedipole(nd,ptrans)
 C-- if not return
-        if (incldip(nd) .eqv. .false.) return
+c        if (incldip(nd) .eqv. .false.) return
 
 c--- if using a dynamic scale, set that scale with dipole kinematics                                                                                        
         q2d=2*dot(ptrans,3,4)
@@ -135,11 +146,7 @@ C---Modification so that only close to singular subtracted
 C---Do not set incldip because initial-final can fail 
 C---but final initial needs still to be tested
 
-        if ((case .eq. 'H_1jet') .and. (ip.eq.1) .and. (jp.eq.6)) then
-c--- do nothing
-        else
-          if (u .gt. aif) return
-        endif
+        if (u .gt. aif) return
         
         do nu=1,4
            vec(nu)=p(jp,nu)/u-p(kp,nu)/omu
@@ -157,7 +164,7 @@ c--- do nothing
 ***********************************************************************
 c-- Check to see if this dipole will be included - should have been
 c-- already determined at this point in the initial-final phase
-        if (incldip(nd) .eqv. .false.) return
+c        if (incldip(nd) .eqv. .false.) return
         
 c--- note, here we assume that msq kinematics are already taken care of
 c--- for msq, although msqv must be recalculated each time
@@ -185,27 +192,13 @@ c--- if using a dynamic scale, set that scale with dipole kinematics
           dipscale(nd)=facscale
         endif
 
-CC Here modification to deal with H->3456 (Check it !)
-
-c--- do something special if we're doing W+2,Z+2jet (jp .ne. 7)
-        if (jp .ne.(5+ndec)) then
-          if (ip .lt. (5+ndec)) then
-C ie for cases 56_i,65_i
-          call subr_corr(ptrans,vec,3+ndec,msqv)
-          else
-C ie for cases 76_i,75_i
-          call subr_corr(ptrans,vec,4+ndec,msqv)
-          endif
-        else
 C ie for cases 57_i,67_i
-          call subr_corr(ptrans,vec,ip,msqv)
-        endif
+        call subr_corr(ptrans,vec,ip,msqv)
                 
         sub(qq)=+gsq/x/sij*(two/(omz+omx)-one-z)
         sub(gq)=+gsq/x/sij
         sub(gg)=+2d0*gsq/x/sij*(one/(omz+omx)+one/(z+omx)-two) 
         subv   =+4d0*gsq/x/sij/sij
-
 
 ***********************************************************************
 **************************** FINAL-FINAL ******************************
