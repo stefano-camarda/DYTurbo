@@ -15,9 +15,10 @@
       include 'dipolescale.f'
       include 'jetlabel.f'
       integer ih1,ih2,j,k,nd,nmax,nmin,nvec,doFill
-      double precision vector(mxdim),W,val,xint
+      double precision vector(mxdim),W,val
       double precision sqrts,fx1(-nf:nf),fx2(-nf:nf)
       double precision p(mxpart,4),pjet(mxpart,4),p1ext(4),p2ext(4)
+      double precision ptrans(mxpart,4)
       double precision pswt,rscalestart,fscalestart
       double precision s(mxpart,mxpart),wgt,msq(-nf:nf,-nf:nf)
       double precision msqc(maxd,-nf:nf,-nf:nf),xmsq(0:maxd),xmsqjk
@@ -46,6 +47,9 @@ C      external hists_fill
       external hists_real_event
 
       integer ii,jj,kk
+
+      double precision x,omx,sij,sik,sjk
+      integer ip,jp,kp
 
       data p/48*0d0/
       data first/.true./
@@ -81,7 +85,7 @@ c      print*
       nvec=npart+2
 
       q2=2*dot(p,3,4)
-      qt2=(p(3,1)+p(4,1))**2+(p(3,2)+p(4,2))**2
+c      qt2=(p(3,1)+p(4,1))**2+(p(3,2)+p(4,2))**2
 
       call dotem(nvec,p,s)
       
@@ -95,6 +99,70 @@ c--- see whether this point will pass cuts - if it will not, do not
 c--- bother calculating the matrix elements for it, instead set to zero
       includereal=includedipole(0,p)
       incldip(0)=includereal 
+
+c     check which dipoles are to be included
+      incldip(5)=incldip(0)
+      incldip(6)=incldip(0) 
+      do nd=1,6
+         if (nd.eq.1) then
+            ip = 1
+            jp = 5
+            kp = 2
+         endif
+         if (nd.eq.2) then
+            ip = 2
+            jp = 5
+            kp = 1
+         endif
+         if (nd.eq.3) then
+            ip = 1
+            jp = 6
+            kp = 2
+         endif
+         if (nd.eq.4) then
+            ip = 2
+            jp = 6
+            kp = 1
+         endif
+         if (nd.eq.5) then
+            ip = 1
+            jp = 5
+            kp = 6
+         endif
+         if (nd.eq.6) then
+            ip = 2
+            jp = 6
+            kp = 5
+         endif
+         sij=two*dot(p,ip,jp)
+         sik=two*dot(p,ip,kp)
+         sjk=two*dot(p,jp,kp)
+
+         if (nd.le.4) then
+            omx=-(sij+sjk)/sik
+         else
+            omx=-sjk/(sij+sik)
+         endif
+         x=one-omx
+                     
+         call transform(p,ptrans,x,ip,jp,kp)
+         call storeptilde(nd,ptrans)
+         if (nd.le.4) then
+            incldip(nd)=includedipole(nd,ptrans)
+         endif
+      enddo
+      
+c If the real and all the dipoles are 0, exit
+      if (.not.incldip(0).and.
+     +     .not.incldip(1).and.
+     +     .not.incldip(2).and.
+     +     .not.incldip(3).and.
+     +     .not.incldip(4).and.
+     +     .not.incldip(5).and.
+     +     .not.incldip(6)) then
+         realint=0d0
+         return
+      endif
       
 CC   Dynamic scale: set it only if point passes cuts
       if(dynamicscale.and.includereal) then
@@ -142,36 +210,32 @@ c--- Calculate the required matrix elements
       endif
 
       do nd=0,ndmax
-      xmsq(nd)=0d0
+         xmsq(nd)=0d0
       enddo
-           
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-      do nd=0,ndmax
-
+      if (includereal) then
+         do j=-nf,nf
+            do k=-nf,nf
+               xmsq(0)=xmsq(0)+fx1(j)*fx2(k)*msq(j,k)
+            enddo
+         enddo
+      endif
+      
+      do nd=1,ndmax
          if(dynamicscale) then
             call fdist(ih1,xx1,dipscale(nd),fx1)
             call fdist(ih2,xx2,dipscale(nd),fx2)
          endif
-      
+         
       do j=-nf,nf
       do k=-nf,nf
-
-        if(nd.eq.0) then
-         xmsqjk=fx1(j)*fx2(k)*msq(j,k)
-        else
-         xmsqjk=fx1(j)*fx2(k)*(-msqc(nd,j,k))
-        endif
-
-        xmsq(nd)=xmsq(nd)+xmsqjk         
-
+         xmsq(nd)=xmsq(nd)+fx1(j)*fx2(k)*(-msqc(nd,j,k))
       enddo
       enddo
 
       enddo
 
       realint=0d0
-      xint=0d0
 
 c---trial with weight of real alone
 c---first set up all dipole contributions
@@ -182,27 +246,12 @@ c--- if this dipole has no contribution, go to end of loop
 
         xmsq(nd)=xmsq(nd)*flux*pswt/BrnRat
          
-        if (nd .ne. 0) then
-c---check whether each counter-event passes the cuts
-c     do j=1,mxpart
-           do j=3,4
-          do k=1,4
-          q(j,k)=ptilde(nd,j,k)
-          enddo
-          enddo
-          incldip(nd)=includedipole(nd,q)
-          if (incldip(nd).eqv..false.) cycle
-        endif
-
 c---  add to total
-        xint=xint+xmsq(nd)
-
-        val=xmsq(nd)*wgt
+        realint=realint+xmsq(nd)
 
 C---    Fill only if it's last iteration
         if (doFill.ne.0) then
             call getptildejet(nd,pjet)
-            call dotem(nvec,pjet,s)
             val=xmsq(nd)*wgt
 C            print*,'fort wt', val
 C            print*,'fort p3', pjet(3,1), pjet(3,2), pjet(3,3), pjet(3,4)
@@ -214,14 +263,11 @@ C---         store information per each dipole
 
 C---  Fill only if it's last iteration
         if (doFill.ne.0) then
-C            val=xint*wgt
+C            val=realint*wgt
 C            call hists_fill(p(3,:),p(4,:),val)
 C---         fill the dipole contribution to each bin separatelly
             call hists_real_event()
         endif
-
-
-      realint=xint
 
       return
 
