@@ -23,7 +23,7 @@
       double precision s(mxpart,mxpart),wgt,msq(-nf:nf,-nf:nf)
       double precision msqc(maxd,-nf:nf,-nf:nf),xmsq(0:maxd),xmsqjk
       double precision flux,BrnRat
-      double precision xx1,xx2,q(mxpart,4),dot,q2,qt2,xqtcut
+      double precision xx1,xx2,q(mxpart,4),dot,q2,xqtcut
       integer n2,n3
       double precision mass2,width2,mass3,width3
       common/breit/n2,n3,mass2,width2,mass3,width3
@@ -50,15 +50,6 @@
       integer ip,jp,kp
 
       data p/48*0d0/
-      data first/.true./
-      save first,rscalestart,fscalestart
-
-
-      if (first) then
-         first=.false.
-         rscalestart=scale
-         fscalestart=facscale
-      endif
 
       pswt=0d0
       realint=0d0      
@@ -150,7 +141,7 @@ c     check which dipoles are to be included
          endif
       enddo
       
-c If the real and all the dipoles are 0, exit
+c     If the real and all the dipoles fail cuts, then exit
       if (.not.incldip(0).and.
      +     .not.incldip(1).and.
      +     .not.incldip(2).and.
@@ -168,19 +159,10 @@ CC   Dynamic scale: set it only if point passes cuts
        dipscale(0)=facscale
       endif
 
-      if (includereal .eqv. .false.) then
-        do j=-nf,nf
-        do k=-nf,nf
-          msq(j,k)=0d0
-        enddo
-        enddo
-      endif
-      
 c---- generate collinear points that satisy the jet cuts (for checking)
 c      call singgen(p,s,*998)
             
 c----calculate the x's for the incoming partons from generated momenta
-
       xx1=two*(p(1,4)*p2ext(4)-p(1,3)*p2ext(3))/W
       xx2=two*(p(2,4)*p1ext(4)-p(2,3)*p1ext(3))/W
 
@@ -235,10 +217,12 @@ c--- Calculate the required matrix elements
 
       realint=0d0
 
+      xmsq(0)=xmsq(0)+xmsq(5)+xmsq(6)
+
 c---trial with weight of real alone
 c---first set up all dipole contributions
 c---this is the value of integral including subtractions
-      do nd=0,ndmax
+      do nd=0,4
 c--- if this dipole has no contribution, go to end of loop
         if (xmsq(nd) .eq. 0d0) cycle
 
@@ -263,6 +247,7 @@ C        if (doFill.ne.0) then
 C            val=realint*wgt
 C            call hists_fill(p(3,:),p(4,:),val)
 C        endif
+
 
       return
 

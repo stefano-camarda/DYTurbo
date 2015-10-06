@@ -1,3 +1,3 @@
-      double precision taumin,xmin
-      common/taumin/taumin
+      double precision taumin,logtaumin,xmin
+      common/taumin/taumin,logtaumin
       common/xmin/xmin
