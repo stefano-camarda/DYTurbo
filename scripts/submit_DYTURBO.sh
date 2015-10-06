@@ -39,6 +39,7 @@ member=unset
 program=unset
 fiducial=unset
 detfiducial=0
+gpar=1
 
 prepare_script(){
     mkdir -p $batch_script_dir
@@ -145,7 +146,7 @@ prepare_in(){
     if [[ $collider == tev2 ]]; then ih2=-1; sroot=1.96e3; fi;
     if [[ $collider == lhc8 ]]; then sroot=8e3; fi;
     # variations
-    gpar=1e0
+    #gpar=1e0
     member=0
     re='^[0-9]+$'
     pdfsetname=$pdfset
@@ -358,9 +359,9 @@ submit_Wwidth(){
     cubacores=8
     variation=0
     # submit
-    for process in z0 wp # wm
+    for process in z0 wp wm
     do
-        for order in 1 # 2
+        for order in 2 # 1 2
         do
             pdfset=CT10nlo
             termlist="RES CT LO"
@@ -406,20 +407,22 @@ submit_allProg(){
     hiybin=5
     collider=lhc7
     random_seed=100101
+    startSeed=100101
     cubacores=8
     variation=0
+    gpar=.83175
     for program in dyturbo # mcfm # dyturbo dyres mcfm
     do
-        for process in z0 wp # wp wm z0
+        for process in wp # wp wm z0
         do
-            for order in 1 2
+            for order in 2
             do
                 # set terms
                 termlist="ALL"
                 if [[ $program =~ ^dyturbo ]] 
                 then
-                    termlist="RES CT RES3D CT3D LO" &&
-                    if [[ $order == 2 ]]; then termlist="RES CT RES3D CT3D REAL VIRT"; fi;
+                    termlist="RES CT LO" &&
+                    if [[ $order == 2 ]]; then termlist="RES CT REAL VIRT"; fi;
                 fi
                 if [[ $program =~ ^dyres ]] 
                 then
@@ -434,11 +437,16 @@ submit_allProg(){
                 fi
                 # set PDF ?
                 pdfset=CT10nlo
-                if [[ $order == 2 ]]; then pdfset=CT10nnlo; fi;
+                if [[ $order == 2 ]]; then pdfset=ZPT-CT10; fi;
                 #
                 for terms in $termlist
                 do
-                    for random_seed in `seq 100101 100200`
+                    NSeeds=20
+                    if [[ terms == RES ]]; then NSeeds=100; fi;
+                    if [[ terms == REAL ]]; then NSeeds=500; fi;
+                    NSeeds=50
+                    endSeed=$(( $startSeed + $NSeeds - 1 ))
+                    for random_seed in `seq $startSeed $endSeed`
                     do
                         #if [[ $terms != REAL ]]; then continue; fi;
                         qtregion=`echo qt${loqtbin}${hiqtbin}y${loybin}${hiybin}t${terms} | sed "s/\.//g;s/ //g"`
@@ -474,4 +482,4 @@ clear_files
 clear_results
 #submit_Z_dyturbo
 submit_allProg
-#submit_Wwidth
+submit_Wwidth
