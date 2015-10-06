@@ -52,6 +52,19 @@ merge_w_pt(){
 }
 
 
-merge_w_pt
+merge_pt_y(){
+    for inrootfile in `ls results/*_100101.root`
+    do
+        root_base=`echo $inrootfile | sed "s|100101|*|g"`
+        root_merge=`echo $inrootfile | sed "s|100101|merge|g; s|results|results_merge|g"`
+        hadd -f $root_merge $root_base
+        echo
+    done
+}
+
+
+#merge_w_pt
+
+merge_pt_y
 
 exit 0

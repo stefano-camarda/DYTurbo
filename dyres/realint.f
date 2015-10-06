@@ -42,7 +42,9 @@
       common/qtcut/xqtcut
 
       common/doFill/doFill
-      external hists_fill
+C      external hists_fill
+      external hists_real_dipole
+      external hists_real_event
 
       integer ii,jj,kk
 
@@ -231,22 +233,25 @@ c--- if this dipole has no contribution, go to end of loop
 c---  add to total
         realint=realint+xmsq(nd)
 
-C       Fill only if it's last iteration
+C---    Fill only if it's last iteration
         if (doFill.ne.0) then
             call getptildejet(nd,pjet)
             val=xmsq(nd)*wgt
 C            print*,'fort wt', val
 C            print*,'fort p3', pjet(3,1), pjet(3,2), pjet(3,3), pjet(3,4)
 C            print*,'fort p4', pjet(4,1), pjet(4,2), pjet(4,3), pjet(4,4)
-            call hists_fill(pjet(3,:),pjet(4,:),val)
+C---         store information per each dipole
+            call hists_real_dipole(pjet(3,:),pjet(4,:),val)
         endif
       enddo
 
-C     Fill only if it's last iteration
-C        if (doFill.ne.0) then
+C---  Fill only if it's last iteration
+        if (doFill.ne.0) then
 C            val=realint*wgt
 C            call hists_fill(p(3,:),p(4,:),val)
-C        endif
+C---         fill the dipole contribution to each bin separatelly
+            call hists_real_event()
+        endif
 
 
       return

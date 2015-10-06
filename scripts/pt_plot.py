@@ -453,9 +453,10 @@ def root_file_integral():
     #filetmp="results/dyturbo_z0_lhc7_CT10nnlo_0_qt010y01t{}_100101.root"
     #
     processes = ["wp", "z0"]
-    programs  = ["dyturbo", "mcfm"]
+    programs  = ["dyturbo"] #, "mcfm"]
     orders    = ["CT10nlo", "CT10nnlo"]
     filetmp="results/{}_{}_lhc7_{}_0_qt0100y05t{}_100101.root"
+    filetmp="results_merge/{}_{}_lhc7_{}_0_qt0100y05t{}_merge.root"
     hist="h_qtVy"
     hist_integr="qt_y_{}"
     TERMS=[ 
