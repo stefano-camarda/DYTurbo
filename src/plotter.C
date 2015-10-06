@@ -110,8 +110,8 @@ void plotter::CalculateKinematics(double p3[4], double p4[4]){
     p[3] = p3[3]+p4[3];
     // 
     double Q2 = calcQ2(p);
-    double qt = calcQt(p);
-    double y  = calcY(p);
+           qt = calcQt(p);
+           y  = calcY(p);
     // Collins-Sopper theta
     double costh_CS = 2;
     costh_CS *= sqrt( float((Q2-qt*qt)/Q2) );
@@ -120,7 +120,7 @@ void plotter::CalculateKinematics(double p3[4], double p4[4]){
     /// @todo: phi_CS;
     // define ai moments
     /// @todo: rest of moments;
-    double a4 = costh_CS;
+           a4 = costh_CS;
     //
 }
 
