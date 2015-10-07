@@ -22,12 +22,6 @@
 
       includedipole=.true.
 
-      if (nd .gt. 0) then
-        isub=1
-      else
-        isub=0
-      endif
-
 CC    Compute qt2,Q2
 
       qt2=(ptrans(3,1)+ptrans(4,1))**2+(ptrans(3,2)+ptrans(4,2))**2      
