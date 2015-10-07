@@ -63,6 +63,9 @@ class plotter {
             double qt,y,wgt;
         } point;
         std::vector<XsecPoint> dipole_points;
+        void print_dipole(XsecPoint pt);
+        void print_dipoleVec(std::vector<XsecPoint> vec );
+
 #endif // USEROOT
 
 };
