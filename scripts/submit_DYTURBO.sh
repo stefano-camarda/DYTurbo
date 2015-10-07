@@ -402,7 +402,7 @@ submit_allProg(){
     fi
     # full phase space
     loqtbin=0
-    hiqtbin=100
+    hiqtbin=10 #100
     loybin=0
     hiybin=5
     collider=lhc7
@@ -422,7 +422,8 @@ submit_allProg(){
                 if [[ $program =~ ^dyturbo ]] 
                 then
                     termlist="RES CT LO" &&
-                    if [[ $order == 2 ]]; then termlist="RES CT REAL VIRT"; fi;
+                    #if [[ $order == 2 ]]; then termlist="RES CT REAL VIRT"; fi;
+                    if [[ $order == 2 ]]; then termlist="REAL"; fi;
                 fi
                 if [[ $program =~ ^dyres ]] 
                 then
@@ -444,7 +445,7 @@ submit_allProg(){
                     NSeeds=20
                     if [[ terms == RES ]]; then NSeeds=100; fi;
                     if [[ terms == REAL ]]; then NSeeds=500; fi;
-                    NSeeds=50
+                    NSeeds=1 #50
                     endSeed=$(( $startSeed + $NSeeds - 1 ))
                     for random_seed in `seq $startSeed $endSeed`
                     do
@@ -482,4 +483,4 @@ clear_files
 clear_results
 #submit_Z_dyturbo
 submit_allProg
-submit_Wwidth
+#submit_Wwidth

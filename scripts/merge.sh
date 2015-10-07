@@ -53,13 +53,26 @@ merge_w_pt(){
 
 
 merge_pt_y(){
-    for inrootfile in `ls results/*_100101.root`
+    DRYRUN=echo 
+    DRYRUN=
+
+    defaults_seed=100101
+    search="results/*_100101.root"
+    search="results/dyturbo_wp_lhc7_ZPT-CT10_0_qt0100y05t*_$defaults_seed.root" # wp 
+    for inrootfile in `ls $search`
     do
-        root_base=`echo $inrootfile | sed "s|100101|*|g"`
-        root_merge=`echo $inrootfile | sed "s|100101|merge|g; s|results|results_merge|g"`
-        hadd -f $root_merge $root_base
+        root_base=`echo $inrootfile | sed "s|$defaults_seed|*|g"`
+        root_merge=`echo $inrootfile | sed "s|$defaults_seed|merge|g; s|results|results_merge|g"`
+        $DRYRUN hadd -f $root_merge $root_base
         echo
     done
+
+    # fin and tot
+    root_base=`echo "$search" | sed  "s|$defaults_seed|merge|g; s|results|results_merge|g"  | rev  | cut -d"_" -f2- | cut -dt -f2- | rev `t
+    $DRYRUN hadd -f ${root_base}FIN_merge.root ${root_base}{CT,REAL,VIRT}_merge.root
+    echo
+    $DRYRUN hadd -f ${root_base}TOT_merge.root ${root_base}{RES,FIN}_merge.root
+    echo
 }
 
 

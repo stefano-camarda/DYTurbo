@@ -452,18 +452,21 @@ def root_file_integral():
     #filetmp="run_dir/results4.root"
     #filetmp="results/dyturbo_z0_lhc7_CT10nnlo_0_qt010y01t{}_100101.root"
     #
-    processes = ["wp", "z0"]
+    processes = ["wp"] #, "z0"]
     programs  = ["dyturbo"] #, "mcfm"]
-    orders    = ["CT10nlo", "CT10nnlo"]
-    filetmp="results/{}_{}_lhc7_{}_0_qt0100y05t{}_100101.root"
+    orders    = ["ZPT-CT10"] #, "CT10nlo", "CT10nnlo"]
+    filetmp1="results/{}_{}_lhc7_{}_0_qt0100y05t{}_100101.root"
+    filetmp2="results_merge/dipole_plotting/{}_{}_lhc7_{}_0_qt0100y05t{}_100101.root"
     filetmp="results_merge/{}_{}_lhc7_{}_0_qt0100y05t{}_merge.root"
     hist="h_qtVy"
     hist_integr="qt_y_{}"
     TERMS=[ 
+            ( "FIN" , "fin"  ),
+            ( "TOT" , "tot"  ),
             ( "RES"  , "resum" ),
-            ( "RES3D", "resum" ),
+            #( "RES3D", "resum" ),
             ( "CT"   , "ct"    ),
-            ( "CT3D" , "ct"    ),
+            #( "CT3D" , "ct"    ),
             ( "LO"   , "lo"    ),
             ( "REAL" , "real"  ),
             ( "VIRT" , "virt"  ),
@@ -482,9 +485,14 @@ def root_file_integral():
                 hlist=list()
                 titltmp="{}_{}_{}_{}_{}"
                 for term,term_lowcas in TERMS :
-                    hist_res_term = "total" if "mcfm" in prog else term_lowcas
+                    hist_res_term = term_lowcas
+                    filename=filetmp
+                    if "mcfm" in prog : hist_res_term = "total"
+                    if "FIN"  in term : hist_res_term = "total"
+                    if "TOT"  in term : hist_res_term = "total"
+                    if "REAL"  in term : filename=filetmp1
                     try :
-                        h = pl.GetHist(filetmp.format(prog,proc,pdf,term),hist)
+                        h = pl.GetHist(filename.format(prog,proc,pdf,term),hist)
                     except ValueError:
                         continue
                     except :
@@ -494,12 +502,12 @@ def root_file_integral():
                     h.SetTitle(titl)
                     # clone grandtotal hist
                     if htot==0 :
-                        titl=titltmp.format(prog,proc,pdf,"tota","qty")
+                        titl=titltmp.format(prog,proc,pdf,"total","qty")
                         htot = h.Clone(titl)
                         htot.SetTitle(titl)
                         htot.Reset()
                     if hfin==0 :
-                        titl=titltmp.format(prog,proc,pdf,"fin","qty")
+                        titl=titltmp.format(prog,proc,pdf,"finite","qty")
                         hfin = h.Clone(titl)
                         hfin.SetTitle(titl)
                         hfin.Reset()
@@ -518,28 +526,33 @@ def root_file_integral():
                     hres = pl.GetHist(filetmp.format(prog,proc,pdf,term),hist_integr.format(hist_res_term))
                     integr , ineer = getIntegralError(hres)
                     print_res(term_lowcas,integr,ineer)
-                    if not "3D" in term: 
+                    if not "3D" in term:
                         hlist.append(h)
-                        tot,toterr = addIntegralError(tot,toterr, integr,ineer)
-                        htot.Add(h)
-                        if not "RES" in term:
-                            fin,finerr = addIntegralError(fin,finerr, integr,ineer)
-                            hfin.Add(h)
+                        if not "TOT" in term and not "FIN" in term: 
+                            tot,toterr = addIntegralError(tot,toterr, integr,ineer)
+                            htot.Add(h)
+                            if not "RES" in term:
+                                fin,finerr = addIntegralError(fin,finerr, integr,ineer)
+                                hfin.Add(h)
+                                pass
+                            pass
+                        pass
                     pass
                 # after all terms
                 integ , inerr = getIntegralError(hfin)
-                print_res("FIN",integ,inerr)
-                print_res("fin",fin,finerr)
+                print_res("hFIN",integ,inerr)
+                print_res("hfin",fin,finerr)
                 #
                 integ , inerr = getIntegralError(htot)
-                print_res("TOT",integ,inerr)
-                print_res("tot",tot,toterr)
+                print_res("hTOT",integ,inerr)
+                print_res("htot",tot,toterr)
                 #
-                hlist.insert(0,hfin)
-                hlist.insert(0,htot)
-                hlqt = [ x.ProjectionX(x.GetName()+"_qt") for x in hlist ]
-                hly  = [ x.ProjectionY(x.GetName()+"_y" ) for x in hlist ]
-                pl.CompareHistsInList( titltmp.format(prog,proc,pdf,"all","qt") , hlqt, maxX=30, compareType="ratio" )
+                #hlist.insert(0,hfin)
+                #hlist.insert(0,htot)
+                hlistProject = hlist[4:]
+                hlqt = [ x.ProjectionX(x.GetName()+"_qt") for x in hlistProject ]
+                hly  = [ x.ProjectionY(x.GetName()+"_y" ) for x in hlistProject ]
+                pl.CompareHistsInList( titltmp.format(prog,proc,pdf,"all","qt") , hlqt, minX=1, maxX=30, compareType="ratio" )
                 pl.CompareHistsInList( titltmp.format(prog,proc,pdf,"all","y" )  , hly , maxX=30, compareType="ratio" )
                 pass
             pass
@@ -581,6 +594,36 @@ def quick_calc():
     pass
 
 
+def wwidth_table():
+    experiments = [
+            [ "D0"    , "tev1" ],
+            [ "CDF"   , "tev2" ],
+            [ "ATLAS" , "lhc7" ],
+            [ "CMS"   , "lhc8" ],
+        ]
+    processes = [ "wp", "wm", "z0"]
+    for exp,col in experiments :
+        #new header
+        print " table for exp", exp, "@", col, " in order W+ W- Z"
+        print " full  | fiducial | eff "
+        for proc in processes :
+            # full
+            full_v, full_e_r = GetValError("Full",col,proc)
+            print_wwidth_res(full_v, full_e_r)
+            # fiducial
+            fid_v, fid_e_r = GetValError(exp,col,proc)
+            print_wwidth_res(fid_v, fid_e_r)
+            # efficiency
+            eff_v = fid_v / full_v
+            eff_e_r = sqrt ( full_e_r**2 + fid_e_r**2 )
+            print_wwidth_res(eff_v, eff_e_r)
+            # newline
+            print
+            pass
+        pass
+        # ratio
+    pass
+
 
 ## Documentation for main
 #
@@ -595,6 +638,7 @@ if __name__ == '__main__' :
     #plot_pt("results/pt_table_CT10nnlo.txt")
     #quick_calc()
     root_file_integral()
+    wwidth_table()
     pass
 
 
