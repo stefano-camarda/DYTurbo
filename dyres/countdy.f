@@ -41,6 +41,8 @@ C
       double precision flux,BrnRat
       double precision xx1,xx2,q(mxpart,4)
       double precision m3,m4,m5,qtcut,xqtcut,switch,qt,m
+      double precision switching
+      external switching
 CC
       double precision x1,x2
       double precision q2,qt2,shat,Itilde
@@ -175,8 +177,8 @@ CC   LR,LF,LQ
          qt=qtt
          qt2=qtt*qtt
 !     SWITCHING FUNCTIONS
-         switch=1d0
-         if(qt.ge.m*3/4d0)  switch=dexp(-(m*3/4d0-qt)**2/(m/2d0)**2) ! GAUSS SWITCH
+c         switch=1d0
+c         if(qt.ge.m*3/4d0)  switch=dexp(-(m*3/4d0-qt)**2/(m/2d0)**2) ! GAUSS SWITCH
 !!!!!!!!!!!!
 !     if(qt.ge.m)  switch=dexp(-(m-qt)**2/(m/2d0)**2)           ! GAUSS SWITCH
 !     if(qt.ge.m/2d0)  switch=dexp(-(m/2d0-qt)**2/(m/2d0)**2)              ! GAUSS SWITCH
@@ -185,6 +187,7 @@ CC   LR,LF,LQ
 !     if(qt.ge.m/2d0)        switch=dexp((m2/4d0-qt2)/m2*4d0)              ! EXP SWITCH FASTER
 !     if(qt.ge.m/2d0)        switch=(dcos(pi/50d0*(qt-45.6d0))+1d0)/2d0    ! COS SWITCH
 !     if(qt.ge.95.6)         switch=0d0                                    ! COS SWITCH
+         switch = switching(qt, m)
 
          if(switch.le.0.01d0) return
 
@@ -907,6 +910,9 @@ c perform qt integration
       common/xmio/xmio
       integer i,j
 
+      double precision switching
+      external switching
+
       double precision Itilde
       external Itilde
       
@@ -961,8 +967,8 @@ c     Common block (output)
             qt = sqrt(qt2)
 
 !      SWITCHING FUNCTIONS
-            switch=1d0
-            if(qt.ge.m*3/4d0)  switch=dexp(-(m*3/4d0-qt)**2/(m/2d0)**2) ! GAUSS SWITCH
+c            switch=1d0
+c            if(qt.ge.m*3/4d0)  switch=dexp(-(m*3/4d0-qt)**2/(m/2d0)**2) ! GAUSS SWITCH
 !!!!!!!!!!!!
 !     if(qt.ge.m)  switch=dexp(-(m-qt)**2/(m/2d0)**2)           ! GAUSS SWITCH
 !     if(qt.ge.m/2d0)  switch=dexp(-(m/2d0-qt)**2/(m/2d0)**2)              ! GAUSS SWITCH
@@ -971,6 +977,7 @@ c     Common block (output)
 !     if(qt.ge.m/2d0)        switch=dexp((m2/4d0-qt2)/m2*4d0)              ! EXP SWITCH FASTER
 !     if(qt.ge.m/2d0)        switch=(dcos(pi/50d0*(qt-45.6d0))+1d0)/2d0    ! COS SWITCH
 !     if(qt.ge.95.6)         switch=0d0                                    ! COS SWITCH
+            switch = switching(qt, m)
 
             if(switch.le.0.01d0) cycle
 

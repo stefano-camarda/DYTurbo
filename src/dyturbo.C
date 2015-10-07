@@ -7,6 +7,7 @@
 #include <iomanip>
 
 #include "integr.h"
+#include "resintegr.h"
 #include "settings.h"
 #include "interface.h"
 #include "finintegr.h"
@@ -111,8 +112,10 @@ int main( int argc , const char * argv[])
   //yline();
   //mline();
   //mlinebw();
+  //xline();
   //ptavar();
   //ptgvar();
+  //return 0;
   /**************************************/
 
 

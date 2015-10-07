@@ -4,6 +4,7 @@
 #include "settings.h"
 #include "integr.h"
 #include "finintegr.h"
+#include "resintegr.h"
 #include "plotter.h"
 
 void integr2d(double &res, double &err)

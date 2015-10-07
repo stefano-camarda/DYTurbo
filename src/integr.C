@@ -1,15 +1,21 @@
+// --------- TO DO -----------------
+//make this collection of functions a self-consistent library
+//by removing dependences on settings.h and interface.h,
+//introducing a namespace, and adding a init function for initialisation of settings
+//rename it to omegaintegr
+//remove integration boundaries
+// ---------------------------------
+
 #include "integr.h"
 #include "settings.h"
 #include "interface.h"
-#include "plotter.h"
+#include "cuba.h"
 
-#include <gsl/gsl_integration.h>
-#include <gsl/gsl_math.h>
 #include <ctime>
 #include <math.h>
+#include <iostream>
 #include <iomanip>
 #include <vector>
-#include <random>
 
 //integration boundaries
 double mmin, mmax;
@@ -61,20 +67,28 @@ void setbounds(double m1, double m2, double qt1, double qt2, double y1, double y
     }
 }
 
-void set(double costh, double mm, double qtt, double yy)
+void setcthmqty(double costh, double mm, double qtt, double yy)
 {
   _costh = costh;
   _m = mm;
   _qt = qtt;
   _y = yy;
 }
-
-void set(double mm, double qtt, double yy)
+void setmqty(double mm, double qtt, double yy)
 {
   _m = mm;
   _qt = qtt;
   _y = yy;
 }
+void setcosth(double costh) {_costh = costh;}
+void setm(double mm) {_m = mm;}
+void setqt(double qtt) {_qt = qtt;}
+void sety(double yy) {_y = yy;}
+
+//fortran functions
+void setqt_(double &qtt) {_qt = qtt;}
+void sety_(double &yy) {_y = yy;}
+
 void genV4p(double m, double qt, double y, double phi)
 {
   //Generate the boson invariant mass
@@ -226,6 +240,8 @@ void genV4p(double m, double qt, double y, double phi)
   cout << pV[0] << " " << pV[1] << "  " << pV[2] << endl;
   */
 }
+
+//fortran function
 void genv4p_()
 {
   genV4p(_m, _qt, _y, 0);
@@ -335,71 +351,6 @@ double costhCS()
   return (1.-4.*(kap1[3]*p4[3]-kap1[2]*p4[2]-kap1[1]*p4[1]-kap1[0]*p4[0])/(_m*_m));
 }
 
-void setcosth(double costh) {_costh = costh;}
-void setm(double mm) {_m = mm;}
-void sety(double yy) {_y = yy;}
-void sety_(double &yy) {_y = yy;}
-void setqt(double qtt) {_qt = qtt;}
-void setqt_(double &qtt) {_qt = qtt;}
-
-double resy(double y, void* param)
-{
-  sety(y);
-
-  double a = 66;
-  double b = 116;
-  double result = 0;
-  double  err = 0;
-
-  size_t limit = 1000;
-  gsl_integration_workspace * gslw = gsl_integration_workspace_alloc (limit);
-  gsl_function gslfm;
-  gslfm.function = &resm;
-  clock_t begin_time = clock();
-  gsl_integration_qag(&gslfm, a, b, 0, 1E-2, limit, 1, gslw, &result, &err);
-  //size_t neval;
-  //gsl_integration_qng(&gslfm, a, b, 0, 1E-2, &result, &err, &neval);
-  clock_t end_time = clock();
-  cout << "Call to function resy, y: " << y 
-  	 << " 66-116 mass integral: " << result 
-  	 << " error: " << err 
-  	 << " time: " << float( end_time - begin_time ) /  CLOCKS_PER_SEC <<endl;
-  return result;
-}
-
-double resth(double costh, void* param)
-{
-  setcosth(costh);
-
-  double a = 0;
-  double b = 5;
-  double result = 0;
-  double  err = 0;
-
-  size_t limit = 1000;
-  gsl_integration_workspace * gslw = gsl_integration_workspace_alloc (limit);
-  gsl_function gslfy;
-  gslfy.function = &resy;
-  clock_t begin_time = clock();
-  gsl_integration_qag(&gslfy, a, b, 0, 1E-2, limit, 1, gslw, &result, &err);
-  //size_t neval;
-  //gsl_integration_qng(&gslfy, a, b, 0, 1E-2, &result, &err, &neval);
-  clock_t end_time = clock();
-  cout << "Call to function resth, costh: " << costh
-         << " 0-5 rapidity integral: " << result 
-         << " error: " << err
-         << " time: " << float( end_time - begin_time ) /  CLOCKS_PER_SEC <<endl;
-  return result*2;
-}
-
-double resm(double mm, void* param)
-{
-  int mode = 0.;
-  double result = resumm_(_costh, mm, _qt, _y,mode);
-  //  cout << "Call to function resm, mass: " << mm << " integral: " << result << endl;
-  return result;
-}
-
 void costhbound(double phi_lep, vector<double> &min, vector<double> &max)
 {
   if (!opts.makelepcuts)
@@ -489,7 +440,7 @@ void costhbound(double phi_lep, vector<double> &min, vector<double> &max)
     }
 }
 
-//convert this trapezoidal rule to gaussian quadratures in fixed segments of phi
+//Perform integration of costheta moments
 void cthmoments_(double &cthmom0, double &cthmom1, double &cthmom2)
 {
   clock_t begin_time, end_time;
@@ -700,457 +651,3 @@ integrand_t thphiintegrand(const int &ndim, const double x[], const int &ncomp, 
   return 0;
 }
 
-integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, double f[])
-{
-  clock_t begin_time, end_time;
-
-  begin_time = clock();
-
-  //Jacobian of the change of variables from the unitary hypercube x[3] to the m, y, qt boundaries
-  double jac = 1.;
-
-  // Generate the boson invariant mass between the integration boundaries
-  double wsqmin = pow(mmin,2);
-  double wsqmax = pow(mmax,2);
-  double x1=x[0];
-  double m2,wt;
-  breitw_(x1,wsqmin,wsqmax,opts.rmass,opts.rwidth,m2,wt);
-  double m=sqrt(m2);
-  jac=jac*wt;
-  //Dynamic scale (not implemented yet)
-  //if(dynamicscale) call scaleset(m2)
-
-  //integrate up to the qT kinematical limit
-  /*
-  double dexpy=exp(y);
-  double dexpmy=exp(-y);
-  double cosh2y=pow(((dexpy+dexpmy)*0.5),2);
-  double qtmax=sqrt(pow((pow(energy_.sroot_,2)+m2),2)/(4.*pow(energy_.sroot_,2)*cosh2y) - m2);
-  double qtmin=0.1;
-  double qt=qtmin+qtmax*x[2];
-  jac=jac*(qtmax);
-  */
-
-  //integrate between qtmin and qtmax
-  double qtmn = max(0.02, qtmin);
-  double qt=qtmn+(qtmax-qtmn)*x[1];
-  jac=jac*(qtmax-qtmn);
-
-  //set global variables to m, qt
-  set(m, qt, 0);
-
-  //generate boson 4-momentum, with m, qt, y and phi=0
-  genV4p(m, qt, 0, 0.);
-
-  //Perform quadrature rule integration in rapidity and nested costh integration
-  int nocuts = !opts.makelepcuts;
-
-  //Limit y boundaries to the kinematic limit in y
-  double ylim = 0.5*log(pow(energy_.sroot_,2)/m2);
-  double ymn = min(max(-ylim, ymin),ylim);
-  double ymx = max(min(ylim, ymax),-ylim);
-
-  clock_t ybt, yet;
-  ybt = clock();
-  //  rapintegrals_(ymin,ymax,m,nocuts);
-  rapintegrals_(ymn,ymx,m,nocuts);
-  yet = clock();
-  
-  set(m, qt, 0);
-  genV4p(m, qt, 0, 0.);
-
-  //  SWITCHING FUNCTIONS
-  double swtch=1.;
-  if (qt >= m*3/4.)  swtch=exp(-pow((m*3/4.-qt),2)/pow((m/2.),2)); // GAUSS SWITCH
-  if (swtch <= 0.01) swtch = 0;
-
-  //Call to the resummation part
-  double costh = 0;
-  double y = 0.5*(ymx+ymn); //needed to get the correct IFIT index of the approximate PDF
-  int mode = 2;
-
-  clock_t rbt = clock();
-  if (swtch < 0.01)
-    f[0]=0.;
-  else
-    f[0]=resumm_(costh,m,qt,y,mode)/(8./3.);
-  clock_t ret = clock();
-
-  if (f[0] != f[0])
-    f[0]=0.;  //avoid nans
-	   
-  f[0] = f[0]*jac*swtch;
-  end_time = clock();
-  if (opts.timeprofile)
-    cout << setw (3) << "m" << setw(10) << m << setw(4) << "qt" << setw(10) <<  qt
-	 << setw(8) << "result" << setw(10) << f[0]
-	 << setw(10) << "tot time" << setw(10) << float( end_time - begin_time ) /  CLOCKS_PER_SEC
-	 << setw(10) << "rapint"  << setw(10) << float( yet - ybt ) /  CLOCKS_PER_SEC
-	 << setw(10) << "resumm"  << setw(10) << float( ret - rbt ) /  CLOCKS_PER_SEC
-	 << endl;
-  return 0;
-}
-
-
-integrand_t resintegrand3d(const int &ndim, const double x[], const int &ncomp, double f[])
-{
-  clock_t begin_time, end_time;
-
-  begin_time = clock();
-
-  //Jacobian of the change of variables from the unitary hypercube x[3] to the m, y, qt boundaries
-  double jac = 1.;
-
-  // Generate the boson invariant mass between the integration boundaries
-  double wsqmin = pow(mmin,2);
-  double wsqmax = pow(mmax,2);
-  double x1=x[0];
-  double m2,wt;
-  breitw_(x1,wsqmin,wsqmax,opts.rmass,opts.rwidth,m2,wt);
-  double m=sqrt(m2);
-  jac=jac*wt;
-
-  /*
-  //split the mass in 3 pieces,
-  //and unweight the breit wigner only from -5 width to +5 width
-  //no sense, I have to split the mass before entering the integration
-  //and set breit wigner unweighting or not
-  double bwmn = opts.rmass -5*opts.rwidth;
-  double bwmx = opts.rmass +5*opts.rwidth;
-  double bwmnsq = pow(bwmn,2);
-  double bwmxsq = pow(bwmx,2);
-  double m,m2,wt;
-  double xl = 0.25;
-  double xu = 0.75;
-  if (x[0] < xl)
-    {
-      double x1=x[0]/(xl-0.);
-      m=mmin+(bwmn-mmin)*x[0];
-      jac=jac*(bwmn-mmin)/(xl-0.);
-    }
-  else if (x[0] > xu)
-    {
-      double x1=(x[0]-xu)/(1.-xu);
-      m=bwmx+(mmax-bwmx)*x1;
-      jac=jac*(mmax-bwmx)/(1.-xu);
-    }
-  else
-    {
-      double xbw=(x[0]-xl)/(xu-xl);
-      breitw_(xbw,bwmnsq,bwmxsq,opts.rmass,opts.rwidth,m2,wt);
-      m=sqrt(m2);
-      wt=wt/(xu-xl);
-      jac=jac*wt;
-    }
-  */
-
-  //  double m=mmin+(mmax-mmin)*x[0];
-  //  jac=jac*(mmax-mmin);
-
-  //Dynamic scale (not implemented yet)
-  //if(dynamicscale) call scaleset(m2)
-
-  //Limit y boundaries to the kinematic limit in y
-  double ylim = 0.5*log(pow(energy_.sroot_,2)/m2);
-  double ymn = min(max(-ylim, ymin),ylim);
-  double ymx = max(min(ylim, ymax),-ylim);
-
-  //integrate between ymin and ymax
-  double y=ymn+(ymx-ymn)*x[1];
-  jac=jac*(ymx-ymn);
-
-  /*
-  //Integrate the full phase space
-  double y=-ylim+2.*ylim*x[1];
-  jac=jac*2.*ylim;
-  */
-
-
-  //integrate up to the qT kinematical limit
-  /*
-  double dexpy=exp(y);
-  double dexpmy=exp(-y);
-  double cosh2y=pow(((dexpy+dexpmy)*0.5),2);
-  double qtmax=sqrt(pow((pow(energy_.sroot_,2)+m2),2)/(4.*pow(energy_.sroot_,2)*cosh2y) - m2);
-  double qtmin=0.1;
-  double qt=qtmin+qtmax*x[2];
-  jac=jac*(qtmax);
-  */
-
-  //integrate between qtmin and qtmax
-  double qtmn = max(0.02, qtmin);
-  double qt=qtmn+(qtmax-qtmn)*x[2];
-  jac=jac*(qtmax-qtmn);
-
-  //set global variables to m, qt, y
-  set(m, qt, y);
-
-  //generate boson 4-momentum, with m, qt, y and phi=0
-  genV4p(m, qt, y, 0.);
-
-  //  SWITCHING FUNCTIONS
-  double swtch=1.;
-  if (qt >= m*3/4.)  swtch=exp(-pow((m*3/4.-qt),2)/pow((m/2.),2)); // GAUSS SWITCH
-  if (swtch <= 0.01) swtch = 0;
-
-  //In this point of phase space (m, qt, y) the costh integration is performed by 
-  //calculating the 0, 1 and 2 moments of costh
-  //that are the integrals int(dcosth dphi1 dphi2), int(costh dcosth dphi1 dphi2), and int(costh^2 dcosth dphi1 dphi2) convoluted with cuts
-  //Then the epxressions 1, costh and costh^2 in sigmaij are substituted by these costh moments
-  double costh = 0;
-  int mode = 1;
-  if (swtch < 0.01)
-    f[0]=0.;
-  else
-    //evaluate the resummed cross section
-    f[0]=resumm_(costh,m,qt,y,mode)/(8./3.);
-
-  if (f[0] != f[0])
-    f[0]=0.;  //avoid nans
-
-	   
-  f[0] = f[0]*jac*swtch;
-
-  end_time = clock();
-
-  { // filling event
-      // only VB information pt and y
-      double p3[4] = {0., 0., 0., 0.};
-      double p4[4] = {0., 0., 0., 0.};  // dont need this
-      p3[0] = qt;  // just x component
-      // rapidity = -.5 log (E+z/E-z) let E=1 just need z
-      double e2y = exp(-2*y);
-      double sqY = pow( (1-e2y)/(1+e2y), 2);
-      double pz2 = (m*m + qt*qt) * sqY/(1-sqY);
-      p3[2] = sqrt(pz2);
-      p3[3] = sqrt(m*m + qt*qt + pz2);
-      hists_fill_(p3,p4,f);
-  }
-
-  if (opts.timeprofile)
-    cout << setw (3) << "m" << setw(10) << m << setw(4) << "qt" << setw(10) <<  qt
-	 << setw(8) << "result" << setw(10) << f[0]
-	 << setw(10) << "tot time" << setw(10) << float( end_time - begin_time ) /  CLOCKS_PER_SEC
-	 << endl;
-  return 0;
-}
-
-//Perform the integration as in the original dyres code
-integrand_t resintegrand4d(const int &ndim, const double x[], const int &ncomp, double f[],
-			   void* userdata, const int &nvec, const int &core,
-			   double &weight, const int &iter)
-{
-  clock_t begin_time, end_time;
-
-  double r[ndim];
-  for (int i = 0; i < ndim; i++)
-    r[i]=x[i];
-
-  double resumm,tempp,ran2;
-  int ii,j,ij;
-  double m,m2,qt2,s,wgt;
-  double p[5][5],pV[4],p4cm[4],ptemp[4],kap1[5],kap1b[5];
-  double pjet[4][12];
-  double phi,cos_th,phi_lep;
-  int n2,n3;
-  double msq,wt,swtch,kk,zeta1,zeta1b,kt1,kt2,mt2,costh_CS,qP1,qP2,ritmx;
-
-  double wsqmin = pow(mmin,2);
-  double wsqmax = pow(mmax,2);
-  
-  double lowintHst=0;
-  double lowintHst0=0;
-
-  int jstop = 0;
-
-  double azloopmax = 500;
-  double azloop = 0;
-
-  ptemp[0]=0.;
-  ptemp[1]=0.;
-  ptemp[2]=0.;
-  ptemp[3]=0.;
-  for (int i=0; i < 5; i++)
-    {
-      p[i][1]=0.;
-      p[i][2]=0.;
-      p[i][3]=0.;
-      p[i][4]=0.;
-    }
-
-  // Generate the boson invariant mass
-
-  double jac=1.;
-  double x1=r[0];
-  breitw_(x1,wsqmin,wsqmax,opts.rmass,opts.rwidth,msq,wt);
-  m2=msq;
-  m=sqrt(m2);
-  jac=jac*wt;
-  //     Dynamic scale
-  //      if(dynamicscale) call scaleset(m2)
-
-
-  //Limit y boundaries to the kinematic limit in y
-  double ylim = 0.5*log(pow(energy_.sroot_,2)/m2);
-  double ymn = min(max(-ylim, ymin),ylim);
-  double ymx = max(min(ylim, ymax),-ylim);
-
-  //integrate between ymin and ymax
-  double y=ymn+(ymx-ymn)*r[1];
-  jac=jac*(ymx-ymn);
-
-  double dexpy=exp(y);
-  double dexpmy=exp(-y);
-  double cosh2y=pow(((dexpy+dexpmy)*0.5),2);
-
-  //   qT kinematical limit
-  //  qtmax=sqrt(pow((pow(energy_.sroot_,2)+m2),2)/(4.*pow(energy_.sroot_,2)*cosh2y) - m2);
-  //  qtmin=0.1;
-  //  qt=qtmin+qtmax*r[2];
-  //  jac=jac*(qtmax);
-
-  double qtmn = max(0.02, qtmin);
-  double qt=qtmn+(qtmax-qtmn)*r[2];
-  jac=jac*(qtmax-qtmn);
-
-  qt2=pow(qt,2);
-
-  double xx1=sqrt(m2/pow(energy_.sroot_,2))*dexpy;
-  double xx2=sqrt(m2/pow(energy_.sroot_,2))*dexpmy;
-
-
-  // incoming quarks
-  p[1][1]=0.;
-  p[1][2]=0.;
-  p[1][3]=xx1*0.5*energy_.sroot_;
-  p[1][4]=xx1*0.5*energy_.sroot_;
-  p[2][1]=0.;
-  p[2][2]=0.;
-  p[2][3]=-xx2*0.5*energy_.sroot_;
-  p[2][4]=xx2*0.5*energy_.sroot_;
-
-
-  // First lepton direction: Cos of the polar angle
-  cos_th=-1.+2.*r[3];
-  jac=jac*2.;
-  
-  mt2=m2+qt2;
-
-  int mode = 0;
-  // LOOP over (vector boson and lepton) azimuthal angles 
-  for (int j=0; j < azloopmax; j++)
-    // Vector boson azimuthal angle
-    {
-      phi = 2.*M_PI*((double)rand()/(double)RAND_MAX);
-
-      // Lepton decay in the center of mass frame 
-      // First lepton direction:  azimuthal angle
-      phi_lep = 2.*M_PI*((double)rand()/(double)RAND_MAX);
-
-      //  vector boson momentum: pV(4)^2-pV(1)^2-pV(2)^2-pV(3)^2=m2
-      pV[0]=qt*cos(phi);
-      pV[1]=qt*sin(phi);
-      pV[2]=0.5*sqrt(mt2)*(exp(y)-exp(-y));
-      pV[3]=0.5*sqrt(mt2)*(exp(y)+exp(-y));
-
-      // momentum of the first lepton 
-      p4cm[3]=m/2.;
-      p4cm[0]=p4cm[3]*sin(acos(cos_th))*sin(phi_lep);
-      p4cm[1]=p4cm[3]*sin(acos(cos_th))*cos(phi_lep);
-      p4cm[2]=p4cm[3]*cos_th;
-
-      // Boost to go in the Lab frame
-      boost_(m,pV,p4cm,ptemp);
-      p[4][1]=ptemp[0];
-      p[4][2]=ptemp[1];
-      p[4][3]=ptemp[2];
-      p[4][4]=ptemp[3];
-
-      //  momentum of the second lepton
-      p[3][4]=pV[3]-p[4][4];
-      p[3][1]=pV[0]-p[4][1];
-      p[3][2]=pV[1]-p[4][2];
-      p[3][3]=pV[2]-p[4][3];
-
-      //CS frame prescription
-      if (opts.qtrec_cs)
-	{
-	  kt1 = pV[0]/2.;
-	  kt2 = pV[1]/2.;
-	}
-
-      //MY (DYRES) prescription
-      if (opts.qtrec_naive)
-	{
-	  kt1=(1.+pV[2]/(sqrt(m2)+pV[3]))*pV[0]/2;
-	  kt2=(1.+pV[2]/(sqrt(m2)+pV[3]))*pV[1]/2;
-	}  
-
-      //alternative k1t = 0 prescription
-      if (opts.qtrec_kt0)
-	{
-	  kt1 = 0;
-	  kt2 = 0;
-	}
-
-      zeta1=1./m2/2.*(m2+2.*(pV[0]*kt1+pV[1]*kt2)+sqrt(pow((m2+2.*(pV[0]*kt1+pV[1]*kt2)),2)-4.*mt2*(pow(kt1,2)+pow(kt2,2))));
-
-      qP1=(pV[3]-pV[2])*energy_.sroot_/2.;
-      qP2=(pV[3]+pV[2])*energy_.sroot_/2.;
-
-      kap1[4]=energy_.sroot_/2.*(zeta1*m2/2./qP1+(pow(kt1,2)+pow(kt2,2))/zeta1*qP1/m2/pow(energy_.sroot_,2)*2.);
-      kap1[1]=kt1;
-      kap1[2]=kt2;
-      kap1[3]=energy_.sroot_/2.*(zeta1*m2/2./qP1-(pow(kt1,2)+pow(kt2,2))/zeta1*qP1/m2/pow(energy_.sroot_,2)*2.);
-
-      costh_CS=1.-4.*(kap1[4]*p[4][4]-kap1[3]*p[4][3]-kap1[2]*p[4][2]-kap1[1]*p[4][1])/m2;
-
-       // see whether this point will pass cuts - if it will not, do not
-       // bother calculating the matrix elements for it, instead bail out
-      for (int i=0; i < 4; i++)
-	{
-	  pjet[i][0] = p[1][i+1];
-	  pjet[i][1] = p[2][i+1];
-	  pjet[i][2] = p[3][i+1];
-	  pjet[i][3] = p[4][i+1];
-	}
-      int njet = 0;
-       //       cout << qt << "  " <<  y << "  " <<  m << "  " << sqrt(p[3][1]*p[3][1] + p[3][2] * p[3][2]) << endl;
-      if (opts.makelepcuts)
-	if (cuts_(pjet,njet)) continue;
-			    
-      //  SWITCHING FUNCTIONS
-      swtch=1.;
-      if (qt >= m*3/4.)  swtch=exp(-pow((m*3/4.-qt),2)/pow((m/2.),2)); // GAUSS SWITCH
-
-      if (swtch <= 0.01) break;
-
-      if (jstop != 1)
-	{
-	  jstop=1;
-
-	  //Call to the resummation part
-	  if (swtch < 0.01)
-	    tempp=0.;
-	  else
-	    tempp=resumm_(costh_CS,m,qt,y,mode)/(8./3.);  // CS PRESCRIPTION
-	    //tempp=resumm_(cos_th,m,qt,y,mode)/(8./3.);
-	   if (tempp != tempp)
-	     tempp=0.;    //  avoid nans
-	   
-	   lowintHst0=jac*tempp;
-	   lowintHst0=lowintHst0*swtch; // SWITCHING
-	 }
-      if (iter==4){
-          double wt = weight*lowintHst0/azloopmax;
-          hists_fill_(p[3]+1,p[4]+1,&wt);
-      } 
-      azloop=azloop+1;
-    }
-
-  lowintHst=lowintHst0*float(azloop)/float(azloopmax);
-  
-  f[0] = lowintHst;
-
-  return 0;
-}

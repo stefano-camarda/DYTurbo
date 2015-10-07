@@ -1,13 +1,13 @@
-#include <iostream>
-#include <LHAPDF/LHAPDF.h>
-#include <gsl/gsl_integration.h>
-#include <gsl/gsl_math.h>
-#include <ctime>
-
 #include "interface.h"
 #include "finintegr.h"
 #include "integr.h"
 #include "settings.h"
+#include "switch.h"
+
+#include <iostream>
+#include <iomanip>
+#include <ctime>
+
 
 using namespace std;
 
@@ -114,6 +114,11 @@ integrand_t ctintegrand3d(const int &ndim, const double x[], const int &ncomp, d
   double ylim = 0.5*log(pow(energy_.sroot_,2)/m2);
   double ymn = min(max(-ylim, ymin),ylim);
   double ymx = max(min(ylim, ymax),-ylim);
+  if (ymn >= ymx)
+    {
+      f[0]=0.;
+      return 0;
+    }
 
   //integrate between ymin and ymax
   double y=ymn+(ymx-ymn)*x[1];
@@ -124,7 +129,9 @@ integrand_t ctintegrand3d(const int &ndim, const double x[], const int &ncomp, d
   double qtcut = qtcut_.xqtcut_*m;
   double qtmn = max(qtcut, qtmin);
   double cosh2y34=pow((exp(y)+exp(-y))*0.5,2);
-  double qtlim = sqrt(pow(pow(energy_.sroot_,2)+m*m,2)/(4*pow(energy_.sroot_,2)*cosh2y34)-m*m);
+  double kinqtlim = sqrt(pow(pow(energy_.sroot_,2)+m*m,2)/(4*pow(energy_.sroot_,2)*cosh2y34)-m*m);
+  double switchqtlim = switching::qtlimit(m);
+  double qtlim = min(kinqtlim, switchqtlim);
   double qtmx = min(qtlim, qtmax);
   double qtmn2 = pow(qtmn,2);
   double qtmx2 = pow(qtmx,2);
@@ -145,15 +152,16 @@ integrand_t ctintegrand3d(const int &ndim, const double x[], const int &ncomp, d
   double qt=sqrt(qt2);
   
   //set global variables to costh, m, qt, y
-  set(0, m, qt, y);
+  setcthmqty(0, m, qt, y);
 
   //generate boson 4-momentum, with m, qt, y and phi=0
   genV4p(m, qt, y, 0.);
 
   //  SWITCHING FUNCTIONS is inside countdy
-  double swtch=1.;
-  if (qt >= m*3/4.)  swtch=exp(-pow((m*3/4.-qt),2)/pow((m/2.),2)); // GAUSS SWITCH
-  if (swtch <= 0.01) swtch = 0;
+  //  double swtch=1.;
+  //  if (qt >= m*3/4.)  swtch=exp(-pow((m*3/4.-qt),2)/pow((m/2.),2)); // GAUSS SWITCH
+  //  if (swtch <= 0.01) swtch = 0;
+  double swtch = switching::swtch(qt, m);
 
   //In this point of phase space (m, qt, y) the costh integration is performed by 
   //calculating the 0, 1 and 2 moments of costh
@@ -230,6 +238,11 @@ integrand_t ctintegrand2d(const int &ndim, const double x[], const int &ncomp, d
   double ylim = 0.5*log(pow(energy_.sroot_,2)/m2);
   double ymn = min(max(-ylim, ymin),ylim);
   double ymx = max(min(ylim, ymax),-ylim);
+  if (ymn >= ymx)
+    {
+      f[0]=0.;
+      return 0;
+    }
 
   //integrate between ymin and ymax
   double y=ymn+(ymx-ymn)*x[1];
@@ -240,16 +253,18 @@ integrand_t ctintegrand2d(const int &ndim, const double x[], const int &ncomp, d
   double qtcut = qtcut_.xqtcut_*m;
   double qtmn = max(qtcut, qtmin);
   double cosh2y34=pow((exp(y)+exp(-y))*0.5,2);
-  double qtlim = sqrt(pow(pow(energy_.sroot_,2)+m*m,2)/(4*pow(energy_.sroot_,2)*cosh2y34)-m*m);
+  double kinqtlim = sqrt(pow(pow(energy_.sroot_,2)+m*m,2)/(4*pow(energy_.sroot_,2)*cosh2y34)-m*m);
+  double switchqtlim = switching::qtlimit(m);
+  double qtlim = min(kinqtlim, switchqtlim);
   double qtmx = min(qtlim, qtmax);
   if (qtmn >= qtmx)
     {
       f[0]=0.;
       return 0;
     }
-  
+
   //set global variables to costh, m, qt, y
-  set(0, m, (qtmn+qtmx)/2., y);
+  setcthmqty(0, m, (qtmn+qtmx)/2., y);
 
   clock_t qtbt, qtet;
   qtbt = clock();
