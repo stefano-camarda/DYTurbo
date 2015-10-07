@@ -243,7 +243,7 @@ extern "C" {
 
   int binner_(double p3[4], double p4[4]);
   void hists_fill_(double p3[4], double p4[4], double *weight);
-  void hists_real_dipole_(double p3[4], double p4[4], double *weight);
+  void hists_real_dipole_(double p3[4], double p4[4], double *weight,int *nd);
   void hists_real_event_();
 }
 

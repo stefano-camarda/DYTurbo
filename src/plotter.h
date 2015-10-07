@@ -21,7 +21,7 @@ class plotter {
 
         void Init();
         void FillEvent(double p3[4], double p4[4], double wgt); ///<Normal filling of histograms.
-        void FillRealDipole(double p3[4], double p4[4], double wgt); ///<Collect dipole kinematics and weights. Fill ai profiles.
+        void FillRealDipole(double p3[4], double p4[4], double wgt,int nd); ///<Collect dipole kinematics and weights. Fill ai profiles.
         void FillRealEvent(); ///< for real filling without correlations. Need to FillRealDipole before.
         void FillResult(TermType term, double int_val, double int_error, double time); ///< Fill the result of integration.
         void Merge();

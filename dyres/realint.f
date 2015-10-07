@@ -257,7 +257,7 @@ C            print*,'fort wt', val
 C            print*,'fort p3', pjet(3,1), pjet(3,2), pjet(3,3), pjet(3,4)
 C            print*,'fort p4', pjet(4,1), pjet(4,2), pjet(4,3), pjet(4,4)
 C---         store information per each dipole
-            call hists_real_dipole(pjet(3,:),pjet(4,:),val)
+            call hists_real_dipole(pjet(3,:),pjet(4,:),val,nd)
         endif
       enddo
 

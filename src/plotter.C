@@ -140,9 +140,14 @@ void plotter::print_dipoleVec(std::vector<XsecPoint> vec ){
 }
 
 
-void plotter::FillRealDipole(double p3[4], double p4[4], double wgt){
-    if (wgt == 0 ) return;
-    CalculateKinematics(p3,p4);
+void plotter::FillRealDipole(double p3[4], double p4[4], double wgt, int nd){
+    if (nd!=0 && wgt == 0 ) return; // make sure you have at least first one for kinematics
+    if (nd == 5 || nd==6 ) { // calculate pt and y for 0..4
+        CalculateKinematics(p3,p4);
+    } else {
+        qt = dipole_points[0] .qt;
+        y  = dipole_points[0] .y;
+    }
     if (N!=0) wgt/=N;
     // fill Xsec - point
     point.ibin = h_qtVy->FindBin(qt,y);
@@ -151,10 +156,10 @@ void plotter::FillRealDipole(double p3[4], double p4[4], double wgt){
     point.wgt  = wgt  ;
     dipole_points.push_back(point);
     // debug
-    printf("FillRealDipole: beg\n");
-    print_dipole(point);
-    print_dipoleVec(dipole_points);
-    printf("FillRealDipole: end\n");
+    //printf("FillRealDipole: beg\n");
+    //print_dipole(point);
+    //print_dipoleVec(dipole_points);
+    //printf("FillRealDipole: end\n");
     // fill moments
     p_qtVy_A4 -> Fill(qt,y,a4,wgt);
     return;
@@ -162,9 +167,9 @@ void plotter::FillRealDipole(double p3[4], double p4[4], double wgt){
 
 void plotter::FillRealEvent(){
     // process all calculated contributions
-    printf("FillRealEvent: beg\n");
-    print_dipole(point);
-    print_dipoleVec(dipole_points);
+    //printf("FillRealEvent: beg\n");
+    //print_dipole(point);
+    //print_dipoleVec(dipole_points);
     int i=0;
     while (!dipole_points.empty()){
         // go per each affected qt_y bin
@@ -175,17 +180,17 @@ void plotter::FillRealEvent(){
             point.wgt+=ipoint->wgt;
             ipoint = dipole_points.erase(ipoint);
         } else ++ipoint; // bin index not same, skip it
-        printf (" dipole group %d",i);
-        print_dipole(point);
-        print_dipoleVec(dipole_points);
+        //printf (" dipole group %d",i);
+        //print_dipole(point);
+        //print_dipoleVec(dipole_points);
         // fill histograms
         h_qt   -> Fill(point.qt         ,point.wgt);
         h_y    -> Fill(point.y          ,point.wgt);
         h_qtVy -> Fill(point.qt,point.y ,point.wgt);
         i++;
     }
-    printf("FillRealEvent: end\n");
-    printf("----------\n");
+    //printf("FillRealEvent: end\n");
+    //printf("----------\n");
     return;
 }
 
@@ -219,8 +224,8 @@ void hists_fill_(double p3[4], double p4[4], double *weight){
     return;
 }
 
-void hists_real_dipole_(double p3[4], double p4[4], double *weight){
-    hists.FillRealDipole(p3,p4,*weight);
+void hists_real_dipole_(double p3[4], double p4[4], double *weight, int * nd){
+    hists.FillRealDipole(p3,p4,*weight,*nd);
 }
 
 void hists_real_event_(){
