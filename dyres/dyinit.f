@@ -60,6 +60,7 @@ C Set-up incoming beams and PS integration cut-offs
       endif
 
       taumin=(rtsmin/sqrts)**2
+      logtaumin=log(taumin)
       xmin=taumin
 
       p1ext(4)=-half*sqrts
