@@ -108,7 +108,7 @@ void plotter::CalculateKinematics(double p3[4], double p4[4]){
     p[1] = p3[1]+p4[1];
     p[2] = p3[2]+p4[2];
     p[3] = p3[3]+p4[3];
-    // 
+    //
     double Q2 = calcQ2(p);
            qt = calcQt(p);
            y  = calcY(p);
@@ -125,6 +125,21 @@ void plotter::CalculateKinematics(double p3[4], double p4[4]){
 }
 
 
+void plotter::print_dipole(XsecPoint pt){
+    printf("   ibin %d pt %f y %f wgt %f\n", pt.ibin, pt.qt, pt.y, pt.wgt );
+}
+void plotter::print_dipoleVec(std::vector<XsecPoint> vec ){
+    printf("  beg vec: size %d\n",vec.size());
+    int i=0;
+    for (auto ipt : vec){
+        printf ( "   i %d",i);
+        print_dipole(ipt);
+        i++;
+    }
+    printf("  end vec: \n");
+}
+
+
 void plotter::FillRealDipole(double p3[4], double p4[4], double wgt){
     if (wgt == 0 ) return;
     CalculateKinematics(p3,p4);
@@ -135,6 +150,11 @@ void plotter::FillRealDipole(double p3[4], double p4[4], double wgt){
     point.y    = y    ;
     point.wgt  = wgt  ;
     dipole_points.push_back(point);
+    // debug
+    printf("FillRealDipole: beg\n");
+    print_dipole(point);
+    print_dipoleVec(dipole_points);
+    printf("FillRealDipole: end\n");
     // fill moments
     p_qtVy_A4 -> Fill(qt,y,a4,wgt);
     return;
@@ -142,6 +162,10 @@ void plotter::FillRealDipole(double p3[4], double p4[4], double wgt){
 
 void plotter::FillRealEvent(){
     // process all calculated contributions
+    printf("FillRealEvent: beg\n");
+    print_dipole(point);
+    print_dipoleVec(dipole_points);
+    int i=0;
     while (!dipole_points.empty()){
         // go per each affected qt_y bin
         point = dipole_points.back();
@@ -151,11 +175,17 @@ void plotter::FillRealEvent(){
             point.wgt+=ipoint->wgt;
             ipoint = dipole_points.erase(ipoint);
         } else ++ipoint; // bin index not same, skip it
+        printf (" dipole group %d",i);
+        print_dipole(point);
+        print_dipoleVec(dipole_points);
         // fill histograms
         h_qt   -> Fill(point.qt         ,point.wgt);
         h_y    -> Fill(point.y          ,point.wgt);
         h_qtVy -> Fill(point.qt,point.y ,point.wgt);
+        i++;
     }
+    printf("FillRealEvent: end\n");
+    printf("----------\n");
     return;
 }
 
