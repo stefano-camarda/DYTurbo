@@ -376,7 +376,7 @@ int cuts_(double p[4][12], int &njet){
         p3[i] = p[i][2];
         p4[i] = p[i][3];
     }
-    // because dyres expects oposite logic false=accept event
+    // because dyres expects opposite logic false=accept event
     return !cuts(p3,p4);
 }
 
@@ -459,10 +459,10 @@ bool cuts(double p3[4], double p4[4])
   if (!opts.makelepcuts)
     return true;
   switch (opts.fiducial){
-      case settings::D0    : fiducial_D0    (p3,p4); break;
-      case settings::CDF   : fiducial_CDF   (p3,p4); break;
-      case settings::ATLAS : fiducial_ATLAS (p3,p4); break;
-      case settings::CMS   : fiducial_CMS   (p3,p4); break;
+      case settings::D0    : return fiducial_D0    (p3,p4); break;
+      case settings::CDF   : return fiducial_CDF   (p3,p4); break;
+      case settings::ATLAS : return fiducial_ATLAS (p3,p4); break;
+      case settings::CMS   : return fiducial_CMS   (p3,p4); break;
       case settings::GENEXP :
       default:
           double pt3 = sqrt((float)pow(p3[0],2)+pow(p3[1],2));
@@ -478,27 +478,6 @@ bool cuts(double p3[4], double p4[4])
           if (fabs(y4) > 2.4)
               return false;
   }
-
-
-
-  //printf("c++ cuts %f %f %f %f  \n", pt3, pt4, y3, y4);
-
-  //if (pt3 < 20)
-    //return false;
-  //if (pt4 < 20)
-    //return false;
-  //if (fabs(y3) > 2.4)
-    //return false;
-  //if (fabs(y4) > 2.4)
-    //return false;
-
-  //  if (y3-y4 < 0.2)
-  //    return false;
-
-  //  if (66 < m < 116
-  //      && pt3 > 20 && pt4 > 20
-  //      && fabs (y3) < 2.4 && fabs(y4) < 2.4)
-  //    cut = true;
   return true;
 }
 
