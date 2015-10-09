@@ -29,4 +29,4 @@ c     common block initialised in ctquadinit
 c     qt integral in counterterm
       integer qtintervals,qtrule
       parameter (qtintervals=1)
-      parameter (qtrule=8)
+      parameter (qtrule=20)
