@@ -15,6 +15,7 @@ sys.argv.append('-b') # run in batch
 
 #from PlotTools import *
 from ROOT  import TGraphErrors, TFile
+import ROOT as RT
 #import asciitable
 
 from PlotTools import *
@@ -452,23 +453,25 @@ def root_file_integral():
     #filetmp="run_dir/results4.root"
     #filetmp="results/dyturbo_z0_lhc7_CT10nnlo_0_qt010y01t{}_100101.root"
     #
-    processes = ["wp"] #, "z0"]
+    processes = ["wp","wm","z0"] #, "z0"]
     programs  = ["dyturbo"] #, "mcfm"]
     orders    = ["ZPT-CT10"] #, "CT10nlo", "CT10nnlo"]
     filetmp1="results/{}_{}_lhc7_{}_0_qt0100y05t{}_100101.root"
     filetmp2="results_merge/dipole_plotting/{}_{}_lhc7_{}_0_qt0100y05t{}_100101.root"
     filetmp="results_merge/{}_{}_lhc7_{}_0_qt0100y05t{}_merge.root"
+    filetmp="results_merge/{}_{}_lhc7_{}_0_qt0100y05t{}_outliers.root"
     hist="h_qtVy"
     hist_integr="qt_y_{}"
     TERMS=[ 
-            ( "FIN" , "fin"  ),
             ( "TOT" , "tot"  ),
+            ( "FIN" , "fin"  ),
             ( "RES"  , "resum" ),
             #( "RES3D", "resum" ),
             ( "CT"   , "ct"    ),
             #( "CT3D" , "ct"    ),
             ( "LO"   , "lo"    ),
             ( "REAL" , "real"  ),
+            #( "REALOUT" , "real"  ),
             ( "VIRT" , "virt"  ),
             #( "ALL"  , "total" ),
             ] 
@@ -487,10 +490,11 @@ def root_file_integral():
                 for term,term_lowcas in TERMS :
                     hist_res_term = term_lowcas
                     filename=filetmp
+                    Nfiles = 1
                     if "mcfm" in prog : hist_res_term = "total"
                     if "FIN"  in term : hist_res_term = "total"
                     if "TOT"  in term : hist_res_term = "total"
-                    if "REAL"  in term : filename=filetmp1
+                    #if "REAL"  in term : filename=filetmp1
                     try :
                         h = pl.GetHist(filename.format(prog,proc,pdf,term),hist)
                     except ValueError:
@@ -500,6 +504,8 @@ def root_file_integral():
                     titl=titltmp.format(prog,proc,pdf,term,"qty")
                     h.SetName(titl)
                     h.SetTitle(titl)
+                    h.Scale(1./Nfiles)
+                    h.SetContour(200)
                     # clone grandtotal hist
                     if htot==0 :
                         titl=titltmp.format(prog,proc,pdf,"total","qty")
@@ -547,13 +553,85 @@ def root_file_integral():
                 print_res("hTOT",integ,inerr)
                 print_res("htot",tot,toterr)
                 #
-                #hlist.insert(0,hfin)
-                #hlist.insert(0,htot)
-                hlistProject = hlist[4:]
+                hlist.insert(0,hfin)
+                hlist.insert(0,htot)
+                # 0   1   2       3       4   5  6    7
+                # tot fin haddtot haddfin res ct real virt
+                hlistProject = [ hlist[2], hlist[4] ]
                 hlqt = [ x.ProjectionX(x.GetName()+"_qt") for x in hlistProject ]
                 hly  = [ x.ProjectionY(x.GetName()+"_y" ) for x in hlistProject ]
-                pl.CompareHistsInList( titltmp.format(prog,proc,pdf,"all","qt") , hlqt, minX=1, maxX=30, compareType="ratio" )
-                pl.CompareHistsInList( titltmp.format(prog,proc,pdf,"all","y" )  , hly , maxX=30, compareType="ratio" )
+                pl.CompareHistsInList( titltmp.format(prog,proc,pdf,"all","qt" ) , hlqt , maxX=30, compareType="ratio" )
+                pl.CompareHistsInList( titltmp.format(prog,proc,pdf,"all","y"  ) , hly  , maxX=30, compareType="ratio" )
+                gStyle.SetPalette(RT.kDarkBodyRadiator)
+                pl.CompareHistsInList( titltmp.format(prog,proc,pdf,"tot","qty" ) , hlistProject[0:1])
+                continue
+                Pallets= [
+                    ["kDeepSea",                  RT.kDeepSea                  ],
+                    ["kGreyScale",                RT.kGreyScale                ],
+                    ["kDarkBodyRadiator",         RT.kDarkBodyRadiator         ],
+                    ["kBlueYellow",               RT.kBlueYellow               ],
+                    ["kRainBow",                  RT.kRainBow                  ],
+                    ["kInvertedDarkBodyRadiator", RT.kInvertedDarkBodyRadiator ],
+                    ["kBird",                     RT.kBird                     ],
+                    ["kCubehelix",                RT.kCubehelix                ],
+                    ["kGreenRedViolet",           RT.kGreenRedViolet           ],
+                    ["kBlueRedYellow",            RT.kBlueRedYellow            ],
+                    ["kOcean",                    RT.kOcean                    ],
+                    ["kColorPrintableOnGrey",     RT.kColorPrintableOnGrey     ],
+                    ["kAlpine",                   RT.kAlpine                   ],
+                    ["kAquamarine",               RT.kAquamarine               ],
+                    ["kArmy",                     RT.kArmy                     ],
+                    ["kAtlantic",                 RT.kAtlantic                 ],
+                    ["kAurora",                   RT.kAurora                   ],
+                    ["kAvocado",                  RT.kAvocado                  ],
+                    ["kBeach",                    RT.kBeach                    ],
+                    ["kBlackBody",                RT.kBlackBody                ],
+                    ["kBlueGreenYellow",          RT.kBlueGreenYellow          ],
+                    ["kBrownCyan",                RT.kBrownCyan                ],
+                    ["kCMYK",                     RT.kCMYK                     ],
+                    ["kCandy",                    RT.kCandy                    ],
+                    ["kCherry",                   RT.kCherry                   ],
+                    ["kCoffee",                   RT.kCoffee                   ],
+                    ["kDarkRainBow",              RT.kDarkRainBow              ],
+                    ["kDarkTerrain",              RT.kDarkTerrain              ],
+                    ["kFall",                     RT.kFall                     ],
+                    ["kFruitPunch",               RT.kFruitPunch               ],
+                    ["kFuchsia",                  RT.kFuchsia                  ],
+                    ["kGreyYellow",               RT.kGreyYellow               ],
+                    ["kGreenBrownTerrain",        RT.kGreenBrownTerrain        ],
+                    ["kGreenPink",                RT.kGreenPink                ],
+                    ["kIsland",                   RT.kIsland                   ],
+                    ["kLake",                     RT.kLake                     ],
+                    ["kLightTemperature",         RT.kLightTemperature         ],
+                    ["kLightTerrain",             RT.kLightTerrain             ],
+                    ["kMint",                     RT.kMint                     ],
+                    ["kNeon",                     RT.kNeon                     ],
+                    ["kPastel",                   RT.kPastel                   ],
+                    ["kPearl",                    RT.kPearl                    ],
+                    ["kPigeon",                   RT.kPigeon                   ],
+                    ["kPlum",                     RT.kPlum                     ],
+                    ["kRedBlue",                  RT.kRedBlue                  ],
+                    ["kRose",                     RT.kRose                     ],
+                    ["kRust",                     RT.kRust                     ],
+                    ["kSandyTerrain",             RT.kSandyTerrain             ],
+                    ["kSienna",                   RT.kSienna                   ],
+                    ["kSolar",                    RT.kSolar                    ],
+                    ["kSouthWest",                RT.kSouthWest                ],
+                    ["kStarryNight",              RT.kStarryNight              ],
+                    ["kSunset",                   RT.kSunset                   ],
+                    ["kTemperatureMap",           RT.kTemperatureMap           ],
+                    ["kThermometer",              RT.kThermometer              ],
+                    ["kValentine",                RT.kValentine                ],
+                    ["kVisibleSpectrum",          RT.kVisibleSpectrum          ],
+                    ["kWaterMelon",               RT.kWaterMelon               ],
+                    ["kCool",                     RT.kCool                     ],
+                    ["kCopper",                   RT.kCopper                   ],
+                    ["kGistEarth",                RT.kGistEarth                ],
+                    #["kViridis",                  RT.kViridis                  ]
+                ]
+                for name, code in Pallets :
+                    gStyle.SetPalette(code)
+                    pl.CompareHistsInList( titltmp.format(prog,proc,pdf,"tot","qty"+name ) , hlistProject[0:1])
                 pass
             pass
         pass
@@ -594,6 +672,24 @@ def quick_calc():
     pass
 
 
+def GetValError(fiducial, col, proc):
+    file_tmpl="results_merge/dyturbo_{}_{}_CT10nnlo_0_f{}qt01000y-55t{}_100101.root"
+    file_tmpl="results/dyturbo_{}_{}_CT10nnlo_0_f{}qt01000y-55t{}_100101.root"
+    term="TOT"
+    hist="qt_y_total"
+    totInt,totIne=0,0
+    for term in [ "RES", "CT", "REAL", "VIRT" ]:
+        h = pl.GetHist(file_tmpl.format(proc,col,fiducial,term),hist)
+        integ , inerr = getIntegralError(h)
+        #print term, integ, inerr, inerr/integ
+        totInt,totIne = addIntegralError(integ,inerr,totInt,totIne)
+        pass
+    #print "tot ", totInt, totIne, totIne/totInt
+    return totInt, totIne/totInt
+
+def print_wwidth_res(int,err):
+    print int,err,
+
 def wwidth_table():
     experiments = [
             [ "D0"    , "tev1" ],
@@ -608,7 +704,7 @@ def wwidth_table():
         print " full  | fiducial | eff "
         for proc in processes :
             # full
-            full_v, full_e_r = GetValError("Full",col,proc)
+            full_v, full_e_r = GetValError("FULL",col,proc)
             print_wwidth_res(full_v, full_e_r)
             # fiducial
             fid_v, fid_e_r = GetValError(exp,col,proc)
@@ -637,7 +733,7 @@ if __name__ == '__main__' :
     #merge_all_hist()
     #plot_pt("results/pt_table_CT10nnlo.txt")
     #quick_calc()
-    root_file_integral()
+    #root_file_integral()
     wwidth_table()
     pass
 

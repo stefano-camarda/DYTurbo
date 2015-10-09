@@ -75,7 +75,7 @@ vegasncallsREAL  = 3e8 #3e8  # only for real 10d vegas integration
 vegasncallsVIRT  = 2e8  # only for virt 8d vegas integration
 
 # total or with lepton cuts
-makelepcuts = false
+makelepcuts = SETLEPCUTS
 fiducial = SETDETFIDUCIAL
 
 # integration types and settings for costh phi_lep phase space

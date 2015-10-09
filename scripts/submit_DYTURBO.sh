@@ -39,6 +39,7 @@ member=unset
 program=unset
 fiducial=unset
 detfiducial=0
+makelepcuts=false
 gpar=1
 
 prepare_script(){
@@ -184,6 +185,7 @@ prepare_in(){
     sed -i "s|SETCTDIM|$ctdim|g             " tmp
     sed -i "s|SETMCFMPROC|$nprocmcfm|g      " tmp
     sed -i "s|SETTERMSTRING|$termstring|g   " tmp
+    sed -i "s|SETLEPCUTS|$makelepcuts|g     " tmp
     sed -i "s|SETDETFIDUCIAL|$detfiducial|g " tmp
     sed -i "s|SETIH1|$ih1|g                 " tmp
     sed -i "s|SETIH2|$ih2|g                 " tmp
@@ -370,13 +372,16 @@ submit_Wwidth(){
                 pdfset=CT10nnlo
                 termlist="RES CT REAL VIRT"
             fi
-            for fiducial in FULL D0 CDF ATLAS CMS
+            fiducialsList="FULL D0 CDF ATLAS CMS"
+            fiducialsList="D0 CDF ATLAS CMS"
+            for fiducial in $fiducialsList
             do
                 colliderlist="tev1 tev2 lhc7 lhc8"
-                if [[ $fiducial == D0    ]]; then colliderlist=tev1; fi;
-                if [[ $fiducial == CDF   ]]; then colliderlist=tev2; fi;
-                if [[ $fiducial == ATLAS ]]; then colliderlist=lhc7; fi;
-                if [[ $fiducial == CMS   ]]; then colliderlist=lhc8; fi;
+                makelepcuts=false
+                if [[ $fiducial == D0    ]]; then colliderlist=tev1; makelepcuts=true; fi;
+                if [[ $fiducial == CDF   ]]; then colliderlist=tev2; makelepcuts=true; fi;
+                if [[ $fiducial == ATLAS ]]; then colliderlist=lhc7; makelepcuts=true; fi;
+                if [[ $fiducial == CMS   ]]; then colliderlist=lhc8; makelepcuts=true; fi;
                 for collider in $colliderlist
                 do
                     for terms in $termlist
@@ -402,7 +407,7 @@ submit_allProg(){
     fi
     # full phase space
     loqtbin=0
-    hiqtbin=10 #100
+    hiqtbin=100
     loybin=0
     hiybin=5
     collider=lhc7
@@ -413,8 +418,10 @@ submit_allProg(){
     gpar=.83175
     for program in dyturbo # mcfm # dyturbo dyres mcfm
     do
-        for process in wp # wp wm z0
+        for process in wm z0 # wp wm z0
         do
+            makelepcuts=false
+            if [[ $process =~ z0 ]]; then makelepcuts=true; fi
             for order in 2
             do
                 # set terms
@@ -422,8 +429,8 @@ submit_allProg(){
                 if [[ $program =~ ^dyturbo ]] 
                 then
                     termlist="RES CT LO" &&
-                    #if [[ $order == 2 ]]; then termlist="RES CT REAL VIRT"; fi;
-                    if [[ $order == 2 ]]; then termlist="REAL"; fi;
+                    if [[ $order == 2 ]]; then termlist="RES CT REAL VIRT"; fi;
+                    #if [[ $order == 2 ]]; then termlist="REAL"; fi;
                 fi
                 if [[ $program =~ ^dyres ]] 
                 then
@@ -442,10 +449,10 @@ submit_allProg(){
                 #
                 for terms in $termlist
                 do
-                    NSeeds=20
-                    if [[ terms == RES ]]; then NSeeds=100; fi;
-                    if [[ terms == REAL ]]; then NSeeds=500; fi;
-                    NSeeds=1 #50
+                    #NSeeds=20
+                    #if [[ terms == RES ]]; then NSeeds=100; fi;
+                    #if [[ terms == REAL ]]; then NSeeds=500; fi;
+                    NSeeds=50
                     endSeed=$(( $startSeed + $NSeeds - 1 ))
                     for random_seed in `seq $startSeed $endSeed`
                     do
@@ -463,8 +470,13 @@ submit_allProg(){
 
 clear_files(){
     echo "Clearing setup files"
-    rm -f scripts/batch_scripts/*.sh
-    rm -f scripts/infiles/*.in
+    if [[ $(bjobs 2> /dev/null) ]] 
+    then
+        echo There are jobs running, skip clearing
+    else
+        rm -f scripts/batch_scripts/*.sh
+        rm -f scripts/infiles/*.in
+    fi
     echo "Done"
 }
 
@@ -482,5 +494,5 @@ clear_results(){
 clear_files
 clear_results
 #submit_Z_dyturbo
-submit_allProg
-#submit_Wwidth
+#submit_allProg
+submit_Wwidth
