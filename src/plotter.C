@@ -142,11 +142,11 @@ void plotter::print_dipoleVec(std::vector<XsecPoint> vec ){
 
 void plotter::FillRealDipole(double p3[4], double p4[4], double wgt, int nd){
     if (nd!=0 && wgt == 0 ) return; // make sure you have at least first one for kinematics
-    if (nd == 5 || nd==6 ) { // calculate pt and y for 0..4
-        CalculateKinematics(p3,p4);
-    } else {
+    if (nd == 5 || nd==6 ) { // use 0 dipole kinematics
         qt = dipole_points[0] .qt;
         y  = dipole_points[0] .y;
+    } else { // calculate pt and y for 0..4
+        CalculateKinematics(p3,p4);
     }
     if (N!=0) wgt/=N;
     // fill Xsec - point
@@ -321,6 +321,7 @@ void plotter::Finalise(double xsection){
     h_qt   -> Write();
     h_y    -> Write();
     h_qtVy -> Write();
+    p_qtVy_A4 -> Write();
     // results
     qt_y_resum -> Write();
     qt_y_ct    -> Write();
@@ -330,7 +331,6 @@ void plotter::Finalise(double xsection){
     qt_y_total -> Write();
     // tree
     //t_tree->Write();
-    
     // close
     outf->Write();
     outf->Close();
