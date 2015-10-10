@@ -116,7 +116,6 @@ c--- bother calculating the matrix elements for it, instead bail out
       if (includedipole(0,p) .eqv. .false.) then
         goto 999
       endif
-      if (binner(p(3,:),p(4,:)).eqv..false.) goto 999
      
       z=r(10)**2
       if (nshot .eq. 1) z=0.95d0

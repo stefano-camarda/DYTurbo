@@ -53,7 +53,7 @@ c      endif
 
       if (jbranch .eq. 1) then
 c S.C. to swicth off jbranch switching comment the following line
-        jbranch=2
+c        jbranch=2
         rtxth=xth**xexp 
         xjac=1d0/(xexp*xth**(xexp-1d0))
       elseif (jbranch .eq. 2) then 
