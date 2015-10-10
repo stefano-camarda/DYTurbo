@@ -7,6 +7,7 @@ C     Scale dependence included up to NNLO
 
       double precision function countint(vector,wgt)
       implicit none
+      include 'options.f'
       include 'constants.f'
       include 'realonly.f'
       include 'virtonly.f'
@@ -103,6 +104,8 @@ C
       logical binner
       external binner
       external hists_fill
+      double precision switching
+      external switching
 
       if (first) then
          first=.false.
@@ -150,10 +153,10 @@ CC   Set qtmax (kinematical limit)
 
 
 !  SWITCHING FUNCTIONS
-      switch=1d0
+c      switch=1d0
       qt=dsqrt(qt2)
       m=dsqrt(q2)
-      if(qt.ge.m*3/4d0)  switch=dexp(-(m*3/4d0-qt)**2/(m/2d0)**2)           ! GAUSS SWITCH
+c      if(qt.ge.m*3/4d0)  switch=dexp(-(m*3/4d0-qt)**2/(m/2d0)**2)           ! GAUSS SWITCH
 !!!!!!!!!!!!
 !      if(qt.ge.m)  switch=dexp(-(m-qt)**2/(m/2d0)**2)           ! GAUSS SWITCH
 !      if(qt.ge.m/2d0)  switch=dexp(-(m/2d0-qt)**2/(m/2d0)**2)              ! GAUSS SWITCH
@@ -162,6 +165,7 @@ CC   Set qtmax (kinematical limit)
 !      if(qt.ge.m/2d0)        switch=dexp((m2/4d0-qt2)/m2*4d0)              ! EXP SWITCH FASTER
 !      if(qt.ge.m/2d0)        switch=(dcos(pi/50d0*(qt-45.6d0))+1d0)/2d0    ! COS SWITCH
 !      if(qt.ge.95.6)         switch=0d0                                    ! COS SWITCH
+      switch = switching(qt, m)
 
       if(switch.le.0.01d0)    goto 999    ! 
 
@@ -207,11 +211,13 @@ CC   In this way normalization is fixed to dsigma/dqt2
   
 
 CC Generate BORN momenta for counterterm
-      
-!      call genBORN2(q2,shat,vector,ptrans,pswt0,*999)
+      if (fixedorder) then
+         call genBORN2(q2,shat,vector,p,pswt0,*999)
 !      call storeptilde(1,ptrans)
-!      write(*,*) sqrt(q2),sqrt(qt2),sqrt(shat)
-       call genBORN2qT(q2,qt2,shat,vector,p,pswt0,*999)
+!     write(*,*) sqrt(q2),sqrt(qt2),sqrt(shat)
+      else
+         call genBORN2qT(q2,qt2,shat,vector,p,pswt0,*999)
+      endif
 
 
 C Scaled momentum fractions
@@ -701,7 +707,6 @@ C     Fill only if it's last iteration
       xreal=xreal+xint*wgt/dfloat(itmx)
       xreal2=xreal2+(xint*wgt)**2/dfloat(itmx)
       
-
       return
 
  999  countint=0d0

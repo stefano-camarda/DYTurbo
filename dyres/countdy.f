@@ -922,6 +922,9 @@ c perform qt integration
       include 'constants.f'
       double precision cthmom0,cthmom1,cthmom2
       double precision msqc(-nf:nf,-nf:nf)
+      include 'flred.f'
+      double precision msqc1(12)
+      integer jk
       integer jj,kk
       COMMON/SIGMAIJ/SIGMAIJ
       double precision sigmaij(-5:5,-5:5)
@@ -944,7 +947,37 @@ c     Common block (output)
             LL4jk(jj,kk)=0
          enddo
       enddo
+
+      do jj=-nf,nf
+         do kk=-nf,nf
+            msqc(jj,kk) = 0d0
+         enddo
+      enddo
+
       q2=m*m
+
+c     reduce flavour double loop to single loop
+      do jk = 1, nfme
+         msqc1(jk) = 0d0
+c         print *,msqc1(jk), jjs(jk),kks(jk)
+      enddo
+      
+c     for fixed order predictions the counterterm is always evaluated at qt=0
+c     store moments and amplitudes
+      if (fixedorder) then
+         call setqt(0.0001D0)
+         call genV4p()
+         call cthmoments(cthmom0,cthmom1,cthmom2)
+         cthmom0=cthmom0*twopi*twopi
+         cthmom1=cthmom1*twopi*twopi
+         cthmom2=cthmom2*twopi*twopi
+         call initsigmacth(m,cthmom0,cthmom1,cthmom2)
+
+         do jk = 1, nfme
+            msqc1(jk) = sigmaij(jjs(jk),kks(jk))*pi*6d0/fbGeV2*(2*q2)
+         enddo
+      endif      
+      
       qtmin2 = qtmin**2
       qtmax2 = qtmax**2
       tiny = 1D-5;
@@ -966,17 +999,6 @@ c     Common block (output)
 
             qt = sqrt(qt2)
 
-!      SWITCHING FUNCTIONS
-c            switch=1d0
-c            if(qt.ge.m*3/4d0)  switch=dexp(-(m*3/4d0-qt)**2/(m/2d0)**2) ! GAUSS SWITCH
-!!!!!!!!!!!!
-!     if(qt.ge.m)  switch=dexp(-(m-qt)**2/(m/2d0)**2)           ! GAUSS SWITCH
-!     if(qt.ge.m/2d0)  switch=dexp(-(m/2d0-qt)**2/(m/2d0)**2)              ! GAUSS SWITCH
-!     if(qt.ge.m/2d0)        switch=dexp(-2d0*(m/2d0-qt)**2/(m/2d0)**2)    ! GAUSS SWITCH FASTER
-!     if(qt.ge.m/2d0)        switch=dexp((m2/4d0-qt2)/m2)                  ! EXP SWITCH
-!     if(qt.ge.m/2d0)        switch=dexp((m2/4d0-qt2)/m2*4d0)              ! EXP SWITCH FASTER
-!     if(qt.ge.m/2d0)        switch=(dcos(pi/50d0*(qt-45.6d0))+1d0)/2d0    ! COS SWITCH
-!     if(qt.ge.95.6)         switch=0d0                                    ! COS SWITCH
             switch = switching(qt, m)
 
             if(switch.le.0.01d0) cycle
@@ -989,68 +1011,27 @@ c     xmio is used in besselkfast for Itilde
             LL3=Itilde(3)/q2**2*a_param**2*w*switch
             LL4=Itilde(4)/q2**2*a_param**2*w*switch
 
-            call setqt(qt)
-            call genV4p()
-            call cthmoments(cthmom0,cthmom1,cthmom2)
-            cthmom0=cthmom0*twopi*twopi
-            cthmom1=cthmom1*twopi*twopi
-            cthmom2=cthmom2*twopi*twopi
-            call initsigmacth(m,cthmom0,cthmom1,cthmom2)
+            if (.not.fixedorder) then
+               call setqt(qt)
+               call genV4p()
+               call cthmoments(cthmom0,cthmom1,cthmom2)
+               cthmom0=cthmom0*twopi*twopi
+               cthmom1=cthmom1*twopi*twopi
+               cthmom2=cthmom2*twopi*twopi
+               call initsigmacth(m,cthmom0,cthmom1,cthmom2)
 
-            do jj=-nf,nf
-               do kk=-nf,nf
-                  msqc(jj,kk) = 0d0
+               do jk = 1, nfme
+               msqc1(jk) = sigmaij(jjs(jk),kks(jk))*pi*6d0/fbGeV2*(2*q2)
                enddo
-            enddo
-            if (nproc.eq.3) then
-               msqc(1,-1)=sigmaij(2,-2)*pi*6d0/fbGeV2*(2*q2)
-               msqc(-1,1)=sigmaij(-2,2)*pi*6d0/fbGeV2*(2*q2)
-               msqc(2,-2)=sigmaij(1,-1)*pi*6d0/fbGeV2*(2*q2)
-               msqc(-2,2)=sigmaij(-1,1)*pi*6d0/fbGeV2*(2*q2)
-               msqc(3,-3)=sigmaij(3,-3)*pi*6d0/fbGeV2*(2*q2)
-               msqc(-3,3)=sigmaij(-3,3)*pi*6d0/fbGeV2*(2*q2)
-               msqc(4,-4)=sigmaij(4,-4)*pi*6d0/fbGeV2*(2*q2)
-               msqc(-4,4)=sigmaij(-4,4)*pi*6d0/fbGeV2*(2*q2)
-               msqc(5,-5)=sigmaij(5,-5)*pi*6d0/fbGeV2*(2*q2)
-               msqc(-5,5)=sigmaij(-5,5)*pi*6d0/fbGeV2*(2*q2)
-            elseif(nproc.eq.1) then
-               msqc(2,-1)=sigmaij(1,-2)*pi*6d0/fbGeV2*(2*q2)
-               msqc(-1,2)=sigmaij(-2,1)*pi*6d0/fbGeV2*(2*q2)
-               msqc(2,-3)=sigmaij(1,-3)*pi*6d0/fbGeV2*(2*q2)
-               msqc(-3,2)=sigmaij(-3,1)*pi*6d0/fbGeV2*(2*q2)
-               msqc(2,-5)=sigmaij(1,-5)*pi*6d0/fbGeV2*(2*q2)
-               msqc(-5,2)=sigmaij(-5,1)*pi*6d0/fbGeV2*(2*q2)
-               msqc(4,-3)=sigmaij(4,-3)*pi*6d0/fbGeV2*(2*q2)
-               msqc(-3,4)=sigmaij(-3,4)*pi*6d0/fbGeV2*(2*q2)
-               msqc(4,-1)=sigmaij(4,-2)*pi*6d0/fbGeV2*(2*q2)
-               msqc(-1,4)=sigmaij(-2,4)*pi*6d0/fbGeV2*(2*q2)
-               msqc(4,-5)=sigmaij(4,-5)*pi*6d0/fbGeV2*(2*q2)
-               msqc(-5,4)=sigmaij(-5,4)*pi*6d0/fbGeV2*(2*q2)
-            elseif(nproc.eq.2) then
-               msqc(1,-2)=sigmaij(2,-1)*pi*6d0/fbGeV2*(2*q2)
-               msqc(-2,1)=sigmaij(-1,2)*pi*6d0/fbGeV2*(2*q2)
-               msqc(3,-2)=sigmaij(3,-1)*pi*6d0/fbGeV2*(2*q2)
-               msqc(-2,3)=sigmaij(-1,3)*pi*6d0/fbGeV2*(2*q2)
-               msqc(5,-2)=sigmaij(5,-1)*pi*6d0/fbGeV2*(2*q2)
-               msqc(-2,5)=sigmaij(-1,5)*pi*6d0/fbGeV2*(2*q2)
-               msqc(3,-4)=sigmaij(3,-4)*pi*6d0/fbGeV2*(2*q2)
-               msqc(-4,3)=sigmaij(-4,3)*pi*6d0/fbGeV2*(2*q2)
-               msqc(1,-4)=sigmaij(2,-4)*pi*6d0/fbGeV2*(2*q2)
-               msqc(-4,1)=sigmaij(-4,2)*pi*6d0/fbGeV2*(2*q2)
-               msqc(5,-4)=sigmaij(5,-4)*pi*6d0/fbGeV2*(2*q2)
-               msqc(-4,5)=sigmaij(-4,5)*pi*6d0/fbGeV2*(2*q2)
             endif
-            
-            do jj=-nf,nf
-               do kk=-nf,nf
-                  if (msqc(jj,kk).ne.0d0) then
-                     LL1jk(jj,kk)=LL1jk(jj,kk)+LL1*msqc(jj,kk)
-                     LL2jk(jj,kk)=LL2jk(jj,kk)+LL2*msqc(jj,kk)
-                     LL3jk(jj,kk)=LL3jk(jj,kk)+LL3*msqc(jj,kk)
-                     LL4jk(jj,kk)=LL4jk(jj,kk)+LL4*msqc(jj,kk)
-                  endif
-               enddo
+
+            do jk=1,nfme
+             LL1jk(jjm(jk),kkm(jk))=LL1jk(jjm(jk),kkm(jk))+LL1*msqc1(jk)
+             LL2jk(jjm(jk),kkm(jk))=LL2jk(jjm(jk),kkm(jk))+LL2*msqc1(jk)
+             LL3jk(jjm(jk),kkm(jk))=LL3jk(jjm(jk),kkm(jk))+LL3*msqc1(jk)
+             LL4jk(jjm(jk),kkm(jk))=LL4jk(jjm(jk),kkm(jk))+LL4*msqc1(jk)
             enddo
+
          enddo
       enddo
       return

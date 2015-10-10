@@ -133,13 +133,25 @@ integrand_t ctintegrand3d(const int &ndim, const double x[], const int &ncomp, d
   double switchqtlim = switching::qtlimit(m);
   double qtlim = min(kinqtlim, switchqtlim);
   double qtmx = min(qtlim, qtmax);
-  double qtmn2 = pow(qtmn,2);
-  double qtmx2 = pow(qtmx,2);
   if (qtmn >= qtmx)
     {
       f[0]=0.;
       return 0;
     }
+
+  //In the fixed order calculation, integrate from qtcut to infinity
+  if (opts.fixedorder)
+    {
+      if (qtmin > 0)
+	{
+	  f[0]=0.;
+	  return 0;
+	}
+      qtmn = qtcut;
+      qtmx = 1e10;
+    }
+  double qtmn2 = pow(qtmn,2);
+  double qtmx2 = pow(qtmx,2);
   
   double tiny = 1E-5;
   double a = 1./(1+log(qtmx2/tiny));
@@ -152,10 +164,16 @@ integrand_t ctintegrand3d(const int &ndim, const double x[], const int &ncomp, d
   double qt=sqrt(qt2);
   
   //set global variables to costh, m, qt, y
-  setcthmqty(0, m, qt, y);
+  if (opts.fixedorder) //In the fixed order calculation evaluate kinematic cuts with qt=0
+    setcthmqty(0, m, 0.0001, y);
+  else
+    setcthmqty(0, m, qt, y);
 
   //generate boson 4-momentum, with m, qt, y and phi=0
-  genV4p(m, qt, y, 0.);
+  if (opts.fixedorder) //In the fixed order calculation evaluate kinematic cuts with qt=0
+    genV4p(m, 0.0001, y, 0.);
+  else
+    genV4p(m, qt, y, 0.);
 
   //  SWITCHING FUNCTIONS is inside countdy
   //  double swtch=1.;
@@ -263,8 +281,23 @@ integrand_t ctintegrand2d(const int &ndim, const double x[], const int &ncomp, d
       return 0;
     }
 
+  //In the fixed order calculation, integrate from qtcut to infinity
+  if (opts.fixedorder)
+    {
+      if (qtmin > 0)
+	{
+	  f[0]=0.;
+	  return 0;
+	}
+      qtmn = qtcut;
+      qtmx = 1e10;
+    }
+
   //set global variables to costh, m, qt, y
-  setcthmqty(0, m, (qtmn+qtmx)/2., y);
+  if (opts.fixedorder) //In the fixed order calculation evaluate kinematic cuts with qt=0
+    setcthmqty(0, m, 0.001, y);
+  else
+    setcthmqty(0, m, (qtmn+qtmx)/2., y);
 
   clock_t qtbt, qtet;
   qtbt = clock();
@@ -272,7 +305,10 @@ integrand_t ctintegrand2d(const int &ndim, const double x[], const int &ncomp, d
   qtet = clock();
   
   //generate boson 4-momentum, with m, qt, y and phi=0
-  genV4p(m, (qtmn+qtmx)/2., y, 0.);
+  if (opts.fixedorder) //In the fixed order calculation evaluate kinematic cuts with qt=0
+    genV4p(m, 0.0001, y, 0.);
+  else
+    genV4p(m, (qtmn+qtmx)/2., y, 0.);
 
   //In this point of phase space (m, qt, y) the costh integration is performed by 
   //calculating the 0, 1 and 2 moments of costh
@@ -303,6 +339,21 @@ integrand_t ctintegrand2d(const int &ndim, const double x[], const int &ncomp, d
   return 0;
 }
 
+integrand_t doublevirtintegrand(const int &ndim, const double x[], const int &ncomp, double f[],
+                        void* userdata, const int &nvec, const int &core,
+                        double &weight, const int &iter)
+{
+  
+  double rvv[22];
+  for (int i = 0; i < ndim; i++)
+    rvv[i]=x[i];
+
+  dofill_.doFill_ = int(iter==last_iter);
+  f[0] = lowinthst_(rvv,weight);
+
+  return 0;
+}
+
 int binner_(double p3[4], double p4[4])
 {
     if (opts.HackBinnerToFiller) {
@@ -311,7 +362,7 @@ int binner_(double p3[4], double p4[4])
 
         double qt = sqrt((float)pow(p3[0]+p4[0],2)+pow(p3[1]+p4[1],2));
         if (qt < qtmin || qt > qtmax)
-            return false;
+	    return false;
 
         double y = 0.5 *log((p3[3] + p4[3] + p3[2] + p4[2]) / (p3[3] + p4[3] - p3[2] - p4[2]));
         if (y < ymin || y > ymax)

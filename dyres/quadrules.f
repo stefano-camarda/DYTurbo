@@ -1,6 +1,4 @@
-      integer approxpdf,pdfintervals
-      common/opts/approxpdf,pdfintervals
-
+      include 'options.f'
       integer pdfrule
       parameter (pdfrule=64)
 

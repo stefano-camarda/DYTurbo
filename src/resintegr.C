@@ -111,6 +111,22 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
   double qt = tiny*exp(pow(x2,1./esp));
   jac=jac*qt*pow(x2,1./esp-1)/esp;
 
+  /*double tiny = 1E-3;
+  double a = log(log(qtmn/tiny));
+  double b = log(log(qtmx/tiny));
+  double x2=a+(b-a)*x[1];
+  jac=jac*(b-a);
+  double qt = tiny*exp(exp(x2));
+  jac=jac*qt*exp(x2);*/
+  
+  /*double base = 100000.;
+  double a = log(qtmn)/log(base);
+  double b = log(qtmx)/log(base);
+  double x2=a+(b-a)*x[1];
+  jac=jac*(b-a);
+  double qt = exp(x2*log(base));
+  jac=jac*qt*log(base);*/
+  
   //set global variables to m, qt
   setmqty(m, qt, 0);
 

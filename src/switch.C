@@ -1,4 +1,5 @@
 #include "switch.h"
+#include "settings.h"
 
 #include <math.h>
 
@@ -16,6 +17,9 @@ double switching::swtch(double qt, double m)
 {
   double swtch=1.;
 
+  if (opts.fixedorder)
+    return swtch;
+  
   if (mode == 1)
     if (qt >= m*k) swtch=exp(-pow((m*k-qt),2)/pow((m/2.),2)); // GAUSS SWITCH
   
@@ -37,7 +41,11 @@ double switching::swtch(double qt, double m)
 
 double switching::qtlimit(double m)
 {
-  double limit=10000;
+  double limit=opts.sroot/2.;
+
+  if (opts.fixedorder)
+    return limit;
+  
   if (mode == 1)
     limit = m*(sqrt(log(1./cutoff))+k);
   return limit;
