@@ -209,7 +209,7 @@ void settings::readfromfile(const string fname){
 	cout << "Asked for fixed order predictions, switching off resummation term" << endl;
 	doRES = false;
       }
-    else if (doVV == true)
+    if (fixedorder == false && doVV == true)
       {
 	cout << "Asked for resummed predictions, switching off double virtual term" << endl;
 	doVV = false;
