@@ -432,10 +432,10 @@ c--- update the maximum weight so far, if necessary
         wtmax=val
       endif
 
-      if (bin) then
-        val=val/dfloat(itmx) 
-        call plotter(pjet,val,2)
-      endif
+c      if (bin) then
+c        val=val/dfloat(itmx) 
+c        call plotter(pjet,val,2)
+c      endif
 
       return
 

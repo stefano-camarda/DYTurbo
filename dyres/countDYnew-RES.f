@@ -688,15 +688,15 @@ c---Add to total
         val=xmsq(1)*wgt
         
 
-c---if we're binning, add to histo too
-        if (bin) then
-          call getptildejet(1,pjet)
-          call dotem(nvec,pjet,s)
-          val=val/dfloat(itmx)       
-        npart=npart-1
-           call plotter(p,val,1)       
-        npart=npart+1
-        endif
+cc---if we're binning, add to histo too
+c        if (bin) then
+c          call getptildejet(1,pjet)
+c          call dotem(nvec,pjet,s)
+c          val=val/dfloat(itmx)       
+c        npart=npart-1
+c           call plotter(p,val,1)       
+c        npart=npart+1
+c        endif
 
 C     Fill only if it's last iteration
       if (doFill.ne.0) then
