@@ -17,9 +17,12 @@ sys.argv.append('-b') # run in batch
 from ROOT  import TGraphErrors, TFile
 import ROOT as RT
 #import asciitable
+from array import array
 
 from PlotTools import *
 pl=PlotTools()
+
+#import array
 
 def plot_pt(fname):
 
@@ -304,6 +307,66 @@ def w_pt_y():
     pass
 
 
+def getDataHistZ(hMC):
+    DATA= [
+            [  0       , 2     ,    0.02822    ,       0.2715   ,        0.3694  ,        0.3639   ,       0.5853 ],
+            [  2       , 4     ,     0.0584    ,       0.1667   ,        0.3191  ,        0.3459   ,       0.4993 ],
+            [  4       , 6     ,    0.05805    ,       0.1698   ,         0.228  ,        0.3614   ,       0.4598 ],
+            [  6       , 8     ,    0.04917    ,       0.1847   ,        0.2151  ,        0.3602   ,       0.4584 ],
+            [  8       , 10    ,    0.04076    ,        0.205   ,        0.2364  ,        0.3433   ,       0.4645 ],
+            [  10      , 12    ,     0.0338    ,       0.2277   ,        0.2562  ,        0.3426   ,       0.4846 ],
+            [  12      , 14    ,    0.02815    ,       0.2451   ,        0.2603  ,        0.3442   ,       0.4963 ],
+            [  14      , 16    ,    0.02375    ,       0.2691   ,        0.2597  ,        0.3431   ,       0.5075 ],
+            [  16      , 18    ,    0.02012    ,       0.2973   ,        0.2747  ,        0.3407   ,        0.529 ],
+            [  18      , 22    ,    0.01595    ,        0.254   ,        0.2537  ,        0.3429   ,       0.4964 ],
+            [  22      , 26    ,      0.012    ,       0.3024   ,        0.2815  ,        0.3557   ,       0.5452 ],
+            [  26      , 30    ,   0.009166    ,       0.3406   ,        0.3084  ,        0.3566   ,       0.5816 ],
+            [  30      , 34    ,   0.007242    ,       0.3902   ,        0.3275  ,        0.3525   ,       0.6195 ],
+            [  34      , 38    ,   0.005802    ,       0.4375   ,        0.3548  ,        0.3473   ,       0.6618 ],
+            [  38      , 42    ,   0.004641    ,       0.4889   ,        0.3896  ,        0.3499   ,       0.7163 ],
+            [  42      , 46    ,   0.003777    ,         0.53   ,        0.4272  ,        0.3481   ,       0.7646 ],
+            [  46      , 50    ,   0.003172    ,       0.5688   ,         0.433  ,        0.3673   ,       0.8037 ],
+            [  50      , 54    ,   0.002593    ,       0.6426   ,        0.4601  ,        0.3673   ,       0.8715 ],
+            [  54      , 60    ,   0.002104    ,        0.613   ,        0.4283  ,        0.3749   ,       0.8365 ],
+            [  60      , 70    ,   0.001492    ,       0.5526   ,        0.4396  ,        0.3785   ,       0.8012 ],
+            [  70      , 80    ,   0.0009851   ,       0.6894   ,        0.4946  ,        0.4282   ,       0.9505 ],
+            [  80      , 100   ,   0.0005525   ,       0.6184   ,        0.4858  ,        0.4447   ,       0.9034 ],
+            [  100     , 150   ,   0.0001918   ,       0.6264   ,        0.5307  ,        0.6531   ,        1.049 ],
+            [  150     , 200   ,   4.891e-05   ,        1.258   ,        0.7213  ,         0.628   ,         1.58 ],
+            [  200     , 300   ,   1.081e-05   ,        1.882   ,         1.402  ,         1.335   ,          2.7 ],
+            [  300     , 800   ,   3.985e-07   ,        4.195   ,         2.045  ,         1.324   ,        4.851 ],
+            ]
+    binsx = [ x[0] for x in DATA ]
+    binsx.append(DATA[-1][1])
+    ar_bins = array('d',binsx)
+    #for i,a in enumerate(binsx):
+        #ar_bins[i]=binsx[i]
+    N = len(binsx)-1
+    hData = TH1D ("Zdata", "Z data", N, ar_bins );
+    for i,x in enumerate(DATA):
+        hData.SetBinContent(i+1, x[2]);
+        hData.SetBinError  (i+1, x[2]*x[6]);
+    # rebin same MC
+    hMC = hMC.Rebin(N,"Z MC",ar_bins)
+    # divide by bin width
+    for ibin in range(1,hMC.GetNbinsX()+1) :
+        val = hMC.GetBinContent(ibin)
+        width = hMC.GetBinWidth(ibin)
+        hMC.SetBinContent(ibin,val/width)
+        pass
+    hData.Scale(1./hData.Integral())
+    hMC.Scale(1./hMC.Integral())
+    return [hData, hMC]
+
+
+
+
+
+
+
+
+
+
 # add by hand
 # dyturbo_z0_lhc7_CT10nnlo_9_qt1214y12_100101
 # |    12 -    14 |     1 -     2 |   -2585.71 +/-0.000531072 (   1360.85s) | -2585.71 +/-0.000531072 (   1360.85s) |
@@ -453,7 +516,7 @@ def root_file_integral():
     #filetmp="run_dir/results4.root"
     #filetmp="results/dyturbo_z0_lhc7_CT10nnlo_0_qt010y01t{}_100101.root"
     #
-    processes = ["wp","wm","z0"] #, "z0"]
+    processes = ["z0"] #"wp","wm","z0"] #, "z0"]
     programs  = ["dyturbo"] #, "mcfm"]
     orders    = ["ZPT-CT10"] #, "CT10nlo", "CT10nnlo"]
     filetmp1="results/{}_{}_lhc7_{}_0_qt0100y05t{}_100101.root"
@@ -564,6 +627,9 @@ def root_file_integral():
                 pl.CompareHistsInList( titltmp.format(prog,proc,pdf,"all","y"  ) , hly  , maxX=30, compareType="ratio" )
                 gStyle.SetPalette(RT.kDarkBodyRadiator)
                 pl.CompareHistsInList( titltmp.format(prog,proc,pdf,"tot","qty" ) , hlistProject[0:1])
+                # data MC comparison
+                if "z0" in proc :
+                    pl.CompareHistsInList( titltmp.format(prog,proc,pdf,"datamc","qt" ) , getDataHistZ(hlqt[0]), maxX=100)
                 continue
                 Pallets= [
                     ["kDeepSea",                  RT.kDeepSea                  ],
@@ -697,7 +763,7 @@ def wwidth_table():
             [ "ATLAS" , "lhc7" ],
             [ "CMS"   , "lhc8" ],
         ]
-    processes = [ "wp", "wm", "z0"]
+    processes = [ "wp" ] # [ "wp", "wm", "z0"]
     for exp,col in experiments :
         #new header
         print " table for exp", exp, "@", col, " in order W+ W- Z"
@@ -719,6 +785,7 @@ def wwidth_table():
         pass
         # ratio
     pass
+
 
 
 ## Documentation for main

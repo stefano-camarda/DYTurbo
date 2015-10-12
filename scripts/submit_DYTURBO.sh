@@ -95,11 +95,12 @@ prepare_in(){
     if [[ $terms =~ CT2D   ]]; then    ctdim=2; fi;
     # order check
     order=1
-    if [[ $pdfset == CT10nlo   ]]; then order=1; fi;
-    if [[ $pdfset == CT10nnlo  ]]; then order=2; fi;
-    if [[ $pdfset == CTZPT2    ]]; then order=2; fi;
-    if [[ $pdfset == ZPT-CT10  ]]; then order=2; fi;
-    if [[ $pdfset == CT14      ]]; then order=2; fi;
+    if [[ $pdfset == CT10nlo    ]]; then order=1; fi;
+    if [[ $pdfset == CT10nnlo   ]]; then order=2; fi;
+    if [[ $pdfset == CTZPT2     ]]; then order=2; fi;
+    if [[ $pdfset == ZPT-CT10   ]]; then order=2; fi;
+    if [[ $pdfset == WZZPT-CT10 ]]; then order=2; fi;
+    if [[ $pdfset == CT14       ]]; then order=2; fi;
     # process (default z0)
     lomass=66.
     himass=116.
@@ -142,7 +143,8 @@ prepare_in(){
     then
         ih2=-1
         sroot=1.8e3
-        if [[ $process == z0 ]]; then lomass=75; himass=105; fi;
+        if [[ $process == z0     ]]; then lomass=30; himass=150; fi;
+        if [[ $process =~ ^w[pm] ]]; then lomass=40; himass=120; fi;
     fi;
     if [[ $collider == tev2 ]]; then ih2=-1; sroot=1.96e3; fi;
     if [[ $collider == lhc8 ]]; then sroot=8e3; fi;
@@ -196,10 +198,14 @@ prepare_in(){
 submit_job(){
     if [[ `hostname` =~ cuth-dell  ]]
     then
-        bash -x $sh_file
+        $DRYRUN bash -x $sh_file
     else
-        bsub < $sh_file
-        #bash -x $sh_file
+        if [ -a results/$job_name.root ]
+        then
+            echo "Output already exists, skipping submission."
+        else
+            $DRYRUN bsub < $sh_file
+        fi
     fi
 }
 
@@ -361,7 +367,7 @@ submit_Wwidth(){
     cubacores=8
     variation=0
     # submit
-    for process in z0 wp wm
+    for process in wp # z0 wp wm
     do
         for order in 2 # 1 2
         do
@@ -374,6 +380,7 @@ submit_Wwidth(){
             fi
             fiducialsList="FULL D0 CDF ATLAS CMS"
             fiducialsList="D0 CDF ATLAS CMS"
+            fiducialsList=FULL
             for fiducial in $fiducialsList
             do
                 colliderlist="tev1 tev2 lhc7 lhc8"
@@ -418,12 +425,16 @@ submit_allProg(){
     gpar=.83175
     for program in dyturbo # mcfm # dyturbo dyres mcfm
     do
-        for process in wm z0 # wp wm z0
+        for process in z0 # wp wm z0
         do
             makelepcuts=false
-            if [[ $process =~ z0 ]]; then makelepcuts=true; fi
-            for order in 2
+            #if [[ $process =~ z0 ]]; then makelepcuts=true; fi
+            for order in 2 3
             do
+                # set PDF ?
+                pdfset=CT10nlo
+                if [[ $order == 2 ]]; then pdfset=ZPT-CT10; fi;
+                if [[ $order == 3 ]]; then pdfset=WZZPT-CT10; order=2; fi;
                 # set terms
                 termlist="ALL"
                 if [[ $program =~ ^dyturbo ]] 
@@ -434,7 +445,7 @@ submit_allProg(){
                 fi
                 if [[ $program =~ ^dyres ]] 
                 then
-                    termlist="ALL"
+                        termlist="ALL"
                     if [[ $order == 2 ]]; then termlist="ALL REAL VIRT"; fi;
                 fi
                 if [[ $program =~ ^mcfm ]] 
@@ -443,9 +454,6 @@ submit_allProg(){
                     termlist="LO"
                     if [[ $order == 2 ]]; then termlist="REAL VIRT"; fi;
                 fi
-                # set PDF ?
-                pdfset=CT10nlo
-                if [[ $order == 2 ]]; then pdfset=ZPT-CT10; fi;
                 #
                 for terms in $termlist
                 do
@@ -459,7 +467,7 @@ submit_allProg(){
                         #if [[ $terms != REAL ]]; then continue; fi;
                         qtregion=`echo qt${loqtbin}${hiqtbin}y${loybin}${hiybin}t${terms} | sed "s/\.//g;s/ //g"`
                         prepare_script
-                        $DRYRUN submit_job
+                        submit_job
                     done
                 done
             done

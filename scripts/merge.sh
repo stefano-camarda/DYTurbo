@@ -74,6 +74,7 @@ merge_pt_y(){
     search="results/*_100101.root"
     #search="results/dyturbo_wp_lhc7_ZPT-CT10_0_qt0100y05t*_$defaults_seed.root" # wp 
     search="results/dyturbo_z0_lhc7_ZPT-CT10_0_qt0100y05t*_$defaults_seed.root" # wp 
+    search="results/dyturbo_z0_lhc7_WZZPT-CT10_0_qt0100y05t*_$defaults_seed.root" # wp 
     for inrootfile in `ls $search`
     do
         root_base=`echo $inrootfile | sed "s|$defaults_seed|*|g"`
