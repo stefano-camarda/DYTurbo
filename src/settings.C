@@ -400,12 +400,12 @@ double getMt(double p3[4], double p4[4]){
 
 bool fiducial_D0(double p3[4], double p4[4]){
     double pt3 = getPt(p3);
-    if (pt3<20) return false;
+    if (pt3<25) return false;
     double aeta3 = fabs(getEta(p3));
     if (aeta3>2.5 || (aeta3>1.1 && aeta3<1.5) ) return false;
     double pt4 = getPt(p4);
     if (opts.nproc==3){ // z
-        if (pt4<20) return false;
+        if (pt4<25) return false;
         double aeta4 = fabs(getEta(p4));
         if (aeta4>2.5 || (aeta4>1.1 && aeta4<1.5) ) return false;
     } else { // W
@@ -416,7 +416,7 @@ bool fiducial_D0(double p3[4], double p4[4]){
 
 bool fiducial_CDF(double p3[4], double p4[4]){
     double pt3 = getPt(p3);
-    if (pt3<20) return false;
+    if (pt3<25) return false;
     double aeta3 = fabs(getEta(p3));
     if (aeta3>2.0 || (aeta3>1.0 && aeta3<1.2) ) return false;
     if (aeta3<1.0 && pt3<25) return false;
