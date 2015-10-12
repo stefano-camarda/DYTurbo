@@ -75,9 +75,9 @@ C Set-up incoming beams and PS integration cut-offs
 
 * Initialize all histograms
 * npart=6 is a dummy value, to ensure that all histograms are included
-      npart=6
-      val=1d-15   
-      call plotter(p,val,0)
+c      npart=6
+c      val=1d-15   
+c      call plotter(p,val,0)
        
       do j=1,mxpart
       do k=1,4

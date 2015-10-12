@@ -370,4 +370,13 @@ void plotter::Finalise(double xsection){
 void hists_fill_(double p3[4], double p4[4], double *weight){
     return;
 }
+
+void hists_real_dipole_(double p3[4], double p4[4], double *weight){
+    return;
+}
+
+void hists_real_event_(){
+    return;
+}
+
 #endif //USEROOT

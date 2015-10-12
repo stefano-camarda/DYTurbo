@@ -39,8 +39,12 @@ void settings::init()
   int3d = true;
   int4d = false;
 
+  //resummation or fixed order switch
+  fixedorder = false;
+  
   //term switch
   doRES  = false;
+  doVV   = false;
   doCT   = false;
   doREAL = false;
   doVIRT = false;
@@ -51,6 +55,7 @@ void settings::init()
   cubacores = 0;   //parallelization (0 = turn off)
   niterRES = 0;           //only for 2d and 3d cuhre integration
   vegasncallsRES  = 10000; // only for res 4d vegas integration
+  vegasncallsVV   = 10000; // only for double virtual 6d vegas integration
   vegasncallsCT   = 10000; // only for lo 8d vegas integration
   vegasncallsLO   = 10000; // only for lo 7d vegas integration
   vegasncallsREAL = 10000; // only for real 10d vegas integration
@@ -127,7 +132,9 @@ void settings::readfromfile(const string fname){
     //ctint2d            = in.GetBool   ( "ctint2d"         ); //true
     //ctint3d            = in.GetBool   ( "ctint3d"         ); //false
     //ctintvegas         = in.GetBool   ( "ctintvegas"      ); //false
+    fixedorder         = in.GetBool   ( "fixedorder"      ); //false
     doRES              = in.GetBool   ( "doRES"           ); //false
+    doVV               = in.GetBool   ( "doVV"            ); //false
     doCT               = in.GetBool   ( "doCT"            ); //false
     doREAL             = in.GetBool   ( "doREAL"          ); //false
     doVIRT             = in.GetBool   ( "doVIRT"          ); //false
@@ -137,6 +144,7 @@ void settings::readfromfile(const string fname){
     niterRES           = in.GetNumber ( "niterRES"        ); //0       # only        for      2d         and     3d          cuhre           integration
     niterCT            = in.GetNumber ( "niterCT"         ); //0       # only        for      3d          cuhre           integration
     vegasncallsRES     = in.GetNumber ( "vegasncallsRES"  ); //10000
+    vegasncallsVV      = in.GetNumber ( "vegasncallsVV"   ); //10000
     vegasncallsCT      = in.GetNumber ( "vegasncallsCT"   ); //10000
     vegasncallsLO      = in.GetNumber ( "vegasncallsLO"   ); //10000
     vegasncallsREAL    = in.GetNumber ( "vegasncallsREAL" ); //10000
@@ -159,7 +167,7 @@ void settings::readfromfile(const string fname){
     fiducial           = static_cast<settings::DetFiducial>( in.GetNumber( "fiducial" )); //0
     opts_.approxpdf_    = in.GetNumber ( "opts_approxpdf" ); //0
     opts_.pdfintervals_ = in.GetNumber ( "opts_pdfintervals" ); //100
-
+    opts_.fixedorder_ = fixedorder;
 
     // additional conditions
     // finite order (NLO vs NNLO)
@@ -196,6 +204,21 @@ void settings::readfromfile(const string fname){
 	int4d = true;
       }
 
+    if (fixedorder == true && doRES == true)
+      {
+	cout << "Asked for fixed order predictions, switching off resummation term" << endl;
+	doRES = false;
+      }
+    if (fixedorder == false && doVV == true)
+      {
+	cout << "Asked for resummed predictions, switching off double virtual term" << endl;
+	doVV = false;
+      }
+    if (fixedorder == true)
+      {
+	cout << "Asked for fixed order predictions, enforce a_param = 1.0" << endl;
+	a_param = 1.0;
+      }
     return ;
 }
 
@@ -282,7 +305,9 @@ void settings::dumpAll(){
         dumpB("ctint2d            ", ctint2d             );
         dumpB("ctint3d            ", ctint3d             );
         dumpB("ctintvegas         ", ctintvegas          );
-        dumpB("doRES              ", doRES               );
+        dumpB("fixedorder         ", fixedorder          );
+	dumpB("doRES              ", doRES               );
+	dumpB("doVV               ", doVV                );
         dumpB("doCT               ", doCT                );
         dumpB("doREAL             ", doREAL              );
         dumpB("doVIRT             ", doVIRT              );
@@ -292,6 +317,7 @@ void settings::dumpAll(){
         dumpI("niterRES           ", niterRES            );
         dumpI("niterCT            ", niterCT             );
         dumpD("vegasncallsRES     ", vegasncallsRES      );
+	dumpD("vegasncallsVV      ", vegasncallsVV       );
         dumpD("vegasncallsCT      ", vegasncallsCT       );
         dumpD("vegasncallsLO      ", vegasncallsLO       );
         dumpD("vegasncallsREAL    ", vegasncallsREAL     );

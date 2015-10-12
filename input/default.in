@@ -61,8 +61,12 @@ intDimCT = 8 # 2, 3 or 8
 #ctint3d = false
 #ctintvegas = false
 
+#resummation or fixed order switch
+fixedorder  = false
+
 # term switches
 doRES  = true
+doVV   = false
 doCT   = true
 doREAL = true
 doVIRT = true
@@ -74,6 +78,7 @@ cubacores        = 8   # parallelization ( 0 = turn off)
 niterRES         = 2   # only for 2d and 3d cuhre integration of resummed part
 niterCT          = 2   # only for 3d cuhre integration of counter term
 vegasncallsRES   = 100 #0000 # only for res 4d vegas integration
+vegasncallsVV    = 100 #0000 # only for double virtual 6d vegas integration
 vegasncallsCT    = 100 #00000 # only for lo 8d vegas integration
 vegasncallsLO    = 100 #00000 # only for lo 7d vegas integration
 vegasncallsREAL  = 100 #000000 # only for real 10d vegas integration
