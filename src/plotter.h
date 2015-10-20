@@ -92,7 +92,8 @@ class plotter {
         TH2D* qt_y_virt  ;
         TH2D* qt_y_total ;
         // kinematics
-        double qt,y,a4;
+        double Q2,qt,y,a[8];
+        double costh,phi;
         // dipole variables
         struct XsecPoint {
             int ibin;
