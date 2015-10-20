@@ -45,6 +45,7 @@ double ymax=100;
 #ifdef USEROOT
 #include "TFile.h"
 #include "TString.h"
+#include "TLorentzVector.h"
 
 plotter::plotter() :
     N          (0),
@@ -118,10 +119,10 @@ void plotter::Init(){
 }
 
 double calcQt(double p[4]){
-    return  sqrt((float)   p[0]*p[0]+p[1]*p[1]);
+    return  sqrt((double)   p[0]*p[0]+p[1]*p[1]);
 }
 double calcY(double p[4]){
-    return 0.5 *log(float( (p[3]+p[2]) / (p[3]-p[2]) ));
+    return 0.5 *log(double( (p[3]+p[2]) / (p[3]-p[2]) ));
 }
 double calcQ2(double p[4]){
     return p[3]*p[3] -p[0]*p[0] -p[1]*p[1] -p[2]*p[2];
@@ -133,6 +134,76 @@ double Vplus(double p[4]){
 double Vminus(double p[4]){
     return (p[3] - p[2])/sqrt2  ;
 }
+double calcCosThCS(double Q2,double qt,double p3[4],double p4[4]){
+    // Maarten total
+    TLorentzVector lep1 (p3);
+    TLorentzVector lep2 (p4);
+    double charge1=-1;
+    //double costh=0;
+    ////
+    //TLorentzVector boson = lep1+lep2;
+    double Lplus  = (charge1 < 0) ? lep1.E()+lep1.Pz() : lep2.E()+lep2.Pz();
+    double Lminus = (charge1 < 0) ? lep1.E()-lep1.Pz() : lep2.E()-lep2.Pz();
+    double Pplus  = (charge1 < 0) ? lep2.E()+lep2.Pz() : lep1.E()+lep1.Pz();
+    double Pminus = (charge1 < 0) ? lep2.E()-lep2.Pz() : lep1.E()-lep1.Pz();
+    
+    //costh  = (Lplus*Pminus - Lminus*Pplus);
+    //costh *= TMath::Abs(boson.Pz());
+    //costh /= (boson.Mag()*boson.Pz());
+    //costh /= TMath::Sqrt(boson.Mag2() + boson.Pt()*boson.Pt());
+    //return costh;
+
+    if (Vplus(p3)  != Lplus  /TMath::Sqrt(2) ) printf ("      Vplusp3  is not same: me %g maarten %g\n", Vplus(p3)  , Lplus  );
+    if (Vminus(p3) != Lminus /TMath::Sqrt(2) ) printf ("      Vminusp3 is not same: me %g maarten %g\n", Vminus(p3) , Lminus );
+    if (Vplus(p4)  != Pplus  /TMath::Sqrt(2) ) printf ("      Vplusp4  is not same: me %g maarten %g\n", Vplus(p4)  , Pplus  );
+    if (Vminus(p4) != Pminus /TMath::Sqrt(2) ) printf ("      Vminusp4 is not same: me %g maarten %g\n", Vminus(p4) , Pminus );
+
+    // Collins-Sopper theta mine
+    double costh_CS = 2;
+    costh_CS *= sqrt( float((Q2-qt*qt)/Q2) );
+    costh_CS *= (Vplus(p3)*Vminus(p4) - Vplus(p4)*Vminus(p3));
+    return costh_CS ;
+    // Maarten simplify
+    //double costh_CS = TMath::Abs(qz);
+    //costh_CS /= qz*TMath::Sqrt(Q2*(Q2+qt*qt));
+    //costh_CS *= (Vplus(p3)*Vminus(p4) - Vplus(p4)*Vminus(p3));
+    //return costh_CS;
+    // version Maarten;
+    //double qz=p3[2]+p4[2];
+    //double costh;
+    //costh  = (Vplus(p3)*Vminus(p4) - Vplus(p4)*Vminus(p3));
+    //costh *= TMath::Abs(qz);
+    //costh /= (TMath::Sqrt(Q2)*qz);
+    //costh /= TMath::Sqrt(Q2 + qt*qt);
+    //return costh;
+}
+double calcPhiCS(double p3[4],double p4[4]){
+    // Collins-Sopper phi
+    const double pmass=0.938;
+    /// @todo: phi_CS without TLorentzVector...
+    // Define TLorentz Vectors
+    TLorentzVector lep1(p3);
+    TLorentzVector VB,p1,p2;
+    VB.SetPxPyPzE(p3[0]+p4[0], p3[1]+p4[1], p3[2]+p4[2], p3[3]+p4[3]);
+    double sign = VB.Z()>0 ? 1 : -1;
+    p1.SetXYZM(0.,0., +sign*opts.sroot/2., pmass);
+    p2.SetXYZM(0.,0., -sign*opts.sroot/2., pmass);
+    // Boost
+    TVector3 VBboost = -VB.BoostVector();
+    p1   .Boost(VBboost);
+    p2   .Boost(VBboost);
+    lep1 .Boost(VBboost);
+    // Collins Soper transversal plane
+    TVector3 hatp1, hatp2, CSAxis, xAxis, yAxis;
+    hatp1 = p1.Vect().Unit();
+    hatp2 = p2.Vect().Unit();
+    CSAxis = ( hatp1 - hatp2      ).Unit();
+    yAxis  = ( hatp1.Cross(hatp2) ).Unit();
+    xAxis  = ( yAxis.Cross(CSAxis)).Unit();
+    // calculate phi
+    return TMath::ATan2(lep1.Vect()*yAxis, lep1.Vect()*xAxis);
+}
+
 void plotter::CalculateKinematics(double p3[4], double p4[4]){
     // calculate VB
     double p[4]; 
@@ -141,19 +212,29 @@ void plotter::CalculateKinematics(double p3[4], double p4[4]){
     p[2] = p3[2]+p4[2];
     p[3] = p3[3]+p4[3];
     //
-    double Q2 = calcQ2(p);
-           qt = calcQt(p);
-           y  = calcY(p);
-    // Collins-Sopper theta
-    double costh_CS = 2;
-    costh_CS *= sqrt( float((Q2-qt*qt)/Q2) );
-    costh_CS *= (Vplus(p3)*Vminus(p4) - Vplus(p4)*Vminus(p3));
-    // Collins-Sopper phi
-    /// @todo: phi_CS;
+    Q2 = calcQ2(p);
+    qt = calcQt(p);
+    y  = calcY(p);
+    // calc Collins-Sopper
+    costh = calcCosThCS(Q2,qt,p3,p4);
+    phi   = calcPhiCS(p3,p4);
+    // coeficients for moments
+    double theta     = TMath::ACos(costh);
+    double sintheta  = TMath::Sin(theta);
+    double sin2theta = TMath::Sin(2*theta);
+    double cosphi    = TMath::Cos(phi);
+    double cos2phi   = TMath::Cos(2*phi);
+    double sinphi    = TMath::Sin(phi);
+    double sin2phi   = TMath::Sin(2*phi);
     // define ai moments
-    /// @todo: rest of moments;
-           a4 = costh_CS;
-    //
+    a[0] = 0.5 - 1.5*costh*costh;
+    a[1] = sin2theta*cosphi;
+    a[2] = sintheta*sintheta*cos2phi;
+    a[3] = sintheta*cosphi;
+    a[4] = costh;
+    a[5] = sintheta*sintheta*sin2phi;
+    a[6] = sin2theta*sinphi;
+    a[7] = sintheta*sinphi;
 }
 
 
@@ -193,7 +274,7 @@ void plotter::FillRealDipole(double p3[4], double p4[4], double wgt, int nd){
     //print_dipoleVec(dipole_points);
     //printf("FillRealDipole: end\n");
     // fill moments
-    p_qtVy_A4 -> Fill(qt,y,a4,wgt);
+    p_qtVy_A4 -> Fill(qt,y,a[4],wgt);
     return;
 }
 
@@ -237,10 +318,10 @@ void plotter::FillEvent(double p3[4], double p4[4], double wgt){
     } 
     // dividing weight
     if (N!=0) wgt/=N;
-    h_qt      ->Fill( qt      ,wgt);
-    h_y       ->Fill( y       ,wgt);
-    h_qtVy    ->Fill( qt,y    ,wgt);
-    p_qtVy_A4 ->Fill( qt,y,a4 ,wgt);
+    h_qt      ->Fill( qt        ,wgt);
+    h_y       ->Fill( y         ,wgt);
+    h_qtVy    ->Fill( qt,y      ,wgt);
+    p_qtVy_A4 ->Fill( qt,y,a[4] ,wgt);
     //v_wgt .push_back( wgt );
     return;
 }
