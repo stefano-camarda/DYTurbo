@@ -1,7 +1,38 @@
+
 #include "plotter.h"
+plotter hists;
+
+#ifndef DYRESCODE
 #include "integr.h"
 #include "interface.h"
 #include "settings.h"
+#else
+Binning::Binning(){
+    hist_qt_bins .push_back(0.)   ;
+    hist_qt_bins .push_back(100.) ;
+    hist_y_bins  .push_back(0.)   ;
+    hist_y_bins  .push_back(5.)   ;
+}
+Binning bins;
+
+Config::Config(){
+    vegasncallsRES  = 1 ;
+    vegasncallsCT   = 1 ;
+    vegasncallsREAL = 1 ;
+    vegasncallsVIRT = 1 ;
+    doRES  = false ;
+    doCT   = false ;
+    doREAL = false ;
+    doVIRT = false ;
+}
+Config opts;
+
+double qtmin=0;
+double qtmax=100;
+double ymin=0;
+double ymax=100;
+
+#endif
 
 #include <sys/mman.h>
 #include <sys/types.h>
@@ -10,7 +41,6 @@
 //#include <sys/wait.h>
 //#include <unistd.h>
 
-plotter hists;
 
 #ifdef USEROOT
 #include "TFile.h"
@@ -27,7 +57,8 @@ plotter::plotter() :
     qt_y_lo    (0),
     qt_y_real  (0),
     qt_y_virt  (0),
-    qt_y_total (0)
+    qt_y_total (0),
+    verbose    (false)
 {
     return;
 }
@@ -48,6 +79,7 @@ plotter::~plotter(){
 
 
 void plotter::Init(){
+    if (verbose) printf(" plotter:  histogram initialization\n");
     // Use sumw2 by default
     TH1::SetDefaultSumw2(true);
     // get qt-y binning: result histograms
@@ -197,6 +229,12 @@ void plotter::FillRealEvent(){
 void plotter::FillEvent(double p3[4], double p4[4], double wgt){
     if (wgt == 0 ) return;
     CalculateKinematics(p3,p4);
+    if (verbose){
+        printf(" plotter:  histogram filling: \n");
+        printf("         p3: %g %g %g %g \n", p3[0], p3[1], p3[2], p3[3] );
+        printf("         p4: %g %g %g %g \n", p4[0], p4[1], p4[2], p4[3] );
+        printf("         pV: %g %g       \n", qt, y  );
+    } 
     // dividing weight
     if (N!=0) wgt/=N;
     h_qt      ->Fill( qt      ,wgt);
@@ -220,6 +258,7 @@ void hists_fill_(double p3[4], double p4[4], double *weight){
             //p4[2],
             //p4[3]
           //);
+    if (!hists.IsInitialized()) hists.Init();
     hists.FillEvent(p3,p4,*weight);
     return;
 }
@@ -230,6 +269,10 @@ void hists_real_dipole_(double p3[4], double p4[4], double *weight, int * nd){
 
 void hists_real_event_(){
     hists.FillRealEvent();
+}
+
+void hists_finalize_(){
+    hists.Finalise();
 }
 
 void plotter::FillResult(TermType term, double int_val, double int_error, double time){
@@ -253,14 +296,14 @@ void plotter::FillResult(TermType term, double int_val, double int_error, double
 }
 
 void plotter::Dump(){
-    //printf(" ploter says count %f : h_qt %p entries %f mean %f RMS %f integral %f \n"
-            //, N
-            //, h_qt
-            //, h_qt->GetEntries()
-            //, h_qt->GetMean()
-            //, h_qt->GetRMS()
-            //, h_qt->Integral()
-            //);
+    printf(" ploter says count %f : h_qt %p entries %f mean %f RMS %f integral %f \n"
+            , N
+            , h_qt
+            , h_qt->GetEntries()
+            , h_qt->GetMean()
+            , h_qt->GetRMS()
+            , h_qt->Integral()
+          );
     //dump weights
     std::vector<double>::iterator v_b = v_wgt.begin ();
     std::vector<double>::iterator v_e = v_wgt.end   ();
@@ -289,7 +332,10 @@ void plotter::Merge(){
 }
 
 void plotter::Finalise(double xsection){
-    //Dump();
+    if (verbose){
+        printf(" plotter:  histogram finalize\n");
+        Dump();
+    }
     ///@note: Sending the process id number instead of xsection. This is for
     ///       saving separate file name per each worker.
     double intpart; ///< this will work as file index

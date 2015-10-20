@@ -1,7 +1,42 @@
 #ifndef plotter_h
 #define plotter_h
 
+#ifndef DYRESCODE
 #include "config.h"
+#else // DYRESCODE
+#include <vector>
+using namespace std;
+
+struct Binning
+{
+
+    Binning();
+    vector<double> hist_qt_bins;
+    vector<double> hist_y_bins;
+
+};
+
+struct Config
+{
+
+    Config();
+    double vegasncallsRES;
+    double vegasncallsCT;
+    double vegasncallsREAL;
+    double vegasncallsVIRT;
+
+    bool doRES  ;
+    bool doCT   ;
+    bool doREAL ;
+    bool doVIRT ;
+
+};
+
+extern "C"{
+   void hists_fill_(double p3[4], double p4[4], double *wt);
+   void hists_finalize_();
+}
+#endif // DYRESCODE
 
 #ifdef USEROOT
 #include <TH1D.h>
@@ -9,8 +44,8 @@
 #include <TProfile2D.h>
 #endif // USEROOT
 
-#include<memory>
-#include<mutex>
+//#include<memory>
+//#include<mutex>
 
 class plotter {
     public :
@@ -20,6 +55,7 @@ class plotter {
         enum TermType { Resum, CT, LO, Real, Virt, Total };
 
         void Init();
+        bool IsInitialized(){return (h_qtVy!=0);};
         void FillEvent(double p3[4], double p4[4], double wgt); ///<Normal filling of histograms.
         void FillRealDipole(double p3[4], double p4[4], double wgt,int nd); ///<Collect dipole kinematics and weights. Fill ai profiles.
         void FillRealEvent(); ///< for real filling without correlations. Need to FillRealDipole before.
@@ -34,8 +70,8 @@ class plotter {
         void CalculateKinematics(double p3[4], double p4[4]);
 
         /// shared space
-        std::shared_ptr<int> sh_N;
-        std::mutex m;
+        //std::shared_ptr<int> sh_N;
+        //std::mutex m;
 
         std::vector<double> v_wgt;
 
@@ -65,6 +101,8 @@ class plotter {
         std::vector<XsecPoint> dipole_points;
         void print_dipole(XsecPoint pt);
         void print_dipoleVec(std::vector<XsecPoint> vec );
+
+        double verbose;
 
 #endif // USEROOT
 
