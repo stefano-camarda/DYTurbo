@@ -444,6 +444,13 @@ def check_cancelation():
 def addIntegralError(v1,e1,v2,e2):
     return v1+v2, sqrt(e1*e1+e2*e2)
 
+def scale_err(hist,scale):
+    if scale!=scale : return hist
+    for ibin,binval in enumerate(hist):
+        olderr=hist.GetBinError(ibin)
+        hist.SetBinError(ibin, olderr*scale)
+    return hist
+
 def root_file_integral():
     #filetmp="results/dyturbo_z0_lhc7_CT10nlo_0_qt0100y05t{}_100101.root"
     #filetmp="results/dyturbo_z0_lhc7_CT10nnlo_0_qt0100y05t{}_100101.root"
@@ -453,9 +460,10 @@ def root_file_integral():
     #filetmp="results/dyturbo_z0_lhc7_CT10nnlo_0_qt010y01t{}_100101.root"
     #
     processes = ["wp", "z0"]
-    programs  = ["dyturbo", "mcfm"]
+    programs  = ["dyturbo"] #, "mcfm"]
     orders    = ["CT10nlo", "CT10nnlo"]
     filetmp="results/{}_{}_lhc7_{}_0_qt0100y05t{}_100101.root"
+    filetmp="results_merge/{}_{}_lhc7_{}_0_qt0100y05t{}_merge.root"
     hist="h_qtVy"
     hist_integr="qt_y_{}"
     TERMS=[ 
@@ -517,6 +525,7 @@ def root_file_integral():
                     hres = pl.GetHist(filetmp.format(prog,proc,pdf,term),hist_integr.format(hist_res_term))
                     integr , ineer = getIntegralError(hres)
                     print_res(term_lowcas,integr,ineer)
+                    if "REAL" in term: h=scale_err(h,ineer/inerr);
                     if not "3D" in term: 
                         hlist.append(h)
                         tot,toterr = addIntegralError(tot,toterr, integr,ineer)
@@ -536,10 +545,11 @@ def root_file_integral():
                 #
                 hlist.insert(0,hfin)
                 hlist.insert(0,htot)
-                hlqt = [ x.ProjectionX(x.GetName()+"_qt") for x in hlist ]
-                hly  = [ x.ProjectionY(x.GetName()+"_y" ) for x in hlist ]
-                pl.CompareHistsInList( titltmp.format(prog,proc,pdf,"all","qt") , hlqt, maxX=30, compareType="ratio" )
-                pl.CompareHistsInList( titltmp.format(prog,proc,pdf,"all","y" )  , hly , maxX=30, compareType="ratio" )
+                hlqt = [ x.ProjectionX(x.GetName()+"_qt") for x in hlist[:3] ]
+                hly  = [ x.ProjectionY(x.GetName()+"_y" ) for x in hlist[:3] ]
+                pl.CompareHistsInList( titltmp.format(prog,proc,pdf,"all","qt"      ) , hlqt, maxX=30, compareType="ratio" )
+                pl.CompareHistsInList( titltmp.format(prog,proc,pdf,"all","qt_zoom" ) , hlqt, maxX=10, compareType="ratio" )
+                pl.CompareHistsInList( titltmp.format(prog,proc,pdf,"all","y"       ) , hly   ,        maxX=30,            compareType="ratio" )
                 pass
             pass
         pass
