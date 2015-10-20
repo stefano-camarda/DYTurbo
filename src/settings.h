@@ -99,7 +99,10 @@ public:
   bool ctint2d, ctint3d, ctintvegas;
 
   //term switch
-  bool doRES  , doCT   , doREAL , doVIRT , doLO   ;
+  bool doRES  , doVV , doCT   , doREAL , doVIRT , doLO   ;
+
+  //resummation or fixed order switch
+  bool fixedorder;
 
   //Cuba settings
   int cubaverbosity;
@@ -107,6 +110,7 @@ public:
   int niterRES;
   int niterCT;
   int vegasncallsRES  ;
+  int vegasncallsVV   ;
   int vegasncallsCT   ;
   int vegasncallsLO   ;
   int vegasncallsREAL ;

@@ -14,6 +14,7 @@ extern "C" {
     void setup_();
     void dyinit_();
     void pdfini_();
+    void iniflavreduce_();
     void gaussinit_();
     double dyalphas_(double &q, double &amz, int &nloop);
     int cuts_(double p[4][12], int &njet);
@@ -119,6 +120,7 @@ extern "C" {
     extern struct {
       int approxpdf_;
       int pdfintervals_;
+      int fixedorder_;
     } opts_;
 
     extern struct {
@@ -238,11 +240,15 @@ extern "C" {
   double realint_(double r[22], double &wgt);
   double virtint_(double r[22], double &wgt);
   double countint_(double r[22], double &wgt);
-  
+
+  double lowinthst_(double r[22], double &wgt);
+
   double countterm_(double &costh, double &mm, double &qtt, double &yy, int &mode);
 
   int binner_(double p3[4], double p4[4]);
   void hists_fill_(double p3[4], double p4[4], double *weight);
+  void hists_real_dipole_(double p3[4], double p4[4], double *weight,int *nd);
+  void hists_real_event_();
 }
 
 #endif

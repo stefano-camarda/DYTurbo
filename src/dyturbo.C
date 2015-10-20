@@ -7,6 +7,7 @@
 #include <iomanip>
 
 #include "integr.h"
+#include "resintegr.h"
 #include "settings.h"
 #include "interface.h"
 #include "finintegr.h"
@@ -60,6 +61,7 @@ int main( int argc , const char * argv[])
   opts.readfromfile(conf_file.c_str());
   opts.initDyresSettings();
   gaussinit_();
+  iniflavreduce_();
   dyinit_();
   //  setup_();
   //bins.init();
@@ -111,8 +113,10 @@ int main( int argc , const char * argv[])
   //yline();
   //mline();
   //mlinebw();
+  //xline();
   //ptavar();
   //ptgvar();
+  //return 0;
   /**************************************/
 
 
@@ -150,6 +154,7 @@ int main( int argc , const char * argv[])
   // Cuba integration
   cout << endl << "Start integration of";
   if (opts.doRES  ) cout << " resummation";
+  if (opts.doVV   ) cout << " double virtual";
   if (opts.doCT   ) cout << " counterterm";
   if (opts.doLO   ) cout << " finite order";
   if (opts.doREAL ) cout << " real part";
@@ -184,6 +189,17 @@ int main( int argc , const char * argv[])
           normalise_result(value,error);
           print_result(value,error,b_time,e_time);
           hists.FillResult( plotter::Resum , value, error, e_time-b_time );
+          totval += value;
+          toterror2 += error*error;
+      }
+      // double virtual
+      if (opts.doVV) {
+          double b_time = clock_real();
+          doublevirtintegr(value, error);
+          double e_time = clock_real();
+          normalise_result(value,error);
+          print_result(value,error,b_time,e_time);
+	  //          hists.FillResult( plotter::DoubleV , value, error, e_time-b_time );
           totval += value;
           toterror2 += error*error;
       }
@@ -288,6 +304,7 @@ void print_head(){
     cout << setw(13) << "qt bin" << " | ";
     cout << setw(13) << "y bin"  << " | ";
     if (opts.doRES ) cout << setw(38) << "resummed "      << " | ";
+    if (opts.doVV  ) cout << setw(38) << "double virtual "<< " | ";
     if (opts.doCT  ) cout << setw(38) << "counter term "  << " | ";
     if (opts.doREAL) cout << setw(38) << "real part "     << " | ";
     if (opts.doVIRT) cout << setw(38) << "virtual part "  << " | ";
@@ -300,6 +317,7 @@ void print_head(){
 void print_line(){
     int N = 18+18;
     if (opts.doRES ) N += 41;
+    if (opts.doVV )  N += 41;
     if (opts.doCT  ) N += 41;
     if (opts.doREAL) N += 41;
     if (opts.doVIRT) N += 41;

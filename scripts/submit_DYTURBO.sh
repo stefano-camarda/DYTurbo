@@ -39,6 +39,8 @@ member=unset
 program=unset
 fiducial=unset
 detfiducial=0
+makelepcuts=false
+gpar=1
 
 prepare_script(){
     mkdir -p $batch_script_dir
@@ -54,10 +56,11 @@ prepare_script(){
     #
     cp $batch_template tmp
     sed -i "s|JOBNAME|$job_name|g               " tmp
+    sed -i "s|SEEDLIST|$seedlist|g              " tmp
     sed -i "s|OUTDIR|$result_dir|g              " tmp
     sed -i "s|DYTURBOROOTDIR|$dyturbo_project|g " tmp
     sed -i "s|DYTURBOINPUTFILE|$in_file|g       " tmp
-    sed -i "s|SETNPROCESSORS|$nprocessors|g       " tmp
+    sed -i "s|SETNPROCESSORS|$nprocessors|g     " tmp
     mv tmp $sh_file
     chmod +x $sh_file
 }
@@ -93,11 +96,12 @@ prepare_in(){
     if [[ $terms =~ CT2D   ]]; then    ctdim=2; fi;
     # order check
     order=1
-    if [[ $pdfset == CT10nlo   ]]; then order=1; fi;
-    if [[ $pdfset == CT10nnlo  ]]; then order=2; fi;
-    if [[ $pdfset == CTZPT2    ]]; then order=2; fi;
-    if [[ $pdfset == ZPT-CT10  ]]; then order=2; fi;
-    if [[ $pdfset == CT14      ]]; then order=2; fi;
+    if [[ $pdfset == CT10nlo    ]]; then order=1; fi;
+    if [[ $pdfset == CT10nnlo   ]]; then order=2; fi;
+    if [[ $pdfset == CTZPT2     ]]; then order=2; fi;
+    if [[ $pdfset == ZPT-CT10   ]]; then order=2; fi;
+    if [[ $pdfset == WZZPT-CT10 ]]; then order=2; fi;
+    if [[ $pdfset == CT14       ]]; then order=2; fi;
     # process (default z0)
     lomass=66.
     himass=116.
@@ -109,8 +113,8 @@ prepare_in(){
     #if [[ $order == 2 ]]; then nprocmcfm=44; fi;
     if [[ $process =~ ^w[pm]$ ]]
     then
-        lomass=10 # for while 10.
-        himass=1000 # for while 1000.
+        lomass=10
+        himass=1000
         rmass=80.385
         width=2.091
     fi
@@ -140,12 +144,13 @@ prepare_in(){
     then
         ih2=-1
         sroot=1.8e3
-        if [[ $process == z0 ]]; then lomass=75; himass=105; fi;
+        if [[ $process == z0     ]]; then lomass=30; himass=150; fi;
+        if [[ $process =~ ^w[pm] ]]; then lomass=40; himass=120; fi;
     fi;
     if [[ $collider == tev2 ]]; then ih2=-1; sroot=1.96e3; fi;
     if [[ $collider == lhc8 ]]; then sroot=8e3; fi;
     # variations
-    gpar=1e0
+    #gpar=1e0
     member=0
     re='^[0-9]+$'
     pdfsetname=$pdfset
@@ -159,44 +164,49 @@ prepare_in(){
     if [[ $job_name =~ ^dyres_   ]]; then in_tmpl=$dyturbo_project/scripts/DYRES_TMPL.in;   fi;
     if [[ $job_name =~ ^mcfm_    ]]; then in_tmpl=$dyturbo_project/scripts/MCFM_TMPL.in;    fi;
     cp $in_tmpl tmp
-    sed -i "s|LOQTBIN|$loqtbin|g            " tmp
-    sed -i "s|HIQTBIN|$hiqtbin|g            " tmp
-    sed -i "s|LOYBIN|$loybin|g              " tmp
-    sed -i "s|HIYBIN|$hiybin|g              " tmp
-    sed -i "s|SETSEED|$random_seed|g        " tmp
-    sed -i "s|SETMLO|$lomass|g              " tmp
-    sed -i "s|SETMHI|$himass|g              " tmp
-    sed -i "s|SETRMASS|$rmass|g             " tmp
-    sed -i "s|SETWIDTH|$width|g             " tmp
-    sed -i "s|SETNPROC|$nproc|g             " tmp
-    sed -i "s|SETPDFSET|$pdfsetname|g       " tmp
-    sed -i "s|SETMEMBER|$member|g           " tmp
-    sed -i "s|SETORDER|$order|g             " tmp
-    sed -i "s|SETGPAR|$gpar|g               " tmp
-    sed -i "s|SETDORES|$doRES|g             " tmp
-    sed -i "s|SETDOCTM|$doCTM|g             " tmp
-    sed -i "s|SETDOREA|$doREA|g             " tmp
-    sed -i "s|SETDOVIR|$doVIR|g             " tmp
-    sed -i "s|SETDOLOR|$doLOR|g             " tmp
-    sed -i "s|SETCUBACORES|$cubacores|g     " tmp
-    sed -i "s|SETRESUMDIM|$resumdim|g       " tmp
-    sed -i "s|SETCTDIM|$ctdim|g             " tmp
-    sed -i "s|SETMCFMPROC|$nprocmcfm|g      " tmp
-    sed -i "s|SETTERMSTRING|$termstring|g   " tmp
-    sed -i "s|SETDETFIDUCIAL|$detfiducial|g " tmp
-    sed -i "s|SETIH1|$ih1|g                 " tmp
-    sed -i "s|SETIH2|$ih2|g                 " tmp
-    sed -i "s|SETSROOT|$sroot|g             " tmp
+    sed -i "s|LOQTBIN|$loqtbin|g           ;
+            s|HIQTBIN|$hiqtbin|g           ;
+            s|LOYBIN|$loybin|g             ;
+            s|HIYBIN|$hiybin|g             ;
+            s|SETSEED|$random_seed|g       ;
+            s|SETMLO|$lomass|g             ;
+            s|SETMHI|$himass|g             ;
+            s|SETRMASS|$rmass|g            ;
+            s|SETWIDTH|$width|g            ;
+            s|SETNPROC|$nproc|g            ;
+            s|SETPDFSET|$pdfsetname|g      ;
+            s|SETMEMBER|$member|g          ;
+            s|SETORDER|$order|g            ;
+            s|SETGPAR|$gpar|g              ;
+            s|SETDORES|$doRES|g            ;
+            s|SETDOCTM|$doCTM|g            ;
+            s|SETDOREA|$doREA|g            ;
+            s|SETDOVIR|$doVIR|g            ;
+            s|SETDOLOR|$doLOR|g            ;
+            s|SETCUBACORES|$cubacores|g    ;
+            s|SETRESUMDIM|$resumdim|g      ;
+            s|SETCTDIM|$ctdim|g            ;
+            s|SETMCFMPROC|$nprocmcfm|g     ;
+            s|SETTERMSTRING|$termstring|g  ;
+            s|SETLEPCUTS|$makelepcuts|g    ;
+            s|SETDETFIDUCIAL|$detfiducial|g;
+            s|SETIH1|$ih1|g                ;
+            s|SETIH2|$ih2|g                ;
+            s|SETSROOT|$sroot|g            ; " tmp
     mv tmp $in_file
 }
 
 submit_job(){
     if [[ `hostname` =~ cuth-dell  ]]
     then
-        bash -x $sh_file
+        $DRYRUN bash -x $sh_file
     else
-        bsub < $sh_file
-        #bash -x $sh_file
+        if [ -a results/$job_name.root ]
+        then
+            echo "Output already exists, skipping submission."
+        else
+            $DRYRUN bsub < $sh_file
+        fi
     fi
 }
 
@@ -348,6 +358,7 @@ submit_Wwidth(){
         DRYRUN=
     fi
     # general setup
+    program=dyturbo
     loqtbin=0
     hiqtbin=1000
     loybin=-5
@@ -357,9 +368,9 @@ submit_Wwidth(){
     cubacores=8
     variation=0
     # submit
-    for process in z0 wp # wm
+    for process in z0 wp wm
     do
-        for order in 1 # 2
+        for order in 2 # 1 2
         do
             pdfset=CT10nlo
             termlist="RES CT LO"
@@ -368,16 +379,20 @@ submit_Wwidth(){
                 pdfset=CT10nnlo
                 termlist="RES CT REAL VIRT"
             fi
-            for fiducial in FULL D0 CDF ATLAS CMS
+            #fiducialsList="FULL D0 CDF ATLAS CMS"
+            fiducialsList="FULL D0"
+            for fiducial in $fiducialsList
             do
-                colliderlist="tev1 tev2 lhc7 lhc8"
-                if [[ $fiducial == D0    ]]; then colliderlist=tev1; fi;
-                if [[ $fiducial == CDF   ]]; then colliderlist=tev2; fi;
-                if [[ $fiducial == ATLAS ]]; then colliderlist=lhc7; fi;
-                if [[ $fiducial == CMS   ]]; then colliderlist=lhc8; fi;
+                #colliderlist="tev1 tev2 lhc7 lhc8"
+                colliderlist="tev1"
+                makelepcuts=false
+                if [[ $fiducial == D0    ]]; then colliderlist=tev1; makelepcuts=true; fi;
+                if [[ $fiducial == CDF   ]]; then colliderlist=tev2; makelepcuts=true; fi;
+                if [[ $fiducial == ATLAS ]]; then colliderlist=lhc7; makelepcuts=true; fi;
+                if [[ $fiducial == CMS   ]]; then colliderlist=lhc8; makelepcuts=true; fi;
                 for collider in $colliderlist
                 do
-                    for term in $termlist
+                    for terms in $termlist
                     do
                         qtregion=`echo f${fiducial}qt${loqtbin}${hiqtbin}y${loybin}${hiybin}t${terms} | sed "s/\.//g;s/ //g"`
                         prepare_script
@@ -405,25 +420,36 @@ submit_allProg(){
     hiybin=5
     collider=lhc7
     random_seed=100101
+    startSeed=100201
     cubacores=8
     variation=0
-    for program in dyturbo mcfm # dyturbo dyres mcfm
+    gpar=.83175
+    # testing the array submission
+    batch_template=$dyturbo_project/scripts/run_DYTURBO_Array_TMPL.sh
+    for program in dyres # mcfm # dyturbo dyres mcfm
     do
-        for process in z0 wp # wp wm z0
+        for process in wp # wp wm z0
         do
-            for order in 1 2
+            makelepcuts=false
+            #if [[ $process =~ z0 ]]; then makelepcuts=true; fi
+            for order in 2 # 3
             do
+                # set PDF ?
+                pdfset=CT10nlo
+                if [[ $order == 2 ]]; then pdfset=ZPT-CT10; fi;
+                if [[ $order == 3 ]]; then pdfset=WZZPT-CT10; order=2; fi;
                 # set terms
                 termlist="ALL"
                 if [[ $program =~ ^dyturbo ]] 
                 then
-                    termlist="RES CT RES3D CT3D LO" &&
-                    if [[ $order == 2 ]]; then termlist="RES CT RES3D CT3D REAL VIRT"; fi;
+                    termlist="RES CT LO"
+                    #if [[ $order == 2 ]]; then termlist="RES CT REAL VIRT"; fi;
+                    if [[ $order == 2 ]]; then termlist="REAL"; fi;
                 fi
                 if [[ $program =~ ^dyres ]] 
                 then
                     termlist="ALL"
-                    if [[ $order == 2 ]]; then termlist="ALL REAL VIRT"; fi;
+                    if [[ $order == 2 ]]; then termlist="ALL"; fi;
                 fi
                 if [[ $program =~ ^mcfm ]] 
                 then
@@ -431,15 +457,25 @@ submit_allProg(){
                     termlist="LO"
                     if [[ $order == 2 ]]; then termlist="REAL VIRT"; fi;
                 fi
-                # set PDF ?
-                pdfset=CT10nlo
-                if [[ $order == 2 ]]; then pdfset=CT10nnlo; fi;
                 #
                 for terms in $termlist
                 do
-                    qtregion=`echo qt${loqtbin}${hiqtbin}y${loybin}${hiybin}t${terms} | sed "s/\.//g;s/ //g"`
-                    prepare_script
-                    $DRYRUN submit_job
+                    #NSeeds=20
+                    #if [[ terms == RES ]]; then NSeeds=100; fi;
+                    #if [[ terms == REAL ]]; then NSeeds=500; fi;
+                    NSeeds=50
+                    NSeeds=100
+                    endSeed=$(( $startSeed + $NSeeds - 1 ))
+                    #seedlist="1000-1999"
+                    seedlist="1000-1999"
+                    random_seed=seed
+                    #for random_seed in `seq $startSeed $endSeed`
+                    #do
+                        #if [[ $terms != REAL ]]; then continue; fi;
+                        qtregion=`echo qt${loqtbin}${hiqtbin}y${loybin}${hiybin}t${terms} | sed "s/\.//g;s/ //g"`
+                        prepare_script
+                        submit_job
+                    #done
                 done
             done
         done
@@ -449,8 +485,13 @@ submit_allProg(){
 
 clear_files(){
     echo "Clearing setup files"
-    rm -f scripts/batch_scripts/*.sh
-    rm -f scripts/infiles/*.in
+    if [[ $(bjobs 2> /dev/null) ]] 
+    then
+        echo There are jobs running, skip clearing
+    else
+        rm -f scripts/batch_scripts/*.sh
+        rm -f scripts/infiles/*.in
+    fi
     echo "Done"
 }
 
@@ -468,5 +509,5 @@ clear_results(){
 clear_files
 clear_results
 #submit_Z_dyturbo
-#submit_allProg
-submit_Wwidth
+submit_allProg
+#submit_Wwidth

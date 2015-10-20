@@ -12,7 +12,8 @@ C     To be used for double real contribution
       double precision wt4,p1(4),p2(4),p3(4),p4(4),p5(4),p6(4)
       double precision p(mxpart,4)
       double precision pswt,xjac,p1ext(4),p2ext(4)
-      double precision xx(2),tau,y,sqrts
+      double precision xx(2),tau,logtau,y,sqrts
+      double precision expy
       common/pext/p1ext,p2ext
       common/x1x2/xx
       common/energy/sqrts
@@ -20,12 +21,16 @@ C     To be used for double real contribution
 
       wt4=0d0
 
-      tau=dexp(dlog(taumin)*r(9))
-      y=0.5d0*dlog(tau)*(1d0-2d0*r(10))
-      xjac=dlog(taumin)*tau*dlog(tau)
+      logtau=logtaumin*r(9)
+      tau=dexp(logtau)
+      y=0.5d0*logtau*(1d0-2d0*r(10))
+      xjac=logtaumin*tau*logtau
 
-      xx(1)=dsqrt(tau)*dexp(+y)
-      xx(2)=dsqrt(tau)*dexp(-y)    
+c      xx(1)=dsqrt(tau)*dexp(+y)
+c      xx(2)=dsqrt(tau)*dexp(-y)    
+      expy=dexp(+y)
+      xx(1)=dsqrt(tau)*expy
+      xx(2)=dsqrt(tau)/expy
 
 
       if   ((xx(1) .gt. 1d0) 
