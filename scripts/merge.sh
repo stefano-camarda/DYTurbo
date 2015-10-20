@@ -70,11 +70,13 @@ merge_pt_y(){
     DRYRUN=echo 
     DRYRUN=
 
-    defaults_seed=100101
+    defaults_seed=1006
     search="results/*_100101.root"
-    #search="results/dyturbo_wp_lhc7_ZPT-CT10_0_qt0100y05t*_$defaults_seed.root" # wp 
-    search="results/dyturbo_z0_lhc7_ZPT-CT10_0_qt0100y05t*_$defaults_seed.root" # wp 
-    search="results/dyturbo_z0_lhc7_WZZPT-CT10_0_qt0100y05t*_$defaults_seed.root" # wp 
+    search="results/dyturbo_wm_lhc7_ZPT-CT10_0_qt0100y05t*_$defaults_seed.root" # wp 
+    #search="results/dyturbo_z0_lhc7_ZPT-CT10_0_qt0100y05t*_$defaults_seed.root" # z0 zpt
+    #search="results/dyturbo_z0_lhc7_WZZPT-CT10_0_qt0100y05t*_$defaults_seed.root"  # z0 wz zpwt
+    #search="results/dyres_wp_lhc7_ZPT-CT10_0_qt0100y05t*_$defaults_seed.root" # DYRES
+    #search="results/dyres_wp_lhc7_ZPT-CT10_0_qt0100y05t*_$defaults_seed.root"
     for inrootfile in `ls $search`
     do
         root_base=`echo $inrootfile | sed "s|$defaults_seed|*|g"`
@@ -84,10 +86,12 @@ merge_pt_y(){
         #if [[ $root_merge =~ REAL ]]
         #then # outlier removal
         root_merge=`echo $inrootfile | sed "s|$defaults_seed|outliers|g; s|results|results_merge|g"`
-        ./../merger/bin/merger $root_merge $root_base
+        $DRYRUN ./../merger/bin/merger $root_merge $root_base
         #fi
         echo
     done
+
+    return
 
 
     # fin and tot

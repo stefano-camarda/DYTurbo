@@ -342,10 +342,10 @@ def getDataHistZ(hMC):
     #for i,a in enumerate(binsx):
         #ar_bins[i]=binsx[i]
     N = len(binsx)-1
-    hData = TH1D ("Zdata", "Z data", N, ar_bins );
+    hData = TH1D ("Zdata", "Z DATA;q_{T}[GeV]", N, ar_bins );
     for i,x in enumerate(DATA):
         hData.SetBinContent(i+1, x[2]);
-        hData.SetBinError  (i+1, x[2]*x[6]);
+        hData.SetBinError  (i+1, x[2]*x[6]/100);
     # rebin same MC
     hMC = hMC.Rebin(N,"Z MC",ar_bins)
     # divide by bin width
@@ -516,13 +516,16 @@ def root_file_integral():
     #filetmp="run_dir/results4.root"
     #filetmp="results/dyturbo_z0_lhc7_CT10nnlo_0_qt010y01t{}_100101.root"
     #
-    processes = ["z0"] #"wp","wm","z0"] #, "z0"]
     programs  = ["dyturbo"] #, "mcfm"]
     orders    = ["ZPT-CT10"] #, "CT10nlo", "CT10nnlo"]
     filetmp1="results/{}_{}_lhc7_{}_0_qt0100y05t{}_100101.root"
     filetmp2="results_merge/dipole_plotting/{}_{}_lhc7_{}_0_qt0100y05t{}_100101.root"
-    filetmp="results_merge/{}_{}_lhc7_{}_0_qt0100y05t{}_merge.root"
-    filetmp="results_merge/{}_{}_lhc7_{}_0_qt0100y05t{}_outliers.root"
+    #filetmp="results_merge/{}_{}_lhc7_{}_0_qt0100y05t{}_merge.root"
+    #filetmp="results_merge/{}_{}_lhc7_{}_0_qt0100y05t{}_outliers.root"
+    processes = ["z0"] #"wp","wm","z0"] #, "z0"]
+    filetmp="results_merge/z0_fiducial_profilingClosure/{}_{}_lhc7_{}_0_qt0100y05t{}_outliers.root"
+    #processes = [ "wp","wm" ]
+    #filetmp="results_merge/wpm_predictions_151012/{}_{}_lhc7_{}_0_qt0100y05t{}_outliers.root"
     hist="h_qtVy"
     hist_integr="qt_y_{}"
     TERMS=[ 
@@ -566,7 +569,7 @@ def root_file_integral():
                         raise
                     titl=titltmp.format(prog,proc,pdf,term,"qty")
                     h.SetName(titl)
-                    h.SetTitle(titl)
+                    h.SetTitle(proc+" "+term)
                     h.Scale(1./Nfiles)
                     h.SetContour(200)
                     # clone grandtotal hist
@@ -620,16 +623,22 @@ def root_file_integral():
                 hlist.insert(0,htot)
                 # 0   1   2       3       4   5  6    7
                 # tot fin haddtot haddfin res ct real virt
-                hlistProject = [ hlist[2], hlist[4] ]
+                hlistProject = [ hlist[4], hlist[2] ]
                 hlqt = [ x.ProjectionX(x.GetName()+"_qt") for x in hlistProject ]
                 hly  = [ x.ProjectionY(x.GetName()+"_y" ) for x in hlistProject ]
-                pl.CompareHistsInList( titltmp.format(prog,proc,pdf,"all","qt" ) , hlqt , maxX=30, compareType="ratio" )
-                pl.CompareHistsInList( titltmp.format(prog,proc,pdf,"all","y"  ) , hly  , maxX=30, compareType="ratio" )
+                # set axis title
+                hlistProject[0].GetXaxis().SetTitle("q_{T}[GeV]")
+                hlistProject[0].GetYaxis().SetTitle("y")
+                hlqt[0].GetXaxis().SetTitle("q_{T}[GeV]")
+                hly[0] .GetXaxis().SetTitle("y")
+                # set 
+                pl.CompareHistsInList( titltmp.format(prog,proc,pdf,"all","qt" ) , hlqt , maxX=30, compareType="ratio0" )
+                pl.CompareHistsInList( titltmp.format(prog,proc,pdf,"all","y"  ) , hly  , maxX=30, compareType="ratio0" )
                 gStyle.SetPalette(RT.kDarkBodyRadiator)
                 pl.CompareHistsInList( titltmp.format(prog,proc,pdf,"tot","qty" ) , hlistProject[0:1])
                 # data MC comparison
                 if "z0" in proc :
-                    pl.CompareHistsInList( titltmp.format(prog,proc,pdf,"datamc","qt" ) , getDataHistZ(hlqt[0]), maxX=100)
+                    pl.CompareHistsInList( titltmp.format(prog,proc,pdf,"datamc","qt" ) , getDataHistZ(hlqt[1]), maxX=100, compareType="ratio0")
                 continue
                 Pallets= [
                     ["kDeepSea",                  RT.kDeepSea                  ],
@@ -740,7 +749,8 @@ def quick_calc():
 
 def GetValError(fiducial, col, proc):
     file_tmpl="results_merge/dyturbo_{}_{}_CT10nnlo_0_f{}qt01000y-55t{}_100101.root"
-    file_tmpl="results/dyturbo_{}_{}_CT10nnlo_0_f{}qt01000y-55t{}_100101.root"
+    #file_tmpl="results/dyturbo_{}_{}_CT10nnlo_0_f{}qt01000y-55t{}_100101.root"
+    file_tmpl="results_merge/wwidth_properD0massCut/dyturbo_{}_{}_CT10nnlo_0_f{}qt01000y-55t{}_100101.root"
     term="TOT"
     hist="qt_y_total"
     totInt,totIne=0,0
@@ -759,11 +769,11 @@ def print_wwidth_res(int,err):
 def wwidth_table():
     experiments = [
             [ "D0"    , "tev1" ],
-            [ "CDF"   , "tev2" ],
-            [ "ATLAS" , "lhc7" ],
-            [ "CMS"   , "lhc8" ],
+            #[ "CDF"   , "tev2" ],
+            #[ "ATLAS" , "lhc7" ],
+            #[ "CMS"   , "lhc8" ],
         ]
-    processes = [ "wp" ] # [ "wp", "wm", "z0"]
+    processes = [ "wp", "wm", "z0"]
     for exp,col in experiments :
         #new header
         print " table for exp", exp, "@", col, " in order W+ W- Z"
