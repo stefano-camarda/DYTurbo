@@ -523,24 +523,23 @@ def root_file_integral():
     #filetmp="run_dir/results4.root"
     #filetmp="results/dyturbo_z0_lhc7_CT10nnlo_0_qt010y01t{}_100101.root"
     #
-<<<<<<< HEAD
-    processes = ["wp", "z0"]
-    programs  = ["dyturbo"] #, "mcfm"]
-    orders    = ["CT10nlo", "CT10nnlo"]
-    filetmp="results/{}_{}_lhc7_{}_0_qt0100y05t{}_100101.root"
-    filetmp="results_merge/{}_{}_lhc7_{}_0_qt0100y05t{}_merge.root"
-=======
     programs  = ["dyturbo"] #, "mcfm"]
     orders    = ["ZPT-CT10"] #, "CT10nlo", "CT10nnlo"]
-    filetmp1="results/{}_{}_lhc7_{}_0_qt0100y05t{}_100101.root"
-    filetmp2="results_merge/dipole_plotting/{}_{}_lhc7_{}_0_qt0100y05t{}_100101.root"
+    #
+    #filetmp1="results/{}_{}_lhc7_{}_0_qt0100y05t{}_100101.root"
+    #filetmp2="results_merge/dipole_plotting/{}_{}_lhc7_{}_0_qt0100y05t{}_100101.root"
     #filetmp="results_merge/{}_{}_lhc7_{}_0_qt0100y05t{}_merge.root"
     #filetmp="results_merge/{}_{}_lhc7_{}_0_qt0100y05t{}_outliers.root"
-    processes = ["z0"] #"wp","wm","z0"] #, "z0"]
-    filetmp="results_merge/z0_fiducial_profilingClosure/{}_{}_lhc7_{}_0_qt0100y05t{}_outliers.root"
-    #processes = [ "wp","wm" ]
-    #filetmp="results_merge/wpm_predictions_151012/{}_{}_lhc7_{}_0_qt0100y05t{}_outliers.root"
->>>>>>> 6e1a5874002946370539054c3e6d4eb30324dd6c
+    #
+    #processes = ["z0"] "wp","wm","z0"] , "z0"]
+    #filetmp="results_merge/z0_fiducial_profilingClosure/{}_{}_lhc7_{}_0_qt0100y05t{}_outliers.root"
+    #
+    programs  = ["dyturbo"] #, "mcfm"]
+    processes = [ "wp" ] #,"wm" ]
+    filetmp="results_merge/wpm_predictions_151012/{}_{}_lhc7_{}_0_qt0100y05t{}_outliers.root"
+    filetmpREAL="results_merge/wpm_300seeds_151019/{}_{}_lhc7_{}_0_qt0100y05t{}_seed_outliers.root" #results_merge/wpm_300seed_151019/{}_{}_lhc7_{}_0_qt0100y05t{}_seed_outliers.root" results_merge/wpm_300seeds_151019/dyturbo_wp_lhc7_ZPT-CT10_0_qt0100y05tREAL_seed_outliers.root
+    #            
+    #
     hist="h_qtVy"
     hist_integr="qt_y_{}"
     TERMS=[ 
@@ -556,6 +555,14 @@ def root_file_integral():
             ( "VIRT" , "virt"  ),
             #( "ALL"  , "total" ),
             ] 
+    #
+    #programs  = ["dyres"] #, "mcfm"]
+    #processes = [ "wp" ] #,"wm" ]
+    #filetmp="results_merge/dyres_closure/{}_{}_lhc7_{}_0_qt0100y05t{}_seed_outliers.root"
+    #TERMS= [
+            #( "ALL", "total" ),
+            #]
+    #
     for proc in processes :
         for prog in programs :
             for pdf in orders:
@@ -575,7 +582,7 @@ def root_file_integral():
                     if "mcfm" in prog : hist_res_term = "total"
                     if "FIN"  in term : hist_res_term = "total"
                     if "TOT"  in term : hist_res_term = "total"
-                    #if "REAL"  in term : filename=filetmp1
+                    if "REAL"  in term : filename=filetmpREAL
                     try :
                         h = pl.GetHist(filename.format(prog,proc,pdf,term),hist)
                     except ValueError:
@@ -613,12 +620,7 @@ def root_file_integral():
                     hres = pl.GetHist(filetmp.format(prog,proc,pdf,term),hist_integr.format(hist_res_term))
                     integr , ineer = getIntegralError(hres)
                     print_res(term_lowcas,integr,ineer)
-<<<<<<< HEAD
-                    if "REAL" in term: h=scale_err(h,ineer/inerr);
-                    if not "3D" in term: 
-=======
                     if not "3D" in term:
->>>>>>> 6e1a5874002946370539054c3e6d4eb30324dd6c
                         hlist.append(h)
                         if not "TOT" in term and not "FIN" in term: 
                             tot,toterr = addIntegralError(tot,toterr, integr,ineer)
@@ -641,16 +643,18 @@ def root_file_integral():
                 #
                 hlist.insert(0,hfin)
                 hlist.insert(0,htot)
-<<<<<<< HEAD
-                hlqt = [ x.ProjectionX(x.GetName()+"_qt") for x in hlist[:3] ]
-                hly  = [ x.ProjectionY(x.GetName()+"_y" ) for x in hlist[:3] ]
-                pl.CompareHistsInList( titltmp.format(prog,proc,pdf,"all","qt"      ) , hlqt, maxX=30, compareType="ratio" )
-                pl.CompareHistsInList( titltmp.format(prog,proc,pdf,"all","qt_zoom" ) , hlqt, maxX=10, compareType="ratio" )
-                pl.CompareHistsInList( titltmp.format(prog,proc,pdf,"all","y"       ) , hly   ,        maxX=30,            compareType="ratio" )
-=======
                 # 0   1   2       3       4   5  6    7
                 # tot fin haddtot haddfin res ct real virt
-                hlistProject = [ hlist[4], hlist[2] ]
+                #hlistProject = [ hlist[4], hlist[2], ]
+                hlistProject = list()
+                hlistProject.append(pl.GetHistSetTitNam("real 300j", "results_merge/wpm_300seeds_151019/dyturbo_wp_lhc7_ZPT-CT10_0_qt0100y05tREAL_seed_outliers.root", hist))
+                hlistProject.append(pl.GetHistSetTitNam("real 100j", "results_merge/wpm_real_100seeds_151016/dyturbo_wp_lhc7_ZPT-CT10_0_qt0100y05tREAL_outliers.root", hist))
+                hlistProject .append(  hlist[6] ); hlistProject[-1].SetTitle("real 50j")
+                #
+                #
+                hlistProject = [ hlist[4], hlist[2], ]
+                hlistProject.append(pl.GetHistSetTitNam("dyres", "results_merge/dyres_closure/dyres_wp_lhc7_ZPT-CT10_0_qt0100y05tALL_seed_outliers.root", hist))
+                #
                 hlqt = [ x.ProjectionX(x.GetName()+"_qt") for x in hlistProject ]
                 hly  = [ x.ProjectionY(x.GetName()+"_y" ) for x in hlistProject ]
                 # set axis title
@@ -661,7 +665,7 @@ def root_file_integral():
                 # set 
                 pl.CompareHistsInList( titltmp.format(prog,proc,pdf,"all","qt" ) , hlqt , maxX=30, compareType="ratio0" )
                 pl.CompareHistsInList( titltmp.format(prog,proc,pdf,"all","y"  ) , hly  , maxX=30, compareType="ratio0" )
-                gStyle.SetPalette(RT.kDarkBodyRadiator)
+                #gStyle.SetPalette(RT.kDarkBodyRadiator)
                 pl.CompareHistsInList( titltmp.format(prog,proc,pdf,"tot","qty" ) , hlistProject[0:1])
                 # data MC comparison
                 if "z0" in proc :
@@ -734,7 +738,6 @@ def root_file_integral():
                 for name, code in Pallets :
                     gStyle.SetPalette(code)
                     pl.CompareHistsInList( titltmp.format(prog,proc,pdf,"tot","qty"+name ) , hlistProject[0:1])
->>>>>>> 6e1a5874002946370539054c3e6d4eb30324dd6c
                 pass
             pass
         pass
@@ -838,8 +841,8 @@ if __name__ == '__main__' :
     #merge_all_hist()
     #plot_pt("results/pt_table_CT10nnlo.txt")
     #quick_calc()
-    #root_file_integral()
-    wwidth_table()
+    root_file_integral()
+    #wwidth_table()
     pass
 
 

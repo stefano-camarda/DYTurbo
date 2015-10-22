@@ -404,6 +404,13 @@ class PlotTools:
         #f.Close()
         return h
 
+    def GetHistSetTitNam(s, newtitle, filename, histname) :
+        h = s.GetHist(filename,histname)
+        h.SetName(newtitle)
+        h.SetTitle(newtitle)
+        #f.Close()
+        return h
+
     def GetTree(s, filename, treename) :
         # get tree
         s.l_TFileWithTree . append( TFile(filename, "r")                )
