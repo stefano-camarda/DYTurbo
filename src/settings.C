@@ -423,6 +423,14 @@ double getMt(double p3[4], double p4[4]){
     p[3]=p3[3]+p4[3];
     return sqrt((float)pow(p[3],2)-pow(p[2],2));
 }
+double getM(double p3[4], double p4[4]){
+    double p[4];
+    p[0] = p3[0] + p4[0];
+    p[1] = p3[1] + p4[1];
+    p[2] = p3[2] + p4[2];
+    p[3] = p3[3] + p4[3];
+    return sqrt(float(p[3]*p[3] - p[0]*p[0] - p[1]*p[1] - p[2]*p[2]));
+}
 
 bool fiducial_D0(double p3[4], double p4[4]){
     double pt3 = getPt(p3);
@@ -433,7 +441,10 @@ bool fiducial_D0(double p3[4], double p4[4]){
     if (opts.nproc==3){ // z
         if (pt4<25) return false;
         double aeta4 = fabs(getEta(p4));
+        double m34 = getM(p3,p4);
         if (aeta4>2.5 || (aeta4>1.1 && aeta4<1.5) ) return false;
+        if (m34 < 75) return false;
+        if (m34 > 105) return false;
     } else { // W
         if (pt4<25) return false;
     }
