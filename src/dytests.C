@@ -115,6 +115,24 @@ void getCSFAngles(double p3[4], double p4[4], double &costh, double &phi){
     getCSFAngles(lep1,ch1,lep2, ebeam, costh,phi,0 );
 }
 
+void print_tlv(const TLorentzVector &a, TString name= "tlv: " ){
+    printf ( "%s (px,py,pz,E)=( % 3.5e % 3.5e % 3.5e % 3.5e) \t (Pt,Eta,Phi,M)=( %-5.2g %-5.2g %-5.2g %-5.2g)\n", name.Data(),
+            a.Px(),
+            a.Py(),
+            a.Pz(),
+            a.E(),
+            a.Pt(),
+            a.Eta(),
+            a.Phi(),
+            a.M()
+            );
+}
+
+void print_IsNotSame(TString name,double myval, double newval){
+    if ( myval != newval ) printf ("  %s is not same: me %g maarten %g diff %g\n ",
+                                    name.Data(), myval, newval, myval-newval );
+}
+
 void test_CalculationCollinsSopper(){
     opts.sroot=7e3;
     double costh_maarten, phi_maarten;
@@ -148,20 +166,16 @@ void test_CalculationCollinsSopper(){
         double Q2 = VB.M2();
         double qt = VB.Pt();
         double y = VB.Rapidity();
-        //getCSFAngles(p3,p4,costh_maarten,phi_maarten);
-
-        //printf ( " p3 is %g %g %g %g\n",p3[0],p3[1],p3[2],p3[3]);
-        //printf ( " p4 is %g %g %g %g\n",p4[0],p4[1],p4[2],p4[3]);
-        //printf( " Q2 %g qt %g y %g z %g \n" , hists.Q2, hists.qt, hists.y, VB.Z() );
+        //
         printf("\n\n\nEvent\n");
-        lep1.Print();
-        lep2.Print();
-        VB.Print();
-        if (hists.phi   != phi_maarten   ) printf ("  PHI   is not same: me %g maarten %g\n",   hists.phi   , phi_maarten   );
-        if (hists.costh != costh_maarten ) printf ("  COSTH is not same: me %g maarten %g\n",   hists.costh , costh_maarten );
-        if (hists.Q2    != Q2            ) printf ("  Q2    is not same: me %g maarten %g\n", hists.Q2    , Q2            );
-        if (hists.qt    != qt            ) printf ("  QT    is not same: me %g maarten %g\n", hists.qt    , qt            );
-        if (hists.y     != y             ) printf ("  Y     is not same: me %g maarten %g\n", hists.y     , y             );
+        print_tlv (lep1 , "lep1: ");
+        print_tlv (lep2 , "lep2: ");
+        print_tlv (VB   , "VB  : ");  
+        print_IsNotSame("  PHI   ", hists.phi   , phi_maarten   );
+        print_IsNotSame("  COSTH ", hists.costh , costh_maarten );
+        print_IsNotSame("  Q2    ", hists.Q2    , Q2            );
+        print_IsNotSame("  QT    ", hists.qt    , qt            );
+        print_IsNotSame("  Y     ", hists.y     , y             );
     }
 }
 

@@ -119,63 +119,29 @@ void plotter::Init(){
 }
 
 double calcQt(double p[4]){
-    return  sqrt((double)   p[0]*p[0]+p[1]*p[1]);
+    return  sqrt((float)   p[0]*p[0]+p[1]*p[1]);
 }
 double calcY(double p[4]){
-    return 0.5 *log(double( (p[3]+p[2]) / (p[3]-p[2]) ));
+    return 0.5 *log(float( (p[3]+p[2]) / (p[3]-p[2]) ));
 }
 double calcQ2(double p[4]){
     return p[3]*p[3] -p[0]*p[0] -p[1]*p[1] -p[2]*p[2];
 }
 double sqrt2=1.4142135623730951454746218587388284504413604736328125;
 double Vplus(double p[4]){
-    return (p[3] + p[2])/sqrt2  ;
+    return (p[3] + p[2])        ;
 }
 double Vminus(double p[4]){
-    return (p[3] - p[2])/sqrt2  ;
+    return (p[3] - p[2])        ;
 }
 double calcCosThCS(double Q2,double qt,double p3[4],double p4[4]){
-    // Maarten total
-    TLorentzVector lep1 (p3);
-    TLorentzVector lep2 (p4);
-    double charge1=-1;
-    //double costh=0;
-    ////
-    //TLorentzVector boson = lep1+lep2;
-    double Lplus  = (charge1 < 0) ? lep1.E()+lep1.Pz() : lep2.E()+lep2.Pz();
-    double Lminus = (charge1 < 0) ? lep1.E()-lep1.Pz() : lep2.E()-lep2.Pz();
-    double Pplus  = (charge1 < 0) ? lep2.E()+lep2.Pz() : lep1.E()+lep1.Pz();
-    double Pminus = (charge1 < 0) ? lep2.E()-lep2.Pz() : lep1.E()-lep1.Pz();
-    
-    //costh  = (Lplus*Pminus - Lminus*Pplus);
-    //costh *= TMath::Abs(boson.Pz());
-    //costh /= (boson.Mag()*boson.Pz());
-    //costh /= TMath::Sqrt(boson.Mag2() + boson.Pt()*boson.Pt());
-    //return costh;
-
-    if (Vplus(p3)  != Lplus  /TMath::Sqrt(2) ) printf ("      Vplusp3  is not same: me %g maarten %g\n", Vplus(p3)  , Lplus  );
-    if (Vminus(p3) != Lminus /TMath::Sqrt(2) ) printf ("      Vminusp3 is not same: me %g maarten %g\n", Vminus(p3) , Lminus );
-    if (Vplus(p4)  != Pplus  /TMath::Sqrt(2) ) printf ("      Vplusp4  is not same: me %g maarten %g\n", Vplus(p4)  , Pplus  );
-    if (Vminus(p4) != Pminus /TMath::Sqrt(2) ) printf ("      Vminusp4 is not same: me %g maarten %g\n", Vminus(p4) , Pminus );
-
-    // Collins-Sopper theta mine
-    double costh_CS = 2;
-    costh_CS *= sqrt( float((Q2-qt*qt)/Q2) );
-    costh_CS *= (Vplus(p3)*Vminus(p4) - Vplus(p4)*Vminus(p3));
-    return costh_CS ;
-    // Maarten simplify
-    //double costh_CS = TMath::Abs(qz);
-    //costh_CS /= qz*TMath::Sqrt(Q2*(Q2+qt*qt));
-    //costh_CS *= (Vplus(p3)*Vminus(p4) - Vplus(p4)*Vminus(p3));
-    //return costh_CS;
-    // version Maarten;
-    //double qz=p3[2]+p4[2];
-    //double costh;
-    //costh  = (Vplus(p3)*Vminus(p4) - Vplus(p4)*Vminus(p3));
-    //costh *= TMath::Abs(qz);
-    //costh /= (TMath::Sqrt(Q2)*qz);
-    //costh /= TMath::Sqrt(Q2 + qt*qt);
-    //return costh;
+    double qz = p3[2]+p4[2];
+    if (qz==0) return 0;
+    double costh=0;
+    costh = (Vplus(p3)*Vminus(p4) - Vplus(p4)*Vminus(p3));
+    costh *= qz<0. ? -1 : 1;
+    costh /= sqrt(float(Q2*(Q2 + qt*qt)));
+    return costh;
 }
 double calcPhiCS(double p3[4],double p4[4]){
     // Collins-Sopper phi
@@ -201,7 +167,7 @@ double calcPhiCS(double p3[4],double p4[4]){
     yAxis  = ( hatp1.Cross(hatp2) ).Unit();
     xAxis  = ( yAxis.Cross(CSAxis)).Unit();
     // calculate phi
-    return TMath::ATan2(lep1.Vect()*yAxis, lep1.Vect()*xAxis);
+    return TMath::ATan2(float(lep1.Vect()*yAxis), float(lep1.Vect()*xAxis));
 }
 
 void plotter::CalculateKinematics(double p3[4], double p4[4]){
@@ -242,7 +208,7 @@ void plotter::print_dipole(XsecPoint pt){
     printf("   ibin %d pt %f y %f wgt %f\n", pt.ibin, pt.qt, pt.y, pt.wgt );
 }
 void plotter::print_dipoleVec(std::vector<XsecPoint> vec ){
-    printf("  beg vec: size %d\n",vec.size());
+    printf("  beg vec: size %lu\n",vec.size());
     int i=0;
     for (auto ipt : vec){
         printf ( "   i %d",i);
