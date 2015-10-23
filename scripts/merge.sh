@@ -70,13 +70,13 @@ merge_pt_y(){
     DRYRUN=echo 
     DRYRUN=
 
-    defaults_seed=1006
+    defaults_seed=1010
     search="results/*_100101.root"
     search="results/dyturbo_wm_lhc7_ZPT-CT10_0_qt0100y05t*_$defaults_seed.root" # wp 
     #search="results/dyturbo_z0_lhc7_ZPT-CT10_0_qt0100y05t*_$defaults_seed.root" # z0 zpt
     #search="results/dyturbo_z0_lhc7_WZZPT-CT10_0_qt0100y05t*_$defaults_seed.root"  # z0 wz zpwt
     #search="results/dyres_wp_lhc7_ZPT-CT10_0_qt0100y05t*_$defaults_seed.root" # DYRES
-    #search="results/dyres_wp_lhc7_ZPT-CT10_0_qt0100y05t*_$defaults_seed.root"
+    search="results/dyres_wp_lhc7_ZPT-CT10_0_qt0100y05t*_$defaults_seed.root"
     for inrootfile in `ls $search`
     do
         root_base=`echo $inrootfile | sed "s|$defaults_seed|*|g"`

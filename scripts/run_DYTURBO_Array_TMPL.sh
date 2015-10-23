@@ -15,7 +15,7 @@
 #BSUB -e OUTDIR/JOBNAME_%I.err
 # #BSUB -q atlaslong
 #BSUB -q atlasshort
-#BSUB -W 5:00
+# #BSUB -W 5:00
 #BSUB -app Reserve5G
 #BSUB -n SETNPROCESSORS
 #BSUB -R "rusage[atlasio=0],select[hname!='a0135']"
@@ -39,7 +39,12 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:DYTURBOROOTDIR/lhapdf6/lib/
 
 # run the code
 printenv
-cd /jobdir/$LSB_JOBID || echo local run: staying in `pwd`
+if [[ JOBNAME_${LSB_JOBINDEX} =~ ^dyturbo_ ]]
+then
+    cd /tmp/${LSB_JOBID}_${LSB_JOBINDEX}.tmpdir || echo local run: staying in `pwd`
+else
+    cd /jobdir/$LSB_JOBID || echo local run: staying in `pwd`
+fi
 rm -rf run_dir_$LSB_JOBINDEX
 mkdir run_dir_$LSB_JOBINDEX
 cd run_dir_$LSB_JOBINDEX
