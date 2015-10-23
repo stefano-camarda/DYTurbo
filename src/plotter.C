@@ -24,6 +24,7 @@ Config::Config(){
     doCT   = false ;
     doREAL = false ;
     doVIRT = false ;
+    sroot = 7e3;
 }
 Config opts;
 
@@ -52,7 +53,6 @@ plotter::plotter() :
     h_qt       (0),
     h_y        (0),
     h_qtVy     (0),
-    p_qtVy_A4  (0),
     qt_y_resum (0),
     qt_y_ct    (0),
     qt_y_lo    (0),
@@ -68,13 +68,16 @@ plotter::~plotter(){
     if(!h_qt       ) delete h_qt;
     if(!h_y        ) delete h_y        ;
     if(!h_qtVy     ) delete h_qtVy     ;
-    if(!p_qtVy_A4  ) delete p_qtVy_A4  ;
     if(!qt_y_resum ) delete qt_y_resum ;
     if(!qt_y_ct    ) delete qt_y_ct    ;
     if(!qt_y_lo    ) delete qt_y_lo    ;
     if(!qt_y_real  ) delete qt_y_real  ;
     if(!qt_y_virt  ) delete qt_y_virt  ;
     if(!qt_y_total ) delete qt_y_total ;
+    for (auto ipp=0; ipp<8; ipp++){
+        delete p_qtVy_A[ipp];
+        p_qtVy_A[ipp]=NULL;
+    }
     return;
 }
 
@@ -102,7 +105,14 @@ void plotter::Init(){
     h_qt      = new TH1D        ("h_qt"     , "VB qt"   , bins_qt [0] , bins_qt [1] , bins_qt [2] );
     h_y       = new TH1D        ("h_y"      , "VB y"    , bins_y  [0] , bins_y  [1] , bins_y  [2] );
     h_qtVy    = new TH2D        ("h_qtVy"   , "VB qtVy" , bins_qt [0] , bins_qt [1] , bins_qt [2] ,  bins_y [0] , bins_y[1] , bins_y[2] );
-    p_qtVy_A4 = new TProfile2D( "p_qtVy_A4" , "A4 qtVy" , bins_qt [0] , bins_qt [1] , bins_qt [2] ,  bins_y [0] , bins_y[1] , bins_y[2] );
+    for (auto i=0; i<8; i++){
+        TString name = "p_qtVy_A";
+        name += i;
+        TString title = "A";
+        title+= i;
+        title+= " qtVy";
+        p_qtVy_A[i] = new TProfile2D(name.Data(), title.Data(), bins_qt [0] , bins_qt [1] , bins_qt [2] ,  bins_y [0] , bins_y[1] , bins_y[2] );
+    }
 
     /// Trying to calculate final number of vegas calls
     // consider this part as new function: when I will run all terms at once it can be recalculated
@@ -135,34 +145,31 @@ double Vminus(double p[4]){
     return (p[3] - p[2])/sqrt2  ;
 }
 double calcCosThCS(double Q2,double qt,double p3[4],double p4[4]){
-    // Maarten total
     TLorentzVector lep1 (p3);
     TLorentzVector lep2 (p4);
-    double charge1=-1;
-    //double costh=0;
-    ////
-    //TLorentzVector boson = lep1+lep2;
-    double Lplus  = (charge1 < 0) ? lep1.E()+lep1.Pz() : lep2.E()+lep2.Pz();
-    double Lminus = (charge1 < 0) ? lep1.E()-lep1.Pz() : lep2.E()-lep2.Pz();
-    double Pplus  = (charge1 < 0) ? lep2.E()+lep2.Pz() : lep1.E()+lep1.Pz();
-    double Pminus = (charge1 < 0) ? lep2.E()-lep2.Pz() : lep1.E()-lep1.Pz();
-    
-    //costh  = (Lplus*Pminus - Lminus*Pplus);
-    //costh *= TMath::Abs(boson.Pz());
-    //costh /= (boson.Mag()*boson.Pz());
-    //costh /= TMath::Sqrt(boson.Mag2() + boson.Pt()*boson.Pt());
-    //return costh;
+    TLorentzVector boson = lep1+lep2;
+    double Lplus  = lep1.E()+lep1.Pz();
+    double Lminus = lep1.E()-lep1.Pz();
+    double Pplus  = lep2.E()+lep2.Pz();
+    double Pminus = lep2.E()-lep2.Pz();
+    //
+    double costh=0;
+    costh  = (Lplus*Pminus - Lminus*Pplus);
+    costh *= boson.Pz()<0 ? -1 : 1;
+    costh /= boson.Mag();
+    costh /= TMath::Sqrt(boson.Mag2() + boson.Pt()*boson.Pt());
+    return costh;
 
-    if (Vplus(p3)  != Lplus  /TMath::Sqrt(2) ) printf ("      Vplusp3  is not same: me %g maarten %g\n", Vplus(p3)  , Lplus  );
-    if (Vminus(p3) != Lminus /TMath::Sqrt(2) ) printf ("      Vminusp3 is not same: me %g maarten %g\n", Vminus(p3) , Lminus );
-    if (Vplus(p4)  != Pplus  /TMath::Sqrt(2) ) printf ("      Vplusp4  is not same: me %g maarten %g\n", Vplus(p4)  , Pplus  );
-    if (Vminus(p4) != Pminus /TMath::Sqrt(2) ) printf ("      Vminusp4 is not same: me %g maarten %g\n", Vminus(p4) , Pminus );
+    //if (Vplus(p3)  != Lplus  /TMath::Sqrt(2) ) printf ("      Vplusp3  is not same: me %g maarten %g\n", Vplus(p3)  , Lplus  );
+    //if (Vminus(p3) != Lminus /TMath::Sqrt(2) ) printf ("      Vminusp3 is not same: me %g maarten %g\n", Vminus(p3) , Lminus );
+    //if (Vplus(p4)  != Pplus  /TMath::Sqrt(2) ) printf ("      Vplusp4  is not same: me %g maarten %g\n", Vplus(p4)  , Pplus  );
+    //if (Vminus(p4) != Pminus /TMath::Sqrt(2) ) printf ("      Vminusp4 is not same: me %g maarten %g\n", Vminus(p4) , Pminus );
 
     // Collins-Sopper theta mine
-    double costh_CS = 2;
-    costh_CS *= sqrt( float((Q2-qt*qt)/Q2) );
-    costh_CS *= (Vplus(p3)*Vminus(p4) - Vplus(p4)*Vminus(p3));
-    return costh_CS ;
+    //double costh_CS = 2;
+    //costh_CS *= sqrt( float((Q2-qt*qt)/Q2) );
+    //costh_CS *= (Vplus(p3)*Vminus(p4) - Vplus(p4)*Vminus(p3));
+    //return costh_CS ;
     // Maarten simplify
     //double costh_CS = TMath::Abs(qz);
     //costh_CS /= qz*TMath::Sqrt(Q2*(Q2+qt*qt));
@@ -274,16 +281,17 @@ void plotter::FillRealDipole(double p3[4], double p4[4], double wgt, int nd){
     //print_dipoleVec(dipole_points);
     //printf("FillRealDipole: end\n");
     // fill moments
-    p_qtVy_A4 -> Fill(qt,y,a[4],wgt);
+    for (auto i=0; i<8; i++) p_qtVy_A[i]->Fill(qt,y,a[i],wgt);
     return;
 }
 
-void plotter::FillRealEvent(){
+void plotter::FillRealEvent(plotter::TermType term){
     // process all calculated contributions
     //printf("FillRealEvent: beg\n");
     //print_dipole(point);
     //print_dipoleVec(dipole_points);
     int i=0;
+    double wgt_sum=0;
     while (!dipole_points.empty()){
         // go per each affected qt_y bin
         point = dipole_points.back();
@@ -300,7 +308,13 @@ void plotter::FillRealEvent(){
         h_qt   -> Fill(point.qt         ,point.wgt);
         h_y    -> Fill(point.y          ,point.wgt);
         h_qtVy -> Fill(point.qt,point.y ,point.wgt);
+        wgt_sum+=point.wgt;
         i++;
+    }
+    if (term==Real){
+        qt = point.qt;
+        y = point.y;
+        CumulateResult(term,wgt_sum);
     }
     //printf("FillRealEvent: end\n");
     //printf("----------\n");
@@ -321,8 +335,7 @@ void plotter::FillEvent(double p3[4], double p4[4], double wgt){
     h_qt      ->Fill( qt        ,wgt);
     h_y       ->Fill( y         ,wgt);
     h_qtVy    ->Fill( qt,y      ,wgt);
-    p_qtVy_A4 ->Fill( qt,y,a[4] ,wgt);
-    //v_wgt .push_back( wgt );
+    for (int i=0;i<8;i++) p_qtVy_A[i] ->Fill( qt,y,a[i] ,wgt);
     return;
 }
 
@@ -339,11 +352,41 @@ void hists_fill_(double p3[4], double p4[4], double *weight){
             //p4[2],
             //p4[3]
           //);
-    if (!hists.IsInitialized()) hists.Init();
     hists.FillEvent(p3,p4,*weight);
     return;
 }
-
+void hists_dyres_fill_(double p3[4], double p4[4],double * weight, int * ii){
+    if (!hists.IsInitialized()) hists.Init();
+    // ii -- switch for term
+    int nd=0;
+    plotter::TermType term = plotter::None;
+    switch( *ii ) {
+        case 0 : // RES
+            hists.FillEvent(p3,p4,*weight);
+            term = static_cast<plotter::TermType>(0);
+            hists.CumulateResult(term,*weight);
+            break;
+        case 1 : // CT
+            hists.FillEvent(p3,p4,*weight);
+            term = static_cast<plotter::TermType>(1);
+            hists.CumulateResult(term,*weight);
+            break;
+        case 2 : // VIRT
+            hists.FillEvent(p3,p4,*weight);
+            term = static_cast<plotter::TermType>(4);
+            hists.CumulateResult(term,*weight);
+            break;
+        case 3 : // REAL dipole 0
+            nd = 0;
+            term = static_cast<plotter::TermType>(3);
+            hists.FillRealEvent(term);
+            hists.FillRealDipole(p3,p4,*weight,nd);
+            break;
+        default : // REAL non-zero dipoles
+            nd = (*ii)-3;
+            hists.FillRealDipole(p3,p4,*weight,nd);
+    }
+}
 void hists_real_dipole_(double p3[4], double p4[4], double *weight, int * nd){
     hists.FillRealDipole(p3,p4,*weight,*nd);
 }
@@ -354,6 +397,21 @@ void hists_real_event_(){
 
 void hists_finalize_(){
     hists.Finalise();
+}
+
+void plotter::CumulateResult(TermType term, double wgt){
+    TH2D * h = 0 ;
+    switch (term) {
+        case Resum : h = qt_y_resum ; break;
+        case CT    : h = qt_y_ct    ; break;
+        case LO    : h = qt_y_lo    ; break;
+        case Real  : h = qt_y_real  ; break;
+        case Virt  : h = qt_y_virt  ; break;
+        case Total : h = qt_y_total ; break;
+    }
+    // get the middle of bin
+    h->Fill ( qt, y, wgt);
+    return;
 }
 
 void plotter::FillResult(TermType term, double int_val, double int_error, double time){
@@ -448,7 +506,7 @@ void plotter::Finalise(double xsection){
     h_qt   -> Write();
     h_y    -> Write();
     h_qtVy -> Write();
-    p_qtVy_A4 -> Write();
+    for (auto pp : p_qtVy_A) pp->Write();
     // results
     qt_y_resum -> Write();
     qt_y_ct    -> Write();
