@@ -30,10 +30,11 @@ struct Config
     bool doREAL ;
     bool doVIRT ;
 
+    double sroot;
 };
 
 extern "C"{
-   void hists_fill_(double p3[4], double p4[4], double *wt);
+   void hists_dyres_fill_(double p3[4], double p4[4], double *wt, int * ii);
    void hists_finalize_();
 }
 #endif // DYRESCODE
@@ -44,28 +45,27 @@ extern "C"{
 #include <TProfile2D.h>
 #endif // USEROOT
 
-//#include<memory>
-//#include<mutex>
-
 class plotter {
     public :
         plotter();
         ~plotter();
 
-        enum TermType { Resum, CT, LO, Real, Virt, Total };
+        enum TermType { Resum, CT, LO, Real, Virt, Total, None=999 };
 
         void Init();
         bool IsInitialized(){return (h_qtVy!=0);};
         void FillEvent(double p3[4], double p4[4], double wgt); ///<Normal filling of histograms.
         void FillRealDipole(double p3[4], double p4[4], double wgt,int nd); ///<Collect dipole kinematics and weights. Fill ai profiles.
-        void FillRealEvent(); ///< for real filling without correlations. Need to FillRealDipole before.
+        void FillRealEvent(TermType term = None); ///< for real filling without correlations. Need to FillRealDipole before.
         void FillResult(TermType term, double int_val, double int_error, double time); ///< Fill the result of integration.
+        void CumulateResult(TermType term, double wgt); ///< Fill the result of integration.
         void Merge();
         void Dump();
         void Finalise(double xsection=0);
 
 
-    private :
+
+    protected :
 #ifdef USEROOT
         void CalculateKinematics(double p3[4], double p4[4]);
 
@@ -83,7 +83,7 @@ class plotter {
         TH1D * h_y ;
         TH2D * h_qtVy;
         // profiles
-        TProfile2D * p_qtVy_A4;
+        TProfile2D * p_qtVy_A[8];
         // final results
         TH2D* qt_y_resum ;
         TH2D* qt_y_ct    ;

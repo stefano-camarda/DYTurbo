@@ -448,12 +448,13 @@ submit_allProg(){
                 fi
                 if [[ $program =~ ^dyres ]] 
                 then
+                    cubacores=0
                     termlist="ALL"
-                    if [[ $order == 2 ]]; then termlist="ALL"; fi;
+                    if [[ $order == 2 ]]; then termlist="ALL REAL VIRT"; fi;
                 fi
                 if [[ $program =~ ^mcfm ]] 
                 then
-                    cubacores=1
+                    cubacores=0
                     termlist="LO"
                     if [[ $order == 2 ]]; then termlist="REAL VIRT"; fi;
                 fi
@@ -467,7 +468,7 @@ submit_allProg(){
                     NSeeds=100
                     endSeed=$(( $startSeed + $NSeeds - 1 ))
                     #seedlist="1000-1999"
-                    seedlist="1000-1999"
+                    seedlist="5000"
                     random_seed=seed
                     #for random_seed in `seq $startSeed $endSeed`
                     #do
