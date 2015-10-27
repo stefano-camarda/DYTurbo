@@ -334,7 +334,7 @@ submit_Z_dyturbo(){
                         for variation in $variationList
                         do
                             prepare_script
-                            $DRYRUN submit_job
+                            submit_job
                         done
                         loybin=$iybin
                     done
@@ -364,11 +364,14 @@ submit_Wwidth(){
     loybin=-5
     hiybin=5
     collider=lhc7
-    random_seed=100101
     cubacores=8
     variation=0
+    #
+    seedlist=10100
+    random_seed=seed
+    batch_template=$dyturbo_project/scripts/run_DYTURBO_Array_TMPL.sh
     # submit
-    for process in z0 wp wm
+    for process in z0 # wp wm
     do
         for order in 2 # 1 2
         do
@@ -396,7 +399,7 @@ submit_Wwidth(){
                     do
                         qtregion=`echo f${fiducial}qt${loqtbin}${hiqtbin}y${loybin}${hiybin}t${terms} | sed "s/\.//g;s/ //g"`
                         prepare_script
-                        $DRYRUN submit_job
+                        submit_job
                     done
                 done
             done
@@ -426,7 +429,8 @@ submit_allProg(){
     gpar=.83175
     # testing the array submission
     batch_template=$dyturbo_project/scripts/run_DYTURBO_Array_TMPL.sh
-    for program in dyres # mcfm # dyturbo dyres mcfm
+    #for program in dyres
+    for program in dyturbo # mcfm # dyturbo dyres mcfm
     do
         for process in wp # wp wm z0
         do
@@ -467,8 +471,8 @@ submit_allProg(){
                     NSeeds=50
                     NSeeds=100
                     endSeed=$(( $startSeed + $NSeeds - 1 ))
-                    #seedlist="1000-1999"
-                    seedlist="5000"
+                    seedlist="1000-1999"
+                    #seedlist="5000"
                     random_seed=seed
                     #for random_seed in `seq $startSeed $endSeed`
                     #do

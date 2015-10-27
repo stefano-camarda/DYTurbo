@@ -831,6 +831,28 @@ class PlotTools:
             h.SetMarkerStyle(s.AutoCompareMarker(i))
             h.SetMarkerSize (1)
 
+    def CreateMovingAverageHist(s,H,nbins=2):
+        # -- try smooth
+        H_MA = H.Clone("average")
+        H_MA.Smooth()
+        return H_MA
+        #
+        # take nbins before and nbins after and calculate a mean
+        H_MA = s.EmptyClone(H,"average")
+        binlist = range(nbins+1,H.GetNbinsX()-nbins+1)
+        for ibin in binlist :
+            unc = H.GetBinError(ibin)
+            # get bin for averaging
+            valrange=range (ibin-nbins, ibin+nbins+1) 
+            vals = [ H.GetBinContent(ii) for ii in valrange ]
+            # make an average
+            avg = sum(vals)/len(vals) 
+            # set new bin val
+            H_MA.SetBinContent(ibin, avg )
+            H_MA.SetBinError  (ibin, unc )
+            print ibin, valrange, vals, avg
+        return H_MA
+
 
     def CreateChiHists(s, A, B):
         C = s.CreateHistsFromFun(A, B, s.dif_chi)
@@ -1348,7 +1370,10 @@ class PlotTools:
         if normalise :
             [ h.Scale ( 1./ h.Integral()) for h in hists]
 
-        if len(hists)>1 :
+        if len(hists)<1 :
+            compareType=None
+
+        try :
             s.hRatio = list()
             kwargsRatio = kwargs
             kwargsRatio = kwargs
@@ -1366,12 +1391,11 @@ class PlotTools:
                 s.hRatio[0].GetYaxis().SetTitle( "#chi")
                 kwargsRatio["drawOpt"]= "p,same"
             else :
-                raise NotImplementedError("Uknown compare type: "+compareType)
-
+                raise NotImplementedError("Uknown compare type: "+str(compareType))
             s.DrawHistCompareSubPlot(hists, s.hRatio, **kwargs)  # ratiology, logx, ymax, ymin, xmax, xmin, forcerange
             s.c1.cd(1)
             s.DrawLegend(hists,"pl",**kwargs)
-        else :
+        except NotImplementedError :
             s.SetFrameStyle1D(hists,**kwargs)
             s.DrawHistCompare(hists)
             s.DrawLegend(hists,"pl", **kwargs)
@@ -1400,6 +1424,13 @@ class PlotTools:
             # create header
             textxt = r"""
 \documentclass{beamer}
+% add page numbers
+\addtobeamertemplate{navigation symbols}{}{%
+\usebeamerfont{footline}%
+\usebeamercolor[fg]{footline}%
+\hspace{1em}%
+\insertframenumber/\inserttotalframenumber
+}
 \begin{document}
 
 """

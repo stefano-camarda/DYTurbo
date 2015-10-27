@@ -537,7 +537,7 @@ def root_file_integral():
     programs  = ["dyturbo"] #, "mcfm"]
     processes = [ "wp" ] #,"wm" ]
     filetmp="results_merge/wpm_predictions_151012/{}_{}_lhc7_{}_0_qt0100y05t{}_outliers.root"
-    filetmpREAL="results_merge/wpm_300seeds_151019/{}_{}_lhc7_{}_0_qt0100y05t{}_seed_outliers.root" #results_merge/wpm_300seed_151019/{}_{}_lhc7_{}_0_qt0100y05t{}_seed_outliers.root" results_merge/wpm_300seeds_151019/dyturbo_wp_lhc7_ZPT-CT10_0_qt0100y05tREAL_seed_outliers.root
+    filetmpREAL="results_merge/wp_real_1000seeds_151026/{}_{}_lhc7_{}_0_qt0100y05t{}_outliers.root" #results_merge/wpm_300seed_151019/{}_{}_lhc7_{}_0_qt0100y05t{}_seed_outliers.root" results_merge/wpm_300seeds_151019/dyturbo_wp_lhc7_ZPT-CT10_0_qt0100y05tREAL_seed_outliers.root
     #            
     #
     hist="h_qtVy"
@@ -647,7 +647,8 @@ def root_file_integral():
                 # tot fin haddtot haddfin res ct real virt
                 #hlistProject = [ hlist[4], hlist[2], ]
                 hlistProject = list()
-                hlistProject.append(pl.GetHistSetTitNam("real 300j", "results_merge/wpm_300seeds_151019/dyturbo_wp_lhc7_ZPT-CT10_0_qt0100y05tREAL_seed_outliers.root", hist))
+                hlistProject.append(pl.GetHistSetTitNam("real 1000j",filetmpREAL.format("dyturbo","wp","ZPT-CT10","REAL"), hist))
+                hlistProject.append(pl.GetHistSetTitNam("real 300j", "results_merge/wpm_real_300seeds_151019/dyturbo_wp_lhc7_ZPT-CT10_0_qt0100y05tREAL_seed_outliers.root", hist))
                 hlistProject.append(pl.GetHistSetTitNam("real 100j", "results_merge/wpm_real_100seeds_151016/dyturbo_wp_lhc7_ZPT-CT10_0_qt0100y05tREAL_outliers.root", hist))
                 hlistProject .append(  hlist[6] ); hlistProject[-1].SetTitle("real 50j")
                 #
@@ -782,11 +783,15 @@ def GetValError(fiducial, col, proc):
     file_tmpl="results_merge/dyturbo_{}_{}_CT10nnlo_0_f{}qt01000y-55t{}_100101.root"
     #file_tmpl="results/dyturbo_{}_{}_CT10nnlo_0_f{}qt01000y-55t{}_100101.root"
     file_tmpl="results_merge/wwidth_properD0massCut/dyturbo_{}_{}_CT10nnlo_0_f{}qt01000y-55t{}_100101.root"
+    file_tmpl_D0="results_merge/wwidth_D0_zmumu/dyturbo_{}_{}_CT10nnlo_0_f{}qt01000y-55t{}_seed_10100.root"
     term="TOT"
     hist="qt_y_total"
     totInt,totIne=0,0
     for term in [ "RES", "CT", "REAL", "VIRT" ]:
-        h = pl.GetHist(file_tmpl.format(proc,col,fiducial,term),hist)
+        ft = file_tmpl
+        #if "z0" in proc and "tev1" in col and "D0" in fiducial : ft = file_tmpl_D0
+        if "z0" in proc and "tev1" in col : ft = file_tmpl_D0
+        h = pl.GetHist(ft.format(proc,col,fiducial,term),hist)
         integ , inerr = getIntegralError(h)
         #print term, integ, inerr, inerr/integ
         totInt,totIne = addIntegralError(integ,inerr,totInt,totIne)
@@ -828,6 +833,55 @@ def wwidth_table():
     pass
 
 
+def find_fluctuations():
+    outnametmp="{}_{}_{}"
+    titletmp = "{} {} {}"
+    filetmp = "results_merge/wpm_predictions_151012/dyturbo_{}_lhc7_ZPT-CT10_0_qt0100y05t{}_outliers.root"
+    filetmpREAL = "results_merge/wp_real_1000seeds_151026/dyturbo_{}_lhc7_ZPT-CT10_0_qt0100y05t{}_outliers.root"
+    proc = "wp"
+    hname="h_qtVy"
+    terms = [
+            "CT",
+            "RES",
+            #"REAL",
+            "VIRT",
+            "REAL 1000"
+            ]
+    for var in [ "qt", "y"] :
+        fluct_list=list()
+        for term in terms :
+            title = titletmp.format(proc,term,var)
+            filename = filetmp.format(proc,term)
+            if "REAL 1000" == term :
+                filename = filetmpREAL.format(proc,"REAL")
+            hist2d = pl.GetHistSetTitNam(titletmp.format(proc,term,"qty"),filename,hname)
+            hist = 0
+            if var == "qt" :
+                hist = hist2d.ProjectionX(title)
+            elif var == "y" :
+                hist = hist2d.ProjectionY(title)
+            else : 
+                raise ValueError(" unknown var ")
+            hist_moving = pl.CreateMovingAverageHist(hist,1)
+            hist_ratio = pl.CreateRatio0Hists(hist_moving,hist)
+            fluct_list.append(hist_ratio)
+            fluct_list[-1].SetTitle(title)
+            pass
+        pl.CompareHistsInList(outnametmp.format(proc,var,"MovAvg"),fluct_list, compareType=None)
+        # zooming
+        MINY=0.8
+        MINX=0
+        MAXX=3.5
+        if "qt" == var :
+            MINY=-300
+            MINX=5
+            MAXX=50
+        pl.CompareHistsInList(outnametmp.format(proc,var,"MovAvgZoom"), fluct_list, minX=MINX, maxX=MAXX,minY=MINY,compareType=None)
+        pass
+    pl.MakePreviewFromList(0,"mov_avg")
+    pass
+
+
 
 ## Documentation for main
 #
@@ -841,8 +895,9 @@ if __name__ == '__main__' :
     #merge_all_hist()
     #plot_pt("results/pt_table_CT10nnlo.txt")
     #quick_calc()
-    root_file_integral()
+    #root_file_integral()
     #wwidth_table()
+    find_fluctuations()
     pass
 
 

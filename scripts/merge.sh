@@ -55,11 +55,13 @@ merge_wwidth(){
     DRYRUN=echo 
     DRYRUN=
     defaultsTERM=RES
+    #outdir=results_merge/wwidth_D0_zmumu
     search="results/dyturbo_*_*_CT10nnlo_0_f*qt01000y-55t${defaultsTERM}_100101.root"
+    search="results_merge/wwidth_D0_zmumu/dyturbo_*_*_CT10nnlo_0_f*qt01000y-55t${defaultsTERM}_seed_10100.root"
     for inrootfile in `ls $search`
     do
         root_base=`echo $inrootfile | sed "s|${defaultsTERM}_|*|g"`
-        root_merge=`echo $inrootfile | sed "s|${defaultsTERM}_|TOT_|g; s|results|results_merge|g"`
+        #root_merge=`echo $inrootfile | sed "s|${defaultsTERM}_|TOT_|g; s|results|$outdir|g"`
         $DRYRUN hadd -f $root_merge $root_base
         echo
     done
@@ -70,27 +72,31 @@ merge_pt_y(){
     DRYRUN=echo 
     DRYRUN=
 
-    defaults_seed=1010
+    outdir=results_merge/wp_real_1000seeds_151026
+
+    defaults_seed=seed_1000
     search="results/*_100101.root"
-    search="results/dyturbo_wm_lhc7_ZPT-CT10_0_qt0100y05t*_$defaults_seed.root" # wp 
+    search="results/dyturbo_w*_lhc7_ZPT-CT10_0_qt0100y05t*_$defaults_seed.root" # DYTURBO wpm,z0
     #search="results/dyturbo_z0_lhc7_ZPT-CT10_0_qt0100y05t*_$defaults_seed.root" # z0 zpt
     #search="results/dyturbo_z0_lhc7_WZZPT-CT10_0_qt0100y05t*_$defaults_seed.root"  # z0 wz zpwt
-    #search="results/dyres_wp_lhc7_ZPT-CT10_0_qt0100y05t*_$defaults_seed.root" # DYRES
-    search="results/dyres_wp_lhc7_ZPT-CT10_0_qt0100y05t*_$defaults_seed.root"
+    #search="results/dyres_w{p,m}_lhc7_ZPT-CT10_0_qt0100y05t*_seed_$defaults_seed.root" # DYRES seed
+    #search="results/dyres_wp_lhc7_ZPT-CT10_0_qt0100y05t*_$defaults_seed.root"
     for inrootfile in `ls $search`
     do
         root_base=`echo $inrootfile | sed "s|$defaults_seed|*|g"`
-        root_merge=`echo $inrootfile | sed "s|$defaults_seed|merge|g; s|results|results_merge|g"`
+        first_file=`echo $inrootfile | sed "s|$defaults_seed|seed_1015|g"`
+        root_merge=`echo $inrootfile | sed "s|$defaults_seed|merge|g; s|results|$outdir|g"`
         $DRYRUN hadd -f $root_merge $root_base
         echo
         #if [[ $root_merge =~ REAL ]]
         #then # outlier removal
-        root_merge=`echo $inrootfile | sed "s|$defaults_seed|outliers|g; s|results|results_merge|g"`
-        $DRYRUN ./../merger/bin/merger $root_merge $root_base
+        root_merge=`echo $inrootfile | sed "s|$defaults_seed|outliers|g; s|results|$outdir|g"`
+        $DRYRUN ./../merger/bin/merger $root_merge $first_file  $root_base
         #fi
         echo
     done
 
+    # no hadd terms
     return
 
 
