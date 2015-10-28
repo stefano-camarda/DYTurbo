@@ -41,6 +41,7 @@ fiducial=unset
 detfiducial=0
 makelepcuts=false
 gpar=1
+tarbalfile=unset
 
 prepare_script(){
     mkdir -p $batch_script_dir
@@ -196,6 +197,16 @@ prepare_in(){
     mv tmp $in_file
 }
 
+prepare_tarbal(){
+    tarbalfile=scripts/infiles/${job_name}.tar
+    tar cvf $tarbalfile --transform='s|.*/||g' bin/dyturbo scripts/run_grid.sh input/default.in /share/LHAPDF lhapdf6/share/LHAPDF/pdfsets.index
+    tar rvf $tarbalfile --transform='s|.*|input.in|g' $in_files_dir/$job_name.in
+    tar rvf $tarbalfile lib/lib*
+    tar rhvf $tarbalfile -C lhapdf6/share/LHAPDF/ $pdfset/
+    gzip $tarbalfile
+    tarbalfile=$tarbalfile.gz
+}
+
 submit_job(){
     if [[ `hostname` =~ cuth-dell  ]]
     then
@@ -208,6 +219,18 @@ submit_job(){
             $DRYRUN bsub < $sh_file
         fi
     fi
+}
+
+submit_job2grid(){
+    $DRYRUN prun --exec ". run_grid.sh ${job_name} %RNDM:1 " \
+    --outDS user.jcuth.${job_name}.out \
+    --outputs=HIST:results_merge.root \
+    --nJobs 1 \
+    --rootVer=6.02/12 --cmtConfig=x86_64-slc6-gcc48-opt \
+    --inTarBall=$tarbalfile \
+    --site ANALY_CERN_SHORT \
+    #--excludeFile="out_*"
+    #--nJobs $seedlist \
 }
 
 jobsDone(){
@@ -487,6 +510,59 @@ submit_allProg(){
     done
 }
 
+submit_grid(){
+    # ask about running/submitting
+    DRYRUN=echo 
+    read -p "Do you want to submit jobs ? " -n 1 -r
+    echo    # (optional) move to a new line
+    if [[ $REPLY =~ ^[Yy]$ ]]
+    then
+        DRYRUN=
+    fi
+    # lsetup rucio panda
+    # voms-proxy-init atlas
+    # full phase space
+    loqtbin=0
+    hiqtbin=100
+    loybin=0
+    hiybin=5
+    collider=lhc7
+    random_seed=100101
+    startSeed=100201
+    cubacores=0
+    variation=0
+    gpar=.83175
+    program=dyturbo
+    gridv=v`date +%s`
+    for process in wp # wp wm z0
+    do
+        makelepcuts=false
+        #if [[ $process =~ z0 ]]; then makelepcuts=true; fi
+        for order in 2 # 3
+        do
+            pdfset=CT10nlo
+            if [[ $order == 2 ]]; then pdfset=ZPT-CT10; fi;
+            if [[ $order == 3 ]]; then pdfset=WZZPT-CT10; order=2; fi;
+            #terms
+            termlist="RES CT LO"
+            if [[ $order == 2 ]]; then termlist="RES CT REAL VIRT"; fi;
+            termlist="RES"
+            for terms in $termlist
+            do
+                seedlist=50
+                if [[ $term == REAL ]]; then seedlist=1000; fi;
+                random_seed=seed
+                # prepare config
+                qtregion=`echo ${gridv}qt${loqtbin}${hiqtbin}y${loybin}${hiybin}t${terms} | sed "s/\.//g;s/ //g"`
+                prepare_script
+                prepare_tarbal
+                submit_job2grid
+            done
+        done
+    done
+}
+
+
 
 clear_files(){
     echo "Clearing setup files"
@@ -496,6 +572,7 @@ clear_files(){
     else
         rm -f scripts/batch_scripts/*.sh
         rm -f scripts/infiles/*.in
+        rm -f scripts/infiles/*.tar.gz
     fi
     echo "Done"
 }
@@ -514,5 +591,6 @@ clear_results(){
 clear_files
 clear_results
 #submit_Z_dyturbo
-submit_allProg
+#submit_allProg
 #submit_Wwidth
+submit_grid
