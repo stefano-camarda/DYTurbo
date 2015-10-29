@@ -433,6 +433,7 @@ double getM(double p3[4], double p4[4]){
 }
 
 bool fiducial_D0(double p3[4], double p4[4]){
+    // electrons only
     double pt3 = getPt(p3);
     if (pt3<25) return false;
     double aeta3 = fabs(getEta(p3));
@@ -452,33 +453,46 @@ bool fiducial_D0(double p3[4], double p4[4]){
 }
 
 bool fiducial_CDF(double p3[4], double p4[4]){
+    //  muons
+    double PTCUT=20; // 20:muon, 25:electrons
     double pt3 = getPt(p3);
-    if (pt3<25) return false;
+    if (pt3<PTCUT) return false;
     double aeta3 = fabs(getEta(p3));
-    if (aeta3>2.0 || (aeta3>1.0 && aeta3<1.2) ) return false;
-    if (aeta3<1.0 && pt3<25) return false;
+    if (aeta3>1.0 ) return false;
+    //if (aeta3>2.0 || (aeta3>1.0 && aeta3<1.2) ) return false;
+    //if (aeta3<1.0 && pt3<25) return false;
     double pt4 = getPt(p4);
     if (opts.nproc==3){ // z
-        if (pt4<20) return false;
+        if (pt4<PTCUT) return false;
         double aeta4 = fabs(getEta(p4));
-        if (aeta4>2.0 || (aeta4>1.0 && aeta3<1.2) ) return false;
-        if (aeta4<1.0 && pt4<25) return false;
+        if (aeta4>1.0 ) return false;
+        double m34 = getM(p3,p4);
+        if (m34 <  66.) return false;
+        if (m34 > 116.) return false;
     } else { // W
-        if (pt4<25) return false;
+        if (pt4<PTCUT) return false;
     }
     return true; // keep
+    // electrons have pt3 25 pt4 25
 }
 
 bool fiducial_ATLAS(double p3[4], double p4[4]){
     double pt3 = getPt(p3);
     if (pt3<20) return false;
     double aeta3 = fabs(getEta(p3));
-    if (aeta3>2.5 ) return false;
+    if (aeta3>2.4 ) return false;
+    /* electron
+    if (aeta3>2.47 ) return false;
+    if (aeta3>1.37 && aeta3 < 1.52 ) return false;
+     */
     double pt4 = getPt(p4);
     if (opts.nproc==3){ // z
         if (pt4<20) return false;
         double aeta4 = fabs(getEta(p4));
-        if (aeta4>2.5 ) return false;
+        if (aeta4>2.4 ) return false;
+        double m34 = getM(p3,p4);
+        if (m34 <  66.) return false;
+        if (m34 > 116.) return false;
     } else { // W
         if (pt4<25) return false;
         double mt = getMt(p3,p4);
@@ -487,21 +501,71 @@ bool fiducial_ATLAS(double p3[4], double p4[4]){
     return true; // keep
 }
 
-bool fiducial_CMS(double p3[4], double p4[4]){
-    return fiducial_CDF(p3,p4);
+bool fiducial_CMS7(double p3[4], double p4[4]){
+    // electron pt 25
+    // electron eta 0 < aeta < 1.44
+    // electron eta 1.57 < aeta < 2.5
+    double pt3 = getPt(p3);
+    if (pt3<25) return false;
+    double aeta3 = fabs(getEta(p3));
+    if (aeta3>2.1 ) return false;
+    double pt4 = getPt(p4);
+    if (opts.nproc==3){ // z
+        if (pt4<25) return false;
+        double aeta4 = fabs(getEta(p4));
+        if (aeta4>2.1 ) return false;
+        double m34 = getM(p3,p4);
+        if (m34 <  60.) return false;
+        if (m34 > 120.) return false;
+    } else { // W
+        //if (pt4<25) return false;
+        //double mt = getMt(p3,p4);
+        //if (mt<40) return false;
+        return true;
+    }
+    return true; // keep
 }
 
-bool cuts(double p3[4], double p4[4])
-{
-  if (!opts.makelepcuts)
-    return true;
+bool fiducial_CMS8(double p3[4], double p4[4]){
+    // electron pt 25
+    // electron eta 0 < aeta < 1.44
+    // electron eta 1.57 < aeta < 2.5
+    double pt3 = getPt(p3);
+    if (pt3<25) return false;
+    double aeta3 = fabs(getEta(p3));
+    if (aeta3>2.1 ) return false;
+    double pt4 = getPt(p4);
+    if (opts.nproc==3){ // z
+        if (pt4<25) return false;
+        double aeta4 = fabs(getEta(p4));
+        if (aeta4>2.1 ) return false;
+        double m34 = getM(p3,p4);
+        if (m34 <  60.) return false;
+        if (m34 > 120.) return false;
+    } else { // W
+        //if (pt4<25) return false;
+        //double mt = getMt(p3,p4);
+        //if (mt<40) return false;
+        return true;
+    }
+    return true; // keep
+}
+
+bool decide_fiducial( double p3[4], double p4[4] ){
   switch (opts.fiducial){
       case settings::D0    : return fiducial_D0    (p3,p4); break;
       case settings::CDF   : return fiducial_CDF   (p3,p4); break;
       case settings::ATLAS : return fiducial_ATLAS (p3,p4); break;
-      case settings::CMS   : return fiducial_CMS   (p3,p4); break;
+      case settings::CMS7  : return fiducial_CMS7  (p3,p4); break;
+      case settings::CMS8  : return fiducial_CMS8  (p3,p4); break;
       case settings::GENEXP :
       default:
+         // Fiducial type is zero so in normal run there is no cut. But,
+         // because for wwidth I need fiducial / full I decided to run one job
+         // with full integral (makelepcuts=false) and plots fill only fiducial
+         // (fiducial!=0). In case I want to run standard full-integral
+         // full-plotting I need to sef fiducial=0 and makecuts=false
+          if (!opts.makelepcuts) return true; //< so this is here for plotting.
           double pt3 = sqrt((float)pow(p3[0],2)+pow(p3[1],2));
           if (pt3 < 20)
               return false;
@@ -516,6 +580,12 @@ bool cuts(double p3[4], double p4[4])
               return false;
   }
   return true;
+}
+
+bool cuts(double p3[4], double p4[4])
+{
+  if (!opts.makelepcuts) return true;
+  return decide_fiducial(p3,p4);
 }
 
 void binning::readfromfile(const string fname){

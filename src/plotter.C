@@ -33,7 +33,8 @@ double qtmax=100;
 double ymin=0;
 double ymax=100;
 
-#endif
+bool decide_fiducial() {return true;};
+#endif // DYRES
 
 #include <sys/mman.h>
 #include <sys/types.h>
@@ -243,6 +244,7 @@ void plotter::FillRealDipole(double p3[4], double p4[4], double wgt, int nd){
     point.qt   = qt   ;
     point.y    = y    ;
     point.wgt  = wgt  ;
+    point.fid   = decide_fiducial(p3,p4);
     dipole_points.push_back(point);
     // debug
     //printf("FillRealDipole: beg\n");
@@ -274,10 +276,12 @@ void plotter::FillRealEvent(plotter::TermType term){
         //print_dipole(point);
         //print_dipoleVec(dipole_points);
         // fill histograms
-        h_qt   -> Fill(point.qt         ,point.wgt);
-        h_y    -> Fill(point.y          ,point.wgt);
-        h_qtVy -> Fill(point.qt,point.y ,point.wgt);
-        wgt_sum+=point.wgt;
+        if (point.fid ){
+            h_qt   -> Fill(point.qt         ,point.wgt);
+            h_y    -> Fill(point.y          ,point.wgt);
+            h_qtVy -> Fill(point.qt,point.y ,point.wgt);
+            wgt_sum+=point.wgt;
+        }
         i++;
     }
     if (term==Real){
@@ -321,7 +325,9 @@ void hists_fill_(double p3[4], double p4[4], double *weight){
             //p4[2],
             //p4[3]
           //);
-    hists.FillEvent(p3,p4,*weight);
+
+    // keep event ?
+    if ( decide_fiducial(p3,p4) ) hists.FillEvent(p3,p4,*weight);
     return;
 }
 void hists_dyres_fill_(double p3[4], double p4[4],double * weight, int * ii){

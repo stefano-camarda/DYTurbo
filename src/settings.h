@@ -138,7 +138,7 @@ public:
   bool HackBinnerToFiller;
 
   // fiducial switches
-  enum DetFiducial { GENEXP=0, D0=1, CDF=2, ATLAS=3, CMS=4};
+  enum DetFiducial { GENEXP=0, D0=1, CDF=2, ATLAS=3, CMS7=4, CMS8=5};
   DetFiducial fiducial;
 };
 
@@ -161,5 +161,6 @@ extern settings opts;
 extern binning bins;
 
 extern bool cuts(double p3[4], double p4[4]);
+bool decide_fiducial(double p3[4], double p4[4]);
 
 #endif

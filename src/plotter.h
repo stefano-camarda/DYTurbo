@@ -37,6 +37,7 @@ extern "C"{
    void hists_dyres_fill_(double p3[4], double p4[4], double *wt, int * ii);
    void hists_finalize_();
 }
+
 #endif // DYRESCODE
 
 #ifdef USEROOT
@@ -98,6 +99,7 @@ class plotter {
         struct XsecPoint {
             int ibin;
             double qt,y,wgt;
+            bool fid;
         } point;
         std::vector<XsecPoint> dipole_points;
         void print_dipole(XsecPoint pt);
