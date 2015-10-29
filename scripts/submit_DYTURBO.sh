@@ -136,20 +136,33 @@ prepare_in(){
     if [[ $fiducial == D0    ]]; then detfiducial=1; fi;
     if [[ $fiducial == CDF   ]]; then detfiducial=2; fi;
     if [[ $fiducial == ATLAS ]]; then detfiducial=3; fi;
-    if [[ $fiducial == CMS   ]]; then detfiducial=4; fi;
+    if [[ $fiducial == CMS7   ]]; then detfiducial=4; fi;
+    if [[ $fiducial == CMS8   ]]; then detfiducial=5; fi;
     # collider: default lhc7
     ih1=1
     ih2=1
     sroot=7e3
+    # TEV1
     if [[ $collider == tev1 ]]
     then
         ih2=-1
         sroot=1.8e3
-        if [[ $process == z0     ]]; then lomass=30; himass=150; fi;
+        if [[ $process == z0     ]]; then lomass=75; himass=105; fi;
         if [[ $process =~ ^w[pm] ]]; then lomass=40; himass=120; fi;
     fi;
-    if [[ $collider == tev2 ]]; then ih2=-1; sroot=1.96e3; fi;
-    if [[ $collider == lhc8 ]]; then sroot=8e3; fi;
+    # TEV2
+    if [[ $collider == tev2 ]];
+    then
+        ih2=-1;
+        sroot=1.96e3;
+        if [[ $process == z0     ]]; then lomass=30; himass=500; fi;
+    fi
+    # TEV2
+    if [[ $collider == lhc8 ]]
+    then
+        sroot=8e3
+        if [[ $process == z0     ]] && [[ $fiducial =~ CMS ]]; then lomass=60; himass=120; fi;
+    fi
     # variations
     #gpar=1e0
     member=0
@@ -398,24 +411,24 @@ submit_Wwidth(){
     do
         for order in 2 # 1 2
         do
-            pdfset=CT10nlo
             termlist="RES CT LO"
             if [[ $order == 2 ]];
             then
-                pdfset=CT10nnlo
                 termlist="RES CT REAL VIRT"
             fi
             #fiducialsList="FULL D0 CDF ATLAS CMS"
-            fiducialsList="FULL D0"
+            fiducialsList="D0 CDF ATLAS CMS7 CMS8"
             for fiducial in $fiducialsList
             do
                 #colliderlist="tev1 tev2 lhc7 lhc8"
                 colliderlist="tev1"
                 makelepcuts=false
-                if [[ $fiducial == D0    ]]; then colliderlist=tev1; makelepcuts=true; fi;
-                if [[ $fiducial == CDF   ]]; then colliderlist=tev2; makelepcuts=true; fi;
-                if [[ $fiducial == ATLAS ]]; then colliderlist=lhc7; makelepcuts=true; fi;
-                if [[ $fiducial == CMS   ]]; then colliderlist=lhc8; makelepcuts=true; fi;
+                if [[ $fiducial == D0    ]]; then colliderlist=tev1; makelepcuts=false; pdfset=CTEQ4M;           fi;
+                if [[ $fiducial == CDF   ]]; then colliderlist=tev2; makelepcuts=false; pdfset=CTEQ5L;           fi;
+                if [[ $fiducial == ATLAS ]]; then colliderlist=lhc7; makelepcuts=false; pdfset=CTEQ66;           fi;
+                if [[ $fiducial == CMS7  ]]; then colliderlist=lhc7; makelepcuts=false; pdfset=CTEQ6L; fi;
+                if [[ $fiducial == CMS8  ]]; then colliderlist=lhc8; makelepcuts=false; pdfset=MSTW2008nnlo68cl; fi;
+                pdfset=MMHT2014nnlo68cl
                 for collider in $colliderlist
                 do
                     for terms in $termlist
