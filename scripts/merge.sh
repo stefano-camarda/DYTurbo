@@ -72,11 +72,12 @@ merge_pt_y(){
     DRYRUN=echo 
     DRYRUN=
 
-    outdir=results_merge/wp_real_1000seeds_151026
+    outdir=results_merge/wm_real_1000seeds_151029
+    mkdir -p $outdir
 
     defaults_seed=seed_1000
     search="results/*_100101.root"
-    search="results/dyturbo_w*_lhc7_ZPT-CT10_0_qt0100y05t*_$defaults_seed.root" # DYTURBO wpm,z0
+    search="results/dyturbo_wm_lhc7_ZPT-CT10_0_qt0100y05t*_$defaults_seed.root" # DYTURBO wpm,z0
     #search="results/dyturbo_z0_lhc7_ZPT-CT10_0_qt0100y05t*_$defaults_seed.root" # z0 zpt
     #search="results/dyturbo_z0_lhc7_WZZPT-CT10_0_qt0100y05t*_$defaults_seed.root"  # z0 wz zpwt
     #search="results/dyres_w{p,m}_lhc7_ZPT-CT10_0_qt0100y05t*_seed_$defaults_seed.root" # DYRES seed

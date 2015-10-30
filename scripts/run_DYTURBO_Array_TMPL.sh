@@ -13,9 +13,8 @@
 #BSUB -L /bin/bash
 #BSUB -o OUTDIR/JOBNAME_%I.out
 #BSUB -e OUTDIR/JOBNAME_%I.err
-# #BSUB -q atlaslong
-#BSUB -q atlasshort
-#BSUB -W 5:00
+#BSUB -q SETQUEUE
+#BSUB -W SETWALLTIME
 #BSUB -app Reserve5G
 #BSUB -n SETNPROCESSORS
 #BSUB -R "rusage[atlasio=0],select[hname!='a0135']"

@@ -49,16 +49,25 @@ prepare_script(){
     sample=${pdfset}_${variation}
     job_name=${program}_${process}_${collider}_${sample}_${qtregion}_${random_seed}
     sh_file=$batch_script_dir/$job_name.sh
-    echo $job_name
+    echo $job_name $seedlist
     # prepare in
     prepare_in
     # prepare script
     nprocessors=$(($cubacores+1))
+    walltime=5:00
+    queue=atlasshort
+    if [[ $program =~ dyres ]]
+    then
+        walltime=20:00
+        queue=atlaslong
+    fi
     #
     cp $batch_template tmp
     sed -i "s|JOBNAME|$job_name|g               " tmp
     sed -i "s|SEEDLIST|$seedlist|g              " tmp
     sed -i "s|OUTDIR|$result_dir|g              " tmp
+    sed -i "s|SETQUEUE|$queue|g              " tmp
+    sed -i "s|SETWALLTIME|$walltime|g              " tmp
     sed -i "s|DYTURBOROOTDIR|$dyturbo_project|g " tmp
     sed -i "s|DYTURBOINPUTFILE|$in_file|g       " tmp
     sed -i "s|SETNPROCESSORS|$nprocessors|g     " tmp
@@ -95,14 +104,15 @@ prepare_in(){
     if [[ $terms =~ RES3D  ]]; then resumdim=3; fi;
     if [[ $terms =~ CT3D   ]]; then    ctdim=3; fi;
     if [[ $terms =~ CT2D   ]]; then    ctdim=2; fi;
-    # order check
-    order=1
-    if [[ $pdfset == CT10nlo    ]]; then order=1; fi;
-    if [[ $pdfset == CT10nnlo   ]]; then order=2; fi;
-    if [[ $pdfset == CTZPT2     ]]; then order=2; fi;
-    if [[ $pdfset == ZPT-CT10   ]]; then order=2; fi;
-    if [[ $pdfset == WZZPT-CT10 ]]; then order=2; fi;
-    if [[ $pdfset == CT14       ]]; then order=2; fi;
+    # order check -- trust user
+    # order=1
+    # if [[ $pdfset == CT10nlo    ]]; then order=1; fi;
+    # if [[ $pdfset == CT10nnlo         ]]; then order=2; fi;
+    # if [[ $pdfset == CTZPT2           ]]; then order=2; fi;
+    # if [[ $pdfset == ZPT-CT10         ]]; then order=2; fi;
+    # if [[ $pdfset == WZZPT-CT10       ]]; then order=2; fi;
+    # if [[ $pdfset == CT14             ]]; then order=2; fi;
+    # if [[ $pdfset == MMHT2014nnlo68cl ]]; then order=2; fi;
     # process (default z0)
     lomass=66.
     himass=116.
@@ -407,7 +417,7 @@ submit_Wwidth(){
     random_seed=seed
     batch_template=$dyturbo_project/scripts/run_DYTURBO_Array_TMPL.sh
     # submit
-    for process in z0 # wp wm
+    for process in z0 wp wm
     do
         for order in 2 # 1 2
         do
@@ -460,15 +470,14 @@ submit_allProg(){
     collider=lhc7
     random_seed=100101
     startSeed=100201
-    cubacores=8
     variation=0
     gpar=.83175
     # testing the array submission
     batch_template=$dyturbo_project/scripts/run_DYTURBO_Array_TMPL.sh
     #for program in dyres
-    for program in dyturbo # mcfm # dyturbo dyres mcfm
+    for program in dyturbo dyres # mcfm # dyturbo dyres mcfm
     do
-        for process in wp # wp wm z0
+        for process in wm # wp wm z0
         do
             makelepcuts=false
             #if [[ $process =~ z0 ]]; then makelepcuts=true; fi
@@ -482,15 +491,18 @@ submit_allProg(){
                 termlist="ALL"
                 if [[ $program =~ ^dyturbo ]] 
                 then
+                    cubacores=8
                     termlist="RES CT LO"
                     #if [[ $order == 2 ]]; then termlist="RES CT REAL VIRT"; fi;
                     if [[ $order == 2 ]]; then termlist="REAL"; fi;
+                    seedlist="1000-1999"
                 fi
                 if [[ $program =~ ^dyres ]] 
                 then
                     cubacores=0
                     termlist="ALL"
                     if [[ $order == 2 ]]; then termlist="ALL REAL VIRT"; fi;
+                    seedlist="5000"
                 fi
                 if [[ $program =~ ^mcfm ]] 
                 then
@@ -498,25 +510,12 @@ submit_allProg(){
                     termlist="LO"
                     if [[ $order == 2 ]]; then termlist="REAL VIRT"; fi;
                 fi
-                #
                 for terms in $termlist
                 do
-                    #NSeeds=20
-                    #if [[ terms == RES ]]; then NSeeds=100; fi;
-                    #if [[ terms == REAL ]]; then NSeeds=500; fi;
-                    NSeeds=50
-                    NSeeds=100
-                    endSeed=$(( $startSeed + $NSeeds - 1 ))
-                    seedlist="1000-1999"
-                    #seedlist="5000"
                     random_seed=seed
-                    #for random_seed in `seq $startSeed $endSeed`
-                    #do
-                        #if [[ $terms != REAL ]]; then continue; fi;
-                        qtregion=`echo qt${loqtbin}${hiqtbin}y${loybin}${hiybin}t${terms} | sed "s/\.//g;s/ //g"`
-                        prepare_script
-                        submit_job
-                    #done
+                    qtregion=`echo qt${loqtbin}${hiqtbin}y${loybin}${hiybin}t${terms} | sed "s/\.//g;s/ //g"`
+                    prepare_script
+                    submit_job
                 done
             done
         done
@@ -604,6 +603,6 @@ clear_results(){
 clear_files
 clear_results
 #submit_Z_dyturbo
-#submit_allProg
+submit_allProg
 #submit_Wwidth
-submit_grid
+#submit_grid

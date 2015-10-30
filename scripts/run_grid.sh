@@ -20,9 +20,18 @@ export LHAPATH=$LHAPDF_DATA_PATH
 # dyturbo libs
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:./lib
 
+echo
+echo LD_LIBRARY_PATH
+echo $LD_LIBRARY_PATH
+echo
 
 random_seed=$2
 sed -i "s|= seed|= 1$random_seed|g        " input.in
+
+echo
+echo input.in :
+cat input.in
+echo
 
 /usr/bin/time -v ./dyturbo input.in
 hadd -f results_merge.root results*.root
