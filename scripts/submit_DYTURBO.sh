@@ -42,6 +42,7 @@ detfiducial=0
 makelepcuts=false
 gpar=1
 tarbalfile=unset
+seedlist=unset
 
 prepare_script(){
     mkdir -p $batch_script_dir
@@ -221,11 +222,18 @@ prepare_in(){
 }
 
 prepare_tarbal(){
-    tarbalfile=scripts/infiles/${job_name}.tar
-    tar cvf $tarbalfile --transform='s|.*/||g' bin/dyturbo scripts/run_grid.sh input/default.in /share/LHAPDF lhapdf6/share/LHAPDF/pdfsets.index
-    tar rvf $tarbalfile --transform='s|.*|input.in|g' $in_files_dir/$job_name.in
-    tar rvf $tarbalfile lib/lib*
-    tar rhvf $tarbalfile -C lhapdf6/share/LHAPDF/ $pdfset/
+    # hack the interations
+    #sed -i "s|^vegasncallsRES  *=.*$|vegasncallsRES   = 1e4|g" $in_files_dir/$job_name.in
+    #sed -i "s|^vegasncallsCT   *=.*$|vegasncallsCT    = 1e6|g" $in_files_dir/$job_name.in
+    #sed -i "s|^vegasncallsLO   *=.*$|vegasncallsLO    = 3e6|g" $in_files_dir/$job_name.in
+    #sed -i "s|^vegasncallsREAL *=.*$|vegasncallsREAL  = 3e6|g" $in_files_dir/$job_name.in
+    #sed -i "s|^vegasncallsVIRT *=.*$|vegasncallsVIRT  = 2e6|g" $in_files_dir/$job_name.in
+    # 
+    tarbalfile=$in_files_dir/${job_name}.tar
+    tar cf $tarbalfile --transform='s|.*/||g' bin/dyturbo scripts/run_grid.sh input/default.in lhapdf6/share/LHAPDF/pdfsets.index
+    tar rf $tarbalfile --transform='s|.*|input.in|g' -C $in_files_dir  $job_name.in
+    tar rf $tarbalfile lib/lib*
+    tar rhf $tarbalfile -C lhapdf6/share/LHAPDF/ $pdfset/
     gzip $tarbalfile
     tarbalfile=$tarbalfile.gz
 }
@@ -248,12 +256,14 @@ submit_job2grid(){
     $DRYRUN prun --exec ". run_grid.sh ${job_name} %RNDM:1 " \
     --outDS user.jcuth.${job_name}.out \
     --outputs=HIST:results_merge.root \
-    --nJobs 1 \
+    --nJobs $seedlist \
+    --noCompile \
+    --long \
     --rootVer=6.02/12 --cmtConfig=x86_64-slc6-gcc48-opt \
     --inTarBall=$tarbalfile \
-    --site ANALY_CERN_SHORT \
+    #--site ANALY_CERN_SHORT \
     #--excludeFile="out_*"
-    #--nJobs $seedlist \
+    #--nJobs 1 \
 }
 
 jobsDone(){
@@ -474,8 +484,7 @@ submit_allProg(){
     gpar=.83175
     # testing the array submission
     batch_template=$dyturbo_project/scripts/run_DYTURBO_Array_TMPL.sh
-    #for program in dyres
-    for program in dyturbo dyres # mcfm # dyturbo dyres mcfm
+    for program in dyres #  dyturbo dyres mcfm
     do
         for process in wm # wp wm z0
         do
@@ -546,7 +555,7 @@ submit_grid(){
     gpar=.83175
     program=dyturbo
     gridv=v`date +%s`
-    for process in wp # wp wm z0
+    for process in z0 # wp wm z0
     do
         makelepcuts=false
         #if [[ $process =~ z0 ]]; then makelepcuts=true; fi
@@ -558,11 +567,12 @@ submit_grid(){
             #terms
             termlist="RES CT LO"
             if [[ $order == 2 ]]; then termlist="RES CT REAL VIRT"; fi;
-            termlist="RES"
+            #termlist="RES"
             for terms in $termlist
             do
                 seedlist=50
                 if [[ $term == REAL ]]; then seedlist=1000; fi;
+                seedlist=1
                 random_seed=seed
                 # prepare config
                 qtregion=`echo ${gridv}qt${loqtbin}${hiqtbin}y${loybin}${hiybin}t${terms} | sed "s/\.//g;s/ //g"`
@@ -603,6 +613,6 @@ clear_results(){
 clear_files
 clear_results
 #submit_Z_dyturbo
-submit_allProg
+#submit_allProg
 #submit_Wwidth
-#submit_grid
+submit_grid

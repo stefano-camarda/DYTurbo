@@ -371,7 +371,5 @@ void doublevirtintegr(double &res, double &err)
 }
 
 void exitfun(void * input, const int &core){
-    hists.Finalise(core);
-    //hists.Merge();
-    //printf(" WORKER exit process %d\n", core);
+    if (opts.cubacores!=0) hists.Finalise(core);
 }

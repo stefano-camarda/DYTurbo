@@ -7,8 +7,8 @@ SETORDER				   ! Perturbative order
 'SETTERMSTRING'				   ! Part					       
 .false.				   ! Narrow Width Approximation		       
 SETMLO SETMHI			   ! Dilepton invariant mass range		       
-10 1000000			   ! itmx1, ncall1				       
-10 1000000			   ! itmx2, ncall2				       
+4 100000000			   ! itmx1, ncall1				       
+1 100000000			   ! itmx2, ncall2				       
 SETSEED				   ! Random number seed: rseed		       
 0 0				   ! For native PDFs only: iset, nset	       
 'SETPDFSET' SETMEMBER	   ! For LHAPDF only: ’name’, ’mem’		       

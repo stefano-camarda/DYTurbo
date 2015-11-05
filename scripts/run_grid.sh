@@ -32,6 +32,7 @@ echo
 echo input.in :
 cat input.in
 echo
+rm -f results*.root
 
 /usr/bin/time -v ./dyturbo input.in
 hadd -f results_merge.root results*.root
