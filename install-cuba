@@ -1,12 +1,19 @@
 #!/bin/bash
 
 version=4.2
-rm -r Cuba-${version}
-wget http://www.feynarts.de/cuba/Cuba-${version}.tar.gz
-tar -xzvf Cuba-${version}.tar.gz
-rm Cuba-${version}.tar.gz
+cuba=Cuba-${version}
+cubasrc=`ls $cuba/src`
 
-cd Cuba-${version}
+# download if necessary
+if [[ x$cubasrc == x ]];
+then
+    rm -r Cuba-${version}
+    wget http://www.feynarts.de/cuba/${cuba}.tar.gz
+    tar -xzvf ${cuba}.tar.gz
+    rm ${cuba}.tar.gz
+fi
+
+cd ${cuba}
 sed -i "s/MINSLICE 10/MINSLICE 1/" src/common/Parallel.c
 ./configure
 make
