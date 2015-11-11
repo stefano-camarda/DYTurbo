@@ -183,6 +183,19 @@ prepare_in(){
     if [[ $variation == g_15  ]]; then gpar=1.5e0;                        fi;
     if [[ $variation == as_*  ]]; then pdfsetname=${pdfset}_${variation}; fi;
     if [[ $variation =~ $re   ]]; then member=$variation;                 fi;
+    # gpar
+    if [[ $pdfset == WZZPT-CT10 ]] 
+    then
+        gpar=0.9097
+        if [[ $variation == 53    ]]; then gpar=0.97330;                      fi;
+        if [[ $variation == 54    ]]; then gpar=0.84610;                      fi;
+    fi;
+    if [[ $pdfset == ZPT-CT10 ]] 
+    then
+        gpar=0.83175
+        if [[ $variation == 53    ]]; then gpar=0.88990;                      fi;
+        if [[ $variation == 54    ]]; then gpar=0.77360;                      fi;
+    fi;
     # set correct input template
     in_tmpl=$dyturbo_in_tmpl
     if [[ $job_name =~ ^dyturbo_ ]]; then in_tmpl=$dyturbo_project/scripts/DYTURBO_TMPL.in; fi;
@@ -222,6 +235,20 @@ prepare_in(){
 }
 
 prepare_tarbal(){
+    tarbalfile=$in_files_dir/${program}_${pdfset}_${gridv}.tar
+    exclude="-X scripts/excl" #'--exclude="*.o" --exclude="*.lo" --exclude="*.Po" --exclude="*.Plo" --exclude="*.deps*" --exclude="*.a" --exclude="*.pdf"'
+    # add scripts and default input
+    tar cf $tarbalfile --transform='s|.*/||g' scripts/run_grid.sh scripts/compile_grid.sh input/default.in lhapdf6/share/LHAPDF/pdfsets.index 
+    # add autotools config
+    tar rf $tarbalfile configure.ac install-cuba dyturbo-config.in Makefile.am input/
+    # add dyturbo source code
+    tar rf $tarbalfile $exclude src/ dyres/ mcfm/ dynnlo/ dyres/ cernlib/ Cuba-4.2/
+    # add wanted PDFset
+    tar rhf $tarbalfile -C lhapdf6/share/LHAPDF/ $pdfset/
+}
+
+
+add_to_tarbal(){
     # hack the interations
     sed -i "s|^cubaverbosity   *=.*$|cubaverbosity    = 2  |g" $in_files_dir/$job_name.in
     sed -i "s|^vegasncallsRES  *=.*$|vegasncallsRES   = 5e5|g" $in_files_dir/$job_name.in
@@ -229,14 +256,8 @@ prepare_tarbal(){
     sed -i "s|^vegasncallsLO   *=.*$|vegasncallsLO    = 1e8|g" $in_files_dir/$job_name.in
     sed -i "s|^vegasncallsREAL *=.*$|vegasncallsREAL  = 2e8|g" $in_files_dir/$job_name.in
     sed -i "s|^vegasncallsVIRT *=.*$|vegasncallsVIRT  = 1e8|g" $in_files_dir/$job_name.in
-    # 
-    tarbalfile=$in_files_dir/${job_name}.tar
-    tar cf $tarbalfile --transform='s|.*/||g' bin/dyturbo scripts/run_grid.sh input/default.in lhapdf6/share/LHAPDF/pdfsets.index
-    tar rf $tarbalfile --transform='s|.*|input.in|g' -C $in_files_dir  $job_name.in
-    tar rf $tarbalfile lib/lib*
-    tar rhf $tarbalfile -C lhapdf6/share/LHAPDF/ $pdfset/
-    gzip $tarbalfile
-    tarbalfile=$tarbalfile.gz
+    # add input file
+    tar rf $tarbalfile scripts/infiles/$job_name.in
 }
 
 submit_job(){
@@ -254,12 +275,14 @@ submit_job(){
 }
 
 submit_job2grid(){
-    $DRYRUN prun --exec ". run_grid.sh ${job_name} %RNDM:1 " \
-    --bexec ". compile_grid.sh"
+    $DRYRUN 
+    echo prun --exec \". run_grid.sh ${job_name} %RNDM:1 \" \
+    --bexec \"./compile_grid.sh\" \
     --outDS user.jcuth.${job_name}.out \
     --outputs=HIST:results_merge.root \
     --nJobs $seedlist \
-    --inTarBall=$tarbalfile \
+    --inTarBall=$tarbalfile.gz \
+    >> scripts/grid_submit.cmd
     #--site ANALY_CERN_SHORT \
     #--excludeFile="out_*"
     #--nJobs 1 \
@@ -534,14 +557,14 @@ submit_allProg(){
 }
 
 submit_grid(){
-    # ask about running/submitting
-    DRYRUN=echo 
-    read -p "Do you want to submit jobs ? " -n 1 -r
-    echo    # (optional) move to a new line
-    if [[ $REPLY =~ ^[Yy]$ ]]
-    then
-        DRYRUN=
-    fi
+    # ask about running/submitting == turned off due to separete file for prun
+    #  DRYRUN=echo 
+    #  read -p "Do you want to submit jobs ? " -n 1 -r
+    #  echo    # (optional) move to a new line
+    #  if [[ $REPLY =~ ^[Yy]$ ]]
+    #  then
+    #      DRYRUN=
+    #  fi
     # lsetup rucio panda
     # voms-proxy-init atlas
     # full phase space
@@ -556,16 +579,19 @@ submit_grid(){
     variation=0
     gpar=.83175
     program=dyturbo
+    pdfset=WZZPT-CT10; order=2;
+    #pdfset=ZPT-CT10; order=2;
+    #
     gridv=v`date +%s`
-    for process in z0 # wp wm z0
+    prepare_tarbal
+    rm scripts/grid_submit.cmd
+    #
+    for process in wp wm z0
     do
         makelepcuts=false
         #if [[ $process =~ z0 ]]; then makelepcuts=true; fi
-        for order in 2 # 3
+        for variation in `seq 0 54`
         do
-            pdfset=CT10nlo
-            if [[ $order == 2 ]]; then pdfset=ZPT-CT10; fi;
-            if [[ $order == 3 ]]; then pdfset=WZZPT-CT10; order=2; fi;
             #terms
             termlist="RES CT LO"
             if [[ $order == 2 ]]; then termlist="RES CT REAL VIRT"; fi;
@@ -579,11 +605,12 @@ submit_grid(){
                 # prepare config
                 qtregion=`echo ${gridv}qt${loqtbin}${hiqtbin}y${loybin}${hiybin}t${terms} | sed "s/\.//g;s/ //g"`
                 prepare_script
-                prepare_tarbal
+                add_to_tarbal
                 submit_job2grid
             done
         done
     done
+    gzip $tarbalfile
 }
 
 
@@ -596,8 +623,9 @@ clear_files(){
     else
         rm -f scripts/batch_scripts/*.sh
         rm -f scripts/infiles/*.in
-        rm -f scripts/infiles/*.tar.gz
     fi
+    rm -f scripts/infiles/*.tar
+    rm -f scripts/infiles/*.tar.gz
     echo "Done"
 }
 
