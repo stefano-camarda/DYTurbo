@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2.7
 # -*- coding: utf-8 -*- 
 
 ## Documentation for file
@@ -779,24 +779,29 @@ def quick_calc():
     pass
 
 
-def GetValError(fiducial, col, proc):
-    file_tmpl="results_merge/dyturbo_{}_{}_CT10nnlo_0_f{}qt01000y-55t{}_100101.root"
+def GetValError(fiducial, col, proc,full=False):
+    #file_tmpl="results_merge/dyturbo_{}_{}_CT10nnlo_0_f{}qt01000y-55t{}_100101.root"
     #file_tmpl="results/dyturbo_{}_{}_CT10nnlo_0_f{}qt01000y-55t{}_100101.root"
-    file_tmpl="results_merge/wwidth_properD0massCut/dyturbo_{}_{}_CT10nnlo_0_f{}qt01000y-55t{}_100101.root"
-    file_tmpl_D0="results_merge/wwidth_D0_zmumu/dyturbo_{}_{}_CT10nnlo_0_f{}qt01000y-55t{}_seed_10100.root"
+    #file_tmpl="results_merge/wwidth_properD0massCut/dyturbo_{}_{}_CT10nnlo_0_f{}qt01000y-55t{}_100101.root"
+    #file_tmpl_D0="results_merge/wwidth_D0_zmumu/dyturbo_{}_{}_CT10nnlo_0_f{}qt01000y-55t{}_seed_10100.root"
+    file_tmpl="results_merge/wwidth_151029_MMHT/dyturbo_{}_{}_MMHT2014nnlo68cl_0_f{}qt01000y-55t{}_seed_10100.root"
     term="TOT"
-    hist="qt_y_total"
+    hist="h_qtVy"
+    if full :
+        hist="qt_y_total"
     totInt,totIne=0,0
     for term in [ "RES", "CT", "REAL", "VIRT" ]:
         ft = file_tmpl
         #if "z0" in proc and "tev1" in col and "D0" in fiducial : ft = file_tmpl_D0
-        if "z0" in proc and "tev1" in col : ft = file_tmpl_D0
+        #if "z0" in proc and "tev1" in col : ft = file_tmpl_D0
+        #print ft ,proc,col,fiducial,term
         h = pl.GetHist(ft.format(proc,col,fiducial,term),hist)
         integ , inerr = getIntegralError(h)
-        #print term, integ, inerr, inerr/integ
+        print term, integ, inerr, inerr/integ
         totInt,totIne = addIntegralError(integ,inerr,totInt,totIne)
         pass
-    #print "tot ", totInt, totIne, totIne/totInt
+    print "TOT ", totInt, totIne, totIne/totInt
+    print
     return totInt, totIne/totInt
 
 def print_wwidth_res(int,err):
@@ -805,9 +810,10 @@ def print_wwidth_res(int,err):
 def wwidth_table():
     experiments = [
             [ "D0"    , "tev1" ],
-            #[ "CDF"   , "tev2" ],
-            #[ "ATLAS" , "lhc7" ],
-            #[ "CMS"   , "lhc8" ],
+            [ "CDF"   , "tev2" ],
+            [ "ATLAS" , "lhc7" ],
+            [ "CMS7"  , "lhc7" ],
+            [ "CMS8"  , "lhc8" ],
         ]
     processes = [ "wp", "wm", "z0"]
     for exp,col in experiments :
@@ -816,7 +822,8 @@ def wwidth_table():
         print " full  | fiducial | eff "
         for proc in processes :
             # full
-            full_v, full_e_r = GetValError("FULL",col,proc)
+            #full_v, full_e_r = GetValError("FULL",col,proc)
+            full_v, full_e_r = GetValError(exp,col,proc,True)
             print_wwidth_res(full_v, full_e_r)
             # fiducial
             fid_v, fid_e_r = GetValError(exp,col,proc)
@@ -896,8 +903,8 @@ if __name__ == '__main__' :
     #plot_pt("results/pt_table_CT10nnlo.txt")
     #quick_calc()
     #root_file_integral()
-    #wwidth_table()
-    find_fluctuations()
+    wwidth_table()
+    #find_fluctuations()
     pass
 
 
