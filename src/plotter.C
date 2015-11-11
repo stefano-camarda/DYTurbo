@@ -295,6 +295,9 @@ void plotter::FillRealEvent(plotter::TermType term){
 }
 
 void plotter::FillEvent(double p3[4], double p4[4], double wgt){
+    // save after 10M events
+    if(int(h_qt->GetEntries())%int(1e6)==0) Finalise(0);
+    //
     if (wgt == 0 ) return;
     CalculateKinematics(p3,p4);
     if (verbose){
