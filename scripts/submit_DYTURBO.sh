@@ -223,11 +223,12 @@ prepare_in(){
 
 prepare_tarbal(){
     # hack the interations
-    #sed -i "s|^vegasncallsRES  *=.*$|vegasncallsRES   = 1e4|g" $in_files_dir/$job_name.in
-    #sed -i "s|^vegasncallsCT   *=.*$|vegasncallsCT    = 1e6|g" $in_files_dir/$job_name.in
-    #sed -i "s|^vegasncallsLO   *=.*$|vegasncallsLO    = 3e6|g" $in_files_dir/$job_name.in
-    #sed -i "s|^vegasncallsREAL *=.*$|vegasncallsREAL  = 3e6|g" $in_files_dir/$job_name.in
-    #sed -i "s|^vegasncallsVIRT *=.*$|vegasncallsVIRT  = 2e6|g" $in_files_dir/$job_name.in
+    sed -i "s|^cubaverbosity   *=.*$|cubaverbosity    = 2  |g" $in_files_dir/$job_name.in
+    sed -i "s|^vegasncallsRES  *=.*$|vegasncallsRES   = 5e5|g" $in_files_dir/$job_name.in
+    sed -i "s|^vegasncallsCT   *=.*$|vegasncallsCT    = 5e7|g" $in_files_dir/$job_name.in
+    sed -i "s|^vegasncallsLO   *=.*$|vegasncallsLO    = 1e8|g" $in_files_dir/$job_name.in
+    sed -i "s|^vegasncallsREAL *=.*$|vegasncallsREAL  = 2e8|g" $in_files_dir/$job_name.in
+    sed -i "s|^vegasncallsVIRT *=.*$|vegasncallsVIRT  = 1e8|g" $in_files_dir/$job_name.in
     # 
     tarbalfile=$in_files_dir/${job_name}.tar
     tar cf $tarbalfile --transform='s|.*/||g' bin/dyturbo scripts/run_grid.sh input/default.in lhapdf6/share/LHAPDF/pdfsets.index
@@ -254,16 +255,17 @@ submit_job(){
 
 submit_job2grid(){
     $DRYRUN prun --exec ". run_grid.sh ${job_name} %RNDM:1 " \
+    --bexec ". compile_grid.sh"
     --outDS user.jcuth.${job_name}.out \
     --outputs=HIST:results_merge.root \
     --nJobs $seedlist \
-    --noCompile \
-    --long \
-    --rootVer=6.02/12 --cmtConfig=x86_64-slc6-gcc48-opt \
     --inTarBall=$tarbalfile \
     #--site ANALY_CERN_SHORT \
     #--excludeFile="out_*"
     #--nJobs 1 \
+    #--noCompile \
+    #--long \
+    #--rootVer=6.02/12 --cmtConfig=x86_64-slc6-gcc48-opt \
 }
 
 jobsDone(){

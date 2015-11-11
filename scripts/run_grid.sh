@@ -18,7 +18,7 @@ lsetup "sft --cmtConfig=x86_64-slc6-gcc47-opt MCGenerators_lcgcmt67c/lhapdf/6.1.
 export LHAPDF_DATA_PATH=./
 export LHAPATH=$LHAPDF_DATA_PATH
 # dyturbo libs
-export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:./lib
+#export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:./lib
 
 echo
 echo LD_LIBRARY_PATH
