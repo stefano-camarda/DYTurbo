@@ -25,6 +25,11 @@ echo LD_LIBRARY_PATH
 echo $LD_LIBRARY_PATH
 echo
 
+# compile just for sure
+./compile_grid.sh
+
+jobname=$1
+ln -sf scripts/infiles/$jobname.in input.in
 random_seed=$2
 sed -i "s|= seed|= 1$random_seed|g        " input.in
 
@@ -34,5 +39,5 @@ cat input.in
 echo
 rm -f results*.root
 
-/usr/bin/time -v ./dyturbo input.in
+/usr/bin/time -v ./bin/dyturbo input.in
 hadd -f results_merge.root results*.root
