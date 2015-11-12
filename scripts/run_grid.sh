@@ -12,7 +12,8 @@
 export ATLAS_LOCAL_ROOT_BASE=/cvmfs/atlas.cern.ch/repo/ATLASLocalRootBase
 source ${ATLAS_LOCAL_ROOT_BASE}/user/atlasLocalSetup.sh
 # LHAPDF and ROOT
-lsetup "sft --cmtConfig=x86_64-slc6-gcc47-opt MCGenerators_lcgcmt67c/lhapdf/6.1.5 "  "root --skipConfirm"
+lsetup "root --skipConfirm"
+lsetup "sft MCGenerators_lcgcmt67c/lhapdf/6.1.5 " 
 # own lhapdf set
 #export LHAPDF_DATA_PATH=/cvmfs/sft.cern.ch/lcg/external/lhapdfsets/current/
 export LHAPDF_DATA_PATH=./
@@ -26,7 +27,7 @@ echo $LD_LIBRARY_PATH
 echo
 
 # compile just for sure
-./compile_grid.sh
+make install
 
 jobname=$1
 ln -sf scripts/infiles/$jobname.in input.in

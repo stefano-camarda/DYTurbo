@@ -13,14 +13,19 @@
 export ATLAS_LOCAL_ROOT_BASE=/cvmfs/atlas.cern.ch/repo/ATLASLocalRootBase
 source ${ATLAS_LOCAL_ROOT_BASE}/user/atlasLocalSetup.sh
 # LHAPDF and ROOT
-lsetup "sft --cmtConfig=x86_64-slc6-gcc47-opt MCGenerators_lcgcmt67c/lhapdf/6.1.5 "  "root --skipConfirm"
+lsetup "root --skipConfirm"
+lsetup "sft MCGenerators_lcgcmt67c/lhapdf/6.1.5 "
+lsetup "root --skipConfirm"
+export LHAPDF_DATA_PATH=./
 
-mkdir m4 || exit 1
+mkdir -p m4 || exit 1
 echo install Cuba
 ./install-cuba || exit 5
 echo install DYTURBO
 autoreconf -i || exit 2
 ./configure --enable-Ofast --enable-root || exit 3
 make install || exit 4
+
+./bin/dytests || exit 6
 
 exit 0

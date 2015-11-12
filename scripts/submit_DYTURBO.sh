@@ -238,13 +238,13 @@ prepare_tarbal(){
     tarbalfile=$in_files_dir/${program}_${pdfset}_${gridv}.tar
     exclude="-X scripts/excl" #'--exclude="*.o" --exclude="*.lo" --exclude="*.Po" --exclude="*.Plo" --exclude="*.deps*" --exclude="*.a" --exclude="*.pdf"'
     # add scripts and default input
-    tar cf $tarbalfile --transform='s|.*/||g' scripts/run_grid.sh scripts/compile_grid.sh input/default.in lhapdf6/share/LHAPDF/pdfsets.index 
+    tar cf $tarbalfile --transform='s|.*/||g' scripts/run_grid.sh scripts/compile_grid.sh input/default.in
     # add autotools config
     tar rf $tarbalfile configure.ac install-cuba dyturbo-config.in Makefile.am input/
     # add dyturbo source code
     tar rf $tarbalfile $exclude src/ dyres/ mcfm/ dynnlo/ dyres/ cernlib/ Cuba-4.2/
     # add wanted PDFset
-    tar rhf $tarbalfile -C lhapdf6/share/LHAPDF/ $pdfset/
+    tar rhf $tarbalfile -C lhapdf6/share/LHAPDF/ $pdfset/ lhapdf.conf pdfsets.index
 }
 
 
@@ -598,9 +598,8 @@ submit_grid(){
             #termlist="RES"
             for terms in $termlist
             do
-                seedlist=50
-                if [[ $term == REAL ]]; then seedlist=1000; fi;
-                seedlist=1
+                seedlist=100
+                if [[ $terms == REAL ]]; then seedlist=2000; fi;
                 random_seed=seed
                 # prepare config
                 qtregion=`echo ${gridv}qt${loqtbin}${hiqtbin}y${loybin}${hiybin}t${terms} | sed "s/\.//g;s/ //g"`
