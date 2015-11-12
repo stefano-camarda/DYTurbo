@@ -24,6 +24,8 @@
 #include <TRandom.h>
 #include "plotter.h"
 
+#include "LHAPDF/LHAPDF.h"
+
 
 void test_CentralLeptonCut(){
     // force cuts on
@@ -179,6 +181,26 @@ void test_CalculationCollinsSopper(){
     }
 }
 
+
+void test_lhapdf(){
+    opts.LHAPDFset = "WZZPT-CT10";
+    opts.LHAPDFmember = 1;
+    dymasses_.zmass_ = 91.1876;
+    pdfini_();
+
+    double x;
+    double xmu = dymasses_.zmass_;
+    double fPDF[15];
+    // 5.1948452766686340E-004   91.187600000000003        39.164724174551921        1.9435176740919504        1.9623752368245406
+    // 4.4012811670435009E-004   91.187600000000003        42.177572440395330        2.0599405750333153        2.0771038986393613
+    // 5.2050018297436528E-004   91.187600000000003        39.130250179232533732733        1.9390057113097723        1.9579333417359461
+    for (double x : {5.1948452766686340E-004,4.4012811670435009E-004,5.2050018297436528E-004}){
+        //evolvepdf_(x,xmu,fPDF); in fortran
+        LHAPDF::xfx(x,xmu,fPDF);
+        printf( " %f %f %f %f %f %f \n", couple_.amz_, x, xmu, fPDF[0],fPDF[6],fPDF[8]);
+    }
+}
+
 /**
  * Description of main program
  *
@@ -186,7 +208,8 @@ void test_CalculationCollinsSopper(){
 int main(int argc, const char * argv[]){
 
     //test_CentralLeptonCut();
-    test_CalculationCollinsSopper();
+    //test_CalculationCollinsSopper();
+    test_lhapdf();
 
     return 0;
 }
