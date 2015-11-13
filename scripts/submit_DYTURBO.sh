@@ -239,12 +239,24 @@ prepare_tarbal(){
     exclude="-X scripts/excl" #'--exclude="*.o" --exclude="*.lo" --exclude="*.Po" --exclude="*.Plo" --exclude="*.deps*" --exclude="*.a" --exclude="*.pdf"'
     # add scripts and default input
     tar cf $tarbalfile --transform='s|.*/||g' scripts/run_grid.sh scripts/compile_grid.sh input/default.in
-    # add autotools config
-    tar rf $tarbalfile configure.ac install-cuba dyturbo-config.in Makefile.am input/
-    # add dyturbo source code
-    tar rf $tarbalfile $exclude src/ dyres/ mcfm/ dynnlo/ dyres/ cernlib/ Cuba-4.2/
+    # add libraries
+    tar rf $tarbalfile lib/lib* bin/dyturbo
+    #  # add autotools config
+    #  tar rf $tarbalfile configure.ac install-cuba dyturbo-config.in Makefile.am input/
+    #  # add dyturbo source code
+    #  tar rf $tarbalfile $exclude src/ dyres/ mcfm/ dynnlo/ dyres/ cernlib/ Cuba-4.2/
     # add wanted PDFset
     tar rhf $tarbalfile -C lhapdf6/share/LHAPDF/ $pdfset/ lhapdf.conf pdfsets.index
+}
+
+finalize_grid_submission(){
+    echo "compressing... $tarbalfile"
+    gzip $tarbalfile
+    rm -rf GRID/*
+    rsync -avP $tarbalfile.gz GRID/
+    cat scripts/grid_submit.cmd | column -t > GRID/subm.sh
+    chmod +x GRID/subm.sh
+    ls -l GRID
 }
 
 
@@ -276,18 +288,19 @@ submit_job(){
 
 submit_job2grid(){
     $DRYRUN 
+    intargz=`basename $tarbalfile`.gz
     echo prun --exec \". run_grid.sh ${job_name} %RNDM:1 \" \
-    --bexec \"./compile_grid.sh\" \
-    --outDS user.jcuth.${job_name}.out \
+    --outDS user.\$GRIDUSER.${job_name}.out \
     --outputs=HIST:results_merge.root \
+    --noCompile \
     --nJobs $seedlist \
-    --inTarBall=$tarbalfile.gz \
+    --inTarBall=$intargz \
     >> scripts/grid_submit.cmd
     #--site ANALY_CERN_SHORT \
     #--excludeFile="out_*"
     #--nJobs 1 \
-    #--noCompile \
     #--long \
+    #--bexec \"./compile_grid.sh\" \
     #--rootVer=6.02/12 --cmtConfig=x86_64-slc6-gcc48-opt \
 }
 
@@ -584,13 +597,13 @@ submit_grid(){
     #
     gridv=v`date +%s`
     prepare_tarbal
-    rm scripts/grid_submit.cmd
+    echo -e "#!/bin/bash\nGRIDUSER=jcuth\n" > scripts/grid_submit.cmd
     #
-    for process in wp wm z0
+    for process in z0 # wp wm z0
     do
         makelepcuts=false
         #if [[ $process =~ z0 ]]; then makelepcuts=true; fi
-        for variation in `seq 0 54`
+        for variation in 0 # `seq 0 54`
         do
             #terms
             termlist="RES CT LO"
@@ -601,6 +614,7 @@ submit_grid(){
                 seedlist=100
                 if [[ $terms == REAL ]]; then seedlist=2000; fi;
                 random_seed=seed
+                seedlist=1
                 # prepare config
                 qtregion=`echo ${gridv}qt${loqtbin}${hiqtbin}y${loybin}${hiybin}t${terms} | sed "s/\.//g;s/ //g"`
                 prepare_script
@@ -609,7 +623,7 @@ submit_grid(){
             done
         done
     done
-    gzip $tarbalfile
+    finalize_grid_submission
 }
 
 

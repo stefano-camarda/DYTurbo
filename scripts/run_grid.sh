@@ -13,13 +13,13 @@ export ATLAS_LOCAL_ROOT_BASE=/cvmfs/atlas.cern.ch/repo/ATLASLocalRootBase
 source ${ATLAS_LOCAL_ROOT_BASE}/user/atlasLocalSetup.sh
 # LHAPDF and ROOT
 lsetup "root --skipConfirm"
-lsetup "sft MCGenerators_lcgcmt67c/lhapdf/6.1.5 " 
+#lsetup "sft MCGenerators_lcgcmt67c/lhapdf/6.1.5 " 
 # own lhapdf set
 #export LHAPDF_DATA_PATH=/cvmfs/sft.cern.ch/lcg/external/lhapdfsets/current/
 export LHAPDF_DATA_PATH=./
 export LHAPATH=$LHAPDF_DATA_PATH
 # dyturbo libs
-#export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:./lib
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:./lib
 
 echo
 echo LD_LIBRARY_PATH
@@ -27,7 +27,7 @@ echo $LD_LIBRARY_PATH
 echo
 
 # compile just for sure
-make install
+#make install
 
 jobname=$1
 ln -sf scripts/infiles/$jobname.in input.in
