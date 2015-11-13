@@ -599,11 +599,11 @@ submit_grid(){
     prepare_tarbal
     echo -e "#!/bin/bash\nGRIDUSER=jcuth\n" > scripts/grid_submit.cmd
     #
-    for process in z0 # wp wm z0
+    for process in z0 wp wm # wp wm z0
     do
         makelepcuts=false
         #if [[ $process =~ z0 ]]; then makelepcuts=true; fi
-        for variation in 0 # `seq 0 54`
+        for variation in `seq 0 54` # `seq 0 54`
         do
             #terms
             termlist="RES CT LO"
@@ -614,7 +614,7 @@ submit_grid(){
                 seedlist=100
                 if [[ $terms == REAL ]]; then seedlist=2000; fi;
                 random_seed=seed
-                seedlist=1
+                #seedlist=1
                 # prepare config
                 qtregion=`echo ${gridv}qt${loqtbin}${hiqtbin}y${loybin}${hiybin}t${terms} | sed "s/\.//g;s/ //g"`
                 prepare_script
