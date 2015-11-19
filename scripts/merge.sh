@@ -115,10 +115,60 @@ merge_pt_y(){
     echo
 }
 
+mergedir=results_merge/grid_151119
+merge_grid(){
+    DRYRUN=echo 
+    DRYRUN=
+    #griddownloads='results_grid/user.jcuth.*_0_* results_grid/group.phys-sm.*_5{1,2,3,4}_*'
+    griddownloads=`echo results_grid/user.jcuth.*_0_* `
+    griddownloads="$griddownloads `echo results_grid/group.phys-sm.*_wm_*_5{1,2,3,4}_*`"
+    griddownloads="$griddownloads `echo results_grid/group.phys-sm.*_wm_*_5{1,2}_*`"
+    griddownloads="$griddownloads `echo results_grid/group.phys-sm.*_wp_*_5{1,2}_*`"
+    griddownloads="$griddownloads `echo results_grid/group.phys-sm.*_z0_*_5{1,2}_*`"
+    griddownloads="$griddownloads `echo results_grid/group.phys-sm.*_wm_*_5{3,4}_*`"
+    griddownloads="$griddownloads `echo results_grid/group.phys-sm.*_wp_*_5{3,4}_*`"
+    griddownloads="$griddownloads `echo results_grid/group.phys-sm.*_z0_*_5{3,4}_*`"
+    mkdir -p $mergedir
+    for griddir in `echo $griddownloads`
+    do
+        echo $griddir
+        base=`echo $griddir | cut -d. -f3 | sed "s|_seed|_merge|g"`
+        outfile=$mergedir/$base.root
+        echo skip $outfile
+        #$DRYRUN hadd -f $mergedir/$base.root $griddir/*results_merge.root*
+        base=`echo $base | sed "s|_merge|_outliers|g"`
+        outfile=$mergedir/$base.root
+        if [ -f $outfile  ]
+        then
+            echo skip $outfile
+        else
+            $DRYRUN ./bin/merger $outfile $griddir/*results_merge.root*
+        fi
+
+    done
+
+}
+merge_grid_TOT(){
+    DRYRUN=echo 
+    DRYRUN=
+    for fres in `ls $mergedir/*RES*outliers.root`
+    do
+        ffin=`echo  $fres | sed "s|RES_|FIN_|g"`
+        ftot=`echo  $fres | sed "s|RES_|TOT_|g"`
+        fct=`echo   $fres | sed "s|RES_|CT_|g"`
+        freal=`echo $fres | sed "s|RES_|REAL_|g"`
+        fvirt=`echo $fres | sed "s|RES_|VIRT_|g"`
+        $DRYRUN hadd -f $ffin $fct $freal $fvirt
+        $DRYRUN hadd -f $ftot $fres $ffin
+    done
+}
+
 
 
 #merge_w_pt
-merge_pt_y
+#merge_pt_y
 #merge_wwidth
+merge_grid
+merge_grid_TOT
 
 exit 0
