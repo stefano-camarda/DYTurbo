@@ -816,19 +816,19 @@ class PlotTools:
 
         s.ShowStyle("AutoCompare"+str(N_test), hlist)
 
-    def AutoSetStyle(s, hists) :
+    def AutoSetStyle(s, hists , opt="clmf") :
         N = len(hists)
         for h in hists :
             i = hists.index(h)
-            h.SetLineColor(s.AutoCompareColor(i,N))
-            h.SetLineStyle(s.AutoCompareLine(i))
-            h.SetLineWidth(2)
+            if "c" in opt: h.SetLineColor(s.AutoCompareColor(i,N))
+            #if "l" in opt: h.SetLineStyle(s.AutoCompareLine(i))
+            #h.SetLineWidth(2)
 
-            h.SetFillColor(s.AutoCompareColorLight(i, N))
-            h.SetFillStyle(1001)
+            #if "c" in opt: h.SetFillColor(s.AutoCompareColorLight(i, N))
+            #if "f" in opt: h.SetFillStyle(1001)
 
-            h.SetMarkerColor(s.AutoCompareColor(i,N))
-            h.SetMarkerStyle(s.AutoCompareMarker(i))
+            #if "c" in opt: h.SetMarkerColor(s.AutoCompareColor(i,N))
+            #if "m" in opt: h.SetMarkerStyle(s.AutoCompareMarker(i))
             h.SetMarkerSize (1)
 
     def CreateMovingAverageHist(s,H,nbins=2):
@@ -1061,8 +1061,17 @@ class PlotTools:
 
     def DrawHistCompare(s, listOfHistos,opt="" ) :
         for h in listOfHistos :
-            if h.GetDimension() ==2 : h.Draw("same,COLZ")
-            else : h.Draw("same"+opt.replace("same",""))
+            dim = 1
+            plotopt=str(h.GetDrawOption()).replace("same","")+","+opt.replace("same","")
+            try :
+                dim = h.GetDimension()
+            except AttributeError:
+                pass
+            if dim ==2 : 
+                plotopt+=",same,COLZ"
+            else :
+                plotopt+=",same"
+            h.Draw(plotopt)
         gPad.Update();
 
     def WriteText(s, text, x=0.2,y=0.8, **kwargs):
