@@ -12,22 +12,346 @@
  * @date 2015-11-18
  */
 
+#include <vector>
+#include <algorithm>
+
+#include <TFile.h>
+#include <TH1.h>
+#include <TProfile.h>
+#include <TProfile2D.h>
+#include <TList.h>
+#include <TClass.h>
+#include <TKey.h>
+#include <TString.h>
+#include <TMath.h>
+
+typedef std::vector<TString> VecTStr;
+typedef std::vector<TFile*> VecTFile;
+typedef std::vector<TH1*> VecTH1;
+typedef std::vector<double> VecDbl;
+using std::sort;
+
 class OutlierRemoval{
     public :
-        Merger(){};
-        ~Merger(){};
+        OutlierRemoval() : includeUnderOverFlow(false), verbose(1) {};
+        ~OutlierRemoval(){};
 
         // Public methods
+        void Merge(){
+            find_all_objects();
+            open_all_infiles();
+            // for object in allobjects
+            for (auto p_objname : all_obj_names){
+                const char* objname = p_objname.Data();
+                if (verbose>1) printf("objname: %s\n",objname);
+                // get object from all files
+                VecTH1 in_objs;
+                for (auto it_f : all_files){
+                    /// @todo: test if they are all same binning
+                    in_objs.push_back((TH1*) it_f->Get(objname));
+                }
+                // temporary objects
+                TString name = in_objs[0]->GetName();
+                TH1* tmp_o = (TH1*) in_objs[0]->Clone("average");
+                tmp_o->SetDirectory(0);
+                tmp_o->Reset();
+                bool isProfile = TString(tmp_o->ClassName()).Contains("Profile");
+                int dim = tmp_o->GetDimension();
+                // prepare total profile
+                TH1* tmp_p=0;
+                if (isProfile){
+                    tmp_p=tmp_o;
+                    tmp_p->SetName("tot");
+                    if(dim==1){
+                        tmp_o=((TProfile *)tmp_p)->ProjectionX("average");
+                    } else if (dim==2){
+                        tmp_o=((TProfile2D *)tmp_p)->ProjectionXY("average");
+                    }
+                    tmp_o->SetDirectory(0);
+                    tmp_p->Reset();
+                }
+                // First Loop :  get average
+                if (verbose>1) printf("    First Loop \n");
+                create_average_obj(tmp_o,in_objs);
+                // Stop here for TH1,2,3
+                if (!isProfile){
+                    tmp_o->SetName(name);
+                    output_objects.push_back(tmp_o);
+                    continue;
+                }
+                // Second Loop -- discard outliers
+                if (verbose>1) printf("    Second Loop \n");
+                for(auto ith : in_objs ){
+                    double p = chi2prob( ith, tmp_o);
+                    if (p < pl(7)){
+                        ith=0;
+                    }
+                }
+                // Third Loop -- calculate average without outliers
+                if (verbose>1) printf("    Third Loop \n");
+                create_average_obj(tmp_o,in_objs);
+                // Save average object
+                tmp_o->SetName(name);
+                output_objects.push_back(tmp_o);
+                for (auto ith : in_objs) tmp_p->Add(ith);
+                name+="_outliers";
+                tmp_p->SetName(name);
+                output_objects.push_back(tmp_p);
+            }
+            if (verbose>1) printf("Write \n");
+            close_all_infiles();
+        };
+
+        void Write(){
+            TFile * fout = new TFile(outfilename.Data(), "RECREATE");
+            for (auto ith : output_objects){
+                //ith->Print();
+                ith->Write();
+            }
+            if(verbose>0) printf("Merged %d files in %s\n", infilenames.size(), outfilename.Data());
+            fout->Close();
+        };
+
+        void SetOutputFile(TString _outf){
+            outfilename=_outf;
+            if(verbose>0)printf ("merger Target file: %s\n", _outf.Data()); // hadd like comments
+        }
+
+        void AddInputFile(TString _inf){
+            infilenames.push_back(_inf); 
+            if(verbose>0) printf ("merger Source file %d: %s\n", infilenames.size(), _inf.Data()); // hadd like comments
+        }
+
+        void Init(){
+            LOBIN= includeUnderOverFlow ? 0 : 1;
+            HIBIN= includeUnderOverFlow ? 1 : 2;
+        }
+
+        // Public data members
+        bool includeUnderOverFlow;
+        int verbose;
+
     private :
         // Private methods
+        void find_all_objects(){
+            TFile *f = TFile::Open(infilenames.begin()->Data(), "read");
+            // get directory
+            TIter iKey(f->GetListOfKeys());
+            TKey* key=0;
+            TDirectory* dir = 0;
+            if ((key=(TKey*)iKey())) dir=(TDirectory*)key->ReadObjectAny(TDirectory::Class());
+            // get dir name (if not root)
+            TString dirname = "";
+            if (dir == 0) dir = f;
+            else dirname = (TString)dir->GetName() + "/";
+            TIter nextkey(dir->GetListOfKeys());
+            while (key = (TKey*)nextkey())
+            {
+                // filter classes
+                TClass *cl = TClass::GetClass(key->GetClassName());
+                if (!cl->InheritsFrom( "TH1"      )) continue; // profiles and histograms of all dimensions
+                //if (!cl->InheritsFrom( "TH1D"      )) continue; // profiles and histograms of all dimensions
+                TObject* o = key->ReadObj();
+                all_obj_names.push_back(dirname+o->GetName());
+            }
+            f->Close();
+        }
+
+        double median(VecDbl xi) {
+            if (xi.size() == 0) {
+                printf( "Error, passed empty vector to double median(vector <double> xi)\n");
+                return 0;
+            }
+            double med = 0;
+            sort(xi.begin(), xi.end());
+            if (verbose > 10){
+                printf ("    sorted ");
+                for (auto x : xi) printf ("%f  ",x);
+                printf ("\n");
+            }
+            if (xi.size() % 2) //odd
+                med = *(xi.begin() + ((xi.size() + 1) / 2) - 1);
+            else { //even 
+                med += *(xi.begin() + ((xi.size() / 2) - 1));
+                med += *(xi.begin() + ((xi.size() / 2)));
+                med /=2;
+            }
+            return med;
+        }
+
+        double delta(VecDbl xi, double central, double ConfLevel) {
+            double delta = 0;
+            VecDbl deltaxi;
+            VecDbl::iterator i = xi.begin();
+            while (i != xi.end()) {
+                deltaxi.push_back(fabs(*i - central));
+                ++i;
+            }
+            sort(deltaxi.begin(), deltaxi.end());
+            VecDbl::iterator di = deltaxi.begin();
+            while (di != deltaxi.end()) {
+                delta = *di;
+                int index = di - deltaxi.begin() + 1;
+                double prob = (double)index / (double)deltaxi.size();
+                //      cout << index << "  " << *di << "  " << prob << endl;
+                if (prob > ConfLevel)
+                    break;
+                ++di;
+            }
+            return delta;
+        }
+
+        double mean(VecDbl xi)
+        {
+            if (xi.size() == 0) {
+                printf( "Error in pdferrors.cc, passed empty vector to double mean(vector <double> xi) \n");
+                return 0;
+            }
+            double avg = 0;
+            for (VecDbl::iterator it = xi.begin(); it != xi.end(); it++)
+                avg += *it;
+            avg /= xi.size();
+            return avg;
+        }
+
+        double rms(VecDbl xi) {
+            if (xi.size() == 0) {
+                printf( "Error in pdferrors.cc, passed empty vector to double rms(vector <double> xi)\n");
+                return 0;
+            }
+            double sum2 = 0;
+            for (VecDbl::iterator it = xi.begin(); it != xi.end(); it++)
+                sum2 += pow(*it,2);
+            sum2 /= xi.size();
+            return sqrt(fabs(sum2 - pow(mean(xi),2)));
+        }
+
+        double pl(int nsigma) {
+            switch (nsigma) {
+                case 0:
+                    return 1.;
+                    break;
+                case 1:
+                    return 1. - 0.682689492137086;
+                    break;
+                case 2:
+                    return 1. - 0.954499736103642;
+                    break;
+                case 3:
+                    return 1. - 0.997300203936740;
+                    break;
+                case 4:
+                    return 1. - 0.999936657516334;
+                    break;
+                case 5:
+                    return 1. - 0.999999426696856;
+                    break;
+                case 6:
+                    return 1. - 0.999999998026825;
+                    break;
+                case 7:
+                    return 1. - 0.999999999997440;
+                    break;
+                default:
+                    printf("Confidence Level interval available only for sigma = 1-7, requested: %d sigma \n", nsigma );
+                    return 1;
+            }
+        }
+
+
+        double chi2prob(TH1* test, TH1 * ref, bool cumul=false) {
+            if (ref == 0 || test == 0) return 0;
+            double c2 = 0;
+            int dim  = ref->GetDimension();
+            int nbinsx= (dim<1) ? 1 : ref->GetNbinsX()+HIBIN;
+            int nbinsy= (dim<2) ? 1 : ref->GetNbinsY()+HIBIN;
+            int nbinsz= (dim<3) ? 1 : ref->GetNbinsZ()+HIBIN;
+            // loop over all bins -- code inspired by TH1::Add()
+            for (int izbin=LOBIN;izbin<nbinsz;izbin++){
+                for (int iybin=LOBIN;iybin<nbinsy;iybin++){
+                    for (int ixbin=LOBIN;ixbin<nbinsx;ixbin++){
+                        int b = ixbin+nbinsx*(iybin +nbinsy*izbin);
+                        double d = test->GetBinContent(b) - ref->GetBinContent(b);
+                        double s = ref->GetBinError(b);
+                        double chi2 = 0;
+                        if (s != 0)
+                            chi2 = d*d/(s*s);
+                        if (cumul){
+                            // cumulative chi2 of all bins
+                            c2 += d*d/(s*s);
+                        } else {
+                            // maximum chi2 of all bins
+                            c2 = std::max(c2,chi2);
+                        }
+                    }
+                }
+            }
+            if (cumul){
+                // return the cumulative chi2 probability of all the bins
+                return TMath::Prob(c2, ref->GetNbinsX());
+            }
+            // return the probability of the maximum deviation of all bins,
+            // corrected for the look elsewhere effect (corrected assuming bins are independent)
+            return TMath::Prob(c2,1) * ref->GetNbinsX();
+        }
+
+        void open_all_infiles(){
+            for (auto it_fn : infilenames){
+                const char * fname = it_fn.Data();
+                all_files.push_back(TFile::Open(fname,"READ"));
+            }
+        }
+
+        void close_all_infiles(){
+            for (auto it_f : all_files) it_f->Close();
+        }
+
+        void create_average_obj(TH1* tmp_o, VecTH1 &in_objs){
+            int dim  = tmp_o->GetDimension();
+            int nbinsx= (dim<1) ? 1+LOBIN : tmp_o->GetNbinsX()+HIBIN;
+            int nbinsy= (dim<2) ? 1+LOBIN : tmp_o->GetNbinsY()+HIBIN;
+            int nbinsz= (dim<3) ? 1+LOBIN : tmp_o->GetNbinsZ()+HIBIN;
+            // loop over all bins -- code inspired by TH1::Add()
+            for (int izbin=LOBIN;izbin<nbinsz;izbin++){
+                for (int iybin=LOBIN;iybin<nbinsy;iybin++){
+                    for (int ixbin=LOBIN;ixbin<nbinsx;ixbin++){
+                        int ibin = tmp_o->GetBin(ixbin,iybin,izbin); //ixbin+nbinsx*(iybin +nbinsy*izbin);
+                        VecDbl vals;
+                        for(auto ith : in_objs){
+                            if (ith!=0){
+                                //printf("   ibin %d content %f \n", ibin, ith->GetBinContent(ixbin,iybin,izbin));
+                                //ith->Print("range");
+                                //return;
+                                vals.push_back(ith->GetBinContent(ibin));
+                            } 
+                        }
+                        double centr = median(vals); // can change this in future
+                        double sigma = delta(vals, centr, 0.68);
+                        tmp_o->SetBinContent( ibin, centr  );
+                        tmp_o->SetBinError  ( ibin, sigma );
+                    }
+                }
+            }
+        }
 
         // Data memebers
+        TString  outfilename;
+        VecTStr  infilenames;
+        VecTFile all_files;
+        VecTStr  all_obj_names;
+        VecTH1   output_objects;
+        int LOBIN;
+        int HIBIN;
 
 };
 
 
+
+
+
+
 void help(const char * prog){
-      cout << "usage: " << prog << " <output> <input list>" << endl;
+      printf ("usage: %s  <output> <input list>\n");
 }
 
 /**
@@ -46,9 +370,10 @@ int main(int argc, const char * argv[]){
     //First argument is the output file
     merger.SetOutputFile(argv[1]);
     //Next arguments are input files
-    for (int i = 2; i < /*argc*/ 10; i++){
+    for (int i = 2; i < argc; i++){
         merger.AddInputFile(argv[i]);
     }
+    merger.Init();
     merger.Merge();
     merger.Write();
 

@@ -15,7 +15,7 @@ dytests_SOURCES = dytests.C
 dytests_LDADD = libdyturbo.la ../Cuba-4.2/libcuba.a ../cernlib/libcern.la -lgfortran \
 	$(CUBA_LDFLAGS) $(LHAPDF_LDFLAGS) -lgsl -lgslcblas $(ROOT_LDFLAGS) $(ROOT_LIBS) #-lifcore -limf -lifport -lintlc -lquadmath
 
-dytests_SOURCES = merger.C
-dytests_LDADD = $(ROOT_LDFLAGS) $(ROOT_LIBS)
+merger_SOURCES = merger.C
+merger_LDADD = $(ROOT_LDFLAGS) $(ROOT_LIBS)
 
 pkginclude_HEADERS = resintegr.h finintegr.h integr.h interface.h settings.h cubacall.h plotter.h finitemapping.h lines.C init.h switch.h options.f
