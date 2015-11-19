@@ -14,7 +14,7 @@ import sys,os,re
 sys.argv.append('-b') # run in batch
 
 #from PlotTools import *
-from ROOT  import TGraphErrors, TFile
+from ROOT  import TGraphErrors, TFile, TGraphAsymmErrors
 import ROOT as RT
 #import asciitable
 from array import array
@@ -843,49 +843,146 @@ def wwidth_table():
 def find_fluctuations():
     outnametmp="{}_{}_{}"
     titletmp = "{} {} {}"
-    filetmp = "results_merge/wpm_predictions_151012/dyturbo_{}_lhc7_ZPT-CT10_0_qt0100y05t{}_outliers.root"
-    filetmpREAL = "results_merge/wp_real_1000seeds_151026/dyturbo_{}_lhc7_ZPT-CT10_0_qt0100y05t{}_outliers.root"
+    #filetmp = "results_merge/wpm_predictions_151012/dyturbo_{}_lhc7_ZPT-CT10_0_qt0100y05t{}_outliers.root"
+    #filetmpREAL = "results_merge/wp_real_1000seeds_151026/dyturbo_{}_lhc7_ZPT-CT10_0_qt0100y05t{}_outliers.root"
+    filetmp = "results_merge/grid_151116/dyturbo_{}_lhc7_WZZPT-CT10_0_v1447428851qt0100y05t{}_outliers.root"
     proc = "wp"
     hname="h_qtVy"
     terms = [
             "CT",
             "RES",
-            #"REAL",
+            "REAL",
             "VIRT",
-            "REAL 1000"
+            #"REAL 1000"
             ]
-    for var in [ "qt", "y"] :
-        fluct_list=list()
-        for term in terms :
-            title = titletmp.format(proc,term,var)
-            filename = filetmp.format(proc,term)
-            if "REAL 1000" == term :
-                filename = filetmpREAL.format(proc,"REAL")
-            hist2d = pl.GetHistSetTitNam(titletmp.format(proc,term,"qty"),filename,hname)
-            hist = 0
-            if var == "qt" :
-                hist = hist2d.ProjectionX(title)
-            elif var == "y" :
-                hist = hist2d.ProjectionY(title)
-            else : 
-                raise ValueError(" unknown var ")
-            hist_moving = pl.CreateMovingAverageHist(hist,1)
-            hist_ratio = pl.CreateRatio0Hists(hist_moving,hist)
-            fluct_list.append(hist_ratio)
-            fluct_list[-1].SetTitle(title)
+    for proc in [ "wp", "wm", "z0" ]:
+        for var in [ "qt", "y"] :
+            fluct_list=list()
+            for term in terms :
+                title = titletmp.format(proc,term,var)
+                filename = filetmp.format(proc,term)
+                #if "REAL 1000" == term :
+                    #filename = filetmpREAL.format(proc,"REAL")
+                hist2d = pl.GetHistSetTitNam(titletmp.format(proc,term,"qty"),filename,hname)
+                hist = 0
+                if var == "qt" :
+                    hist = hist2d.ProjectionX(title)
+                elif var == "y" :
+                    hist = hist2d.ProjectionY(title)
+                else : 
+                    raise ValueError(" unknown var ")
+                hist_moving = pl.CreateMovingAverageHist(hist,1)
+                hist_ratio = pl.CreateRatio0Hists(hist_moving,hist)
+                fluct_list.append(hist_ratio)
+                fluct_list[-1].SetTitle(title)
+                pass
+            pl.CompareHistsInList(outnametmp.format(proc,var,"MovAvg"),fluct_list, compareType=None)
+            # zooming
+            MINY=0.8
+            MINX=0
+            MAXX=3.5
+            if "qt" == var :
+                MINY=-300
+                MINX=5
+                MAXX=50
+            pl.CompareHistsInList(outnametmp.format(proc,var,"MovAvgZoom"), fluct_list, minX=MINX, maxX=MAXX,minY=MINY,compareType=None)
             pass
-        pl.CompareHistsInList(outnametmp.format(proc,var,"MovAvg"),fluct_list, compareType=None)
-        # zooming
-        MINY=0.8
-        MINX=0
-        MAXX=3.5
-        if "qt" == var :
-            MINY=-300
-            MINX=5
-            MAXX=50
-        pl.CompareHistsInList(outnametmp.format(proc,var,"MovAvgZoom"), fluct_list, minX=MINX, maxX=MAXX,minY=MINY,compareType=None)
-        pass
     pl.MakePreviewFromList(0,"mov_avg")
+    pass
+
+
+def PlotBand(name,hlist):
+    cent=hlist[0]
+    pl.AutoSetStyle(hlist) #,"c")
+    band = TGraphAsymmErrors()
+    for i in range(1,cent.GetNbinsX()+1) :
+        x  = cent.GetBinCenter (i)
+        y  = cent.GetBinContent(i)
+        ey1 = hlist[1].GetBinContent(i)-y
+        ey2 = hlist[2].GetBinContent(i)-y
+        ex = cent.GetBinWidth(i)/2.
+        band.SetPoint(i-1,x,y)
+        eyh=abs(ey1)
+        eyl=abs(ey2)
+        if ey1*ey2 < 0 and ey1 < 0 :
+                eyl = abs(ey1)
+                eyh = abs(ey2)
+        band.SetPointError(i-1,ex,ex,eyl,eyh)
+        pass
+    band.Draw()
+    band.SetName(name+"_bandG")
+    band.SetTitle(name+"_bandG")
+    band.SetDrawOption("3")
+    band.SetFillColor(860-9)
+    mainHists = [ band,cent]
+    subHists = pl.CreateRatio0Hists(cent,hlist)
+    pl.NewCanvas(name+"band")
+    # var
+    var = name.split("_")[2]
+    maxx=40
+    if var=="y" :
+        maxx=3.8
+    pl.DrawHistCompareSubPlot(mainHists,subHists, drawOpt="3", compareType="ratio0", maxX=maxx, cdiv=0.3)
+    pl.Save()
+    pass
+
+def PlotUnc2D(name,hlist):
+    #cent
+    cent=hlis[0]
+    hists = [cent]
+    #pos=var-cent
+    hists .append(hlist[1])
+    hists[-1].Add(cent,-1)
+    hists[-1].SetTitle("pos")
+    #neg=var-cent
+    hists .append(hlist[1])
+    hists[-1].Add(cent,-1)
+    hists[-1].SetTitle("neg")
+    #pos+neg
+    hists .append(hists[-2].Clone("pos+neg"))
+    hists[-1].Add(hists[-2])
+    hists[-1].SetTitle("posPneg")
+    # plot all
+    for h in hists:
+        pl.NewCanvas(name+h.Title)
+        pl.SetFrameStyle2D([h])
+        pl.Save()
+    pass
+
+def CreateUncertPlot(name,variations,hname,fbase):
+    centvar = ["0"]
+    centvar += [ str (x) for x in variations]
+    #hlist = list()
+    #hlist.append(pl.GetHistSetTitNam(name,hname,fbase.format())
+    hlist = [pl.GetHistSetTitNam(name,fbase.format(x),hname) for x in centvar]
+    plotclass = hlist[0].ClassName()
+    if plotclass == "TH1D" :
+        PlotBand(name,hlist)
+    elif plotclass == "TH2D" :
+        PlotUnc2D(name,hlist)
+    else :
+        raise ValueError("not know plotclass: "+plotclass)
+    pass
+
+
+def uncert_as_g():
+    processes = [
+            #"wp",
+            "wm",
+            #"z0",
+            ]
+    plots = [
+            "h_qt",
+            "h_y",
+            ]
+    filetmp = "results_merge/grid_151116/dyturbo_{}_lhc7_WZZPT-CT10_{}_v1447428851qt0100y05t{}_outliers.root"
+    for proc in processes:
+        filebase= filetmp.format(proc,"{}","TOT")
+        for plot in plots :
+            CreateUncertPlot( "_".join([proc,plot,"alphaS" ]), [51,52] , plot, filebase)
+            #CreateUncertPlot( "_".join(proc,plot,"g"      ), [53,54] , plot, filebase)
+        pass
+    pl.MakePreviewFromList(0,"unc")
     pass
 
 
@@ -903,7 +1000,8 @@ if __name__ == '__main__' :
     #plot_pt("results/pt_table_CT10nnlo.txt")
     #quick_calc()
     #root_file_integral()
-    wwidth_table()
+    #wwidth_table()
+    uncert_as_g()
     #find_fluctuations()
     pass
 
