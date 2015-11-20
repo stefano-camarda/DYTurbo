@@ -986,6 +986,277 @@ def uncert_as_g():
     pass
 
 
+class  makeInfo:
+    def __init__(s,procD,plotD,termD,fileD):
+        #
+        s.proc_name  = procD[0]
+        s.proc_titl = procD[1]
+        #
+        s.plot_name = plotD[0]
+        s.plot_titl = plotD[1]
+        s.plot_maxx = plotD[2]
+        #
+        s.term_name  = termD[0]
+        s.term_title = termD[1]
+        #
+        s.filebase   = fileD[0]
+        #
+        s.name = "_".join([
+                s.proc_name,
+                s.term_name,
+                s.plot_name
+                ])
+
+class makeUncInfo():
+    def __init__(s,uncD):
+        s.name = uncD[0]
+        s.titl = uncD[1]
+        s.varN = [ str(x) for x in uncD[2] ]
+        s.types = uncD[3].split(",")
+        s.cfill = pl.ColorHTML(uncD[5]+"88")
+        s.cline = pl.ColorHTML(uncD[5])
+    pass
+
+class  makeUncDescrInfo:
+    def __init__(s,uncDList):
+        s.Get=dict()
+        for uncD in uncDList :
+            info=makeUncInfo(uncD)
+            s.Get[info.name] = info
+            pass
+        s.size = len(uncDList)
+        pass
+
+    def __getitem__(s,name):
+        return s.Get[name]
+
+    def getNameByVarN(s,varN):
+        for name,uncI in s.Get.iteritems():
+            if varN in uncI.varN :
+                return name
+        return ""
+
+    def iterkeys(s):
+        return s.Get.iteritems()
+
+
+class TheoUncStudy:
+    def __init__(s):
+        s.processesDesc = [
+                [ "wp" , "W^{+}#rightarrowl^{+}#nu" ],
+                [ "wm" , "W^{-}#rightarrowl^{-}#nu" ],
+                [ "z0" , "Z#rightarrowll"           ],
+                ]
+        s.plotsDesc = [
+                [  "h_qt"           , "q_{T}[GeV];#sigma[pb]" , 60  ],
+                [  "h_y"            , "y;#sigma[pb]"          , 4   ],
+                #[ "h_qtVy"         , "q_{T}[GeV];y"          , 1e8 ],
+                #[ "p_qtVy_A4"      , "q_{T}[GeV];y;A4"       , 1e8 ],
+                [  "p_qtVy_A4_prfx" , "q_{T}[GeV];A4"         , 40  ],
+                [  "p_qtVy_A4_prfy" , "y;A4"                  , 3   ],
+                ]
+        s.uncDescr =  [
+                ["stat"  , "stat."           , [0]         , "error"       , "#BEC4C9", "#88919A" ],
+                ["alphas", "#alpha_{S} var." , [54,53]     , "pos,neg,sym" , "#FFAB91", "#FF6737" ],
+                ["gpar"  , "g var."          , [52,51]     , "pos,neg,sym" , "#D1FF91", "#ABFE37" ],
+                #["pdf"   , "PDF"             , range(1,51) , "pos,neg,sym" , "#99CDFF", "#45A2FC" ],
+                ]
+        s.infoUnc = makeUncDescrInfo(s.uncDescr)
+        s.termDesc = [
+                [ "TOT"  , ""        ] ,
+                [ "FIN"  , "(fin.)"  ] ,
+                [ "RES"  , "(res.)"  ] ,
+                [ "CT"   , "(ct.)"   ] ,
+                [ "REAL" , "(real.)" ] ,
+                [ "VIRT" , "(virt.)" ] ,
+                ]
+        s.file_template = "results_merge/grid_151119/dyturbo_{}_lhc7_WZZPT-CT10_{}_v1447428851qt0100y05t{}_outliers.root"
+        pass
+
+    def getplot(s,info,var,name=""):
+        if name == "" : name=s.infoUnc.getNameByVarN(var)
+        fname=info.filebase.format(var)
+        hname=info.plot_name
+        title=name+";"+info.plot_titl
+        h = 0
+        try :
+           h = pl.GetHistSetName(name,fname,hname)
+           pass
+        except ValueError as detail:
+           #print detail
+           # try to remove last term of name and then make projection
+           splitname=hname.split("_")
+           hname = "_".join( splitname[:-1] )
+           proj=splitname[-1]
+           h2d = pl.GetHistSetName(name+"2d",fname,hname)
+           h = pl.GetProjection(h2d,"_"+proj)
+       # set axis
+        h.SetTitle(title)
+        return h
+
+    def getallbands(s,info,central):
+        bands=dict()
+        for u_name,uInfo in s.infoUnc.iterkeys() :
+            # load all variations
+            htmp = [ s.getplot(info,var,uInfo.name+str(i)) for i,var in enumerate(uInfo.varN)]
+            htmp = [central] + htmp
+            for type in uInfo.types :
+                bname = "_".join([uInfo.name,type])
+                bands[bname]=pl.MakeUncBand(bname,htmp,band=type,rel=True)
+                #bands[bname].Print()
+                pass
+            pass
+        # create stack
+        stacks = [
+            ["alphas","gpar"],
+            ["stat", "alphas"],
+            ["stat","alphas+gpar"],
+            #["stat+alphas+gpar","pdf"],
+            ]
+        bands["stat_sym"] = bands["stat_error"]
+        type="sym"
+        for st1,st2 in stacks :
+            res="+".join([st1,st2])
+            resName = "_".join([res , type])
+            st1name = "_".join([st1 , type])
+            st2name = "_".join([st2 , type])
+            htmp = [bands[st1name], bands[st2name] ]
+            CorMatrix = [[0]] if "alphas" == st1 and "gpar" == st2 else [[0.20]]
+            bands[resName]=pl.CombUncBand(resName,htmp,correl=CorMatrix, opts="rel" )
+            #bands[resName].Print()
+        return bands
+
+    def PlotCentralWithBand(s,ctrl,allbands,info):
+        name = info.name+"_CentBand"
+        central=ctrl.Clone("hh")
+        central.SetLineWidth(2)
+        central.SetLineColor(kAzure)
+        central_totband = pl.MakeBandGraph( "centralband", central, [allbands["stat+alphas+gpar_sym"]], "band,rel" )
+        central_totband.SetTitle(" Full unc. band " + info.term_title)
+        central_totband.SetFillColor(kAzure-9)
+        for i,bin in enumerate(central):
+            central.SetBinError(i,0);
+        # plot
+        pl.NewCanvas(name)
+        hlist=[central,central_totband]
+        pl.SetFrameStyle1D(hlist,maxX=info.plot_maxx)
+        central_totband.Draw("SAMEE3")
+        central.Draw("LSAME")
+        pl.DrawLegend([central_totband],"fl",legx=0.65,legy=0.80,scale=1.1)
+        pl.WriteText(info.proc_titl,0.68,0.85,tsize=0.05)
+        pl.Save()
+        pass
+
+    def PlotStackUncertainty(s,allbands,info):
+        name = info.name+"_UncStack"
+        stackList=[
+                #[ "stat_sym"             , "stat"   ] ,
+                [ "stat+alphas+gpar_sym" , "stat"   ] ,
+                [ "alphas+gpar_sym" , "gpar"   ] ,
+                [ "alphas_sym" , "alphas"   ] ,
+                #[ "alphas+gpar_sym" , "alphas"   ] ,
+                #[ "gpar_sym" , "gpar"   ] ,
+                #[ "gpar_sym" , "gpar"   ] ,
+                #[ "stat+alphas+gpar_sym" , "gpar"   ] ,
+                #[ "stat+alphas_sym"      , "alphas" ] ,
+                ]
+        hlist=list()
+        for bname,uncName in stackList :
+            uncD = s.infoUnc[uncName]
+            hlist.append(allbands[bname])
+            hlist[-1].SetFillColor(uncD.cfill)
+            hlist[-1].SetLineColor(uncD.cline)
+            hlist[-1].SetLineWidth(2)
+            hlist[-1].SetTitle(uncD.titl+" "+info.term_title)
+            #hlist[-1].Print()
+            hlist[-1].GetYaxis().SetTitle("rel. unc.")
+        pl.NewCanvas(name)
+        pl.SetFrameStyle1D(hlist,maxX=info.plot_maxx,maxY=0.06,forceRange=True)
+        #pl.DrawHistCompare([central_totband,central])
+        for h in hlist :
+            h.Draw("same,f")
+        pl.DrawLegend(hlist,"f",legx=0.2,scale=0.8)
+        pl.WriteText(info.proc_titl,0.8,0.8,tsize=0.06)
+        pl.Save()
+        pass
+
+    def PlotPosNegEnvelopes(s,allbands,info):
+        tmp=pl.canvasSettings
+        pl.canvasSettings = [0,0,1200,400]
+        uncList=[
+                "gpar"   ,
+                "alphas" ,
+                "stat"   ,
+                ]
+        for uncName in uncList :
+            maxiy=0.025
+            miniy=-maxiy
+            hlist=list()
+            btypes=[ "pos", "neg" ]
+            if "stat" in uncName : 
+                btypes = ["sym"]
+                miniy=0
+            for btype in btypes:
+                uncD = s.infoUnc[uncName]
+                bname="_".join([uncName,btype])
+                hlist.append(allbands[bname])
+                hlist[-1].SetFillColor(uncD.cfill)
+                hlist[-1].SetLineColor(uncD.cline)
+                hlist[-1].SetLineWidth(2)
+                hlist[-1].SetTitle(uncD.titl+" "+info.term_title)
+                hlist[-1].GetYaxis().SetTitle("rel. unc.")
+            name = info.name+"_UncEnv_" + uncName
+            pl.NewCanvas(name)
+            pl.SetFrameStyle1D(hlist,maxX=info.plot_maxx,scale=2,minY=miniy,maxY=maxiy,forceRange=True)
+            pl.axis.GetYaxis().SetNdivisions(5)
+            gPad.SetLeftMargin  ( 0.120 )
+            gPad.SetTopMargin  ( 0.050 )
+            #pl.axis.GetListOfPrimitives().Print()
+            #pl.DrawHistCompare([central_totband,central])
+            for h in hlist :
+                h.Draw("same")
+            pl.DrawLegend(hlist[0:1],"f",legx=0.15,legy=0.87)
+            pl.WriteText(info.proc_titl,0.8,0.8,tsize=0.09)
+            pl.Save()
+            pass
+        pl.canvasSettings=tmp
+        pass
+
+
+    def DoStudy(s):
+        for proc in s.processesDesc :
+            for term in s.termDesc :
+                filebase = [s.file_template.format(proc[0],"{}",term[0])]
+                for plot in s.plotsDesc :
+                    info = makeInfo(proc , plot , term , filebase)
+                    # get central
+                    central = s.getplot(info,"0","central")
+                    dim = central.GetDimension()
+                    # create uncertainty bands
+                    allbands = s.getallbands(info,central)
+                    if dim == 1 :
+                        # create central plot with total unc band
+                        s.PlotCentralWithBand(central,allbands, info )
+                        # create stack plot with correct uncertainty combination
+                        s.PlotStackUncertainty(allbands, info )
+                        # create pos-neg envelope plot
+                        s.PlotPosNegEnvelopes(allbands, info )
+                        # @todo: PDF
+                        pass
+                    elif dim == 2 :
+                        # create central plot
+                        # create total unc plot with correct uncertainty combination
+                        # create sym unc per each
+                        pass
+                    else :
+                        raise ImplementationError("Plots for dim {}.".format(dim))
+                    pass
+                pass
+            pass
+        pl.MakePreviewFromList(0,"unc_study")
+        pass
+
+
 
 ## Documentation for main
 #
@@ -1001,8 +1272,10 @@ if __name__ == '__main__' :
     #quick_calc()
     #root_file_integral()
     #wwidth_table()
-    uncert_as_g()
+    #uncert_as_g()
     #find_fluctuations()
+    DY = TheoUncStudy()
+    DY.DoStudy()
     pass
 
 

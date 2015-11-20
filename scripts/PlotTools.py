@@ -18,7 +18,7 @@
 
 
 import os,time
-from ROOT import ROOT, TObject, TTree, TH2F, TH1D, TProfile, TH1F, TH1I, TH1C, TGraph, TF1, TMath, TFile, TCanvas, TBox, TLegend, TColor, gPad, gStyle, gROOT, Double, TLatex, TMarker, TLine
+from ROOT import ROOT, TObject, TTree, TH2F, TH1D, TProfile, TH1F, TH1I, TH1C, TGraph, TGraphAsymmErrors, TF1, TMath, TFile, TCanvas, TBox, TLegend, TColor, gPad, gStyle, gROOT, Double, TLatex, TMarker, TLine
 
 # very handy for debugging -- missing backtrace
 import logging as MSG
@@ -347,6 +347,113 @@ class PlotTools:
             h3.SetBinError  (i_x, TMath.Sqrt(TMath.Power(e1*v2,2) + TMath.Power(e2*v1,2) ))
         return h3
 
+    def MakeUncBand(s,name,hlist,**kwargs):
+        relative = kwargs["rel"]  if "rel"  in kwargs else True
+        utype    = kwargs["band"] if "band" in kwargs else "error"
+        h = s.EmptyClone(hlist[0],name)
+        dim = h.GetDimension()
+        # loop bins
+        for xbin in range(0,h.GetNbinsX()+2):
+            ybinlist = [0] if dim<2 else range(0,h.GetNbinsY()+2)
+            for ybin in ybinlist:
+                zbinlist = [0] if dim<3 else range(0,h.GetNbinsZ()+2)
+                for zbin in zbinlist:
+                    ibin = h.GetBin(xbin,ybin,zbin)
+                    err =  hlist[0].GetBinError(ibin)
+                    val =  hlist[0].GetBinContent(ibin)
+                    unc = 1
+                    pos = neg = sym = 0
+                    try :
+                        pos = hlist[1].GetBinContent(ibin)
+                        neg = hlist[2].GetBinContent(ibin)
+                        sym= (abs(pos - neg))/2.
+                        pos = pos - val
+                        neg = neg - val
+                    except IndexError:
+                        pass
+                    if relative and val!=0 : unc/=abs(val)
+                    if   utype=="stat"  : unc *= sqrt(abs(val))
+                    elif utype=="error" : unc *= err
+                    elif utype=="pos"   : unc *= pos
+                    elif utype=="neg"   : unc *= neg
+                    elif utype=="sym"   : unc *= sym
+                    else : raise ValueError("Uknown error type {}".format(utype))
+                    #print ibin,unc
+                    h.SetBinContent(ibin,unc)
+                    pass
+                pass
+            pass
+        return h
+
+    def CombUncBand(s,name,hlist,**kwargs):
+        CorMatrix = kwargs["correl"] if "correl" in kwargs else [[0]]
+        opts      = kwargs["opts"]   if "opts"   in kwargs else "rel"
+        h = s.EmptyClone(hlist[0],name)
+        dim = h.GetDimension()
+        N = len(hlist)
+        # loop bins
+        for xbin in range(0,h.GetNbinsX()+2):
+            ybinlist = [0] if dim<2 else range(0,h.GetNbinsY()+2)
+            for ybin in ybinlist:
+                zbinlist = [0] if dim<3 else range(0,h.GetNbinsZ()+2)
+                for zbin in zbinlist:
+                    ibin = h.GetBin(xbin,ybin,zbin)
+                    #vals=list()
+                    vals = sorted([ x.GetBinContent(ibin) for x in hlist])
+                    unc = 0
+                    if "rel" in opts :
+                        # uncor
+                        for v in vals : unc += v*v
+                        # cor
+                        for i in range (0,N) :
+                            for j in range(i+1,N) :
+                                unc+= -2.*CorMatrix[i][j-1]*abs(vals[i]*vals[j])
+                    else : raise ValueError("Uknown option {}".format(opts))
+                    #print ibin, unc, vals
+                    #hlist[0].Print()
+                    #hlist[1].Print()
+                    h.SetBinContent(ibin,sqrt(unc))
+                    pass
+                pass
+            pass
+        return h
+
+    def MakeBandGraph(s,name,cent,hlist,opt="diff"):
+        #band = TGraphAsymmErrors()
+        band = s.EmptyClone(cent,name)
+        for i in range(1,cent.GetNbinsX()+1) :
+            x  = cent.GetBinCenter (i)
+            y  = cent.GetBinContent(i)
+            #band.SetPoint(i-1,x,y)
+            band.SetBinContent(i,y)
+            eyl=eyh=exl=exh=0.
+            exl=exh= cent.GetBinWidth(i)/2.
+            if "diff" in opt :
+                ey1 =  hlist[1].GetBinContent(i)-y
+                ey2 = -hlist[2].GetBinContent(i)+y
+                eyh=abs(ey1)
+                eyl=abs(ey2)
+                if ey1*ey2 < 0 and ey1 < 0 :
+                    eyl = abs(ey1)
+                    eyh = abs(ey2)
+                    pass
+                if "sym" in opt :
+                    eyl=eyh=(eyh+eyl)/2
+                pass
+            elif "band" in opt :
+                ey=hlist[0].GetBinContent(i)
+                #ey=cent.GetBinError(i)/y
+                if "rel" in opt and y!=0 :
+                    ey*=abs(y)
+                eyl=eyh=ey
+                #print i,eyl,eyh,ey,y,hlist[0].GetBinContent(i)
+                pass
+            else : raise ValueError("Uknown option {}".format(opt))
+            #band.SetPointError(i-1,exl,exh,eyl,eyh)
+            band.SetBinError(i,ey)
+            pass
+        return band
+
     def GetObject(s,filename,objname,classname) :
         f = TFile(filename, "r")
         if not f.IsOpen() :
@@ -375,6 +482,66 @@ class PlotTools:
                     hh.SetBinError   ( ibin , e )#if e==e else 0. )
                 return hh
         return h
+
+    def GetProjection(s,h,ax="_px") :
+        if "TH1" in h.ClassName() : return h.Clone(h.GetName()+ax)
+        name=h.GetName()+ax
+        ytit  = h.GetZaxis().GetTitle()
+        hp=0
+        if   ax == "_px": # out of 2D
+            n = h.GetNbinsX()
+            hp=h.ProjectionX(name,1,n,"e")
+            hp.GetYaxis().SetTitle(ytit)
+            #hp=h.ProfileX(name,1,n,"e")
+            #for i in range(n-10,n+1):
+                #hp.SetBinContent(i,0)
+        elif ax == "_py":
+            n = h.GetNbinsY()
+            hp=h.ProjectionY(name,1,n,"e")
+            hp.GetYaxis().SetTitle(ytit)
+            #hp=h.ProfileY(name,1,n-10,"e")
+        elif ax == "_pxy":
+            hp=h.ProjectionXY(name,"w")
+            x_tit = h.GetXaxis().GetTitle()
+            y_tit = h.GetYaxis().GetTitle()
+            z_tit = h.GetZaxis().GetTitle()
+            tit = "{};{};{};{}".format(h.GetTitle(),x_tit,y_tit,z_tit)
+            hp.SetTitle(tit)#.GetTitle())
+            #hp.GetXaxis().SetTitle(x_tit)
+            #hp.GetYaxis().SetTitle(x_tit)
+            #hp.GetZaxis().SetTitle(x_tit)
+        elif ax == "_prfy":
+            n = h.GetNbinsY()
+            hp=h.ProfileY(name+"prof",1,n,"w").ProjectionX(name)
+            #hp=h.ProjectionX(name,1,n,"w")
+            hp.GetYaxis().SetTitle(ytit)
+        elif ax == "_prfx":
+            n = h.GetNbinsX()
+            hp=h.ProfileX(name+"prof",1,n,"w").ProjectionX(name)
+            #hp=h.ProjectionX(name,1,n,"w")
+            hp.GetYaxis().SetTitle(ytit)
+            # correct for nan in error
+            #  for xbin in range(1,hp.GetNbinsX()+1):
+            #      v1 = hp.GetBinContent (xbin)
+            #      e1 = hp.GetBinError   (xbin)
+            #      if v1!=v1 : MSG.warning(" nan in value: hist {} bin {}".format(hp.GetName(),xbin))
+            #      if e1!=e1 :
+            #          MSG.warning(" nan in error: hist {} bin {}".format(hp.GetName(),xbin))
+            #          # sum the entries
+            #          ybinlist = range(1,h.GetNbinsY()+1)
+            #          entries = list()
+            #          for ybin in ybinlist:
+            #              ibin = h.GetBin(xbin,ybin)
+            #              n1 = h.GetBinEntries(ibin)
+            #              entries.append(abs(n1))
+            #              pass
+            #          tot=np.sum(entries)
+            #          hp.SetBinError(xbin, sqrt(tot))
+            #hp=h.ProfileX(name,1,n,"e")
+            #for i in range(n-10,n+1):
+                #hp.SetBinContent(i,0)
+        else : raise RuntimeError("Uknown type of projection `{}`".format(ax) )
+        return hp
 
     def GetGraph(s, filename, objname) :
         h = s.GetObject(filename,objname,"graph")
@@ -1440,6 +1607,7 @@ class PlotTools:
 \hspace{1em}%
 \insertframenumber/\inserttotalframenumber
 }
+\setbeamercolor{background canvas}{bg=black}
 \begin{document}
 
 """
@@ -1476,4 +1644,97 @@ class PlotTools:
 if __name__ == '__main__' :
     print "Just use this class."
     pass
+
+
+
+kAzure=860
+
+# 0 - fill
+# 4 - line
+# 3 - darker fill
+# 1 - lighter fill
+
+#####  Color Palette by Paletton.com
+######  Palette URL: http://paletton.com/#uid=40c0-0kdP++00++70++jv+Yp2+2
+# colorscheme RGB (where blue is kAzure-9)
+# *** Red
+# 
+#    shade 0 = #FFAB91 = rgb(255,171,145) = rgba(255,171,145,1) = rgb0(1,0.671,0.569)
+#    shade 1 = #FFFFFF = rgb(255,255,255) = rgba(255,255,255,1) = rgb0(1,1,1)
+#    shade 2 = #FFD5C7 = rgb(255,213,199) = rgba(255,213,199,1) = rgb0(1,0.835,0.78)
+#    shade 3 = #FF8964 = rgb(255,137,100) = rgba(255,137,100,1) = rgb0(1,0.537,0.392)
+#    shade 4 = #FF6737 = rgb(255,103, 55) = rgba(255,103, 55,1) = rgb0(1,0.404,0.216)
+# 
+# *** Blue
+# 
+#    shade 0 = #99CDFF = rgb(153,205,255) = rgba(153,205,255,1) = rgb0(0.6,0.804,1)
+#    shade 1 = #FFFFFF = rgb(255,255,255) = rgba(255,255,255,1) = rgb0(1,1,1)
+#    shade 2 = #CBE6FF = rgb(203,230,255) = rgba(203,230,255,1) = rgb0(0.796,0.902,1)
+#    shade 3 = #6FB8FF = rgb(111,184,255) = rgba(111,184,255,1) = rgb0(0.435,0.722,1)
+#    shade 4 = #45A2FC = rgb( 69,162,252) = rgba( 69,162,252,1) = rgb0(0.271,0.635,0.988)
+# 
+# *** Green
+# 
+#    shade 0 = #D1FF91 = rgb(209,255,145) = rgba(209,255,145,1) = rgb0(0.82,1,0.569)
+#    shade 1 = #FFFFFF = rgb(255,255,255) = rgba(255,255,255,1) = rgb0(1,1,1)
+#    shade 2 = #E8FFC7 = rgb(232,255,199) = rgba(232,255,199,1) = rgb0(0.91,1,0.78)
+#    shade 3 = #BEFF64 = rgb(190,255,100) = rgba(190,255,100,1) = rgb0(0.745,1,0.392)
+#    shade 4 = #ABFE37 = rgb(171,254, 55) = rgba(171,254, 55,1) = rgb0(0.671,0.996,0.216)
+# 
+# *** Torqua
+# 
+#    shade 0 = #91FFC7 = rgb(145,255,199) = rgba(145,255,199,1) = rgb0(0.569,1,0.78)
+#    shade 1 = #FFFFFF = rgb(255,255,255) = rgba(255,255,255,1) = rgb0(1,1,1)
+#    shade 2 = #C7FFE3 = rgb(199,255,227) = rgba(199,255,227,1) = rgb0(0.78,1,0.89)
+#    shade 3 = #64FFB0 = rgb(100,255,176) = rgba(100,255,176,1) = rgb0(0.392,1,0.69)
+#    shade 4 = #37FD98 = rgb( 55,253,152) = rgba( 55,253,152,1) = rgb0(0.216,0.992,0.596)
+#
+#
+
+######  Color Palette by Paletton.com
+######  Palette URL: http://paletton.com/#uid=73-1q0kdP++00++70++jv+Yp2+2
+# 
+# 
+# *** Blue
+# 
+#    shade 0 = #99CDFF = rgb(153,205,255) = rgba(153,205,255,1) = rgb0(0.6,0.804,1)
+#    shade 1 = #FFFFFF = rgb(255,255,255) = rgba(255,255,255,1) = rgb0(1,1,1)
+#    shade 2 = #CBE6FF = rgb(203,230,255) = rgba(203,230,255,1) = rgb0(0.796,0.902,1)
+#    shade 3 = #6FB8FF = rgb(111,184,255) = rgba(111,184,255,1) = rgb0(0.435,0.722,1)
+#    shade 4 = #45A2FC = rgb( 69,162,252) = rgba( 69,162,252,1) = rgb0(0.271,0.635,0.988)
+# 
+# *** Violete
+# 
+#    shade 0 = #FF91F1 = rgb(255,145,241) = rgba(255,145,241,1) = rgb0(1,0.569,0.945)
+#    shade 1 = #FFFFFF = rgb(255,255,255) = rgba(255,255,255,1) = rgb0(1,1,1)
+#    shade 2 = #FFC7F8 = rgb(255,199,248) = rgba(255,199,248,1) = rgb0(1,0.78,0.973)
+#    shade 3 = #FF64EC = rgb(255,100,236) = rgba(255,100,236,1) = rgb0(1,0.392,0.925)
+#    shade 4 = #FD37E4 = rgb(253, 55,228) = rgba(253, 55,228,1) = rgb0(0.992,0.216,0.894)
+# 
+# *** Green
+# 
+#    shade 0 = #E9FF91 = rgb(233,255,145) = rgba(233,255,145,1) = rgb0(0.914,1,0.569)
+#    shade 1 = #FFFFFF = rgb(255,255,255) = rgba(255,255,255,1) = rgb0(1,1,1)
+#    shade 2 = #F4FFC7 = rgb(244,255,199) = rgba(244,255,199,1) = rgb0(0.957,1,0.78)
+#    shade 3 = #DFFF64 = rgb(223,255,100) = rgba(223,255,100,1) = rgb0(0.875,1,0.392)
+#    shade 4 = #D6FF37 = rgb(214,255, 55) = rgba(214,255, 55,1) = rgb0(0.839,1,0.216)
+# 
+# *** Orange
+# 
+#    shade 0 = #FFD291 = rgb(255,210,145) = rgba(255,210,145,1) = rgb0(1,0.824,0.569)
+#    shade 1 = #FFFFFF = rgb(255,255,255) = rgba(255,255,255,1) = rgb0(1,1,1)
+#    shade 2 = #FFE8C7 = rgb(255,232,199) = rgba(255,232,199,1) = rgb0(1,0.91,0.78)
+#    shade 3 = #FFC064 = rgb(255,192,100) = rgba(255,192,100,1) = rgb0(1,0.753,0.392)
+#    shade 4 = #FFAE37 = rgb(255,174, 55) = rgba(255,174, 55,1) = rgb0(1,0.682,0.216)
+# 
+# #####  Generated by Paletton.com (c) 2002-2014
+
+#### Special kAzure-9: almost grey
+#
+#   shade 0 = #BEC4C9
+#   shade 1 = #FFFFFF
+#   shade 2 = #DEE1E4
+#   shade 3 = #A4ABB2
+#   shade 4 = #88919A
+#
 
