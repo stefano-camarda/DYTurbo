@@ -38,6 +38,7 @@ void integr2d(double &res, double &err)
 
   res = integral[0];
   err = error[0];
+  hists.FillQuadrature(res,err);
   return;
 }
 
@@ -72,6 +73,7 @@ void integr3d(double &res, double &err)
 
   res = integral[0];
   err = error[0];
+  hists.FillQuadrature(res,err);
   return;
 }
 
@@ -295,6 +297,7 @@ void ctintegr3d(double &res, double &err)
 
   res = integral[0];
   err = error[0];
+  hists.FillQuadrature(res,err);
   return;
 }
 
@@ -329,6 +332,7 @@ void ctintegr2d(double &res, double &err)
 
   res = integral[0];
   err = error[0];
+  hists.FillQuadrature(res,err);
   return;
 }
 
