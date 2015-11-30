@@ -9,7 +9,10 @@
 # @author cuto <Jakub.Cuth@cern.ch>
 # @date 2015-08-07
 
+# lsetup root "sft releases/pyanalysis/1.5_python2.7-0dd7c"
+
 import sys,os,re
+from copy import deepcopy
 # for batch add -b before first ROOT calling 
 sys.argv.append('-b') # run in batch
 
@@ -987,25 +990,46 @@ def uncert_as_g():
 
 
 class  makeInfo:
-    def __init__(s,procD,plotD,termD,fileD):
+    def __init__(s,procD=0,plotD=0,termD=0,fileD=0):
+        # NULL
+        s.proc_name = ""
+        s.proc_titl = ""
         #
-        s.proc_name  = procD[0]
-        s.proc_titl = procD[1]
+        s.plot_name = ""
+        s.plot_titl = ""
+        s.plot_maxx = ""
         #
-        s.plot_name = plotD[0]
-        s.plot_titl = plotD[1]
-        s.plot_maxx = plotD[2]
+        s.term_name  = ""
+        s.term_title = ""
+        s.term_cline = ""
+        s.term_cfill = ""
         #
-        s.term_name  = termD[0]
-        s.term_title = termD[1]
-        #
-        s.filebase   = fileD[0]
-        #
+        s.filebase   = ""
+        # DEFINE
+        if procD!=0 :
+            s.proc_name = procD[0]
+            s.proc_titl = procD[1]
+            pass
+        if plotD!=0 :
+            s.plot_name = plotD[0]
+            s.plot_titl = plotD[1]
+            s.plot_maxx = plotD[2]
+            pass
+        if termD!=0 :
+            s.term_name  = termD[0]
+            s.term_title = termD[1]
+            s.term_cline = pl.ColorHTML(termD[2])
+            s.term_cfill = pl.ColorHTML(termD[2]+"88")
+            pass
+        if termD!=0 :
+            s.filebase   = fileD
+            pass
         s.name = "_".join([
                 s.proc_name,
                 s.term_name,
                 s.plot_name
                 ])
+        pass
 
 class makeUncInfo():
     def __init__(s,uncD):
@@ -1048,12 +1072,14 @@ class TheoUncStudy:
                 [ "z0" , "Z#rightarrowll"           ],
                 ]
         s.plotsDesc = [
-                [  "h_qt"           , "q_{T}[GeV];#sigma[pb]" , 60  ],
-                [  "h_y"            , "y;#sigma[pb]"          , 4   ],
-                #[ "h_qtVy"         , "q_{T}[GeV];y"          , 1e8 ],
-                #[ "p_qtVy_A4"      , "q_{T}[GeV];y;A4"       , 1e8 ],
-                [  "p_qtVy_A4_prfx" , "q_{T}[GeV];A4"         , 40  ],
-                [  "p_qtVy_A4_prfy" , "y;A4"                  , 3   ],
+                [  "h_qt"         , "q_{T}[GeV];#sigma[pb]" , 100  ],
+                #[  "h_y"          , "y;#sigma[pb]"          , 5   ],
+                #[ "h_qtVy"       , "q_{T}[GeV];y"          , 1e8 ],
+                #[ "p_qtVy_A4"    , "q_{T}[GeV];y;A4"       , 1e8 ],
+                #[  "p_qtVy_A4_prfx" , "q_{T}[GeV];A4"         , 40  ],
+                #[  "p_qtVy_A4_prfy" , "y;A4"                  , 3   ],
+                #[  "p_qtVy_A4_outliers_px" , "q_{T}[GeV];A4"         , 40  ],
+                #[  "p_qtVy_A4_outliers_py" , "y;A4"                  , 3   ],
                 ]
         s.uncDescr =  [
                 ["stat"  , "stat."           , [0]         , "error"       , "#BEC4C9", "#88919A" ],
@@ -1063,19 +1089,49 @@ class TheoUncStudy:
                 ]
         s.infoUnc = makeUncDescrInfo(s.uncDescr)
         s.termDesc = [
-                [ "TOT"  , ""        ] ,
-                [ "FIN"  , "(fin.)"  ] ,
-                [ "RES"  , "(res.)"  ] ,
-                [ "CT"   , "(ct.)"   ] ,
-                [ "REAL" , "(real.)" ] ,
-                [ "VIRT" , "(virt.)" ] ,
+                [ "TOT"  , ""         , "#88919a" ] ,
+                [ "FIN"  , "(fin.)"   , "#d95f02" ] ,
+                [ "RES"  , "(res.)"   , "#7570b3" ] ,
+                [ "CT"   , "(ct.)"    , "#e7298a" ] ,
+                [ "REAL" , "(real.)"  , "#66a61e" ] ,
+                [ "VIRT" , "(virt.)"  , "#e6ab02" ] ,
                 ]
-        s.file_template = "results_merge/grid_151119/dyturbo_{}_lhc7_WZZPT-CT10_{}_v1447428851qt0100y05t{}_outliers.root"
+        s.file_template = "results_merge/grid_151123/dyturbo_{}_lhc7_WZZPT-CT10_{}_v1447428851qt0100y05t{}_outliers.root"
+        s.MaxUnc=0.015
+        pl.MakeNiceGradient()
         pass
+
+    def GetPlot(s,info,var,name=""):
+        # if tot or fin load smartly :
+        #
+        h=0
+        match={
+             #"TOT"  : ["RES","CT","REAL","VIRT"] ,
+             #"FIN"  : ["CT","REAL","VIRT"]       ,
+             "TOT"  : ["TOT"]  ,
+             "FIN"  : ["FIN"]  ,
+             "RES"  : ["RES"]  ,
+             "CT"   : ["CT"]   ,
+             "REAL" : ["REAL"] ,
+             "VIRT" : ["VIRT"] ,
+            }
+        for term in match[info.term_name] :
+            tinfo=deepcopy(info)
+            tinfo.term_name=term
+            hist = s.getplot(tinfo,var,term)
+            if not "TH1D" in hist.ClassName() or not "TH2D" in hist.ClassName() :
+                h = hist.Clone(name)
+                break;
+            if h == 0 :
+                h = pl.EmptyClone(hist,name)
+            xsec =  s.getplot(tinfo,"qt_y_total","xsec")
+            c = xsec.Integral()  / hist.Integral() 
+            h.Add(hist,c)
+        return h
 
     def getplot(s,info,var,name=""):
         if name == "" : name=s.infoUnc.getNameByVarN(var)
-        fname=info.filebase.format(var)
+        fname=info.filebase.format(info.proc_name,var,info.term_name)
         hname=info.plot_name
         title=name+";"+info.plot_titl
         h = 0
@@ -1098,11 +1154,21 @@ class TheoUncStudy:
         bands=dict()
         for u_name,uInfo in s.infoUnc.iterkeys() :
             # load all variations
-            htmp = [ s.getplot(info,var,uInfo.name+str(i)) for i,var in enumerate(uInfo.varN)]
+            htmp = [ s.GetPlot(info,var,uInfo.name+str(i)) for i,var in enumerate(uInfo.varN)]
             htmp = [central] + htmp
             for type in uInfo.types :
                 bname = "_".join([uInfo.name,type])
                 bands[bname]=pl.MakeUncBand(bname,htmp,band=type,rel=True)
+                # add decomposition of statistical uncertainty (band per each term relative to total)
+                if info.term_name=="TOT" and type == "error" :
+                    alltrms= [ "FIN" , "RES"  , "CT"   , "REAL" , "VIRT" ]
+                    for trm in alltrms :
+                        centr = htmp[0]
+                        infocp = deepcopy(info)
+                        infocp.term_name=trm
+                        term_hist = s.GetPlot(infocp,"0",trm)
+                        bname="stat_"+trm
+                        bands[bname] = pl.MakeUncBand(bname,[centr,term_hist],band="errOth",rel=True)
                 #bands[bname].Print()
                 pass
             pass
@@ -1114,6 +1180,7 @@ class TheoUncStudy:
             #["stat+alphas+gpar","pdf"],
             ]
         bands["stat_sym"] = bands["stat_error"]
+        if info.term_name == "TOT": bands["stat_TOT"] = bands["stat_error"]
         type="sym"
         for st1,st2 in stacks :
             res="+".join([st1,st2])
@@ -1127,6 +1194,11 @@ class TheoUncStudy:
         return bands
 
     def PlotCentralWithBand(s,ctrl,allbands,info):
+        minx=0
+        maxx=info.plot_maxx
+        if info.term_name=="REAL"  :
+            minx=50
+            maxx=80
         name = info.name+"_CentBand"
         central=ctrl.Clone("hh")
         central.SetLineWidth(2)
@@ -1139,7 +1211,7 @@ class TheoUncStudy:
         # plot
         pl.NewCanvas(name)
         hlist=[central,central_totband]
-        pl.SetFrameStyle1D(hlist,maxX=info.plot_maxx)
+        pl.SetFrameStyle1D(hlist,minX=minx, maxX=maxx)
         central_totband.Draw("SAMEE3")
         central.Draw("LSAME")
         pl.DrawLegend([central_totband],"fl",legx=0.65,legy=0.80,scale=1.1)
@@ -1148,36 +1220,85 @@ class TheoUncStudy:
         pass
 
     def PlotStackUncertainty(s,allbands,info):
+        minx=0
+        maxx=info.plot_maxx
+        uncmax= s.MaxUnc*2 
+        forcrng=True
+        if info.term_name=="REAL"  :
+            minx=50
+            maxx=80
+            uncmax=1e8
+            forcrng=False
+        # systematic + statistic
         name = info.name+"_UncStack"
         stackList=[
-                #[ "stat_sym"             , "stat"   ] ,
-                [ "stat+alphas+gpar_sym" , "stat"   ] ,
-                [ "alphas+gpar_sym" , "gpar"   ] ,
-                [ "alphas_sym" , "alphas"   ] ,
+                [ "stat_sym"             , "stat"   ] ,
+                [ "stat+alphas_sym"      , "alphas" ] ,
+                [ "stat+alphas+gpar_sym" , "gpar"   ] ,
+                #[ "alphas+gpar_sym" , "gpar"   ] ,
+                #[ "alphas_sym" , "alphas"   ] ,
                 #[ "alphas+gpar_sym" , "alphas"   ] ,
                 #[ "gpar_sym" , "gpar"   ] ,
                 #[ "gpar_sym" , "gpar"   ] ,
                 #[ "stat+alphas+gpar_sym" , "gpar"   ] ,
-                #[ "stat+alphas_sym"      , "alphas" ] ,
                 ]
         hlist=list()
+        titl=""
         for bname,uncName in stackList :
             uncD = s.infoUnc[uncName]
             hlist.append(allbands[bname])
             hlist[-1].SetFillColor(uncD.cfill)
             hlist[-1].SetLineColor(uncD.cline)
             hlist[-1].SetLineWidth(2)
-            hlist[-1].SetTitle(uncD.titl+" "+info.term_title)
+            titl += uncD.titl
+            hlist[-1].SetTitle(titl+" "+info.term_title)
+            titl += "#oplus"
             #hlist[-1].Print()
             hlist[-1].GetYaxis().SetTitle("rel. unc.")
         pl.NewCanvas(name)
-        pl.SetFrameStyle1D(hlist,maxX=info.plot_maxx,maxY=0.06,forceRange=True)
+        pl.SetFrameStyle1D(hlist,minX=minx, maxX=maxx,maxY=uncmax,forceRange=forcrng)
         #pl.DrawHistCompare([central_totband,central])
-        for h in hlist :
+        for h in reversed(hlist) :
             h.Draw("same,f")
         pl.DrawLegend(hlist,"f",legx=0.2,scale=0.8)
         pl.WriteText(info.proc_titl,0.8,0.8,tsize=0.06)
         pl.Save()
+        #
+        # statistic per term
+        if info.term_name == "TOT" :
+            uncList=[
+                    [ "TOT"    , "FIN"    , "RES"                                     ],
+                    [            "FIN"    ,            "CT"     , "REAL"   , "VIRT"   ],
+                    [                       "RES"    , "CT"     , "REAL"   , "VIRT"   ],
+                    [ "TOT"    , "FIN"    , "RES"    , "CT"     , "REAL"   , "VIRT"   ],
+                    ]
+            for i,termList in enumerate(uncList) :
+                name = info.name+"_UncStatPerTerm"+str(i)
+                hlist=list()
+                for trm in termList:
+                    #uncD = s.infoUnc[uncName]
+                    bname = "stat_"+trm
+                    hlist.append(allbands[bname])
+                    trmD = [ x for x in s.termDesc if x[0]==trm][0]
+                    print trmD
+                    tmp_info = makeInfo(0,0,trmD,0)
+                    hlist[-1].SetFillColor(tmp_info.term_cfill)
+                    hlist[-1].SetLineColor(tmp_info.term_cline)
+                    hlist[-1].SetLineWidth(2)
+                    hlist[-1].SetTitle("stat "+tmp_info.term_title)
+                    #hlist[-1].Print()
+                    hlist[-1].GetYaxis().SetTitle("rel. unc. wrt. total")
+                    pass
+                pl.NewCanvas(name)
+                pl.SetFrameStyle1D(hlist,maxX=info.plot_maxx,maxY=s.MaxUnc*2,forceRange=True)
+                #pl.DrawHistCompare([central_totband,central])
+                for h in hlist :
+                    h.Draw("same,f")
+                pl.DrawLegend(hlist,"f",legx=0.2,scale=0.8)
+                pl.WriteText(info.proc_titl,0.8,0.8,tsize=0.06)
+                pl.Save()
+                pass
+            pass
         pass
 
     def PlotPosNegEnvelopes(s,allbands,info):
@@ -1189,7 +1310,7 @@ class TheoUncStudy:
                 "stat"   ,
                 ]
         for uncName in uncList :
-            maxiy=0.025
+            maxiy=s.MaxUnc
             miniy=-maxiy
             hlist=list()
             btypes=[ "pos", "neg" ]
@@ -1219,18 +1340,83 @@ class TheoUncStudy:
             pl.WriteText(info.proc_titl,0.8,0.8,tsize=0.09)
             pl.Save()
             pass
+        #
+        # decompose statistic per term
+        if info.term_name == "TOT" :
+            uncList=[
+                    "TOT"  ,
+                    "FIN"  ,
+                    "RES"  ,
+                    "CT"   ,
+                    "REAL" ,
+                    "VIRT" ,
+                    ]
+            for trm in uncList :
+                hlist=list()
+                maxiy=s.MaxUnc
+                miniy=0
+                bname="stat_"+trm
+                hlist.append(allbands[bname])
+                trmD = [ x for x in s.termDesc if x[0]==trm][0]
+                tmp_info = makeInfo(0,0,trmD)
+                hlist[-1].SetFillColor(tmp_info.term_cfill)
+                hlist[-1].SetLineColor(tmp_info.term_cline)
+                hlist[-1].SetLineWidth(2)
+                hlist[-1].SetTitle("stat "+tmp_info.term_title)
+                hlist[-1].GetYaxis().SetTitle("rel. unc. wrt. total")
+                name = info.name+"_UncEnvStatTerm_" + trm
+                pl.NewCanvas(name)
+                pl.SetFrameStyle1D(hlist,maxX=info.plot_maxx,scale=2,minY=miniy,maxY=maxiy,forceRange=True)
+                pl.axis.GetYaxis().SetNdivisions(5)
+                gPad.SetLeftMargin  ( 0.120 )
+                gPad.SetTopMargin  ( 0.050 )
+                #pl.axis.GetListOfPrimitives().Print()
+                #pl.DrawHistCompare([central_totband,central])
+                for h in hlist :
+                    h.Draw("same")
+                pl.DrawLegend(hlist[0:1],"f",legx=0.15,legy=0.87)
+                pl.WriteText(info.proc_titl,0.8,0.8,tsize=0.09)
+                pl.Save()
+                pass
         pl.canvasSettings=tmp
+        pass
+
+    def PlotCentral2D(s,central,info):
+        name=info.name+"Cent2D"
+        pl.NewCanvas(name)
+        pl.SetFrameStyle2D([central])
+        central.Draw("same,colz")
+        central.SetContour(99)
+        pl.WriteText("shape "+info.term_name,0.15,0.87,tsize=0.035,tcol=pl.ColorHTML("#e0e0e0"))
+        pl.WriteText(info.proc_titl,0.68,0.85,tsize=0.05,tcol=pl.ColorHTML("#e0e0e0"))
+        pl.Save()
+        pass
+
+    def PlotUnc2D(s,central,allbands,info):
+        blist = [ ]
+        tlist = [ "TOT" , "FIN" , "RES" , "CT" , "REAL", "VIRT" ]
+        if info.term_name == "TOT" : blist += [ "stat_"+x for x in tlist ]
+        for i,bname in enumerate(blist) :
+            name=info.name+"_Unc2D_"+bname
+            termtit = [x for x in s.termDesc if x[0]==tlist[i]][0][1]
+            pl.NewCanvas(name)
+            pl.SetFrameStyle2D([allbands[bname]])
+            allbands[bname].Draw("same,colz")
+            allbands[bname].GetZaxis().SetRangeUser(0,s.MaxUnc*4)
+            allbands[bname].SetContour(99)
+            pl.WriteText("stat unc "+ termtit + " rel. wrt. total",0.15,0.87,tsize=0.035,tcol=pl.ColorHTML("#303030"))
+            pl.WriteText(info.proc_titl,0.68,0.688,tsize=0.05,tcol=pl.ColorHTML("#303030"))
+            pl.Save()
         pass
 
 
     def DoStudy(s):
         for proc in s.processesDesc :
             for term in s.termDesc :
-                filebase = [s.file_template.format(proc[0],"{}",term[0])]
                 for plot in s.plotsDesc :
-                    info = makeInfo(proc , plot , term , filebase)
+                    info = makeInfo(proc , plot , term , s.file_template)
                     # get central
-                    central = s.getplot(info,"0","central")
+                    central = s.GetPlot(info,"0","central")
                     dim = central.GetDimension()
                     # create uncertainty bands
                     allbands = s.getallbands(info,central)
@@ -1245,7 +1431,9 @@ class TheoUncStudy:
                         pass
                     elif dim == 2 :
                         # create central plot
+                        s.PlotCentral2D(central,info)
                         # create total unc plot with correct uncertainty combination
+                        s.PlotUnc2D(central,allbands,info)
                         # create sym unc per each
                         pass
                     else :
@@ -1255,6 +1443,7 @@ class TheoUncStudy:
             pass
         pl.MakePreviewFromList(0,"unc_study")
         pass
+    pass
 
 
 
