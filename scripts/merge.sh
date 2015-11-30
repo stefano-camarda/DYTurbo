@@ -115,19 +115,20 @@ merge_pt_y(){
     echo
 }
 
-mergedir=results_merge/grid_151119
+mergedir=results_merge/grid_151123
+MERGER="./bin/merger -X"
 merge_grid(){
     DRYRUN=echo 
     DRYRUN=
     #griddownloads='results_grid/user.jcuth.*_0_* results_grid/group.phys-sm.*_5{1,2,3,4}_*'
     griddownloads=`echo results_grid/user.jcuth.*_0_* `
-    griddownloads="$griddownloads `echo results_grid/group.phys-sm.*_wm_*_5{1,2,3,4}_*`"
-    griddownloads="$griddownloads `echo results_grid/group.phys-sm.*_wm_*_5{1,2}_*`"
-    griddownloads="$griddownloads `echo results_grid/group.phys-sm.*_wp_*_5{1,2}_*`"
-    griddownloads="$griddownloads `echo results_grid/group.phys-sm.*_z0_*_5{1,2}_*`"
-    griddownloads="$griddownloads `echo results_grid/group.phys-sm.*_wm_*_5{3,4}_*`"
-    griddownloads="$griddownloads `echo results_grid/group.phys-sm.*_wp_*_5{3,4}_*`"
-    griddownloads="$griddownloads `echo results_grid/group.phys-sm.*_z0_*_5{3,4}_*`"
+    griddownloads="$griddownloads `echo results_grid/group.phys-sm.*_{wp,wm,z0}_*_5{1,2,3,4}_*`"
+    #griddownloads="$griddownloads `echo results_grid/group.phys-sm.*_wm_*_5{1,2}_*`"
+    #griddownloads="$griddownloads `echo results_grid/group.phys-sm.*_wp_*_5{1,2}_*`"
+    #griddownloads="$griddownloads `echo results_grid/group.phys-sm.*_z0_*_5{1,2}_*`"
+    #griddownloads="$griddownloads `echo results_grid/group.phys-sm.*_wm_*_5{3,4}_*`"
+    #griddownloads="$griddownloads `echo results_grid/group.phys-sm.*_wp_*_5{3,4}_*`"
+    #griddownloads="$griddownloads `echo results_grid/group.phys-sm.*_z0_*_5{3,4}_*`"
     mkdir -p $mergedir
     for griddir in `echo $griddownloads`
     do
@@ -142,7 +143,7 @@ merge_grid(){
         then
             echo skip $outfile
         else
-            $DRYRUN ./bin/merger $outfile $griddir/*results_merge.root*
+            $DRYRUN $MERGER $outfile $griddir/*results_merge.root*
         fi
 
     done
