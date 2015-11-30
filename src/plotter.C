@@ -392,6 +392,31 @@ void plotter::CumulateResult(TermType term, double wgt){
     return;
 }
 
+void plotter::addToBin(TH1*h, double int_val, double int_error){
+    // Get bin
+    // get the middle of bin
+    double qt_val = ( qtmax + qtmin )/2.;
+    double y_val  = ( ymax  + ymin  )/2.;
+    int ibin = 0;
+    if      (!TString(h->GetName()).CompareTo( "h_qtVy" )) ibin = h->FindBin( qt_val, y_val);
+    else if (!TString(h->GetName()).CompareTo( "h_qt"   )) ibin = h->FindBin( qt_val  );
+    else if (!TString(h->GetName()).CompareTo( "h_y"    )) ibin = h->FindBin( y_val   );
+    // if there somethin in bin add it properly
+    double val = h->GetBinContent (ibin);
+    double err = h->GetBinError   (ibin);
+    val += int_val;
+    err = sqrt (err*err + int_error*int_error);
+    // set new values
+    h->SetBinContent (ibin, val);
+    h->SetBinError   (ibin, err);
+}
+
+void plotter::FillQuadrature(double int_val, double int_error){
+    addToBin( h_qt    , int_val , int_error);
+    addToBin( h_y     , int_val , int_error);
+    addToBin( h_qtVy  , int_val , int_error);
+}
+
 void plotter::FillResult(TermType term, double int_val, double int_error, double time){
     TH2D * h = 0 ;
     switch (term) {
@@ -511,6 +536,14 @@ plotter::~plotter(){
 }
 
 void plotter::Init(){
+    return;
+}
+
+void plotter::FillQuadrature(double int_val, double int_error){
+    return;
+}
+
+void plotter::addToBin(TH1* h, double int_val, double int_err){
     return;
 }
 

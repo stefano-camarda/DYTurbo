@@ -55,6 +55,7 @@ class plotter {
 
         void Init();
         bool IsInitialized(){return (h_qtVy!=0);};
+        void FillQuadrature(double int_val, double int_error); ///< Adding integration to proper bin
         void FillEvent(double p3[4], double p4[4], double wgt); ///<Normal filling of histograms.
         void FillRealDipole(double p3[4], double p4[4], double wgt,int nd); ///<Collect dipole kinematics and weights. Fill ai profiles.
         void FillRealEvent(TermType term = None); ///< for real filling without correlations. Need to FillRealDipole before.
@@ -69,6 +70,7 @@ class plotter {
     protected :
 #ifdef USEROOT
         void CalculateKinematics(double p3[4], double p4[4]);
+        void addToBin(TH1* h, double int_val, double int_err);
 
         /// shared space
         //std::shared_ptr<int> sh_N;
