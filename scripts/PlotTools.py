@@ -362,8 +362,9 @@ class PlotTools:
                     err =  hlist[0].GetBinError(ibin)
                     val =  hlist[0].GetBinContent(ibin)
                     unc = 1
-                    pos = neg = sym = 0
+                    pos = neg = sym = err_other = 0
                     try :
+                        err_other = hlist[1].GetBinError(ibin)
                         pos = hlist[1].GetBinContent(ibin)
                         neg = hlist[2].GetBinContent(ibin)
                         sym= (abs(pos - neg))/2.
@@ -372,11 +373,12 @@ class PlotTools:
                     except IndexError:
                         pass
                     if relative and val!=0 : unc/=abs(val)
-                    if   utype=="stat"  : unc *= sqrt(abs(val))
-                    elif utype=="error" : unc *= err
-                    elif utype=="pos"   : unc *= pos
-                    elif utype=="neg"   : unc *= neg
-                    elif utype=="sym"   : unc *= sym
+                    if   utype=="stat"   : unc *= sqrt(abs(val))
+                    elif utype=="error"  : unc *= err
+                    elif utype=="errOth" : unc *= err_other
+                    elif utype=="pos"    : unc *= pos
+                    elif utype=="neg"    : unc *= neg
+                    elif utype=="sym"    : unc *= sym
                     else : raise ValueError("Uknown error type {}".format(utype))
                     #print ibin,unc
                     h.SetBinContent(ibin,unc)
@@ -885,7 +887,7 @@ class PlotTools:
     #     return [c.GetRed(),c.GetGreen(),c.GetBlue()]
 
     # def MakeBrighterRGB(s, inColorRGB, q=0.3) :
-    #     #HEX = 255 # if your input is 0..1=>1, if 0..256=>1
+    #     #HEX = 255 # if your insput is 0..1=>1, if 0..256=>1
     #     ## inRGB = map(ord, inColorRGB.decode('hex') ) # makee 3-tuple of numbers 0..256
     #     #inRGB = inColorRGB # 
     #     #print inRGB, q
@@ -934,6 +936,8 @@ class PlotTools:
         #print
 
         return TColor.GetColor(R,G,B)
+
+
 
     def AutoCompareColor(s, i_col, N_col) :
         step = 1./(N_col)
@@ -1424,12 +1428,12 @@ class PlotTools:
             return s.make_color_transparent(nonA,alpha)
         return TColor.GetColor("#"+coltext)
 
-    def niceGradient(s):
+    def MakeNiceGradient(s):
         import numpy as np
         # red -- light yellow -- blue
-        Red    = [ 165 , 215 , 244 , 253 , 254 , 224 , 171 , 116 , 69  , 49  ]
-        Green  = [ 0   , 48  , 109 , 174 , 224 , 243 , 217 , 173 , 117 , 54  ]
-        Blue   = [ 38  , 39  , 67  , 97  , 144 , 248 , 233 , 209 , 180 , 149 ]
+        Red    = [ 165 , 215 , 244 , 253 , 254 , 224 , 171 , 116 , 69  , 49  ][::-1]
+        Green  = [ 0   , 48  , 109 , 174 , 224 , 243 , 217 , 173 , 117 , 54  ][::-1]
+        Blue   = [ 38  , 39  , 67  , 97  , 144 , 248 , 233 , 209 , 180 , 149 ][::-1]
         Length = [ 0   , 1   , 2   , 3   , 4   , 5   , 6   , 7   , 8   , 9   ] 
         ln = len(Length)
         TColor.CreateGradientColorTable(
@@ -1634,7 +1638,8 @@ class PlotTools:
             texfile.write(textxt)
             texfile.close()
             # compile tex file
-            os.system("cd {}; pdflatex -interaction=batchmode {}.tex > /dev/null".format(s.imgDir, fname))
+            os.system("cd {}; pdflatex -interaction=batchmode {}.tex  > /dev/null".format(s.imgDir, fname))
+            os.system("cd {}; pdflatex -interaction=batchmode {}.tex  > /dev/null".format(s.imgDir, fname))
 
 
 
@@ -1737,4 +1742,10 @@ kAzure=860
 #   shade 3 = #A4ABB2
 #   shade 4 = #88919A
 #
+
+
+
+
+
+### Color Brewer 2.0
 
