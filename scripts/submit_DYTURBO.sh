@@ -105,6 +105,17 @@ prepare_in(){
     if [[ $terms =~ RES3D  ]]; then resumdim=3; fi;
     if [[ $terms =~ CT3D   ]]; then    ctdim=3; fi;
     if [[ $terms =~ CT2D   ]]; then    ctdim=2; fi;
+    setloqtbin=$loqtbin
+    sethiqtbin=$hiqtbin
+    setloybin=$loybin
+    sethiybin=$hiybin
+    if [[ $terms =~ 3D ]];
+    then
+        setloqtbin=` seq -s' ' $loqtbin 0.5 $hiqtbin `
+        setloybin=`  seq -s' ' $loybin  0.2 $hiybin  `
+        sethiqtbin=
+        sethiybin=
+    fi
     # order check -- trust user
     # order=1
     # if [[ $pdfset == CT10nlo    ]]; then order=1; fi;
@@ -202,10 +213,10 @@ prepare_in(){
     if [[ $job_name =~ ^dyres_   ]]; then in_tmpl=$dyturbo_project/scripts/DYRES_TMPL.in;   fi;
     if [[ $job_name =~ ^mcfm_    ]]; then in_tmpl=$dyturbo_project/scripts/MCFM_TMPL.in;    fi;
     cp $in_tmpl tmp
-    sed -i "s|LOQTBIN|$loqtbin|g           ;
-            s|HIQTBIN|$hiqtbin|g           ;
-            s|LOYBIN|$loybin|g             ;
-            s|HIYBIN|$hiybin|g             ;
+    sed -i "s|LOQTBIN|$setloqtbin|g           ;
+            s|HIQTBIN|$sethiqtbin|g           ;
+            s|LOYBIN|$setloybin|g             ;
+            s|HIYBIN|$sethiybin|g             ;
             s|SETSEED|$random_seed|g       ;
             s|SETMLO|$lomass|g             ;
             s|SETMHI|$himass|g             ;
@@ -232,6 +243,11 @@ prepare_in(){
             s|SETIH2|$ih2|g                ;
             s|SETSROOT|$sroot|g            ; " tmp
     mv tmp $in_file
+}
+
+
+splitBins(){
+    echo -n `seq $1 $3 $2`
 }
 
 prepare_tarbal(){
@@ -501,6 +517,17 @@ submit_Wwidth(){
     done
 }
 
+splitedBin(){
+    lo=$1
+    hi=$2
+    N=$3
+    i=$4
+    j=$5
+    step=$(( ($hi - $lo) / $N ))
+    edge=$(( $lo + $step * ($i+$j -1 ) ))
+    echo -n $edge
+}
+
 submit_allProg(){
     # ask about running/submitting
     DRYRUN=echo 
@@ -515,6 +542,10 @@ submit_allProg(){
     hiqtbin=100
     loybin=0
     hiybin=5
+    fulllloqtbin=$loqtbin
+    fulllhiqtbin=$hiqtbin
+    fulllloybin=$loybin
+    fulllhiybin=$hiybin
     collider=lhc7
     random_seed=100101
     startSeed=100201
@@ -522,13 +553,13 @@ submit_allProg(){
     gpar=.83175
     # testing the array submission
     batch_template=$dyturbo_project/scripts/run_DYTURBO_Array_TMPL.sh
-    for program in dyres #  dyturbo dyres mcfm
+    for program in dyturbo #  dyturbo dyres mcfm
     do
         for process in wm # wp wm z0
         do
             makelepcuts=false
             #if [[ $process =~ z0 ]]; then makelepcuts=true; fi
-            for order in 2 # 3
+            for order in 3 # 3
             do
                 # set PDF ?
                 pdfset=CT10nlo
@@ -539,10 +570,13 @@ submit_allProg(){
                 if [[ $program =~ ^dyturbo ]] 
                 then
                     cubacores=8
-                    termlist="RES CT LO"
+                    #termlist="RES CT LO"
                     #if [[ $order == 2 ]]; then termlist="RES CT REAL VIRT"; fi;
-                    if [[ $order == 2 ]]; then termlist="REAL"; fi;
-                    seedlist="1000-1999"
+                    #if [[ $order == 2 ]]; then termlist="REAL"; fi;
+                    #seedlist="1000-1999"
+                    termlist="RES3D CT3D"
+                    if [[ $order == 2 ]]; then termlist="RES3D CT3D"; fi;
+                    seedlist=1000
                 fi
                 if [[ $program =~ ^dyres ]] 
                 then
@@ -559,10 +593,29 @@ submit_allProg(){
                 fi
                 for terms in $termlist
                 do
-                    random_seed=seed
-                    qtregion=`echo qt${loqtbin}${hiqtbin}y${loybin}${hiybin}t${terms} | sed "s/\.//g;s/ //g"`
-                    prepare_script
-                    submit_job
+                    # for qt/y splits
+                    NsplitQT=1
+                    NsplitY=1
+                    if [[ $terms =~ 3D ]]
+                    then
+                        NsplitQT=4
+                        NsplitY=5
+                    fi
+                    for iqt in `seq $NsplitQT`
+                    do
+                        for iy in `seq $NsplitY`
+                        do
+                            #
+                            random_seed=seed
+                            loqtbin=` splitedBin $fulllloqtbin $fulllhiqtbin $NsplitQT $iqt 0`
+                            hiqtbin=` splitedBin $fulllloqtbin $fulllhiqtbin $NsplitQT $iqt 1`
+                            loybin=`  splitedBin $fulllloybin  $fulllhiybin  $NsplitY  $iy  0`
+                            hiybin=`  splitedBin $fulllloybin  $fulllhiybin  $NsplitY  $iy  1`
+                            qtregion=`echo qt${loqtbin}${hiqtbin}y${loybin}${hiybin}t${terms} | sed "s/\.//g;s/ //g"`
+                            prepare_script
+                            submit_job
+                        done
+                    done
                 done
             done
         done
@@ -592,7 +645,8 @@ submit_grid(){
     variation=0
     gpar=.83175
     program=dyturbo
-    pdfset=WZZPT-CT10; order=2;
+    pdfset=CT10nnlo; order=2;
+    #pdfset=WZZPT-CT10; order=2;
     #pdfset=ZPT-CT10; order=2;
     #
     gridv=v`date +%s`
@@ -656,6 +710,7 @@ clear_results(){
 clear_files
 clear_results
 #submit_Z_dyturbo
-#submit_allProg
+submit_allProg
 #submit_Wwidth
-submit_grid
+#submit_grid
+
