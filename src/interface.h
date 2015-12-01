@@ -9,7 +9,7 @@
 
 extern "C" {
 
-    // rewrited functions
+    // rewritten functions
     double resumm_(double &costh, double &mm, double &qtt, double &yy, int& mode);
     void setup_();
     void dyinit_();
@@ -18,7 +18,7 @@ extern "C" {
     void gaussinit_();
     double dyalphas_(double &q, double &amz, int &nloop);
     int cuts_(double p[4][12], int &njet);
-    int cutsold_(double p[4][12], int &njet);
+  //int cutsold_(double p[4][12], int &njet);
 
     void breitw_(double& x1, double& mminsq, double& mmaxsq, double& rmass, double& rwidth, double& msq, double& wt);
     void boost_(double& mass, double p1[],double p_in[], double p_out[]);
