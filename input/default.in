@@ -86,6 +86,8 @@ vegasncallsVIRT  = 100 #00000 # only for virt 8d vegas integration
 
 # total or with lepton cuts
 makelepcuts = false
+lptcut = 20
+lycut = 2.5
 fiducial = 0
 
 # integration types and settings for costh phi_lep phase space
@@ -114,6 +116,8 @@ HackBinnerToFiller = false # debug the integration (need no parallelization, ful
 opts_approxpdf = 0
 # number of intervals for integration of PDF moments, relevant only for opts_approxpdf = 0
 opts_pdfintervals = 100
+
+PDFerrors = false
 
 # binning
 

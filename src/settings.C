@@ -9,7 +9,7 @@
 settings opts;
 binning bins;
 
-void settings::init()
+/*void settings::init()
 {
   
   //Z
@@ -22,7 +22,7 @@ void settings::init()
   mlow = 66.;
   mhigh = 116.;
 
-  /*
+
   //W
   //resonance mass and width (used for breit wigner unweighting)
   rmass = 80.385;
@@ -32,7 +32,7 @@ void settings::init()
   yhigh = 5.;
   mlow = 10.;
   mhigh = 1000.;
-  */
+
   
   //type of integration
   int2d = false;
@@ -89,6 +89,7 @@ void settings::init()
   //Set to 0 to use exact PDFs and straight line contour in the complex plane for the Mellin inversion
   opts_.approxpdf_ = 0;
 }
+*/
 
 void settings::readfromfile(const string fname){
     //read input settings from file
@@ -150,6 +151,8 @@ void settings::readfromfile(const string fname){
     vegasncallsREAL    = in.GetNumber ( "vegasncallsREAL" ); //10000
     vegasncallsVIRT    = in.GetNumber ( "vegasncallsVIRT" ); //10000
     makelepcuts        = in.GetBool   ( "makelepcuts"     ); //true
+    lptcut             = in.GetNumber ( "lptcut"          );
+    lycut              = in.GetNumber ( "lycut"          );
     cubaint            = in.GetBool   ( "cubaint"         ); //true    # integration with     Cuba       Suave
     trapezint          = in.GetBool   ( "trapezint"       ); //false   # trapezoidal rule     for        the     phi_lep     integration     and         semi-analytical for         costh
     quadint            = in.GetBool   ( "quadint"         ); //false   # quadrature  rule     for        the     phi_lep     integration     and         semi-analytical for         costh
@@ -164,7 +167,8 @@ void settings::readfromfile(const string fname){
     verbose            = in.GetBool   ( "verbose"         ); //false   # debug       and      time       profile costh       phi_lep         integration
     HackBinnerToFiller = in.GetBool   ( "HackBinnerToFiller"         ); //false   # debug       and      time       profile costh       phi_lep         integration
     useGamma           = in.GetBool ( "useGamma" );//
-    fiducial           = static_cast<settings::DetFiducial>( in.GetNumber( "fiducial" )); //0
+    fiducial           = static_cast<cuts::DetFiducial>( in.GetNumber( "fiducial" )); //0
+    PDFerrors           = in.GetBool ( "PDFerrors" );//
     opts_.approxpdf_    = in.GetNumber ( "opts_approxpdf" ); //0
     opts_.pdfintervals_ = in.GetNumber ( "opts_pdfintervals" ); //100
     opts_.fixedorder_ = fixedorder;
@@ -297,6 +301,7 @@ void settings::dumpAll(){
         dumpD("yhigh              ", yhigh               );
         dumpD("mlow               ", mlow                );
         dumpD("mhigh              ", mhigh               );
+        dumpB("useGamma           ", useGamma            );
         dumpI("intDimRes          ", intDimRes           );
         dumpB("int2d              ", int2d               );
         dumpB("int3d              ", int3d               );
@@ -339,6 +344,7 @@ void settings::dumpAll(){
         dumpB("HackBinnerToFiller ", HackBinnerToFiller  );
         dumpI("approxpdf          ", opts_.approxpdf_    );
         dumpI("pdfintervals       ", opts_.pdfintervals_ );
+        dumpB("PDFerrors          ", PDFerrors           );
     }
 
     if (print_masses){
@@ -393,199 +399,6 @@ void settings::dumpS( string var,string val){
 }
 void settings::dumpB( string var,bool val){
     printf( " %s = %s\n", var.c_str(), val ? "true" : "false" );
-}
-
-int cuts_(double p[4][12], int &njet){
-    double p3[4];
-    double p4[4];
-    for (int i=0; i<4; i++){
-        p3[i] = p[i][2];
-        p4[i] = p[i][3];
-    }
-    // because dyres expects opposite logic false=accept event
-    return !cuts(p3,p4);
-}
-
-
-/// fiducial cuts
-double getPt(double p[4]){
-    return sqrt((float)pow(p[0],2)+pow(p[1],2));
-}
-double getY(double p[4]){
-    return 0.5 *log((p[3] + p[2]) / (p[3] - p[2]));
-}
-double getEta(double p[4]){
-    return atanh(p[2]/sqrt((float) p[0]*p[0] + p[1]*p[1] + p[2]*p[2]));
-}
-double getMt(double p3[4], double p4[4]){
-    double p[4];
-    p[2]=p3[2]+p4[2];
-    p[3]=p3[3]+p4[3];
-    return sqrt((float)pow(p[3],2)-pow(p[2],2));
-}
-double getM(double p3[4], double p4[4]){
-    double p[4];
-    p[0] = p3[0] + p4[0];
-    p[1] = p3[1] + p4[1];
-    p[2] = p3[2] + p4[2];
-    p[3] = p3[3] + p4[3];
-    return sqrt(float(p[3]*p[3] - p[0]*p[0] - p[1]*p[1] - p[2]*p[2]));
-}
-
-bool fiducial_D0(double p3[4], double p4[4]){
-    // electrons only
-    double pt3 = getPt(p3);
-    if (pt3<25) return false;
-    double aeta3 = fabs(getEta(p3));
-    if (aeta3>2.5 || (aeta3>1.1 && aeta3<1.5) ) return false;
-    double pt4 = getPt(p4);
-    if (opts.nproc==3){ // z
-        if (pt4<25) return false;
-        double aeta4 = fabs(getEta(p4));
-        double m34 = getM(p3,p4);
-        if (aeta4>2.5 || (aeta4>1.1 && aeta4<1.5) ) return false;
-        if (m34 < 75) return false;
-        if (m34 > 105) return false;
-    } else { // W
-        if (pt4<25) return false;
-    }
-    return true; // keep
-}
-
-bool fiducial_CDF(double p3[4], double p4[4]){
-    //  muons
-    double PTCUT=20; // 20:muon, 25:electrons
-    double pt3 = getPt(p3);
-    if (pt3<PTCUT) return false;
-    double aeta3 = fabs(getEta(p3));
-    if (aeta3>1.0 ) return false;
-    //if (aeta3>2.0 || (aeta3>1.0 && aeta3<1.2) ) return false;
-    //if (aeta3<1.0 && pt3<25) return false;
-    double pt4 = getPt(p4);
-    if (opts.nproc==3){ // z
-        if (pt4<PTCUT) return false;
-        double aeta4 = fabs(getEta(p4));
-        if (aeta4>1.0 ) return false;
-        double m34 = getM(p3,p4);
-        if (m34 <  66.) return false;
-        if (m34 > 116.) return false;
-    } else { // W
-        if (pt4<PTCUT) return false;
-    }
-    return true; // keep
-    // electrons have pt3 25 pt4 25
-}
-
-bool fiducial_ATLAS(double p3[4], double p4[4]){
-    double pt3 = getPt(p3);
-    if (pt3<20) return false;
-    double aeta3 = fabs(getEta(p3));
-    if (aeta3>2.4 ) return false;
-    /* electron
-    if (aeta3>2.47 ) return false;
-    if (aeta3>1.37 && aeta3 < 1.52 ) return false;
-     */
-    double pt4 = getPt(p4);
-    if (opts.nproc==3){ // z
-        if (pt4<20) return false;
-        double aeta4 = fabs(getEta(p4));
-        if (aeta4>2.4 ) return false;
-        double m34 = getM(p3,p4);
-        if (m34 <  66.) return false;
-        if (m34 > 116.) return false;
-    } else { // W
-        if (pt4<25) return false;
-        double mt = getMt(p3,p4);
-        if (mt<40) return false;
-    }
-    return true; // keep
-}
-
-bool fiducial_CMS7(double p3[4], double p4[4]){
-    // electron pt 25
-    // electron eta 0 < aeta < 1.44
-    // electron eta 1.57 < aeta < 2.5
-    double pt3 = getPt(p3);
-    if (pt3<25) return false;
-    double aeta3 = fabs(getEta(p3));
-    if (aeta3>2.1 ) return false;
-    double pt4 = getPt(p4);
-    if (opts.nproc==3){ // z
-        if (pt4<25) return false;
-        double aeta4 = fabs(getEta(p4));
-        if (aeta4>2.1 ) return false;
-        double m34 = getM(p3,p4);
-        if (m34 <  60.) return false;
-        if (m34 > 120.) return false;
-    } else { // W
-        //if (pt4<25) return false;
-        //double mt = getMt(p3,p4);
-        //if (mt<40) return false;
-        return true;
-    }
-    return true; // keep
-}
-
-bool fiducial_CMS8(double p3[4], double p4[4]){
-    // electron pt 25
-    // electron eta 0 < aeta < 1.44
-    // electron eta 1.57 < aeta < 2.5
-    double pt3 = getPt(p3);
-    if (pt3<25) return false;
-    double aeta3 = fabs(getEta(p3));
-    if (aeta3>2.1 ) return false;
-    double pt4 = getPt(p4);
-    if (opts.nproc==3){ // z
-        if (pt4<25) return false;
-        double aeta4 = fabs(getEta(p4));
-        if (aeta4>2.1 ) return false;
-        double m34 = getM(p3,p4);
-        if (m34 <  60.) return false;
-        if (m34 > 120.) return false;
-    } else { // W
-        //if (pt4<25) return false;
-        //double mt = getMt(p3,p4);
-        //if (mt<40) return false;
-        return true;
-    }
-    return true; // keep
-}
-
-bool decide_fiducial( double p3[4], double p4[4] ){
-  switch (opts.fiducial){
-      case settings::D0    : return fiducial_D0    (p3,p4); break;
-      case settings::CDF   : return fiducial_CDF   (p3,p4); break;
-      case settings::ATLAS : return fiducial_ATLAS (p3,p4); break;
-      case settings::CMS7  : return fiducial_CMS7  (p3,p4); break;
-      case settings::CMS8  : return fiducial_CMS8  (p3,p4); break;
-      case settings::GENEXP :
-      default:
-         // Fiducial type is zero so in normal run there is no cut. But,
-         // because for wwidth I need fiducial / full I decided to run one job
-         // with full integral (makelepcuts=false) and plots fill only fiducial
-         // (fiducial!=0). In case I want to run standard full-integral
-         // full-plotting I need to sef fiducial=0 and makecuts=false
-          if (!opts.makelepcuts) return true; //< so this is here for plotting.
-          double pt3 = sqrt((float)pow(p3[0],2)+pow(p3[1],2));
-          if (pt3 < 20)
-              return false;
-          double pt4 = sqrt((float)pow(p4[0],2)+pow(p4[1],2));
-          if (pt4 < 20)
-              return false;
-          double y3 = 0.5 *log((p3[3] + p3[2]) / (p3[3] - p3[2]));
-          if (fabs(y3) > 2.4)
-              return false;
-          double y4 = 0.5 *log((p4[3] + p4[2]) / (p4[3] - p4[2]));
-          if (fabs(y4) > 2.4)
-              return false;
-  }
-  return true;
-}
-
-bool cuts(double p3[4], double p4[4])
-{
-  if (!opts.makelepcuts) return true;
-  return decide_fiducial(p3,p4);
 }
 
 void binning::readfromfile(const string fname){

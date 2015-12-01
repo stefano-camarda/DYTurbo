@@ -1,8 +1,11 @@
 #ifndef settings_h
 #define settings_h
 
+#include "cuts.h"
+
 #include <vector>
 using namespace std;
+using namespace cuts;
 
 #include <algorithm>
 #include <map>
@@ -40,7 +43,7 @@ class settings
 {
 public:
   settings() {};
-  void init();
+  //void init();
   void readfromfile(const string fname);
   void initDyresSettings();
 
@@ -116,7 +119,9 @@ public:
   int vegasncallsREAL ;
   int vegasncallsVIRT ;
 
+  //lepton fiducial cuts
   bool makelepcuts;
+  double lptcut, lycut;
 
   //integration types and settings for costh phi_lep phase space
   bool cubaint;
@@ -131,6 +136,9 @@ public:
 
   //qt-recoil prescriptions
   bool qtrec_naive, qtrec_cs, qtrec_kt0;
+
+  // PDF errors
+  bool PDFerrors;
   
   //debug settings
   bool timeprofile;
@@ -138,8 +146,7 @@ public:
   bool HackBinnerToFiller;
 
   // fiducial switches
-  enum DetFiducial { GENEXP=0, D0=1, CDF=2, ATLAS=3, CMS7=4, CMS8=5};
-  DetFiducial fiducial;
+  cuts::DetFiducial fiducial;
 };
 
 class binning
@@ -160,7 +167,5 @@ class binning
 extern settings opts;
 extern binning bins;
 
-extern bool cuts(double p3[4], double p4[4]);
-bool decide_fiducial(double p3[4], double p4[4]);
 
 #endif

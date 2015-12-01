@@ -17,6 +17,7 @@
       integer ih1,ih2,j,k,nd,nmax,nmin,nvec,doFill
       double precision vector(mxdim),W,val
       double precision sqrts,fx1(-nf:nf),fx2(-nf:nf)
+      double precision dipfx1(0:maxd,-nf:nf),dipfx2(0:maxd,-nf:nf)
       double precision p(mxpart,4),pjet(mxpart,4),p1ext(4),p2ext(4)
       double precision ptrans(mxpart,4)
       double precision pswt,rscalestart,fscalestart
@@ -168,14 +169,12 @@ c----calculate the x's for the incoming partons from generated momenta
       xx1=two*(p(1,4)*p2ext(4)-p(1,3)*p2ext(3))/W
       xx2=two*(p(2,4)*p1ext(4)-p(2,3)*p1ext(3))/W
 
-      
       if ((xx1 .gt. 1d0) .or. (xx2 .gt. 1d0)) then
          realint=0d0
          return
       endif
 
-c--- Calculate the required matrix elements    
-
+c--- Calculate the required matrix elements  (dipscale(nd) are set appropriately in dipolesub.f)
       if(nproc.eq.3) then
        if (includereal) call qqb_z2jet(p,msq)
        call qqb_z1jet_gs(p,msqc)
@@ -184,75 +183,88 @@ c--- Calculate the required matrix elements
        call qqb_w1jet_gs(p,msqc)
       endif 
 
-      flux=fbGeV2/(two*xx1*xx2*W)
-
-      if(.not.dynamicscale) then
-         call fdist(ih1,xx1,dipscale(0),fx1)
-         call fdist(ih2,xx2,dipscale(0),fx2)
-      endif
-
+c     initialise xmsq to 0 for the real and all dipoles
       do nd=0,ndmax
          xmsq(nd)=0d0
       enddo
 
+      flux=fbGeV2/(two*xx1*xx2*W)
+
+c start here PDF loop
+c     evaluate PDFs
+      if (dynamicscale) then
+         do nd=0,ndmax
+            if (incldip(nd)) then
+               call fdist(ih1,xx1,dipscale(nd),dipfx1(nd,:))
+               call fdist(ih2,xx2,dipscale(nd),dipfx2(nd,:))
+            endif
+         enddo
+      else
+         call fdist(ih1,xx1,dipscale(0),fx1)
+         call fdist(ih2,xx2,dipscale(0),fx2)
+         do nd=0,ndmax
+            do j=-nf,nf
+               dipfx1(nd,j)=fx1(j)
+               dipfx2(nd,j)=fx2(j)
+            enddo
+         enddo
+      endif
+
+c     calculate xmsq for the real event
       if (includereal) then
          do j=-nf,nf
             do k=-nf,nf
-               xmsq(0)=xmsq(0)+fx1(j)*fx2(k)*msq(j,k)
+               xmsq(0)=xmsq(0)+dipfx1(0,j)*dipfx2(0,k)*msq(j,k)
             enddo
          enddo
       endif
       
+c     calculate xmsq for the dipole contributions
       do nd=1,ndmax
-         if(dynamicscale) then
-            call fdist(ih1,xx1,dipscale(nd),fx1)
-            call fdist(ih2,xx2,dipscale(nd),fx2)
-         endif
-         
-      do j=-nf,nf
-      do k=-nf,nf
-         xmsq(nd)=xmsq(nd)+fx1(j)*fx2(k)*(-msqc(nd,j,k))
-      enddo
+         do j=-nf,nf
+            do k=-nf,nf
+               xmsq(nd)=xmsq(nd)
+     .              +dipfx1(nd,j)*dipfx2(nd,k)*(-msqc(nd,j,k))
+            enddo
+         enddo
       enddo
 
-      enddo
-
+c     Sum up the real and all the dipole contributions
       realint=0d0
-
       xmsq(0)=xmsq(0)+xmsq(5)+xmsq(6)
 
 c---trial with weight of real alone
 c---first set up all dipole contributions
 c---this is the value of integral including subtractions
-      do nd=0,4
-c--- if this dipole has no contribution, go to end of loop
-        if (xmsq(nd) .eq. 0d0) cycle
-
-        xmsq(nd)=xmsq(nd)*flux*pswt/BrnRat
+c     
+      do nd=0,4                 !Start loop on real+dipoles contributions
+c---  if this dipole has no contribution, go to end of loop
+         if (xmsq(nd).eq.0d0) cycle
+         xmsq(nd)=xmsq(nd)*flux*pswt/BrnRat
          
 c---  add to total
-        realint=realint+xmsq(nd)
+         realint=realint+xmsq(nd)
 
 C---    Fill only if it's last iteration
-        if (doFill.ne.0) then
+         if (doFill.ne.0) then
             call getptildejet(nd,pjet)
             val=xmsq(nd)*wgt
-C            print*,'fort wt', val
-C            print*,'fort p3', pjet(3,1), pjet(3,2), pjet(3,3), pjet(3,4)
-C            print*,'fort p4', pjet(4,1), pjet(4,2), pjet(4,3), pjet(4,4)
-C---         store information per each dipole
+C           print*,'fort wt', val
+C           print*,'fort p3', pjet(3,1), pjet(3,2), pjet(3,3), pjet(3,4)
+C           print*,'fort p4', pjet(4,1), pjet(4,2), pjet(4,3), pjet(4,4)
+C---        store information per each dipole
             call hists_real_dipole(pjet(3,:),pjet(4,:),val,nd)
-        endif
-      enddo
+         endif
+      enddo                     !End loop on real+dipoles contributions
 
 C---  Fill only if it's last iteration
-        if (doFill.ne.0) then
-C            val=realint*wgt
-C            call hists_fill(p(3,:),p(4,:),val)
-C---         fill the dipole contribution to each bin separatelly
-            call hists_real_event()
-        endif
-
+      if (doFill.ne.0) then
+C        val=realint*wgt
+C        call hists_fill(p(3,:),p(4,:),val)
+C---     fill the dipole contribution to each bin separatelly
+         call hists_real_event()
+      endif
+c end here PDF loop
 
       return
 
