@@ -7,13 +7,13 @@
 #include <math.h>
 
 void pdfini_(){
-    printf(" CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC\n\n");
-    LHAPDF::initPDFSetByName(opts.LHAPDFset);
-    LHAPDF::initPDF(opts.LHAPDFmember);
-    // initialization of alphas
-    couple_.amz_=LHAPDF::alphasPDF(dymasses_.zmass_) ;
-    printf("\n");
-    //setalphas();
+  printf(" CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC\n\n");
+  LHAPDF::initPDFSetByName(opts.LHAPDFset);
+  LHAPDF::initPDF(opts.LHAPDFmember);
+  // initialization of alphas
+  couple_.amz_=LHAPDF::alphasPDF(dymasses_.zmass_) ;
+  printf("\n");
+  //setalphas();
 }
 
 void setpdf_(int& member){
@@ -32,20 +32,20 @@ void setalphas()
   qcdcouple_.gsq_=4*M_PI*qcdcouple_.as_;
 }
 
-void fdist_(int& ih, double& x, double& xmu, double* fx[13])
+void fdist_(int& ih, double& x, double& xmu, double fx[11])
 {
   double fPDF[13];
 
   //set to zero if x out of range
   if (x > 1.)
     for (int i = -5; i <=5; i++)
-      *fx[i]=0.;
+      fx[5+i]=0.;
  
   LHAPDF::xfx(x,xmu,fPDF);
   if (ih == 1) //proton
     for (int i = -5; i <=5; i++)
-      *fx[6+i]=fPDF[6+i]/x;
+      fx[5+i]=fPDF[6+i]/x;
   else if (ih == -1) //antiproton
     for (int i = -5; i <=5; i++)
-      *fx[6+i]=fPDF[6-i]/x;
+      fx[5+i]=fPDF[6-i]/x;
 }
