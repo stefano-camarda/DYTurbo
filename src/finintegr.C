@@ -55,7 +55,7 @@ integrand_t virtintegrand(const int &ndim, const double x[], const int &ncomp, d
   rvi[9] = rvi[7];
   
   dofill_.doFill_ = int(iter==last_iter);
-  f[0]  = virtint_(rvi,weight);
+  f[0] = virtint_(rvi,weight,f);
   
   return 0;
 }

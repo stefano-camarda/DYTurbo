@@ -187,7 +187,7 @@ c--- Calculate the required matrix elements  (dipscale(nd) are set appropriately
 
       flux=fbGeV2/(two*xx1*xx2*W)
 
-c start here PDF loop
+c     start PDF loop
       do npdf=0,totpdf-1
          call setpdf(npdf)
 c     intitialise xmsq to 0 for the real and all dipoles

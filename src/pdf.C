@@ -30,6 +30,7 @@ void pdfini_()
   LHAPDF::Info& cfg = LHAPDF::getConfig();
   cfg.set_entry("Verbosity", 0);
   //setalphas();
+  setg();
 }
 
 void setpdf_(int& member)
@@ -47,6 +48,15 @@ void setalphas()
   qcdcouple_.ason2pi_=qcdcouple_.as_/(2*M_PI);
   qcdcouple_.ason4pi_=qcdcouple_.as_/(4*M_PI);
   qcdcouple_.gsq_=4*M_PI*qcdcouple_.as_;
+}
+
+//set value of g
+void setg()
+{
+  LHAPDF::PDFInfo info(opts.LHAPDFset, opts.LHAPDFmember);
+  double gformfactor = info.get_entry_as<double>("g", opts.g_param);
+  cout << "g for this PDF set is " << gformfactor << endl;
+  opts.g_param = gformfactor;
 }
 
 void fdist_(int& ih, double& x, double& xmu, double fx[11])

@@ -35,6 +35,8 @@ void save_ybin();
 void save_result(vector <double> vals, double err);
 void close_file();
 
+void vadd(vector <double> &totvals, vector <double> vals);
+
 void normalise_result(double &value, double &error);
 
 double TotXSec ;
@@ -85,6 +87,7 @@ int main( int argc , const char * argv[])
   double costh, m, qt, y;
   double value, error, totval, toterror2;
   vector <double> vals;
+  vector <double> totvals;
 
   /**************************************/
   //Checks for resummed cross section
@@ -178,6 +181,9 @@ int main( int argc , const char * argv[])
 
       //Set integration boundaries
       totval=toterror2=0;
+      totvals.clear();
+      for (int i = 0; i < opts.totpdf; i++)
+	totvals.push_back(0);
       setbounds(opts.mlow, opts.mhigh, *qit, *(qit+1), *yit, *(yit+1) );//  opts.ylow, opts.yhigh);
       print_qtbin();
       print_ybin();
@@ -244,25 +250,28 @@ int main( int argc , const char * argv[])
           double e_time = clock_real();
           normalise_result(value,error);
           print_result(value,error,b_time,e_time);
-          save_result(vals,error);
           hists.FillResult( plotter::Real , value, error, e_time-b_time );
           totval += value;
           toterror2 += error*error;
+	  vadd(totvals,vals);
       }
       // virt part
       if (opts.doVIRT) {
           double b_time = clock_real();
-          virtintegr(value, error);
-          double e_time = clock_real();
+          virtintegr(vals, error);
+	  value = vals[0];
+	  double e_time = clock_real();
           normalise_result(value,error);
           print_result(value,error,b_time,e_time);
           hists.FillResult( plotter::Virt , value, error, e_time-b_time );
           totval += value;
           toterror2 += error*error;
+	  vadd(totvals,vals);
       }
       // total
       double ee_time = clock_real();
       print_result (totval, sqrt(toterror2), bb_time, ee_time);
+      save_result(totvals,sqrt(toterror2));
       hists.FillResult( plotter::Total ,  totval, sqrt(toterror2), ee_time-bb_time );
       cout << endl;
       }
@@ -401,4 +410,12 @@ void close_file()
 {
   outfile.close();
   system("mv results.txt temp.txt && column -t temp.txt > results.txt && rm temp.txt");
+}
+
+void vadd(vector <double> &totvals, vector <double> vals)
+{
+  vector<double>::iterator it = totvals.begin();
+  vector<double>::iterator i = vals.begin();
+  for (; it != totvals.end(); it++,i++)
+    *it += *i;
 }

@@ -273,7 +273,7 @@ extern "C" {
 
   double lowint_(double r[22], double &wgt);
   double realint_(double r[22], double &wgt, double f[]);
-  double virtint_(double r[22], double &wgt);
+  double virtint_(double r[22], double &wgt, double f[]);
   double countint_(double r[22], double &wgt);
 
   double lowinthst_(double r[22], double &wgt);
