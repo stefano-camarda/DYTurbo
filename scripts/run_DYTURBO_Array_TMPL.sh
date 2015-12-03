@@ -69,7 +69,8 @@ ln -sf input.in input.DAT
 if [[ JOBNAME_${LSB_JOBINDEX} =~ ^dyturbo_ ]]
 then
     /usr/bin/time -v ./dyturbo input.in #| tee OUTDIR/JOBNAME_${LSB_JOBINDEX}.log
-    if [[ JOBNAME =~ t*3D_ ]] 
+    if [[ JOBNAME =~ t*3D_ ]]
+    then
         CP results.root OUTDIR/JOBNAME_${LSB_JOBINDEX}.root
     else
         hadd -f results_merge.root results*.root
