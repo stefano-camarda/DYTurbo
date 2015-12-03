@@ -115,14 +115,14 @@ merge_pt_y(){
     echo
 }
 
-mergedir=results_merge/grid_151123
+mergedir=results_merge/grid_151201
 MERGER="./bin/merger -X"
 merge_grid(){
     DRYRUN=echo 
     DRYRUN=
     #griddownloads='results_grid/user.jcuth.*_0_* results_grid/group.phys-sm.*_5{1,2,3,4}_*'
     griddownloads=`echo results_grid/user.jcuth.*_0_* `
-    griddownloads="$griddownloads `echo results_grid/group.phys-sm.*_{wp,wm,z0}_*_5{1,2,3,4}_*`"
+    griddownloads="$griddownloads `echo results_grid/group.phys-sm.dyturbo_{wp,wm,z0}_*_4_*_seed.out_HIST`"
     #griddownloads="$griddownloads `echo results_grid/group.phys-sm.*_wm_*_5{1,2}_*`"
     #griddownloads="$griddownloads `echo results_grid/group.phys-sm.*_wp_*_5{1,2}_*`"
     #griddownloads="$griddownloads `echo results_grid/group.phys-sm.*_z0_*_5{1,2}_*`"
@@ -145,10 +145,9 @@ merge_grid(){
         else
             $DRYRUN $MERGER $outfile $griddir/*results_merge.root*
         fi
-
     done
-
 }
+
 merge_grid_TOT(){
     DRYRUN=echo 
     DRYRUN=
