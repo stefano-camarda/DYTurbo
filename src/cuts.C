@@ -3,6 +3,7 @@
 #include "interface.h"
 
 #include <iostream>
+#include <math.h>
 
 double cuts::getPt(double p[4]){
     return sqrt(pow(p[0],2)+pow(p[1],2));

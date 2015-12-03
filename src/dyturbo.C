@@ -73,9 +73,7 @@ int main( int argc , const char * argv[])
   bins.readfromfile(conf_file.c_str());
   //force number of cores to 0 (no parallelization)
   cubacores(opts.cubacores,1000000); // < move this to cubainit
-  //  void pippo=NULL;
-  //  cubaexit(exitfun,pippo); //< merge at the end of the run
-  cubaexit(exitfun,NULL); //< merge at the end of the run
+  cubaexit((void (*)()) exitfun,NULL); //< merge at the end of the run
   ///@todo: print out EW parameters and other settings
   // just a check
   opts.dumpAll();
@@ -402,5 +400,5 @@ void save_result(vector <double> vals, double err)
 void close_file()
 {
   outfile.close();
-  system("mv results.txt temp.txt && column -t temp.txt > results.txt");
+  system("mv results.txt temp.txt && column -t temp.txt > results.txt && rm temp.txt");
 }
