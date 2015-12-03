@@ -1,7 +1,7 @@
 #include "interface.h"
-//#include "LHAPDF/LHAPDF.h"
 #include "settings.h"
 #include "init.h"
+#include <math.h>
 
 //rewrite initialisation functions
 void dyturboinit()
