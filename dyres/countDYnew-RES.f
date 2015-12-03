@@ -28,7 +28,7 @@ C
       include 'rescoeff.f'
       include 'dynamicscale.f'
 C
-      integer ih1,ih2,j,k,l,nd,nmax,nmin,nvec,order,doFill
+      integer ih1,ih2,j,k,l,nd,nmax,nmin,nvec,order
       integer nproc
       common/nproc/nproc
       double precision vector(mxdim),W,val,xint
@@ -100,7 +100,6 @@ C
       data first/.true./
       save first,rscalestart,fscalestart
 
-      common/doFill/doFill
       logical binner
       external binner
       external hists_fill

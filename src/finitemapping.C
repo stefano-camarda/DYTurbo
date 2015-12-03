@@ -113,7 +113,8 @@ double dyreal(double m, double y, double qt, double phicm, double phiZ, double c
   rre[4] = phijj;                                  //phi jj
   rre[5] = costhjj;                                //costh jj
   begin_time = clock_real();
-  value = realint_(rre,wgt);
+  double f[opts.totpdf];
+  value = realint_(rre,wgt,f);
   end_time = clock_real();
   cout << "Real: " << value << "  " << "time " << end_time - begin_time << "s" << endl;
   //******************************************
@@ -220,7 +221,8 @@ double dyvirt(double m, double y, double qt, double phicm, double phiZ, double c
   //virtual dimension to be integrated
   rvi[9] = vz;
   begin_time = clock_real();
-  value = virtint_(rvi,wgt);
+  double f[opts.totpdf];
+  value = virtint_(rvi,wgt,f);
   end_time = clock_real();
   cout << "Virt: " << value << "  " << "time " << end_time - begin_time << "s" << endl;
   //******************************************

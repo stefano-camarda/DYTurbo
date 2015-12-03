@@ -57,14 +57,6 @@ CC
       double precision beta1,H2qqdelta,H2qqD0
       common/Hstcoeff/beta1,H2qqdelta,H2qqD0
 
-      logical isol
-      common/isol/isol
-
-C     Labels that identify the charged leptons
-
-      integer i1,i2
-      common/isolabel/i1,i2
-
       logical int
       common/int/int
 
@@ -146,8 +138,6 @@ C     Labels that identify the charged leptons
       flag=0
 
       lhapdfs=.false.
-
-      isol=.false.
 
       virtonly=.false.
       realonly=.false.
@@ -338,8 +328,6 @@ C
        plabel(6)='pp'
        n2=0
        n3=1
-       i1=4
-       i2=4
        nwz=1
        mass3=wmass
        width3=wwidth
@@ -364,8 +352,6 @@ C
        plabel(6)='pp'
        n2=0
        n3=1
-       i1=3
-       i2=3
        nwz=-1
        mass3=wmass
        width3=wwidth
@@ -393,8 +379,6 @@ C
        plabel(6)='pp'
        n2=0
        n3=1
-       i1=3
-       i2=4
        nwz=0
        mass3=zmass
        width3=zwidth

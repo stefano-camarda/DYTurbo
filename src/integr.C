@@ -364,7 +364,7 @@ void costhbound(double phi_lep, vector<double> &min, vector<double> &max)
   double c1 = -1;
   double c2 = +1;
   genl4p(c1, phi_lep);
-  if (cuts(p3, p4))
+  if (cuts::lep(p3, p4))
     {
       min.push_back(c1);
       status = true;
@@ -385,7 +385,7 @@ void costhbound(double phi_lep, vector<double> &min, vector<double> &max)
 		{
 		  double costh = i*hc+c1;
 		  genl4p(costh, phi_lep);
-		  if (!cuts(p3, p4))
+		  if (!cuts::lep(p3, p4))
 		    {
 		      tempmax = costh; //tempmax = costh_CS;
 		      c2 = i*hc+c1;
@@ -418,7 +418,7 @@ void costhbound(double phi_lep, vector<double> &min, vector<double> &max)
 		{
 		  double costh = i*hc+c1;
 		  genl4p(costh, phi_lep);
-		  if (cuts(p3, p4))
+		  if (cuts::lep(p3, p4))
 		    {
 		      tempmin = costh; //tempmin = costh_CS;
 		      c2 = i*hc+c1;
@@ -631,7 +631,7 @@ integrand_t thphiintegrand(const int &ndim, const double x[], const int &ncomp, 
   */
 
   genl4p(costh, phi_lep);
-  if (cuts(p3, p4))
+  if (cuts::lep(p3, p4))
     {
       //evaluate couplings using cos(theta) in CS framework
       double costh_CS = costhCS();

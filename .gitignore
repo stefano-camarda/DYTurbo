@@ -11,6 +11,7 @@ lhapdf6/
 tags
 src/dyturbo
 src/dytests
+src/merger
 Makefile.in
 Makefile
 autom4te.cache/

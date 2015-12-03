@@ -1,4 +1,4 @@
-
+//comment: there is no need to require cuts here (decide_fiducial)
 #include "plotter.h"
 plotter hists;
 

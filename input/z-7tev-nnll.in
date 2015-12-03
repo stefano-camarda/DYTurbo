@@ -64,6 +64,8 @@ vegasncallsVIRT  = 100000000 # only for virt 8d vegas integration
 
 # total or with lepton cuts
 makelepcuts = true
+lptcut = 20
+lycut = 2.4
 
 # integration types and settings for costh phi_lep phase space
 cubaint   = false   # integration with Cuba Suave

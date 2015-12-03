@@ -1,4 +1,4 @@
-      double precision function virtint(r,wgt)
+      double precision function virtint(r,wgt,f)
       implicit none
       include 'constants.f'
       include 'noglue.f'
@@ -23,18 +23,15 @@
       include 'limits.f'
       include 'b0.f'
       include 'dynamicscale.f'
+      include 'options.f'
       double precision mqq(0:2,fn:nf,fn:nf)
       double precision msqx(0:2,-nf:nf,-nf:nf,-nf:nf,-nf:nf)
       double precision msqx_cs(0:2,-nf:nf,-nf:nf)
       double precision AP(-1:1,-1:1,3)
-CC
-CC    Variables to be passed to the counterterm
-CC      
-      double precision qt2,qq2,shat,dot
-      common/count/qt2,qq2,shat
-CC
+      double precision qt2,qq2,dot
+      double precision f(*)
 
-      integer ih1,ih2,j,k,cs,nvec,is,ia,ib,ic,doFill
+      integer ih1,ih2,j,k,cs,nvec,is,ia,ib,ic
       double precision p(mxpart,4),pjet(mxpart,4),r(mxdim),W,sqrts,xmsq,
      . val,fx1(-nf:nf),fx2(-nf:nf),fx1z(-nf:nf),fx2z(-nf:nf)
       double precision pswt,xjac,rscalestart,fscalestart,
@@ -54,7 +51,6 @@ CC
       common/mypart/mypart
       integer nproc
       common/nproc/nproc
-      common/doFill/doFill
 
       data p/48*0d0/
       data nshot/1/
@@ -64,17 +60,21 @@ CC
       external binner
       external hists_fill
 
-      if (first) then
-         first=.false.
-         rscalestart=scale
-         fscalestart=facscale
-      endif
+      integer npdf
+      double precision gsqcentral
 
-      ntotshot=ntotshot+1
+c      if (first) then
+c         first=.false.
+c         rscalestart=scale
+c         fscalestart=facscale
+c      endif
+
       virtint=0d0
+      do npdf=0,totpdf-1
+         f(npdf+1)=0d0
+      enddo
 
       W=sqrts**2
-
 
       npart=3   
       call gen3(r,p,pswt,*999)
@@ -93,16 +93,10 @@ c      print*
       qq2=2*dot(p,3,4)
       qt2=p(5,1)**2+p(5,2)**2  
     
-
-      shat=2*dot(p,1,2)
-      
-
       nvec=npart+2
 
 C     Dynamic scale
-
       if(dynamicscale) call scaleset(qq2)
-
 
       call dotem(nvec,p,s)
 
@@ -114,30 +108,24 @@ c----reject event if any s(i,j) is too small
 c--- see whether this point will pass cuts - if it will not, do not
 c--- bother calculating the matrix elements for it, instead bail out
       if (includedipole(0,p) .eqv. .false.) then
-        goto 999
+         return
       endif
+
+      if (pdferr) then
+         call setpdf(0)
+      endif
+      gsqcentral=gsq
      
       z=r(10)**2
-      if (nshot .eq. 1) z=0.95d0
       xjac=two*dsqrt(z)
 
       omz=1d0-z
 
       flux=fbGeV2/(2d0*xx(1)*xx(2)*W)
 
-c--- to test poles, we need colourchoice=0, but save real value
-      if (nshot .eq. 1) then
-        rvcolourchoice=colourchoice
-        colourchoice=0
-      endif
-      
-   12 continue
-c--- point to restart from when checking epsilon poles
-
 c--- correction to epinv from AP subtraction when mu_FAC != mu_REN,
 c--- corresponding to subtracting -1/epinv*Pab*log(musq_REN/musq_FAC)
       epcorr=epinv+2d0*dlog(scale/facscale)
-          
 
       AP(q,q,1)=+ason2pi*Cf*1.5d0*epcorr
       AP(q,q,2)=+ason2pi*Cf*(-1d0-z)*epcorr
@@ -171,21 +159,12 @@ c--- corresponding to subtracting -1/epinv*Pab*log(musq_REN/musq_FAC)
       do is=1,3
         Q1(ia,ib,ic,is)=0d0
         Q2(ia,ib,ic,is)=0d0
-c      do cs=0,2
-c        R1(ia,ib,ic,cs,is)=0d0
-c        R2(ia,ib,ic,cs,is)=0d0
-c      do j=1,8
-c        S1(ia,ib,ic,j,cs,is)=0d0
-c        S2(ia,ib,ic,j,cs,is)=0d0
-c      enddo
-c      enddo
       enddo
       enddo
       enddo
       enddo
      
 c--- Calculate the required matrix elements      
-
       if(nproc.eq.3) then 
        call qqb_z1jet(p,msq)
        call qqb_z1jet_v(p,msqv)
@@ -196,30 +175,31 @@ c--- Calculate the required matrix elements
        call qqb_w1jet_z(p,z)
       endif
 
-            
-  777 continue    
-      xmsq=0d0
+c     start PDF loop
+      do npdf=0,totpdf-1
+         call setpdf(npdf)
+c     intitialise xmsq to 0
+         xmsq=0d0
 
-      call fdist(ih1,xx(1),facscale,fx1)
-      call fdist(ih2,xx(2),facscale,fx2)
+         call fdist(ih1,xx(1),facscale,fx1)
+         call fdist(ih2,xx(2),facscale,fx2)
 
-      do j=-nf,nf
-      fx1z(j)=0d0
-      fx2z(j)=0d0
-      enddo
+         do j=-nf,nf
+            fx1z(j)=0d0
+            fx2z(j)=0d0
+         enddo
             
-      if (z .gt. xx(1)) then
-         x1onz=xx(1)/z
-         call fdist(ih1,x1onz,facscale,fx1z)
-      endif
-      if (z .gt. xx(2)) then
-         x2onz=xx(2)/z
-         call fdist(ih2,x2onz,facscale,fx2z)
-      endif         
+         if (z .gt. xx(1)) then
+            x1onz=xx(1)/z
+            call fdist(ih1,x1onz,facscale,fx1z)
+         endif
+         if (z .gt. xx(2)) then
+            x2onz=xx(2)/z
+            call fdist(ih2,x2onz,facscale,fx2z)
+         endif         
       
       do j=-nf,nf
       do k=-nf,nf
-
       
       if (ggonly) then
       if ((j.ne.0) .or. (k.ne.0)) goto 20
@@ -233,9 +213,6 @@ c--- Calculate the required matrix elements
       if ((j.eq.0) .or. (k.eq.0)) goto 20
       endif
 
-
-      tmp=xmsq
-
 c--- The variables R1 and R2 provide the Regular and Plus pieces associated
 c--- with radiation from leg 1 (R1(a,b,c,cs,is)) and leg 2 (R2(a,b,c,cs,is))
 c--- In each case the parton labelling is using the normal QM notation of 
@@ -247,12 +224,11 @@ c--- There is no label for he or she who is emitted.
 c--- Note that in general each piece will be composed of many different
 c--- dipole contributions
 
-
 c--- SUM BY TOTAL MATRIX ELEMENTS: everything else
 C--QQ
       if     ((j .gt. 0) .and. (k.gt.0)) then
       xmsq=xmsq+(msqv(j,k)
-     & + msq(j,k)*(one+AP(q,q,1)-AP(q,q,3)+Q1(q,q,q,1)-Q1(q,q,q,3)
+     & + msq(j,k)*(AP(q,q,1)-AP(q,q,3)+Q1(q,q,q,1)-Q1(q,q,q,3)
      &                +AP(q,q,1)-AP(q,q,3)+Q2(q,q,q,1)-Q2(q,q,q,3)))
      &                *fx1(j)*fx2(k)
      & +(msq(j,k)*(AP(q,q,2)+AP(q,q,3)+Q1(q,q,q,2)+Q1(q,q,q,3))
@@ -262,7 +238,7 @@ C--QQ
 C--QbarQbar
       elseif ((j .lt. 0) .and. (k.lt.0)) then
       xmsq=xmsq+(msqv(j,k)
-     & + msq(j,k)*(one+AP(a,a,1)-AP(a,a,3)+Q1(a,a,a,1)-Q1(a,a,a,3)
+     & + msq(j,k)*(AP(a,a,1)-AP(a,a,3)+Q1(a,a,a,1)-Q1(a,a,a,3)
      &                +AP(a,a,1)-AP(a,a,3)+Q2(a,a,a,1)-Q2(a,a,a,3)))
      &                *fx1(j)*fx2(k)
      & +(msq(j,k)*(AP(a,a,2)+AP(a,a,3)+Q1(a,a,a,2)+Q1(a,a,a,3))
@@ -272,7 +248,7 @@ C--QbarQbar
 C--QQbar
       elseif ((j .gt. 0) .and. (k.lt.0)) then
       xmsq=xmsq+(msqv(j,k)
-     & + msq(j,k)*(one+AP(q,q,1)-AP(q,q,3)+Q1(q,q,a,1)-Q1(q,q,a,3)
+     & + msq(j,k)*(AP(q,q,1)-AP(q,q,3)+Q1(q,q,a,1)-Q1(q,q,a,3)
      &                +AP(a,a,1)-AP(a,a,3)+Q2(a,a,q,1)-Q2(a,a,q,3)))
      &                *fx1(j)*fx2(k)
      & +(msq(j,k)*(AP(q,q,2)+AP(q,q,3)+Q1(q,q,a,3)+Q1(q,q,a,2))
@@ -283,7 +259,7 @@ C--QQbar
       elseif ((j .lt. 0) .and. (k.gt.0)) then
 C--QbarQ
       xmsq=xmsq+(msqv(j,k)
-     & +msq(j,k)*(one+AP(a,a,1)-AP(a,a,3)+Q1(a,a,q,1)-Q1(a,a,q,3)
+     & +msq(j,k)*(AP(a,a,1)-AP(a,a,3)+Q1(a,a,q,1)-Q1(a,a,q,3)
      &               +AP(q,q,1)-AP(q,q,3)+Q2(q,q,a,1)-Q2(q,q,a,3)))
      &               *fx1(j)*fx2(k)
      & +(msq(j,k)*(AP(a,a,3)+AP(a,a,2)+Q1(a,a,q,3)+Q1(a,a,q,2))
@@ -293,13 +269,12 @@ C--QbarQ
 
       elseif ((j .eq. g) .and. (k.eq.g)) then
 C--gg
-    
        msq_qg=msq(+5,g)+msq(+4,g)+msq(+3,g)+msq(+2,g)+msq(+1,g)
      &       +msq(-5,g)+msq(-4,g)+msq(-3,g)+msq(-2,g)+msq(-1,g)
        msq_gq=msq(g,+5)+msq(g,+4)+msq(g,+3)+msq(g,+2)+msq(g,+1)
      &       +msq(g,-5)+msq(g,-4)+msq(g,-3)+msq(g,-2)+msq(g,-1)
        xmsq=xmsq+(msqv(g,g)
-     &  +msq(g,g)*(one+AP(g,g,1)-AP(g,g,3)+Q1(g,g,g,1)-Q1(g,g,g,3)
+     &  +msq(g,g)*(AP(g,g,1)-AP(g,g,3)+Q1(g,g,g,1)-Q1(g,g,g,3)
      &                +AP(g,g,1)-AP(g,g,3)+Q2(g,g,g,1)-Q2(g,g,g,3)))
      &                *fx1(g)*fx2(g)
      &  +(msq(g,g)*(AP(g,g,2)+AP(g,g,3)+Q1(g,g,g,2)+Q1(g,g,g,3))
@@ -313,7 +288,7 @@ C--gQ
        msq_aq=msq(-1,k)+msq(-2,k)+msq(-3,k)+msq(-4,k)+msq(-5,k)
        msq_qq=msq(+1,k)+msq(+2,k)+msq(+3,k)+msq(+4,k)+msq(+5,k)
        xmsq=xmsq+(msqv(g,k)
-     & +msq(g,k)*(one+AP(g,g,1)-AP(g,g,3)+Q1(g,g,q,1)-Q1(g,g,q,3)
+     & +msq(g,k)*(AP(g,g,1)-AP(g,g,3)+Q1(g,g,q,1)-Q1(g,g,q,3)
      &               +AP(q,q,1)-AP(q,q,3)+Q2(q,q,g,1)-Q2(q,q,g,3)))
      &               *fx1(g)*fx2(k)
      & +(msq(g,k)*(AP(g,g,2)+AP(g,g,3)+Q1(g,g,q,2)+Q1(g,g,q,3))
@@ -327,7 +302,7 @@ C--gQbar
        msq_qa=msq(+1,k)+msq(+2,k)+msq(+3,k)+msq(+4,k)+msq(+5,k)
        msq_aa=msq(-1,k)+msq(-2,k)+msq(-3,k)+msq(-4,k)+msq(-5,k)
        xmsq=xmsq+(msqv(g,k)
-     & +msq(g,k)*(one+AP(g,g,1)-AP(g,g,3)+Q1(g,g,a,1)-Q1(g,g,a,3)
+     & +msq(g,k)*(AP(g,g,1)-AP(g,g,3)+Q1(g,g,a,1)-Q1(g,g,a,3)
      &               +AP(a,a,1)-AP(a,a,3)+Q2(a,a,g,1)-Q2(a,a,g,3)))
      &               *fx1(g)*fx2(k)
      & +(msq(g,k)*(AP(g,g,2)+AP(g,g,3)+Q1(g,g,a,2)+Q1(g,g,a,3))
@@ -342,8 +317,8 @@ C--Qg
        msq_qa=msq(j,-1)+msq(j,-2)+msq(j,-3)+msq(j,-4)+msq(j,-5)
        msq_qq=msq(j,+1)+msq(j,+2)+msq(j,+3)+msq(j,+4)+msq(j,+5)
        xmsq=xmsq+(msqv(j,g)
-     & +msq(j,g)*(one
-     &               +AP(q,q,1)-AP(q,q,3)+Q1(q,q,g,1)-Q1(q,q,g,3)
+     & +msq(j,g)*(
+     &                AP(q,q,1)-AP(q,q,3)+Q1(q,q,g,1)-Q1(q,q,g,3)
      &               +AP(g,g,1)-AP(g,g,3)+Q2(g,g,q,1)-Q2(g,g,q,3)))
      &               *fx1(j)*fx2(g)
      & +(msq(j,g)*(AP(q,q,2)+AP(q,q,3)+Q1(q,q,g,2)+Q1(q,q,g,3))
@@ -356,7 +331,7 @@ C--Qbarg
        msq_aq=msq(j,+1)+msq(j,+2)+msq(j,+3)+msq(j,+4)+msq(j,+5)
        msq_aa=msq(j,-1)+msq(j,-2)+msq(j,-3)+msq(j,-4)+msq(j,-5)
        xmsq=xmsq+(msqv(j,g)
-     & +msq(j,g)*(one+AP(a,a,1)-AP(a,a,3)+Q1(a,a,g,1)-Q1(a,a,g,3)
+     & +msq(j,g)*(AP(a,a,1)-AP(a,a,3)+Q1(a,a,g,1)-Q1(a,a,g,3)
      &               +AP(g,g,1)-AP(g,g,3)+Q2(g,g,a,1)-Q2(g,g,a,3)))
      &                *fx1(j)*fx2(g)
      & +(msq(j,g)*(AP(a,a,2)+AP(a,a,3)+Q1(a,a,g,2)+Q1(a,a,g,3))
@@ -365,84 +340,39 @@ C--Qbarg
      & + msq_aq*(AP(q,g,2)+Q2(q,g,a,2))
      & + msq_aa*(AP(a,g,2)+Q2(a,g,a,2)))*fx1(j)*fx2z(g)/z
        endif
-      
+
       endif
 
-      if     (j .gt. 0) then
-        sgnj=+1
-      elseif (j .lt. 0) then
-        sgnj=-1
-      else
-        sgnj=0
-      endif
-      if     (k .gt. 0) then
-        sgnk=+1
-      elseif (k .lt. 0) then
-        sgnk=-1
-      else
-        sgnk=0
-      endif
+c until now added part proportional to as**2
+c now add born part (proportional to as)
 
-      
+      xmsq=xmsq *(gsq/gsqcentral)**2
+     .     +(msq(j,k))*fx1(j)*fx2(k) *(gsq/gsqcentral)
+
  20   continue
 
       enddo
       enddo
       
+      xmsq=flux*xjac*pswt*xmsq/BrnRat
+      f(npdf+1)=xmsq
 
-      virtint=flux*xjac*pswt*xmsq/BrnRat
-
-c--- code to check that epsilon poles cancel      
-      if (nshot .eq. 1) then
-        if (xmsq .eq. 0d0) goto 999
-        xmsq_old=xmsq
-        nshot=nshot+1
-        epinv=0d0
-        epinv2=0d0
-c        epinv=1d0
-c        epinv2=1d0
-        goto 12
-      elseif (nshot .eq. 2) then
-        nshot=nshot+1
-
-        if (abs(xmsq_old/xmsq-1d0) .gt. 1d-6) then
-CC          if (abs(xmsq_old/xmsq-1d0) .gt. 1d-4) then
-          write(6,*) 'epsilon fails to cancel'
-          write(6,*) 'xmsq (epinv=large) = ',xmsq_old
-          write(6,*) 'xmsq (epinv=zero ) = ',xmsq
-c          stop
-        else
-c          write(6,*) 'Poles cancelled!'
-          colourchoice=rvcolourchoice
-        endif
+      if (npdf.eq.0) then
+         virtint=xmsq
       endif
-
-      call getptildejet(0,pjet)
-      
-      call dotem(nvec,pjet,s)
-
 
 C     Fill only if it's last iteration
       if (doFill.ne.0) then
           call hists_fill(p(3,:),p(4,:),virtint*wgt)
       endif
-      val=virtint*wgt 
-c--- update the maximum weight so far, if necessary
-      if (val .gt. wtmax) then
-        wtmax=val
-      endif
 
-c      if (bin) then
-c        val=val/dfloat(itmx) 
-c        call plotter(pjet,val,2)
-c      endif
+      enddo                     ! end PDF loop
+
+      virtint = f(1)
 
       return
 
  999  continue
-      ntotzero=ntotzero+1
       
       return
       end
-
-

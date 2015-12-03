@@ -37,7 +37,7 @@ void test_CentralLeptonCut(){
     int njets = 0;
     // testing point
     for (int i : {1,2,3,4,5} ){
-        opts.fiducial = static_cast<settings::DetFiducial> (i);
+        opts.fiducial = static_cast<cuts::DetFiducial> (i);
         printf ("fiducial %d\n",i);
         for ( double pt3 : { 10., 22., 30. }) for ( double pt4 : { 10., 22.,  30. }) for ( double y3 : { 0.5, 1.1, 1.3, 2.2 }) for ( double y4 : { 0.5, 1.1, 1.3, 2.2 }){
             // set lep kinem

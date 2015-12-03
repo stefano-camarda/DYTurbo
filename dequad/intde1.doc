@@ -1,0 +1,111 @@
+  DE公式による汎用数値積分パッケージ(簡易版v960506)
+
+【概要】
+    一次元の(広義)積分の数値計算を行います.
+
+【ファイル内容】
+    intde1.c   : Cによる汎用数値積分パッケージ 簡易版
+    intde1.f   : Fortranによる汎用数値積分パッケージ 簡易版
+    intde1t.c  : intde1.c のテスト
+    intde1t.f  : intde1.f のテスト
+    intde1.doc : このファイル
+
+    C版とFortran版の内容はまったく同じ.
+
+【ルーチン内容】
+    intde  : 有限区間積分ルーチン
+    intdei : 非振動型無限区間積分ルーチン
+    intdeo : 振動型無限区間積分ルーチン
+
+【使用例】
+    1.有限区間積分 I=integral_a^b f(x) dx
+      を相対誤差epsで求める.
+      <intde1.c の場合>
+          double f(double), a, b, i, eps, err, ...;
+          void intde(double (*f)(double), double a, double b, 
+              double eps, double *i, double *err);
+          ...
+          intde(f, a, b, eps, &i, &err);
+          ...
+      <intde1.f の場合>
+          real*8 f, a, b, i, eps, err, ...
+          external f
+          ...
+          call intde(f, a, b, eps, i, err)
+          ...
+
+    2.非振動型無限区間積分 I=integral_a^infinity f(x) dx,
+      (f(x)はxの大きいところで単調に減少している 例:1/(1+x*x))
+      を相対誤差epsで求める.
+      <intde1.c の場合>
+          double f(double), a, i, eps, err, ...;
+          void intdei(double (*f)(double), double a, double eps, 
+              double *i, double *err);
+          ...
+          intdei(f, a, eps, &i, &err);
+          ...
+      <intde1.f の場合>
+          real*8 f, a, i, eps, err, ...
+          external f
+          ...
+          call intdei(f, a, eps, i, err)
+          ...
+
+    3.振動型無限区間積分 I=integral_a^infinity f(x) dx,
+      (f(x)は振動項を含み,xの大きいところで漸近的に(単調な関数)*
+      sin(omega*x+theta)となっている 例:sin(x)/x,BesselJ(0,x))
+      を相対誤差epsで求める.
+      <intde1.c の場合>
+          double f(double), a, omega, i, eps, err, ...;
+          void intdeo(double (*f)(double), double a, double omega, 
+              double eps, double *i, double *err);
+          ...
+          intdeo(f, a, omega, eps, &i, &err);
+          ...
+      <intde1.f の場合>
+          real*8 f, a, omega, i, eps, err, ...
+          external f
+          ...
+          call intdeo(f, a, omega, eps, i, err)
+          ...
+
+【備考】
+    errは推定絶対誤差で収束に失敗する(m>=mmaxで許容誤差に
+    達しない)と負で返す.このときの原因と対策を以下に示す.
+      1. f(x)に積分端点以外で微分不可能や不連続な点,あるいは
+         それに近い点(鋭いピークなど)がある.
+         この場合そのような点で積分区間を分割すれば計算可能.
+      2. f(x)の計算に大きな誤差が含まれる.
+         この場合桁落ちなどが起きないようにf(x)を変形すればよい.
+         ただし端点で発散するような積分の場合はさらに特異点を
+         原点にずらしておく必要がある.
+      3. intdeo以外でf(x)が激しく振動している.
+         この場合はintdeoが使える形に変形できれば計算可能.
+         変形できない複雑な振動積分は別のルーチンが必要.
+
+    積分の和の計算で桁落ちが起きると,実際の相対誤差は
+    epsで指定した精度よりも悪くなる.例えばeps=1.0e-15と
+    指定したときに5桁の桁落ちが起きた場合10桁の精度になる.
+    誤差の確認はerrを参照すること.
+
+    推定誤差errはあくまで推定であり厳密な誤差の上限ではない.
+    計算が遅くても高い信頼性を要求する場合にはパッケージ中の
+    efsの値を小さめ(例えばefs=sqrt(eps)程度)に選ぶとよい.
+
+    integral(1/sqrt(1-x^2))dx from 0 to 1 のように端点で無限大に
+    発散する積分を高精度で計算する場合には注意が必要で,発散する
+    特異点を0にずらして引数が0に近いところで精度が落ちないように
+    被積分関数を変形しなければならない.log発散のような弱い発散で
+    精度をそれほど必要としない場合には誤差の範囲内で積分区間を少し
+    狭めればそのまま計算できる.
+
+【その他】
+    参考文献
+        1.数値微分積分法/長田直樹/現代数学社
+        2.岩波講座 応用数学 方法1.数値計算の基礎/
+          森正武 室田一雄 杉原正顯
+        3.数値計算の常識/伊理正夫 藤野和建/共立出版
+
+    著作/連絡先
+        大浦拓哉 (email: ooura@mmm.t.u-tokyo.ac.jp)
+

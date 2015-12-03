@@ -1,4 +1,4 @@
-AC_INIT([dyturbo], [0.9.1], [stefano.camarda@cern.ch,jakub.cuth@cern.ch])
+AC_INIT([dyturbo], [0.9.3], [stefano.camarda@cern.ch,jakub.cuth@cern.ch])
 AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE([foreign -Wall -Werror])
 
@@ -159,5 +159,5 @@ if test x$enable_checkBounds == xyes; then
 fi
 
 
-AC_CONFIG_FILES([Makefile src/Makefile dyres/Makefile dynnlo/Makefile mcfm/Makefile cernlib/Makefile dyturbo-config])
+AC_CONFIG_FILES([Makefile src/Makefile dyres/Makefile dynnlo/Makefile mcfm/Makefile cernlib/Makefile dequad/Makefile dyturbo-config])
 AC_OUTPUT
