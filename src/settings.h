@@ -139,6 +139,7 @@ public:
 
   // PDF errors
   bool PDFerrors;
+  int totpdf;
   
   //debug settings
   bool timeprofile;

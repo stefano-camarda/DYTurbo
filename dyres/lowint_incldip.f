@@ -15,6 +15,7 @@ CC    Used to compute Higgs or W(Z) cross section at NLO only
       include 'maxwt.f'
       include 'phasemin.f'
       include 'dynamicscale.f'
+      include 'options.f'
 
 CC
 CC    Variables to be passed to the counterterm
@@ -47,8 +48,6 @@ c      double precision msqa(-nf:nf,-nf:nf),n(4)
       logical binner
       external binner
 
-      double precision doFill
-      common/doFill/doFill
       external hists_fill
       
       if (first) then

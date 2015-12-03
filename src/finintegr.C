@@ -33,14 +33,13 @@ integrand_t realintegrand(const int &ndim, const double x[], const int &ncomp, d
                         void* userdata, const int &nvec, const int &core,
                         double &weight, const int &iter)
 {
-  
   double rre[22];
   for (int i = 0; i < ndim; i++)
     rre[i]=x[i];
 
   dofill_.doFill_ = int(iter==last_iter);
-  f[0] = realint_(rre,weight);
-  
+  f[0] = realint_(rre,weight,f);
+
   return 0;
 }
 

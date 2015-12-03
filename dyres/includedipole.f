@@ -8,14 +8,13 @@
       double precision ptrans(mxpart,4),pjet(mxpart,4),rcut,pt34
       double precision qt2,xqtcut,Q2
       integer i,j,nd,nqcdjets,nqcdstart,notag,isub
-      logical cuts,failedcuts,makecuts,isolation,isol
+      logical cuts,failedcuts,makecuts
 
       common/nqcdjets/nqcdjets,nqcdstart
       common/rcut/rcut
       common/makecuts/makecuts
       common/notag/notag
       common/qtcut/xqtcut
-      common/isol/isol
       
       logical binner
       external binner
@@ -45,11 +44,6 @@ c      print *,nd, q2, qt2
          enddo
       enddo
 
-CC    Insert here isolation cut
-      if(isol) then
-       if(isolation(ptrans).eqv..false.) includedipole=.false.
-      endif 
- 
 c--- check the lepton cuts
       failedcuts=(cuts(pjet,jets))
       if (failedcuts) includedipole=.false.

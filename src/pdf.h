@@ -5,6 +5,7 @@ extern void setalphas();
 
 extern "C" {
   void fdist_(int& ih, double& x, double& xmu, double fx[11]);
+  void setpdf_(int& member);
 }
 
 #endif

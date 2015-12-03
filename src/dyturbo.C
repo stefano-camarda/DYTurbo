@@ -6,6 +6,7 @@
 #include <cuba.h>
 #include <iomanip>
 
+#include "init.h"
 #include "integr.h"
 #include "resintegr.h"
 #include "settings.h"
@@ -14,9 +15,6 @@
 #include "finitemapping.h"
 #include "cubacall.h"
 #include "plotter.h"
-
-
-
 
 using namespace std;
 
@@ -29,8 +27,15 @@ void print_line();
 void print_qtbin();
 void print_ybin();
 void print_result(double val, double err, double btime , double etime);
-void normalise_result(double &value, double &error);
 
+ofstream outfile;
+void open_file();
+void save_qtbin();
+void save_ybin();
+void save_result(vector <double> vals, double err);
+void close_file();
+
+void normalise_result(double &value, double &error);
 
 double TotXSec ;
 
@@ -53,7 +58,7 @@ int main( int argc , const char * argv[])
   double begin_time, end_time;
 
   /***********************************/
-  //initialise settings
+  //Initialization
   string conf_file;
   if (argc>1) {
       conf_file = argv[1];
@@ -62,12 +67,14 @@ int main( int argc , const char * argv[])
   opts.initDyresSettings();
   gaussinit_();
   iniflavreduce_();
-  dyinit_();
-  //  setup_();
+  setup_();
+  dyturboinit();
   //bins.init();
   bins.readfromfile(conf_file.c_str());
   //force number of cores to 0 (no parallelization)
   cubacores(opts.cubacores,1000000); // < move this to cubainit
+  //  void pippo=NULL;
+  //  cubaexit(exitfun,pippo); //< merge at the end of the run
   cubaexit(exitfun,NULL); //< merge at the end of the run
   ///@todo: print out EW parameters and other settings
   // just a check
@@ -79,6 +86,7 @@ int main( int argc , const char * argv[])
 
   double costh, m, qt, y;
   double value, error, totval, toterror2;
+  vector <double> vals;
 
   /**************************************/
   //Checks for resummed cross section
@@ -162,6 +170,7 @@ int main( int argc , const char * argv[])
   cout << endl;
 
   print_head();
+  open_file();
   begin_time = clock_real();
   TotXSec = 0.;
   for (vector<double>::iterator yit = bins.ybins.begin(); yit != bins.ybins.end()-1; yit++)
@@ -174,6 +183,8 @@ int main( int argc , const char * argv[])
       setbounds(opts.mlow, opts.mhigh, *qit, *(qit+1), *yit, *(yit+1) );//  opts.ylow, opts.yhigh);
       print_qtbin();
       print_ybin();
+      save_qtbin();
+      save_ybin();
       double  bb_time = clock_real();
 
       // resummation
@@ -230,10 +241,12 @@ int main( int argc , const char * argv[])
       // real part
       if (opts.doREAL) {
           double b_time = clock_real();
-          realintegr(value, error);
+          realintegr(vals, error);
+	  value = vals[0];
           double e_time = clock_real();
           normalise_result(value,error);
           print_result(value,error,b_time,e_time);
+          save_result(vals,error);
           hists.FillResult( plotter::Real , value, error, e_time-b_time );
           totval += value;
           toterror2 += error*error;
@@ -257,6 +270,7 @@ int main( int argc , const char * argv[])
       }
     }
   print_line();
+  close_file();
   end_time = clock_real();
   cout << endl;
   cout << setw(10) << "time "  << setw(15) << float(end_time - begin_time) << endl;
@@ -312,8 +326,7 @@ void print_head(){
     if (true       ) cout << setw(38) << "TOTAL "         << " | ";
     cout << endl;
     print_line();
-
-};
+}
 void print_line(){
     int N = 18+18;
     if (opts.doRES ) N += 41;
@@ -348,3 +361,46 @@ void print_result(double val, double err, double btime , double etime){
          << flush;
 }
 
+void open_file()
+{
+  outfile.open("results.txt");
+  outfile << "qt1" << " ";
+  outfile << "qt2" << " ";
+  outfile << "y1"  << " ";
+  outfile << "y2"  << " ";
+  outfile << "xs(fb)" << " ";
+  for (int i = 1; i < opts.totpdf; i++)
+    {
+      char pdf[10];
+      sprintf(pdf, "pdf%d", i);
+      outfile << pdf << " ";
+    }
+  outfile << "staterr" << endl;
+  outfile << flush;
+}
+void save_qtbin()
+{
+  outfile << qtmin << " " << qtmax << " " << flush; 
+}
+void save_ybin()
+{
+  outfile << ymin << " " << ymax << " " << flush; 
+}
+void save_result(vector <double> vals, double err)
+{
+  double central = vals[0];
+  for (vector<double>::iterator it = vals.begin(); it != vals.end(); it++)
+    {
+      if (it - vals.begin() == 0)
+	outfile << *(vals.begin()) << " ";
+      else
+	outfile << *it-*vals.begin() << " ";
+    }
+  outfile << " " << err << endl;
+  outfile << flush;
+}
+void close_file()
+{
+  outfile.close();
+  system("mv results.txt temp.txt && column -t temp.txt > results.txt");
+}

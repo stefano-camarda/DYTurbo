@@ -113,7 +113,8 @@ double dyreal(double m, double y, double qt, double phicm, double phiZ, double c
   rre[4] = phijj;                                  //phi jj
   rre[5] = costhjj;                                //costh jj
   begin_time = clock_real();
-  value = realint_(rre,wgt);
+  double f[opts.totpdf];
+  value = realint_(rre,wgt,f);
   end_time = clock_real();
   cout << "Real: " << value << "  " << "time " << end_time - begin_time << "s" << endl;
   //******************************************

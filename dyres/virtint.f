@@ -23,6 +23,7 @@
       include 'limits.f'
       include 'b0.f'
       include 'dynamicscale.f'
+      include 'options.f'
       double precision mqq(0:2,fn:nf,fn:nf)
       double precision msqx(0:2,-nf:nf,-nf:nf,-nf:nf,-nf:nf)
       double precision msqx_cs(0:2,-nf:nf,-nf:nf)
@@ -34,7 +35,7 @@ CC
       common/count/qt2,qq2,shat
 CC
 
-      integer ih1,ih2,j,k,cs,nvec,is,ia,ib,ic,doFill
+      integer ih1,ih2,j,k,cs,nvec,is,ia,ib,ic
       double precision p(mxpart,4),pjet(mxpart,4),r(mxdim),W,sqrts,xmsq,
      . val,fx1(-nf:nf),fx2(-nf:nf),fx1z(-nf:nf),fx2z(-nf:nf)
       double precision pswt,xjac,rscalestart,fscalestart,
@@ -54,7 +55,6 @@ CC
       common/mypart/mypart
       integer nproc
       common/nproc/nproc
-      common/doFill/doFill
 
       data p/48*0d0/
       data nshot/1/

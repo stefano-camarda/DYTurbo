@@ -6,22 +6,39 @@
 #include <LHAPDF/LHAGlue.h>
 #include <math.h>
 
-void pdfini_(){
-  printf(" CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC\n\n");
+void pdfini_()
+{
+  printf(" ==Initialize PDF set from LHAPDF==\n\n");
   LHAPDF::initPDFSetByName(opts.LHAPDFset);
   LHAPDF::initPDF(opts.LHAPDFmember);
   // initialization of alphas
   couple_.amz_=LHAPDF::alphasPDF(dymasses_.zmass_) ;
+  if (opts.PDFerrors && LHAPDF::numberPDF() > 1)
+    {
+      opts.totpdf = LHAPDF::numberPDF()+1;
+      pdferropts_.pdferr_ = true;
+      pdferropts_.totpdf_ = LHAPDF::numberPDF()+1;
+    }
+  else
+    {
+      opts.totpdf = 1;
+      pdferropts_.pdferr_ = false;
+      pdferropts_.totpdf_ = 1;
+    }
   printf("\n");
+
+  LHAPDF::Info& cfg = LHAPDF::getConfig();
+  cfg.set_entry("Verbosity", 0);
   //setalphas();
 }
 
-void setpdf_(int& member){
-    LHAPDF::initPDF(member);
-    // initialization of alphas
-    setalphas();
+void setpdf_(int& member)
+{
+  LHAPDF::initPDF(member);
+  setalphas();
 }
 
+//set value of alphas
 void setalphas()
 {
   couple_.amz_=LHAPDF::alphasPDF(dymasses_.zmass_) ;
