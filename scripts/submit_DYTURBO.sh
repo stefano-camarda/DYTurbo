@@ -598,7 +598,7 @@ submit_allProg(){
                     NsplitY=1
                     if [[ $terms =~ 3D ]]
                     then
-                        NsplitQT=4
+                        NsplitQT=10
                         NsplitY=5
                     fi
                     for iqt in `seq $NsplitQT`

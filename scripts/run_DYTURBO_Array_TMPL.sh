@@ -69,8 +69,12 @@ ln -sf input.in input.DAT
 if [[ JOBNAME_${LSB_JOBINDEX} =~ ^dyturbo_ ]]
 then
     /usr/bin/time -v ./dyturbo input.in #| tee OUTDIR/JOBNAME_${LSB_JOBINDEX}.log
-    hadd -f results_merge.root results*.root
-    CP results_merge.root OUTDIR/JOBNAME_${LSB_JOBINDEX}.root
+    if [[ JOBNAME =~ t*3D_ ]] 
+        CP results.root OUTDIR/JOBNAME_${LSB_JOBINDEX}.root
+    else
+        hadd -f results_merge.root results*.root
+        CP results_merge.root OUTDIR/JOBNAME_${LSB_JOBINDEX}.root
+    fi
 elif [[ JOBNAME_${LSB_JOBINDEX} =~ ^dyres_ ]]
 then
     sed -i "s|seed|1${LSB_JOBINDEX}|g        " input.in

@@ -164,11 +164,31 @@ merge_grid_TOT(){
 }
 
 
+MERGER="hadd -f "
+merge_cubatures(){
+    DRYRUN=echo 
+    DRYRUN=
+    tmp_phase=qt025y01
+    tot_phase=qt0100y05
+    outdir=results_merge/quad_151203
+    name=results/dyturbo_wm_lhc7_WZZPT-CT10_0_${tmp_phase}t*3D_seed_1000.root
+    mkdir -p $outdir
+    for f in $name
+    do
+        infiles=`echo  $f | sed "s|$tmp_phase|*|g" `
+        outfile=`echo  $f | sed "s|$tmp_phase|$tot_phase|g; s|seed_[0-9]*|seed_merge|g; s|results|$outdir|g" `
+        $DRYRUN $MERGER $outfile $infiles
+    done
+}
+
+
 
 #merge_w_pt
 #merge_pt_y
 #merge_wwidth
-merge_grid
-merge_grid_TOT
+#merge_grid
+#merge_grid_TOT
+
+merge_cubatures
 
 exit 0
