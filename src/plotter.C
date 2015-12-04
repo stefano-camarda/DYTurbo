@@ -507,6 +507,8 @@ void plotter::Finalise(double xsection){
 
 #else // not USEROOT
 
+plotter::plotter(){return;}
+plotter::~plotter(){return;}
 void plotter::Init(){return;}
 bool plotter::IsInitialized(){return false;}
 void plotter::FillQuadrature(double int_val, double int_error){return;}
