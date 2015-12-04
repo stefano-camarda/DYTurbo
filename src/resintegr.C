@@ -343,7 +343,6 @@ integrand_t resintegrand3d(const int &ndim, const double x[], const int &ncomp, 
       double pz2 = (m*m + qt*qt) * sqY/(1-sqY);
       p3[2] = sqrt(pz2);
       p3[3] = sqrt(m*m + qt*qt + pz2);
-      hists_fill_(p3,p4,f);
   }
 
   if (opts.timeprofile)

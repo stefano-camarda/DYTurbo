@@ -31,6 +31,8 @@ localSetupROOT # 5.34.25-x86_64-slc6-gcc48-opt
 #export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/etapfs03/atlashpc/cuth/resbos/lhapdf/LHAPDF-6.1.4/install/lib/
 #LD_LIBRARY_PATH=$LD_LIBRARY_PATH:DYTURBOROOTDIR/../RESBOS/lhapdf/lhapdf-5.6.0/install/lib/
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:DYTURBOROOTDIR/lhapdf6/lib/
+export LHAPDF_DATA_PATH=DYTURBOROOTDIR/lhapdf6/share/LHAPDF/
+export LHAPATH=$LHAPDF_DATA_PATH
 #mkdir PDFsets/
 
 
@@ -41,7 +43,7 @@ printenv
 if [[ JOBNAME_${LSB_JOBINDEX} =~ ^dyturbo_ ]]
 then
     if [[ -n "`find OUTDIR -name "JOBNAME_${LSB_JOBINDEX}.root" `" ]]; then exit 0; fi;
-    cd /tmp/${LSB_JOBID}_${LSB_JOBINDEX}.tmpdir || echo local run: staying in `pwd`
+    cd /jobdir/${LSB_JOBID}-${LSB_JOBINDEX} || echo local run: staying in `pwd`
 else
     cd /jobdir/$LSB_JOBID || echo local run: staying in `pwd`
 fi
@@ -67,8 +69,13 @@ ln -sf input.in input.DAT
 if [[ JOBNAME_${LSB_JOBINDEX} =~ ^dyturbo_ ]]
 then
     /usr/bin/time -v ./dyturbo input.in #| tee OUTDIR/JOBNAME_${LSB_JOBINDEX}.log
-    hadd -f results_merge.root results*.root
-    CP results_merge.root OUTDIR/JOBNAME_${LSB_JOBINDEX}.root
+    if [[ JOBNAME =~ t*3D_ ]]
+    then
+        CP results.root OUTDIR/JOBNAME_${LSB_JOBINDEX}.root
+    else
+        hadd -f results_merge.root results*.root
+        CP results_merge.root OUTDIR/JOBNAME_${LSB_JOBINDEX}.root
+    fi
 elif [[ JOBNAME_${LSB_JOBINDEX} =~ ^dyres_ ]]
 then
     sed -i "s|seed|1${LSB_JOBINDEX}|g        " input.in

@@ -115,14 +115,14 @@ merge_pt_y(){
     echo
 }
 
-mergedir=results_merge/grid_151123
+mergedir=results_merge/grid_151201
 MERGER="./bin/merger -X"
 merge_grid(){
     DRYRUN=echo 
     DRYRUN=
     #griddownloads='results_grid/user.jcuth.*_0_* results_grid/group.phys-sm.*_5{1,2,3,4}_*'
     griddownloads=`echo results_grid/user.jcuth.*_0_* `
-    griddownloads="$griddownloads `echo results_grid/group.phys-sm.*_{wp,wm,z0}_*_5{1,2,3,4}_*`"
+    griddownloads="$griddownloads `echo results_grid/group.phys-sm.dyturbo_{wp,wm,z0}_*_4_*_seed.out_HIST`"
     #griddownloads="$griddownloads `echo results_grid/group.phys-sm.*_wm_*_5{1,2}_*`"
     #griddownloads="$griddownloads `echo results_grid/group.phys-sm.*_wp_*_5{1,2}_*`"
     #griddownloads="$griddownloads `echo results_grid/group.phys-sm.*_z0_*_5{1,2}_*`"
@@ -145,10 +145,9 @@ merge_grid(){
         else
             $DRYRUN $MERGER $outfile $griddir/*results_merge.root*
         fi
-
     done
-
 }
+
 merge_grid_TOT(){
     DRYRUN=echo 
     DRYRUN=
@@ -165,11 +164,31 @@ merge_grid_TOT(){
 }
 
 
+MERGER="hadd -f "
+merge_cubatures(){
+    DRYRUN=echo 
+    DRYRUN=
+    tmp_phase=qt025y01
+    tot_phase=qt0100y05
+    outdir=results_merge/quad_151203
+    name=results/dyturbo_wm_lhc7_WZZPT-CT10_0_${tmp_phase}t*3D_seed_1000.root
+    mkdir -p $outdir
+    for f in $name
+    do
+        infiles=`echo  $f | sed "s|$tmp_phase|*|g" `
+        outfile=`echo  $f | sed "s|$tmp_phase|$tot_phase|g; s|seed_[0-9]*|seed_merge|g; s|results|$outdir|g" `
+        $DRYRUN $MERGER $outfile $infiles
+    done
+}
+
+
 
 #merge_w_pt
 #merge_pt_y
 #merge_wwidth
-merge_grid
-merge_grid_TOT
+#merge_grid
+#merge_grid_TOT
+
+merge_cubatures
 
 exit 0
