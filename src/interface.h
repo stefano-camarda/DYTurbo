@@ -281,9 +281,13 @@ extern "C" {
   double countterm_(double &costh, double &mm, double &qtt, double &yy, int &mode);
 
   int binner_(double p3[4], double p4[4]);
+  void hists_setpdf_(int * npdf);
   void hists_fill_(double p3[4], double p4[4], double *weight);
   void hists_real_dipole_(double p3[4], double p4[4], double *weight,int *nd);
   void hists_real_event_();
+  void hists_fill_pdf_(double p3[4], double p4[4], double *weight, int *npdf);
+  void hists_real_dipole_pdf_(double p3[4], double p4[4], double *weight,int *nd, int *npdf);
+  void hists_real_event_pdf_(int* npdf);
 }
 
 #endif
