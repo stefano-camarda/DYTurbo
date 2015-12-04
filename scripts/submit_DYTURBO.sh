@@ -190,10 +190,12 @@ prepare_in(){
     member=0
     re='^[0-9]+$'
     pdfsetname=$pdfset
+    setPDFerrors=false
     if [[ $variation == g_05  ]]; then gpar=0.5e0;                        fi;
     if [[ $variation == g_15  ]]; then gpar=1.5e0;                        fi;
     if [[ $variation == as_*  ]]; then pdfsetname=${pdfset}_${variation}; fi;
     if [[ $variation =~ $re   ]]; then member=$variation;                 fi;
+    if [[ $variation =~ all   ]]; then member=0; setPDFerrors=true;        fi;
     # gpar
     if [[ $pdfset == WZZPT-CT10 ]] 
     then
@@ -213,35 +215,36 @@ prepare_in(){
     if [[ $job_name =~ ^dyres_   ]]; then in_tmpl=$dyturbo_project/scripts/DYRES_TMPL.in;   fi;
     if [[ $job_name =~ ^mcfm_    ]]; then in_tmpl=$dyturbo_project/scripts/MCFM_TMPL.in;    fi;
     cp $in_tmpl tmp
-    sed -i "s|LOQTBIN|$setloqtbin|g           ;
-            s|HIQTBIN|$sethiqtbin|g           ;
-            s|LOYBIN|$setloybin|g             ;
-            s|HIYBIN|$sethiybin|g             ;
-            s|SETSEED|$random_seed|g       ;
-            s|SETMLO|$lomass|g             ;
-            s|SETMHI|$himass|g             ;
-            s|SETRMASS|$rmass|g            ;
-            s|SETWIDTH|$width|g            ;
-            s|SETNPROC|$nproc|g            ;
-            s|SETPDFSET|$pdfsetname|g      ;
-            s|SETMEMBER|$member|g          ;
-            s|SETORDER|$order|g            ;
-            s|SETGPAR|$gpar|g              ;
-            s|SETDORES|$doRES|g            ;
-            s|SETDOCTM|$doCTM|g            ;
-            s|SETDOREA|$doREA|g            ;
-            s|SETDOVIR|$doVIR|g            ;
-            s|SETDOLOR|$doLOR|g            ;
-            s|SETCUBACORES|$cubacores|g    ;
-            s|SETRESUMDIM|$resumdim|g      ;
-            s|SETCTDIM|$ctdim|g            ;
-            s|SETMCFMPROC|$nprocmcfm|g     ;
-            s|SETTERMSTRING|$termstring|g  ;
-            s|SETLEPCUTS|$makelepcuts|g    ;
-            s|SETDETFIDUCIAL|$detfiducial|g;
-            s|SETIH1|$ih1|g                ;
-            s|SETIH2|$ih2|g                ;
-            s|SETSROOT|$sroot|g            ; " tmp
+    sed -i "s|LOQTBIN|$setloqtbin|g          ;
+            s|HIQTBIN|$sethiqtbin|g          ;
+            s|LOYBIN|$setloybin|g            ;
+            s|HIYBIN|$sethiybin|g            ;
+            s|SETSEED|$random_seed|g         ;
+            s|SETMLO|$lomass|g               ;
+            s|SETMHI|$himass|g               ;
+            s|SETRMASS|$rmass|g              ;
+            s|SETWIDTH|$width|g              ;
+            s|SETNPROC|$nproc|g              ;
+            s|SETPDFSET|$pdfsetname|g        ;
+            s|SETMEMBER|$member|g            ;
+            s|SETORDER|$order|g              ;
+            s|SETGPAR|$gpar|g                ;
+            s|SETDORES|$doRES|g              ;
+            s|SETDOCTM|$doCTM|g              ;
+            s|SETDOREA|$doREA|g              ;
+            s|SETDOVIR|$doVIR|g              ;
+            s|SETDOLOR|$doLOR|g              ;
+            s|SETCUBACORES|$cubacores|g      ;
+            s|SETRESUMDIM|$resumdim|g        ;
+            s|SETCTDIM|$ctdim|g              ;
+            s|SETMCFMPROC|$nprocmcfm|g       ;
+            s|SETTERMSTRING|$termstring|g    ;
+            s|SETLEPCUTS|$makelepcuts|g      ;
+            s|SETDETFIDUCIAL|$detfiducial|g  ;
+            s|SETIH1|$ih1|g                  ;
+            s|SETIH2|$ih2|g                  ;
+            s|SETPDFERRORS|$setPDFerrors|g   ;
+            s|SETSROOT|$sroot|g              ; " tmp
     mv tmp $in_file
 }
 
@@ -575,7 +578,8 @@ submit_allProg(){
                     #if [[ $order == 2 ]]; then termlist="REAL"; fi;
                     #seedlist="1000-1999"
                     termlist="RES3D CT3D"
-                    if [[ $order == 2 ]]; then termlist="RES3D CT3D"; fi;
+                    #if [[ $order == 2 ]]; then termlist="RES3D CT3D"; fi;
+                    if [[ $order == 2 ]]; then termlist="REAL VIRT"; fi;
                     seedlist=1000
                 fi
                 if [[ $program =~ ^dyres ]] 
@@ -593,6 +597,11 @@ submit_allProg(){
                 fi
                 for terms in $termlist
                 do
+                    # run all pdf variations at once
+                    if [[ $terms =~ REAL ]] 
+                    then
+                        variation=all
+                    fi
                     # for qt/y splits
                     NsplitQT=1
                     NsplitY=1

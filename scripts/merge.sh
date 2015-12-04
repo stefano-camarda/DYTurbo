@@ -168,12 +168,12 @@ MERGER="hadd -f "
 merge_cubatures(){
     DRYRUN=echo 
     DRYRUN=
-    tmp_phase=qt025y01
+    tmp_phase=qt010y01
     tot_phase=qt0100y05
-    outdir=results_merge/quad_151203
-    name=results/dyturbo_wm_lhc7_WZZPT-CT10_0_${tmp_phase}t*3D_seed_1000.root
+    outdir=results_merge/quad_151204
+    name="results/dyturbo_wm_lhc7_WZZPT-CT10_0_${tmp_phase}t*3D_seed_1000.root"
     mkdir -p $outdir
-    for f in $name
+    for f in `ls $name`
     do
         infiles=`echo  $f | sed "s|$tmp_phase|*|g" `
         outfile=`echo  $f | sed "s|$tmp_phase|$tot_phase|g; s|seed_[0-9]*|seed_merge|g; s|results|$outdir|g" `
