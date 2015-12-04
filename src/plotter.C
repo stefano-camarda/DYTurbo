@@ -1,5 +1,5 @@
-//comment: there is no need to require cuts here (decide_fiducial)
 #include "plotter.h"
+
 plotter hists;
 
 #include "integr.h"
@@ -10,14 +10,13 @@ plotter hists;
 #include <sys/types.h>
 #include <cmath>
 #include <algorithm>
-//#include <sys/wait.h>
-//#include <unistd.h>
 
 
 #ifdef USEROOT
-#include "TFile.h"
-#include "TString.h"
-#include "TLorentzVector.h"
+#include <TFile.h>
+#include <TH1.h>
+#include <TString.h>
+#include <TLorentzVector.h>
 
 plotter::plotter() :
     N           (0),

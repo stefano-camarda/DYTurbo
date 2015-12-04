@@ -132,6 +132,7 @@ then
         AC_DEFINE(USEROOT, "1",[ Turn on the ROOT for histogramming.] )
     fi
 fi
+AM_CONDITIONAL([HAVE_ROOT],test $root_ok)
 
 AC_ARG_ENABLE([debug],
   [AC_HELP_STRING(--enable-debug, [Add debug flags. (default=no)])])
