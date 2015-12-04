@@ -2,39 +2,9 @@
 #include "plotter.h"
 plotter hists;
 
-#ifndef DYRESCODE
 #include "integr.h"
 #include "interface.h"
 #include "settings.h"
-#else
-Binning::Binning(){
-    hist_qt_bins .push_back(0.)   ;
-    hist_qt_bins .push_back(100.) ;
-    hist_y_bins  .push_back(0.)   ;
-    hist_y_bins  .push_back(5.)   ;
-}
-Binning bins;
-
-Config::Config(){
-    vegasncallsRES  = 1 ;
-    vegasncallsCT   = 1 ;
-    vegasncallsREAL = 1 ;
-    vegasncallsVIRT = 1 ;
-    doRES  = false ;
-    doCT   = false ;
-    doREAL = false ;
-    doVIRT = false ;
-    sroot = 7e3;
-}
-Config opts;
-
-double qtmin=0;
-double qtmax=100;
-double ymin=0;
-double ymax=100;
-
-bool decide_fiducial() {return true;};
-#endif // DYRES
 
 #include <sys/mman.h>
 #include <sys/types.h>
@@ -50,18 +20,19 @@ bool decide_fiducial() {return true;};
 #include "TLorentzVector.h"
 
 plotter::plotter() :
-    N          (0),
-    h_qt       (0),
-    h_y        (0),
-    h_qtVy     (0),
-    qt_y_resum (0),
-    qt_y_ct    (0),
-    qt_y_lo    (0),
-    qt_y_real  (0),
-    qt_y_virt  (0),
-    qt_y_total (0),
-    last_npdf  (0),
-    verbose    (false)
+    N           (0),
+    h_qt        (0),
+    h_y         (0),
+    h_qtVy      (0),
+    qt_y_resum  (0),
+    qt_y_ct     (0),
+    qt_y_lo     (0),
+    qt_y_real   (0),
+    qt_y_virt   (0),
+    qt_y_total  (0),
+    last_npdf   (0),
+    doAiMoments (false),
+    verbose     (false)
 {
     return;
 }
@@ -79,7 +50,7 @@ plotter::~plotter(){
     if(!qt_y_real  ) delete qt_y_real  ;
     if(!qt_y_virt  ) delete qt_y_virt  ;
     if(!qt_y_total ) delete qt_y_total ;
-    for (auto ipp=0; ipp<8; ipp++){
+    if(doAiMoments) for (auto ipp=0; ipp<8; ipp++){
         delete p_qtVy_A[ipp];
         p_qtVy_A[ipp]=NULL;
     }
@@ -110,7 +81,8 @@ void plotter::Init(){
     h_qt      = new TH1D        ("h_qt"     , "VB qt"   , bins_qt [0] , bins_qt [1] , bins_qt [2] );
     h_y       = new TH1D        ("h_y"      , "VB y"    , bins_y  [0] , bins_y  [1] , bins_y  [2] );
     h_qtVy    = new TH2D        ("h_qtVy"   , "VB qtVy" , bins_qt [0] , bins_qt [1] , bins_qt [2] ,  bins_y [0] , bins_y[1] , bins_y[2] );
-    for (auto i=0; i<8; i++){
+    // turn off aimomens
+    if (doAiMoments) for (auto i=0; i<8; i++){
         TString name = "p_qtVy_A";
         name += i;
         TString title = "A";
@@ -118,7 +90,6 @@ void plotter::Init(){
         title+= " qtVy";
         p_qtVy_A[i] = new TProfile2D(name.Data(), title.Data(), bins_qt [0] , bins_qt [1] , bins_qt [2] ,  bins_y [0] , bins_y[1] , bins_y[2] );
     }
-
     /// Trying to calculate final number of vegas calls
     // consider this part as new function: when I will run all terms at once it can be recalculated
     if (opts.doRES  ) N = opts.vegasncallsRES  ;
@@ -127,11 +98,12 @@ void plotter::Init(){
     if (opts.doVIRT ) N = opts.vegasncallsVIRT ;
     // hacked to one -- cuba gives correct weights (accoring to number of entries);
     N = 1;
-
     // vector of weights -- for systematics
     v_wgt.clear();
     return;
 }
+
+bool plotter::IsInitialized(){return (h_qtVy!=0);};
 
 double calcQt(double p[4]){
     return  sqrt((float)   p[0]*p[0]+p[1]*p[1]);
@@ -196,6 +168,7 @@ void plotter::CalculateKinematics(double p3[4], double p4[4]){
     Q2 = calcQ2(p);
     qt = calcQt(p);
     y  = calcY(p);
+    if (!doAiMoments) return; // turn off ai moments
     // calc Collins-Sopper
     costh = calcCosThCS(Q2,qt,p3,p4);
     phi   = calcPhiCS(p3,p4);
@@ -250,21 +223,13 @@ void plotter::FillRealDipole(double p3[4], double p4[4], double wgt, int nd){
     point.wgt  = wgt  ;
     point.fid   = decide_fiducial(p3,p4);
     dipole_points.push_back(point);
-    // debug
-    //printf("FillRealDipole: beg\n");
-    //print_dipole(point);
-    //print_dipoleVec(dipole_points);
-    //printf("FillRealDipole: end\n");
     // fill moments
-    for (auto i=0; i<8; i++) p_qtVy_A[i]->Fill(qt,y,a[i],wgt);
+    if(doAiMoments) for (auto i=0; i<8; i++) p_qtVy_A[i]->Fill(qt,y,a[i],wgt);
     return;
 }
 
 void plotter::FillRealEvent(plotter::TermType term){
     // process all calculated contributions
-    //printf("FillRealEvent: beg\n");
-    //print_dipole(point);
-    //print_dipoleVec(dipole_points);
     int i=0;
     double wgt_sum=0;
     while (!dipole_points.empty()){
@@ -276,9 +241,6 @@ void plotter::FillRealEvent(plotter::TermType term){
             point.wgt+=ipoint->wgt;
             ipoint = dipole_points.erase(ipoint);
         } else ++ipoint; // bin index not same, skip it
-        //printf (" dipole group %d",i);
-        //print_dipole(point);
-        //print_dipoleVec(dipole_points);
         // fill histograms
         if (point.fid ){
             h_qt   -> Fill(point.qt         ,point.wgt);
@@ -288,13 +250,6 @@ void plotter::FillRealEvent(plotter::TermType term){
         }
         i++;
     }
-    if (term==Real){ // < here for DYRES
-        qt = point.qt;
-        y = point.y;
-        CumulateResult(term,wgt_sum);
-    }
-    //printf("FillRealEvent: end\n");
-    //printf("----------\n");
     return;
 }
 
@@ -309,13 +264,19 @@ void plotter::FillEvent(double p3[4], double p4[4], double wgt){
         printf("         p3: %g %g %g %g \n", p3[0], p3[1], p3[2], p3[3] );
         printf("         p4: %g %g %g %g \n", p4[0], p4[1], p4[2], p4[3] );
         printf("         pV: %g %g       \n", qt, y  );
-    } 
+    }
     // dividing weight
     if (N!=0) wgt/=N;
     h_qt      ->Fill( qt        ,wgt);
     h_y       ->Fill( y         ,wgt);
     h_qtVy    ->Fill( qt,y      ,wgt);
-    for (int i=0;i<8;i++) p_qtVy_A[i] ->Fill( qt,y,a[i] ,wgt);
+    if(doAiMoments)for (int i=0;i<8;i++) p_qtVy_A[i] ->Fill( qt,y,a[i] ,wgt);
+    return;
+}
+
+// fortran interface to Root
+void hists_fill_(double p3[4], double p4[4], double *weight){
+    hists.FillEvent(p3,p4,*weight);
     return;
 }
 
@@ -323,61 +284,9 @@ void hists_setpdf_(int * npdf){
     hists.SetPDF(*npdf);
 }
 
-// fortran interface to Root
-void hists_fill_(double p3[4], double p4[4], double *weight){
-    //printf("wt %g\np3 %g %g %g %g\np4 %g %g %g %g\n",
-            //*weight,
-            //p3[0],
-            //p3[1],
-            //p3[2],
-            //p3[3],
-            //p4[0],
-            //p4[1],
-            //p4[2],
-            //p4[3]
-          //);
-
-    // keep event ?
-    if ( decide_fiducial(p3,p4) ) hists.FillEvent(p3,p4,*weight);
-    return;
-}
-
 void hists_fill_pdf_(double p3[4], double p4[4], double *weight, int *npdf){
     hists.SetPDF(*npdf);
     hists_fill_(p3,p4,weight);
-}
-
-void hists_dyres_fill_(double p3[4], double p4[4],double * weight, int * ii){
-    if (!hists.IsInitialized()) hists.Init();
-    // ii -- switch for term
-    int nd=0;
-    plotter::TermType term = plotter::None;
-    switch( *ii ) {
-        case 0 : // RES
-            hists.FillEvent(p3,p4,*weight);
-            term = static_cast<plotter::TermType>(0);
-            hists.CumulateResult(term,*weight);
-            break;
-        //case 1 : // CT
-            //hists.FillEvent(p3,p4,*weight);
-            //term = static_cast<plotter::TermType>(1);
-            //hists.CumulateResult(term,*weight);
-            //break;
-        //case 2 : // VIRT
-            //hists.FillEvent(p3,p4,*weight);
-            //term = static_cast<plotter::TermType>(4);
-            //hists.CumulateResult(term,*weight);
-            //break;
-        //case 3 : // REAL dipole 0
-            //nd = 0;
-            //term = static_cast<plotter::TermType>(3);
-            //hists.FillRealEvent(term);
-            //hists.FillRealDipole(p3,p4,*weight,nd);
-            //break;
-        //default : // REAL non-zero dipoles
-            //nd = (*ii)-3;
-            //hists.FillRealDipole(p3,p4,*weight,nd);
-    }
 }
 
 void hists_real_dipole_(double p3[4], double p4[4], double *weight, int * nd){
@@ -477,6 +386,7 @@ TH1 * plotter::clone_PDF(TH1*h,int npdf){
 
 void plotter::SetPDF(int npdf){
     // if current npdf still same don't change anything
+    //printf("setting pdf %d \n", npdf);
     if (last_npdf==npdf) return;
     // if empty add current hist to 0-th position
     // assuming we always starting from central
@@ -501,6 +411,7 @@ void plotter::SetPDF(int npdf){
     h_qtVy = h_qtVy_PDF [npdf];
     // set last pdf
     last_npdf = npdf;
+    //printf (" changed successfully last_pdf %d size %d qtVy ptr %p \n",last_npdf,size,h_qtVy);
     return;
 }
 
@@ -579,7 +490,7 @@ void plotter::Finalise(double xsection){
         h_y    -> Write();
         h_qtVy -> Write();
     }
-    for (auto pp : p_qtVy_A) pp->Write();
+    if(doAiMoments) for (auto pp : p_qtVy_A) pp->Write();
     // results
     qt_y_resum -> Write();
     qt_y_ct    -> Write();
@@ -587,62 +498,36 @@ void plotter::Finalise(double xsection){
     qt_y_real  -> Write();
     qt_y_virt  -> Write();
     qt_y_total -> Write();
-    // tree
-    //t_tree->Write();
     // close
     outf->Write();
     outf->Close();
     return;
 }
 
+
+
 #else // not USEROOT
 
-plotter::plotter(){
-    return;
-}
+void plotter::Init(){return;}
+bool plotter::IsInitialized(){return false;}
+void plotter::FillQuadrature(double int_val, double int_error){return;}
+void plotter::FillEvent(double p3[4], double p4[4], double wgt){return;}
+void plotter::FillRealDipole(double p3[4], double p4[4], double wgt,int nd){return;}
+void plotter::FillRealEvent(TermType term ){return;}
+void plotter::FillResult(TermType term, double int_val, double int_error, double time){return;}
+void plotter::SetPDF(int npdf){return;}
+void plotter::CumulateResult(TermType term, double wgt){return;}
+void plotter::Merge(){return;}
+void plotter::Dump(){return;}
+void plotter::Finalise(double xsection){return;}
 
-plotter::~plotter(){
-    return;
-}
 
-void plotter::Init(){
-    return;
-}
-
-void plotter::FillQuadrature(double int_val, double int_error){
-    return;
-}
-
-void plotter::addToBin(TH1* h, double int_val, double int_err){
-    return;
-}
-
-void plotter::FillEvent(double p3[4], double p4[4], double wgt){
-    return;
-}
-
-void plotter::FillResult(TermType term, double int_val, double int_error, double time){
-    return;
-}
-
-void plotter::Dump(){
-    return;
-}
-
-void plotter::Finalise(double xsection){
-    return;
-}
-
-void hists_fill_(double p3[4], double p4[4], double *weight){
-    return;
-}
-
-void hists_real_dipole_(double p3[4], double p4[4], double *weight){
-    return;
-}
-
-void hists_real_event_(){
-    return;
-}
+void hists_setpdf_(int * npdf){ return; }
+void hists_fill_(double p3[4], double p4[4], double *weight){ return; }
+void hists_real_dipole_(double p3[4], double p4[4], double *weight,int *nd){ return; }
+void hists_real_event_(){ return; }
+void hists_fill_pdf_(double p3[4], double p4[4], double *weight, int *npdf){ return; }
+void hists_real_dipole_pdf_(double p3[4], double p4[4], double *weight,int *nd, int *npdf){ return; }
+void hists_real_event_pdf_(int* npdf){ return; }
 
 #endif //USEROOT
