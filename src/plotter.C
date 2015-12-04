@@ -1,5 +1,6 @@
 //comment: there is no need to require cuts here (decide_fiducial)
 #include "plotter.h"
+
 plotter hists;
 
 #ifndef DYRESCODE
@@ -45,9 +46,10 @@ bool decide_fiducial() {return true;};
 
 
 #ifdef USEROOT
-#include "TFile.h"
-#include "TString.h"
-#include "TLorentzVector.h"
+#include <TFile.h>
+#include <TH1.h>
+#include <TString.h>
+#include <TLorentzVector.h>
 
 plotter::plotter() :
     N          (0),
@@ -127,6 +129,10 @@ void plotter::Init(){
     // vector of weights -- for systematics
     v_wgt.clear();
     return;
+}
+
+bool plotter::IsInitialized() {
+return (h_qtVy!=0);
 }
 
 double calcQt(double p[4]){
@@ -543,10 +549,6 @@ void plotter::FillQuadrature(double int_val, double int_error){
     return;
 }
 
-void plotter::addToBin(TH1* h, double int_val, double int_err){
-    return;
-}
-
 void plotter::FillEvent(double p3[4], double p4[4], double wgt){
     return;
 }
@@ -567,7 +569,7 @@ void hists_fill_(double p3[4], double p4[4], double *weight){
     return;
 }
 
-void hists_real_dipole_(double p3[4], double p4[4], double *weight){
+void hists_real_dipole_(double p3[4], double p4[4], double *weight,int *nd){
     return;
 }
 

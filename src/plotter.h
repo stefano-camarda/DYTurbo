@@ -54,7 +54,7 @@ class plotter {
         enum TermType { Resum, CT, LO, Real, Virt, Total, None=999 };
 
         void Init();
-        bool IsInitialized(){return (h_qtVy!=0);};
+        bool IsInitialized();
         void FillQuadrature(double int_val, double int_error); ///< Adding integration to proper bin
         void FillEvent(double p3[4], double p4[4], double wgt); ///<Normal filling of histograms.
         void FillRealDipole(double p3[4], double p4[4], double wgt,int nd); ///<Collect dipole kinematics and weights. Fill ai profiles.
