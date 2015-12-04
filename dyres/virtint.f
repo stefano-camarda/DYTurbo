@@ -58,7 +58,9 @@
       save first,rscalestart,fscalestart
       logical binner
       external binner
+      external hists_setpdf
       external hists_fill
+C      external hists_fill_PDF
 
       integer npdf
       double precision gsqcentral
@@ -178,6 +180,7 @@ c--- Calculate the required matrix elements
 c     start PDF loop
       do npdf=0,totpdf-1
          call setpdf(npdf)
+         call hists_setpdf(npdf)
 c     intitialise xmsq to 0
          xmsq=0d0
 
@@ -364,6 +367,7 @@ c now add born part (proportional to as)
 C     Fill only if it's last iteration
       if (doFill.ne.0) then
           call hists_fill(p(3,:),p(4,:),virtint*wgt)
+C          call hists_fill_PDF(p(3,:),p(4,:),virtint*wgt,npdf)
       endif
 
       enddo                     ! end PDF loop

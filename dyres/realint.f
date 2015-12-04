@@ -43,8 +43,11 @@
       common/nproc/nproc
 
 C      external hists_fill
+      external hists_setpdf
       external hists_real_dipole
       external hists_real_event
+C      external hists_real_dipole_PDF
+C      external hists_real_event_PDF
 
       double precision x,omx,sij,sik,sjk
       integer ip,jp,kp
@@ -190,6 +193,7 @@ c--- Calculate the required matrix elements  (dipscale(nd) are set appropriately
 c     start PDF loop
       do npdf=0,totpdf-1
          call setpdf(npdf)
+         call hists_setpdf(npdf)
 c     intitialise xmsq to 0 for the real and all dipoles
          do nd=0,ndmax
             xmsq(nd)=0d0
@@ -258,7 +262,8 @@ C           print*,'fort wt', val
 C           print*,'fort p3', pjet(3,1), pjet(3,2), pjet(3,3), pjet(3,4)
 C           print*,'fort p4', pjet(4,1), pjet(4,2), pjet(4,3), pjet(4,4)
 C---        store information per each dipole
-               call hists_real_dipole(pjet(3,:),pjet(4,:),val,nd)
+              call hists_real_dipole(pjet(3,:),pjet(4,:),val,nd)
+C             call hists_real_dipole_PDF(pjet(3,:),pjet(4,:),val,nd,npdf)
             endif
          enddo                  !End loop on real+dipoles contributions
 
@@ -267,6 +272,7 @@ C---  Fill only if it's last iteration
 C        call hists_fill(p(3,:),p(4,:),val)
 C---     fill the dipole contribution to each bin separatelly
             call hists_real_event()
+C            call hists_real_event_PDF(npdf)
          endif
       enddo ! end of PDF loop
       realint = f(1)
