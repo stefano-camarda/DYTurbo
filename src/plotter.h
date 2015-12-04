@@ -60,6 +60,7 @@ class plotter {
         void FillRealDipole(double p3[4], double p4[4], double wgt,int nd); ///<Collect dipole kinematics and weights. Fill ai profiles.
         void FillRealEvent(TermType term = None); ///< for real filling without correlations. Need to FillRealDipole before.
         void FillResult(TermType term, double int_val, double int_error, double time); ///< Fill the result of integration.
+        void SetPDF(int npdf); ///< Set histograms for pdf memeber npdf.
         void CumulateResult(TermType term, double wgt); ///< Fill the result of integration.
         void Merge();
         void Dump();
@@ -107,7 +108,16 @@ class plotter {
         void print_dipole(XsecPoint pt);
         void print_dipoleVec(std::vector<XsecPoint> vec );
 
+        // PDF hists
+        int last_npdf;
+        std::vector<TH1D *> h_qt_PDF   ;
+        std::vector<TH1D *> h_y_PDF    ;
+        std::vector<TH2D *> h_qtVy_PDF ;
+        TH1 * clone_PDF( TH1 *h, int npdf);
+
         double verbose;
+
+
 
 #endif // USEROOT
 

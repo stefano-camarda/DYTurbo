@@ -60,15 +60,19 @@ plotter::plotter() :
     qt_y_real  (0),
     qt_y_virt  (0),
     qt_y_total (0),
+    last_npdf  (0),
     verbose    (false)
 {
     return;
 }
 
 plotter::~plotter(){
-    if(!h_qt       ) delete h_qt;
-    if(!h_y        ) delete h_y        ;
-    if(!h_qtVy     ) delete h_qtVy     ;
+    for (int i=0; i< h_qtVy_PDF.size(); i++){
+        SetPDF(i);
+        if(!h_qt   ) delete h_qt   ;
+        if(!h_y    ) delete h_y    ;
+        if(!h_qtVy ) delete h_qtVy ;
+    }
     if(!qt_y_resum ) delete qt_y_resum ;
     if(!qt_y_ct    ) delete qt_y_ct    ;
     if(!qt_y_lo    ) delete qt_y_lo    ;
@@ -284,7 +288,7 @@ void plotter::FillRealEvent(plotter::TermType term){
         }
         i++;
     }
-    if (term==Real){
+    if (term==Real){ // < here for DYRES
         qt = point.qt;
         y = point.y;
         CumulateResult(term,wgt_sum);
@@ -315,6 +319,10 @@ void plotter::FillEvent(double p3[4], double p4[4], double wgt){
     return;
 }
 
+void hists_setpdf_(int * npdf){
+    hists.SetPDF(*npdf);
+}
+
 // fortran interface to Root
 void hists_fill_(double p3[4], double p4[4], double *weight){
     //printf("wt %g\np3 %g %g %g %g\np4 %g %g %g %g\n",
@@ -333,6 +341,12 @@ void hists_fill_(double p3[4], double p4[4], double *weight){
     if ( decide_fiducial(p3,p4) ) hists.FillEvent(p3,p4,*weight);
     return;
 }
+
+void hists_fill_pdf_(double p3[4], double p4[4], double *weight, int *npdf){
+    hists.SetPDF(*npdf);
+    hists_fill_(p3,p4,weight);
+}
+
 void hists_dyres_fill_(double p3[4], double p4[4],double * weight, int * ii){
     if (!hists.IsInitialized()) hists.Init();
     // ii -- switch for term
@@ -365,12 +379,23 @@ void hists_dyres_fill_(double p3[4], double p4[4],double * weight, int * ii){
             //hists.FillRealDipole(p3,p4,*weight,nd);
     }
 }
+
 void hists_real_dipole_(double p3[4], double p4[4], double *weight, int * nd){
     hists.FillRealDipole(p3,p4,*weight,*nd);
 }
 
+void hists_real_dipole_pdf_(double p3[4], double p4[4], double *weight, int * nd, int* npdf){
+    hists.SetPDF(*npdf);
+    hists_real_dipole_(p3,p4,weight,nd);
+}
+
 void hists_real_event_(){
     hists.FillRealEvent();
+}
+
+void hists_real_event_pdf_(int *npdf){
+    hists.SetPDF(*npdf);
+    hists_real_event_();
 }
 
 void hists_finalize_(){
@@ -434,6 +459,48 @@ void plotter::FillResult(TermType term, double int_val, double int_error, double
     int ibin = h->FindBin(qt_val, y_val);
     h->SetBinContent ( ibin , int_val   );
     h->SetBinError   ( ibin , int_error );
+    return;
+}
+
+TH1 * plotter::clone_PDF(TH1*h,int npdf){
+    TH1 *out = 0;
+    TString name = h->GetName();
+    name += npdf;
+    out = (TH1*) h->Clone(name.Data());
+    out->Reset();
+    out->SetDirectory(0);
+    name = h->GetTitle();
+    name += " "; name+=npdf;
+    out->SetTitle(name);
+    return out;
+}
+
+void plotter::SetPDF(int npdf){
+    // if current npdf still same don't change anything
+    if (last_npdf==npdf) return;
+    // if empty add current hist to 0-th position
+    // assuming we always starting from central
+    int size = h_qtVy_PDF.size();
+    if (size==0) {
+        h_qt_PDF   .push_back( h_qt   );
+        h_y_PDF    .push_back( h_y    );
+        h_qtVy_PDF .push_back( h_qtVy );
+    }
+    // create new histograms
+    size = h_qtVy_PDF.size();
+    while (npdf >= size){
+        // clone, rename and reset
+        h_qt_PDF   .push_back( (TH1D *) clone_PDF( h_qt_PDF   [0] , size) );
+        h_y_PDF    .push_back( (TH1D *) clone_PDF( h_y_PDF    [0] , size) );
+        h_qtVy_PDF .push_back( (TH2D *) clone_PDF( h_qtVy_PDF [0] , size) );
+        size = h_qtVy_PDF.size();
+    }
+    // change poiters pointer
+    h_qt   = h_qt_PDF   [npdf];
+    h_y    = h_y_PDF    [npdf];
+    h_qtVy = h_qtVy_PDF [npdf];
+    // set last pdf
+    last_npdf = npdf;
     return;
 }
 
@@ -506,9 +573,12 @@ void plotter::Finalise(double xsection){
     // open file
     TFile *outf = TFile::Open(outfname.Data(), "recreate");
     // write
-    h_qt   -> Write();
-    h_y    -> Write();
-    h_qtVy -> Write();
+    for (int i=0; i< h_qtVy_PDF.size(); i++){
+        SetPDF(i);
+        h_qt   -> Write();
+        h_y    -> Write();
+        h_qtVy -> Write();
+    }
     for (auto pp : p_qtVy_A) pp->Write();
     // results
     qt_y_resum -> Write();
