@@ -1,8 +1,6 @@
       double precision function realint(vector,wgt,f)
       implicit none
       include 'constants.f'
-      include 'realonly.f'
-      include 'virtonly.f'
       include 'noglue.f'
       include 'vegas_common.f'
       include 'ptilde.f'

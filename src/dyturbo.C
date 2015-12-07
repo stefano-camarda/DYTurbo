@@ -69,8 +69,9 @@ int main( int argc , const char * argv[])
   opts.initDyresSettings();
   gaussinit_();
   iniflavreduce_();
-  setup_();
+  //setup_();
   dyturboinit();
+  rescinit_();
   //bins.init();
   bins.readfromfile(conf_file.c_str());
   //force number of cores to 0 (no parallelization)

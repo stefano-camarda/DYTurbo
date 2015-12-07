@@ -69,17 +69,10 @@ public:
   bool   zerowidth    ;
   double M_min        ;
   double M_max        ;
-  int    itmx1        ;
-  int    ncall1       ;
-  int    itmx2        ;
-  int    ncall2       ;
   int    rseed        ;
-  int    PDFset       ;
-  int    PDFmember    ;
   string LHAPDFset    ;
   int    LHAPDFmember ;
   string outputfile   ;
-  int    itmxToFile   ;
 
   //resonance mass and width (used for breit wigner unweighting)
   double rmass, rwidth;

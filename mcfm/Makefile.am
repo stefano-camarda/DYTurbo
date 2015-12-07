@@ -10,4 +10,4 @@ libmcfm_la_SOURCES = qqb_w1jet_gs.f  qqb_w1jet_v.f  qqb_w1jet_z.f  qqb_w2jet.f  
 #modified files
 libmcfm_la_SOURCES +=  alfamz_lhapdf.f dipolesub.f 
 
-pkginclude_HEADERS = agq.f alfacut.f b0.f ckm.f ckm1.f clustering.f constants.f cutoff.f dipolescale.f dynamicscale.f efficiency.f epinv2.f epinv.f ewcharge.f ewcouple.f ewinput.f facscale.f flags.f gridinfo.f lhapdf.f lc.f limits.f
+pkginclude_HEADERS = agq.f alfacut.f b0.f ckm.f ckm1.f clustering.f constants.f cutoff.f dipolescale.f dynamicscale.f efficiency.f epinv2.f epinv.f ewcharge.f ewcouple.f ewinput.f facscale.f flags.f gridinfo.f lhapdf.f lc.f limits.f jetcuts.f

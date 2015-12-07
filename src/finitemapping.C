@@ -17,7 +17,7 @@ double dyreal(double m, double y, double qt, double phicm, double phiZ, double c
   //set up constants
   double rmass = opts.rmass;
   double rwidth = opts.rwidth;
-  double minmass = rtsmin_.rtsmin_;
+  double minmass = sqrt(taumin_.taumin_)*energy_.sroot_;
   double sqrts = energy_.sroot_;;
   double s = sqrts*sqrts;
   double mmin = opts.mlow;
@@ -127,7 +127,7 @@ double dyvirt(double m, double y, double qt, double phicm, double phiZ, double c
   //set up constants
   double rmass = opts.rmass;
   double rwidth = opts.rwidth;
-  double minmass = rtsmin_.rtsmin_;
+  double minmass = sqrt(taumin_.taumin_)*energy_.sroot_;
   double sqrts = energy_.sroot_;;
   double s = sqrts*sqrts;
   double mmin = opts.mlow;
@@ -232,7 +232,7 @@ double dyct(double m, double y, double qt, double phicm, double phiZ, double cos
   //set up constants
   double rmass = opts.rmass; //91.1876;
   double rwidth = opts.rwidth; //2.495;
-  double minmass = rtsmin_.rtsmin_; //40.;
+  double minmass = sqrt(taumin_.taumin_)*energy_.sroot_; //40.;
   double sqrts = energy_.sroot_; //7000.;
   double s = sqrts*sqrts;
   double mmin = opts.mlow; //66.;

@@ -12,17 +12,10 @@ part         = tota           # part
 zerowidth    = false          # zerowidth
 M_min        = 66d0
 M_max        = 116d0          # M_min, M_max
-itmx1        = 1
-ncall1       = 1              # itmx1, ncall1
-itmx2        = 1
-ncall2       = 1              # itmx2, ncall2
 rseed        = 123456         # rseed
-PDFset       = 92
-PDFmember    = 0              # set,member (native   PDFs)
 LHAPDFset    = CT10nnlo
 LHAPDFmember = 0              # set, member (LHAPDFs)
 outputfile   = default        # outputfile
-itmxToFile   = 0              # number of last itmx to write on file
 
 
 # DYTURBO settings

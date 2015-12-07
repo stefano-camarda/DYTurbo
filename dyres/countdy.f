@@ -11,8 +11,6 @@ C     Scale dependence included up to NNLO
       integer mode
       double precision cthmom0,cthmom1,cthmom2
       include 'constants.f'
-      include 'realonly.f'
-      include 'virtonly.f'
       include 'noglue.f'
       include 'vegas_common.f'
       include 'ptilde.f'

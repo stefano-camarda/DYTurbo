@@ -107,17 +107,10 @@ void settings::readfromfile(const string fname){
     zerowidth      = in.GetBool   ( "zerowidth"      ); //false          # zerowidth
     M_min          = in.GetNumber ( "M_min"          ); //66d0
     M_max          = in.GetNumber ( "M_max"          ); //116d0          # M_min,      M_max
-    itmx1          = in.GetNumber ( "itmx1"          ); //1
-    ncall1         = in.GetNumber ( "ncall1"         ); //100000         # itmx1,      ncall1
-    itmx2          = in.GetNumber ( "itmx2"          ); //1
-    ncall2         = in.GetNumber ( "ncall2"         ); //100            # itmx2,      ncall2
     rseed          = in.GetNumber ( "rseed"          ); //123456         # rseed
-    PDFset         = in.GetNumber ( "PDFset"         ); //92
-    PDFmember      = in.GetNumber ( "PDFmember"      ); //0              # set,member  (native  PDFs)
     LHAPDFset      = in.GetString ( "LHAPDFset"      ); //CT10nlo.LHgrid
     LHAPDFmember   = in.GetNumber ( "LHAPDFmember"   ); //0              # set,        member   (LHAPDFs)
     outputfile     = in.GetString ( "outputfile"     ); //'LHC7-Z-nnlo'  # outputfile
-    itmxToFile     = in.GetNumber ( "itmxToFile"     ); //0              # number      of       last       itmx    to          write           on          file
 
     rmass              = in.GetNumber ( "rmass"           ); //91.1876
     rwidth             = in.GetNumber ( "rwidth"          ); //2.495
@@ -238,21 +231,8 @@ void settings::initDyresSettings(){
     g_param_     . g_param_   = g_param      ;         //1.0e0          # g_param
     nnlo_        . order_     = order        ;         //1              # order
     zerowidth_   . zerowidth_ = zerowidth    ;         //false          # zerowidth
-    mwminmax_    . Mwmin_     = M_min        ;         //66d0
-    mwminmax_    . Mwmax_     = M_max        ;         //116d0          # M_min,     M_max
-    iterat_      . itmx1_     = itmx1        ;         //1
-    iterat_      . ncall1_    = ncall1       ;         //100000         # itmx1,     ncall1
-    iterat_      . itmx2_     = itmx2        ;         //1
-    iterat_      . ncall2_    = ncall2       ;         //100            # itmx2,     ncall2
-    rseed_       . rseed_     = rseed        ;         //123456         # rseed
-    pdfiset_     . iset_      = PDFset       ;         //92
-    prefix_      . nset_      = PDFmember    ;         //0              # set,member (native PDFs)
-    lhapdf_int_  . PDFmember_ = LHAPDFmember ;         //0              # set,       member  (LHAPDFs)
-    pr_          . pr_        = itmxToFile   ;         //0              # number     of      last      itmx to write on file
 
     strncpy( part_        . part_      , part         .c_str(), part       .size() ); //virt           # part
-    strncpy( lhapdf_char_ . PDFname_   , LHAPDFset    .c_str(), LHAPDFset  .size() ); //CT10nlo.LHgrid
-    strncpy( runstring_   . runstring_ , outputfile   .c_str(), outputfile .size() ); //'LHC7-Z-nnlo'  # outputfile
 
     zcouple_ . q1_ = (useGamma ? -1 :  0 );
 
@@ -278,23 +258,15 @@ void settings::dumpAll(){
         dumpI ( "order       ",  nnlo_        . order_      ) ;
         dumpS ( "part        ",  part_        . part_       ) ;
         dumpB ( "zerowidth   ",  zerowidth_   . zerowidth_  ) ;
-        dumpD ( "M_min       ",  mwminmax_    . Mwmin_      ) ;
-        dumpD ( "M_max       ",  mwminmax_    . Mwmax_      ) ;
-        dumpI ( "itmx1       ",  iterat_      . itmx1_      ) ;
-        dumpI ( "ncall1      ",  iterat_      . ncall1_     ) ;
-        dumpI ( "itmx2       ",  iterat_      . itmx2_      ) ;
-        dumpI ( "ncall2      ",  iterat_      . ncall2_     ) ;
-        dumpI ( "rseed       ",  rseed_       . rseed_      ) ;
-        dumpI ( "PDFset      ",  pdfiset_     . iset_       ) ;
-        dumpI ( "PDFmember   ",  prefix_      . nset_       ) ;
-        dumpS ( "LHAPDFset   ",  lhapdf_char_ . PDFname_    ) ;
-        dumpI ( "LHAPDFmember",  lhapdf_int_  . PDFmember_  ) ;
-        dumpS ( "outputfile  ",  runstring_   . runstring_  ) ;
-        dumpI ( "itmxToFile  ",  pr_          . pr_         ) ;
     }
 
     if (print_inputs) {
         printf("Input settings:\n");
+        dumpS ( "LHAPDFset   ",  LHAPDFset                  ) ;
+        dumpI ( "LHAPDFmember",  LHAPDFmember               ) ;
+        dumpI ( "rseed       ",  rseed                      ) ;
+        dumpD ( "M_min       ",  M_min      ) ;
+        dumpD ( "M_max       ",  M_max      ) ;
         dumpD("rmass              ", rmass               );
         dumpD("rwidth             ", rwidth              );
         dumpD("ylow               ", ylow                );
