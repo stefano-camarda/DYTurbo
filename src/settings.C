@@ -352,7 +352,6 @@ void settings::dumpAll(){
         dumpD ( "Vcd       " , cabib_    . Vcd_       );
         dumpD ( "Vcs       " , cabib_    . Vcs_       );
         dumpD ( "Vcb       " , cabib_    . Vcb_       );
-        dumpD ( "mb_msbar  " , mb_msbar_ . mb_msbar_  );
         dumpD ( "epinv     " , epinv_    . epinv_     );
         dumpD ( "epinv2    " , epinv2_   . epinv2_    );
     }

@@ -65,6 +65,7 @@ int main( int argc , const char * argv[])
   if (argc>1) {
       conf_file = argv[1];
   }
+  SMparameters();
   opts.readfromfile(conf_file.c_str());
   opts.initDyresSettings();
   gaussinit_();

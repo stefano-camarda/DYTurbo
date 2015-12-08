@@ -104,6 +104,7 @@ extern "C" {
     double zmass_;
     double zwidth_;
     double twidth_;
+    double tauwidth_;
     double mtausq_;
     double mcsq_;
     double mbsq_;
@@ -160,10 +161,10 @@ extern "C" {
     double ason4pi_;
   } qcdcouple_;
 
-  // H+b mb msbar value
+  /*  // H+b mb msbar value
   extern struct {
     double mb_msbar_;
-  } mb_msbar_;
+    } mb_msbar_;*/
 
   // dimensional regularization parameters
   extern struct {

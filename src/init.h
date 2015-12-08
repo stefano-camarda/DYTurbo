@@ -4,6 +4,7 @@
 //#include <map>
 using namespace std;
 
+extern void SMparameters();
 extern void dyturboinit();
 
 extern map <int,string> plabel;

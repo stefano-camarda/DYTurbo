@@ -5,7 +5,7 @@ AM_FFLAGS = -I$(srcdir)/../dyres
 noinst_LTLIBRARIES = libmcfm.la
 
 #original files
-libmcfm_la_SOURCES = qqb_w1jet_gs.f  qqb_w1jet_v.f  qqb_w1jet_z.f  qqb_w2jet.f  qqb_z1jet.f  qqb_z1jet_gs.f  qqb_z1jet_v.f  qqb_z1jet_z.f  qqb_z2jet.f z2jetsq.f w2jetsq.f A51.f A52.f A5NLO.f ampqqb_qqb.f aqqb_zbb.f boost.f branch.f breitw.f ckmfill.f lfunctions.f dclaus.f i3m.f transform.f ddilog.f lnrat.f couplz.f coupling.f dipoles.f dot.f dotem.f gen3.f getptildejet.f masscuts.f storecsz.f mdata.f phase4.f phase3.f subqcd.f phi1_2m.f phi1_2.f phi3m0.f qqb_w_g.f qqb_w.f qqb_w_gvec.f qqb_z.f qqb_z_gvec.f qqb_z_g.f scaleset.f smalls.f spinoru.f virt5.f includedipole.f zeromsq.f storeptilde.f
+libmcfm_la_SOURCES = qqb_w1jet_gs.f  qqb_w1jet_v.f  qqb_w1jet_z.f  qqb_w2jet.f  qqb_z1jet.f  qqb_z1jet_gs.f  qqb_z1jet_v.f  qqb_z1jet_z.f  qqb_z2jet.f z2jetsq.f w2jetsq.f A51.f A52.f A5NLO.f ampqqb_qqb.f aqqb_zbb.f boost.f branch.f breitw.f ckmfill.f lfunctions.f dclaus.f i3m.f transform.f ddilog.f lnrat.f couplz.f coupling.f dipoles.f dot.f dotem.f gen3.f getptildejet.f masscuts.f storecsz.f phase4.f phase3.f subqcd.f phi1_2m.f phi1_2.f phi3m0.f qqb_w_g.f qqb_w.f qqb_w_gvec.f qqb_z.f qqb_z_gvec.f qqb_z_g.f scaleset.f smalls.f spinoru.f virt5.f includedipole.f zeromsq.f storeptilde.f # mdata.f
 
 #modified files
 libmcfm_la_SOURCES +=  alfamz_lhapdf.f dipolesub.f 
