@@ -3,5 +3,6 @@ AUTOMAKE_OPTIONS = foreign
 AM_FFLAGS = -I$(srcdir)/../mcfm -I$(srcdir)/../src
 
 noinst_LTLIBRARIES = libdyres.la
-libdyres_la_SOURCES = main2.f varios.f csection.f integration.f mellinh2.f strcat.f ptyrap.f mdata.f resinit.f besselkfast.f realint.f virtint.f lowint_incldip.f countDYnew-RES.f gen4MIO.f smalls.f includedipole.f qqb_w_g.f scaleset.f qqb_z_g.f myli2.f genBORN2qT.f qqb_w.f phase4.f qqb_z.f spinoru.f virt5.f qqb_w_gvec.f storecsz.f qqb_z_gvec.f phase3.f phi1_2.f phi3m0.f r.f zeromsq.f storeptilde.f subqcd.f phi1_2m.f countdy.f pdfmoments.f
-pkginclude_HEADERS = const.h jetlabel.f masses.f maxwt.f mb_msbar.f mmsq_cs.f msq_cs.f mxdim.f nlooprun.f noglue.f npart.f nplot.f nwz.f pdlabel.f phasemin.f PR_cs_new.f PR_new.f process.f PR_twojet.f ptilde.f qcdcouple.f qqgg.f realonly.f removebr.f rescoeff.f scale.f scales.h scheme.f sprods_com.f vegas_common.f virtonly.f zcouple.f zerowidth.f zprods_com.f zprods_decl.f
+libdyres_la_SOURCES = varios.f csection.f integration.f mellinh2.f strcat.f resinit.f besselkfast.f countDYnew-RES.f gen4MIO.f smalls.f includedipole.f scaleset.f myli2.f genBORN2qT.f spinoru.f virt5.f r.f zeromsq.f storeptilde.f
+
+pkginclude_HEADERS = const.h realonly.f removebr.f rescoeff.f scale.f scales.h scheme.f sprods_com.f vegas_common.f virtonly.f zcouple.f zerowidth.f zprods_com.f zprods_decl.f

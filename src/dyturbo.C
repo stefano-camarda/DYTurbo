@@ -180,11 +180,11 @@ int main( int argc , const char * argv[])
       for (vector<double>::iterator qit = bins.qtbins.begin(); qit != bins.qtbins.end()-1; qit++)
       {
 
-      //Set integration boundaries
       totval=toterror2=0;
       totvals.clear();
       for (int i = 0; i < opts.totpdf; i++)
 	totvals.push_back(0);
+      //Set integration boundaries
       setbounds(opts.mlow, opts.mhigh, *qit, *(qit+1), *yit, *(yit+1) );//  opts.ylow, opts.yhigh);
       print_qtbin();
       print_ybin();

@@ -12,7 +12,6 @@ CC    Used to compute Higgs or W(Z) cross section at NLO only
       include 'facscale.f'
       include 'noglue.f'
       include 'efficiency.f'
-      include 'maxwt.f'
       include 'phasemin.f'
       include 'dynamicscale.f'
       include 'options.f'
@@ -180,17 +179,6 @@ c--- calculate PDF's
       call dotem(nvec,pjet,s)
 
 
-c      val=lowint*wgt
-cc--- update the maximum weight so far, if necessary
-cc---  but not if we are already unweighting ...
-c      if ((.not.unweight) .and. (dabs(val) .gt. wtmax)) then
-c        wtmax=dabs(val)
-c      endif
-c
-c      if (bin) then
-c        val=val/dfloat(itmx)
-c          call plotter(pjet,val,2)
-c      endif
         if (doFill.ne.0) then
             val=lowint*wgt
             call hists_fill(pjet(3,:),pjet(4,:),val)

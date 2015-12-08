@@ -160,5 +160,13 @@ if test x$enable_checkBounds == xyes; then
 fi
 
 
-AC_CONFIG_FILES([Makefile src/Makefile dyres/Makefile dynnlo/Makefile mcfm/Makefile cernlib/Makefile dequad/Makefile dyturbo-config])
+AC_CONFIG_FILES([Makefile 
+	 	 src/Makefile
+		 integrands/Makefile
+		 dyres/Makefile
+		 dynnlo/Makefile
+		 mcfm/Makefile
+		 cernlib/Makefile
+		 dequad/Makefile
+		 dyturbo-config])
 AC_OUTPUT
