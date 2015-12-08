@@ -15,6 +15,7 @@
 #include "finitemapping.h"
 #include "cubacall.h"
 #include "plotter.h"
+#include "printsettings.h"
 
 using namespace std;
 
@@ -70,29 +71,27 @@ int main( int argc , const char * argv[])
   opts.initDyresSettings();
   gaussinit_();
   iniflavreduce_();
-  //setup_();
   dyturboinit();
   rescinit_();
   //bins.init();
   bins.readfromfile(conf_file.c_str());
-  //force number of cores to 0 (no parallelization)
-  cubacores(opts.cubacores,1000000); // < move this to cubainit
+  cubacores(opts.cubacores,1000000);   //< set number of cores (move this to cubainit)
   cubaexit((void (*)()) exitfun,NULL); //< merge at the end of the run
-  ///@todo: print out EW parameters and other settings
-  // just a check
-  opts.dumpAll();
-  //return 0;
   // histogram output
   hists.Init();
   /***********************************/
 
-  double costh, m, qt, y;
-  double value, error, totval, toterror2;
-  vector <double> vals;
-  vector <double> totvals;
+  /***********************************/
+  //Initialization
+  ///@todo: print out EW parameters and other settings
+  // just a check
+  opts.dumpAll();
+  printsettings();
+  /***********************************/
 
   /**************************************/
   //Checks for resummed cross section
+  double costh, m, qt, y;
   //  std::cout << std::setprecision(15);
   int mode = 0;
   costh = 0.3; m = 91; qt = 1; y = 0;
@@ -134,7 +133,7 @@ int main( int argc , const char * argv[])
   /**************************************/
   //Checks for finite order cross section
   //born level variables (6 dimensions)
-  // m, qt, y, costh;
+  //double m, qt, y, costh;
   double phicm, phiZ;
   costh = 0.0;  m = 91.1876;  qt = 5.;  y = 0.5;  phicm = 0.0;  phiZ = 0.;
 
@@ -163,6 +162,10 @@ int main( int argc , const char * argv[])
   /**************************************/
 
   // Cuba integration
+  double value, error, totval, toterror2;
+  vector <double> vals;
+  vector <double> totvals;
+
   cout << endl << "Start integration of";
   if (opts.doRES  ) cout << " resummation";
   if (opts.doVV   ) cout << " double virtual";

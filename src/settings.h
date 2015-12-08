@@ -43,7 +43,6 @@ class settings
 {
 public:
   settings() {};
-  //void init();
   void readfromfile(const string fname);
   void initDyresSettings();
 
@@ -147,7 +146,6 @@ class binning
 {
  public:
   binning() {};
-  void init();
   void readfromfile(const string fname);
   // private:
   vector <double> qtbins;
@@ -157,9 +155,7 @@ class binning
 };
 
 
-
 extern settings opts;
 extern binning bins;
-
 
 #endif

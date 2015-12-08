@@ -5,7 +5,8 @@ AM_CPPFLAGS = -fpermissive -I$(srcdir)/../include -I$(srcdir)/../dequad $(CUBA_C
 AM_FFLAGS =  -I$(srcdir)/../dyres -I$(srcdir)/../mcfm #-I$(srcdir)/../src
 
 lib_LTLIBRARIES = libdyturbo.la
-libdyturbo_la_SOURCES = resintegr.C integr.C settings.C init.C finintegr.C finitemapping.C cubacall.C plotter.C switch.C flavreduce.f gaussinit.f cuts.C usercuts.C pdf.C rescinit.f pdfmoments.f
+libdyturbo_la_SOURCES = resintegr.C integr.C settings.C init.C finintegr.C finitemapping.C cubacall.C plotter.C switch.C cuts.C usercuts.C pdf.C printsettings.C coupling.C
+libdyturbo_la_SOURCES += flavreduce.f gaussinit.f rescinit.f pdfmoments.f
 libdyturbo_la_LIBADD = ../integrands/libintegrands.la ../dyres/libdyres.la ../dynnlo/libdynnlo.la ../mcfm/libmcfm.la
 
 bin_PROGRAMS = dyturbo

@@ -2,6 +2,7 @@
 #include "settings.h"
 #include "init.h"
 #include "pdf.h"
+#include "coupling.h"
 
 #include <math.h>
 #include <iostream>
@@ -84,7 +85,7 @@ void dyturboinit()
 
   colc_.colourchoice_=0;
   double rtsmin = 40;
-  cutoff_.cutoff_=0.001;
+  cutoff_.cutoff_=0.001; //add to settings (what is this cutoff?)
 
   flags_.qflag_=true;
   flags_.gflag_=true;
@@ -122,15 +123,13 @@ void dyturboinit()
   plabel[1]="pp";
   plabel[2]="pp";
 
-  dycoupling_();
+  //dycoupling_();
+  coupling::init();
 
   dymasses_.mb_=0; //probably irrelevant to set the bottom mass to 0, since it is not used anywhere
      
-  if ((density_.ih1_==1) && (density_.ih2_ == -1))
-    cout << "Colliding proton-antiproton" << endl;
-  else if((density_.ih1_==1) && (density_.ih2_ == 1))
-    cout << "Colliding proton-proton" << endl;
-  else
+  if (!((density_.ih1_==1) && (density_.ih2_ == -1))
+      && !((density_.ih1_==1) && (density_.ih2_ == 1)))
     {
       cout << "The selected initial state is not valid," << endl;
       cout << "please select proton-proton (1 1) or proton-antiproton (1 -1)" << endl;
@@ -147,7 +146,6 @@ void dyturboinit()
   //W+->l+nubar
   if (nproc_.nproc_ == 1)
     {
-      cout << "W+ ->  nu(p3)+e+(p4) production " << endl;
       plabel[3]="nl";
       plabel[4]="ea";
       plabel[5]="pp";
@@ -162,7 +160,6 @@ void dyturboinit()
   //W-=>l-nu
   else if(nproc_.nproc_ == 2)
     {
-      cout << "W- ->  e^-(p3)+nu~(p4) production " << endl;
       plabel[3]="el";
       plabel[4]="na";
       plabel[5]="pp";
@@ -175,7 +172,6 @@ void dyturboinit()
     }
   else if(nproc_.nproc_==3)
     {
-      cout << "Z ->  e-(p3)+e+(p4) production " << endl;
       plabel[3]="el";
       plabel[4]="ea";
       plabel[5]="pp";
@@ -202,8 +198,13 @@ void dyturboinit()
     }
 
   //Breit Wigner unweighting settings
-  breit_.n2_=0; //the jets, particles 5 and 6, are not resonant
-  breit_.n3_=1; //the leptons, particles 3 and 4, are resonant
+  //the jets, particles 5 and 6, are not resonant
+  breit_.n2_=0; 
+  breit_.mass2_=0;
+  breit_.width2_=0;
+
+  //the leptons, particles 3 and 4, are resonant
+  breit_.n3_=1;
 
   //Decide if worth using Breit-Wigner unweighting or not for the dilepon system
   //n3=0
@@ -211,18 +212,6 @@ void dyturboinit()
   //if(nproc.eq.3) vmass=zmass
   //if(mwmin.lt.vmass.and.mwmax.gt.vmass) n3=1
 
-  //Print out some information on settings
-  if (nnlo_.order_ == 1)
-    cout << " Computing NLO(+NLL) cross section" << endl;
-  else if (nnlo_.order_ == 2)
-    cout << " Computing NNLO(+NNLL) cross section" << endl;
-  else
-    {
-      cout << " Invalid order, please select 1 (NLO) or 2 (NNLO)" << endl;
-      exit(0);
-    }
-  cout << "Center-of-mass energy " << energy_.sroot_ << endl;
-    
   ckmfill_(nwz_.nwz_);
 
   setalphas(); //probably not needed, since already set in dycoupling

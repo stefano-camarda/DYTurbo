@@ -7,6 +7,8 @@
 #define NLOOP 2
 #define mxpart 12
 
+#define XN 3
+
 extern "C" {
 
   // rewritten functions
@@ -124,6 +126,26 @@ extern "C" {
     int ewscheme_;
   } ewscheme_;
 
+  // ewcouple
+  extern struct {
+    double Gf_;
+    double gw_;
+    double xw_;
+    double gwsq_;
+    double esq_;
+    double vevsq_;
+  } ewcouple_;
+
+  //alpha EM (MZ)
+  /*  extern struct {
+    double aemmz_;
+    } em_;*/
+
+  extern struct {
+    double Q_[2*NF+1];
+    double tau_[2*NF+1];
+  } ewcharge_;
+
   //branching ratio
   extern struct {
     double brnrat_;
@@ -161,6 +183,10 @@ extern "C" {
     double ason4pi_;
   } qcdcouple_;
 
+  extern struct {
+    double b0_;
+  } b0_;
+
   /*  // H+b mb msbar value
   extern struct {
     double mb_msbar_;
@@ -191,9 +217,9 @@ extern "C" {
     double amz_;
   } couple_;
 
-  extern struct {
+  /*extern struct {
     int nlooprun_;
-  } nlooprun_;
+    } nlooprun_;*/
 
   /*  extern struct {
     int lhapdfs_;
