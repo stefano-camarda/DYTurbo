@@ -170,7 +170,7 @@ merge_cubatures(){
     DRYRUN=
     tmp_phase=qt010y01
     tot_phase=qt0100y05
-    outdir=results_merge/quad_151204
+    outdir=results_merge/quad_151207
     name="results/dyturbo_wm_lhc7_WZZPT-CT10_0_${tmp_phase}t*3D_seed_1000.root"
     mkdir -p $outdir
     for f in `ls $name`

@@ -1445,6 +1445,21 @@ class TheoUncStudy:
         pass
     pass
 
+def makeStatPlot():
+    name="res_stat_quad"
+    file="results_merge/quad_151207/dyturbo_wm_lhc7_WZZPT-CT10_0_qt0100y05tRES3D_seed_merge.root"
+    hfin="qt_y_total"
+    hin = pl.GetHistSetTitNam(name,file,hfin)
+    h = pl.MakeUncBand("stat",[hin],band="error",rel=True)
+    h.SetTitle("stat rel unc")
+    pl.MakeNiceGradient()
+    pl.NewCanvas(name)
+    pl.SetFrameStyle2D([h])
+    h.SetMaximum(0.001)
+    h.Draw("COLZ")
+    pl.Save()
+    pass
+
 
 
 ## Documentation for main
@@ -1463,8 +1478,9 @@ if __name__ == '__main__' :
     #wwidth_table()
     #uncert_as_g()
     #find_fluctuations()
-    DY = TheoUncStudy()
-    DY.DoStudy()
+    #DY = TheoUncStudy()
+    #DY.DoStudy()
+    makeStatPlot()
     pass
 
 

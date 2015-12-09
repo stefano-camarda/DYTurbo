@@ -57,7 +57,7 @@ prepare_script(){
     nprocessors=$(($cubacores+1))
     walltime=5:00
     queue=atlasshort
-    if [[ $program =~ dyres ]]
+    if [[ $program =~ dyres ]] || [[ $variation =~ all ]]
     then
         walltime=20:00
         queue=atlaslong
@@ -576,11 +576,9 @@ submit_allProg(){
                     #termlist="RES CT LO"
                     #if [[ $order == 2 ]]; then termlist="RES CT REAL VIRT"; fi;
                     #if [[ $order == 2 ]]; then termlist="REAL"; fi;
-                    #seedlist="1000-1999"
                     termlist="RES3D CT3D"
-                    #if [[ $order == 2 ]]; then termlist="RES3D CT3D"; fi;
+                    #if [[ $order == 2 ]]; then termlist="RES3D CT3D REAL VIRT"; fi;
                     if [[ $order == 2 ]]; then termlist="REAL VIRT"; fi;
-                    seedlist=1000
                 fi
                 if [[ $program =~ ^dyres ]] 
                 then
@@ -598,9 +596,10 @@ submit_allProg(){
                 for terms in $termlist
                 do
                     # run all pdf variations at once
-                    if [[ $terms =~ REAL ]] 
+                    if [[ $terms =~ REAL ]]  || [[ $terms =~ VIRT ]]
                     then
                         variation=all
+                        seedlist=1010
                     fi
                     # for qt/y splits
                     NsplitQT=1
@@ -609,6 +608,8 @@ submit_allProg(){
                     then
                         NsplitQT=10
                         NsplitY=5
+                        variation=all
+                        seedlist=0-54
                     fi
                     for iqt in `seq $NsplitQT`
                     do

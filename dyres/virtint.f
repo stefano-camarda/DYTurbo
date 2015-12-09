@@ -1,4 +1,4 @@
-      double precision function virtint(r,wgt,f)
+      333ble precision function virtint(r,wgt,f)
       implicit none
       include 'constants.f'
       include 'noglue.f'
@@ -181,6 +181,8 @@ c     start PDF loop
       do npdf=0,totpdf-1
          call setpdf(npdf)
          call hists_setpdf(npdf)
+c     skip for scanning events
+         if npdf.ne.0.and.dofill.eq.0 goto 333
 c     intitialise xmsq to 0
          xmsq=0d0
 
@@ -372,7 +374,7 @@ C          call hists_fill_PDF(p(3,:),p(4,:),virtint*wgt,npdf)
 
       enddo                     ! end PDF loop
 
-      virtint = f(1)
+ 333  virtint = f(1)
 
       return
 
