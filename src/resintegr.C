@@ -346,7 +346,9 @@ integrand_t resintegrand3d(const int &ndim, const double x[], const int &ncomp, 
   }
 
   if (opts.timeprofile)
-    cout << setw (3) << "m" << setw(10) << m << setw(4) << "qt" << setw(10) <<  qt
+    cout << setw (3) << "m" << setw(10) << m
+	 << setw(4) << "qt" << setw(10) <<  qt
+      	 << setw(4) << "y" << setw(10) <<  y
 	 << setw(8) << "result" << setw(10) << f[0]
 	 << setw(10) << "tot time" << setw(10) << float( end_time - begin_time ) /  CLOCKS_PER_SEC
 	 << endl;
