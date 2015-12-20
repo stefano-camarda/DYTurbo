@@ -7,9 +7,9 @@ void yline()
   double y = 0.0;
   int mode = 1;
 
-  double y1 = -5;
-  double y2 = 5;
-  int ny = 200;
+  double y1 = opts.ylow;
+  double y2 = opts.yhigh;
+  int ny = 500;
 
   ofstream yf("yline.C");
   yf << "{" << endl;
@@ -21,8 +21,8 @@ void yline()
       double y = i*hy+y1;
       setcthmqty(costh, m, qt, y);//set global variables to costh, m, qt, y
       genV4p(m, qt, y, 0.);//generate boson 4-momentum, with m, qt, y and phi=0
-      //      yf << "gy->SetPoint(gy->GetN(), " << i*hy+y1 << ", " << resumm_(costh,m,qt,y,mode) << ");" << endl;
-      yf << "gy->SetPoint(gy->GetN(), " << i*hy+y1 << ", " << countterm_(costh,m,qt,y,mode) << ");" << endl;
+      yf << "gy->SetPoint(gy->GetN(), " << i*hy+y1 << ", " << resumm_(costh,m,qt,y,mode) << ");" << endl;
+      //yf << "gy->SetPoint(gy->GetN(), " << i*hy+y1 << ", " << countterm_(costh,m,qt,y,mode) << ");" << endl;
     }
   yf << "gy->Draw();" << endl;
   yf << "}" << endl;
@@ -33,7 +33,7 @@ void mline()
 {
   double costh = 0.1;
   double m = opts.rmass;
-  double qt = 50.;
+  double qt = 10;
   double y =  (opts.ylow + opts.yhigh)/2.;
   int mode = 1;
 
@@ -50,8 +50,8 @@ void mline()
       double m = i*hm+m1;
       setcthmqty(costh, m, qt, y);//set global variables to costh, m, qt, y
       genV4p(m, qt, y, 0.);//generate boson 4-momentum, with m, qt, y and phi=0
-      //      mf << "gm->SetPoint(gm->GetN(), " << i*hm+m1 << ", " << resumm_(costh,m,qt,y,mode) << ");" << endl;
-      mf << "gm->SetPoint(gm->GetN(), " << i*hm+m1 << ", " << countterm_(costh,m,qt,y,mode) << ");" << endl;
+      mf << "gm->SetPoint(gm->GetN(), " << i*hm+m1 << ", " << resumm_(costh,m,qt,y,mode) << ");" << endl;
+      //mf << "gm->SetPoint(gm->GetN(), " << i*hm+m1 << ", " << countterm_(costh,m,qt,y,mode) << ");" << endl;
     }
   mf << "gm->Draw();" << endl;
   mf << "}" << endl;
@@ -186,8 +186,8 @@ void ptline()
       double qt = i*hp+p1;
       setcthmqty(costh, m, qt, y);//set global variables to costh, m, qt, y
       genV4p(m, qt, y, 0.);//generate boson 4-momentum, with m, qt, y and phi=0
-      //      pf << "gp->SetPoint(gp->GetN(), " << i*hp+p1 << ", " << resumm_(costh,m,qt,y,mode) << ");" << endl;
-      pf << "gp->SetPoint(gp->GetN(), " << i*hp+p1 << ", " << countterm_(costh,m,qt,y,mode) << ");" << endl;
+      pf << "gp->SetPoint(gp->GetN(), " << i*hp+p1 << ", " << resumm_(costh,m,qt,y,mode) << ");" << endl;
+      //pf << "gp->SetPoint(gp->GetN(), " << i*hp+p1 << ", " << countterm_(costh,m,qt,y,mode) << ");" << endl;
     }
   pf << "gp->Draw();" << endl;
   pf << "}" << endl;
