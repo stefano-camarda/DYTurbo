@@ -1,5 +1,5 @@
 ACLOCAL_AMFLAGS=-I m4
-SUBDIRS = cernlib dequad dyres dynnlo mcfm integrands src
+SUBDIRS = cernlib dequad dyres dynnlo mcfm integrands src origdyres
 EXTRA_DIST= install-cuba install-lhapdf pdfsets.list README.md
 bin_SCRIPTS = dyturbo-config
 

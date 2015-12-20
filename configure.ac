@@ -77,7 +77,7 @@ fi
 
 # set up lhapdf flags
 LHAPDF_CPPFLAGS=`${lhapdf_config} --cppflags`
-LHAPDF_LDFLAGS=`${lhapdf_config} --libdir`/libLHAPDF.a
+LHAPDF_LDFLAGS=`${lhapdf_config} --ldflags`
 AC_SUBST(LHAPDF_CPPFLAGS)
 AC_SUBST(LHAPDF_LDFLAGS)
 AC_MSG_RESULT([Using $lhapdf_config])
@@ -109,6 +109,16 @@ AC_MSG_RESULT([Using $cubadir])
 #	AC_MSG_RESULT([Using -lcuba])
 #        ])
 #AC_SUBST(CUBA_LDFLAGS)
+
+# check for DYRES installation
+AC_MSG_CHECKING([for DYRes installation])
+# search in Cuba-4.2
+dyresinst=`ls -d ${PWD}/origdyres/DYRes-v1.0`
+if test x$dyresinst == x; then
+    # if not found, install it
+    AC_MSG_RESULT([Install DYRes])
+    cd origdyres && ./install-dyres && cd ..
+fi
 
 # Set --enable-root option, for linking histograms
 AC_ARG_ENABLE([root],
@@ -163,6 +173,7 @@ fi
 AC_CONFIG_FILES([Makefile 
 	 	 src/Makefile
 		 integrands/Makefile
+		 origdyres/Makefile
 		 dyres/Makefile
 		 dynnlo/Makefile
 		 mcfm/Makefile
