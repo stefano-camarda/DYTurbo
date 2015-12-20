@@ -572,7 +572,7 @@ c      endif
 
 
          if(id.gt.2) then
-         chi2=chi2+(f2-f)**2**aaaa*x**1.2  !*aextra
+         chi2=chi2+(f2-f)**2*aaaa*x**1.2  !*aextra
          elseif(id.eq.1) then
          chi2=chi2+(f2-f)**2*aaaa  !*300
          elseif(id.eq.2) then
