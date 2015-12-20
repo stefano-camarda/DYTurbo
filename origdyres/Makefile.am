@@ -9,5 +9,5 @@ liborigintegrands_la_SOURCES = main2.f intde2.f alfamz.f varios.f csection.f new
 bin_PROGRAMS = dyrestest
 dyrestest_SOURCES = dyrestest.C
 dyrestest_LDADD = liborigintegrands.la ../cernlib/libcern.la \
-	-lgfortran $(LHAPDFDYRES_LDFLAGS)
+	-lgfortran $(LHAPDF_LDFLAGS)
 
