@@ -52,7 +52,8 @@ void printsettings()
   cout << setw(35) << "Renormalization scale: mur ="  << setw(19) << scale_.scale_ << setw(7) << "GeV" << endl;
   cout << setw(35) << "Factorization scale:   muf ="  << setw(19) << facscale_.facscale_ << setw(7) << "GeV" <<endl;
   cout << setw(35) << "Resummation scale:  m_ll/Q ="  << setw(19) << a_param_.a_param_ << endl;
-  cout << setw(35) << "alpha_s(MZ) ="                 << setw(19) << qcdcouple_.as_ << endl;
+  cout << setw(35) << "alpha_s(MZ) ="                 << setw(19) << couple_.amz_ << endl;
+  cout << setw(35) << "alpha_s(mur) ="                << setw(19) << qcdcouple_.as_ << endl;
   cout << setw(35) << "alpha_s running order ="       << setw(19) << (LHAPDF::getOrderAlphaS()+1) << "-loop" << endl;
   cout << setw(35) << "PDF set:"                      << setw(19) << opts.LHAPDFset << endl;
   cout << setw(35) << "PDF member: "                  << setw(19) << opts.LHAPDFmember << endl;
