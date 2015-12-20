@@ -2,7 +2,7 @@
 It is called from BK(n,z) (derivative of bessel function), which is called from IK(n), which is called by evaluatekin, but commented, so actually not used
 * mellinh2.f: Bluemlein functions PSI0(ZZ,RES), PSI1(ZZ,RES), PSI2(ZZ,RES), PSI3(ZZ,RES), BET(ZZ,RES), BET1(ZZ,RES), BET2(ZZ,RES), BET3(ZZ,RES) (from https://www-zeuthen.desy.de/~blumlein/CODE/ANCONT/ancont.f Comput.Phys.Commun. 133 (2000) 76-104)
 * resinit.f: initialisation for resummed integrand (integrands/main2.f). Part of the initialisation should be moved to src/rescinit.f
-* besselkfast.f: Bessel functions. !!! LOCATE and POLINT functions are from "Numerical Recipes in Fortran 77" Be careful, this code has a copyright !!!
+* besselkfast.f: Bessel functions. !!! LOCATE and POLINT functions are from "Numerical Recipes in Fortran 77" Be careful, this code has a copyright !!! (-> locate renamed to dylocate to avoid conflicts with QCDNUM, polint renamed to xpolint probably to avoid conflict with CTEQ PDFs)
 * const.h: DYRES constants (some repetition with MCFM constants, to clean up)
 * countDYnew-RES.f: counterterm integrand
 * lowintHst-RES.f: resummed integrand
