@@ -94,7 +94,7 @@ int main( int argc , const char * argv[])
   double costh, m, qt, y;
   //  std::cout << std::setprecision(15);
   int mode = 0;
-  costh = 0.3; m = 91; qt = 1; y = 0;
+  costh = 0.; m = opts.rmass; qt = 1; y = 0;
   test_resum_speed(costh,m,qt,y,mode);
 
   costh = 0.1; m = 91; qt = 5; y = 0.2;
