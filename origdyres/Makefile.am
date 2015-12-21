@@ -1,5 +1,7 @@
 AUTOMAKE_OPTIONS = foreign
 
+if HAVE_DYRES
+
 AM_CPPFLAGS = -fpermissive $(LHAPDF_CPPFLAGS)
 
 noinst_LTLIBRARIES = liborigintegrands.la
@@ -11,3 +13,4 @@ dyrestest_SOURCES = dyrestest.C
 dyrestest_LDADD = liborigintegrands.la ../cernlib/libcern.la \
 	-lgfortran $(LHAPDF_LDFLAGS)
 
+endif

@@ -22,7 +22,7 @@ dyturbo_LDADD = libdyturbo.la \
 	$(CUBA_LDFLAGS) $(LHAPDF_LDFLAGS) -lgsl -lgslcblas #-lifcore -limf -lifport -lintlc -lquadmath
 
 if HAVE_ROOT
-dyturbo_LDADD += $(ROOT_LDFLAGS) $(ROOT_LIBS)
+dyturbo_LDADD += $(ROOT_LDFLAGS)
 AM_CPPFLAGS += $(ROOT_CFLAGS)
 
 bin_PROGRAMS += dytests merger
@@ -31,10 +31,10 @@ dytests_SOURCES = dytests.C
 dytests_LDADD = libdyturbo.la \
 	../cernlib/libcern.la ../dequad/libdequad.la \
 	-lgfortran \
-	$(CUBA_LDFLAGS) $(LHAPDF_LDFLAGS) -lgsl -lgslcblas $(ROOT_LDFLAGS) $(ROOT_LIBS) #-lifcore -limf -lifport -lintlc -lquadmath
+	$(CUBA_LDFLAGS) $(LHAPDF_LDFLAGS) -lgsl -lgslcblas $(ROOT_LDFLAGS) #-lifcore -limf -lifport -lintlc -lquadmath
 
 merger_SOURCES = merger.C
-merger_LDADD = $(ROOT_LDFLAGS) $(ROOT_LIBS)
+merger_LDADD = $(ROOT_LDFLAGS)
 endif
 
 pkginclude_HEADERS = resintegr.h finintegr.h integr.h interface.h settings.h cubacall.h plotter.h finitemapping.h lines.C init.h switch.h options.f flred.f gauss.f quadrules.f
