@@ -4,6 +4,7 @@
 #include "pdf.h"
 
 #include <iostream>
+#include <math.h>
 
 using namespace coupling;
 
