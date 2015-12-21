@@ -23,8 +23,6 @@ void settings::readfromfile(const string fname){
     order          = in.GetNumber ( "order"          ); //1              # order
     part           = in.GetString ( "part"           ); //virt           # part
     zerowidth      = in.GetBool   ( "zerowidth"      ); //false          # zerowidth
-    M_min          = in.GetNumber ( "M_min"          ); //66d0
-    M_max          = in.GetNumber ( "M_max"          ); //116d0          # M_min,      M_max
     rseed          = in.GetNumber ( "rseed"          ); //123456         # rseed
     LHAPDFset      = in.GetString ( "LHAPDFset"      ); //CT10nlo.LHgrid
     LHAPDFmember   = in.GetNumber ( "LHAPDFmember"   ); //0              # set,        member   (LHAPDFs)
@@ -188,8 +186,6 @@ void settings::dumpAll(){
         dumpS("LHAPDFset          ", LHAPDFset           );
         dumpI("LHAPDFmember       ", LHAPDFmember        );
         dumpI("rseed              ", rseed               );
-        dumpD("M_min              ", M_min               );
-        dumpD("M_max              ", M_max               );
         dumpD("rmass              ", rmass               );
         dumpD("rwidth             ", rwidth              );
         dumpD("ylow               ", ylow                );

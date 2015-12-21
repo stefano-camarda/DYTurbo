@@ -66,8 +66,6 @@ public:
   int    order        ;
   string part         ;
   bool   zerowidth    ;
-  double M_min        ;
-  double M_max        ;
   int    rseed        ;
   string LHAPDFset    ;
   int    LHAPDFmember ;

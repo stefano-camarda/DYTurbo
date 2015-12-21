@@ -113,8 +113,8 @@ void dyturboinit()
 
   //Limits on invariant mass of vector boson decay products
   //(irrelevant if zerowidth=true)
-  limits_.wsqmin_=pow(opts.M_min,2);
-  limits_.wsqmax_=pow(opts.M_max,2);
+  limits_.wsqmin_=pow(opts.mlow,2);
+  limits_.wsqmax_=pow(opts.mhigh,2);
 
   //Check if the limits are compatible with sroot
   if (limits_.wsqmax_> pow(energy_.sroot_,2))
