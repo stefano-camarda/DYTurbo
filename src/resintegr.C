@@ -288,13 +288,13 @@ integrand_t resintegrand3d(const int &ndim, const double x[], const int &ncomp, 
       f[0]=0.;
       return 0;
     }
-  //  double qt=qtmn+(qtmx-qtmn)*x[1];
+  //  double qt=qtmn+(qtmx-qtmn)*x[2];
   //  jac=jac*(qtmx-qtmn);
   double esp = 1./2.;
   double tiny = 1E-3;
   double a = pow(log(qtmn/tiny),esp);
   double b = pow(log(qtmx/tiny),esp);
-  double x2=a+(b-a)*x[1];
+  double x2=a+(b-a)*x[2];
   jac=jac*(b-a);
   double qt = tiny*exp(pow(x2,1./esp));
   jac=jac*qt*pow(x2,1./esp-1)/esp;
