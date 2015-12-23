@@ -2898,7 +2898,12 @@ c     print *,'in rapintegrals'
       NMAX1 = mdim
       NMAX2 = mdim
       
-c     c If there are no cuts on the leptons, calculate the integrals analitically
+
+!!!   Important, notice that in all the expressions, the dependence on I1, I2 is of the type I2-I1
+!!!   This means that the double loops on I1 I2 can be reduced to single loops on I2-I1
+!!!   This is true for both analytical and numerical integration
+      
+c     If there are no cuts on the leptons, calculate the integrals analitically
       if (nolepcuts.eqv..true.) then
          do I1 = 1, NMAX1          !136
             do I2 = 1, NMAX2       !136
