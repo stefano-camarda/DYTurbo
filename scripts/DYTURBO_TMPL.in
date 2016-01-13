@@ -71,8 +71,8 @@ niterCT          = 10 #200  # only for 3d cuhre integration of counter term
 vegasncallsRES   = 1e6  # only for res 4d vegas integration
 vegasncallsCT    = 1e8  # only for lo 8d vegas integration
 vegasncallsLO    = 3e8  # only for lo 7d vegas integration
-vegasncallsREAL  = 1e7  #3e8  # only for real 10d vegas integration
-vegasncallsVIRT  = 1e7  # 2e8 only for virt 8d vegas integration
+vegasncallsREAL  = 1e8  #3e8  # only for real 10d vegas integration
+vegasncallsVIRT  = 1e8  # 2e8 only for virt 8d vegas integration
 
 # total or with lepton cuts
 makelepcuts = SETLEPCUTS

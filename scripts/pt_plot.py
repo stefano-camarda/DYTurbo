@@ -1443,7 +1443,61 @@ class TheoUncStudy:
             pass
         pl.MakePreviewFromList(0,"unc_study")
         pass
-    pass
+
+    def DoPDFQuadStudy(s):
+        fname1 = "results_merge/quad_151210/dyturbo_wm_lhc7_WZZPT-CT10_{}_qt0100y05t{}_seed_merge.root"
+        fname2 = "results_merge/grid_151201/dyturbo_wm_lhc7_WZZPT-CT10_{}_v1447428851qt0100y05t{}_outliers.root"
+        fname3 = "results_merge/allPDF_20151216/dyturbo_wm_lhc7_WZZPT-CT10_all_qt0100y05t{}_seed_1010.root"
+        hname1 = "qt_y_total"
+        hname2 = "h_qtVy"
+        # get
+        centrals = [
+            pl.GetHistSetTitNam("RES3D" , fname1.format(0, "RES3D") , hname1),
+            pl.GetHistSetTitNam("CT3D"  , fname1.format(0, "CT3D")  , hname1),
+            pl.GetHistSetTitNam("REAL"  , fname2.format(0, "REAL")  , hname2),
+            pl.GetHistSetTitNam("VIRT"  , fname2.format(0, "VIRT")  , hname2),
+            #pl.GetHistSetTitNam("REALall", fname3.format(   "REAL") , hname2),
+            #pl.GetHistSetTitNam("VIRTall", fname3.format(   "VIRT") , hname2),
+            ]
+        central = centrals[1].Clone("cent"); centTerms=centrals[1].GetName();
+        #central.Add(centrals[1]); centTerms+=centrals[1].GetName();
+        #central.Add(centrals[2]); centTerms+=centrals[2].GetName();
+        #central.Add(centrals[3]); centTerms+=centrals[3].GetName();
+        central.Print()
+        # do it for total
+        pdfvars=list()
+        for i in range(1,3) :
+            termvars = [
+                pl.GetHistSetTitNam("RES3D" +str(i), fname1.format(i, "RES3D" ) , hname1        ),
+                pl.GetHistSetTitNam("CT3D"  +str(i), fname1.format(i, "CT3D"  ) , hname1        ),
+                pl.GetHistSetTitNam("REAL"  +str(i), fname3.format(   "REAL"  ) , hname2+str(i) ),
+                pl.GetHistSetTitNam("VIRT"  +str(i), fname3.format(   "VIRT"  ) , hname2+str(i) ),
+            ]
+            pdfvar=termvars[1];
+            #pdfvar.Add(termvars[1])
+            #pdfvar.Add(termvars[2])
+            #pdfvar.Add(termvars[3])
+            pdfvars.append(pdfvar)
+            pdfvars[-1].Print()
+        pdfTerms=""
+        #pdfTerms+="RES3D"
+        pdfTerms+="CT3D"
+        #pdfTerms+="REAl"
+        #pdfTerms+="VIRT"
+        # prepare
+        band=pl.MakeUncBand("pdf",[central]+pdfvars,band="pdf",rel=True)
+        band.Print()
+        band.SetMaximum(1e-1)
+        zoom=""
+        zoom="_zoom2"
+        # plot
+        pl.NewCanvas("QuadPDF_"+hname1+"_pdf"+pdfTerms+"_rel"+centTerms+zoom)
+        pl.SetFrameStyle2D([band],maxX=10)
+        band.Draw("same,colz")
+        #central.Draw("same,colz")
+        pl.Save()
+        pl.MakePreviewFromFolder(pl.imgDir+"/QuadPDF_*.pdf")
+        pass
 
 def makeStatPlot():
     name="res_stat_quad"
@@ -1478,9 +1532,10 @@ if __name__ == '__main__' :
     #wwidth_table()
     #uncert_as_g()
     #find_fluctuations()
-    #DY = TheoUncStudy()
+    DY = TheoUncStudy()
     #DY.DoStudy()
-    makeStatPlot()
+    DY.DoPDFQuadStudy()
+    #makeStatPlot()
     pass
 
 

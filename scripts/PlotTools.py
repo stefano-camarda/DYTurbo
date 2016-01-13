@@ -353,6 +353,7 @@ class PlotTools:
         h = s.EmptyClone(hlist[0],name)
         dim = h.GetDimension()
         # loop bins
+        ist=0
         for xbin in range(0,h.GetNbinsX()+2):
             ybinlist = [0] if dim<2 else range(0,h.GetNbinsY()+2)
             for ybin in ybinlist:
@@ -370,6 +371,21 @@ class PlotTools:
                         sym= (abs(pos - neg))/2.
                         pos = pos - val
                         neg = neg - val
+                        # pdf
+                        CL99to68=1/2.705
+                        N = len(hlist)-1
+                        allind = range(N)
+                        pdfVar = [ hlist[i+1].GetBinContent(ibin) for i in allind]
+                        pdfVarSq = [ (x-val)**2 for x in pdfVar]
+                        pdfDWSq = [ CL99to68*(pdfVarSq[i] + pdfVarSq[i+1])/4. for i in range(N/2)]
+                        pdfsigma = sqrt(sum(pdfDWSq))
+                        #print "    PDFERROR ", ibin, pdfsigma
+                        #print "    ", len(pdfVar), pdfVar
+                        #print "    ", len(pdfVarSq), pdfVarSq
+                        #print "    ", len(pdfDWSq), pdfDWSq
+                        #print "    PDFERROR END"
+                        #if ist>100 : return
+                        #ist+=1
                     except IndexError:
                         pass
                     if relative and val!=0 : unc/=abs(val)
@@ -379,6 +395,7 @@ class PlotTools:
                     elif utype=="pos"    : unc *= pos
                     elif utype=="neg"    : unc *= neg
                     elif utype=="sym"    : unc *= sym
+                    elif utype=="pdf"    : unc *= pdfsigma
                     else : raise ValueError("Uknown error type {}".format(utype))
                     #print ibin,unc
                     h.SetBinContent(ibin,unc)
@@ -1584,7 +1601,16 @@ class PlotTools:
 
 
     def MakePreviewFromFolder(s, path) :
-        os.system(" rm -f {1}/preview.pdf; pdftk {0}/*.pdf cat output {1}/preview.pdf".format(path, s.imgDir))
+        hasPDFTK=False
+        if hasPDFTK :
+            os.system(" rm -f {1}/preview.pdf; pdftk {0}/*.pdf cat output {1}/preview.pdf".format(path, s.imgDir))
+        else :
+            # create list (with wildcards)
+            import glob
+            hlist = glob.glob(path)
+            hlist = [ x.replace(".pdf","") for x in hlist]
+            # use prev, from list
+            s.MakePreviewFromList(hlist)
 
     def MakePreviewFromList(s, figlist = 0, fname="preview") :
         if figlist == 0 : figlist = s.updated_plots

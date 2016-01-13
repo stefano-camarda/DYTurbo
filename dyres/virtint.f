@@ -1,4 +1,4 @@
-      333ble precision function virtint(r,wgt,f)
+      double precision function virtint(r,wgt,f)
       implicit none
       include 'constants.f'
       include 'noglue.f'
@@ -182,7 +182,7 @@ c     start PDF loop
          call setpdf(npdf)
          call hists_setpdf(npdf)
 c     skip for scanning events
-         if npdf.ne.0.and.dofill.eq.0 goto 333
+         if (npdf.ne.0.and.dofill.eq.0) goto 333
 c     intitialise xmsq to 0
          xmsq=0d0
 
@@ -368,7 +368,8 @@ c now add born part (proportional to as)
 
 C     Fill only if it's last iteration
       if (doFill.ne.0) then
-          call hists_fill(p(3,:),p(4,:),virtint*wgt)
+C          print *, "PDF rew test: ", npdf,fx1(0),fx1(1),fx1(-1)
+          call hists_fill(p(3,:),p(4,:),xmsq*wgt)
 C          call hists_fill_PDF(p(3,:),p(4,:),virtint*wgt,npdf)
       endif
 

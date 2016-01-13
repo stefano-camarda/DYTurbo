@@ -170,14 +170,18 @@ merge_cubatures(){
     DRYRUN=
     tmp_phase=qt010y01
     tot_phase=qt0100y05
-    outdir=results_merge/quad_151207
-    name="results/dyturbo_wm_lhc7_WZZPT-CT10_0_${tmp_phase}t*3D_seed_1000.root"
-    mkdir -p $outdir
-    for f in `ls $name`
+    outdir=results_merge/quad_151210
+    for pdfmem in `seq 0 54`
     do
-        infiles=`echo  $f | sed "s|$tmp_phase|*|g" `
-        outfile=`echo  $f | sed "s|$tmp_phase|$tot_phase|g; s|seed_[0-9]*|seed_merge|g; s|results|$outdir|g" `
-        $DRYRUN $MERGER $outfile $infiles
+        mem=$(( $pdfmem + 100 ))
+        name="results/dyturbo_wm_lhc7_WZZPT-CT10_array_${tmp_phase}t*3D_seed_$mem.root"
+        mkdir -p $outdir
+        for f in `ls $name`
+        do
+            infiles=`echo  $f | sed "s|$tmp_phase|*|g" `
+            outfile=`echo  $f | sed "s|$tmp_phase|$tot_phase|g; s|seed_[0-9]*|seed_merge|g; s|results|$outdir|g; s|array|$pdfmem|g;" `
+            $DRYRUN $MERGER $outfile $infiles
+        done
     done
 }
 

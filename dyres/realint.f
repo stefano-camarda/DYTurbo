@@ -195,7 +195,7 @@ c     start PDF loop
          call setpdf(npdf)
          call hists_setpdf(npdf)
 c     skip for scanning events
-         if npdf.ne.0.and.dofill.eq.0 goto 333
+         if (npdf.ne.0.and.dofill.eq.0) goto 333
 c     intitialise xmsq to 0 for the real and all dipoles
          do nd=0,ndmax
             xmsq(nd)=0d0

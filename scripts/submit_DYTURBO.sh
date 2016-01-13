@@ -195,7 +195,8 @@ prepare_in(){
     if [[ $variation == g_15  ]]; then gpar=1.5e0;                        fi;
     if [[ $variation == as_*  ]]; then pdfsetname=${pdfset}_${variation}; fi;
     if [[ $variation =~ $re   ]]; then member=$variation;                 fi;
-    if [[ $variation =~ all   ]]; then member=0; setPDFerrors=true;        fi;
+    if [[ $variation =~ all   ]]; then member=0; setPDFerrors=true;       fi;
+    if [[ $variation =~ array ]]; then member=array;                      fi;
     # gpar
     if [[ $pdfset == WZZPT-CT10 ]] 
     then
@@ -578,7 +579,8 @@ submit_allProg(){
                     #if [[ $order == 2 ]]; then termlist="REAL"; fi;
                     termlist="RES3D CT3D"
                     #if [[ $order == 2 ]]; then termlist="RES3D CT3D REAL VIRT"; fi;
-                    if [[ $order == 2 ]]; then termlist="REAL VIRT"; fi;
+                    if [[ $order == 2 ]]; then termlist="VIRT"; fi;
+                    #if [[ $order == 2 ]]; then termlist="RES3D CT3D"; fi;
                 fi
                 if [[ $program =~ ^dyres ]] 
                 then
@@ -596,10 +598,19 @@ submit_allProg(){
                 for terms in $termlist
                 do
                     # run all pdf variations at once
-                    if [[ $terms =~ REAL ]]  || [[ $terms =~ VIRT ]]
+                    if [[ $terms =~ REAL ]]
                     then
                         variation=all
-                        seedlist=1010
+                        #seedlist=1010
+                        # you need two because of array size
+                        seedlist=1010-1510
+                        seedlist=1510-2010
+                    fi
+                    if [[ $terms =~ VIRT ]]
+                    then
+                        variation=all
+                        #seedlist=1010
+                        seedlist=1010-1110
                     fi
                     # for qt/y splits
                     NsplitQT=1
@@ -608,8 +619,8 @@ submit_allProg(){
                     then
                         NsplitQT=10
                         NsplitY=5
-                        variation=all
-                        seedlist=0-54
+                        variation=array
+                        seedlist=100-154
                     fi
                     for iqt in `seq $NsplitQT`
                     do
@@ -697,6 +708,8 @@ clear_files(){
     if [[ $(bjobs 2> /dev/null) ]] 
     then
         echo There are jobs running, skip clearing
+        #rm -f scripts/batch_scripts/*.sh
+        #rm -f scripts/infiles/*.in
     else
         rm -f scripts/batch_scripts/*.sh
         rm -f scripts/infiles/*.in
