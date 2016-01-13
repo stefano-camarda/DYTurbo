@@ -6,7 +6,7 @@ c     quadrature rules for mellin inversions
 !!!!! mdim=mellinrule*mellintervales has to be lower than 136
       integer mellinintervals,mellinrule,mdim
       parameter (mellinintervals=1)
-      parameter (mellinrule=50)
+      parameter (mellinrule=64)
       parameter (mdim=mellinrule*mellinintervals)
 
 c     rapidity integral in resummed 2d integration

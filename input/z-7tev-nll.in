@@ -10,19 +10,10 @@ g_param      = 1.0e0          # g_param
 order        = 1              # order
 part         = virt           # part
 zerowidth    = false          # zerowidth
-M_min        = 66d0
-M_max        = 116d0          # M_min, M_max
-itmx1        = 1
-ncall1       = 100000         # itmx1, ncall1
-itmx2        = 1
-ncall2       = 100            # itmx2, ncall2
 rseed        = 123456         # rseed
-PDFset       = 92
-PDFmember    = 0              # set,member (native   PDFs)
 LHAPDFset    = CT10nlo
 LHAPDFmember = 0              # set, member (LHAPDFs)
 outputfile   = LHC7-Z-nlo     # outputfile
-itmxToFile   = 0              # number of last itmx to write on file
 
 
 # DYTURBO settings

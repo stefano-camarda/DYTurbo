@@ -1,0 +1,15 @@
+7d3                 ! sroot
+1 1                 ! ih1, ih2
+1                   ! nproc
+80.385d0 80.385d0 80.385d0 ! mur, muf  
+1.0d0               ! g_param
+2                   ! order
+'virt'              ! part 
+.false.              ! zerowidth
+2d0 500d0          ! M_min, M_max
+1 100000000          ! itmx1, ncall1
+1 100000000          ! itmx2, ncall2
+123446                 ! rseed
+92 0                ! set, member (native PDFs)
+'CT10nnlo' 0   ! set, member (LHAPDFs)
+'LHC7-Wp-nnlo'       ! outputfile

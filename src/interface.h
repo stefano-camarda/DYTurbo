@@ -7,11 +7,13 @@
 #define NLOOP 2
 #define mxpart 12
 
+#define XN 3
+
 extern "C" {
 
   // rewritten functions
   double resumm_(double &costh, double &mm, double &qtt, double &yy, int& mode);
-  void setup_();
+  //void setup_();
   void dyinit_();
   void pdfini_();
   void iniflavreduce_();
@@ -19,9 +21,14 @@ extern "C" {
   double dyalphas_(double &q, double &amz, int &nloop);
   int cuts_(double p[4][12], int &njet);
   //int cutsold_(double p[4][12], int &njet);
+  void rescinit_();
 
   void breitw_(double& x1, double& mminsq, double& mmaxsq, double& rmass, double& rwidth, double& msq, double& wt);
   void boost_(double& mass, double p1[],double p_in[], double p_out[]);
+  void branch_(double& brwen, double& brzee, double& brtau, double& brtop);
+  void ckmfill_(int& nwz);
+
+  void dycoupling_();
 
   void rapintegrals_(double &ymin,double &ymax, double& mass, int& nocuts);
   void cacheyrapint_(double &ymin,double &ymax);
@@ -30,6 +37,35 @@ extern "C" {
 
   void initmoments_();
   // fortran common spaces
+
+  //Catani-Seymour subtraction cut-offs for initial-initial, initial-final, final-initial, and final-final dipoles
+  extern struct {
+    double aii_;
+    double aif_;
+    double afi_;
+    double aff_;
+  } alfacut_;
+
+  //initialization flag
+  extern struct {
+    int flag_;
+  } flag_;
+
+  extern struct {
+    int qflag_;
+    int gflag_;
+  } flags_;
+
+  extern struct {
+    int noglue_;
+    int ggonly_;
+    int gqonly_;
+  } noglue_;
+
+  extern struct {
+    int colourchoice_;
+  } colc_;
+
 
   // z coupling
   extern struct {
@@ -47,6 +83,10 @@ extern "C" {
     double rn_;
     double sin2w_;
   } zcouple_;
+
+  extern struct {
+    int phot_;
+  } dyphoton_;
 
   // masses
   extern struct {
@@ -66,6 +106,7 @@ extern "C" {
     double zmass_;
     double zwidth_;
     double twidth_;
+    double tauwidth_;
     double mtausq_;
     double mcsq_;
     double mbsq_;
@@ -80,9 +121,49 @@ extern "C" {
     double zmass_inp_;
   } ewinput_;
 
+  //EW scheme
   extern struct {
     int ewscheme_;
   } ewscheme_;
+
+  // ewcouple
+  extern struct {
+    double Gf_;
+    double gw_;
+    double xw_;
+    double gwsq_;
+    double esq_;
+    double vevsq_;
+  } ewcouple_;
+
+  //alpha EM (MZ)
+  /*  extern struct {
+    double aemmz_;
+    } em_;*/
+
+  extern struct {
+    double Q_[2*NF+1];
+    double tau_[2*NF+1];
+  } ewcharge_;
+
+  //branching ratio
+  extern struct {
+    double brnrat_;
+  } brnrat_;
+
+  //boson charge (used for the CKM matrix)
+  extern struct {
+    int nwz_;
+  } nwz_;
+
+  extern struct {
+    int n2_;
+    int n3_;
+    double mass2_;
+    double width2_;
+    double mass3_;
+    double width3_;
+  } breit_;
 
   // CKM
   extern struct {
@@ -102,10 +183,14 @@ extern "C" {
     double ason4pi_;
   } qcdcouple_;
 
-  // H+b mb msbar value
+  extern struct {
+    double b0_;
+  } b0_;
+
+  /*  // H+b mb msbar value
   extern struct {
     double mb_msbar_;
-  } mb_msbar_;
+    } mb_msbar_;*/
 
   // dimensional regularization parameters
   extern struct {
@@ -132,13 +217,13 @@ extern "C" {
     double amz_;
   } couple_;
 
-  extern struct {
+  /*extern struct {
     int nlooprun_;
-  } nlooprun_;
+    } nlooprun_;*/
 
-  extern struct {
+  /*  extern struct {
     int lhapdfs_;
-  } lhapdfs_;
+    } lhapdfs_;*/
 
 
   //input file related variables
@@ -156,6 +241,10 @@ extern "C" {
   }  nproc_;
 
   extern struct {
+    int dynamicscale_;
+  } dynamicscale_;
+
+  extern struct {
     double scale_;
     double musq_;
   } scale_;
@@ -163,6 +252,11 @@ extern "C" {
   extern struct {
     double facscale_;
   } facscale_;
+
+  //dynamic scale for each dipole
+  extern struct {
+    double dipscale_[41];
+  } dipolescale_;
 
   extern struct {
     double a_param_;
@@ -185,50 +279,50 @@ extern "C" {
     int zerowidth_;
   } zerowidth_;
 
-  extern struct {
+  /*  extern struct {
     double Mwmin_;
     double Mwmax_;
-  } mwminmax_;
+    } mwminmax_;*/
 
-  extern struct {
+  /*extern struct {
     int itmx1_;
     int ncall1_;
     int itmx2_;
     int ncall2_;
-  } iterat_;
+    } iterat_;*/
 
-  extern struct {
+  /*  extern struct {
     int rseed_;
-  } rseed_;
+    } rseed_;*/
 
-  extern struct {
+  /*  extern struct {
     int iset_;
-  } pdfiset_;
+    } pdfiset_;*/
 
-  extern struct {
+  /*extern struct {
     double nset_;
     char prefix_[50];
-  } prefix_;
+    } prefix_;*/
 
-  extern struct {
+  /*  extern struct {
     char PDFname_[30];
   } lhapdf_char_;
 
   extern struct {
     int PDFmember_;
-  } lhapdf_int_;
+    } lhapdf_int_;*/
 
-  extern struct {
+  /*extern struct {
     char runstring_[30];
-  } runstring_;
+    } runstring_;*/
 
-  extern struct {
+  /*  extern struct {
     int pr_;
-  } pr_;
+    } pr_;*/
 
-  extern struct {
+  /*  extern struct {
     double rtsmin_;
-  } rtsmin_;
+    } rtsmin_;*/
 
   extern struct {
     double wsqmin_;

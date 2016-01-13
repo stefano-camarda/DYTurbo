@@ -1,4 +1,4 @@
-AC_INIT([dyturbo], [0.9.3], [stefano.camarda@cern.ch,jakub.cuth@cern.ch])
+AC_INIT([dyturbo], [0.9.4], [stefano.camarda@cern.ch,jakub.cuth@cern.ch])
 AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE([foreign -Wall -Werror])
 
@@ -18,21 +18,19 @@ AC_CONFIG_MACRO_DIR([m4])
 
 #optimisation flags O3
 AC_ARG_ENABLE([O3],
-  [AC_HELP_STRING(--enable-O3, [Use compiler optimization flags -O3. (default=no)])])
-if test x$enable_O3 == xyes
-then
-  CXXFLAGS="${CXXFLAGS} -O3"
-  FFLAGS="${FFLAGS} -O3"
-fi
+  AC_HELP_STRING(--enable-O3, [Use compiler optimization flags -O3. (default=no)]))
+  AS_IF([test "x$enable_O3" = "xyes"], [
+    CXXFLAGS="${CXXFLAGS} -O3"
+    FFLAGS="${FFLAGS} -O3"
+])
 
 #optimisation flags, O3 or Ofast
 AC_ARG_ENABLE([Ofast],
-  [AC_HELP_STRING(--enable-Ofast, [Use unsafe compiler optimization flags -Ofast. (default=no)])])
-if test x$enable_Ofast == xyes
-then
-  CXXFLAGS="${CXXFLAGS} -Ofast"
-  FFLAGS="${FFLAGS} -Ofast"
-fi
+  AC_HELP_STRING(--enable-Ofast, [Use unsafe compiler optimization flags -Ofast. (default=no)]))
+  AS_IF([test "x$enable_Ofast" = "xyes"], [
+    CXXFLAGS="${CXXFLAGS} -Ofast"
+    FFLAGS="${FFLAGS} -Ofast"
+])
 
 #c++11 flag is needed for the random number generator function
 #CXXFLAGS="${CXXFLAGS} -std=c++11"
@@ -77,7 +75,7 @@ fi
 
 # set up lhapdf flags
 LHAPDF_CPPFLAGS=`${lhapdf_config} --cppflags`
-LHAPDF_LDFLAGS=`${lhapdf_config} --libdir`/libLHAPDF.a
+LHAPDF_LDFLAGS=`${lhapdf_config} --ldflags`
 AC_SUBST(LHAPDF_CPPFLAGS)
 AC_SUBST(LHAPDF_LDFLAGS)
 AC_MSG_RESULT([Using $lhapdf_config])
@@ -110,55 +108,74 @@ AC_MSG_RESULT([Using $cubadir])
 #        ])
 #AC_SUBST(CUBA_LDFLAGS)
 
+# check for DYRES installation
+AC_ARG_ENABLE([dyres], AC_HELP_STRING(--enable-dyres, [Install and link original DYRes code. (default=no)]))
+AS_IF([test "x$enable_dyres" = "xyes"], [
+  AC_MSG_CHECKING([for DYRes installation])
+  # search in origdyres/DYRes-v1.0
+  dyresinst=`ls -d ${PWD}/origdyres/DYRes-v1.0`
+  AS_IF([test test x$dyresinst == x], [
+    # if not found, install it
+    AC_MSG_RESULT([Install DYRes])
+    cd origdyres && ./install-dyres && cd ..
+  ])
+])
+AM_CONDITIONAL([HAVE_DYRES],test "x$enable_dyres" = "xyes")
+
+
 # Set --enable-root option, for linking histograms
 AC_ARG_ENABLE([root],
-  [AC_HELP_STRING(--enable-root, [Use root for histograming. (default=no)])])
-if test x$enable_root == xyes
-then
+  AC_HELP_STRING(--enable-root, [Use root for histograming. (default=no)]))
+AS_IF([test "x$enable_root" = "xyes"], [
     AC_MSG_CHECKING([for root installation])
     root_config=`which root-config`
-    if test x$root_config == x;
-    then
-        AC_MSG_ERROR([Unable to find root-config.])
-    else
-        AC_MSG_RESULT([Using $root_config])
-        root_ok=1
-        ROOT_CFLAGS=`root-config --cflags`
-        ROOT_LDFLAGS=`root-config --ldflags`
-        ROOT_LIBS=`root-config --glibs`
-        AC_SUBST(ROOT_CFLAGS)
-        AC_SUBST(ROOT_LDFLAGS)
-        AC_SUBST(ROOT_LIBS)
-        AC_DEFINE(USEROOT, "1",[ Turn on the ROOT for histogramming.] )
-    fi
-fi
-AM_CONDITIONAL([HAVE_ROOT],test $root_ok)
+    AS_IF([test x$root_config == x],
+       [AC_MSG_ERROR([Unable to find root-config.])],
+       [AC_MSG_RESULT([Using $root_config])
+       root_ok=1
+       ROOT_CFLAGS=`root-config --cflags`
+       ROOT_LDFLAGS=`root-config --ldflags --libs`
+       AC_SUBST(ROOT_CFLAGS)
+       AC_SUBST(ROOT_LDFLAGS)
+       AC_DEFINE(USEROOT, "1",[ Turn on the ROOT for histogramming.] )
+    ])
+])
+AM_CONDITIONAL([HAVE_ROOT],test "x$enable_root" = "xyes")
 
+# Enable debug symbols
 AC_ARG_ENABLE([debug],
   [AC_HELP_STRING(--enable-debug, [Add debug flags. (default=no)])])
-if test x$enable_debug == xyes; then
-  echo "Adding debug symbols."
+AS_IF([test "x$enable_debug" = "xyes"], [
+  AC_MSG_RESULT([Adding debug symbols.])
   FFLAGS="$FFLAGS -ggdb"
   CXXFLAGS="$CXXFLAGS -ggdb"
-fi
-
+])
 
 # Check for trapFPE flag
 AC_ARG_ENABLE([trapFPE],
   [AC_HELP_STRING(--enable-trapFPE, [Stop of floating point errors (default=no)])])
-if test x$enable_trapFPE == xyes; then
-  echo "Add floating point trap"
-  FFLAGS="$FFLAGS -ffpe-trap='invalid,overflow,zero' "
-fi
+AS_IF([test "x$enable_trapFPE" = "xyes"], [
+  AC_MSG_RESULT([Add floating point trap.])
+  FFLAGS="$FFLAGS -ffpe-trap='invalid,overflow,zero'"
+])
 
 # Check for check bounds flag
 AC_ARG_ENABLE([checkBounds],
   [AC_HELP_STRING(--enable-checkBounds, [add -fbounds-check flag for compilation (default=no)])])
-if test x$enable_checkBounds == xyes; then
-  echo "Add check bounds flag"
+AS_IF([test "x$enable_checkBounds" = "xyes"], [
+  AC_MSG_RESULT([Add check bounds flag])
   FFLAGS="$FFLAGS -fbounds-check"
-fi
+])
 
 
-AC_CONFIG_FILES([Makefile src/Makefile dyres/Makefile dynnlo/Makefile mcfm/Makefile cernlib/Makefile dequad/Makefile dyturbo-config])
+AC_CONFIG_FILES([Makefile 
+	 	 src/Makefile
+		 integrands/Makefile
+		 origdyres/Makefile
+		 dyres/Makefile
+		 dynnlo/Makefile
+		 mcfm/Makefile
+		 cernlib/Makefile
+		 dequad/Makefile
+		 dyturbo-config])
 AC_OUTPUT

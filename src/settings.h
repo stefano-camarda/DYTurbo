@@ -43,7 +43,6 @@ class settings
 {
 public:
   settings() {};
-  //void init();
   void readfromfile(const string fname);
   void initDyresSettings();
 
@@ -67,19 +66,10 @@ public:
   int    order        ;
   string part         ;
   bool   zerowidth    ;
-  double M_min        ;
-  double M_max        ;
-  int    itmx1        ;
-  int    ncall1       ;
-  int    itmx2        ;
-  int    ncall2       ;
   int    rseed        ;
-  int    PDFset       ;
-  int    PDFmember    ;
   string LHAPDFset    ;
   int    LHAPDFmember ;
   string outputfile   ;
-  int    itmxToFile   ;
 
   //resonance mass and width (used for breit wigner unweighting)
   double rmass, rwidth;
@@ -154,7 +144,6 @@ class binning
 {
  public:
   binning() {};
-  void init();
   void readfromfile(const string fname);
   // private:
   vector <double> qtbins;
@@ -164,9 +153,7 @@ class binning
 };
 
 
-
 extern settings opts;
 extern binning bins;
-
 
 #endif

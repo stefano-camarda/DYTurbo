@@ -44,7 +44,8 @@ void setalphas()
 {
   couple_.amz_=LHAPDF::alphasPDF(dymasses_.zmass_) ;
   double scale = fabs(scale_.scale_);
-  qcdcouple_.as_=dyalphas_(scale,couple_.amz_,nlooprun_.nlooprun_);
+  int nloop = -1;
+  qcdcouple_.as_=dyalphas_(scale,couple_.amz_,nloop);
   qcdcouple_.ason2pi_=qcdcouple_.as_/(2*M_PI);
   qcdcouple_.ason4pi_=qcdcouple_.as_/(4*M_PI);
   qcdcouple_.gsq_=4*M_PI*qcdcouple_.as_;
@@ -54,9 +55,13 @@ void setalphas()
 void setg()
 {
   LHAPDF::PDFInfo info(opts.LHAPDFset, opts.LHAPDFmember);
-  double gformfactor = info.get_entry_as<double>("g", opts.g_param);
-  cout << "g for this PDF set is " << gformfactor << endl;
-  opts.g_param = gformfactor;
+  double gformfactor = info.get_entry_as<double>("g", -1);
+  if (gformfactor >= 0)
+  {
+    cout << "g form factor: input from PDF member: " << gformfactor << endl;
+    opts.g_param = gformfactor;
+    g_param_.g_param_ = gformfactor;
+  }
 }
 
 void fdist_(int& ih, double& x, double& xmu, double fx[11])

@@ -17,7 +17,7 @@ c     IMPLICIT DOUBLE PRECISION (A-I,L-Z)
       double precision cthmom0,cthmom1,cthmom2
       INTEGER N, NVP, ISET, NAORD, NNF, ih,flag1,IER,flag
       double precision mv2,g_param,a_param !  real *16 mm,qtt,yy,theta
-      integer nloop,icoll,ih1,ih2,inorm
+      integer icoll,ih1,ih2,inorm
       integer cc, iord, flagrealcomplex,imod,mord,kk,sii,sjj
       double precision sigmaij(-5:5,-5:5)
 C     Parameters for Bessel quadratures
@@ -45,7 +45,6 @@ c     alphas(Mz) from lhapdf
       COMMON/etalimite/etalim
       double precision etam
       COMMON / NAORD / NAORD
-      COMMON/nloop/nloop
       double precision v
       COMMON/v/v
       COMMON/NFLAVORS/nnF
@@ -117,9 +116,8 @@ c     include 'constants.f'
       data gevpb/3.8937966d8/
       double precision gevfb
       data gevfb/3.8937966d11/
-      include 'nlooprun.f'
       include 'zerowidth.f'
-      integer order,nproc,iih1,iih2,phot!,nlooprun
+      integer order,nproc,iih1,iih2,phot
       common/nnlo/order
       common/nproc/nproc
       double precision sqs
@@ -144,7 +142,6 @@ C     Initialization for Gauss inversion
          print *,'done'
 c     Initialization of redundant variables       
          flag1=order            ! set flag1 to order of calculation (carbon copy of order, 1=NLO+NLL, 2=NNLO+NNLL)
-         nloop=nlooprun         ! set nloop to order of running of alphas (carbon copy of nlooprun, not used)
 c     Choose pp or ppbar collider
          ih1=iih1               !1
          ih2=iih2               !1
@@ -214,7 +211,7 @@ c     flag1 is the order of calculation (carbon copy of order, 1=NLO+NLL, 2=NNLO
 
 
 C   ALPQR = ALPHA AT RENORMALIZATION SCALE
-      ALPQR=dyalphas(dsqrt(q2mur),amz,nlooprun)/4d0/pi
+      ALPQR=dyalphas(dsqrt(q2mur),amz,-1)/4d0/pi
 C as = ALPHAS/PI
       aass = ALPQR*4d0
 
@@ -271,7 +268,7 @@ C     Limit eta_max to avoid reaching the end of phase space
 C...  COUPLING CONSTANTS AT INPUT SCALE = ALPHAS/4/PI
 C     ALPQF = ALPHA AT RESUMMATION SCALE (used to start evolution,
 
-         ALPQF=dyalphas(dsqrt(q2s),amz,nlooprun)/4d0/pi
+         ALPQF=dyalphas(dsqrt(q2s),amz,-1)/4d0/pi
          
 c     precompute scales
          logmuf2q2=log(muf2/q2)

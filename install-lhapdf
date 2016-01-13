@@ -17,6 +17,7 @@ rm LHAPDF-${VERSION}.tar.gz
 
 cd LHAPDF-${VERSION}
 echo "Configuring..."
+export CPPFLAGS="-P"
 ./configure --prefix=`cd .. && pwd` >& ../pdfinstall.log 
 
 if [[ $? != 0 ]]
@@ -52,4 +53,21 @@ for pdf in $pdflist
 do
     bin/lhapdf install $pdf
     rm share/LHAPDF/${pdf}.tar.gz >& /dev/null
+done
+
+for pdf in $pdflist
+do
+    pdf=`echo $pdf | cut -d. -f1`
+    if [[ -e $pdf ]]
+    then
+	continue
+    fi
+    wget https://www.hepforge.org/archive/lhapdf/pdfsets/6.0/${pdf}.tar.gz
+    if [[ $? != 0 ]]
+    then
+	echo "$pdf download failed"
+	continue
+    fi
+    tar -xzvf ${pdf}.tar.gz
+    rm ${pdf}.tar.gz
 done

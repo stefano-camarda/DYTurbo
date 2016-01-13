@@ -15,6 +15,7 @@
 #include "finitemapping.h"
 #include "cubacall.h"
 #include "plotter.h"
+#include "printsettings.h"
 
 using namespace std;
 
@@ -65,35 +66,35 @@ int main( int argc , const char * argv[])
   if (argc>1) {
       conf_file = argv[1];
   }
+  SMparameters();
   opts.readfromfile(conf_file.c_str());
   opts.initDyresSettings();
   gaussinit_();
   iniflavreduce_();
-  setup_();
   dyturboinit();
+  rescinit_();
   //bins.init();
   bins.readfromfile(conf_file.c_str());
-  //force number of cores to 0 (no parallelization)
-  cubacores(opts.cubacores,1000000); // < move this to cubainit
+  cubacores(opts.cubacores,1000000);   //< set number of cores (move this to cubainit)
   cubaexit((void (*)()) exitfun,NULL); //< merge at the end of the run
-  ///@todo: print out EW parameters and other settings
-  // just a check
-  opts.dumpAll();
-  //return 0;
   // histogram output
   hists.Init();
   /***********************************/
 
-  double costh, m, qt, y;
-  double value, error, totval, toterror2;
-  vector <double> vals;
-  vector <double> totvals;
+  /***********************************/
+  //Initialization
+  ///@todo: print out EW parameters and other settings
+  // just a check
+  opts.dumpAll();
+  printsettings();
+  /***********************************/
 
   /**************************************/
   //Checks for resummed cross section
+  double costh, m, qt, y;
   //  std::cout << std::setprecision(15);
   int mode = 0;
-  costh = 0.3; m = 91; qt = 1; y = 0;
+  costh = 0.; m = opts.rmass; qt = 1; y = 0;
   test_resum_speed(costh,m,qt,y,mode);
 
   costh = 0.1; m = 91; qt = 5; y = 0.2;
@@ -132,7 +133,7 @@ int main( int argc , const char * argv[])
   /**************************************/
   //Checks for finite order cross section
   //born level variables (6 dimensions)
-  // m, qt, y, costh;
+  //double m, qt, y, costh;
   double phicm, phiZ;
   costh = 0.0;  m = 91.1876;  qt = 5.;  y = 0.5;  phicm = 0.0;  phiZ = 0.;
 
@@ -161,6 +162,10 @@ int main( int argc , const char * argv[])
   /**************************************/
 
   // Cuba integration
+  double value, error, totval, toterror2;
+  vector <double> vals;
+  vector <double> totvals;
+
   cout << endl << "Start integration of";
   if (opts.doRES  ) cout << " resummation";
   if (opts.doVV   ) cout << " double virtual";
@@ -179,11 +184,11 @@ int main( int argc , const char * argv[])
       for (vector<double>::iterator qit = bins.qtbins.begin(); qit != bins.qtbins.end()-1; qit++)
       {
 
-      //Set integration boundaries
       totval=toterror2=0;
       totvals.clear();
       for (int i = 0; i < opts.totpdf; i++)
 	totvals.push_back(0);
+      //Set integration boundaries
       setbounds(opts.mlow, opts.mhigh, *qit, *(qit+1), *yit, *(yit+1) );//  opts.ylow, opts.yhigh);
       print_qtbin();
       print_ybin();

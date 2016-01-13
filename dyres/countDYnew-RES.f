@@ -9,8 +9,6 @@ C     Scale dependence included up to NNLO
       implicit none
       include 'options.f'
       include 'constants.f'
-      include 'realonly.f'
-      include 'virtonly.f'
       include 'noglue.f'
       include 'vegas_common.f'
       include 'ptilde.f'

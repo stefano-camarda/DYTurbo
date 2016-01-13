@@ -23,20 +23,20 @@ c      double precision mtausq,mcsq,mbsq
 c      common/qmassq/mtausq,mcsq,mbsq
 
       double precision 
-     . md,mu,ms,mc,mb,mt,
-     . mel,mmu,mtau,
-     . hmass,hwidth,
-     . wmass,wwidth,
-     . zmass,zwidth,
-     . twidth,
-     . tauwidth,
-     . mtausq,mcsq,mbsq
+     & md,mu,ms,mc,mb,mt,
+     & mel,mmu,mtau,
+     & hmass,hwidth,
+     & wmass,wwidth,
+     & zmass,zwidth,
+     & twidth,
+     & tauwidth,
+     & mtausq,mcsq,mbsq
       common/dymasses/
-     . md,mu,ms,mc,mb,mt,
-     . mel,mmu,mtau,
-     . hmass,hwidth,
-     . wmass,wwidth,
-     . zmass,zwidth,
-     . twidth,
-     . tauwidth,
-     . mtausq,mcsq,mbsq
+     & md,mu,ms,mc,mb,mt,
+     & mel,mmu,mtau,
+     & hmass,hwidth,
+     & wmass,wwidth,
+     & zmass,zwidth,
+     & twidth,
+     & tauwidth,
+     & mtausq,mcsq,mbsq

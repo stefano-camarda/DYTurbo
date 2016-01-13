@@ -10,6 +10,7 @@ git clone https://gitlab.cern.ch/DYdevel/DYTURBO.git
 
  2. setup/compile
 ```
+mkdir m4
 autoreconf -i
 (optional PATH=<lhapdfdir>:$PATH if you want to use your version of lhapdf previously installed in <lhapdfdir>)
 ./configure
@@ -52,4 +53,3 @@ make && make install
  - two files can be change to customize output of the calculation:
      - `src/plotter.C` for histograms
      - `src/settings.C` function `cuts` for changing cuts
-
