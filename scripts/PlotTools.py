@@ -18,7 +18,7 @@
 
 
 import os,time
-from ROOT import ROOT, TObject, TTree, TH2F, TH1D, TProfile, TH1F, TH1I, TH1C, TGraph, TGraphAsymmErrors, TF1, TMath, TFile, TCanvas, TBox, TLegend, TColor, gPad, gStyle, gROOT, Double, TLatex, TMarker, TLine
+from ROOT import ROOT, TObject, TTree, TH2F, TH1D, TProfile, TProfile2D, TH1F, TH1I, TH1C, TGraph, TGraphAsymmErrors, TF1, TMath, TFile, TCanvas, TBox, TLegend, TColor, gPad, gStyle, gROOT, Double, TLatex, TMarker, TLine
 
 # very handy for debugging -- missing backtrace
 import logging as MSG
@@ -619,7 +619,8 @@ class PlotTools:
         h.SetTitle(name)
         return h
 
-    def SwitchTH2Axes(s,h_in,outname,H2) :
+    def SwitchTH2Axes(s,h_in,H2) :
+        outname = h_in.GetName()+"_yx"
         z_tit = h_in.GetZaxis().GetTitle()
         x_tit = h_in.GetYaxis().GetTitle()
         x_N   = h_in.GetYaxis().GetNbins()
@@ -633,10 +634,17 @@ class PlotTools:
         h_out = H2(outname,tit ,x_N,x_lo,x_hi ,y_N,y_lo,y_hi )
         for xbin in range(0,x_N+2) :
             for ybin in range(0,y_N+2) :
+                ibinT = h_in.GetBin(ybin,xbin)
+                ibin  = h_out.GetBin(xbin,ybin)
                 v = h_in.GetBinContent(ybin,xbin)
                 e = h_in.GetBinError  (ybin,xbin)
+                n = 0
+                if H2 == TProfile2D :
+                    n = h_in.GetBinEntries(ibinT)
+                    v*=n
                 h_out.SetBinContent(xbin,ybin,v)
                 h_out.SetBinError  (xbin,ybin,e)
+                if H2 == TProfile2D : h_out.SetBinEntries  (ibin,n)
         return h_out
 
 
@@ -715,6 +723,16 @@ class PlotTools:
             pass
         return xmin,xmax,ymin,ymax
 
+    def SetFrameStyle(s,horlist,**kwargs):
+        H = horlist
+        if not type(H) is list :
+            H = [horlist]
+        dim = H[0].GetDimension()
+        if dim == 1 :
+            s.SetFrameStyle1D(H,**kwargs)
+        if dim == 2 :
+            s.SetFrameStyle2D(H,**kwargs)
+        pass
 
     def SetFrameStyle1D(s,hlist, **kwargs):
         # possible options: scale = 1.0, logY=False, logX=False, maxY="inf", minY="-inf", maxX="inf", minX="-inf", forceRange=False) :

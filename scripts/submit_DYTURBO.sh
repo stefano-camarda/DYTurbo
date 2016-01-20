@@ -580,7 +580,8 @@ submit_allProg(){
                     termlist="RES3D CT3D"
                     #if [[ $order == 2 ]]; then termlist="RES3D CT3D REAL VIRT"; fi;
                     if [[ $order == 2 ]]; then termlist="VIRT"; fi;
-                    #if [[ $order == 2 ]]; then termlist="RES3D CT3D"; fi;
+                    if [[ $order == 2 ]]; then termlist="RES3D"; fi;
+                    termlist="RES3D"
                 fi
                 if [[ $program =~ ^dyres ]] 
                 then
@@ -620,7 +621,8 @@ submit_allProg(){
                         NsplitQT=10
                         NsplitY=5
                         variation=array
-                        seedlist=100-154
+                        #seedlist=100
+                        seedlist=101-154
                     fi
                     for iqt in `seq $NsplitQT`
                     do

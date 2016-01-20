@@ -9,6 +9,8 @@
 #include <TProfile2D.h>
 #endif // USEROOT
 
+#define NMOM 8
+
 class plotter {
     public :
         plotter();
@@ -41,10 +43,12 @@ class plotter {
         // kinematic histograms
         TH1D * h_qt;
         TH1D * h_y ;
+        TH1D * h_costh;
+        TH1D * h_phi;
         TH2D * h_qtVy;
         // profiles
         bool doAiMoments;
-        TProfile2D * p_qtVy_A[8];
+        TProfile2D * p_qtVy_A[NMOM];
         // final results
         TH2D* qt_y_resum ;
         TH2D* qt_y_ct    ;
@@ -53,7 +57,7 @@ class plotter {
         TH2D* qt_y_virt  ;
         TH2D* qt_y_total ;
         // kinematics
-        double Q2,qt,y,a[8];
+        double Q2,qt,y,a[NMOM],c[NMOM];
         double costh,phi;
         // dipole variables
         struct XsecPoint {

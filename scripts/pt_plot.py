@@ -1514,7 +1514,34 @@ def makeStatPlot():
     pl.Save()
     pass
 
-
+def plot_profile():
+    fname = "run_dir_133/results_merge.root"
+    pname = "p_qtVy_A0"
+    pO = pl.GetHist(fname,pname)
+    p = pl.SwitchTH2Axes(pO,TProfile2D)
+    #p.RebinX(5)
+    hxy = pl.GetProjection(p   ,ax="_pxy"  )
+    px  = pl.GetProjection(p   ,ax="_prfx" )
+    py  = pl.GetProjection(p   ,ax="_prfy" )
+    hx  = pl.GetProjection(hxy ,ax="_px"   )
+    hy  = pl.GetProjection(hxy ,ax="_py"   )
+    #
+    for h in [p,hxy,px,py,hx,hy]:
+        MINY=0.
+        MAXY=2.
+        dim = h.GetDimension()
+        if dim == 2 :
+            MINY="-inf"
+            MAXY="inf"
+            pass
+        pl.NewCanvas(h.GetName())
+        pl.SetFrameStyle(h,minY=MINY,maxY=MAXY)
+        h.Draw("COLZ,SAME")
+        pl.Save()
+        pass
+    #
+    pl.MakePreviewFromList(0,"profiles")
+    pass
 
 ## Documentation for main
 #
@@ -1532,9 +1559,10 @@ if __name__ == '__main__' :
     #wwidth_table()
     #uncert_as_g()
     #find_fluctuations()
-    DY = TheoUncStudy()
+    #DY = TheoUncStudy()
     #DY.DoStudy()
-    DY.DoPDFQuadStudy()
+    #DY.DoPDFQuadStudy()
+    plot_profile()
     #makeStatPlot()
     pass
 
