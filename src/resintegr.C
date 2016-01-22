@@ -145,13 +145,17 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
   //for consistency, has to keep the integration between ymin and ymax
   if (opts.makelepcuts)
     {
-      //      rapintegrals_(ymin,ymax,m,nocuts);
-      rapint::integrate(ymin,ymax,m);
+      rapintegrals_(ymin,ymax,m,nocuts);
+      //C++ rewritten resum
+      //rapint::integrate(ymin,ymax,m);
+      //end
     }
   else
     {
-      //      rapintegrals_(ymn,ymx,m,nocuts);
-      rapint::integrate(ymn,ymx,m);
+      rapintegrals_(ymn,ymx,m,nocuts);
+      //C++ rewritten resum
+      //rapint::integrate(ymn,ymx,m);
+      //end
     }
   yet = clock();
   
