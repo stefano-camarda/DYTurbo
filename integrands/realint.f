@@ -192,6 +192,8 @@ c     start PDF loop
       do npdf=0,totpdf-1
          call setpdf(npdf)
          call hists_setpdf(npdf)
+c     skip for scanning events
+         if (npdf.ne.0.and.dofill.eq.0) goto 333
 c     intitialise xmsq to 0 for the real and all dipoles
          do nd=0,ndmax
             xmsq(nd)=0d0
@@ -273,7 +275,7 @@ C---     fill the dipole contribution to each bin separatelly
 C            call hists_real_event_PDF(npdf)
          endif
       enddo ! end of PDF loop
-      realint = f(1)
+ 333  realint = f(1)
       return
 
  999  realint=0d0

@@ -61,7 +61,14 @@ CP DYTURBOROOTDIR/../MCFM/Bin/mcfm .
 CP DYTURBOROOTDIR/input/default.in .
 CP DYTURBOROOTDIR/../MCFM/Bin/process.DAT .
 CP DYTURBOINPUTFILE input.in
-sed -i "s|= seed|= ${LSB_JOBINDEX}|g        " input.in
+if [[ JOBNAME =~ t*3D_ ]]
+then
+    var=$(( ${LSB_JOBINDEX} - 100))
+    sed -i "s|= seed|= 123|g             " input.in
+    sed -i "s|= array|= ${var}|g  " input.in
+else
+    sed -i "s|= seed|= ${LSB_JOBINDEX}|g        " input.in
+fi
 ln -sf input.in infile
 ln -sf input.in input.DAT
 

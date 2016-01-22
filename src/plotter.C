@@ -29,8 +29,8 @@ plotter::plotter() :
     qt_y_real   (0),
     qt_y_virt   (0),
     qt_y_total  (0),
-    last_npdf   (0),
-    doAiMoments (false),
+    last_npdf   (-1),
+    doAiMoments (true),
     verbose     (false)
 {
     return;
@@ -49,9 +49,13 @@ plotter::~plotter(){
     if(!qt_y_real  ) delete qt_y_real  ;
     if(!qt_y_virt  ) delete qt_y_virt  ;
     if(!qt_y_total ) delete qt_y_total ;
-    if(doAiMoments) for (auto ipp=0; ipp<8; ipp++){
-        delete p_qtVy_A[ipp];
-        p_qtVy_A[ipp]=NULL;
+    if(doAiMoments) {
+        for (auto ipp=0; ipp<NMOM; ipp++){
+            delete p_qtVy_A[ipp];
+            p_qtVy_A[ipp]=NULL;
+        }
+        if(!h_costh ) delete h_costh ;
+        if(!h_phi   ) delete h_phi   ;
     }
     return;
 }
@@ -81,14 +85,27 @@ void plotter::Init(){
     h_y       = new TH1D        ("h_y"      , "VB y"    , bins_y  [0] , bins_y  [1] , bins_y  [2] );
     h_qtVy    = new TH2D        ("h_qtVy"   , "VB qtVy" , bins_qt [0] , bins_qt [1] , bins_qt [2] ,  bins_y [0] , bins_y[1] , bins_y[2] );
     // turn off aimomens
-    if (doAiMoments) for (auto i=0; i<8; i++){
-        TString name = "p_qtVy_A";
-        name += i;
-        TString title = "A";
-        title+= i;
-        title+= " qtVy";
-        p_qtVy_A[i] = new TProfile2D(name.Data(), title.Data(), bins_qt [0] , bins_qt [1] , bins_qt [2] ,  bins_y [0] , bins_y[1] , bins_y[2] );
+    if (doAiMoments){
+        for (auto i=0; i<NMOM; i++){
+            TString name = "p_qtVy_A";
+            name += i;
+            TString title = "A";
+            title+= i;
+            title+= " qtVy";
+            p_qtVy_A[i] = new TProfile2D(name.Data(), title.Data(), bins_qt [0] , bins_qt [1] , bins_qt [2] ,  bins_y [0] , bins_y[1] , bins_y[2] );
+        }
+        h_costh       = new TH1D        ("h_costh"      , "VB costh"    , 100, -1,1 );
+        h_phi         = new TH1D        ("h_phi"        , "VB phi"      , 100, -TMath::Pi(),TMath::Pi() );
     }
+    // correction factor for Ai moments
+    c[0] = 20./3. ;
+    c[1] = 5.     ;
+    c[2] = 10.    ;
+    c[3] = 4.     ;
+    c[4] = 4.     ;
+    c[5] = 5.     ;
+    c[6] = 5.     ;
+    c[7] = 4.     ;
     /// Trying to calculate final number of vegas calls
     // consider this part as new function: when I will run all terms at once it can be recalculated
     if (opts.doRES  ) N = opts.vegasncallsRES  ;
@@ -99,6 +116,7 @@ void plotter::Init(){
     N = 1;
     // vector of weights -- for systematics
     v_wgt.clear();
+    SetPDF(0);
     return;
 }
 
@@ -180,14 +198,14 @@ void plotter::CalculateKinematics(double p3[4], double p4[4]){
     double sinphi    = TMath::Sin(phi);
     double sin2phi   = TMath::Sin(2*phi);
     // define ai moments
-    a[0] = 0.5 - 1.5*costh*costh;
-    a[1] = sin2theta*cosphi;
-    a[2] = sintheta*sintheta*cos2phi;
-    a[3] = sintheta*cosphi;
-    a[4] = costh;
-    a[5] = sintheta*sintheta*sin2phi;
-    a[6] = sin2theta*sinphi;
-    a[7] = sintheta*sinphi;
+    a[0] = c[0] * (0.5-1.5*costh*costh       ) +2./3.;
+    a[1] = c[1] * (sin2theta*cosphi          )       ;
+    a[2] = c[2] * (sintheta*sintheta*cos2phi )       ;
+    a[3] = c[3] * (sintheta*cosphi           )       ;
+    a[4] = c[4] * (costh                     )       ;
+    a[5] = c[5] * (sintheta*sintheta*sin2phi )       ;
+    a[6] = c[6] * (sin2theta*sinphi          )       ;
+    a[7] = c[7] * (sintheta*sinphi           )       ;
 }
 
 
@@ -223,7 +241,7 @@ void plotter::FillRealDipole(double p3[4], double p4[4], double wgt, int nd){
     point.fid   = decide_fiducial(p3,p4);
     dipole_points.push_back(point);
     // fill moments
-    if(doAiMoments) for (auto i=0; i<8; i++) p_qtVy_A[i]->Fill(qt,y,a[i],wgt);
+    if(doAiMoments) for (auto i=0; i<NMOM; i++) p_qtVy_A[i]->Fill(qt,y,a[i],wgt);
     return;
 }
 
@@ -254,7 +272,7 @@ void plotter::FillRealEvent(plotter::TermType term){
 
 void plotter::FillEvent(double p3[4], double p4[4], double wgt){
     // save after 10M events
-    if(int(h_qt->GetEntries()+1)%int(1e6)==0) Finalise(0);
+    //if(int(h_qt->GetEntries()+1)%int(1e6)==0) Finalise(0);
     //
     if (wgt == 0 ) return;
     CalculateKinematics(p3,p4);
@@ -269,7 +287,11 @@ void plotter::FillEvent(double p3[4], double p4[4], double wgt){
     h_qt      ->Fill( qt        ,wgt);
     h_y       ->Fill( y         ,wgt);
     h_qtVy    ->Fill( qt,y      ,wgt);
-    if(doAiMoments)for (int i=0;i<8;i++) p_qtVy_A[i] ->Fill( qt,y,a[i] ,wgt);
+    if(doAiMoments){
+        for (int i=0;i<NMOM;i++) p_qtVy_A[i] ->Fill( qt,y,a[i] ,wgt);
+        h_costh    ->Fill( costh      ,wgt);
+        h_phi      ->Fill( phi        ,wgt);
+    }
     return;
 }
 
@@ -484,12 +506,17 @@ void plotter::Finalise(double xsection){
     TFile *outf = TFile::Open(outfname.Data(), "recreate");
     // write
     for (int i=0; i< h_qtVy_PDF.size(); i++){
+        printf( " wriging pdf %d \n",i);
         SetPDF(i);
         h_qt   -> Write();
         h_y    -> Write();
         h_qtVy -> Write();
     }
-    if(doAiMoments) for (auto pp : p_qtVy_A) pp->Write();
+    if(doAiMoments){
+        for (auto pp : p_qtVy_A) pp->Write();
+        h_costh   -> Write();
+        h_phi     -> Write();
+    } 
     // results
     qt_y_resum -> Write();
     qt_y_ct    -> Write();

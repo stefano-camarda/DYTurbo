@@ -18,7 +18,7 @@
 
 
 import os,time
-from ROOT import ROOT, TObject, TTree, TH2F, TH1D, TProfile, TH1F, TH1I, TH1C, TGraph, TGraphAsymmErrors, TF1, TMath, TFile, TCanvas, TBox, TLegend, TColor, gPad, gStyle, gROOT, Double, TLatex, TMarker, TLine
+from ROOT import ROOT, TObject, TTree, TH2F, TH1D, TProfile, TProfile2D, TH1F, TH1I, TH1C, TGraph, TGraphAsymmErrors, TF1, TMath, TFile, TCanvas, TBox, TLegend, TColor, gPad, gStyle, gROOT, Double, TLatex, TMarker, TLine
 
 # very handy for debugging -- missing backtrace
 import logging as MSG
@@ -353,6 +353,7 @@ class PlotTools:
         h = s.EmptyClone(hlist[0],name)
         dim = h.GetDimension()
         # loop bins
+        ist=0
         for xbin in range(0,h.GetNbinsX()+2):
             ybinlist = [0] if dim<2 else range(0,h.GetNbinsY()+2)
             for ybin in ybinlist:
@@ -370,6 +371,21 @@ class PlotTools:
                         sym= (abs(pos - neg))/2.
                         pos = pos - val
                         neg = neg - val
+                        # pdf
+                        CL99to68=1/2.705
+                        N = len(hlist)-1
+                        allind = range(N)
+                        pdfVar = [ hlist[i+1].GetBinContent(ibin) for i in allind]
+                        pdfVarSq = [ (x-val)**2 for x in pdfVar]
+                        pdfDWSq = [ CL99to68*(pdfVarSq[i] + pdfVarSq[i+1])/4. for i in range(N/2)]
+                        pdfsigma = sqrt(sum(pdfDWSq))
+                        #print "    PDFERROR ", ibin, pdfsigma
+                        #print "    ", len(pdfVar), pdfVar
+                        #print "    ", len(pdfVarSq), pdfVarSq
+                        #print "    ", len(pdfDWSq), pdfDWSq
+                        #print "    PDFERROR END"
+                        #if ist>100 : return
+                        #ist+=1
                     except IndexError:
                         pass
                     if relative and val!=0 : unc/=abs(val)
@@ -379,6 +395,7 @@ class PlotTools:
                     elif utype=="pos"    : unc *= pos
                     elif utype=="neg"    : unc *= neg
                     elif utype=="sym"    : unc *= sym
+                    elif utype=="pdf"    : unc *= pdfsigma
                     else : raise ValueError("Uknown error type {}".format(utype))
                     #print ibin,unc
                     h.SetBinContent(ibin,unc)
@@ -602,7 +619,8 @@ class PlotTools:
         h.SetTitle(name)
         return h
 
-    def SwitchTH2Axes(s,h_in,outname,H2) :
+    def SwitchTH2Axes(s,h_in,H2) :
+        outname = h_in.GetName()+"_yx"
         z_tit = h_in.GetZaxis().GetTitle()
         x_tit = h_in.GetYaxis().GetTitle()
         x_N   = h_in.GetYaxis().GetNbins()
@@ -616,10 +634,17 @@ class PlotTools:
         h_out = H2(outname,tit ,x_N,x_lo,x_hi ,y_N,y_lo,y_hi )
         for xbin in range(0,x_N+2) :
             for ybin in range(0,y_N+2) :
+                ibinT = h_in.GetBin(ybin,xbin)
+                ibin  = h_out.GetBin(xbin,ybin)
                 v = h_in.GetBinContent(ybin,xbin)
                 e = h_in.GetBinError  (ybin,xbin)
+                n = 0
+                if H2 == TProfile2D :
+                    n = h_in.GetBinEntries(ibinT)
+                    v*=n
                 h_out.SetBinContent(xbin,ybin,v)
                 h_out.SetBinError  (xbin,ybin,e)
+                if H2 == TProfile2D : h_out.SetBinEntries  (ibin,n)
         return h_out
 
 
@@ -698,6 +723,16 @@ class PlotTools:
             pass
         return xmin,xmax,ymin,ymax
 
+    def SetFrameStyle(s,horlist,**kwargs):
+        H = horlist
+        if not type(H) is list :
+            H = [horlist]
+        dim = H[0].GetDimension()
+        if dim == 1 :
+            s.SetFrameStyle1D(H,**kwargs)
+        if dim == 2 :
+            s.SetFrameStyle2D(H,**kwargs)
+        pass
 
     def SetFrameStyle1D(s,hlist, **kwargs):
         # possible options: scale = 1.0, logY=False, logX=False, maxY="inf", minY="-inf", maxX="inf", minX="-inf", forceRange=False) :
@@ -1584,7 +1619,16 @@ class PlotTools:
 
 
     def MakePreviewFromFolder(s, path) :
-        os.system(" rm -f {1}/preview.pdf; pdftk {0}/*.pdf cat output {1}/preview.pdf".format(path, s.imgDir))
+        hasPDFTK=False
+        if hasPDFTK :
+            os.system(" rm -f {1}/preview.pdf; pdftk {0}/*.pdf cat output {1}/preview.pdf".format(path, s.imgDir))
+        else :
+            # create list (with wildcards)
+            import glob
+            hlist = glob.glob(path)
+            hlist = [ x.replace(".pdf","") for x in hlist]
+            # use prev, from list
+            s.MakePreviewFromList(hlist)
 
     def MakePreviewFromList(s, figlist = 0, fname="preview") :
         if figlist == 0 : figlist = s.updated_plots
