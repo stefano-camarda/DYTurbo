@@ -1,10 +1,10 @@
 ACLOCAL_AMFLAGS=-I m4
-SUBDIRS = cernlib dequad dyres dynnlo mcfm integrands resum src origdyres
+SUBDIRS = cernlib dequad dyres dynnlo mcfm integrands resum src # origdyres
 EXTRA_DIST= install-cuba install-lhapdf pdfsets.list README.md
 bin_SCRIPTS = dyturbo-config
 
 sharedir = ${datadir}/${PACKAGE}
-dist_share_DATA = input/*.in
+dist_share_DATA = input/*.in scripts/submit_DYTURBO.sh scripts/DYTURBO_*.in scripts/run_DYTURBO_Array_TMPL.sh
 
 #distribute the cuba library
 #lib_LIBRARIES = libcuba.a
