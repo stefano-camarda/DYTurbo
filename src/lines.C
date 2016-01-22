@@ -171,7 +171,10 @@ void ptline()
   double m = opts.rmass;
   double qt = 5.;
   double y = 0.0;
-  int mode = 1;
+  int mode = 2;
+  setbounds(opts.mlow, opts.mhigh, 0, 100, opts.ylow, opts.yhigh);
+  cacheyrapint_(ymin, ymax);
+  rapint::cache(ymin, ymax);
 
   double p1 = 0.01;
   double p2 = 100;
