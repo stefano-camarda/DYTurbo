@@ -11,6 +11,8 @@
 //#include <vector>
 //#include <random>
 
+double const qtcutoff = 0.02;
+
 integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, double f[])
 {
   clock_t begin_time, end_time;
@@ -43,14 +45,14 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
 
   //integrate between qtmin and qtmax
   /*
-  double qtmn = max(0.02, qtmin);
+  double qtmn = max(qtcutoff, qtmin);
   double qt=qtmn+(qtmax-qtmn)*x[1];
   jac=jac*(qtmax-qtmn);
   */
     
   //integrate between qtmin and qtmax
   //limit qtmax to the qT kinematical limit, or to the switching function boundary
-  double qtmn = max(0.02, qtmin);
+  double qtmn = max(qtcutoff, qtmin);
   double miny;
   if (ymn * ymx <= 0)
     miny = 0;
@@ -138,8 +140,19 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
 
   clock_t ybt, yet;
   ybt = clock();
-  //  rapintegrals_(ymin,ymax,m,nocuts);
-  rapintegrals_(ymn,ymx,m,nocuts);
+  //there is a potential issue here, when lepton cuts are applied
+  //the rapidity dependent exponential are cached assuming integration between ymin and ymax
+  //for consistency, has to keep the integration between ymin and ymax
+  if (opts.makelepcuts)
+    {
+      //      rapintegrals_(ymin,ymax,m,nocuts);
+      rapint::integrate(ymin,ymax,m);
+    }
+  else
+    {
+      //      rapintegrals_(ymn,ymx,m,nocuts);
+      rapint::integrate(ymn,ymx,m);
+    }
   yet = clock();
   
   setmqty(m, qt, 0);
@@ -271,13 +284,13 @@ integrand_t resintegrand3d(const int &ndim, const double x[], const int &ncomp, 
 
   //integrate between qtmin and qtmax
   /*
-  double qtmn = max(0.02, qtmin);
+  double qtmn = max(qtcutoff, qtmin);
   double qt=qtmn+(qtmax-qtmn)*x[2];
   jac=jac*(qtmax-qtmn);
   */
 
   //integrate between qtmin and qtmax
-  double qtmn = max(0.02, qtmin);
+  double qtmn = max(qtcutoff, qtmin);
   double cosh2y34=pow((exp(y)+exp(-y))*0.5,2);
   double kinqtlim = sqrt(pow(pow(energy_.sroot_,2)+m*m,2)/(4*pow(energy_.sroot_,2)*cosh2y34)-m*m);
   double switchqtlim = switching::qtlimit(m);
@@ -356,7 +369,7 @@ integrand_t resintegrand3d(const int &ndim, const double x[], const int &ncomp, 
 }
 
 //Perform the integration as in the original dyres code
-integrand_t resintegrand4d(const int &ndim, const double x[], const int &ncomp, double f[],
+integrand_t resintegrandMC(const int &ndim, const double x[], const int &ncomp, double f[],
 			   void* userdata, const int &nvec, const int &core,
 			   double &weight, const int &iter)
 {
@@ -414,29 +427,37 @@ integrand_t resintegrand4d(const int &ndim, const double x[], const int &ncomp, 
   double ylim = 0.5*log(pow(energy_.sroot_,2)/m2);
   double ymn = min(max(-ylim, ymin),ylim);
   double ymx = max(min(ylim, ymax),-ylim);
+  if (ymn >= ymx)
+    {
+      f[0]=0.;
+      return 0;
+    }
 
   //integrate between ymin and ymax
   double y=ymn+(ymx-ymn)*r[1];
   jac=jac*(ymx-ymn);
 
-  double dexpy=exp(y);
-  double dexpmy=exp(-y);
-  double cosh2y=pow(((dexpy+dexpmy)*0.5),2);
-
-  //   qT kinematical limit
-  //  qtmax=sqrt(pow((pow(energy_.sroot_,2)+m2),2)/(4.*pow(energy_.sroot_,2)*cosh2y) - m2);
-  //  qtmin=0.1;
-  //  qt=qtmin+qtmax*r[2];
-  //  jac=jac*(qtmax);
-
-  double qtmn = max(0.02, qtmin);
-  double qt=qtmn+(qtmax-qtmn)*r[2];
-  jac=jac*(qtmax-qtmn);
+  //integrate between qtmin and qtmax
+  double expy=exp(y);
+  double expmy=exp(-y);
+  double qtmn = max(qtcutoff, qtmin);
+  double cosh2y34=pow((expy+expmy)*0.5,2);
+  double kinqtlim = sqrt(pow(pow(energy_.sroot_,2)+m*m,2)/(4*pow(energy_.sroot_,2)*cosh2y34)-m*m);
+  double switchqtlim = switching::qtlimit(m);
+  double qtlim = min(kinqtlim, switchqtlim);
+  double qtmx = min(qtlim, qtmax);
+  if (qtmn >= qtmx)
+    {
+      f[0]=0.;
+      return 0;
+    }
+  double qt=qtmn+(qtmx-qtmn)*r[2];
+  jac=jac*(qtmx-qtmn);
 
   qt2=pow(qt,2);
 
-  double xx1=sqrt(m2/pow(energy_.sroot_,2))*dexpy;
-  double xx2=sqrt(m2/pow(energy_.sroot_,2))*dexpmy;
+  double xx1=sqrt(m2/pow(energy_.sroot_,2))*expy;
+  double xx2=sqrt(m2/pow(energy_.sroot_,2))*expmy;
 
 
   // incoming quarks
