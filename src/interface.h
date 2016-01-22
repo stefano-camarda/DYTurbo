@@ -1,6 +1,14 @@
 #ifndef interface_h
 #define interface_h
 
+#include "rapint.h"
+#include "mellinint.h"
+#include "mesq.h"
+#include "pdfevol.h"
+#include "hcoefficients.h"
+
+#include <complex>
+ 
 // constants.f
 #define NF 5
 #define FN -5
@@ -9,7 +17,17 @@
 
 #define XN 3
 
+using namespace std;
+
 extern "C" {
+
+  struct fcomplex {double real; double imag;};
+  //function to convert from fortran to C complex type
+  inline complex <double> cx(fcomplex fcx) {return complex<double>(fcx.real, fcx.imag);}
+  //function to convert from C to fortran complex type
+  //  inline fcomplex fcx(complex <double> cx) {fcomplex f; f.real = real(cx); f.imag = imag(cx); return f;};
+  inline fcomplex fcx(complex <double> cx) {return (fcomplex) {real(cx), imag(cx)};};
+
 
   // rewritten functions
   double resumm_(double &costh, double &mm, double &qtt, double &yy, int& mode);
@@ -23,6 +41,16 @@ extern "C" {
   //int cutsold_(double p[4][12], int &njet);
   void rescinit_();
 
+  //C++ rewritten resummation
+  inline void rapint_cache_(double& ymin, double& ymax) {rapint::cache(ymin, ymax);};
+  inline void rapint_integrate_(double& ymin, double& ymax, double& m) {rapint::integrate(ymin, ymax, m);};
+  void setmesq_expy_(int& mode, double& m, double& costh, double& y);
+  void pdfevol_(int& i1, int& i2, int& sign);
+  void mellinint_pdf_mesq_expy_(int& i1, int& i2, int& sign);
+  fcomplex mellinint_integrand_(int& i1, int& i2, int& sign);
+  void hcoeff_calc_(double& aass, double& logmuf2q2, double& logq2muf2, double& logq2mur2, double& loga);
+  void hcoeff_calcb_(double& aass, double& logmuf2q2, double& loga, double& alpq, double &aexp, double &aexpb);
+  
   void breitw_(double& x1, double& mminsq, double& mmaxsq, double& rmass, double& rwidth, double& msq, double& wt);
   void boost_(double& mass, double p1[],double p_in[], double p_out[]);
   void branch_(double& brwen, double& brzee, double& brtau, double& brtop);
@@ -38,6 +66,24 @@ extern "C" {
   void initmoments_();
   // fortran common spaces
 
+  //Anomalous dimensions and Wilson coefficients
+  
+  void ancalc_(fcomplex &QQI, fcomplex &QGF, fcomplex &GQI, fcomplex &GGI, fcomplex &GGF, fcomplex &NS1MI, fcomplex &NS1PI, fcomplex &NS1F,
+	       fcomplex &QQ1F, fcomplex &QG1F, fcomplex &GQ1I, fcomplex &GQ1F, fcomplex &GG1I, fcomplex &GG1F, fcomplex &xn);
+  void anom_(fcomplex &ANS, fcomplex &AM, fcomplex &AP, fcomplex &AL, fcomplex &BE, fcomplex &AB, fcomplex &RMIN, fcomplex &RPLUS, fcomplex &RQQ, fcomplex &RQG,
+	     fcomplex &RGQ, fcomplex &RGG, fcomplex &C2Q, fcomplex &C2G, fcomplex &CDYQ, fcomplex &CDYG, fcomplex &xn, int &FR,
+	     fcomplex &QQI, fcomplex &QGF, fcomplex &GQI, fcomplex &GGI, fcomplex &GGF, fcomplex &NS1MI, fcomplex &NS1PI, fcomplex &NS1F,
+	     fcomplex &QQ1F, fcomplex &QG1F, fcomplex &GQ1I, fcomplex &GQ1F, fcomplex &GG1I, fcomplex &GG1F, fcomplex &C2QI, fcomplex &C2GF,
+	     fcomplex &CDYQI, fcomplex &CDYGI);
+  void h2calc_(fcomplex &C2qg, fcomplex &C2NSqqb, fcomplex &C2NSqq, fcomplex &C2Sqqb,fcomplex &xn);
+
+  //access dyres PDF in N-space
+  extern struct {
+    fcomplex cfx1_[136][11];
+    fcomplex cfx2p_[136][11];
+    fcomplex cfx2m_[136][11];
+  } creno_;
+  
   //Catani-Seymour subtraction cut-offs for initial-initial, initial-final, final-initial, and final-final dipoles
   extern struct {
     double aii_;
@@ -140,6 +186,10 @@ extern "C" {
   /*  extern struct {
     double aemmz_;
     } em_;*/
+
+  extern struct {
+    int nf_;
+  } nf_;
 
   extern struct {
     double Q_[2*NF+1];
