@@ -168,11 +168,11 @@ AS_IF([test "x$enable_checkBounds" = "xyes"], [
 ])
 
 
+		 #origdyres/Makefile
 AC_CONFIG_FILES([Makefile 
 	 	 src/Makefile
  	 	 resum/Makefile
 		 integrands/Makefile
-		 origdyres/Makefile
 		 dyres/Makefile
 		 dynnlo/Makefile
 		 mcfm/Makefile
