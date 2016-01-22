@@ -1,4 +1,4 @@
-AC_INIT([dyturbo], [0.9.4], [stefano.camarda@cern.ch,jakub.cuth@cern.ch])
+AC_INIT([dyturbo], [0.9.6], [stefano.camarda@cern.ch,jakub.cuth@cern.ch])
 AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE([foreign -Wall -Werror])
 
@@ -170,6 +170,7 @@ AS_IF([test "x$enable_checkBounds" = "xyes"], [
 
 AC_CONFIG_FILES([Makefile 
 	 	 src/Makefile
+ 	 	 resum/Makefile
 		 integrands/Makefile
 		 origdyres/Makefile
 		 dyres/Makefile
