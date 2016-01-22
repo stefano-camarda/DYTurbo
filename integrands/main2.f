@@ -442,7 +442,12 @@ c*****************************************
       endif
 C     COMPUTE RESUMMED CONTRIBUTION (b integral 0->infinity)
 c     print*,'phase space point in resumm', qtt, yy, mm, costh
-c*****************************************
+
+cc*****************************************
+cc     C++ rewritten check
+c      call setmesq_expy(mod, mm, costh, yy)
+c      call hcoeff_calc(aass,logmuf2q2,logq2muf2,logq2mur2,loga)
+cc*****************************************
 c     dependence on qt, m, also y, and costh unless integrated
       call resummation(resu)
 c*****************************************
@@ -524,6 +529,17 @@ c     cached from resumm
 
       integer mod              !mode 0: differential mode 1: integrated in costh mode 2: integrated in costh and y
       common /mod/mod
+
+      double complex loga,logmuf2q2,logq2muf2,logq2mur2
+      common/clogs/loga,logmuf2q2,logq2muf2,logq2mur2
+      
+      double complex aexp,aexpB
+      COMMON/exponent/aexp,aexpB
+
+      double precision aass
+      COMMON/aass/aass
+
+      COMPLEX *16 mellinint_integrand
       
       include 'constants.f' 
       scale2=cmplx(b0p**2/b**2,0d0)
@@ -627,24 +643,29 @@ c     Cache the positive and negative branch of coefficients which depend only o
          call cachehcoeff(I,-1)
       enddo
 c ******************************
-       DO 100 I1 = 1, NMAX1
-          DO 10 I2 = 1, NMAX2
+c     C++ rewritten check
+c      call hcoeff_calcb(aass,logmuf2q2,loga,alpq,aexp,aexpb)
+c ******************************
+      DO 100 I1 = 1, NMAX1
+         DO 10 I2 = 1, NMAX2
 c here scale2 is fixed (b-dependent), and the function is called many times at I1 I2 points       
 c part of the coefficients calculation is hoisted in the previous I loop
 
-c merge positive and negative branch
-        if (mod.eq.0.or.mod.eq.1) then
+c     merge positive and negative branch
+c *************************************
+c orig fortran code            
+             if (mod.eq.0.or.mod.eq.1) then
 C     COMPUTE POSITIVE BRANCH
            CALL INTERESnew (HCRN, I1, I2, 1)
            INT1= (HCRN * cCEX2p(I2))
-            
+           
 C     COMPUTE NEGATIVE BRANCH
            CALL INTERESnew (HCRN, I1, I2, -1)
            INT2= (HCRN * cCEX2m(I2))
-            
-           FZ=-DBLE( 1./2*(INT1-INT2)*cCEX1(I1)*WN(I1)*WN(I2)*factorfin)
-           FUN= FUN + FZ
+           
+           FZ=-DBLE( 1./2*(INT1-INT2)*cCEX1(I1)*WN(I1)*WN(I2))
 
+           FUN= FUN + FZ
         elseif (mod.eq.2) then
 c     Rapidity integrated mode:
 c     sigmaij are fatorised from HCRN and numerical integration in y is performed in rapintegrals
@@ -670,17 +691,36 @@ c     The integrals are solved analitically when no cuts on the leptons are appl
             funp2m2=funp2m2-DBLE((int1p2m2-int2p2m2)) !*WN(I1)*WN(I2))
             funm1p1=funm1p1-DBLE((int1m1p1-int2m1p1)) !*WN(I1)*WN(I2))
             funm2p2=funm2p2-DBLE((int1m2p2-int2m2p2)) !*WN(I1)*WN(I2))
-         else
-      endif    
-        
+        endif    
+
+c *************************************
+cc     C++ rewritten check
+c            call pdfevol(I1,I2,1)
+c            call mellinint_pdf_mesq_expy(I1,I2,1)
+c            INT1=mellinint_integrand(I1,I2,1)
+c            call pdfevol(I1,I2,2)
+c            call mellinint_pdf_mesq_expy(I1,I2,2)
+c            INT2=mellinint_integrand(I1,I2,2)
+c            FZ=-DBLE(0.5d0*(INT1-INT2))
+cc     FZ=-0.5d0*(DBLE(INT1)-DBLE(INT2))
+c            FUN= FUN + FZ
+cc *************************************
+
+
  10   CONTINUE
  100  CONTINUE
 c     ***************************
       if (mod.eq.0.or.mod.eq.1) then
-         INVRES = fun
+         INVRES = fun*factorfin
       elseif (mod.eq.2) then
+c     ***************************
+cc orig fortran code            
          INVRES= 0.5d0*(funp1m1+funp2m2
      1        +funm1p1+funm2p2)*factorfin
+c     ***************************
+c     C++ rewritten check
+c         INVRES = fun*factorfin
+c     ***************************
       endif
       if (invres.ne.invres) then
          print *, 'Warning, invres =', invres, 'b =', b, 'qt=', qt
@@ -791,7 +831,6 @@ c     and also on b through aexpb, aexp
          
       endif                     ! end NNLL
 c     *********************************************************
-      
       return
       end
         
@@ -960,7 +999,8 @@ C  GG
        Hgg = aasshsq*cH2stgg(I1,I2,SIG)
      .   *aexp*caexpqg(I1,1)  
      .   *aexp*caexpqg(I2,SIG)              
-
+c       print *,I1, I2, SIG,aasshsq,aexp,cH2stgg(I1,I2,SIG),
+c     .      caexpqg(I2,SIG),caexpqg(I1,1),Hgg
        Hqq_1 = cHqqnnll(I1,1)     !  Q Q -> Qb Q  = Qb Qb -> Q Qb
        Hqq_2 = cHqqnnll(I2,SIG)   !  Qb Qb -> Qb Q =  Q Q -> Q Qb
        Hqq= (Hqq_1+Hqq_2)/2d0     ! Average QQ->QQb  and QbQb->QQb
@@ -1748,7 +1788,17 @@ c     1    + sHCRN(-2,2)*sigmaij(-2,2)
       else
          HCRN = GGN*Hgg + FX1(0)*QGN_1*Hqg_1 + FX2(0)*QGN_2*Hqg_2
      1        + QQBN_1*Hqqb + QQBN_2*Hqq + QQBN_3*Hqqp_1 + QQBN_4*Hqqp_2
-
+c         print *,I1,I2,SIG,Hgg
+c     print *, Hgg,Hqg_1,Hqg_2
+c     print *, GGN,FX1(0)*QGN_1,FX2(0)*QGN_2
+c     print *,GGN*Hgg + FX1(0)*QGN_1*Hqg_1 + FX2(0)*QGN_2*Hqg_2
+c     print *,QQBN_1*Hqqb+QQBN_2*Hqq+QQBN_3*Hqqp_1+QQBN_4*Hqqp_2
+c         print *,QQBN_1,QQBN_2,QQBN_3,QQBN_4
+c     print *,Hqqb,Hqq,Hqqp_1,Hqqp_2
+c         print *,cH1stqqb(I1,I2,SIG),cH2stqqb(I1,I2,SIG)
+c         print *,cC2NSqqM(I1,1),cC2NSqqM(I2,SIG),
+c     .        cC2SqqbM(I1,1),cC2SqqbM(I2,SIG),
+c     .        cC1qq(I1,1), cC1qq(I2,SIG)
       endif
       RETURN
       END
@@ -2989,10 +3039,10 @@ c     integrals
       enddo
       enddo
 
-c     print *,
-c      do I1 = 1, 2 !136
-c         do I2 = 1, 2  !136
-c            print*,Ith0p(I1,I2)
+c      print *,
+c      do I1 = 1, 3              !136
+c         do I2 = 1, 3           !136
+c            print*,I1,I2,Ith1p(I1,I2),cfpm(I1,I2)
 c         enddo
 c      enddo
       call initsigmacthy(m)
@@ -3453,7 +3503,6 @@ c     setup the sigmaij integrated in costh
       facW=1/9d0/pi*q2/((q2-Mw**2)**2+Mw**2*ww**2)*gevfb
       chi1=(q2-Mz**2)/q2
       chi2=((q2-Mz**2)**2+Mz**2*zw**2)/q2/q2
-      
       if (flag5.eq.3) then
          sigmaij(1,-1)=facZ*( 
      \        (gLZu**2+gRZu**2)*(fLZ**2+fRZ**2)*(1d0+costh**2)
