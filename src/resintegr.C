@@ -396,8 +396,8 @@ integrand_t resintegrandMC(const int &ndim, const double x[], const int &ncomp, 
 
   int jstop = 0;
 
-  double azloopmax = 500;
-  double azloop = 0;
+  //double azloopmax = 1;
+  //double azloop = 0;
 
   ptemp[0]=0.;
   ptemp[1]=0.;
@@ -478,16 +478,18 @@ integrand_t resintegrandMC(const int &ndim, const double x[], const int &ncomp, 
   mt2=m2+qt2;
 
   int mode = 0;
+
   // LOOP over (vector boson and lepton) azimuthal angles 
-  for (int j=0; j < azloopmax; j++)
-    // Vector boson azimuthal angle
-    {
-      phi = 2.*M_PI*((double)rand()/(double)RAND_MAX);
+  //for (int j=0; j < azloopmax; j++)
+  //    {
+      // Vector boson azimuthal angle
+      //      phi = 2.*M_PI*((double)rand()/(double)RAND_MAX);
+      // Azimuthal angle of the first lepton in the center of mass frame 
+      //phi_lep = 2.*M_PI*((double)rand()/(double)RAND_MAX);
 
-      // Lepton decay in the center of mass frame 
-      // First lepton direction:  azimuthal angle
-      phi_lep = 2.*M_PI*((double)rand()/(double)RAND_MAX);
-
+      phi = 2.*M_PI*r[4];
+      phi_lep = 2.*M_PI*r[5];
+      
       //  vector boson momentum: pV(4)^2-pV(1)^2-pV(2)^2-pV(3)^2=m2
       pV[0]=qt*cos(phi);
       pV[1]=qt*sin(phi);
@@ -558,14 +560,22 @@ integrand_t resintegrandMC(const int &ndim, const double x[], const int &ncomp, 
       int njet = 0;
        //       cout << qt << "  " <<  y << "  " <<  m << "  " << sqrt(p[3][1]*p[3][1] + p[3][2] * p[3][2]) << endl;
       if (opts.makelepcuts)
-	if (cuts_(pjet,njet)) continue;
+	if (cuts_(pjet,njet)) // continue;
+	  {
+	    f[0]=0.;
+	    return 0;
+	  }
 			    
       //  SWITCHING FUNCTIONS
       //      swtch=1.;
       //      if (qt >= m*3/4.)  swtch=exp(-pow((m*3/4.-qt),2)/pow((m/2.),2)); // GAUSS SWITCH
       swtch = switching::swtch(qt, m);
 
-      if (swtch <= 0.01) break;
+      if (swtch <= 0.01) //break;
+	{
+	  f[0]=0.;
+	  return 0;
+	}
 
       if (jstop != 1)
 	{
@@ -584,13 +594,13 @@ integrand_t resintegrandMC(const int &ndim, const double x[], const int &ncomp, 
 	   lowintHst0=lowintHst0*swtch; // SWITCHING
 	 }
       if (iter==4){
-          double wt = weight*lowintHst0/azloopmax;
-          hists_fill_(p[3]+1,p[4]+1,&wt);
+  	double wt = weight*lowintHst0;///azloopmax;
+	hists_fill_(p[3]+1,p[4]+1,&wt);
       } 
-      azloop=azloop+1;
-    }
+      //azloop=azloop+1;
+      //}
 
-  lowintHst=lowintHst0*float(azloop)/float(azloopmax);
+      lowintHst=lowintHst0;//*float(azloop)/float(azloopmax);
   
   f[0] = lowintHst;
 
