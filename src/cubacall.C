@@ -8,7 +8,7 @@
 #include "resintegr.h"
 #include "plotter.h"
 
-void integr2d(double &res, double &err)
+void resintegr2d(double &res, double &err)
 {
   const int ndim = 2;     //dimensions of the integral
   const int ncomp = 1;  //components of the integrand
@@ -43,7 +43,7 @@ void integr2d(double &res, double &err)
   return;
 }
 
-void integr3d(double &res, double &err)
+void resintegr3d(double &res, double &err)
 {
   const int ndim = 3;     //dimensions of the integral
   const int ncomp = 1;  //components of the integrand
@@ -79,9 +79,9 @@ void integr3d(double &res, double &err)
 }
 
 //original integration, can use this to sample phase space and fill histograms
-void integr4d(double &res, double &err)
+void resintegrMC(double &res, double &err)
 {
-  const int ndim = 4;   //dimensions of the integral
+  const int ndim = 6;   //dimensions of the integral
   const int ncomp = 1;  //components of the integrand
   void *userdata;
   const int nvec = 1;
@@ -102,7 +102,7 @@ void integr4d(double &res, double &err)
   const int nincrease = max(10, int(opts.vegasncallsRES/10));
   const int nbatch = 1000;
   const int gridno = 0;
-  Vegas(ndim, ncomp, (integrand_t)resintegrand4d, userdata, nvec,
+  Vegas(ndim, ncomp, (integrand_t)resintegrandMC, userdata, nvec,
 	epsrel, epsabs,
 	flags, seed,
 	mineval, maxeval,

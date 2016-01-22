@@ -11,6 +11,8 @@
 //#include <vector>
 //#include <random>
 
+double const qtcutoff = 0.02;
+
 integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, double f[])
 {
   clock_t begin_time, end_time;
@@ -43,14 +45,14 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
 
   //integrate between qtmin and qtmax
   /*
-  double qtmn = max(0.02, qtmin);
+  double qtmn = max(qtcutoff, qtmin);
   double qt=qtmn+(qtmax-qtmn)*x[1];
   jac=jac*(qtmax-qtmn);
   */
     
   //integrate between qtmin and qtmax
   //limit qtmax to the qT kinematical limit, or to the switching function boundary
-  double qtmn = max(0.02, qtmin);
+  double qtmn = max(qtcutoff, qtmin);
   double miny;
   if (ymn * ymx <= 0)
     miny = 0;
@@ -138,8 +140,19 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
 
   clock_t ybt, yet;
   ybt = clock();
-  //  rapintegrals_(ymin,ymax,m,nocuts);
-  rapintegrals_(ymn,ymx,m,nocuts);
+  //there is a potential issue here, when lepton cuts are applied
+  //the rapidity dependent exponential are cached assuming integration between ymin and ymax
+  //for consistency, has to keep the integration between ymin and ymax
+  if (opts.makelepcuts)
+    {
+      //      rapintegrals_(ymin,ymax,m,nocuts);
+      rapint::integrate(ymin,ymax,m);
+    }
+  else
+    {
+      //      rapintegrals_(ymn,ymx,m,nocuts);
+      rapint::integrate(ymn,ymx,m);
+    }
   yet = clock();
   
   setmqty(m, qt, 0);
@@ -271,13 +284,13 @@ integrand_t resintegrand3d(const int &ndim, const double x[], const int &ncomp, 
 
   //integrate between qtmin and qtmax
   /*
-  double qtmn = max(0.02, qtmin);
+  double qtmn = max(qtcutoff, qtmin);
   double qt=qtmn+(qtmax-qtmn)*x[2];
   jac=jac*(qtmax-qtmn);
   */
 
   //integrate between qtmin and qtmax
-  double qtmn = max(0.02, qtmin);
+  double qtmn = max(qtcutoff, qtmin);
   double cosh2y34=pow((exp(y)+exp(-y))*0.5,2);
   double kinqtlim = sqrt(pow(pow(energy_.sroot_,2)+m*m,2)/(4*pow(energy_.sroot_,2)*cosh2y34)-m*m);
   double switchqtlim = switching::qtlimit(m);
@@ -356,7 +369,7 @@ integrand_t resintegrand3d(const int &ndim, const double x[], const int &ncomp, 
 }
 
 //Perform the integration as in the original dyres code
-integrand_t resintegrand4d(const int &ndim, const double x[], const int &ncomp, double f[],
+integrand_t resintegrandMC(const int &ndim, const double x[], const int &ncomp, double f[],
 			   void* userdata, const int &nvec, const int &core,
 			   double &weight, const int &iter)
 {
@@ -383,8 +396,8 @@ integrand_t resintegrand4d(const int &ndim, const double x[], const int &ncomp, 
 
   int jstop = 0;
 
-  double azloopmax = 500;
-  double azloop = 0;
+  //double azloopmax = 1;
+  //double azloop = 0;
 
   ptemp[0]=0.;
   ptemp[1]=0.;
@@ -414,29 +427,37 @@ integrand_t resintegrand4d(const int &ndim, const double x[], const int &ncomp, 
   double ylim = 0.5*log(pow(energy_.sroot_,2)/m2);
   double ymn = min(max(-ylim, ymin),ylim);
   double ymx = max(min(ylim, ymax),-ylim);
+  if (ymn >= ymx)
+    {
+      f[0]=0.;
+      return 0;
+    }
 
   //integrate between ymin and ymax
   double y=ymn+(ymx-ymn)*r[1];
   jac=jac*(ymx-ymn);
 
-  double dexpy=exp(y);
-  double dexpmy=exp(-y);
-  double cosh2y=pow(((dexpy+dexpmy)*0.5),2);
-
-  //   qT kinematical limit
-  //  qtmax=sqrt(pow((pow(energy_.sroot_,2)+m2),2)/(4.*pow(energy_.sroot_,2)*cosh2y) - m2);
-  //  qtmin=0.1;
-  //  qt=qtmin+qtmax*r[2];
-  //  jac=jac*(qtmax);
-
-  double qtmn = max(0.02, qtmin);
-  double qt=qtmn+(qtmax-qtmn)*r[2];
-  jac=jac*(qtmax-qtmn);
+  //integrate between qtmin and qtmax
+  double expy=exp(y);
+  double expmy=exp(-y);
+  double qtmn = max(qtcutoff, qtmin);
+  double cosh2y34=pow((expy+expmy)*0.5,2);
+  double kinqtlim = sqrt(pow(pow(energy_.sroot_,2)+m*m,2)/(4*pow(energy_.sroot_,2)*cosh2y34)-m*m);
+  double switchqtlim = switching::qtlimit(m);
+  double qtlim = min(kinqtlim, switchqtlim);
+  double qtmx = min(qtlim, qtmax);
+  if (qtmn >= qtmx)
+    {
+      f[0]=0.;
+      return 0;
+    }
+  double qt=qtmn+(qtmx-qtmn)*r[2];
+  jac=jac*(qtmx-qtmn);
 
   qt2=pow(qt,2);
 
-  double xx1=sqrt(m2/pow(energy_.sroot_,2))*dexpy;
-  double xx2=sqrt(m2/pow(energy_.sroot_,2))*dexpmy;
+  double xx1=sqrt(m2/pow(energy_.sroot_,2))*expy;
+  double xx2=sqrt(m2/pow(energy_.sroot_,2))*expmy;
 
 
   // incoming quarks
@@ -457,16 +478,18 @@ integrand_t resintegrand4d(const int &ndim, const double x[], const int &ncomp, 
   mt2=m2+qt2;
 
   int mode = 0;
+
   // LOOP over (vector boson and lepton) azimuthal angles 
-  for (int j=0; j < azloopmax; j++)
-    // Vector boson azimuthal angle
-    {
-      phi = 2.*M_PI*((double)rand()/(double)RAND_MAX);
+  //for (int j=0; j < azloopmax; j++)
+  //    {
+      // Vector boson azimuthal angle
+      //      phi = 2.*M_PI*((double)rand()/(double)RAND_MAX);
+      // Azimuthal angle of the first lepton in the center of mass frame 
+      //phi_lep = 2.*M_PI*((double)rand()/(double)RAND_MAX);
 
-      // Lepton decay in the center of mass frame 
-      // First lepton direction:  azimuthal angle
-      phi_lep = 2.*M_PI*((double)rand()/(double)RAND_MAX);
-
+      phi = 2.*M_PI*r[4];
+      phi_lep = 2.*M_PI*r[5];
+      
       //  vector boson momentum: pV(4)^2-pV(1)^2-pV(2)^2-pV(3)^2=m2
       pV[0]=qt*cos(phi);
       pV[1]=qt*sin(phi);
@@ -537,14 +560,22 @@ integrand_t resintegrand4d(const int &ndim, const double x[], const int &ncomp, 
       int njet = 0;
        //       cout << qt << "  " <<  y << "  " <<  m << "  " << sqrt(p[3][1]*p[3][1] + p[3][2] * p[3][2]) << endl;
       if (opts.makelepcuts)
-	if (cuts_(pjet,njet)) continue;
+	if (cuts_(pjet,njet)) // continue;
+	  {
+	    f[0]=0.;
+	    return 0;
+	  }
 			    
       //  SWITCHING FUNCTIONS
       //      swtch=1.;
       //      if (qt >= m*3/4.)  swtch=exp(-pow((m*3/4.-qt),2)/pow((m/2.),2)); // GAUSS SWITCH
       swtch = switching::swtch(qt, m);
 
-      if (swtch <= 0.01) break;
+      if (swtch <= 0.01) //break;
+	{
+	  f[0]=0.;
+	  return 0;
+	}
 
       if (jstop != 1)
 	{
@@ -563,13 +594,13 @@ integrand_t resintegrand4d(const int &ndim, const double x[], const int &ncomp, 
 	   lowintHst0=lowintHst0*swtch; // SWITCHING
 	 }
       if (iter==4){
-          double wt = weight*lowintHst0/azloopmax;
-          hists_fill_(p[3]+1,p[4]+1,&wt);
-      }
-      azloop=azloop+1;
-    }
+  	double wt = weight*lowintHst0;///azloopmax;
+	hists_fill_(p[3]+1,p[4]+1,&wt);
+      } 
+      //azloop=azloop+1;
+      //}
 
-  lowintHst=lowintHst0*float(azloop)/float(azloopmax);
+      lowintHst=lowintHst0;//*float(azloop)/float(azloopmax);
   
   f[0] = lowintHst;
 

@@ -3,6 +3,13 @@
 #include "init.h"
 #include "pdf.h"
 #include "coupling.h"
+#include "gaussrules.h"
+#include "mellinint.h"
+#include "rapint.h"
+#include "mesq.h"
+#include "resconst.h"
+#include "hcoefficients.h"
+#include "anomalous.h"
 
 #include <math.h>
 #include <iostream>
@@ -246,4 +253,19 @@ void dyturboinit()
   pext_.p2ext_[0]=0.;
   pext_.p2ext_[1]=0.;
   pext_.p2ext_[2]=+0.5*energy_.sroot_;
+
+  //set NF to 5 (it is used in H2calc)
+  nf_.nf_=5;
+
+  //C++ resum
+  //initialise all the C modules
+  gr::init(); //nodes and weights of gaussian quadrature rules
+  mellinint::initgauss(); //gaussian quadrature for mellin inversion
+  mesq::init(); //EW couplings for born amplitudes
+  rapint::init(); //allocate memory for the rapidity quadrature
+  resconst::init(); //calculate beta, A and B coefficients
+  anomalous::init(); //calculate anomalous dimensions, C1, C2 and gamma coefficients
+  hcoefficients::init(); //allocate memory for the H coefficients
+  pdfevol::init(); //allocate memory for the pdf in N-space
+  //end C++ resum
 }

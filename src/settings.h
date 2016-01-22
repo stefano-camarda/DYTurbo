@@ -85,7 +85,7 @@ public:
 
   //dimension of integration
   int intDimRes;
-  bool int2d, int3d, int4d;
+  bool resint2d, resint3d, resintvegas;
 
   //type of integration for the counterterm
   int intDimCT;
@@ -124,6 +124,14 @@ public:
   bool quadint;
   int quadnphi;
 
+  //settings for Mellin integration
+  int mellinintervals;
+  int mellinrule;
+  
+  //settings for rapidity integration
+  int yintervals;
+  int yrule;
+  
   //qt-recoil prescriptions
   bool qtrec_naive, qtrec_cs, qtrec_kt0;
 
