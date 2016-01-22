@@ -35,9 +35,9 @@ void settings::readfromfile(const string fname){
     mlow               = in.GetNumber ( "mlow"            ); //66.
     mhigh              = in.GetNumber ( "mhigh"           ); //116.
     intDimRes          = in.GetNumber ( "intDimRes"       ); //3
-    //int2d              = in.GetBool   ( "int2d"           ); //false
-    //int3d              = in.GetBool   ( "int3d"           ); //true
-    //int4d              = in.GetBool   ( "int4d"           ); //false
+    //resint2d              = in.GetBool   ( "resint2d"           ); //false
+    //resint3d              = in.GetBool   ( "resint3d"           ); //true
+    //resintvegas           = in.GetBool   ( "resintvegas"           ); //false
     intDimCT           = in.GetNumber ( "intDimCT"       ); //3
     //ctint2d            = in.GetBool   ( "ctint2d"         ); //true
     //ctint3d            = in.GetBool   ( "ctint3d"         ); //false
@@ -80,7 +80,11 @@ void settings::readfromfile(const string fname){
     PDFerrors           = in.GetBool ( "PDFerrors" );//
     opts_.approxpdf_    = in.GetNumber ( "opts_approxpdf" ); //0
     opts_.pdfintervals_ = in.GetNumber ( "opts_pdfintervals" ); //100
-    opts_.fixedorder_ = fixedorder;
+    opts_.fixedorder_  = fixedorder;
+    mellinintervals    = in.GetNumber ( "mellinintervals" );
+    mellinrule         = in.GetNumber ( "mellinrule" );
+    yintervals         = in.GetNumber ( "yintervals" );
+    yrule              = in.GetNumber ( "yrule" );
 
     // additional conditions
     // finite order (NLO vs NNLO)
@@ -93,14 +97,14 @@ void settings::readfromfile(const string fname){
       throw invalid_argument("Wrong process, please select nproc = 1, 2, or 3");
     
     // resummation term integration dimension
-    if (intDimRes<5 && intDimRes>1){
-        int2d = (intDimRes == 2);
-        int3d = (intDimRes == 3);
-        int4d = (intDimRes == 4);
+    if (intDimRes<4 && intDimRes>1){
+        resint2d = (intDimRes == 2);
+        resint3d = (intDimRes == 3);
+        resintvegas = false;
     } else {
-        int2d = false;
-        int3d = false;
-        int4d = true;
+        resint2d = false;
+        resint3d = false;
+        resintvegas = true;
     }
 
     // counter term integration dimension
@@ -117,9 +121,9 @@ void settings::readfromfile(const string fname){
     if (opts_.approxpdf_ == 1)
       {
 	cout << "DYRES-style approximate PDF requested, enforce vegas integration for the resummed cross section" << endl;
-	int2d = false;
-	int3d = false;
-	int4d = true;
+	resint2d = false;
+	resint3d = false;
+	resintvegas = true;
       }
 
     if (fixedorder == true && doRES == true)
@@ -194,9 +198,9 @@ void settings::dumpAll(){
         dumpD("mhigh              ", mhigh               );
         dumpB("useGamma           ", useGamma            );
         dumpI("intDimRes          ", intDimRes           );
-        dumpB("int2d              ", int2d               );
-        dumpB("int3d              ", int3d               );
-        dumpB("int4d              ", int4d               );
+        dumpB("resint2d           ", resint2d            );
+        dumpB("resint3d           ", resint3d            );
+        dumpB("resintvegas        ", resintvegas         );
         dumpI("intDimCT           ", intDimCT            );
         dumpB("ctint2d            ", ctint2d             );
         dumpB("ctint3d            ", ctint3d             );
@@ -236,6 +240,10 @@ void settings::dumpAll(){
         dumpI("approxpdf          ", opts_.approxpdf_    );
         dumpI("pdfintervals       ", opts_.pdfintervals_ );
         dumpB("PDFerrors          ", PDFerrors           );
+        dumpI("mellinintervals    ", mellinintervals     );
+        dumpI("mellinrule         ", mellinrule          );
+        dumpI("yintervals         ", yintervals     );
+        dumpI("yrule              ", yrule          );
     }
 
     if (print_masses){
