@@ -199,12 +199,17 @@ int main( int argc , const char * argv[])
       // resummation
       if (opts.doRES) {
           double b_time = clock_real();
-          if (opts.int2d) {
-              cacheyrapint_(ymin, ymax);
-              integr2d(value, error);
+          if (opts.resint2d) {
+	    cacheyrapint_(ymin, ymax);
+	    //C++ resum
+	    /*
+	    rapint::cache(ymin, ymax);
+	    */
+	    //end C++ resum
+	    resintegr2d(value, error);
           }
-          if (opts.int3d) integr3d(value, error);
-          if (opts.int4d) integr4d(value, error);
+          if (opts.resint3d) resintegr3d(value, error);
+          if (opts.resintvegas) resintegrMC(value, error);
           double e_time = clock_real();
           normalise_result(value,error);
           print_result(value,error,b_time,e_time);
