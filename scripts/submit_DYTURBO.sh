@@ -132,14 +132,20 @@ prepare_in(){
     width=2.495
     nproc=3 
     nprocmcfm=41
+    lepPtCut=20
+    lepYCut=2.4
     #nprocmcfm=41
     #if [[ $order == 2 ]]; then nprocmcfm=44; fi;
     if [[ $process =~ ^w[pm]$ ]]
     then
-        lomass=10
-        himass=1000
+        #lomass=10
+        #himass=1000
+        lomass=2
+        himass=500
         rmass=80.385
         width=2.091
+        lepPtCut=0
+        lepYCut=100
     fi
     if [[ $process =~ ^wp$ ]];
     then
@@ -212,9 +218,10 @@ prepare_in(){
     fi;
     # set correct input template
     in_tmpl=$dyturbo_in_tmpl
-    if [[ $job_name =~ ^dyturbo_ ]]; then in_tmpl=$dyturbo_project/scripts/DYTURBO_TMPL.in; fi;
-    if [[ $job_name =~ ^dyres_   ]]; then in_tmpl=$dyturbo_project/scripts/DYRES_TMPL.in;   fi;
-    if [[ $job_name =~ ^mcfm_    ]]; then in_tmpl=$dyturbo_project/scripts/MCFM_TMPL.in;    fi;
+    # because of benchmark turn off
+    #if [[ $job_name =~ ^dyturbo_ ]]; then in_tmpl=$dyturbo_project/scripts/DYTURBO_TMPL.in; fi;
+    #if [[ $job_name =~ ^dyres_   ]]; then in_tmpl=$dyturbo_project/scripts/DYRES_TMPL.in;   fi;
+    #if [[ $job_name =~ ^mcfm_    ]]; then in_tmpl=$dyturbo_project/scripts/MCFM_TMPL.in;    fi;
     cp $in_tmpl tmp
     sed -i "s|LOQTBIN|$setloqtbin|g          ;
             s|HIQTBIN|$sethiqtbin|g          ;
@@ -241,6 +248,8 @@ prepare_in(){
             s|SETMCFMPROC|$nprocmcfm|g       ;
             s|SETTERMSTRING|$termstring|g    ;
             s|SETLEPCUTS|$makelepcuts|g      ;
+            s|SETLEPPTCUT|$lepPtCut|g        ;
+            s|SETLEPYCUT|$lepYCut|g          ;
             s|SETDETFIDUCIAL|$detfiducial|g  ;
             s|SETIH1|$ih1|g                  ;
             s|SETIH2|$ih2|g                  ;
@@ -721,6 +730,39 @@ clear_files(){
     echo "Done"
 }
 
+submit_Benchmark(){
+    # ask about running/submitting
+    DRYRUN=echo 
+    read -p "Do you want to submit jobs ? " -n 1 -r
+    echo    # (optional) move to a new line
+    if [[ $REPLY =~ ^[Yy]$ ]]
+    then
+        DRYRUN=
+    fi
+    #
+    collider=lhc7
+    pdfset=CT10nnlo
+    variation=0
+    benchmark=0
+    batch_template=$dyturbo_project/scripts/run_DYTURBO_Array_TMPL.sh
+    dyturbo_in_tmpl=$dyturbo_project/scripts/DYTURBO_bench_v0.in
+    program=dyturbo
+    for process in wm wp z0 # wp wm z0
+    do
+        makelepcuts=false
+        if [[ $process =~ z0 ]]; then makelepcuts=true; fi;
+        for term in RES CT REAL1 REAL2 VIRT
+        do
+            random_seed=seed
+            seedlist=10101-10201
+            if [[ $term  =~ REAL1 ]]; then seedlist=10101-10501; term=REAL; fi;
+            if [[ $term  =~ REAL2 ]]; then seedlist=10501-11101; term=REAL; fi;
+            qtregion="bm${benchmark}qt0100ym55t$term" prepare_script
+            submit_job
+            done
+        done
+    }
+
 clear_results(){
     read -p "Are you sure you want to delete all current results ? " -n 1 -r
     echo    # (optional) move to a new line
@@ -735,7 +777,8 @@ clear_results(){
 clear_files
 clear_results
 #submit_Z_dyturbo
-submit_allProg
+#submit_allProg
 #submit_Wwidth
 #submit_grid
+submit_Benchmark
 

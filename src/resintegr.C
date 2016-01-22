@@ -565,7 +565,7 @@ integrand_t resintegrand4d(const int &ndim, const double x[], const int &ncomp, 
       if (iter==4){
           double wt = weight*lowintHst0/azloopmax;
           hists_fill_(p[3]+1,p[4]+1,&wt);
-      } 
+      }
       azloop=azloop+1;
     }
 
