@@ -22,7 +22,7 @@ batch_template=$dyturbo_project/scripts/run_DYTURBO_TMPL.sh
 dyturbo_in_tmpl=$dyturbo_project/scripts/DYTURBO_TMPL.in
 
 
-cubacores=unset
+cubacores=9
 job_name=unset
 in_file=unset
 sh_file=unset
@@ -742,6 +742,7 @@ submit_Benchmark(){
     #
     collider=lhc7
     pdfset=CT10nnlo
+    cubacores=8
     variation=0
     benchmark=0
     batch_template=$dyturbo_project/scripts/run_DYTURBO_Array_TMPL.sh
@@ -751,13 +752,13 @@ submit_Benchmark(){
     do
         makelepcuts=false
         if [[ $process =~ z0 ]]; then makelepcuts=true; fi;
-        for term in RES CT REAL1 REAL2 VIRT
+        for terms in RES CT REAL1 REAL2 VIRT
         do
             random_seed=seed
             seedlist=10101-10201
-            if [[ $term  =~ REAL1 ]]; then seedlist=10101-10501; term=REAL; fi;
-            if [[ $term  =~ REAL2 ]]; then seedlist=10501-11101; term=REAL; fi;
-            qtregion="bm${benchmark}qt0100ym55t$term" prepare_script
+            if [[ $terms  =~ REAL1 ]]; then seedlist=10101-10501; terms=REAL; fi;
+            if [[ $terms  =~ REAL2 ]]; then seedlist=10501-11101; terms=REAL; fi;
+            qtregion="bm${benchmark}qt0100ym55t$terms" prepare_script
             submit_job
             done
         done
