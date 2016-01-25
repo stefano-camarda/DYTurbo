@@ -26,7 +26,7 @@ complex <double> mellinint::QQBN_4;
 
 int mellinint::mdim;
 
-//fortran interfacex
+//fortran interfaces
 void mellinint_pdf_mesq_expy_(int& i1, int& i2, int& sign)
 {
   mellinint::pdf_mesq_expy(i1-1, i2-1, sign-1);

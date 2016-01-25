@@ -168,47 +168,47 @@ c        do ji=1,14
 c        yav(ji)=0d0
 c        enddo
 
-        inquire( FILE='pdffit.grid', EXIST=fileexist ) 
-        if ( fileexist ) then
-           open(unit=101,file='pdffit.grid',status='unknown')
-           do kk=1,NFITMAX
-              read(101,*) A1UV(kk),A2UV(kk),A3UV(kk),
-     .             A4UV(kk),A5UV(kk),A6UV(kk),A7UV(kk),A8UV(kk)
-              read(101,*) A1DV(kk),A2DV(kk),A3DV(kk),
-     .             A4DV(kk),A5DV(kk),A6DV(kk),A7DV(kk),A8DV(kk)
-              read(101,*) A1US(kk),A2US(kk),A3US(kk),
-     .             A4US(kk),A5US(kk),A6US(kk),A7US(kk),A8US(kk)
-              read(101,*) A1DS(kk),A2DS(kk),A3DS(kk),
-     .             A4DS(kk),A5DS(kk),A6DS(kk),A7DS(kk),A8DS(kk)
-              read(101,*) A1SS(kk),A2SS(kk),A3SS(kk),
-     .             A4SS(kk),A5SS(kk),A6SS(kk),A7SS(kk),A8SS(kk)
-              read(101,*) A1GL(kk),A2GL(kk),A3GL(kk),
-     .             A4GL(kk),A5GL(kk),A6GL(kk),A7GL(kk),A8GL(kk)
-              read(101,*) A1CH(kk),A2CH(kk),A3CH(kk),
-     .             A4CH(kk),A5CH(kk),A6CH(kk),A7CH(kk),A8CH(kk)
-              read(101,*) A1BO(kk),A2BO(kk),A3BO(kk),
-     .             A4BO(kk),A5BO(kk),A6BO(kk),A7BO(kk),A8BO(kk)
-
-              read(101,*) A1UVp(kk),A2UVp(kk),A3UVp(kk),
-     .             A4UVp(kk),A5UVp(kk),A6UVp(kk),A7UVp(kk),A8UVp(kk)
-              read(101,*) A1DVp(kk),A2DVp(kk),A3DVp(kk),
-     .             A4DVp(kk),A5DVp(kk),A6DVp(kk),A7DVp(kk),A8DVp(kk)
-              read(101,*) A1USp(kk),A2USp(kk),A3USp(kk),
-     .             A4USp(kk),A5USp(kk),A6USp(kk),A7USp(kk),A8USp(kk)
-              read(101,*) A1DSp(kk),A2DSp(kk),A3DSp(kk),
-     .             A4DSp(kk),A5DSp(kk),A6DSp(kk),A7DSp(kk),A8DSp(kk)
-              read(101,*) A1SSp(kk),A2SSp(kk),A3SSp(kk),
-     .             A4SSp(kk),A5SSp(kk),A6SSp(kk),A7SSp(kk),A8SSp(kk)
-              read(101,*) A1GLp(kk),A2GLp(kk),A3GLp(kk),
-     .             A4GLp(kk),A5GLp(kk),A6GLp(kk),A7GLp(kk),A8GLp(kk)
-              read(101,*) A1CHp(kk),A2CHp(kk),A3CHp(kk),
-     .             A4CHp(kk),A5CHp(kk),A6CHp(kk),A7CHp(kk),A8CHp(kk)
-              read(101,*) A1BOp(kk),A2BOp(kk),A3BOp(kk),
-     .             A4BOp(kk),A5BOp(kk),A6BOp(kk),A7BOp(kk),A8BOp(kk)
-           enddo
-           close(101)
-           return
-        endif
+c        inquire( FILE='pdffit.grid', EXIST=fileexist ) 
+c        if ( fileexist ) then
+c           open(unit=101,file='pdffit.grid',status='unknown')
+c           do kk=1,NFITMAX
+c              read(101,*) A1UV(kk),A2UV(kk),A3UV(kk),
+c     .             A4UV(kk),A5UV(kk),A6UV(kk),A7UV(kk),A8UV(kk)
+c              read(101,*) A1DV(kk),A2DV(kk),A3DV(kk),
+c     .             A4DV(kk),A5DV(kk),A6DV(kk),A7DV(kk),A8DV(kk)
+c              read(101,*) A1US(kk),A2US(kk),A3US(kk),
+c     .             A4US(kk),A5US(kk),A6US(kk),A7US(kk),A8US(kk)
+c              read(101,*) A1DS(kk),A2DS(kk),A3DS(kk),
+c     .             A4DS(kk),A5DS(kk),A6DS(kk),A7DS(kk),A8DS(kk)
+c              read(101,*) A1SS(kk),A2SS(kk),A3SS(kk),
+c     .             A4SS(kk),A5SS(kk),A6SS(kk),A7SS(kk),A8SS(kk)
+c              read(101,*) A1GL(kk),A2GL(kk),A3GL(kk),
+c     .             A4GL(kk),A5GL(kk),A6GL(kk),A7GL(kk),A8GL(kk)
+c              read(101,*) A1CH(kk),A2CH(kk),A3CH(kk),
+c     .             A4CH(kk),A5CH(kk),A6CH(kk),A7CH(kk),A8CH(kk)
+c              read(101,*) A1BO(kk),A2BO(kk),A3BO(kk),
+c     .             A4BO(kk),A5BO(kk),A6BO(kk),A7BO(kk),A8BO(kk)
+c
+c              read(101,*) A1UVp(kk),A2UVp(kk),A3UVp(kk),
+c     .             A4UVp(kk),A5UVp(kk),A6UVp(kk),A7UVp(kk),A8UVp(kk)
+c              read(101,*) A1DVp(kk),A2DVp(kk),A3DVp(kk),
+c     .             A4DVp(kk),A5DVp(kk),A6DVp(kk),A7DVp(kk),A8DVp(kk)
+c              read(101,*) A1USp(kk),A2USp(kk),A3USp(kk),
+c     .             A4USp(kk),A5USp(kk),A6USp(kk),A7USp(kk),A8USp(kk)
+c              read(101,*) A1DSp(kk),A2DSp(kk),A3DSp(kk),
+c     .             A4DSp(kk),A5DSp(kk),A6DSp(kk),A7DSp(kk),A8DSp(kk)
+c              read(101,*) A1SSp(kk),A2SSp(kk),A3SSp(kk),
+c     .             A4SSp(kk),A5SSp(kk),A6SSp(kk),A7SSp(kk),A8SSp(kk)
+c              read(101,*) A1GLp(kk),A2GLp(kk),A3GLp(kk),
+c     .             A4GLp(kk),A5GLp(kk),A6GLp(kk),A7GLp(kk),A8GLp(kk)
+c              read(101,*) A1CHp(kk),A2CHp(kk),A3CHp(kk),
+c     .             A4CHp(kk),A5CHp(kk),A6CHp(kk),A7CHp(kk),A8CHp(kk)
+c              read(101,*) A1BOp(kk),A2BOp(kk),A3BOp(kk),
+c     .             A4BOp(kk),A5BOp(kk),A6BOp(kk),A7BOp(kk),A8BOp(kk)
+c           enddo
+c           close(101)
+c           return
+c        endif
 
          write(*,*)'Waiting for PDF fit ...'
          

@@ -642,6 +642,18 @@ c     Cache the positive and negative branch of coefficients which depend only o
          call cachehcoeff(I,1)
          call cachehcoeff(I,-1)
       enddo
+cc     ******************** rapidity integrated cross section
+c      if (mod.eq.0.or.mod.eq.1) then
+c         do I = 1, NMAX1
+c            CALL INTERESnew (HCRN, I, I, 1)
+c            INT1= HCRN*exp(-Np(I)*AX)/pi*CCp
+c
+c            INT2 = 0
+c            FZ=-DBLE(1./2*(INT1-INT2)*WN(I))
+c            FUN= FUN + FZ
+c         enddo
+cc     ********************************************************      
+      
 c ******************************
 c     C++ rewritten check
 c      call hcoeff_calcb(aass,logmuf2q2,loga,alpq,aexp,aexpb)
@@ -686,7 +698,7 @@ c     The integrals are solved analitically when no cuts on the leptons are appl
             int2p2m2=shcrn(2,-2)*sigmaintijm(2,-2,I1,I2)
             int2m1p1=shcrn(-1,1)*sigmaintijm(-1,1,I1,I2)
             int2m2p2=shcrn(-2,2)*sigmaintijm(-2,2,I1,I2)
-            
+
             funp1m1=funp1m1-DBLE((int1p1m1-int2p1m1)) !*WN(I1)*WN(I2))
             funp2m2=funp2m2-DBLE((int1p2m2-int2p2m2)) !*WN(I1)*WN(I2))
             funm1p1=funm1p1-DBLE((int1m1p1-int2m1p1)) !*WN(I1)*WN(I2))

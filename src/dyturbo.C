@@ -89,11 +89,29 @@ int main( int argc , const char * argv[])
   printsettings();
   /***********************************/
 
-  /**************************************/
-  //Checks for resummed cross section
   double costh, m, qt, y;
   //  std::cout << std::setprecision(15);
   int mode = 0;
+  /*****************************************/
+  //If using the DYRES approximation for PDFs, make sure that the PDF fit is initialised in the same way
+  //Need to throw a random point according to a breit wigner, which is used to determine xtauf in the PDF fit
+  if (opts_.approxpdf_ == 1)
+    {
+      srand(opts.rseed);
+      double wsqmin = pow(opts.mlow,2);
+      double wsqmax = pow(opts.mhigh,2);
+      double x1=((double)rand()/(double)RAND_MAX);
+      double m2,wt;
+      breitw_(x1,wsqmin,wsqmax,opts.rmass,opts.rwidth,m2,wt);
+      cout << "Initialise PDF fit with mass = " << sqrt(m2) << " xtauf = " << m2 / opts.sroot << endl;
+      costh = 0.; m = sqrt(m2); qt = 1; y = 0;
+      test_resum_speed(costh,m,qt,y,mode);
+    }
+  /****************************************/
+  
+  /**************************************/
+  //Checks for resummed cross section
+  //  std::cout << std::setprecision(15);
   costh = 0.; m = opts.rmass; qt = 1; y = 0;
   test_resum_speed(costh,m,qt,y,mode);
 
