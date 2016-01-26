@@ -1545,43 +1545,80 @@ def plot_profile():
 
 def benchmark():
     samples=[
-            [ "DYRES-v1.0"     , "results_merge/Stefano_dyturbo_v1"  , "{}{}.root"                                                   , ["r","v"]                  , "pt"   , 1 ],
-            [ "DYTURBO-v0.9.6" , "results_merge/benchmark_v0_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_merge.root" , ["REAL","VIRT","CT","RES"] , "h_qt" , 1./101. ],
-            #[ "DYRES-v1.0Fin"     , "results_merge/Stefano_dyturbo_v1"  , "{}{}.root"                                                   , ["r"]                  , "pt"   , 1 ],
-            #[ "DYTURBO-v0.9.6Fin" , "results_merge/benchmark_v0_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_merge.root" , ["REAL","VIRT","CT"] , "h_qt" , 1./101. ],
-            #[ "DYRES-v1.0Res"     , "results_merge/Stefano_dyturbo_v1"  , "{}{}.root"                                                   , ["v"]                  , "pt"   , 1 ],
-            #[ "DYTURBO-v0.9.6Res" , "results_merge/benchmark_v0_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_merge.root" , ["RES"] , "h_qt" , 1./101. ],
+            #[ "DYTURBO-v0.9.6"      , "results_merge/benchmark_v0_160125"   , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root"   , ["REAL","VIRT","CT","RES"] , "h_qt" , 1. ],
+            #[ "DYTURBO-v0.9.6.1" , "results_merge/benchmark_v0.1_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0.1qt0100ym55t{}_seed_outliers.root" , ["REAL","VIRT","CT","RES"] , "h_qt" , 1. ],
+            #[ "DYRES-v1.0"          , "results_merge/Stefano_dyturbo_v1"    , "{}{}.root"                                                        , ["r","v"]                  , "pt"   , 1  ],
+            #[ "DYTURBO-v0.9.6_PDF" , "results_merge/benchmark_v1_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm1qt0100ym55t{}_seed_outliers.root" , ["REAL","VIRT","CT","RES"] , "h_qt" , 1. ],
+
+            [ "DYTURBO-v0.9.6.1"   , "results_merge/benchmark_v0.1_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0.1qt0100ym55t{}_seed_outliers.root" , ["REAL","VIRT","CT","RES"] , "h_qtVy"   , 1. ],
+            [ "DYRES-v1.0"         , "results_merge/Stefano_dyturbo_v1"    , "{}{}.root"                                                        , ["r","v"]                  , "yvspt"  , 1  ],
+            #[ "DYTURBO-v0.9.6"     , "results_merge/benchmark_v0_160125"   , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root"   , ["REAL","VIRT","CT","RES"] , "h_qtVy" , 1. ],
+            #[ "DYTURBO-v0.9.6_PDF" , "results_merge/benchmark_v1_160125"   , "dyturbo_{}_lhc7_CT10nnlo_0_bm1qt0100ym55t{}_seed_outliers.root"   , ["REAL","VIRT","CT","RES"] , "h_qtVy" , 1. ],
+
+            #[ "DYRES-v1.0Res"         , "results_merge/Stefano_dyturbo_v1"  , "{}{}.root"                                                      , ["v"]                      , "pt"     , 1       ],
+            #[ "DYTURBO-v0.9.6Res"     , "results_merge/benchmark_v0_160125"   , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root" , ["RES"] , "h_qt" , 1. ],
+            #[ "DYTURBO-v0.9.6.1Res"   , "results_merge/benchmark_v0.1_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0.1qt0100ym55t{}_seed_outliers.root" , ["RES"] , "h_qt" , 1. ],
+            #[ "DYTURBO-v0.9.6_PDFRes" , "results_merge/benchmark_v1_160125"   , "dyturbo_{}_lhc7_CT10nnlo_0_bm1qt0100ym55t{}_seed_outliers.root" , ["RES"] , "h_qt" , 1. ],
+
+            #[ "DYRES-v1.0Res2D"       , "results_merge/Stefano_dyturbo_v1"  , "{}{}.root"                                                      , ["v"]                      , "yvspt"  , 1       ],
+            #[  "DYTURBO-v0.9.6Res2D"   , "results_merge/benchmark_v0_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root" , ["RES"]                    , "h_qtVy" , 1.      ],
+            #[  "DYTURBO-v0.9.6_PDFRes" , "results_merge/benchmark_v1_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm1qt0100ym55t{}_seed_outliers.root" , ["RES"]                    , "h_qtVy" , 1.      ],
+
+            #[ "DYRES-v1.0Fin"         , "results_merge/Stefano_dyturbo_v1"  , "{}{}.root"                                                      , ["r"]                , "pt"   , 1  ],
+            #[ "DYTURBO-v0.9.6Fin"     , "results_merge/benchmark_v0_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root" , ["REAL","VIRT","CT"] , "h_qt" , 1. ],
+            #[ "DYTURBO-v0.9.6.1Fin" , "results_merge/benchmark_v0.1_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0.1qt0100ym55t{}_seed_outliers.root" , ["REAL","VIRT","CT","RES"] , "h_qt" , 1. ],
+            #[ "DYTURBO-v0.9.6_PDFFin" , "results_merge/benchmark_v1_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm1qt0100ym55t{}_seed_outliers.root" , ["REAL","VIRT","CT"] , "h_qt" , 1. ],
+
+            #[ "DYRES-v1.0Fin"         , "results_merge/Stefano_dyturbo_v1"  , "{}{}.root"                                                      , ["r"]                , "yvspt"   , 1  ],
+            #[ "DYTURBO-v0.9.6Fin"     , "results_merge/benchmark_v0_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root" , ["REAL","VIRT","CT"] , "h_qtVy" , 1. ],
+            #[ "DYTURBO-v0.9.6_PDFFin" , "results_merge/benchmark_v1_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm1qt0100ym55t{}_seed_outliers.root" , ["REAL","VIRT","CT"] , "h_qtVy" , 1. ],
+
+            #  merge
+            #[ "DYRES-v1.0Fin"         , "results_merge/Stefano_dyturbo_v1"  , "{}{}.root"                                                      , ["r"]                      , "pt"     , 1       ],
+            #[ "DYTURBO-v0.9.6Fin"     , "results_merge/benchmark_v0_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_merge.root"    , ["REAL","VIRT","CT"]       , "h_qt"   , 1./101. ],
+            #[ "DYRES-v1.0Res"         , "results_merge/Stefano_dyturbo_v1"  , "{}{}.root"                                                      , ["v"]                      , "pt"     , 1       ],
+            #[ "DYTURBO-v0.9.6Res"     , "results_merge/benchmark_v0_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_merge.root"    , ["RES"]                    , "h_qt"   , 1./101. ],
+            #[ "DYRES-v1.0"            , "results_merge/Stefano_dyturbo_v1"  , "{}{}.root"                                                      , ["r","v"]                  , "pt"     , 1       ],
+            #[ "DYTURBO-v0.9.6"        , "results_merge/benchmark_v0_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_merge.root"    , ["REAL","VIRT","CT","RES"] , "h_qt"   , 1./101. ],
         ]
     procs = [ "wp", "wm", "z0" ]
     for proc in procs :
-        hists=list()
-        for hdf in samples :
-            title=hdf[0]
-            hname=hdf[4]
-            fname=hdf[1]+"/"+hdf[2]
-            trm=hdf[3][0]
-            scale=hdf[5]
-            h= pl.EmptyClone(pl.GetHistSetTitNam(title,fname.format(proc,trm),hname),title)
-            for trm in hdf[3] :
-                tmp=pl.GetHist(fname.format(proc,trm),hname)
-                c=scale
-                try:
-                    htot=pl.GetHist(fname.format(proc,trm),"qt_y_total")
-                    c*=tmp.Integral()/htot.Integral()
-                    if "REAL" in trm : c*=101./1001.
-                    print c
+        for proj in ["_px","_py"] :
+            hists=list()
+            for hdf in samples :
+                title=hdf[0]
+                hname=hdf[4]
+                fname=hdf[1]+"/"+hdf[2]
+                trm=hdf[3][0]
+                scale=hdf[5]
+                h= pl.EmptyClone(pl.GetHistSetTitNam(title,fname.format(proc,trm),hname),title)
+                for trm in hdf[3] :
+                    tmp=pl.GetHist(fname.format(proc,trm),hname)
+                    c=scale
+                    # try:
+                    #     htot=pl.GetHist(fname.format(proc,trm),"qt_y_total")
+                    #     c*=tmp.Integral()/htot.Integral()
+                    #     if "REAL" in trm : c*=101./1001.
+                    #     print c
+                    #     pass
+                    # except ValueError:
+                    #     pass
+                    tmp.Scale(c)
+                    h.Add(tmp)
                     pass
-                except ValueError:
-                    pass
-                tmp.Scale(c)
-                h.Add(tmp)
+                if "Vy" in hname or "yvs" in hname :
+                    h = pl.GetProjection(h,proj)
+                else :
+                    if "_py" in proj : continue
+                if "_px" in proj: h.Rebin(5)
+                hists.append(h)
+                #for h in hists:
+                    #h.Print("range")
+                    #for ibin,val in enumerate(h): print ibin, Get , ival
                 pass
-            hists.append(h)
-            for h in hists:
-                h.Print("range")
-                #for ibin,val in enumerate(h): print ibin, Get , ival
+            if len(hists)==0: continue
+            pl.CompareHistsInList("bm0_"+proc+proj,hists,compareType="ratio0")
             pass
-        pl.CompareHistsInList("bm0_"+proc,hists,compareType="ratio0")
         pass
     pl.MakePreviewFromList(0,"bm0")
     pass

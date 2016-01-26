@@ -195,9 +195,13 @@ merge_benchmark(){
     #
     resdir=$resdir/dyturbo-0.9.6/results_benchmark0
     prodname=benchmark_v0_160125
+    #resdir=$resdir/dyturbo-0.9.6/results_benchmark1
+    #prodname=benchmark_v1_160125
+    #resdir=$resdir/dyturbo-0.9.6.1/results
+    #prodname=benchmark_v0.1_160125
     #
     outdir=results_merge/$prodname
-    seednum=10101
+    seednum=10102
     mkdir -p $outdir
     #
     for fres in `ls $resdir/dyturbo_*$seednum*root`
@@ -205,7 +209,8 @@ merge_benchmark(){
         #echo $fres
         infiles=`echo $fres | sed "s|$seednum|*|g"`
         outfilebase=`basename $fres | sed "s|$seednum.*||g"`
-        $DRYRUN hadd -f $outdir/${outfilebase}merge.root $infiles
+        #$DRYRUN hadd -f $outdir/${outfilebase}merge.root $infiles
+        $DRYRUN ./bin/merger -X $outdir/${outfilebase}outliers.root $infiles
         echo
     done
 }

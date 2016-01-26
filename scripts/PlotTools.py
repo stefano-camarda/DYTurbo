@@ -509,7 +509,8 @@ class PlotTools:
         hp=0
         if   ax == "_px": # out of 2D
             n = h.GetNbinsX()
-            hp=h.ProjectionX(name,1,n,"e")
+            #hp=h.ProjectionX(name,1,n,"e")
+            hp=h.ProjectionX(name) #,1,n,"e")
             hp.GetYaxis().SetTitle(ytit)
             #hp=h.ProfileX(name,1,n,"e")
             #for i in range(n-10,n+1):
@@ -1166,8 +1167,9 @@ class PlotTools:
             s.SetFrameStyle1D(subHists, **ratioArgs) # scale = 1./(1-cdiv), logY=True, minY=0.04, maxY=25, logX=logx)
         elif compareType=="ratio0" :
             #ratioArgs["logY"]=False
-            #ratioArgs["minY"]= 0.8
-            #ratioArgs["maxY"]= 1.2
+            ratioArgs["minY"]= 0.95
+            ratioArgs["maxY"]= 1.05
+            ratioArgs["forceRange"]= True
             s.SetFrameStyle1D(subHists, **ratioArgs) # scale = 1./(1-cdiv), logY=True, minY=0.04, maxY=25, logX=logx)
         elif compareType=="subtract" :
             ratioArgs["minY"]=-10.
