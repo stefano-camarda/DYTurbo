@@ -744,22 +744,50 @@ submit_Benchmark(){
     pdfset=CT10nnlo
     cubacores=8
     variation=0
-    benchmark=0
+    benchmark=2
     batch_template=$dyturbo_project/scripts/run_DYTURBO_Array_TMPL.sh
-    dyturbo_in_tmpl=$dyturbo_project/scripts/DYTURBO_bench_v0.in
+    dyturbo_in_tmpl=$dyturbo_project/scripts/DYTURBO_bench_v2.in
     program=dyturbo
+    NsplitQT=10
+    NsplitY=10
     for process in wm wp z0 # wp wm z0
     do
         makelepcuts=false
         if [[ $process =~ z0 ]]; then makelepcuts=true; fi;
-        for terms in RES CT REAL1 REAL2 VIRT
+        for terms in RES3D CT3D # RES CT REAL1 REAL2 VIRT
         do
             random_seed=seed
             seedlist=10101-10201
             if [[ $terms  =~ REAL1 ]]; then seedlist=10101-10501; terms=REAL; fi;
             if [[ $terms  =~ REAL2 ]]; then seedlist=10501-11101; terms=REAL; fi;
-            qtregion="bm${benchmark}qt0100ym55t$terms" prepare_script
-            submit_job
+            for iqt in `seq $NsplitQT`
+            do
+                for iy in `seq $NsplitY`
+                do
+                    #
+                    random_seed=seed
+                    if [[ benchmark==2 ]]
+                    then
+                        fulllloqtbin=0
+                        fulllhiqtbin=100
+                        fulllloybin=-5
+                        fulllhiybin=5
+                        loqtbin=` splitedBin $fulllloqtbin $fulllhiqtbin $NsplitQT $iqt 0`
+                        hiqtbin=` splitedBin $fulllloqtbin $fulllhiqtbin $NsplitQT $iqt 1`
+                        loybin=`  splitedBin $fulllloybin  $fulllhiybin  $NsplitY  $iy  0`
+                        hiybin=`  splitedBin $fulllloybin  $fulllhiybin  $NsplitY  $iy  1`
+                        seedlist=10100
+                    else
+                        loqtbin=0
+                        hiqtbin=100
+                        loybin=m5
+                        hiybin=5
+                    fi
+                    qtregion=`echo bm${benchmark}qt${loqtbin}${hiqtbin}y${loybin}${hiybin}t${terms} | sed "s/\.//g;s/ //g"`
+                    prepare_script
+                    submit_job
+                done
+            done
             done
         done
     }

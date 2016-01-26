@@ -47,12 +47,24 @@ class OutlierRemoval{
             // for object in allobjects
             for (auto p_objname : all_obj_names){
                 const char* objname = p_objname.Data();
+                size_t len = p_objname.Length();
+                char proj = p_objname(len);
                 if (verbose>1) printf("objname: %s\n",objname);
                 // get object from all files
                 VecTH1 in_objs;
                 for (auto it_f : all_files){
                     /// @todo: test if they are all same binning
                     TH1 * o = (TH1*) it_f->Get(objname);
+                    if (o==0 && len>3 ){ // not found histogram
+                        // test if it not 1D projection and if yes create it
+                        TString basename = p_objname(0,len-3);
+                        TH2* h2d = (TH2*) it_f->Get(basename.Data());
+                        if ( proj == 'x') {
+                            o = h2d.ProjectionX(objname,-1,0,"e");
+                        } else if (proj == 'y'){
+                            o = h2d.ProjectionY(objname,-1,0,"e");
+                        }
+                    }
                     if (verbose>2) o->Print();
                     in_objs.push_back(o);
                 }
@@ -168,9 +180,13 @@ class OutlierRemoval{
                 // filter classes
                 TClass *cl = TClass::GetClass(key->GetClassName());
                 if (!cl->InheritsFrom( "TH1"      )) continue; // profiles and histograms of all dimensions
-                //if (!cl->InheritsFrom( "TH1D"      )) continue; // profiles and histograms of all dimensions
                 TObject* o = key->ReadObj();
                 all_obj_names.push_back(dirname+o->GetName());
+                // make projections on TH2 and remove outlier on 1D separatelly
+                if (doTh2dProjections && cl->InheritsFrom( "TH2"      )) {
+                    all_obj_names.push_back(dirname+o->GetName()+"_px");
+                    all_obj_names.push_back(dirname+o->GetName()+"_py");
+                }
             }
             f->Close();
         }
