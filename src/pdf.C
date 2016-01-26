@@ -44,8 +44,15 @@ void setalphas()
 {
   couple_.amz_=LHAPDF::alphasPDF(dymasses_.zmass_) ;
   double scale = fabs(scale_.scale_);
-  int nloop = -1;
-  qcdcouple_.as_=dyalphas_(scale,couple_.amz_,nloop);
+
+  if (opts_.approxpdf_ == 1)
+    {
+      int nloop = 3;
+      qcdcouple_.as_=dyalphas_mcfm_(scale,couple_.amz_,nloop);
+    }
+  else
+    qcdcouple_.as_=dyalphas_lhapdf_(scale);
+  
   qcdcouple_.ason2pi_=qcdcouple_.as_/(2*M_PI);
   qcdcouple_.ason4pi_=qcdcouple_.as_/(4*M_PI);
   qcdcouple_.gsq_=4*M_PI*qcdcouple_.as_;

@@ -467,6 +467,7 @@ c All these constants must be initialised only once
       include 'ewinput.f' 
 cc******************************************
       pi=dacos(-1d0)!Expensive way of calculating pi?
+      pisq329=2d0*pi**2/3d0-16/3d0
       nf=5
 c      nnf=nf !number of flavours (why duplicated?)
       CA=3d0

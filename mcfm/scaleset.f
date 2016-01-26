@@ -6,8 +6,10 @@
       include 'qcdcouple.f'
       include 'nwz.f'
       include 'facscale.f'
+      include 'options.f'
 
-      double precision q2,scalemax,amz,dyalphas
+      double precision q2,scalemax,amz
+      double precision dyalphas_mcfm,dyalphas_lhapdf
       common/couple/amz
       
       scale=dsqrt(q2)
@@ -23,7 +25,11 @@ c--- catch absurdly large scales
        
 
 c--- run alpha_s
-      as=dyalphas(scale,amz,-1)
+      if (approxpdf.eq.1) then
+         as=dyalphas_mcfm(scale,amz,3)
+      else
+         as=dyalphas_lhapdf(scale)
+      endif
         
       ason2pi=as/twopi
       ason4pi=as/fourpi

@@ -96,8 +96,8 @@ c     cached for invres and cachecoeff
 
       double precision xborn,xborn2,xnorm,xnormal
 
-      double precision dyalphas
-      external dyalphas
+      double precision dyalphas_mcfm,dyalphas_lhapdf
+      external dyalphas_mcfm,dyalphas_lhapdf
 
       double precision xsection
       external xsection
@@ -211,7 +211,11 @@ c     flag1 is the order of calculation (carbon copy of order, 1=NLO+NLL, 2=NNLO
 
 
 C   ALPQR = ALPHA AT RENORMALIZATION SCALE
-      ALPQR=dyalphas(dsqrt(q2mur),amz,-1)/4d0/pi
+      if (approxpdf.eq.1) then
+         ALPQR=dyalphas_mcfm(dsqrt(q2mur),amz,3)/4d0/pi
+      else
+         ALPQR=dyalphas_lhapdf(dsqrt(q2mur))/4d0/pi
+      endif
 C as = ALPHAS/PI
       aass = ALPQR*4d0
 
@@ -268,7 +272,11 @@ C     Limit eta_max to avoid reaching the end of phase space
 C...  COUPLING CONSTANTS AT INPUT SCALE = ALPHAS/4/PI
 C     ALPQF = ALPHA AT RESUMMATION SCALE (used to start evolution,
 
-         ALPQF=dyalphas(dsqrt(q2s),amz,-1)/4d0/pi
+      if (approxpdf.eq.1) then
+         ALPQF=dyalphas_mcfm(dsqrt(q2s),amz,3)/4d0/pi
+      else
+         ALPQF=dyalphas_lhapdf(dsqrt(q2s))/4d0/pi
+      endif
          
 c     precompute scales
          logmuf2q2=log(muf2/q2)
@@ -393,6 +401,7 @@ c rapidity (and mass) dependence in ax1 ax2
 c     here can cache the products cCEX1(I)*cCEX2p(I) and cCEX1(I)*cCEX2p(I)
 c and perform I1*I2 integrations in rapidity      
       enddo
+
 c***************************************
 
 c***************************************
@@ -835,7 +844,6 @@ c     and also on b through aexpb, aexp
          caexpqq(I,SIG)=aexpB**(aassh*(cC1qq(I,SIG)-pisq329))
          caexpqg(I,SIG)=aexpB**(aassh*(cC2qgM(I,SIG)/cC1qg(I,SIG)
      .        -pisq329))
-
          cHqqnnll(I,SIG)=aasshsq*cH2stqq(I,SIG)
      .        *caexpqq(I,SIG)*(aexp)**2
          cHqqpnnll(I,SIG)=aasshsq*cH2stqqp(I,SIG)
@@ -1011,9 +1019,8 @@ C  GG
        Hgg = aasshsq*cH2stgg(I1,I2,SIG)
      .   *aexp*caexpqg(I1,1)  
      .   *aexp*caexpqg(I2,SIG)              
-c       print *,I1, I2, SIG,aasshsq,aexp,cH2stgg(I1,I2,SIG),
-c     .      caexpqg(I2,SIG),caexpqg(I1,1),Hgg
-       Hqq_1 = cHqqnnll(I1,1)     !  Q Q -> Qb Q  = Qb Qb -> Q Qb
+
+       Hqq_1 = cHqqnnll(I1,1)   !  Q Q -> Qb Q  = Qb Qb -> Q Qb
        Hqq_2 = cHqqnnll(I2,SIG)   !  Qb Qb -> Qb Q =  Q Q -> Q Qb
        Hqq= (Hqq_1+Hqq_2)/2d0     ! Average QQ->QQb  and QbQb->QQb
        Hqqp_1 = cHqqpnnll(I1,1)   ! qqp_1  means   Q' Q -> Qb Q  flavor in sigmaQQb determined by "second parton"
@@ -1800,17 +1807,6 @@ c     1    + sHCRN(-2,2)*sigmaij(-2,2)
       else
          HCRN = GGN*Hgg + FX1(0)*QGN_1*Hqg_1 + FX2(0)*QGN_2*Hqg_2
      1        + QQBN_1*Hqqb + QQBN_2*Hqq + QQBN_3*Hqqp_1 + QQBN_4*Hqqp_2
-c         print *,I1,I2,SIG,Hgg
-c     print *, Hgg,Hqg_1,Hqg_2
-c     print *, GGN,FX1(0)*QGN_1,FX2(0)*QGN_2
-c     print *,GGN*Hgg + FX1(0)*QGN_1*Hqg_1 + FX2(0)*QGN_2*Hqg_2
-c     print *,QQBN_1*Hqqb+QQBN_2*Hqq+QQBN_3*Hqqp_1+QQBN_4*Hqqp_2
-c         print *,QQBN_1,QQBN_2,QQBN_3,QQBN_4
-c     print *,Hqqb,Hqq,Hqqp_1,Hqqp_2
-c         print *,cH1stqqb(I1,I2,SIG),cH2stqqb(I1,I2,SIG)
-c         print *,cC2NSqqM(I1,1),cC2NSqqM(I2,SIG),
-c     .        cC2SqqbM(I1,1),cC2SqqbM(I2,SIG),
-c     .        cC1qq(I1,1), cC1qq(I2,SIG)
       endif
       RETURN
       END
