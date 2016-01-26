@@ -1543,6 +1543,49 @@ def plot_profile():
     pl.MakePreviewFromList(0,"profiles")
     pass
 
+def benchmark():
+    samples=[
+            [ "DYRES-v1.0"     , "results_merge/Stefano_dyturbo_v1"  , "{}{}.root"                                                   , ["r","v"]                  , "pt"   , 1 ],
+            [ "DYTURBO-v0.9.6" , "results_merge/benchmark_v0_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_merge.root" , ["REAL","VIRT","CT","RES"] , "h_qt" , 1./101. ],
+            #[ "DYRES-v1.0Fin"     , "results_merge/Stefano_dyturbo_v1"  , "{}{}.root"                                                   , ["r"]                  , "pt"   , 1 ],
+            #[ "DYTURBO-v0.9.6Fin" , "results_merge/benchmark_v0_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_merge.root" , ["REAL","VIRT","CT"] , "h_qt" , 1./101. ],
+            #[ "DYRES-v1.0Res"     , "results_merge/Stefano_dyturbo_v1"  , "{}{}.root"                                                   , ["v"]                  , "pt"   , 1 ],
+            #[ "DYTURBO-v0.9.6Res" , "results_merge/benchmark_v0_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_merge.root" , ["RES"] , "h_qt" , 1./101. ],
+        ]
+    procs = [ "wp", "wm", "z0" ]
+    for proc in procs :
+        hists=list()
+        for hdf in samples :
+            title=hdf[0]
+            hname=hdf[4]
+            fname=hdf[1]+"/"+hdf[2]
+            trm=hdf[3][0]
+            scale=hdf[5]
+            h= pl.EmptyClone(pl.GetHistSetTitNam(title,fname.format(proc,trm),hname),title)
+            for trm in hdf[3] :
+                tmp=pl.GetHist(fname.format(proc,trm),hname)
+                c=scale
+                try:
+                    htot=pl.GetHist(fname.format(proc,trm),"qt_y_total")
+                    c*=tmp.Integral()/htot.Integral()
+                    if "REAL" in trm : c*=101./1001.
+                    print c
+                    pass
+                except ValueError:
+                    pass
+                tmp.Scale(c)
+                h.Add(tmp)
+                pass
+            hists.append(h)
+            for h in hists:
+                h.Print("range")
+                #for ibin,val in enumerate(h): print ibin, Get , ival
+            pass
+        pl.CompareHistsInList("bm0_"+proc,hists,compareType="ratio0")
+        pass
+    pl.MakePreviewFromList(0,"bm0")
+    pass
+
 ## Documentation for main
 #
 # More details. 
@@ -1562,7 +1605,8 @@ if __name__ == '__main__' :
     #DY = TheoUncStudy()
     #DY.DoStudy()
     #DY.DoPDFQuadStudy()
-    plot_profile()
+    #plot_profile()
+    benchmark()
     #makeStatPlot()
     pass
 

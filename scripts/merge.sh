@@ -187,6 +187,30 @@ merge_cubatures(){
 }
 
 
+merge_benchmark(){
+    DRYRUN=echo 
+    DRYRUN=
+    #
+    resdir=/etapfs03/atlashpc/cuth/DYTURBO_PROD
+    #
+    resdir=$resdir/dyturbo-0.9.6/results_benchmark0
+    prodname=benchmark_v0_160125
+    #
+    outdir=results_merge/$prodname
+    seednum=10101
+    mkdir -p $outdir
+    #
+    for fres in `ls $resdir/dyturbo_*$seednum*root`
+    do
+        #echo $fres
+        infiles=`echo $fres | sed "s|$seednum|*|g"`
+        outfilebase=`basename $fres | sed "s|$seednum.*||g"`
+        $DRYRUN hadd -f $outdir/${outfilebase}merge.root $infiles
+        echo
+    done
+}
+
+
 
 #merge_w_pt
 #merge_pt_y
@@ -194,6 +218,7 @@ merge_cubatures(){
 #merge_grid
 #merge_grid_TOT
 
-merge_cubatures
+#merge_cubatures
+merge_benchmark
 
 exit 0

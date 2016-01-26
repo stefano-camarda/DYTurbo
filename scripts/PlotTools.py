@@ -1166,8 +1166,8 @@ class PlotTools:
             s.SetFrameStyle1D(subHists, **ratioArgs) # scale = 1./(1-cdiv), logY=True, minY=0.04, maxY=25, logX=logx)
         elif compareType=="ratio0" :
             #ratioArgs["logY"]=False
-            ratioArgs["minY"]= 0.8
-            ratioArgs["maxY"]= 1.2
+            #ratioArgs["minY"]= 0.8
+            #ratioArgs["maxY"]= 1.2
             s.SetFrameStyle1D(subHists, **ratioArgs) # scale = 1./(1-cdiv), logY=True, minY=0.04, maxY=25, logX=logx)
         elif compareType=="subtract" :
             ratioArgs["minY"]=-10.
@@ -1502,6 +1502,16 @@ class PlotTools:
                 )
         return [c_val, c_err]
 
+    #def norm_subtract_bins(s, a_val, a_err, b_val, b_err) :
+        ## C = A/B
+        #if b_val==0 : return [0,0]
+        #c_val = 1-float(a_val)/b_val
+        #c_err = TMath.Sqrt(
+                #TMath.Power(float(a_err)/b_val, 2) +
+                #TMath.Power(float(b_err)*a_val/(b_val*b_val), 2)
+                #)
+        #return [c_val, c_err]
+
     def dif_chi(s, a_val,a_err,b_val,b_err):
         sigma = TMath.Sqrt(a_err**2 + b_err**2)
         if sigma==0 : sigma = TMath.Sqrt(a_val+b_val)
@@ -1514,10 +1524,13 @@ class PlotTools:
         # C = A/B
         if b_val==0 : return [0,0]
         c_val = float(a_val)/b_val
-        c_err = TMath.Sqrt(
-                TMath.Power(float(a_err)/b_val, 2) +
-                TMath.Power(float(b_err)*a_val/(b_val*b_val), 2)
-                )
+        #c_err = TMath.Sqrt(
+                #TMath.Power(float(a_err)/b_val, 2) +
+                #TMath.Power(float(b_err)*a_val/(b_val*b_val), 2)
+                #)
+        a_rel=a_err/a_val if a_val!=0 else 0.
+        b_rel=b_err/b_val
+        c_err = c_val * TMath.Sqrt(a_rel*a_rel + b_rel*b_rel)
         return [c_val, c_err]
 
     def divide_bins0(s, a_val, a_err, b_val, b_err) :
