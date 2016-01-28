@@ -183,7 +183,7 @@ class PlotTools:
         s.legend = 0;
         #s.c_white_a10 = s.make_color_transparent(ROOT.kBlue-10,50)
         s.outImgFormats=["png","eps","pdf"]
-        s.outImgFormats=["root","pdf"]
+        s.outImgFormats=["root","pdf","eps"]
 
         s.forceRange=False
 
@@ -900,7 +900,7 @@ class PlotTools:
         cols       = kwargs[ "legCol"          ] if "legCol"          in kwargs else 1
         ytop =  y
         dy = 0.093*scale * (len(objList))
-        dx = 0.3*scale*cols
+        dx = 0.48*scale*cols
         s.legend = TLegend(x, ytop-dy, x+dx, ytop)
         s.legend.SetNColumns(cols)
         s.legend.SetLineWidth(0)
@@ -1167,10 +1167,11 @@ class PlotTools:
             s.SetFrameStyle1D(subHists, **ratioArgs) # scale = 1./(1-cdiv), logY=True, minY=0.04, maxY=25, logX=logx)
         elif compareType=="ratio0" :
             #ratioArgs["logY"]=False
-            ratioArgs["minY"]= 0.95
-            ratioArgs["maxY"]= 1.05
+            ratioArgs["minY"]= 0.955
+            ratioArgs["maxY"]= 1.045
             ratioArgs["forceRange"]= True
             s.SetFrameStyle1D(subHists, **ratioArgs) # scale = 1./(1-cdiv), logY=True, minY=0.04, maxY=25, logX=logx)
+            s.axis.GetYaxis().SetNdivisions(5,2,0,True)
         elif compareType=="subtract" :
             ratioArgs["minY"]=-10.
             ratioArgs["maxY"]= 10.
@@ -1587,6 +1588,7 @@ class PlotTools:
         normalise= kwargs["normalise"] if "normalise" in kwargs else False
         setXlabel= kwargs["setXlabel"] if "setXlabel" in kwargs else False
         compareType = kwargs[ "compareType" ] if "compareType" in kwargs else "subtract"
+        doSave = kwargs[ "doSave" ] if "doSave" in kwargs else True
         doStyle = kwargs[ "doStyle" ] if "doStyle" in kwargs else True
 
         s.NewCanvas(name)
@@ -1612,7 +1614,7 @@ class PlotTools:
                 s.hRatio[0].GetYaxis().SetTitle( hists[0].GetTitle()+"/other")
             elif compareType == "ratio0":
                 s.hRatio = s.CreateRatio0Hists(hists[0],hists)
-                s.hRatio[0].GetYaxis().SetTitle( "other/"+hists[0].GetTitle())
+                s.hRatio[0].GetYaxis().SetTitle( "ratio" ) # "other/"+hists[0].GetTitle())
             elif compareType == "subtract":
                 s.hRatio = s.CreateSubtrctHists(hists[0],hists)
                 s.hRatio[0].GetYaxis().SetTitle( "1-"+hists[0].GetTitle()+"/other")
@@ -1630,7 +1632,8 @@ class PlotTools:
             s.DrawHistCompare(hists)
             s.DrawLegend(hists,"pl", **kwargs)
 
-        s.Save()
+        if doSave : s.Save()
+        pass
 
 
     def MakePreviewFromFolder(s, path) :
