@@ -36,6 +36,7 @@ class OutlierRemoval{
         OutlierRemoval() :
             includeUnderOverFlow(false),
             doXsecNormalization(false),
+            doTh2dProjections(true),
             verbose(1) {};
         ~OutlierRemoval(){};
 
@@ -48,7 +49,7 @@ class OutlierRemoval{
             for (auto p_objname : all_obj_names){
                 const char* objname = p_objname.Data();
                 size_t len = p_objname.Length();
-                char proj = p_objname(len);
+                char proj = p_objname(len-1);
                 if (verbose>1) printf("objname: %s\n",objname);
                 // get object from all files
                 VecTH1 in_objs;
@@ -58,11 +59,16 @@ class OutlierRemoval{
                     if (o==0 && len>3 ){ // not found histogram
                         // test if it not 1D projection and if yes create it
                         TString basename = p_objname(0,len-3);
+                        if (verbose>1) printf("basename: %s , proj %c \n",basename.Data(), proj);
                         TH2* h2d = (TH2*) it_f->Get(basename.Data());
                         if ( proj == 'x') {
-                            o = h2d.ProjectionX(objname,-1,0,"e");
+                            o = h2d->ProjectionX(objname); // ,-1,0,"e");
                         } else if (proj == 'y'){
-                            o = h2d.ProjectionY(objname,-1,0,"e");
+                            o = h2d->ProjectionY(objname); // ,-1,0,"e");
+                        }
+                        for (int ibin=0; ibin < o->GetNbinsX()+1;ibin++){
+                            if (o->GetBinContent(ibin) != o->GetBinContent(ibin))
+                                printf(" NAN bin: %d",ibin);
                         }
                     }
                     if (verbose>2) o->Print();
@@ -159,6 +165,7 @@ class OutlierRemoval{
         // Public data members
         bool includeUnderOverFlow;
         bool doXsecNormalization;
+        bool doTh2dProjections;
         int verbose;
 
     private :
@@ -431,9 +438,9 @@ int main(int argc, const char * argv[]){
         merger.doXsecNormalization=true;
         i++;
     }
-    // parse x section normalization
+    // parse verbosity level
     if (TString(argv[i]).CompareTo("-v",TString::kIgnoreCase)==0){
-        merger.verbose=3;
+        merger.verbose=8;
         i++;
     }
     //First argument is the output file
