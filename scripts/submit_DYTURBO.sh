@@ -753,15 +753,15 @@ submit_Benchmark(){
     fulllhiybin=5
     # benchmark dependence 
     benchmark=2
-    for benchmark in 0 1 2
+    for benchmark in 0 1 2 # 0 1 2
     do
         dyturbo_in_tmpl=$dyturbo_project/scripts/DYTURBO_bench_v$benchmark.in
         #termlist="RES CT REAL1 REAL2 VIRT"
-        termlist="RES CT" 
+        termlist="RES CT"
         NsplitQT=1
         NsplitY=1
-        [[ benchmark == 2 ]] && termlist="RES3D CT3D" && NsplitQT=10 && NsplitY=10 
-        for process in wm # wp wm z0
+        [[ $benchmark == 2 ]] && termlist="RES3D CT3D" && NsplitQT=10 && NsplitY=10 
+        for process in wm wp z0 # wp wm z0
         do
             makelepcuts=false
             [[ $process =~ z0 ]] &&  makelepcuts=true
