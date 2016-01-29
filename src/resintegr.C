@@ -388,7 +388,7 @@ integrand_t resintegrandMC(const int &ndim, const double x[], const int &ncomp, 
   double m,m2,qt2,s,wgt;
   double p[5][5],pV[4],p4cm[4],ptemp[4],kap1[5],kap1b[5];
   double pjet[4][12];
-  double phi,cos_th,phi_lep;
+  double phi,costh,phi_lep;
   int n2,n3;
   double msq,wt,swtch,kk,zeta1,zeta1b,kt1,kt2,mt2,costh_CS,qP1,qP2,ritmx;
 
@@ -444,8 +444,8 @@ integrand_t resintegrandMC(const int &ndim, const double x[], const int &ncomp, 
   //integrate between qtmin and qtmax
   double expy=exp(y);
   double expmy=exp(-y);
-  double qtmn = max(qtcutoff, qtmin);
   double cosh2y34=pow((expy+expmy)*0.5,2);
+  double qtmn = max(qtcutoff, qtmin);
   double kinqtlim = sqrt(pow(pow(energy_.sroot_,2)+m*m,2)/(4*pow(energy_.sroot_,2)*cosh2y34)-m*m);
   double switchqtlim = switching::qtlimit(m);
   double qtlim = min(kinqtlim, switchqtlim);
@@ -457,7 +457,21 @@ integrand_t resintegrandMC(const int &ndim, const double x[], const int &ncomp, 
     }
   double qt=qtmn+(qtmx-qtmn)*r[2];
   jac=jac*(qtmx-qtmn);
+  
 
+  /********************** DYRES check ************************************/
+  /*  //integrate between qtmin and qtmax
+  double qtmn = 0.1;
+  double qtmx = sqrt(pow(pow(energy_.sroot_,2)+m*m,2)/(4*pow(energy_.sroot_,2)*cosh2y34)-m*m);
+  double qt=qtmn+qtmx*r[2];
+  if (qt < qtmin || qt >= qtmax)
+    {
+      f[0]=0.;
+      return 0;
+    }
+    jac=jac*qtmx;*/
+  /******************************************************************/
+  
   qt2=pow(qt,2);
 
   double xx1=sqrt(m2/pow(energy_.sroot_,2))*expy;
@@ -476,7 +490,7 @@ integrand_t resintegrandMC(const int &ndim, const double x[], const int &ncomp, 
 
 
   // First lepton direction: Cos of the polar angle
-  cos_th=-1.+2.*r[3];
+  costh=-1.+2.*r[3];
   jac=jac*2.;
   
   mt2=m2+qt2;
@@ -502,9 +516,9 @@ integrand_t resintegrandMC(const int &ndim, const double x[], const int &ncomp, 
 
       // momentum of the first lepton 
       p4cm[3]=m/2.;
-      p4cm[0]=p4cm[3]*sin(acos(cos_th))*sin(phi_lep);
-      p4cm[1]=p4cm[3]*sin(acos(cos_th))*cos(phi_lep);
-      p4cm[2]=p4cm[3]*cos_th;
+      p4cm[0]=p4cm[3]*sin(acos(costh))*sin(phi_lep);
+      p4cm[1]=p4cm[3]*sin(acos(costh))*cos(phi_lep);
+      p4cm[2]=p4cm[3]*costh;
 
       // Boost to go in the Lab frame
       boost_(m,pV,p4cm,ptemp);
@@ -564,7 +578,7 @@ integrand_t resintegrandMC(const int &ndim, const double x[], const int &ncomp, 
       int njet = 0;
        //       cout << qt << "  " <<  y << "  " <<  m << "  " << sqrt(p[3][1]*p[3][1] + p[3][2] * p[3][2]) << endl;
       if (opts.makelepcuts)
-	if (cuts_(pjet,njet)) // continue;
+	if (cuts_(pjet,njet))  //if (!cuts::lep(p3, p4)) // continue;
 	  {
 	    f[0]=0.;
 	    return 0;
@@ -590,7 +604,7 @@ integrand_t resintegrandMC(const int &ndim, const double x[], const int &ncomp, 
 	    tempp=0.;
 	  else
 	    tempp=resumm_(costh_CS,m,qt,y,mode)/(8./3.);  // CS PRESCRIPTION
-	    //tempp=resumm_(cos_th,m,qt,y,mode)/(8./3.);
+	    //tempp=resumm_(costh,m,qt,y,mode)/(8./3.);
 	   if (tempp != tempp)
 	     tempp=0.;    //  avoid nans
 	   
@@ -604,7 +618,7 @@ integrand_t resintegrandMC(const int &ndim, const double x[], const int &ncomp, 
       //azloop=azloop+1;
       //}
 
-      lowintHst=lowintHst0;//*float(azloop)/float(azloopmax);
+      lowintHst=lowintHst0;//*double(azloop)/double(azloopmax);
   
   f[0] = lowintHst;
 
