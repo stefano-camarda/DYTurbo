@@ -233,6 +233,8 @@ prepare_in(){
             s|SETMHI|$himass|g               ;
             s|SETRMASS|$rmass|g              ;
             s|SETWIDTH|$width|g              ;
+            s|SETMUR|$rmass|g              ;
+            s|SETMUF|$rmass|g              ;
             s|SETNPROC|$nproc|g              ;
             s|SETPDFSET|$pdfsetname|g        ;
             s|SETMEMBER|$member|g            ;
@@ -753,7 +755,7 @@ submit_Benchmark(){
     fulllhiybin=5
     # benchmark dependence 
     benchmark=2
-    for benchmark in 0 1 2 # 0 1 2
+    for benchmark in 0     # 0 1 2
     do
         dyturbo_in_tmpl=$dyturbo_project/scripts/DYTURBO_bench_v$benchmark.in
         #termlist="RES CT REAL1 REAL2 VIRT"
@@ -761,7 +763,7 @@ submit_Benchmark(){
         NsplitQT=1
         NsplitY=1
         [[ $benchmark == 2 ]] && termlist="RES3D CT3D" && NsplitQT=10 && NsplitY=10 
-        for process in wm wp z0 # wp wm z0
+        for process in wm wp # wp wm z0
         do
             makelepcuts=false
             [[ $process =~ z0 ]] &&  makelepcuts=true

@@ -232,7 +232,7 @@ merge_benchmark(){
     seednum=11105
     mkdir -p $outdir
     #
-    for fres in `ls $resdir/dyturbo_wp*RES*$seednum*root`
+    for fres in `ls $resdir/dyturbo_*RES*$seednum*root`
     do
         #echo $fres
         infiles=`echo $fres | sed "s|$seednum|*|g"`
@@ -252,7 +252,7 @@ merge_benchmark(){
 #merge_grid_TOT
 
 #merge_cubatures
-merge_benchmark
-#merge_stefano
+#merge_benchmark
+merge_stefano
 
 exit 0

@@ -74,7 +74,7 @@ class OutlierRemoval{
                         }
                     }
                     if (verbose>2) o->Print();
-                    if ( p_objname.EqualTo("pt")) {
+                    if ( p_objname.EqualTo("pt") || p_objname.EqualTo("h_qt") ) {
                         o->Rebin(22,"zpt",bins);
                     }
                     in_objs.push_back(o);
