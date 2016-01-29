@@ -197,18 +197,16 @@ merge_stefano(){
     DRYRUN=echo 
     DRYRUN=
     #
-    resdir=/etapfs03/atlashpc/cuth/DYTURBO_PROD
-    prodname=Stefano_dyturbo_v1
-    #
-    outdir=results_merge/$prodname
-    seednum=10102
+    indir=results_Stefano/
+    outdir=results_merge/Stefano_dyturbo_v1
+    mkdir -p $outdir
 
     for proc in Wp Wm Z
     do
         for term in v r
         do
             outf=$outdir/`echo "$proc" | tr '[:upper:]' '[:lower:]'`${term}.root
-            inf=$outdir/out/${proc}${term}nnlo/benchmark/CT10nnlo/0/integr/*/AiMoments.root
+            inf=$indir/${proc}${term}nnlo/benchmark/CT10nnlo/0/integr/*/AiMoments.root
             $DRYRUN ./bin/merger $outf $inf
         done
     done
@@ -222,13 +220,16 @@ merge_benchmark(){
     #
     #resdir=$resdir/dyturbo-0.9.6/results_benchmark0
     #prodname=benchmark_v0_160125
-    resdir=$resdir/dyturbo-0.9.6/results_benchmark1
-    prodname=benchmark_v1_160125
+    #resdir=$resdir/dyturbo-0.9.6/results_benchmark1
+    #prodname=benchmark_v1_160125
     #resdir=$resdir/dyturbo-0.9.6.1/results
     #prodname=benchmark_v0.1_160125
     #
+    resdir=$resdir/dyturbo-0.9.6.2/results
+    prodname=benchmark_v0.2_160129
+    #
     outdir=results_merge/$prodname
-    seednum=10105
+    seednum=11105
     mkdir -p $outdir
     #
     for fres in `ls $resdir/dyturbo_wp*RES*$seednum*root`
@@ -250,8 +251,8 @@ merge_benchmark(){
 #merge_grid
 #merge_grid_TOT
 
-merge_cubatures
-#merge_benchmark
+#merge_cubatures
+merge_benchmark
 #merge_stefano
 
 exit 0
