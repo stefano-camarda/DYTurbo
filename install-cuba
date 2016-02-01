@@ -9,7 +9,7 @@ if [[ x$cubasrc == x ]];
 then
     rm -r Cuba-${version}
     wget http://www.feynarts.de/cuba/${cuba}.tar.gz
-    tar -xzvf ${cuba}.tar.gz
+    tar -xzf ${cuba}.tar.gz
     rm ${cuba}.tar.gz
 fi
 
