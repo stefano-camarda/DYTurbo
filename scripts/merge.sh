@@ -169,20 +169,77 @@ merge_cubatures(){
     DRYRUN=echo 
     DRYRUN=
     tmp_phase=qt010y01
-    tot_phase=qt0100y05
-    outdir=results_merge/quad_160118
-    for pdfmem in `seq 0 54`
+    tot_phase=qt0100ym55
+    #outdir=results_merge/quad_160118
+    resdir=/etapfs03/atlashpc/cuth/DYTURBO_PROD/dyturbo-0.9.6.2
+    outdir=results_merge/benchmark_v2_160125
+    for proc in wp wm z0
     do
-        mem=$(( $pdfmem + 100 ))
-        #name="results/dyturbo_wm_lhc7_WZZPT-CT10_array_${tmp_phase}t*3D_seed_$mem.root"
-        name="results/dyturbo_wm_lhc7_WZZPT-CT10_array_${tmp_phase}tRES3D_seed_$mem.root"
-        mkdir -p $outdir
-        for f in `ls $name`
+        for pdfmem in 0 # `seq 0 54`
         do
-            infiles=`echo  $f | sed "s|$tmp_phase|*|g" `
-            outfile=`echo  $f | sed "s|$tmp_phase|$tot_phase|g; s|seed_[0-9]*|seed_merge|g; s|results|$outdir|g; s|array|$pdfmem|g;" `
-            $DRYRUN $MERGER $outfile $infiles
+            mem=$(( $pdfmem + 100 ))
+            #name="results/dyturbo_wm_lhc7_WZZPT-CT10_array_${tmp_phase}t*3D_seed_$mem.root"
+            name="results/dyturbo_wm_lhc7_WZZPT-CT10_array_${tmp_phase}tRES3D_seed_$mem.root"
+            name=$resdir/"results/dyturbo_${proc}_lhc7_CT10nnlo_0_bm2${tmp_phase}t*3D_seed_10100.root"
+            mkdir -p $outdir
+            for f in `ls $name`
+            do
+                infiles=`echo  $f | sed "s|$tmp_phase|*|g" `
+                #outfile=`echo  $f | sed "s|$tmp_phase|$tot_phase|g; s|seed_[0-9]*|seed_merge|g; s|results|$outdir|g; s|array|$pdfmem|g;" `
+                outfile=$outdir/`basename  $f | sed "s|$tmp_phase|$tot_phase|g; s|seed_[0-9]*|seed_merge|g;" `
+                $DRYRUN $MERGER $outfile $infiles
+            done
         done
+    done
+}
+
+merge_stefano(){
+    DRYRUN=echo 
+    DRYRUN=
+    #
+    indir=results_Stefano/
+    outdir=results_merge/Stefano_dyturbo_v1
+    mkdir -p $outdir
+
+    for proc in Wp Wm Z
+    do
+        for term in v r
+        do
+            outf=$outdir/`echo "$proc" | tr '[:upper:]' '[:lower:]'`${term}.root
+            inf=$indir/${proc}${term}nnlo/benchmark/CT10nnlo/0/integr/*/AiMoments.root
+            $DRYRUN ./bin/merger $outf $inf
+        done
+    done
+}
+
+merge_benchmark(){
+    DRYRUN=echo 
+    DRYRUN=
+    #
+    resdir=/etapfs03/atlashpc/cuth/DYTURBO_PROD
+    #
+    #resdir=$resdir/dyturbo-0.9.6/results_benchmark0
+    #prodname=benchmark_v0_160125
+    #resdir=$resdir/dyturbo-0.9.6/results_benchmark1
+    #prodname=benchmark_v1_160125
+    #resdir=$resdir/dyturbo-0.9.6.1/results
+    #prodname=benchmark_v0.1_160125
+    #
+    resdir=$resdir/dyturbo-0.9.6.2/results
+    prodname=benchmark_v0.2_160129
+    #
+    outdir=results_merge/$prodname
+    seednum=11105
+    mkdir -p $outdir
+    #
+    for fres in `ls $resdir/dyturbo_wp*RES*$seednum*root`
+    do
+        #echo $fres
+        infiles=`echo $fres | sed "s|$seednum|*|g"`
+        outfilebase=`basename $fres | sed "s|$seednum.*||g"`
+        #$DRYRUN hadd -f $outdir/${outfilebase}merge.root $infiles
+        $DRYRUN ./bin/merger -X $outdir/${outfilebase}outliers.root $infiles #&& return 0 || return 3
+        echo
     done
 }
 
@@ -194,6 +251,8 @@ merge_cubatures(){
 #merge_grid
 #merge_grid_TOT
 
-merge_cubatures
+#merge_cubatures
+merge_benchmark
+#merge_stefano
 
 exit 0

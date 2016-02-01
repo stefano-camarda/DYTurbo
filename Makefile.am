@@ -1,6 +1,6 @@
 ACLOCAL_AMFLAGS=-I m4
 #add cuba to SUBDIRS to ship cuba
-SUBDIRS = cernlib dequad dyres dynnlo mcfm integrands resum src origdyres #test
+SUBDIRS = cernlib dequad dyres dynnlo mcfm integrands resum src #origdyres test
 
 #nodist_SUBDIRS = origdyres #test
 
@@ -11,7 +11,7 @@ bin_SCRIPTS = dyturbo-config
 CLEANFILES = $(bin_SCRIPTS)
 
 sharedir = ${datadir}/${PACKAGE}
-dist_share_DATA = ${srcdir}/input/*.in ${srcdir}/pdfsets.list
+dist_share_DATA = ${srcdir}/input/*.in ${srcdir}/pdfsets.list ${srcdir}/scripts/submit_DYTURBO.sh ${srcdir}/scripts/DYTURBO_*.in ${srcdir}/scripts/run_DYTURBO_Array_TMPL.sh
 
 #distribute the cuba library
 #lib_LIBRARIES = libcuba.a

@@ -183,7 +183,7 @@ class PlotTools:
         s.legend = 0;
         #s.c_white_a10 = s.make_color_transparent(ROOT.kBlue-10,50)
         s.outImgFormats=["png","eps","pdf"]
-        s.outImgFormats=["root","pdf"]
+        s.outImgFormats=["root","pdf","eps"]
 
         s.forceRange=False
 
@@ -509,7 +509,8 @@ class PlotTools:
         hp=0
         if   ax == "_px": # out of 2D
             n = h.GetNbinsX()
-            hp=h.ProjectionX(name,1,n,"e")
+            #hp=h.ProjectionX(name,1,n,"e")
+            hp=h.ProjectionX(name) #,1,n,"e")
             hp.GetYaxis().SetTitle(ytit)
             #hp=h.ProfileX(name,1,n,"e")
             #for i in range(n-10,n+1):
@@ -899,7 +900,7 @@ class PlotTools:
         cols       = kwargs[ "legCol"          ] if "legCol"          in kwargs else 1
         ytop =  y
         dy = 0.093*scale * (len(objList))
-        dx = 0.3*scale*cols
+        dx = 0.48*scale*cols
         s.legend = TLegend(x, ytop-dy, x+dx, ytop)
         s.legend.SetNColumns(cols)
         s.legend.SetLineWidth(0)
@@ -1166,9 +1167,11 @@ class PlotTools:
             s.SetFrameStyle1D(subHists, **ratioArgs) # scale = 1./(1-cdiv), logY=True, minY=0.04, maxY=25, logX=logx)
         elif compareType=="ratio0" :
             #ratioArgs["logY"]=False
-            ratioArgs["minY"]= 0.8
-            ratioArgs["maxY"]= 1.2
+            ratioArgs["minY"]= 0.955
+            ratioArgs["maxY"]= 1.045
+            ratioArgs["forceRange"]= True
             s.SetFrameStyle1D(subHists, **ratioArgs) # scale = 1./(1-cdiv), logY=True, minY=0.04, maxY=25, logX=logx)
+            s.axis.GetYaxis().SetNdivisions(5,2,0,True)
         elif compareType=="subtract" :
             ratioArgs["minY"]=-10.
             ratioArgs["maxY"]= 10.
@@ -1502,6 +1505,16 @@ class PlotTools:
                 )
         return [c_val, c_err]
 
+    #def norm_subtract_bins(s, a_val, a_err, b_val, b_err) :
+        ## C = A/B
+        #if b_val==0 : return [0,0]
+        #c_val = 1-float(a_val)/b_val
+        #c_err = TMath.Sqrt(
+                #TMath.Power(float(a_err)/b_val, 2) +
+                #TMath.Power(float(b_err)*a_val/(b_val*b_val), 2)
+                #)
+        #return [c_val, c_err]
+
     def dif_chi(s, a_val,a_err,b_val,b_err):
         sigma = TMath.Sqrt(a_err**2 + b_err**2)
         if sigma==0 : sigma = TMath.Sqrt(a_val+b_val)
@@ -1514,10 +1527,13 @@ class PlotTools:
         # C = A/B
         if b_val==0 : return [0,0]
         c_val = float(a_val)/b_val
-        c_err = TMath.Sqrt(
-                TMath.Power(float(a_err)/b_val, 2) +
-                TMath.Power(float(b_err)*a_val/(b_val*b_val), 2)
-                )
+        #c_err = TMath.Sqrt(
+                #TMath.Power(float(a_err)/b_val, 2) +
+                #TMath.Power(float(b_err)*a_val/(b_val*b_val), 2)
+                #)
+        a_rel=a_err/a_val if a_val!=0 else 0.
+        b_rel=b_err/b_val
+        c_err = c_val * TMath.Sqrt(a_rel*a_rel + b_rel*b_rel)
         return [c_val, c_err]
 
     def divide_bins0(s, a_val, a_err, b_val, b_err) :
@@ -1572,6 +1588,7 @@ class PlotTools:
         normalise= kwargs["normalise"] if "normalise" in kwargs else False
         setXlabel= kwargs["setXlabel"] if "setXlabel" in kwargs else False
         compareType = kwargs[ "compareType" ] if "compareType" in kwargs else "subtract"
+        doSave = kwargs[ "doSave" ] if "doSave" in kwargs else True
         doStyle = kwargs[ "doStyle" ] if "doStyle" in kwargs else True
 
         s.NewCanvas(name)
@@ -1597,7 +1614,7 @@ class PlotTools:
                 s.hRatio[0].GetYaxis().SetTitle( hists[0].GetTitle()+"/other")
             elif compareType == "ratio0":
                 s.hRatio = s.CreateRatio0Hists(hists[0],hists)
-                s.hRatio[0].GetYaxis().SetTitle( "other/"+hists[0].GetTitle())
+                s.hRatio[0].GetYaxis().SetTitle( "ratio" ) # "other/"+hists[0].GetTitle())
             elif compareType == "subtract":
                 s.hRatio = s.CreateSubtrctHists(hists[0],hists)
                 s.hRatio[0].GetYaxis().SetTitle( "1-"+hists[0].GetTitle()+"/other")
@@ -1615,7 +1632,8 @@ class PlotTools:
             s.DrawHistCompare(hists)
             s.DrawLegend(hists,"pl", **kwargs)
 
-        s.Save()
+        if doSave : s.Save()
+        pass
 
 
     def MakePreviewFromFolder(s, path) :

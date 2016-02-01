@@ -22,7 +22,7 @@ batch_template=$dyturbo_project/scripts/run_DYTURBO_TMPL.sh
 dyturbo_in_tmpl=$dyturbo_project/scripts/DYTURBO_TMPL.in
 
 
-cubacores=unset
+cubacores=9
 job_name=unset
 in_file=unset
 sh_file=unset
@@ -94,17 +94,18 @@ prepare_in(){
         doLOR="true"
         termstring="tota"
     fi;
-    if [[ $terms =~ RES  ]]; then doRES="true"; termstring="none"; fi;
-    if [[ $terms =~ CT   ]]; then doCTM="true"; termstring="none"; fi;
-    if [[ $terms =~ REAL ]]; then doREA="true"; termstring="real"; fi;
-    if [[ $terms =~ VIRT ]]; then doVIR="true"; termstring="virt"; fi;
-    if [[ $terms =~ LO   ]]; then doLOR="true"; termstring="lord"; fi;
-    # special 3d
+    [[ $terms =~ RES  ]] && doRES="true" && termstring="none"
+    [[ $terms =~ CT   ]] && doCTM="true" && termstring="none"
+    [[ $terms =~ REAL ]] && doREA="true" && termstring="real"
+    [[ $terms =~ VIRT ]] && doVIR="true" && termstring="virt"
+    [[ $terms =~ LO   ]] && doLOR="true" && termstring="lord"
+    # dimension of integration
     resumdim=4
     ctdim=8
-    if [[ $terms =~ RES3D  ]]; then resumdim=3; fi;
-    if [[ $terms =~ CT3D   ]]; then    ctdim=3; fi;
-    if [[ $terms =~ CT2D   ]]; then    ctdim=2; fi;
+    [[ $terms =~ RES3D  ]] && resumdim=3
+    [[ $terms =~ CT3D   ]] &&    ctdim=3
+    [[ $terms =~ CT2D   ]] &&    ctdim=2
+    # ranges / list of ranges
     setloqtbin=$loqtbin
     sethiqtbin=$hiqtbin
     setloybin=$loybin
@@ -132,14 +133,20 @@ prepare_in(){
     width=2.495
     nproc=3 
     nprocmcfm=41
+    lepPtCut=20
+    lepYCut=2.4
     #nprocmcfm=41
     #if [[ $order == 2 ]]; then nprocmcfm=44; fi;
     if [[ $process =~ ^w[pm]$ ]]
     then
-        lomass=10
-        himass=1000
+        #lomass=10
+        #himass=1000
+        lomass=2
+        himass=500
         rmass=80.385
         width=2.091
+        lepPtCut=0
+        lepYCut=100
     fi
     if [[ $process =~ ^wp$ ]];
     then
@@ -155,11 +162,11 @@ prepare_in(){
     fi;
     # fiducial
     detfiducial=0
-    if [[ $fiducial == D0    ]]; then detfiducial=1; fi;
-    if [[ $fiducial == CDF   ]]; then detfiducial=2; fi;
-    if [[ $fiducial == ATLAS ]]; then detfiducial=3; fi;
-    if [[ $fiducial == CMS7   ]]; then detfiducial=4; fi;
-    if [[ $fiducial == CMS8   ]]; then detfiducial=5; fi;
+    [[ $fiducial == D0     ]] && detfiducial=1
+    [[ $fiducial == CDF    ]] && detfiducial=2
+    [[ $fiducial == ATLAS  ]] && detfiducial=3
+    [[ $fiducial == CMS7   ]] && detfiducial=4
+    [[ $fiducial == CMS8   ]] && detfiducial=5
     # collider: default lhc7
     ih1=1
     ih2=1
@@ -169,21 +176,21 @@ prepare_in(){
     then
         ih2=-1
         sroot=1.8e3
-        if [[ $process == z0     ]]; then lomass=75; himass=105; fi;
-        if [[ $process =~ ^w[pm] ]]; then lomass=40; himass=120; fi;
+        [[ $process == z0     ]] && lomass=75 && himass=105
+        [[ $process =~ ^w[pm] ]] && lomass=40 && himass=120
     fi;
     # TEV2
     if [[ $collider == tev2 ]];
     then
         ih2=-1;
         sroot=1.96e3;
-        if [[ $process == z0     ]]; then lomass=30; himass=500; fi;
+        [[ $process == z0 ]] && lomass=30 && himass=500
     fi
-    # TEV2
+    # lhc8
     if [[ $collider == lhc8 ]]
     then
         sroot=8e3
-        if [[ $process == z0     ]] && [[ $fiducial =~ CMS ]]; then lomass=60; himass=120; fi;
+        [[ $process == z0 ]] && [[ $fiducial =~ CMS ]] && lomass=60 && himass=120
     fi
     # variations
     #gpar=1e0
@@ -191,30 +198,31 @@ prepare_in(){
     re='^[0-9]+$'
     pdfsetname=$pdfset
     setPDFerrors=false
-    if [[ $variation == g_05  ]]; then gpar=0.5e0;                        fi;
-    if [[ $variation == g_15  ]]; then gpar=1.5e0;                        fi;
-    if [[ $variation == as_*  ]]; then pdfsetname=${pdfset}_${variation}; fi;
-    if [[ $variation =~ $re   ]]; then member=$variation;                 fi;
-    if [[ $variation =~ all   ]]; then member=0; setPDFerrors=true;       fi;
-    if [[ $variation =~ array ]]; then member=array;                      fi;
+    [[ $variation == g_05  ]] && gpar=0.5e0;                       
+    [[ $variation == g_15  ]] && gpar=1.5e0;                       
+    [[ $variation == as_*  ]] && pdfsetname=${pdfset}_${variation};
+    [[ $variation =~ $re   ]] && member=$variation;                
+    [[ $variation =~ all   ]] && member=0 && setPDFerrors=true;      
+    [[ $variation =~ array ]] && member=array;                     
     # gpar
-    if [[ $pdfset == WZZPT-CT10 ]] 
+    if [[ $pdfset == WZZPT-CT10 ]]
     then
         gpar=0.9097
-        if [[ $variation == 53    ]]; then gpar=0.97330;                      fi;
-        if [[ $variation == 54    ]]; then gpar=0.84610;                      fi;
+        [[ $variation == 53    ]] && gpar=0.97330
+        [[ $variation == 54    ]] && gpar=0.84610
     fi;
-    if [[ $pdfset == ZPT-CT10 ]] 
+    if [[ $pdfset == ZPT-CT10 ]]
     then
         gpar=0.83175
-        if [[ $variation == 53    ]]; then gpar=0.88990;                      fi;
-        if [[ $variation == 54    ]]; then gpar=0.77360;                      fi;
+        [[ $variation == 53    ]] && gpar=0.88990
+        [[ $variation == 54    ]] && gpar=0.77360
     fi;
     # set correct input template
     in_tmpl=$dyturbo_in_tmpl
-    if [[ $job_name =~ ^dyturbo_ ]]; then in_tmpl=$dyturbo_project/scripts/DYTURBO_TMPL.in; fi;
-    if [[ $job_name =~ ^dyres_   ]]; then in_tmpl=$dyturbo_project/scripts/DYRES_TMPL.in;   fi;
-    if [[ $job_name =~ ^mcfm_    ]]; then in_tmpl=$dyturbo_project/scripts/MCFM_TMPL.in;    fi;
+    # because it was redefine benchmark setting I turned off
+    #if [[ $job_name =~ ^dyturbo_ ]]; then in_tmpl=$dyturbo_project/scripts/DYTURBO_TMPL.in; fi;
+    #if [[ $job_name =~ ^dyres_   ]]; then in_tmpl=$dyturbo_project/scripts/DYRES_TMPL.in;   fi;
+    #if [[ $job_name =~ ^mcfm_    ]]; then in_tmpl=$dyturbo_project/scripts/MCFM_TMPL.in;    fi;
     cp $in_tmpl tmp
     sed -i "s|LOQTBIN|$setloqtbin|g          ;
             s|HIQTBIN|$sethiqtbin|g          ;
@@ -241,6 +249,8 @@ prepare_in(){
             s|SETMCFMPROC|$nprocmcfm|g       ;
             s|SETTERMSTRING|$termstring|g    ;
             s|SETLEPCUTS|$makelepcuts|g      ;
+            s|SETLEPPTCUT|$lepPtCut|g        ;
+            s|SETLEPYCUT|$lepYCut|g          ;
             s|SETDETFIDUCIAL|$detfiducial|g  ;
             s|SETIH1|$ih1|g                  ;
             s|SETIH2|$ih2|g                  ;
@@ -721,6 +731,71 @@ clear_files(){
     echo "Done"
 }
 
+submit_Benchmark(){
+    # ask about running/submitting
+    DRYRUN=echo 
+    read -p "Do you want to submit jobs ? " -n 1 -r
+    echo    # (optional) move to a new line
+    if [[ $REPLY =~ ^[Yy]$ ]]
+    then
+        DRYRUN=
+    fi
+    #
+    collider=lhc7
+    pdfset=CT10nnlo
+    cubacores=8
+    variation=0
+    batch_template=$dyturbo_project/scripts/run_DYTURBO_Array_TMPL.sh
+    program=dyturbo
+    fulllloqtbin=0
+    fulllhiqtbin=100
+    fulllloybin=-5
+    fulllhiybin=5
+    # benchmark dependence 
+    benchmark=2
+    for benchmark in 0 1 2 # 0 1 2
+    do
+        dyturbo_in_tmpl=$dyturbo_project/scripts/DYTURBO_bench_v$benchmark.in
+        #termlist="RES CT REAL1 REAL2 VIRT"
+        termlist="RES CT"
+        NsplitQT=1
+        NsplitY=1
+        [[ $benchmark == 2 ]] && termlist="RES3D CT3D" && NsplitQT=10 && NsplitY=10 
+        for process in wm wp z0 # wp wm z0
+        do
+            makelepcuts=false
+            [[ $process =~ z0 ]] &&  makelepcuts=true
+            for terms in $termlist
+            do
+                random_seed=seed
+                #  already used for real and virt
+                #seedlist=10101-10201
+                #[[ $terms  =~ REAL1 ]] && seedlist=10101-10501 && terms=REAL
+                #[[ $terms  =~ REAL2 ]] && seedlist=10501-11101 && terms=REAL
+                # new for increasing statistics
+                seedlist=11101-11201
+                [[ $terms  =~ REAL1 ]] && seedlist=11101-10501 && terms=REAL
+                [[ $terms  =~ REAL2 ]] && seedlist=11501-11101 && terms=REAL
+                #
+                [[ $terms  =~ 3D ]] && seedlist=10100
+                for iqt in `seq $NsplitQT`
+                do
+                    for iy in `seq $NsplitY`
+                    do
+                        loqtbin=` splitedBin $fulllloqtbin $fulllhiqtbin $NsplitQT $iqt 0`
+                        hiqtbin=` splitedBin $fulllloqtbin $fulllhiqtbin $NsplitQT $iqt 1`
+                        loybin=`  splitedBin $fulllloybin  $fulllhiybin  $NsplitY  $iy  0`
+                        hiybin=`  splitedBin $fulllloybin  $fulllhiybin  $NsplitY  $iy  1`
+                        qtregion=`echo bm${benchmark}qt${loqtbin}${hiqtbin}y${loybin}${hiybin}t${terms} | sed "s/\.//g;s/ //g"`
+                        prepare_script
+                        submit_job
+                    done
+                done
+            done
+        done
+    done
+}
+
 clear_results(){
     read -p "Are you sure you want to delete all current results ? " -n 1 -r
     echo    # (optional) move to a new line
@@ -735,7 +810,8 @@ clear_results(){
 clear_files
 clear_results
 #submit_Z_dyturbo
-submit_allProg
+#submit_allProg
 #submit_Wwidth
 #submit_grid
+submit_Benchmark
 

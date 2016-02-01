@@ -506,7 +506,6 @@ void plotter::Finalise(double xsection){
     TFile *outf = TFile::Open(outfname.Data(), "recreate");
     // write
     for (int i=0; i< h_qtVy_PDF.size(); i++){
-        printf( " wriging pdf %d \n",i);
         SetPDF(i);
         h_qt   -> Write();
         h_y    -> Write();

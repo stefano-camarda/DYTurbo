@@ -61,7 +61,7 @@ doVV   = false
 doCT   = true
 doREAL = true
 doVIRT = true
-doLO   = true
+doLO   = false
 
 # Cuba settings
 cubaverbosity    = 0   # Cuba info messsages, from 0 to 3

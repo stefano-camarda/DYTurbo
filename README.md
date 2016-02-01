@@ -2,8 +2,30 @@
 DYTURBO is a fast Drell-Yan integrator, based on the DYRES and DYNNLO programs.
 Numerical integration is performed using both the Vegas Monte Carlo integration and quadrature rules.
 
-## How to setup
- 1. checkout the repository
+## How to setup USER
+1. ask for guest rights and get tarbal from webpage
+```
+https://gitlab.cern.ch/DYdevel/DYTURBO/wikis/home
+tar xzvf dyturbo-VERSION.tar.gz
+cd dyturbo-VERSION
+```
+
+2. setup and compile
+```
+(optional PATH=<lhapdfdir>:$PATH if you want to use your version of lhapdf previously installed in <lhapdfdir>)
+(optional setup root to enable root output)
+./configure --enable-root --enable-Ofast
+make
+make install
+```
+
+3. have fun
+```
+./bin/dyturbo
+```
+
+## How to setup DEVEL
+ 1. ask for developer access and checkout the repository
 ```
 git clone https://gitlab.cern.ch/DYdevel/DYTURBO.git
 ```
@@ -53,3 +75,4 @@ make && make install
  - two files can be change to customize output of the calculation:
      - `src/plotter.C` for histograms
      - `src/settings.C` function `cuts` for changing cuts
+

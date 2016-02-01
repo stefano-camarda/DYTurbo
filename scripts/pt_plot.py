@@ -1543,6 +1543,171 @@ def plot_profile():
     pl.MakePreviewFromList(0,"profiles")
     pass
 
+def benchmark():
+    samples=[
+            #[ "DYTURBO-v0.9.6"      , "results_merge/benchmark_v0_160125"   , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root"   , ["REAL","VIRT","CT","RES"] , "h_qt" , 1. ],
+            #[ "DYTURBO-v0.9.6.1" , "results_merge/benchmark_v0.1_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0.1qt0100ym55t{}_seed_outliers.root" , ["REAL","VIRT","CT","RES"] , "h_qt" , 1. ],
+            #[ "DYRES-v1.0"          , "results_merge/Stefano_dyturbo_v1"    , "{}{}.root"                                                        , ["r","v"]                  , "pt"   , 1  ],
+            #[ "DYTURBO-v0.9.6_PDF" , "results_merge/benchmark_v1_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm1qt0100ym55t{}_seed_outliers.root" , ["REAL","VIRT","CT","RES"] , "h_qt" , 1. ],
+
+            [ "DYTURBO-v0.9.6.1"   , "results_merge/benchmark_v0.1_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0.1qt0100ym55t{}_seed_outliers.root" , ["REAL","VIRT","CT","RES"] , "h_qtVy"   , 1. ],
+            [ "DYRES-v1.0"         , "results_merge/Stefano_dyturbo_v1"    , "{}{}.root"                                                        , ["r","v"]                  , "yvspt"  , 1  ],
+            #[ "DYTURBO-v0.9.6"     , "results_merge/benchmark_v0_160125"   , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root"   , ["REAL","VIRT","CT","RES"] , "h_qtVy" , 1. ],
+            #[ "DYTURBO-v0.9.6_PDF" , "results_merge/benchmark_v1_160125"   , "dyturbo_{}_lhc7_CT10nnlo_0_bm1qt0100ym55t{}_seed_outliers.root"   , ["REAL","VIRT","CT","RES"] , "h_qtVy" , 1. ],
+
+            #[ "DYRES-v1.0Res"         , "results_merge/Stefano_dyturbo_v1"  , "{}{}.root"                                                      , ["v"]                      , "pt"     , 1       ],
+            #[ "DYTURBO-v0.9.6Res"     , "results_merge/benchmark_v0_160125"   , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root" , ["RES"] , "h_qt" , 1. ],
+            #[ "DYTURBO-v0.9.6.1Res"   , "results_merge/benchmark_v0.1_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0.1qt0100ym55t{}_seed_outliers.root" , ["RES"] , "h_qt" , 1. ],
+            #[ "DYTURBO-v0.9.6_PDFRes" , "results_merge/benchmark_v1_160125"   , "dyturbo_{}_lhc7_CT10nnlo_0_bm1qt0100ym55t{}_seed_outliers.root" , ["RES"] , "h_qt" , 1. ],
+
+            #[ "DYRES-v1.0Res2D"       , "results_merge/Stefano_dyturbo_v1"  , "{}{}.root"                                                      , ["v"]                      , "yvspt"  , 1       ],
+            #[  "DYTURBO-v0.9.6Res2D"   , "results_merge/benchmark_v0_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root" , ["RES"]                    , "h_qtVy" , 1.      ],
+            #[  "DYTURBO-v0.9.6_PDFRes" , "results_merge/benchmark_v1_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm1qt0100ym55t{}_seed_outliers.root" , ["RES"]                    , "h_qtVy" , 1.      ],
+
+            #[ "DYRES-v1.0Fin"         , "results_merge/Stefano_dyturbo_v1"  , "{}{}.root"                                                      , ["r"]                , "pt"   , 1  ],
+            #[ "DYTURBO-v0.9.6Fin"     , "results_merge/benchmark_v0_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root" , ["REAL","VIRT","CT"] , "h_qt" , 1. ],
+            #[ "DYTURBO-v0.9.6.1Fin" , "results_merge/benchmark_v0.1_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0.1qt0100ym55t{}_seed_outliers.root" , ["REAL","VIRT","CT","RES"] , "h_qt" , 1. ],
+            #[ "DYTURBO-v0.9.6_PDFFin" , "results_merge/benchmark_v1_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm1qt0100ym55t{}_seed_outliers.root" , ["REAL","VIRT","CT"] , "h_qt" , 1. ],
+
+            #[ "DYRES-v1.0Fin"         , "results_merge/Stefano_dyturbo_v1"  , "{}{}.root"                                                      , ["r"]                , "yvspt"   , 1  ],
+            #[ "DYTURBO-v0.9.6Fin"     , "results_merge/benchmark_v0_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root" , ["REAL","VIRT","CT"] , "h_qtVy" , 1. ],
+            #[ "DYTURBO-v0.9.6_PDFFin" , "results_merge/benchmark_v1_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm1qt0100ym55t{}_seed_outliers.root" , ["REAL","VIRT","CT"] , "h_qtVy" , 1. ],
+
+            #  merge
+            #[ "DYRES-v1.0Fin"         , "results_merge/Stefano_dyturbo_v1"  , "{}{}.root"                                                      , ["r"]                      , "pt"     , 1       ],
+            #[ "DYTURBO-v0.9.6Fin"     , "results_merge/benchmark_v0_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_merge.root"    , ["REAL","VIRT","CT"]       , "h_qt"   , 1./101. ],
+            #[ "DYRES-v1.0Res"         , "results_merge/Stefano_dyturbo_v1"  , "{}{}.root"                                                      , ["v"]                      , "pt"     , 1       ],
+            #[ "DYTURBO-v0.9.6Res"     , "results_merge/benchmark_v0_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_merge.root"    , ["RES"]                    , "h_qt"   , 1./101. ],
+            #[ "DYRES-v1.0"            , "results_merge/Stefano_dyturbo_v1"  , "{}{}.root"                                                      , ["r","v"]                  , "pt"     , 1       ],
+            #[ "DYTURBO-v0.9.6"        , "results_merge/benchmark_v0_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_merge.root"    , ["REAL","VIRT","CT","RES"] , "h_qt"   , 1./101. ],
+        ]
+    #
+    #blueH   = pl.ColorHTML("45A2FC") #"99CDFF")
+    #violetH = pl.ColorHTML("FD37E4") #"FF91F1")
+    #greenH  = pl.ColorHTML("D6FF37") #"E9FF91")
+    #orangeH = pl.ColorHTML("FFAE37") #"FFD291")
+    #
+    redH     = pl.ColorHTML("FF6737")
+    greenH   = pl.ColorHTML("ABFE37")
+    blueH    = pl.ColorHTML("45A2FC")
+    torquaH  = pl.ColorHTML("37FD98")
+    CONF = [
+         [   "bm0",
+             [ # samples
+                 #[ "DYTURBO (pol. inter. PDF)" , "results_merge/benchmark_v0.1_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0.1qt0100ym55t{}_seed_outliers.root" , "h_qt" , redH],
+                 [ "DYTURBO (pol. inter. PDF)" , "results_merge/benchmark_v0_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root" , "h_qt" , redH],
+                 [ "DYRES-v1.0"                , "results_merge/Stefano_dyturbo_v1"    , "{}{}.root"                                                        , "pt"   , torquaH],
+             ],
+             [ # terms
+                 #[ ""    , ["REAL","VIRT","CT","RES"], ["r","v"] ],
+                 #[ "FIN" , ["REAL","VIRT","CT"],       ["r"]     ],
+                 [ "RES" , ["RES"],                    ["v"]     ],
+             ]
+         ],
+        #[   "bm1",
+            #[ # samples 
+                #[ "DYTURBO (num. integr. PDF)"  , "results_merge/benchmark_v1_160125"   , "dyturbo_{}_lhc7_CT10nnlo_0_bm1qt0100ym55t{}_seed_outliers.root"   , "h_qt" , blueH   ],
+                #[ "DYTURBO (pol. inter. PDF)" , "results_merge/benchmark_v0_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root" , "h_qt" , redH],
+                ##[ "DYTURBO (pol. inter. PDF)"   , "results_merge/benchmark_v0.1_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0.1qt0100ym55t{}_seed_outliers.root" , "h_qt" , redH ],
+            #],
+            #[ # terms 
+                #[ ""    , ["REAL","VIRT","CT","RES"] , ["REAL","VIRT","CT","RES"] ],
+                #[ "FIN" , ["REAL","VIRT","CT"]       , ["REAL","VIRT","CT"]       ],
+                #[ "RES" , ["RES"]                    , ["RES"]                    ],
+            #]
+        #],
+        # [   "bm2",
+        #     [ # samples
+        #         [ "DYTURBO (QUADRATURE)" , "results_merge/benchmark_v2_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm2qt0100ym55t{}_seed_merge.root" , "qt_y_total" , blueH ],
+        #         [ "DYTURBO (VEGAS)"      , "results_merge/benchmark_v1_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm1qt0100ym55t{}_seed_outliers.root" , "h_qtVy" , greenH ],
+        #     ],
+        #     [ # terms
+        #         [ ""    , ["REAL","VIRT","CT","RES3D"] , ["REAL","VIRT","CT","RES"]  ],
+        #         [ "FIN" , ["REAL","VIRT","CT3D"]       , ["REAL","VIRT","CT"]        ],
+        #         [ "RES" , ["RES3D"]                    , ["RES"]                     ],
+        #     ]
+        # ]
+    ]
+    #
+    procs = ["z0"] # [ "wp", "wm", "z0" ]
+    projs = ["_px"] # # ["_px","_py"]
+    for cfg in CONF :
+        bname   = cfg[0]
+        samples = cfg[1]
+        terms   = cfg[2]
+        for proc in procs :
+            proctit = ""
+            if "wp" in proc : proctit= "W^{+}"
+            if "wm" in proc : proctit= "W^{-}"
+            if "z0" in proc : proctit= "Z"
+            for term in terms :
+                term_name = term[0]
+                term_list = term[1:]
+                for proj in projs:
+                    hists=list()
+                    for isampl,sampl_conf in enumerate(samples) :
+                        title=sampl_conf[0]
+                        hname=sampl_conf[3]
+                        scol=sampl_conf[4]
+                        # merger creates projection from TH2D
+                        if "Vy" in hname or "yvs" in hname : hname+=proj
+                        fname=sampl_conf[1]+"/"+sampl_conf[2]
+                        # start with empty histogram
+                        tmpterm=term_list[isampl][0]
+                        h= pl.EmptyClone(pl.GetHistSetTitNam(title,fname.format(proc,tmpterm),hname),title)
+                        scale=1
+                        for trm in term_list[isampl] :
+                            tmp=pl.GetHist(fname.format(proc,trm),hname)
+                            c=scale
+                            # reweight by X section histogram
+                            # try:
+                            #     htot=pl.GetHist(fname.format(proc,trm),"qt_y_total")
+                            #     c*=tmp.Integral()/htot.Integral()
+                            #     if "REAL" in trm : c*=101./1001.
+                            #     print c
+                            #     pass
+                            # except ValueError:
+                            #     pass
+                            tmp.Scale(c)
+                            h.Add(tmp)
+                            pass # sum over terms
+                        if "Vy" in hname or "yvs" in hname :
+                            # do projection by hand
+                            #h = pl.GetProjection(h,proj)
+                            pass
+                        else :
+                            #skip for 1D histograms
+                            if "_py" in proj : continue
+                            pass
+                        if "_px" in proj:
+                            # its probably pt so rebin and scale by bin width (equidistant)
+                            h.Print("range")
+                            h.Rebin(5)
+                            h.Scale(1./h.GetBinWidth(1))
+                            h.GetXaxis().SetTitle("p_{T}[GeV]")
+                            h.GetYaxis().SetTitle("#frac{d#sigma}{dp_{T}}[fb.GeV^{-1}]")
+                        if "_py" in proj:
+                            h.GetXaxis().SetTitle("y")
+                            h.GetYaxis().SetTitle("#frac{d#sigma}{dy}[fb]")
+                        h.SetLineColor(scol)
+                        h.SetLineWidth(2)
+                        h.SetMarkerColor(scol)
+                        hists.append(h)
+                        pass # loop over samples
+                    if len(hists)==0: continue
+                    pl.CompareHistsInList(bname+"_"+term_name+"_"+proc+proj,hists,compareType="ratio0",legx=0.5,doStyle=False,doSave=False)
+                    # cosmetics
+                    pl.c1.cd(0)
+                    pl.WriteText(proctit+" "+term_name,0.7,0.8,tsize=0.04)
+                    pl.c1.cd()
+                    pl.Save()
+                    pass # loop over proj
+                pass # loop over terms
+            pass # loop over processes
+        pass # loop over benchmark tests
+    pl.MakePreviewFromList(0,"bm_all")
+    pass
+
 ## Documentation for main
 #
 # More details. 
@@ -1562,7 +1727,8 @@ if __name__ == '__main__' :
     #DY = TheoUncStudy()
     #DY.DoStudy()
     #DY.DoPDFQuadStudy()
-    plot_profile()
+    #plot_profile()
+    benchmark()
     #makeStatPlot()
     pass
 
