@@ -284,6 +284,64 @@ double dyct(double m, double y, double qt, double phicm, double phiZ, double cos
   return value;
 }
 
+void dyres(double costh,double m,double qt,double y)
+{
+  double rmass = opts.rmass;
+  double rwidth = opts.rwidth;
+  double sqrts = energy_.sroot_; //7000.;
+  double s = sqrts*sqrts;
+
+  double begin_time, end_time;
+  double value;
+  double rr[22];
+  double wgt = 1;
+  
+  //convert invariant mass to 0-1 for Breit-Wigner weighting
+  double mmin2 = pow(opts.mlow,2);
+  double mmax2 = pow(opts.mhigh,2);
+  double almin, almax, tanal, al, x1;
+  almin=atan((mmin2-rmass*rmass)/rmass/rwidth);
+  almax=atan((mmax2-rmass*rmass)/rmass/rwidth);
+  tanal = (m*m - rmass*rmass)/rmass/rwidth;
+  al = atan(tanal);
+  x1 = (al-almin)/(almax-almin);
+
+  //rapidity
+  double ymax=0.5*log(s/m/m);
+  double x2 = (y + ymax)/(2.*ymax);
+
+  //qt
+  double qtmin=0.1;
+  double cosh2y=pow((exp(y)+exp(-y))*0.5,2);
+  double qtmax = sqrt(pow(s+m*m,2)/(4.*s*cosh2y) - m*m);
+  double x3 = (qt-qtmin)/qtmax;
+
+  //costh
+  double x4 = (costh+1.)/2.;
+  
+  //phase space mapping
+  const int ncomp = 1;
+  const int ndim = 6; //4;
+  double f[ncomp];
+  double x[ndim];
+
+  //************** COUNTERTERM ***************
+  //phase space mapping
+  rr[0] = x1;                                           //q2
+  rr[1] = x2;                                          //y of the Z boson
+  rr[2] = x3;                                         //costh of the system (qt)
+  rr[3] = x4;                                          //costh of dilepton in Z rest frame
+  begin_time = clock_real();
+  value = lowinthst_(rr,wgt);
+  end_time = clock_real();
+  cout << "Resummed part: " << value << "  " << "time " << end_time - begin_time << "s" << endl;
+  //******************************************
+  
+  return;
+}
+
+
+
 double clock_real(){
     struct timeval now;
     gettimeofday(&now, NULL);
