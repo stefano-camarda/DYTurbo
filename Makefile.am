@@ -1,14 +1,22 @@
 ACLOCAL_AMFLAGS=-I m4
-SUBDIRS = cernlib dequad dyres dynnlo mcfm integrands resum src origdyres
-EXTRA_DIST= install-cuba install-lhapdf pdfsets.list README.md
+#add cuba to SUBDIRS to ship cuba
+SUBDIRS = cernlib dequad dyres dynnlo mcfm integrands resum src origdyres #test
+
+#nodist_SUBDIRS = origdyres #test
+
+dist_bin_SCRIPTS = install-cuba install-lhapdf
+EXTRA_DIST = README.md
+
 bin_SCRIPTS = dyturbo-config
+CLEANFILES = $(bin_SCRIPTS)
 
 sharedir = ${datadir}/${PACKAGE}
-dist_share_DATA = input/*.in
+dist_share_DATA = ${srcdir}/input/*.in ${srcdir}/pdfsets.list
 
 #distribute the cuba library
 #lib_LIBRARIES = libcuba.a
 #libcuba_a_SOURCES =
 #libcuba_a_LIBADD  = Cuba-4.2/libcuba.a
 
-#pkginclude_HEADERS = Cuba-4.2/cuba.h
+clean-local:
+	rm -rf Cuba-$(CUBA_VERSION)

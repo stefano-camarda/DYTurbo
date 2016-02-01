@@ -12,7 +12,7 @@ AC_PROG_CC
 m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 
 #Use libtoolize to build dyturbo libraries
-#AM_PROG_LIBTOOL
+AC_PROG_LIBTOOL
 LT_INIT
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -67,7 +67,7 @@ if test x$lhapdf_config == x; then
  if test x$lhapdf_config == x; then
 # if not found, install it
   AC_MSG_RESULT([Install LHAPDF6])
-  ./install-lhapdf
+   ${srcdir}/install-lhapdf
   #AC_MSG_ERROR([Unable to find lhapdf-config.])
   lhapdf_config=`ls ${PWD}/lhapdf6/bin/lhapdf-config`
  fi
@@ -80,33 +80,36 @@ AC_SUBST(LHAPDF_CPPFLAGS)
 AC_SUBST(LHAPDF_LDFLAGS)
 AC_MSG_RESULT([Using $lhapdf_config])
 
-# check for Cuba installation
+# check for Cuba installation, and install it if missing
 AC_MSG_CHECKING([for Cuba library installation])
-# search in Cuba-4.2
-cubalib=`ls ${PWD}/Cuba-4.2/libcuba.a`
-if test x$cubalib == x; then
-    # if not found, install it
-    AC_MSG_RESULT([Install Cuba])
-    ./install-cuba
-fi
+AC_SEARCH_LIBS([vegas],[cuba],[
+	AC_MSG_RESULT([Using -lcuba from system installation])
+        CUBA_LDFLAGS=-lcuba],
+        [
+	CUBA_VERSION=4.2
+	AC_SUBST(CUBA_VERSION)
+	# search for local istallation of Cuba-4.2
+	cubalib=`ls ${PWD}/Cuba-${CUBA_VERSION}/libcuba.a`
+	if test x$cubalib == x; then
+          # if not found, install it
+  	   AC_MSG_RESULT([Install Cuba ${CUBA_VERSION}])
+	   ${srcdir}/install-cuba
+	fi
+        CUBA_LDFLAGS="-L${PWD}/Cuba-${CUBA_VERSION} -lcuba"
+	CUBA_CPPFLAGS="-I${PWD}/Cuba-4.2"
+	AC_MSG_RESULT([Using -lcuba from local installation ${PWD}/Cuba-${CUBA_VERSION}])
+        ])
 
-AC_MSG_RESULT([Using ${PWD}/Cuba-4.2 ])
-CUBA_CPPFLAGS="-I${PWD}/Cuba-4.2"
-CUBA_LDFLAGS="-L${PWD}/Cuba-4.2 -lcuba"
+## Use the following to ship cuba as third party library
+#CUBA_VERSION=4.2
+#AC_SUBST(CUBA_VERSION)
+#AC_CONFIG_SUBDIRS([cuba/Cuba-4.2])
+#CUBA_LDFLAGS="-L\$(builddir)/../cuba/Cuba-${CUBA_VERSION} -lcuba"
+#CUBA_CPPFLAGS="-I\$(srcdir)/../cuba/Cuba-4.2"
+
+
 AC_SUBST(CUBA_CPPFLAGS)
 AC_SUBST(CUBA_LDFLAGS)
-cubadir="${PWD}/Cuba-4.2"
-AC_MSG_RESULT([Using $cubadir])
-
-
-#AC_SEARCH_LIBS([vegas],[cuba],[
-#	AC_MSG_RESULT([Using -lcuba])
-#        CUBA_LDFLAGS=-lcuba],
-#        [./install-cuba
-#         CUBA_LDFLAGS=-L`pwd`/Cuba-4.2 -lcuba
-#	AC_MSG_RESULT([Using -lcuba])
-#        ])
-#AC_SUBST(CUBA_LDFLAGS)
 
 # check for DYRES installation
 AC_ARG_ENABLE([dyres], AC_HELP_STRING(--enable-dyres, [Install and link original DYRes code. (default=no)]))
@@ -121,7 +124,6 @@ AS_IF([test "x$enable_dyres" = "xyes"], [
   ])
 ])
 AM_CONDITIONAL([HAVE_DYRES],test "x$enable_dyres" = "xyes")
-
 
 # Set --enable-root option, for linking histograms
 AC_ARG_ENABLE([root],
@@ -168,7 +170,7 @@ AS_IF([test "x$enable_checkBounds" = "xyes"], [
 ])
 
 
-AC_CONFIG_FILES([Makefile 
+AC_CONFIG_FILES([Makefile
 	 	 src/Makefile
  	 	 resum/Makefile
 		 integrands/Makefile
@@ -179,4 +181,8 @@ AC_CONFIG_FILES([Makefile
 		 cernlib/Makefile
 		 dequad/Makefile
 		 dyturbo-config])
+		 
+#add this to ship cuba
+#		 cuba/Makefile
+
 AC_OUTPUT
