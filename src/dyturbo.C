@@ -78,10 +78,9 @@ int main( int argc , const char * argv[])
   /***********************************/
 
   /***********************************/
-  //Initialization
-  ///@todo: print out EW parameters and other settings
-  // just a check
-  opts.dumpAll();
+  //print out EW and QCD parameters and other settings
+  if (opts.verbose)
+    opts.dumpAll();
   printsettings();
   /***********************************/
 

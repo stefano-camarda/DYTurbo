@@ -8,7 +8,10 @@
 
 void pdfini_()
 {
-  printf(" ==Initialize PDF set from LHAPDF==\n\n");
+  //printf(" ==Initialize PDF set from LHAPDF==\n\n");
+  //printf("\n");
+  LHAPDF::Info& cfg = LHAPDF::getConfig();
+  cfg.set_entry("Verbosity", 0);
   LHAPDF::initPDFSetByName(opts.LHAPDFset);
   LHAPDF::initPDF(opts.LHAPDFmember);
   // initialization of alphas
@@ -25,10 +28,7 @@ void pdfini_()
       pdferropts_.pdferr_ = false;
       pdferropts_.totpdf_ = 1;
     }
-  printf("\n");
 
-  LHAPDF::Info& cfg = LHAPDF::getConfig();
-  cfg.set_entry("Verbosity", 0);
   //setalphas();
   setg();
 }
