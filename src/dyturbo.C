@@ -19,10 +19,6 @@
 
 using namespace std;
 
-#include "lines.C"
-
-void test_resum_speed(double costh,double m,double qt,double y,int mode);
-void test_ct_speed(double costh,double m,double qt,double y,int mode);
 void print_head();
 void print_line();
 void print_qtbin();
@@ -89,12 +85,11 @@ int main( int argc , const char * argv[])
   printsettings();
   /***********************************/
 
-  double costh, m, qt, y;
-  //  std::cout << std::setprecision(15);
-  int mode = 0;
   /*****************************************/
   //If using the DYRES approximation for PDFs, make sure that the PDF fit is initialised in the same way
   //Need to throw a random point according to a breit wigner, which is used to determine xtauf in the PDF fit
+  double costh, m, qt, y;
+  int mode = 0;
   if (opts_.approxpdf_ == 1)
     {
       srand(opts.rseed);
@@ -105,79 +100,16 @@ int main( int argc , const char * argv[])
       breitw_(x1,wsqmin,wsqmax,opts.rmass,opts.rwidth,m2,wt);
       cout << "Initialise PDF fit with mass = " << sqrt(m2) << " xtauf = " << m2 / opts.sroot << endl;
       costh = 0.; m = sqrt(m2); qt = 1; y = 0;
-      test_resum_speed(costh,m,qt,y,mode);
+      resumm_(costh,m,qt,y,mode);
     }
+  else
+    {
+      costh = 0.; m = opts.rmass; qt = 1; y = 0;
+      resumm_(costh,m,qt,y,mode);
+    }
+  countterm_(costh,m,qt,y,mode);
   /****************************************/
   
-  /**************************************/
-  //Checks for resummed cross section
-  //  std::cout << std::setprecision(15);
-  costh = 0.; m = opts.rmass; qt = 1; y = 0;
-  test_resum_speed(costh,m,qt,y,mode);
-
-  costh = 0.1; m = 91; qt = 5; y = 0.2;
-  test_resum_speed(costh,m,qt,y,mode);
-
-  costh = 0.5; m = 70; qt = 10; y = 1.5;
-  test_resum_speed(costh,m,qt,y,mode);
-
-  costh = -1.0; m = 110; qt = 20; y = -2.5;
-  test_resum_speed(costh,m,qt,y,mode);
-
-  costh = 0.1; m = 91; qt = 5; y = 3.5;
-  test_resum_speed(costh,m,qt,y,mode);
-
-  costh = 0.1; m = 91; qt = 5; y = 4.0;
-  test_resum_speed(costh,m,qt,y,mode);
-
-  costh = 0.1; m = 91; qt = 5; y = 0.2;
-  test_resum_speed(costh,m,qt,y,mode);
-
-  costh = 0.1; m = 91; qt = 5; y = 0.2;
-  test_ct_speed(costh,m,qt,y,mode);
-
-  //costhline();
-  //ptline();
-  //yline();
-  //mline();
-  //mlinebw();
-  //xline();
-  //ptavar();
-  //ptgvar();
-  //return 0;
-  /**************************************/
-
-
-  /**************************************/
-  //Checks for finite order cross section
-  //born level variables (6 dimensions)
-  //double m, qt, y, costh;
-  double phicm, phiZ;
-  costh = 0.0;  m = 91.1876;  qt = 5.;  y = 0.5;  phicm = 0.0;  phiZ = 0.;
-
-  //variables to be integrated (4 dimensions in total)
-  //1 collinear PDF dimension, common to real, virtual and lowint
-  double zcth;
-  zcth = 0.5;   //polar angle of Z in the CM frame
-  //3 dimensions of real radiation
-  double mjj, phijj, costhjj;
-  mjj = 10.;    //invariant mass of the dijet (set to 0 to have the correct virtual phase space mapping)
-  phijj = 0.3;  //phi of the dijet in dijet rest frame
-  costhjj = 0.1;//costh of the dijet in dijet rest frame
-  //1 dimension of virtual
-  double vz;
-  vz = sqrt(0.95);
-  //2 dimensions for the counterterm
-  double alpha,beta;
-  beta = 0.1;
-  alpha = 0.1;
-
-  //call function wrappers, which map the variables into the unity hypercube of the vegas integration
-  cout << " check phase space mapping " << endl;
-  dyreal(m, y, qt, phicm, phiZ, costh, zcth, mjj, costhjj, phijj);
-  dyvirt(m, y, qt, phicm, phiZ, costh, zcth, vz);
-  dyct(m, y, qt, phicm, phiZ, costh, alpha, beta);
-  /**************************************/
 
   // Cuba integration
   double value, error, totval, toterror2;
@@ -315,18 +247,6 @@ int main( int argc , const char * argv[])
   return 0;
 }
 
-void test_resum_speed(double costh,double m,double qt,double y,int mode){
-    double begin_time, end_time;
-    double value;
-    begin_time = clock_real();
-    value = resumm_(costh,m,qt,y,mode);
-    end_time = clock_real();
-    cout << setw(10) << "Result" << setw(15) << value
-         << setw(10) << "time "  << setw(15) << float(end_time - begin_time) << "s" << endl;
-    return;
-}
-
-
 void normalise_result(double &value, double &error){
     TotXSec+=value;
     //value /= qtmax - qtmin;
@@ -334,18 +254,6 @@ void normalise_result(double &value, double &error){
     //value /= ymax  - ymin;
     //error /= ymax  - ymin;
 }
-
-void test_ct_speed(double costh,double m,double qt,double y,int mode){
-    double begin_time, end_time;
-    double value;
-    begin_time = clock_real();
-    value = countterm_(costh,m,qt,y,mode);
-    end_time = clock_real();
-    cout << setw(10) << "Result" << setw(15) << value
-         << setw(10) << "time "  << setw(15) << float(end_time - begin_time) << "s" << endl;
-    return;
-}
-
 
 void print_head(){
     print_line();

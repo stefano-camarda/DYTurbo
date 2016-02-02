@@ -29,3 +29,4 @@ dist_share_DATA = ${srcdir}/input/*.in ${srcdir}/pdfsets.list ${srcdir}/scripts/
 
 distclean-local:
 	rm -rf Cuba-$(CUBA_VERSION)
+	rm -rf origdyres/*.f origdyres/*.h origdyres/DYRes-v1.0

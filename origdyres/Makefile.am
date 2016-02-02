@@ -14,6 +14,3 @@ dyrestest_LDADD = liborigintegrands.la ../cernlib/libcern.la \
 	-lgfortran $(LHAPDF_LDFLAGS)
 
 endif
-
-distclean-local:
-	rm -rf *.f *.h DYRes-v1.0
