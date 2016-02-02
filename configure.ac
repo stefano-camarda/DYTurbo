@@ -112,18 +112,25 @@ AC_SUBST(CUBA_CPPFLAGS)
 AC_SUBST(CUBA_LDFLAGS)
 
 # check for DYRES installation
-AC_ARG_ENABLE([dyres], AC_HELP_STRING(--enable-dyres, [Install and link original DYRes code. (default=no)]))
+AC_ARG_ENABLE([dyres], AC_HELP_STRING(--enable-dyres, [Install and link original DYRes code, Available only in git (default=no)]))
 AS_IF([test "x$enable_dyres" = "xyes"], [
   AC_MSG_CHECKING([for DYRes installation])
   # search in origdyres/DYRes-v1.0
   dyresinst=`ls -d ${PWD}/origdyres/DYRes-v1.0`
-  AS_IF([test test x$dyresinst == x], [
+  AS_IF([test "x$dyresinst" = x], [
     # if not found, install it
     AC_MSG_RESULT([Install DYRes])
-    cd origdyres && ./install-dyres && cd ..
+    cd ${srcdir}/origdyres && ${srcdir}/install-dyres && cd ..
   ])
 ])
 AM_CONDITIONAL([HAVE_DYRES],test "x$enable_dyres" = "xyes")
+
+# enable test programs
+AC_ARG_ENABLE([test], AC_HELP_STRING(--enable-test, [Compile test programs, Available only in git (default=no)]))
+AS_IF([test "x$enable_test" = "xyes"], [
+  AC_MSG_CHECKING([Compile test programs])
+])
+AM_CONDITIONAL([HAVE_TEST],test "x$enable_test" = "xyes")
 
 # Set --enable-root option, for linking histograms
 AC_ARG_ENABLE([root],
@@ -170,7 +177,6 @@ AS_IF([test "x$enable_checkBounds" = "xyes"], [
 ])
 
 
-#origdyres/Makefile
 AC_CONFIG_FILES([Makefile 
 	 	 src/Makefile
  	 	 resum/Makefile
@@ -181,7 +187,15 @@ AC_CONFIG_FILES([Makefile
 		 cernlib/Makefile
 		 dequad/Makefile
 		 dyturbo-config])
-		 
+
+
+AM_COND_IF([HAVE_DYRES], [
+  AC_CONFIG_FILES([origdyres/Makefile])
+])
+AM_COND_IF([HAVE_TEST], [
+  AC_CONFIG_FILES([test/Makefile])
+])
+
 #add this to ship cuba
 #		 cuba/Makefile
 
