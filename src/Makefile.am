@@ -25,13 +25,7 @@ if HAVE_ROOT
 dyturbo_LDADD += $(ROOT_LDFLAGS)
 AM_CPPFLAGS += $(ROOT_CFLAGS)
 
-bin_PROGRAMS += dytests merger
-
-dytests_SOURCES = dytests.C
-dytests_LDADD = libdyturbo.la \
-	../cernlib/libcern.la ../dequad/libdequad.la \
-	-lgfortran \
-	$(CUBA_LDFLAGS) $(LHAPDF_LDFLAGS) -lgsl -lgslcblas $(ROOT_LDFLAGS) #-lifcore -limf -lifport -lintlc -lquadmath
+bin_PROGRAMS += merger
 
 merger_SOURCES = merger.C
 merger_LDADD = $(ROOT_LDFLAGS)
