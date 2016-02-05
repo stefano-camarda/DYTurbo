@@ -571,7 +571,7 @@ submit_allProg(){
     batch_template=$dyturbo_project/scripts/run_DYTURBO_Array_TMPL.sh
     for program in dyturbo #  dyturbo dyres mcfm
     do
-        for process in wm # wp wm z0
+        for process in wp wm z0 # wp wm z0
         do
             makelepcuts=false
             #if [[ $process =~ z0 ]]; then makelepcuts=true; fi
@@ -581,19 +581,20 @@ submit_allProg(){
                 pdfset=CT10nlo
                 if [[ $order == 2 ]]; then pdfset=ZPT-CT10; fi;
                 if [[ $order == 3 ]]; then pdfset=WZZPT-CT10; order=2; fi;
+                pdfset=CT10nlo
                 # set terms
                 termlist="ALL"
                 if [[ $program =~ ^dyturbo ]] 
                 then
                     cubacores=8
                     #termlist="RES CT LO"
-                    #if [[ $order == 2 ]]; then termlist="RES CT REAL VIRT"; fi;
+                    if [[ $order == 2 ]]; then termlist="RES CT REAL VIRT"; fi;
                     #if [[ $order == 2 ]]; then termlist="REAL"; fi;
-                    termlist="RES3D CT3D"
+                    #termlist="RES3D CT3D"
                     #if [[ $order == 2 ]]; then termlist="RES3D CT3D REAL VIRT"; fi;
-                    if [[ $order == 2 ]]; then termlist="VIRT"; fi;
-                    if [[ $order == 2 ]]; then termlist="RES3D"; fi;
-                    termlist="RES3D"
+                    #if [[ $order == 2 ]]; then termlist="VIRT"; fi;
+                    #if [[ $order == 2 ]]; then termlist="RES3D"; fi;
+                    #termlist="RES3D"
                 fi
                 if [[ $program =~ ^dyres ]] 
                 then
@@ -610,21 +611,23 @@ submit_allProg(){
                 fi
                 for terms in $termlist
                 do
+                    seedlist=1010
+                    #seedlist=1010-1110
                     # run all pdf variations at once
                     if [[ $terms =~ REAL ]]
                     then
                         variation=all
                         #seedlist=1010
                         # you need two because of array size
-                        seedlist=1010-1510
-                        seedlist=1510-2010
+                        #seedlist=1010-1510
+                        #seedlist=1510-2010
+                        seedlist=1010-1020
                     fi
                     if [[ $terms =~ VIRT ]]
                     then
                         variation=all
-                        #seedlist=1010
-                        seedlist=1010-1110
                     fi
+                    variation=0
                     # for qt/y splits
                     NsplitQT=1
                     NsplitY=1
@@ -715,24 +718,6 @@ submit_grid(){
     finalize_grid_submission
 }
 
-
-
-clear_files(){
-    echo "Clearing setup files"
-    if [[ $(bjobs 2> /dev/null) ]] 
-    then
-        echo There are jobs running, skip clearing
-        #rm -f scripts/batch_scripts/*.sh
-        #rm -f scripts/infiles/*.in
-    else
-        rm -f scripts/batch_scripts/*.sh
-        rm -f scripts/infiles/*.in
-    fi
-    rm -f scripts/infiles/*.tar
-    rm -f scripts/infiles/*.tar.gz
-    echo "Done"
-}
-
 submit_Benchmark(){
     # ask about running/submitting
     DRYRUN=echo 
@@ -755,7 +740,7 @@ submit_Benchmark(){
     fulllhiybin=5
     # benchmark dependence 
     benchmark=2
-    for benchmark in 0     # 0 1 2
+    for benchmark in 1 2 # 0 1 2
     do
         dyturbo_in_tmpl=$dyturbo_project/scripts/DYTURBO_bench_v$benchmark.in
         #termlist="RES CT REAL1 REAL2 VIRT"
@@ -798,6 +783,24 @@ submit_Benchmark(){
     done
 }
 
+
+
+clear_files(){
+    echo "Clearing setup files"
+    if [[ $(bjobs 2> /dev/null) ]] 
+    then
+        echo There are jobs running, skip clearing
+        #rm -f scripts/batch_scripts/*.sh
+        #rm -f scripts/infiles/*.in
+    else
+        rm -f scripts/batch_scripts/*.sh
+        rm -f scripts/infiles/*.in
+    fi
+    rm -f scripts/infiles/*.tar
+    rm -f scripts/infiles/*.tar.gz
+    echo "Done"
+}
+
 clear_results(){
     read -p "Are you sure you want to delete all current results ? " -n 1 -r
     echo    # (optional) move to a new line
@@ -812,8 +815,8 @@ clear_results(){
 clear_files
 clear_results
 #submit_Z_dyturbo
-#submit_allProg
+submit_allProg
 #submit_Wwidth
 #submit_grid
-submit_Benchmark
+#submit_Benchmark
 
