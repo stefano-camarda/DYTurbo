@@ -31,6 +31,9 @@ class plotter {
         void Dump();
         void Finalise(double xsection=0);
 
+        double Q2,qt,y,a[NMOM],c[NMOM];
+        double costh,phi,phi_lep;
+
     protected :
 #ifdef USEROOT
         void CalculateKinematics(double p3[4], double p4[4]);
@@ -45,6 +48,7 @@ class plotter {
         TH1D * h_y ;
         TH1D * h_costh;
         TH1D * h_phi;
+        TH1D * h_phi_lep;
         TH2D * h_qtVy;
         // profiles
         bool doAiMoments;
@@ -57,12 +61,12 @@ class plotter {
         TH2D* qt_y_virt  ;
         TH2D* qt_y_total ;
         // kinematics
-        double Q2,qt,y,a[NMOM],c[NMOM];
-        double costh,phi;
+        //double Q2,qt,y,a[NMOM],c[NMOM];
+        //double costh,phi;
         // dipole variables
         struct XsecPoint {
             int ibin;
-            double qt,y,wgt;
+            double qt,y,costh,phi,wgt;
             bool fid;
         } point;
         std::vector<XsecPoint> dipole_points;
@@ -76,10 +80,13 @@ class plotter {
         std::vector<TH2D *> h_qtVy_PDF ;
         TH1 * clone_PDF( TH1 *h, int npdf);
 
+
         double verbose;
 #endif // USEROOT
 
 };
+
+
 
 extern plotter hists;
 

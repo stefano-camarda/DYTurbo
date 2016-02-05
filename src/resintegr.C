@@ -349,19 +349,6 @@ integrand_t resintegrand3d(const int &ndim, const double x[], const int &ncomp, 
 
   end_time = clock();
 
-  { // filling event
-      // only VB information pt and y
-      double p3[4] = {0., 0., 0., 0.};
-      double p4[4] = {0., 0., 0., 0.};  // dont need this
-      p3[0] = qt;  // just x component
-      // rapidity = -.5 log (E+z/E-z) let E=1 just need z
-      double e2y = exp(-2*y);
-      double sqY = pow( (1-e2y)/(1+e2y), 2);
-      double pz2 = (m*m + qt*qt) * sqY/(1-sqY);
-      p3[2] = sqrt(pz2);
-      p3[3] = sqrt(m*m + qt*qt + pz2);
-  }
-
   if (opts.timeprofile)
     cout << setw (3) << "m" << setw(10) << m
 	 << setw(4) << "qt" << setw(10) <<  qt
@@ -599,7 +586,8 @@ integrand_t resintegrandMC(const int &ndim, const double x[], const int &ncomp, 
 	 }
       if (iter==4){
   	double wt = weight*lowintHst0;///azloopmax;
-	hists_fill_(p[3]+1,p[4]+1,&wt);
+	hists_fill_(p[4]+1,p[3]+1,&wt);
+        //hists_AiTest_(pjet,p4cm,&m,&qt,&y,&costh_CS,&phi_lep,&phi,&wt,&lowintHst0);
       } 
       //azloop=azloop+1;
       //}

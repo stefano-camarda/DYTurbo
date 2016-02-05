@@ -54,8 +54,9 @@ plotter::~plotter(){
             delete p_qtVy_A[ipp];
             p_qtVy_A[ipp]=NULL;
         }
-        if(!h_costh ) delete h_costh ;
-        if(!h_phi   ) delete h_phi   ;
+        if(!h_costh   ) delete h_costh   ;
+        if(!h_phi     ) delete h_phi     ;
+        if(!h_phi_lep ) delete h_phi_lep ;
     }
     return;
 }
@@ -95,7 +96,8 @@ void plotter::Init(){
             p_qtVy_A[i] = new TProfile2D(name.Data(), title.Data(), bins_qt [0] , bins_qt [1] , bins_qt [2] ,  bins_y [0] , bins_y[1] , bins_y[2] );
         }
         h_costh       = new TH1D        ("h_costh"      , "VB costh"    , 100, -1,1 );
-        h_phi         = new TH1D        ("h_phi"        , "VB phi"      , 100, -TMath::Pi(),TMath::Pi() );
+        h_phi         = new TH1D        ("h_phi"        , "VB phi"      , 100, 0,TMath::TwoPi() );
+        h_phi_lep     = new TH1D        ("h_phi_lep"    , "Lep phi CM"  , 100, 0,TMath::TwoPi() );
     }
     // correction factor for Ai moments
     c[0] = 20./3. ;
@@ -106,13 +108,7 @@ void plotter::Init(){
     c[5] = 5.     ;
     c[6] = 5.     ;
     c[7] = 4.     ;
-    /// Trying to calculate final number of vegas calls
-    // consider this part as new function: when I will run all terms at once it can be recalculated
-    if (opts.doRES  ) N = opts.vegasncallsRES  ;
-    if (opts.doCT   ) N = opts.vegasncallsCT   ;
-    if (opts.doREAL ) N = opts.vegasncallsREAL ;
-    if (opts.doVIRT ) N = opts.vegasncallsVIRT ;
-    // hacked to one -- cuba gives correct weights (accoring to number of entries);
+    // force to one -- cuba gives correct weights (accoring to number of entries);
     N = 1;
     // vector of weights -- for systematics
     v_wgt.clear();
@@ -147,7 +143,7 @@ double calcCosThCS(double Q2,double qt,double p3[4],double p4[4]){
     costh /= sqrt(float(Q2*(Q2 + qt*qt)));
     return costh;
 }
-double calcPhiCS(double p3[4],double p4[4]){
+double calcPhiCS(double p3[4],double p4[4],double &phi_lep){
     // Collins-Sopper phi
     const double pmass=0.938;
     /// @todo: phi_CS without TLorentzVector...
@@ -163,6 +159,7 @@ double calcPhiCS(double p3[4],double p4[4]){
     p1   .Boost(VBboost);
     p2   .Boost(VBboost);
     lep1 .Boost(VBboost);
+    phi_lep=TVector2::Phi_0_2pi(-lep1.Phi()+TMath::Pi()/2.); // phi_lep: cos(-phi+pi/2) = sin(phi)
     // Collins Soper transversal plane
     TVector3 hatp1, hatp2, CSAxis, xAxis, yAxis;
     hatp1 = p1.Vect().Unit();
@@ -188,8 +185,8 @@ void plotter::CalculateKinematics(double p3[4], double p4[4]){
     if (!doAiMoments) return; // turn off ai moments
     // calc Collins-Sopper
     costh = calcCosThCS(Q2,qt,p3,p4);
-    phi   = calcPhiCS(p3,p4);
-    // coeficients for moments
+    phi   = calcPhiCS(p3,p4,phi_lep);
+    // angular terms for moments
     double theta     = TMath::ACos(costh);
     double sintheta  = TMath::Sin(theta);
     double sin2theta = TMath::Sin(2*theta);
@@ -232,12 +229,13 @@ void plotter::FillRealDipole(double p3[4], double p4[4], double wgt, int nd){
     } else { // calculate pt and y for 0..4
         CalculateKinematics(p3,p4);
     }
-    if (N!=0) wgt/=N;
     // fill Xsec - point
     point.ibin = h_qtVy->FindBin(qt,y);
-    point.qt   = qt   ;
-    point.y    = y    ;
-    point.wgt  = wgt  ;
+    point.qt    = qt    ;
+    point.y     = y     ;
+    point.wgt   = wgt   ;
+    point.costh = costh ;
+    point.phi   = phi   ;
     point.fid   = decide_fiducial(p3,p4);
     dipole_points.push_back(point);
     // fill moments
@@ -247,25 +245,25 @@ void plotter::FillRealDipole(double p3[4], double p4[4], double wgt, int nd){
 
 void plotter::FillRealEvent(plotter::TermType term){
     // process all calculated contributions
-    int i=0;
-    double wgt_sum=0;
     while (!dipole_points.empty()){
         // go per each affected qt_y bin
-        point = dipole_points.back();
+        point = dipole_points.back(); // take last one and combare ibin
         dipole_points.pop_back();
         for (auto ipoint=dipole_points.begin(); ipoint!=dipole_points.end() ; ) if (point.ibin == ipoint->ibin){
             // found same bin: remove from list and sum weight
             point.wgt+=ipoint->wgt;
             ipoint = dipole_points.erase(ipoint);
         } else ++ipoint; // bin index not same, skip it
-        // fill histograms
+        // fill histograms in ibin with sum of all weights
         if (point.fid ){
             h_qt   -> Fill(point.qt         ,point.wgt);
             h_y    -> Fill(point.y          ,point.wgt);
             h_qtVy -> Fill(point.qt,point.y ,point.wgt);
-            wgt_sum+=point.wgt;
+            if(doAiMoments){
+                h_costh   ->Fill( point.costh                    ,point.wgt);
+                h_phi     ->Fill( TVector2::Phi_0_2pi(point.phi) ,point.wgt);
+            }
         }
-        i++;
     }
     return;
 }
@@ -289,8 +287,9 @@ void plotter::FillEvent(double p3[4], double p4[4], double wgt){
     h_qtVy    ->Fill( qt,y      ,wgt);
     if(doAiMoments){
         for (int i=0;i<NMOM;i++) p_qtVy_A[i] ->Fill( qt,y,a[i] ,wgt);
-        h_costh    ->Fill( costh      ,wgt);
-        h_phi      ->Fill( phi        ,wgt);
+        h_costh   ->Fill( costh                    ,wgt);
+        h_phi     ->Fill( TVector2::Phi_0_2pi(phi) ,wgt);
+        h_phi_lep ->Fill( phi_lep                  ,wgt);
     }
     return;
 }
@@ -298,6 +297,71 @@ void plotter::FillEvent(double p3[4], double p4[4], double wgt){
 // fortran interface to Root
 void hists_fill_(double p3[4], double p4[4], double *weight){
     hists.FillEvent(p3,p4,*weight);
+    return;
+}
+
+void hists_AiTest_(double pjet[4][12], double p4cm[4],double *Q,double *qt,double *y,double* pcosthCS, double* pphiCS, double *pphiVB, double *wt, double *loHst ){
+    if ((*wt)*(*loHst)==0) return;
+    //printf("EVENT WEIGHT %g %g\n", *wt, *loHst);
+    //printf("PJET test -- px -- py -- pz -- E\n");
+    //printf("0 : %f\t%f\t%f\t%f \n", pjet[0][0], pjet[1][0], pjet[2][0], pjet[3][0] );
+    //printf("1 : %f\t%f\t%f\t%f \n", pjet[0][1], pjet[1][1], pjet[2][1], pjet[3][1] );
+    //printf("2 : %f\t%f\t%f\t%f \n", pjet[0][2], pjet[1][2], pjet[2][2], pjet[3][2] );
+    //printf("3 : %f\t%f\t%f\t%f \n", pjet[0][3], pjet[1][3], pjet[2][3], pjet[3][3] );
+    //printf("4 : %f\t%f\t%f\t%f \n", pjet[0][4], pjet[1][4], pjet[2][4], pjet[3][4] );
+    //printf("5 : %f\t%f\t%f\t%f \n", pjet[0][5], pjet[1][5], pjet[2][5], pjet[3][5] );
+    //printf("------------------------\n");
+    double pvb[4]; for (int i=0; i<4; i++) pvb[i]=pjet[i][2]+pjet[i][3];
+    //printf("vb: %f\t%f\t%f\t%f \n", pvb[0], pvb[1],  pvb[2], pvb[3]);
+    //printf("q : %f\t%f\t%f\t%f \n", calcQ2(pvb), calcQt(pvb), calcY(pvb), 0 );
+    //printf("------------------------\n");
+    TLorentzVector vb(pvb);
+    TLorentzVector lep; lep.SetXYZT(pjet[0][3],pjet[1][3],pjet[2][3],pjet[3][3]);
+    lep.Boost(-vb.BoostVector());
+    TLorentzVector ilep(p4cm);
+
+    double i_costhCS = *pcosthCS;
+    double i_phiCS   = *pphiCS;
+    double i_phiVB   = *pphiVB;
+    double i_q       = (*Q);
+    double i_qt      = (*qt);
+    double i_y       = (*y);
+    double i_p4cm    = p4cm[3];
+
+    double p_costhCS = hists.costh;
+    double p_phiCS   = hists.phi;
+    double p_phiVB   = TLorentzVector(pvb).Phi();
+    double p_q       = TMath::Sqrt(hists.Q2);
+    double p_qt      = hists.qt;
+    double p_y       = hists.y;
+    double p_p4cm    = lep.E();
+
+    //
+    double pihalf = TMath::Pi()/2.;
+    double pe = lep.E();
+    double theta = lep.Theta();
+    double phi = hists.phi_lep; // i_phiCS;
+    double px = pe * TMath::Sin(theta) * TMath::Sin(phi);
+    double py = pe * TMath::Sin(theta) * TMath::Cos(phi);
+    double pz = pe * TMath::Cos(theta);
+    TLorentzVector jlep(px,py,pz,pe);
+
+    printf("AI Test -- integrand -- plotter \n");
+    printf("p_costhCS = %f \t %f \t %g \n"        , i_costhCS , p_costhCS , i_costhCS - p_costhCS );
+    printf("p_phiCS   = %f \t %f \t %g\t%g\t%g \n", i_phiCS   , p_phiCS   , TVector2::Phi_mpi_pi(i_phiCS   - p_phiCS),  TVector2::Phi_mpi_pi(i_phiCS   - p_phiCS + pihalf),  TVector2::Phi_mpi_pi(i_phiCS   - p_phiCS - pihalf)  );
+    printf("p_phiVB   = %f \t %f \t %g \n"        , i_phiVB   , p_phiVB   , TVector2::Phi_mpi_pi(i_phiVB   - p_phiVB)   );
+    printf("p_q       = %f \t %f \t %g \n"        , i_q       , p_q       , i_q       - p_q       );
+    printf("p_qt      = %f \t %f \t %g \n"        , i_qt      , p_qt      , i_qt      - p_qt      );
+    printf("p_y       = %f \t %f \t %g \n"        , i_y       , p_y       , i_y       - p_y       );
+    printf("p_p4cm    = %f \t %f \t %g \n"        , i_p4cm    , p_p4cm    , i_p4cm    - p_p4cm    );
+    printf("lep      ");lep.Print();
+    printf("ilep     ");ilep.Print();
+    printf("jlep     ");jlep.Print();
+    printf("lep-ilep ");(lep-ilep).Print();
+    printf("lep-jlep ");(jlep-ilep).Print();
+    printf("--------------------------------\n");
+    printf("--------------------------------\n");
+
     return;
 }
 
@@ -515,6 +579,7 @@ void plotter::Finalise(double xsection){
         for (auto pp : p_qtVy_A) pp->Write();
         h_costh   -> Write();
         h_phi     -> Write();
+        h_phi_lep -> Write();
     } 
     // results
     qt_y_resum -> Write();
@@ -556,5 +621,6 @@ void hists_real_event_(){ return; }
 void hists_fill_pdf_(double p3[4], double p4[4], double *weight, int *npdf){ return; }
 void hists_real_dipole_pdf_(double p3[4], double p4[4], double *weight,int *nd, int *npdf){ return; }
 void hists_real_event_pdf_(int* npdf){ return; }
+void hists_AiTest_(double* pcosthCS, double* pphiCS) {return};
 
 #endif //USEROOT
