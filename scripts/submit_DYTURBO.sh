@@ -44,6 +44,7 @@ gpar=1
 tarbalfile=unset
 seedlist=unset
 
+queue=atlasshort
 prepare_script(){
     mkdir -p $batch_script_dir
     mkdir -p $result_dir
@@ -56,7 +57,6 @@ prepare_script(){
     # prepare script
     nprocessors=$(($cubacores+1))
     walltime=5:00
-    queue=atlasshort
     if [[ $program =~ dyres ]] || [[ $variation =~ all ]]
     then
         walltime=20:00
@@ -554,6 +554,7 @@ submit_allProg(){
         DRYRUN=
     fi
     # full phase space
+    queue=etapshort
     loqtbin=0
     hiqtbin=100
     loybin=0
