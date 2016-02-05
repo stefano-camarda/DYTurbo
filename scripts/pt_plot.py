@@ -1592,44 +1592,67 @@ def benchmark():
     blueH    = pl.ColorHTML("45A2FC")
     torquaH  = pl.ColorHTML("37FD98")
     CONF = [
-         [   "bm0",
-             [ # samples
-                 #[ "DYTURBO (pol. inter. PDF)" , "results_merge/benchmark_v0.1_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0.1qt0100ym55t{}_seed_outliers.root" , "h_qt" , redH],
-                 [ "DYTURBO (pol. inter. PDF)" , "results_merge/benchmark_v0_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root" , "h_qt" , redH],
-                 [ "DYRES-v1.0"                , "results_merge/Stefano_dyturbo_v1"    , "{}{}.root"                                                        , "pt"   , torquaH],
+         # [   "bm0",
+         #     [ # samples
+         #         #[ "DYTURBO (pol. inter. PDF)" ,   "results_merge/benchmark_v0.1_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0.1qt0100ym55t{}_seed_outliers.root" , "h_qt" , 6],
+         #         #[ "DYTURBO (pol. inter. PDF) average" , "results_merge/benchmark_v0.2_160129" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root" , "h_qt_rebin_average" , 6],
+         #         #[ "DYTURBO (pol. inter. PDF)"         , "results_merge/benchmark_v0.2_160129" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root" , "h_qt_rebin" , 6],
+         #         #[ "DYRES-v1.0 average"                , "results_merge/Stefano_dyturbo_v1_160201"    , "{}{}.root"                                                        , "pt_rebin_average"   , torquaH],
+         #         #[ "DYRES-v1.0"                        , "results_merge/Stefano_dyturbo_v1_160201"    , "{}{}.root"                                                        , "pt_rebin"   , 4],
+
+         #         #[ "DYTURBO (pol. inter. PDF) average" , "results_merge/benchmark_v0.2_160201_o2" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root" , "h_qt_rebin_average" , 6],
+         #         [ "DYTURBO (pol. inter. PDF)" , "results_merge/benchmark_v0.2_160201_o2" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root" , "h_qt_rebin" , redH],
+         #         #[ "DYRES-v1.0 average"                , "results_merge/Stefano_dyturbo_v1_160201_o2"    , "{}{}.root"                                                        , "pt_rebin_average"   , torquaH],
+         #         [ "DYRES-v1.0"                , "results_merge/Stefano_dyturbo_v1_160201_o2"    , "{}{}.root"                                                        , "pt_rebin"   , torquaH],
+         #     ],
+         #     [ # terms
+         #         [ "RES" , ["RES"],                    ["v"]     ],
+         #         [ "FIN" , ["REAL","VIRT","CT"],       ["r"]     ],
+         #         [ ""    , ["REAL","VIRT","CT","RES"], ["r","v"] ],
+
+         #         #[ "RES"   , ["RES"],    ["RES"]       ],
+         #         #[ "CT"   , ["CT"],    ["CT"]       ],
+         #         #[ "REAL" , ["REAL"],    ["REAL"]       ],
+         #         #[ "VIRT" , ["VIRT"],    ["VIRT"]       ],
+         #         #[ "FIN" , ["REAL","VIRT","CT"],  ["REAL","VIRT","CT"] ],
+         #         #[ "" , ["REAL","VIRT","CT","RES"],  ["REAL","VIRT","CT","RES"] ],
+
+         #         #[ ""    , ["REAL","VIRT","CT","RES"], ["REAL","VIRT","CT","RES"], ["r","v"], ["r","v"] ],
+         #         #[ "FIN" , ["REAL","VIRT","CT"],  ["REAL","VIRT","CT"],    ["r"],    ["r"]     ],
+         #         #[ "RES" , ["RES"], ["RES"],  ["v"],                    ["v"]     ],
+
+         #         #[ "RES" , ["v"],                    ["v"]     ],
+         #     ]
+         # ],
+         [   "bm1",
+             [ # samples 
+                 #[ "DYTURBO (num. integr. PDF)"  , "results_merge/benchmark_v1_160125"   , "dyturbo_{}_lhc7_CT10nnlo_0_bm1qt0100ym55t{}_seed_outliers.root"   , "h_qt" , blueH   ],
+                 #[ "DYTURBO (pol. inter. PDF)" , "results_merge/benchmark_v0_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root" , "h_qt" , redH],
+                 #[ "DYTURBO (pol. inter. PDF)"   , "results_merge/benchmark_v0.1_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0.1qt0100ym55t{}_seed_outliers.root" , "h_qt" , redH ],
+                 [ "DYTURBO (num. integr. PDF)" , "results_merge/benchmark_v1_160202"      , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root" , "h_qt" , blueH ],
+                 [ "DYTURBO (pol. inter.  PDF)" , "results_merge/benchmark_v0.2_160201_o2" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root" , "h_qt" , redH ],
              ],
-             [ # terms
-                 #[ ""    , ["REAL","VIRT","CT","RES"], ["r","v"] ],
-                 #[ "FIN" , ["REAL","VIRT","CT"],       ["r"]     ],
-                 [ "RES" , ["RES"],                    ["v"]     ],
+             [ # terms 
+                 #[ ""    , ["REAL","VIRT","CT","RES"] , ["REAL","VIRT","CT","RES"] ],
+                 #[ "FIN" , ["REAL","VIRT","CT"]       , ["REAL","VIRT","CT"]       ],
+                 [ "RES" , ["RES"]                    , ["RES"]                    ],
              ]
          ],
-        #[   "bm1",
-            #[ # samples 
-                #[ "DYTURBO (num. integr. PDF)"  , "results_merge/benchmark_v1_160125"   , "dyturbo_{}_lhc7_CT10nnlo_0_bm1qt0100ym55t{}_seed_outliers.root"   , "h_qt" , blueH   ],
-                #[ "DYTURBO (pol. inter. PDF)" , "results_merge/benchmark_v0_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root" , "h_qt" , redH],
-                ##[ "DYTURBO (pol. inter. PDF)"   , "results_merge/benchmark_v0.1_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0.1qt0100ym55t{}_seed_outliers.root" , "h_qt" , redH ],
-            #],
-            #[ # terms 
-                #[ ""    , ["REAL","VIRT","CT","RES"] , ["REAL","VIRT","CT","RES"] ],
-                #[ "FIN" , ["REAL","VIRT","CT"]       , ["REAL","VIRT","CT"]       ],
-                #[ "RES" , ["RES"]                    , ["RES"]                    ],
-            #]
-        #],
-        # [   "bm2",
-        #     [ # samples
-        #         [ "DYTURBO (QUADRATURE)" , "results_merge/benchmark_v2_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm2qt0100ym55t{}_seed_merge.root" , "qt_y_total" , blueH ],
-        #         [ "DYTURBO (VEGAS)"      , "results_merge/benchmark_v1_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm1qt0100ym55t{}_seed_outliers.root" , "h_qtVy" , greenH ],
-        #     ],
-        #     [ # terms
-        #         [ ""    , ["REAL","VIRT","CT","RES3D"] , ["REAL","VIRT","CT","RES"]  ],
-        #         [ "FIN" , ["REAL","VIRT","CT3D"]       , ["REAL","VIRT","CT"]        ],
-        #         [ "RES" , ["RES3D"]                    , ["RES"]                     ],
-        #     ]
-        # ]
+          [   "bm2",
+              [ # samples
+                 [ "DYTURBO (QUADRATURE)"  , "results_merge/benchmark_v2_160202"   , "dyturbo_{}_lhc7_CT10nnlo_0_bm2qt0100ym55t{}_seed_outliers.root"   , "h_qt" , greenH   ],
+                 [ "DYTURBO (VEGAS)"  , "results_merge/benchmark_v1_160202"   , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root"   , "h_qt" , blueH   ],
+              ],
+              [ # terms
+                  #[ ""    , ["REAL","VIRT","CT3D","RES3D"] , ["REAL","VIRT","CT","RES"]  ],
+                  #[ "FIN" , ["REAL","VIRT","CT3D"]       , ["REAL","VIRT","CT"]        ],
+                  [ "RES" , ["RES3D"]                    , ["RES"]                     ],
+              ]
+          ]
     ]
     #
     procs = ["z0"] # [ "wp", "wm", "z0" ]
+    #procs = [ "z0" , "wp", "wm" ]
     projs = ["_px"] # # ["_px","_py"]
     for cfg in CONF :
         bname   = cfg[0]
@@ -1657,18 +1680,31 @@ def benchmark():
                         h= pl.EmptyClone(pl.GetHistSetTitNam(title,fname.format(proc,tmpterm),hname),title)
                         scale=1
                         for trm in term_list[isampl] :
-                            tmp=pl.GetHist(fname.format(proc,trm),hname)
+                            hnametmp=hname
+                            if "v" == trm :
+                                hnametmp+="_average"
+                                #hname+=" average"
+                            #if "3D" in trm :
+                                #hnametmp=
+                            tmp=pl.GetHist(fname.format(proc,trm),hnametmp)
                             c=scale
                             # reweight by X section histogram
-                            # try:
-                            #     htot=pl.GetHist(fname.format(proc,trm),"qt_y_total")
-                            #     c*=tmp.Integral()/htot.Integral()
-                            #     if "REAL" in trm : c*=101./1001.
-                            #     print c
-                            #     pass
-                            # except ValueError:
-                            #     pass
-                            tmp.Scale(c)
+                            try:
+                                htot=pl.GetHist(fname.format(proc,trm),"qt_y_total")
+                                xsec=htot.Integral()
+                                intprime=tmp.Integral()
+                                inttilde=0
+                                intnow=0
+                                for ibin,val in enumerate(tmp) :
+                                    inttilde+=val
+                                    intnow+=val*tmp.GetBinWidth(ibin)
+                                #c = inttilde/intnow
+                                #if "REAL" in trm : c*=101./1001.
+                                print c
+                                pass
+                            except ValueError:
+                                pass
+                            #tmp.Scale(c)
                             h.Add(tmp)
                             pass # sum over terms
                         if "Vy" in hname or "yvs" in hname :
@@ -1682,10 +1718,10 @@ def benchmark():
                         if "_px" in proj:
                             # its probably pt so rebin and scale by bin width (equidistant)
                             h.Print("range")
-                            h.Rebin(5)
-                            h.Scale(1./h.GetBinWidth(1))
+                            #h.Rebin(5)
+                            #h.Scale(1./h.GetBinWidth(1))
                             h.GetXaxis().SetTitle("p_{T}[GeV]")
-                            h.GetYaxis().SetTitle("#frac{d#sigma}{dp_{T}}[fb.GeV^{-1}]")
+                            h.GetYaxis().SetTitle("1/p_{T}d#sigma/dp_{T}[fb.GeV^{-2}]")
                         if "_py" in proj:
                             h.GetXaxis().SetTitle("y")
                             h.GetYaxis().SetTitle("#frac{d#sigma}{dy}[fb]")
@@ -1699,6 +1735,14 @@ def benchmark():
                     # cosmetics
                     pl.c1.cd(0)
                     pl.WriteText(proctit+" "+term_name,0.7,0.8,tsize=0.04)
+                    pl.c1.cd(2)
+                    # find maximal deviation
+                    maxdev=0.
+                    for bin in list(gPad.GetListOfPrimitives())[3]:
+                        if bin == 0: continue
+                        maxdev = max([maxdev,abs(1-bin)])
+                        print bin, maxdev*100
+                    if "FIN" not in term_name : pl.WriteText(" max dev {:.2g}%".format(maxdev*100),0.7,0.8,tsize=0.08)
                     pl.c1.cd()
                     pl.Save()
                     pass # loop over proj
