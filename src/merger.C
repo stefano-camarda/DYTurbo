@@ -39,6 +39,7 @@ class OutlierRemoval{
             includeUnderOverFlow(false),
             doXsecNormalization(false),
             doTh2dProjections(true),
+            doRebin(true),
             verbose(1) {};
         ~OutlierRemoval(){};
 
@@ -65,18 +66,27 @@ class OutlierRemoval{
                         TH2* h2d = (TH2*) it_f->Get(basename.Data());
                         if ( proj == 'x') {
                             o = h2d->ProjectionX(objname); // ,-1,0,"e");
+                            if (doXsecNormalization) normalize(o);
                         } else if (proj == 'y'){
                             o = h2d->ProjectionY(objname); // ,-1,0,"e");
+                            if (doXsecNormalization) normalize(o);
+                        } else if (proj == 'n') { // its probably pt so rebin to ptz measurement
+                            TString basename = p_objname(0,len-6); // remove "_rebin"
+                            if (verbose>1) printf("basename: %s , proj %c \n",basename.Data(), proj);
+                            TH1* h1 = (TH1*) it_f->Get(basename.Data());
+                            if (doXsecNormalization) normalize(h1);
+                            o=h1->Rebin(22,objname,bins);
+                            // divide by bin width
+                            for (int ibin =1; ibin<=o->GetNbinsX(); ibin++ ){
+                                o->SetBinContent(ibin,o->GetBinContent(ibin)/o->GetBinWidth(ibin));
+                            }
                         }
-                        for (int ibin=0; ibin < o->GetNbinsX()+1;ibin++){
+                        for (int ibin=0; ibin < o->GetNbinsX()+1;ibin++){ // check for NAN
                             if (o->GetBinContent(ibin) != o->GetBinContent(ibin))
                                 printf(" NAN bin: %d",ibin);
                         }
-                    }
+                    } else if (doXsecNormalization) normalize(o);
                     if (verbose>2) o->Print();
-                    if ( p_objname.EqualTo("pt") || p_objname.EqualTo("h_qt") ) {
-                        o->Rebin(22,"zpt",bins);
-                    }
                     in_objs.push_back(o);
                 }
                 // temporary objects
@@ -117,7 +127,6 @@ class OutlierRemoval{
                     tmp_m->SetName(name);
                     tmp_a->SetName((name+"_average").Data());
                     if (verbose>2) printf("writing histogram with integral %f\n",tmp_m->Integral());
-                    if (doXsecNormalization) normalize(tmp_m);
                     output_objects.push_back(tmp_m);
                     output_objects.push_back(tmp_a);
                     continue;
@@ -177,6 +186,7 @@ class OutlierRemoval{
         bool includeUnderOverFlow;
         bool doXsecNormalization;
         bool doTh2dProjections;
+        bool doRebin;
         int verbose;
 
     private :
@@ -199,11 +209,18 @@ class OutlierRemoval{
                 TClass *cl = TClass::GetClass(key->GetClassName());
                 if (!cl->InheritsFrom( "TH1"      )) continue; // profiles and histograms of all dimensions
                 TObject* o = key->ReadObj();
-                all_obj_names.push_back(dirname+o->GetName());
+                TString name = o->GetName();
+                all_obj_names.push_back(dirname+name);
                 // make projections on TH2 and remove outlier on 1D separatelly
                 if (doTh2dProjections && cl->InheritsFrom( "TH2"      )) {
-                    all_obj_names.push_back(dirname+o->GetName()+"_px");
-                    all_obj_names.push_back(dirname+o->GetName()+"_py");
+                    all_obj_names.push_back(dirname+name+"_px");
+                    all_obj_names.push_back(dirname+name+"_py");
+                }
+                // rebin pt as used ptz measurement
+                if (doRebin) {
+                    if ( name.EqualTo("pt") || name.EqualTo("h_qt") ) {
+                        all_obj_names.push_back(dirname+name+"_rebin");
+                    }
                 }
             }
             f->Close();
@@ -398,7 +415,7 @@ class OutlierRemoval{
                             sigma = delta(vals, centr, 0.68) / sqrtN;
                         } else if (type.CompareTo("mean",TString::kIgnoreCase)==0){
                             centr = mean(vals); 
-                            sigma = rms(vals, centr);
+                            sigma = rms(vals, centr)/sqrtN;
                         }
                         tmp_m->SetBinContent( ibin, centr  );
                         tmp_m->SetBinError  ( ibin, sigma );
@@ -425,7 +442,8 @@ class OutlierRemoval{
 
 
 void help(const char * prog){
-      printf ("usage: %s [-X] [-v]  <output> <input list>\n");
+      printf ("usage: %s [-X] [-v] [-b]  <output> <input list>\n");
+      printf (" Please keep the ORDER of switches!!! Its on my todolist! \n");
       printf ("   -X    Normalize histograms to Xsection. \n");
       printf ("   -v    Increase verbosity. \n");
 }
