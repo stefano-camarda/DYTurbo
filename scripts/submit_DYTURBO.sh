@@ -55,7 +55,8 @@ prepare_script(){
     # prepare in
     prepare_in
     # prepare script
-    nprocessors=$(($cubacores+1))
+    nprocessors=$cubacores
+    [[ $cubacores == 0 ]] && nprocessors=1
     walltime=5:00
     if [[ $program =~ dyres ]] || [[ $variation =~ all ]]
     then
