@@ -26,6 +26,7 @@ from PlotTools import *
 pl=PlotTools()
 
 #import array
+import numpy as np
 
 def plot_pt(fname):
 
@@ -1543,6 +1544,21 @@ def plot_profile():
     pl.MakePreviewFromList(0,"profiles")
     pass
 
+redH     = pl.ColorHTML("#FF6737")
+greenH   = pl.ColorHTML("#ABFE37")
+blueH    = pl.ColorHTML("#45A2FC")
+torquaH  = pl.ColorHTML("#37FD98")
+purpleH  = pl.ColorHTML("#FD37E4")
+orangeH  = pl.ColorHTML("#FFAE37")
+
+violetI = pl.ColorHTML("#AB8BC8")
+greenI  = pl.ColorHTML("#8DA139")
+redI    = pl.ColorHTML("#D3695E")
+orangeI = pl.ColorHTML("#C48933")
+#greenI = pl.ColorHTML("#4EA96F")
+blueI   = pl.ColorHTML("#589CBF")
+purpleI = pl.ColorHTML("#CB6F9B")
+
 def benchmark():
     samples=[
             #[ "DYTURBO-v0.9.6"      , "results_merge/benchmark_v0_160125"   , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root"   , ["REAL","VIRT","CT","RES"] , "h_qt" , 1. ],
@@ -1587,21 +1603,37 @@ def benchmark():
     #greenH  = pl.ColorHTML("D6FF37") #"E9FF91")
     #orangeH = pl.ColorHTML("FFAE37") #"FFD291")
     #
-    redH     = pl.ColorHTML("FF6737")
-    greenH   = pl.ColorHTML("ABFE37")
-    blueH    = pl.ColorHTML("45A2FC")
-    torquaH  = pl.ColorHTML("37FD98")
     CONF = [
          [   "bm0",
              [ # samples
-                 #[ "DYTURBO (pol. inter. PDF)" , "results_merge/benchmark_v0.1_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0.1qt0100ym55t{}_seed_outliers.root" , "h_qt" , redH],
-                 [ "DYTURBO (pol. inter. PDF)" , "results_merge/benchmark_v0_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root" , "h_qt" , redH],
-                 [ "DYRES-v1.0"                , "results_merge/Stefano_dyturbo_v1"    , "{}{}.root"                                                        , "pt"   , torquaH],
+                 #[ "DYTURBO (pol. inter. PDF)" ,   "results_merge/benchmark_v0.1_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0.1qt0100ym55t{}_seed_outliers.root" , "h_qt" , 6],
+                 #[ "DYTURBO (pol. inter. PDF) average" , "results_merge/benchmark_v0.2_160129" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root" , "h_qt_rebin_average" , 6],
+                 #[ "DYTURBO (pol. inter. PDF)"         , "results_merge/benchmark_v0.2_160129" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root" , "h_qt_rebin" , 6],
+                 #[ "DYRES-v1.0 average"                , "results_merge/Stefano_dyturbo_v1_160201"    , "{}{}.root"                                                        , "pt_rebin_average"   , torquaH],
+                 #[ "DYRES-v1.0"                        , "results_merge/Stefano_dyturbo_v1_160201"    , "{}{}.root"                                                        , "pt_rebin"   , 4],
+
+                 #[ "DYTURBO (pol. inter. PDF) average" , "results_merge/benchmark_v0.2_160201_o2" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root" , "h_qt_rebin_average" , 6],
+                 [ "DYTURBO (pol. inter. PDF)" , "results_merge/benchmark_v0.2_160201_o2" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root" , "h_qt_rebin" , redH],
+                 #[ "DYRES-v1.0 average"                , "results_merge/Stefano_dyturbo_v1_160201_o2"    , "{}{}.root"                                                        , "pt_rebin_average"   , torquaH],
+                 [ "DYRES-v1.0"                , "results_merge/Stefano_dyturbo_v1_160201_o2"    , "{}{}.root"                                                        , "pt_rebin"   , torquaH],
              ],
              [ # terms
-                 #[ ""    , ["REAL","VIRT","CT","RES"], ["r","v"] ],
-                 #[ "FIN" , ["REAL","VIRT","CT"],       ["r"]     ],
                  [ "RES" , ["RES"],                    ["v"]     ],
+                 [ "FIN" , ["REAL","VIRT","CT"],       ["r"]     ],
+                 [ ""    , ["REAL","VIRT","CT","RES"], ["r","v"] ],
+
+                 #[ "RES"   , ["RES"],    ["RES"]       ],
+                 #[ "CT"   , ["CT"],    ["CT"]       ],
+                 #[ "REAL" , ["REAL"],    ["REAL"]       ],
+                 #[ "VIRT" , ["VIRT"],    ["VIRT"]       ],
+                 #[ "FIN" , ["REAL","VIRT","CT"],  ["REAL","VIRT","CT"] ],
+                 #[ "" , ["REAL","VIRT","CT","RES"],  ["REAL","VIRT","CT","RES"] ],
+
+                 #[ ""    , ["REAL","VIRT","CT","RES"], ["REAL","VIRT","CT","RES"], ["r","v"], ["r","v"] ],
+                 #[ "FIN" , ["REAL","VIRT","CT"],  ["REAL","VIRT","CT"],    ["r"],    ["r"]     ],
+                 #[ "RES" , ["RES"], ["RES"],  ["v"],                    ["v"]     ],
+
+                 #[ "RES" , ["v"],                    ["v"]     ],
              ]
          ],
         #[   "bm1",
@@ -1629,7 +1661,7 @@ def benchmark():
         # ]
     ]
     #
-    procs = ["z0"] # [ "wp", "wm", "z0" ]
+    procs = ["z0", "wp", "wm"] # [ "wp", "wm", "z0" ]
     projs = ["_px"] # # ["_px","_py"]
     for cfg in CONF :
         bname   = cfg[0]
@@ -1657,18 +1689,29 @@ def benchmark():
                         h= pl.EmptyClone(pl.GetHistSetTitNam(title,fname.format(proc,tmpterm),hname),title)
                         scale=1
                         for trm in term_list[isampl] :
-                            tmp=pl.GetHist(fname.format(proc,trm),hname)
+                            hnametmp=hname
+                            if "v" == trm :
+                                hnametmp+="_average"
+                                #hname+=" average"
+                            tmp=pl.GetHist(fname.format(proc,trm),hnametmp)
                             c=scale
                             # reweight by X section histogram
-                            # try:
-                            #     htot=pl.GetHist(fname.format(proc,trm),"qt_y_total")
-                            #     c*=tmp.Integral()/htot.Integral()
-                            #     if "REAL" in trm : c*=101./1001.
-                            #     print c
-                            #     pass
-                            # except ValueError:
-                            #     pass
-                            tmp.Scale(c)
+                            try:
+                                htot=pl.GetHist(fname.format(proc,trm),"qt_y_total")
+                                xsec=htot.Integral()
+                                intprime=tmp.Integral()
+                                inttilde=0
+                                intnow=0
+                                for ibin,val in enumerate(tmp) :
+                                    inttilde+=val
+                                    intnow+=val*tmp.GetBinWidth(ibin)
+                                #c = inttilde/intnow
+                                #if "REAL" in trm : c*=101./1001.
+                                print c
+                                pass
+                            except ValueError:
+                                pass
+                            #tmp.Scale(c)
                             h.Add(tmp)
                             pass # sum over terms
                         if "Vy" in hname or "yvs" in hname :
@@ -1682,10 +1725,10 @@ def benchmark():
                         if "_px" in proj:
                             # its probably pt so rebin and scale by bin width (equidistant)
                             h.Print("range")
-                            h.Rebin(5)
-                            h.Scale(1./h.GetBinWidth(1))
+                            #h.Rebin(5)
+                            #h.Scale(1./h.GetBinWidth(1))
                             h.GetXaxis().SetTitle("p_{T}[GeV]")
-                            h.GetYaxis().SetTitle("#frac{d#sigma}{dp_{T}}[fb.GeV^{-1}]")
+                            h.GetYaxis().SetTitle("1/p_{T}d#sigma/dp_{T}[fb.GeV^{-2}]")
                         if "_py" in proj:
                             h.GetXaxis().SetTitle("y")
                             h.GetYaxis().SetTitle("#frac{d#sigma}{dy}[fb]")
@@ -1699,6 +1742,14 @@ def benchmark():
                     # cosmetics
                     pl.c1.cd(0)
                     pl.WriteText(proctit+" "+term_name,0.7,0.8,tsize=0.04)
+                    pl.c1.cd(2)
+                    # find maximal deviation
+                    maxdev=0.
+                    for bin in list(gPad.GetListOfPrimitives())[3]:
+                        if bin == 0: continue
+                        maxdev = max([maxdev,abs(1-bin)])
+                        print bin, maxdev*100
+                    if "FIN" not in term_name : pl.WriteText(" max dev {:.2g}%".format(maxdev*100),0.7,0.8,tsize=0.08)
                     pl.c1.cd()
                     pl.Save()
                     pass # loop over proj
@@ -1706,6 +1757,278 @@ def benchmark():
             pass # loop over processes
         pass # loop over benchmark tests
     pl.MakePreviewFromList(0,"bm_all")
+    pass
+
+def read_cute_out(fname,colnum):
+    xx=list()
+    yy=list()
+    f=open(fname,"r")
+    for line in f:
+        # uncomment
+        data = line.split("#")[0]
+        if len(data) == 0: continue
+        # read numbers
+        xx.append( data.split("	")[0] )
+        yy.append( data.split("	")[colnum] )
+        pass
+    #print fname
+    #print xx
+    #print yy
+    return np.array(xx,'d'),np.array(yy,'d')
+
+def newGraph(x,y,**kwargs):
+    #settings
+    name = kwargs[ "name" ] if "name" in kwargs else "graph"
+    title = kwargs[ "title" ] if "title" in kwargs else name
+    #line
+    lcolor = kwargs[ "lcolor" ] if "lcolor" in kwargs else 1
+    lwidth = kwargs[ "lwidth" ] if "lwidth" in kwargs else 2
+    lstyle = kwargs[ "lstyle" ] if "lstyle" in kwargs else 1
+    # marker todo
+    gr =  TGraph(len(x),np.array(x,'d'),np.array(y,'d'))
+    gr.SetLineColor(lcolor)
+    gr.SetLineWidth(lwidth)
+    gr.SetLineStyle(lstyle)
+    gr.SetTitle(title)
+    gr.SetName(name)
+    return gr
+
+def normalize(x,y):
+    N=0
+    xlast=0
+    for i,val in enumerate(y):
+        N+=val*(x[i]-xlast)
+    if N==0 : return False
+    N=(x[-1])/N
+    y = y*N
+    return y
+
+CKM_style= [
+    #["0",  1 ],
+    #["ud", pl.AutoCompareColor(0,9), "97%"],
+    #["us", pl.AutoCompareColor(1,9), "23%"],
+    #["ub", pl.AutoCompareColor(2,9), "0.4%"],
+    #["cd", pl.AutoCompareColor(3,9), "23%"],
+    #["cs", pl.AutoCompareColor(4,9), "97%"],
+    #["cb", pl.AutoCompareColor(5,9), "4.1%"],
+    #["td", pl.AutoCompareColor(6,9), "0.9%"],
+    #["ts", pl.AutoCompareColor(7,9), "4.%"],
+    #["tb", pl.AutoCompareColor(8,9), "99%"],
+
+    #["uu", pl.AutoCompareColor(0,6), ""],
+    #["dd", pl.AutoCompareColor(1,6), ""],
+    #["ss", pl.AutoCompareColor(2,6), ""],
+    #["cc", pl.AutoCompareColor(3,6), ""],
+    #["bb", pl.AutoCompareColor(4,6), ""],
+    #["tt", pl.AutoCompareColor(5,6), ""],
+    ["ud", pl.ColorHTML("#D3544D"), "97%"],
+    ["us", pl.ColorHTML("#C9AF31"), "23%"],
+    ["ub", pl.ColorHTML("#B379C7"), "0.4%"],
+    ["cd", pl.ColorHTML("#C06F2A"), "23%"],
+    ["cs", pl.ColorHTML("#7ED13F"), "97%"],
+    ["cb", pl.ColorHTML("#5A8FC1"), "4.1%"],
+    ["td", pl.ColorHTML("#578533"), "0.9%"],
+    ["ts", pl.ColorHTML("#4FC887"), "4.%"],
+    ["tb", pl.ColorHTML("#C95686"), "99%"],
+
+    ["uu", pl.ColorHTML("#D3695E"), ""],
+    ["dd", pl.ColorHTML("#8DA139"), ""],
+    ["ss", pl.ColorHTML("#C48933"), ""],
+    ["cc", pl.ColorHTML("#4EA96F"), ""],
+    ["bb", pl.ColorHTML("#589CBF"), ""],
+    ["tt", pl.ColorHTML("#AB8BC8"), ""],
+]
+procs=[
+  ["z0", 1, "Z"     ], # 123,
+  ["wp", 1, "W^{+}" ], # 124,
+  ["wm", 1, "W^{-}" ], # 224,
+]
+terms=[
+  [""   , 3],
+  #["RES", 4],
+  #["RES_FO", 5],
+  #["FO", 6],
+]
+PDFsets = [
+        #pdf
+        ["CT10"              ,     "CT10nnlo"        , "CT10nnlo"        ] ,
+        ["CT10-5N"           ,     "CT10nnlo5Trsh"   , "CT10nnlo5Trsh"   ] ,
+        ["ABM-5N"            ,     "abm12lhc_5_nnlo" , "abm12lhc_5_nnlo" ] ,
+        ["ABM-4N"            ,     "abm12lhc_4_nnlo" , "abm12lhc_4_nnlo" ] ,
+        #ratio
+        ["CT10_vs_CT10-5N"   ,     "CT10nnlo"        , "CT10nnlo5Trsh"   ] ,
+        ["CT10_vs_ABM-5N"    ,     "CT10nnlo"        , "abm12lhc_5_nnlo" ] ,
+        ["CT10-5N_vs_ABM-5N" ,     "CT10nnlo5Trsh"   , "abm12lhc_5_nnlo" ] ,
+        ["ABM-4N_vs_ABM-5N"  ,     "abm12lhc_4_nnlo" , "abm12lhc_5_nnlo" ] ,
+        ]
+
+def cute_ratioWZ():
+    V= "0"
+    col=1
+    Vtitle=""
+    termtitle=""
+    termnum=3
+    for proc,num,proctit in procs[1:]:
+        for pdftitle, PDFname1,PDFname2 in PDFsets:
+            if PDFname1==PDFname2 : continue
+            graphs=list()
+            graphsRatio=list()
+            PDFtitle1 = pdftitle.split("_")[0]
+            PDFtitle2 = pdftitle.split("_")[2]
+            fname="../CUTE/results/cute_{}_lhc7_{}_{}_{}.txt"
+            x,yw1 = read_cute_out(fname.format(proc,PDFname1,V,num),termnum)
+            x,yw2 = read_cute_out(fname.format(proc,PDFname2,V,num),termnum)
+            x,yz1 = read_cute_out(fname.format("z0",PDFname1,V,num),termnum)
+            x,yz2 = read_cute_out(fname.format("z0",PDFname2,V,num),termnum)
+            #
+            graphs.append( newGraph(x,yz1, name="{} {}".format("Z"     ,PDFtitle1), lcolor=blueI,lstyle=1))
+            graphs.append( newGraph(x,yz2, name="{} {}".format("Z"     ,PDFtitle2), lcolor=blueI,lstyle=2))
+            graphs.append( newGraph(x,yw1, name="{} {}".format(proctit ,PDFtitle1), lcolor=redI,lstyle=1))
+            graphs.append( newGraph(x,yw2, name="{} {}".format(proctit ,PDFtitle2), lcolor=redI,lstyle=2))
+            #
+            y= (yz1/yz2)          ; y[y==np.inf] = 0; graphsRatio.append( newGraph(x,y, name="ratioZ"  , lcolor=blueI, lstyle=3 ))
+            y=           (yw1/yw2); y[y==np.inf] = 0; graphsRatio.append( newGraph(x,y, name="ratioW"  , lcolor=redI , lstyle=3 ))
+            y= (yz1/yz2)/(yw1/yw2); y[y==np.inf] = 0; graphsRatio.append( newGraph(x,y, name="ratioWZ" , lcolor=orangeI     ))
+            pl.NewCanvas("cute_{}_{}_{}".format(proc+"zratio",pdftitle,termtitle))
+            pl.DrawHistCompareSubPlot(graphs,
+                                      graphsRatio,
+                                      cdiv=0.45,
+                                      compareType="none",
+                                      drawOpt="L",
+                                      maxX=50
+                                      )
+            pl.axes[-2].SetTitle(";;d#sigma/dq_{T} [fb.GeV^{-1}]")
+            pl.axis.SetTitle(";q_{T}[GeV]; ratio")
+            pl.c1.cd(1)
+            graphs.append( newGraph(x,yw2, name="#frac{{{}}}{{{}}}".format(PDFtitle1 ,PDFtitle2), lcolor=1,lstyle=3))
+            pl.DrawLegend(graphs,"l")
+            pl.c1.cd(2)
+            pl.WriteText("#frac{{ {}-{} / {}-{} }}{{ {}-{} / {}-{} }}".format(
+                "Z", PDFtitle1,
+                "Z", PDFtitle2,
+                proctit, PDFtitle1,
+                proctit, PDFtitle2,
+                ),
+                0.45,0.5,tsize=0.08,tcol=orangeI)
+            pl.Save()
+        pass
+    pass
+
+def cute():
+    for proc,num,proctitle in procs :
+        ckmst = [[ "0", 1 , "" ]]
+        ckmst += CKM_style[0:9] if "w" in proc else CKM_style[9:]
+        #ckmst = [[ "uu", 1 ]]
+        for pdftitle, PDFname1,PDFname2 in PDFsets:
+            for termtitle, termnum in terms :
+                graphs= list()
+                graphsRatio= list()
+                ycent=0
+                ysum=0
+                x=0
+                #print "cute_{}_{}_{}".format(proc,pdftitle,termtitle)
+                for V,col,Vij in ckmst:
+                    Vtitle="..."
+                    if V=="0" : Vtitle= "total"
+                    else :
+                        tittmp="{}#bar{{{}}}" if proc != "wm" else "#bar{{{}}}{}"
+                        Vtitle=tittmp.format(V[0],V[1])
+                        Vtitle+=" {}".format(Vij)
+                    fname="../CUTE/results/cute_{}_lhc7_{}_{}_{}.txt"
+                    # pdf1
+                    PDFname=PDFname1
+                    x,y1 = read_cute_out(fname.format(proc,PDFname,V,num),termnum)
+                    #y1 = normalize(x,y1)
+                    if np.any(y1):
+                        graphs.append( newGraph(x,y1,
+                            name=V+"1",
+                            title=Vtitle,
+                            lcolor=col
+                            ))
+                    if np.isscalar(ycent):
+                        ycent=y1
+                        ysum=np.zeros_like(y1,'d')
+                    else :
+                        ysum+=y1
+                    # pdf2
+                    PDFname=PDFname2
+                    x,y2 = read_cute_out(fname.format(proc,PDFname,V,num),termnum)
+                    #y2 = normalize(x,y2)
+                    if PDFname1!=PDFname2 and np.any(y2) :
+                        graphs.append( newGraph(x,y2,
+                            name=V+"2",
+                            title=Vtitle,
+                            lcolor=col,
+                            lstyle=2
+                            ))
+                    # ratio
+                    y=0
+                    if PDFname1==PDFname2: y2=ycent
+                    if np.any(y1) and np.any(y2) :
+                        y2=np.divide(1.,y2)
+                        y2[y2==np.inf] = 0
+                        y = y2*y1
+                        graphsRatio.append( newGraph(x,y,
+                            name=V,
+                            title=Vtitle,
+                            lcolor=col
+                            ))
+                        pass
+                    pass
+                    #print "ycent",ycent
+                    #print "ysum",ysum
+                    #print "y1",y1
+                    #print "y2",y2
+                    #print "y",y
+                # add sum line and ratio
+                if not np.isscalar(ysum) and PDFname1==PDFname2 :
+                    #ysum*=5./6./2.
+                    graphs.append( newGraph(x,ysum,
+                        name="sum0",
+                        title="sum",
+                        lcolor=1,
+                        lstyle=3
+                        ))
+                    ysum/=ycent
+                    graphsRatio.append( newGraph(x,ysum,
+                        name="sum",
+                        title="sum",
+                        lcolor=1,
+                        lstyle=3
+                        ))
+                    pass
+                print "ysum ratio",ysum
+                #
+                forrang=False
+                comptype="none"
+                if PDFname1==PDFname2 : 
+                    forrang=True
+                    comptype="noneLog"
+                pl.NewCanvas("cute_{}_{}_{}".format(proc,pdftitle,termtitle))
+                pl.DrawHistCompareSubPlot(graphs,
+                                          graphsRatio,
+                                          cdiv=0.45,
+                                          compareType=comptype,
+                                          drawOpt="L",
+                                          maxX=50
+                                          )
+                tit1="flavour"
+                tit2="total"
+                if PDFname1!=PDFname2 : 
+                    tit1=pdftitle.split("_")[0]
+                    tit2=pdftitle.split("_")[2]
+                    graphsRatio.append(newGraph([0],[0],name=tit1,lstyle=1))
+                    graphsRatio.append(newGraph([0],[0],name=tit2,lstyle=2))
+                pl.axes[-2].SetTitle(";;d#sigma/dq_{T} [fb.GeV^{-1}]")
+                pl.axis.SetTitle(";q_{{T}}[GeV]; {} / {}".format(tit1,tit2))
+                #pl.axis.GetYaxis().SetMoreLogLabels(True)
+                pl.c1.cd(1)
+                pl.DrawLegend(graphsRatio,"l")
+                pl.WriteText("{} {}" .format(proctitle,termtitle),0.45,0.77,tsize=0.11)
+                pl.Save()
+                pass
+            pass
+        pass
     pass
 
 ## Documentation for main
@@ -1728,8 +2051,11 @@ if __name__ == '__main__' :
     #DY.DoStudy()
     #DY.DoPDFQuadStudy()
     #plot_profile()
-    benchmark()
+    #benchmark()
     #makeStatPlot()
+    cute()
+    cute_ratioWZ()
+    pl.MakePreviewFromList(0,"cute")
     pass
 
 
