@@ -58,24 +58,37 @@ class OutlierRemoval{
                 VecTH1 in_objs;
                 for (auto it_f : all_files){
                     /// @todo: test if they are all same binning
+                    const char* objname_out = (p_objname+in_objs.size()).Data();
+                    if (verbose>3) printf(" objname out: %s\n",objname_out);
                     TH1 * o = (TH1*) it_f->Get(objname);
+                    if (o!=0) o = (TH1*)  o->Clone(objname_out);
                     if (o==0 && len>3 ){ // not found histogram
                         // test if it not 1D projection and if yes create it
                         TString basename = p_objname(0,len-3);
                         if (verbose>1) printf("basename: %s , proj %c \n",basename.Data(), proj);
                         TH2* h2d = (TH2*) it_f->Get(basename.Data());
                         if ( proj == 'x') {
-                            o = h2d->ProjectionX(objname); // ,-1,0,"e");
+                            o = h2d->ProjectionX("dummy"); // ,-1,0,"e");
+                            o->SetName(objname_out);
                             if (doXsecNormalization) normalize(o);
                         } else if (proj == 'y'){
-                            o = h2d->ProjectionY(objname); // ,-1,0,"e");
+                            o = h2d->ProjectionY("dummy"); // ,-1,0,"e");
+                            o->SetName(objname_out);
+                            if (doXsecNormalization) normalize(o);
+                        } else if (proj == 'u'){
+                            o = h2d->ProjectionY("dummy",0,-1,"e");
+                            o->SetName(objname_out);
+                            if (doXsecNormalization) normalize(o);
+                        } else if (proj == 'v'){
+                            o = make_projection(h2d);
+                            o->SetName(objname_out);
                             if (doXsecNormalization) normalize(o);
                         } else if (proj == 'n') { // its probably pt so rebin to ptz measurement
                             TString basename = p_objname(0,len-6); // remove "_rebin"
                             if (verbose>1) printf("basename: %s , proj %c \n",basename.Data(), proj);
                             TH1* h1 = (TH1*) it_f->Get(basename.Data());
                             if (doXsecNormalization) normalize(h1);
-                            o=h1->Rebin(22,objname,bins);
+                            o=h1->Rebin(22,objname_out,bins);
                             // divide by bin width
                             for (int ibin =1; ibin<=o->GetNbinsX(); ibin++ ){
                                 o->SetBinContent(ibin,o->GetBinContent(ibin)/o->GetBinWidth(ibin));
@@ -215,6 +228,8 @@ class OutlierRemoval{
                 if (doTh2dProjections && cl->InheritsFrom( "TH2"      )) {
                     all_obj_names.push_back(dirname+name+"_px");
                     all_obj_names.push_back(dirname+name+"_py");
+                    //all_obj_names.push_back(dirname+name+"_pu");
+                    //all_obj_names.push_back(dirname+name+"_pv");
                 }
                 // rebin pt as used ptz measurement
                 if (doRebin) {
@@ -224,6 +239,12 @@ class OutlierRemoval{
                 }
             }
             f->Close();
+        }
+
+        TH1D* make_projection(TH2*h2d){
+            int nxbins = h2d->GetNbinsX();
+            TH1D * o = h2d->ProjectionY("dummy",1,nxbins,"e");
+            return o;
         }
 
         double median(VecDbl xi) {
@@ -454,9 +475,9 @@ void help(const char * prog){
  */
 int main(int argc, const char * argv[]){
 
-    if (argc < 4)
+    if (argc < 3)
     {
-        printf("Not enough arguments (at least 1 output and 2 inputs )\n");
+        printf("Not enough arguments (at least 1 output and 1 inputs )\n");
         help(argv[0]);
         return 1;
     }
