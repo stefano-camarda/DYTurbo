@@ -306,9 +306,13 @@ add_to_tarbal(){
 }
 
 submit_job(){
+    echo $job_name $sh_file $seedlist  >> scripts/cmd_list
     if [[ `hostname` =~ cuth-dell  ]]
     then
         $DRYRUN bash -x $sh_file
+    elif [[ `hostname` =~ precision  ]]
+    then
+        true
     else
         if [ -a results/$job_name.root ]
         then
@@ -800,6 +804,7 @@ clear_files(){
     fi
     rm -f scripts/infiles/*.tar
     rm -f scripts/infiles/*.tar.gz
+    rm -f scripts/cmd_list
     echo "Done"
 }
 
@@ -822,3 +827,5 @@ submit_allProg
 #submit_grid
 #submit_Benchmark
 
+# 
+[[ `hostname` =~ precision  ]] && $DRYRUN python scripts/run_parallel.py

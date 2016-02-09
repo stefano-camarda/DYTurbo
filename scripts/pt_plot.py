@@ -1752,6 +1752,25 @@ def benchmark():
     pl.MakePreviewFromList(0,"bm_all")
     pass
 
+def plot_y():
+    pl.CompareHistsInFiles(
+            "proj_y_test",
+            [
+                [ "noNorm y"            , "rebin_noNorm.root", "h_qt"]              ,
+                #[ "noNorm y aver"      , "rebin_noNorm.root", "h_y_average"]      ,
+                [ "noNorm proj y"       , "rebin_noNorm.root", "h_qtVy_px"]        ,
+                #[ "noNorm proj y errors", "rebin_noNorm.root", "h_qtVy_pu"]        ,
+                #[ "noNorm proj y noOver", "rebin_noNorm.root", "h_qtVy_pv"]        ,
+                #[ "noNorm proj y aver" , "rebin_noNorm.root", "h_qtVy_py_average"],
+                #[ "XNorm y"             , "rebin_XNorm.root" , "h_y"]              ,
+                #[ "XNorm y aver"       , "rebin_XNorm.root" , "h_y_average"]      ,
+                #[ "XNorm proj y"        , "rebin_XNorm.root" , "h_qtVy_py"]        ,
+                #[ "XNorm proj y aver"  , "rebin_XNorm.root" , "h_qtVy_py_average"],
+            ],
+            compareType="ratio0",
+            legx=0.6
+            )
+
 ## Documentation for main
 #
 # More details. 
@@ -1772,8 +1791,9 @@ if __name__ == '__main__' :
     #DY.DoStudy()
     #DY.DoPDFQuadStudy()
     #plot_profile()
-    benchmark()
+    #benchmark()
     #makeStatPlot()
+    plot_y()
     pass
 
 
