@@ -31,7 +31,8 @@ plotter::plotter() :
     qt_y_total  (0),
     last_npdf   (-1),
     doAiMoments (true),
-    verbose     (false)
+    ai_maarten ("ai_maarten"),
+    verbose     (true)
 {
     return;
 }
@@ -113,6 +114,9 @@ void plotter::Init(){
     // vector of weights -- for systematics
     v_wgt.clear();
     SetPDF(0);
+
+    ai_maarten.Initialize();
+
     return;
 }
 
@@ -273,6 +277,15 @@ void plotter::FillEvent(double p3[4], double p4[4], double wgt){
     //if(int(h_qt->GetEntries()+1)%int(1e6)==0) Finalise(0);
     //
     if (wgt == 0 ) return;
+    TLorentzVector lep1(p3);
+    TLorentzVector lep2(p4);
+    lep1.Print();
+    lep2.Print();
+    ai_maarten.Execute(
+            lep1.Pt(), lep1.Eta(), lep1.Phi(), 0., 13,
+            lep2.Pt(), lep2.Eta(), lep2.Phi(), 0., -13,
+            7e3, wgt
+            );
     CalculateKinematics(p3,p4);
     if (verbose){
         printf(" plotter:  histogram filling: \n");
@@ -591,6 +604,7 @@ void plotter::Finalise(double xsection){
     // close
     outf->Write();
     outf->Close();
+    ai_maarten.Finalize();
     return;
 }
 

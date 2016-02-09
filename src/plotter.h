@@ -2,6 +2,7 @@
 #define plotter_h
 
 #include "config.h"
+#include "AiMoments.h"
 
 #ifdef USEROOT
 #include <TH1D.h>
@@ -79,6 +80,8 @@ class plotter {
         std::vector<TH1D *> h_y_PDF    ;
         std::vector<TH2D *> h_qtVy_PDF ;
         TH1 * clone_PDF( TH1 *h, int npdf);
+
+        AiMoments ai_maarten;
 
 
         double verbose;
