@@ -587,7 +587,7 @@ integrand_t resintegrandMC(const int &ndim, const double x[], const int &ncomp, 
       if (iter==4){
   	double wt = weight*lowintHst0;///azloopmax;
 	hists_fill_(p[4]+1,p[3]+1,&wt);
-        //hists_AiTest_(pjet,p4cm,&m,&qt,&y,&costh_CS,&phi_lep,&phi,&wt,&lowintHst0);
+        hists_AiTest_(pjet,p4cm,&m,&qt,&y,&costh_CS,&phi_lep,&phi,&wt,&lowintHst0);
       } 
       //azloop=azloop+1;
       //}
