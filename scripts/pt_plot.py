@@ -1592,38 +1592,39 @@ def benchmark():
     blueH    = pl.ColorHTML("45A2FC")
     torquaH  = pl.ColorHTML("37FD98")
     CONF = [
-         # [   "bm0",
-         #     [ # samples
-         #         #[ "DYTURBO (pol. inter. PDF)" ,   "results_merge/benchmark_v0.1_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0.1qt0100ym55t{}_seed_outliers.root" , "h_qt" , 6],
-         #         #[ "DYTURBO (pol. inter. PDF) average" , "results_merge/benchmark_v0.2_160129" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root" , "h_qt_rebin_average" , 6],
-         #         #[ "DYTURBO (pol. inter. PDF)"         , "results_merge/benchmark_v0.2_160129" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root" , "h_qt_rebin" , 6],
-         #         #[ "DYRES-v1.0 average"                , "results_merge/Stefano_dyturbo_v1_160201"    , "{}{}.root"                                                        , "pt_rebin_average"   , torquaH],
-         #         #[ "DYRES-v1.0"                        , "results_merge/Stefano_dyturbo_v1_160201"    , "{}{}.root"                                                        , "pt_rebin"   , 4],
+         [   "bm0",
+             [ # samples
+                 #[ "DYTURBO (pol. inter. PDF)" ,   "results_merge/benchmark_v0.1_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0.1qt0100ym55t{}_seed_outliers.root" , "h_qt" , 6],
+                 #[ "DYTURBO (pol. inter. PDF) average" , "results_merge/benchmark_v0.2_160129" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root" , "h_qt_rebin_average" , 6],
+                 #[ "DYTURBO (pol. inter. PDF)"         , "results_merge/benchmark_v0.2_160129" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root" , "h_qt_rebin" , 6],
+                 #[ "DYRES-v1.0 average"                , "results_merge/Stefano_dyturbo_v1_160201"    , "{}{}.root"                                                        , "pt_rebin_average"   , torquaH],
+                 #[ "DYRES-v1.0"                        , "results_merge/Stefano_dyturbo_v1_160201"    , "{}{}.root"                                                        , "pt_rebin"   , 4],
 
-         #         #[ "DYTURBO (pol. inter. PDF) average" , "results_merge/benchmark_v0.2_160201_o2" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root" , "h_qt_rebin_average" , 6],
-         #         [ "DYTURBO (pol. inter. PDF)" , "results_merge/benchmark_v0.2_160201_o2" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root" , "h_qt_rebin" , redH],
-         #         #[ "DYRES-v1.0 average"                , "results_merge/Stefano_dyturbo_v1_160201_o2"    , "{}{}.root"                                                        , "pt_rebin_average"   , torquaH],
-         #         [ "DYRES-v1.0"                , "results_merge/Stefano_dyturbo_v1_160201_o2"    , "{}{}.root"                                                        , "pt_rebin"   , torquaH],
-         #     ],
-         #     [ # terms
-         #         [ "RES" , ["RES"],                    ["v"]     ],
-         #         [ "FIN" , ["REAL","VIRT","CT"],       ["r"]     ],
-         #         [ ""    , ["REAL","VIRT","CT","RES"], ["r","v"] ],
+                 #[ "DYTURBO (pol. inter. PDF) average" , "results_merge/benchmark_v0.2_160201_o2" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root" , "h_qt_rebin_average" , 6],
+                 #[ "DYTURBO (pol. inter. PDF)" , "results_merge/benchmark_v0.2_160201_o2" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root" , "h_qt_rebin" , redH],
+                 #[ "DYRES-v1.0 average"                , "results_merge/Stefano_dyturbo_v1_160201_o2"    , "{}{}.root"                                                        , "pt_rebin_average"   , torquaH],
+                 [ "DYTURBO (pol. inter. PDF)", "results_merge/benchmark_v0_160204_WZ"      , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root", "h_qt_rebin", redH]   ,
+                 [ "DYRES-v1.0"               , "results_merge/Stefano_dyturbo_v1_160201_o2", "{}{}.root"                                                     , "pt_rebin"  , torquaH],
+             ],
+             [ # terms
+                 [ "RES" , ["RES"],                    ["v"]     ],
+                 [ "FIN" , ["REAL","VIRT","CT"],       ["r"]     ],
+                 [ ""    , ["REAL","VIRT","CT","RES"], ["r","v"] ],
 
-         #         #[ "RES"   , ["RES"],    ["RES"]       ],
-         #         #[ "CT"   , ["CT"],    ["CT"]       ],
-         #         #[ "REAL" , ["REAL"],    ["REAL"]       ],
-         #         #[ "VIRT" , ["VIRT"],    ["VIRT"]       ],
-         #         #[ "FIN" , ["REAL","VIRT","CT"],  ["REAL","VIRT","CT"] ],
-         #         #[ "" , ["REAL","VIRT","CT","RES"],  ["REAL","VIRT","CT","RES"] ],
+                 #[ "RES"   , ["RES"],    ["RES"]       ],
+                 #[ "CT"   , ["CT"],    ["CT"]       ],
+                 #[ "REAL" , ["REAL"],    ["REAL"]       ],
+                 #[ "VIRT" , ["VIRT"],    ["VIRT"]       ],
+                 #[ "FIN" , ["REAL","VIRT","CT"],  ["REAL","VIRT","CT"] ],
+                 #[ "" , ["REAL","VIRT","CT","RES"],  ["REAL","VIRT","CT","RES"] ],
 
-         #         #[ ""    , ["REAL","VIRT","CT","RES"], ["REAL","VIRT","CT","RES"], ["r","v"], ["r","v"] ],
-         #         #[ "FIN" , ["REAL","VIRT","CT"],  ["REAL","VIRT","CT"],    ["r"],    ["r"]     ],
-         #         #[ "RES" , ["RES"], ["RES"],  ["v"],                    ["v"]     ],
+                 #[ ""    , ["REAL","VIRT","CT","RES"], ["REAL","VIRT","CT","RES"], ["r","v"], ["r","v"] ],
+                 #[ "FIN" , ["REAL","VIRT","CT"],  ["REAL","VIRT","CT"],    ["r"],    ["r"]     ],
+                 #[ "RES" , ["RES"], ["RES"],  ["v"],                    ["v"]     ],
 
-         #         #[ "RES" , ["v"],                    ["v"]     ],
-         #     ]
-         # ],
+                 #[ "RES" , ["v"],                    ["v"]     ],
+             ]
+         ],
          [   "bm1",
              [ # samples 
                  #[ "DYTURBO (num. integr. PDF)"  , "results_merge/benchmark_v1_160125"   , "dyturbo_{}_lhc7_CT10nnlo_0_bm1qt0100ym55t{}_seed_outliers.root"   , "h_qt" , blueH   ],
@@ -1653,7 +1654,7 @@ def benchmark():
     #
     procs = ["z0"] # [ "wp", "wm", "z0" ]
     #procs = [ "z0" , "wp", "wm" ]
-    projs = ["_px"] # # ["_px","_py"]
+    projs = ["_px", "_py"] # # ["_px","_py"]
     for cfg in CONF :
         bname   = cfg[0]
         samples = cfg[1]

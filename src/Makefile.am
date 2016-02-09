@@ -9,6 +9,7 @@ AM_FFLAGS =  -I$(srcdir)/../dyres -I$(srcdir)/../mcfm #-I$(srcdir)/../src
 noinst_LTLIBRARIES = libdyturbobase.la
 libdyturbobase_la_SOURCES = resintegr.C integr.C settings.C init.C finintegr.C finitemapping.C cubacall.C plotter.C switch.C cuts.C usercuts.C pdf.C printsettings.C coupling.C
 libdyturbobase_la_SOURCES += flavreduce.f gaussinit.f rescinit.f pdfmoments.f
+libdyturbobase_la_SOURCES += AiMoments.cxx TLVUtils.cxx
 
 lib_LTLIBRARIES = libdyturbo.la
 libdyturbo_la_SOURCES =
