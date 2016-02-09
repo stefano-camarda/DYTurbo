@@ -44,6 +44,7 @@ gpar=1
 tarbalfile=unset
 seedlist=unset
 
+queue=atlasshort
 prepare_script(){
     mkdir -p $batch_script_dir
     mkdir -p $result_dir
@@ -54,9 +55,9 @@ prepare_script(){
     # prepare in
     prepare_in
     # prepare script
-    nprocessors=$(($cubacores+1))
+    nprocessors=$cubacores
+    [[ $cubacores == 0 ]] && nprocessors=1
     walltime=5:00
-    queue=atlasshort
     if [[ $program =~ dyres ]] || [[ $variation =~ all ]]
     then
         walltime=20:00
@@ -233,6 +234,8 @@ prepare_in(){
             s|SETMHI|$himass|g               ;
             s|SETRMASS|$rmass|g              ;
             s|SETWIDTH|$width|g              ;
+            s|SETMUR|$rmass|g              ;
+            s|SETMUF|$rmass|g              ;
             s|SETNPROC|$nproc|g              ;
             s|SETPDFSET|$pdfsetname|g        ;
             s|SETMEMBER|$member|g            ;
@@ -552,6 +555,7 @@ submit_allProg(){
         DRYRUN=
     fi
     # full phase space
+    queue=atlasshort
     loqtbin=0
     hiqtbin=100
     loybin=0
@@ -569,7 +573,7 @@ submit_allProg(){
     batch_template=$dyturbo_project/scripts/run_DYTURBO_Array_TMPL.sh
     for program in dyturbo #  dyturbo dyres mcfm
     do
-        for process in wm # wp wm z0
+        for process in wp wm z0 # wp wm z0
         do
             makelepcuts=false
             #if [[ $process =~ z0 ]]; then makelepcuts=true; fi
@@ -579,19 +583,20 @@ submit_allProg(){
                 pdfset=CT10nlo
                 if [[ $order == 2 ]]; then pdfset=ZPT-CT10; fi;
                 if [[ $order == 3 ]]; then pdfset=WZZPT-CT10; order=2; fi;
+                pdfset=CT10nlo
                 # set terms
                 termlist="ALL"
                 if [[ $program =~ ^dyturbo ]] 
                 then
                     cubacores=8
                     #termlist="RES CT LO"
-                    #if [[ $order == 2 ]]; then termlist="RES CT REAL VIRT"; fi;
+                    if [[ $order == 2 ]]; then termlist="RES CT REAL VIRT"; fi;
                     #if [[ $order == 2 ]]; then termlist="REAL"; fi;
-                    termlist="RES3D CT3D"
+                    #termlist="RES3D CT3D"
                     #if [[ $order == 2 ]]; then termlist="RES3D CT3D REAL VIRT"; fi;
-                    if [[ $order == 2 ]]; then termlist="VIRT"; fi;
-                    if [[ $order == 2 ]]; then termlist="RES3D"; fi;
-                    termlist="RES3D"
+                    #if [[ $order == 2 ]]; then termlist="VIRT"; fi;
+                    #if [[ $order == 2 ]]; then termlist="RES3D"; fi;
+                    #termlist="RES3D"
                 fi
                 if [[ $program =~ ^dyres ]] 
                 then
@@ -608,21 +613,23 @@ submit_allProg(){
                 fi
                 for terms in $termlist
                 do
+                    seedlist=1010
+                    #seedlist=1010-1110
                     # run all pdf variations at once
                     if [[ $terms =~ REAL ]]
                     then
                         variation=all
                         #seedlist=1010
                         # you need two because of array size
-                        seedlist=1010-1510
-                        seedlist=1510-2010
+                        #seedlist=1010-1510
+                        #seedlist=1510-2010
+                        seedlist=1010-1020
                     fi
                     if [[ $terms =~ VIRT ]]
                     then
                         variation=all
-                        #seedlist=1010
-                        seedlist=1010-1110
                     fi
+                    variation=0
                     # for qt/y splits
                     NsplitQT=1
                     NsplitY=1
@@ -713,24 +720,6 @@ submit_grid(){
     finalize_grid_submission
 }
 
-
-
-clear_files(){
-    echo "Clearing setup files"
-    if [[ $(bjobs 2> /dev/null) ]] 
-    then
-        echo There are jobs running, skip clearing
-        #rm -f scripts/batch_scripts/*.sh
-        #rm -f scripts/infiles/*.in
-    else
-        rm -f scripts/batch_scripts/*.sh
-        rm -f scripts/infiles/*.in
-    fi
-    rm -f scripts/infiles/*.tar
-    rm -f scripts/infiles/*.tar.gz
-    echo "Done"
-}
-
 submit_Benchmark(){
     # ask about running/submitting
     DRYRUN=echo 
@@ -753,7 +742,7 @@ submit_Benchmark(){
     fulllhiybin=5
     # benchmark dependence 
     benchmark=2
-    for benchmark in 0 1 2 # 0 1 2
+    for benchmark in 1 2 # 0 1 2
     do
         dyturbo_in_tmpl=$dyturbo_project/scripts/DYTURBO_bench_v$benchmark.in
         #termlist="RES CT REAL1 REAL2 VIRT"
@@ -761,7 +750,7 @@ submit_Benchmark(){
         NsplitQT=1
         NsplitY=1
         [[ $benchmark == 2 ]] && termlist="RES3D CT3D" && NsplitQT=10 && NsplitY=10 
-        for process in wm wp z0 # wp wm z0
+        for process in wm wp # wp wm z0
         do
             makelepcuts=false
             [[ $process =~ z0 ]] &&  makelepcuts=true
@@ -796,6 +785,24 @@ submit_Benchmark(){
     done
 }
 
+
+
+clear_files(){
+    echo "Clearing setup files"
+    if [[ $(bjobs 2> /dev/null) ]] 
+    then
+        echo There are jobs running, skip clearing
+        #rm -f scripts/batch_scripts/*.sh
+        #rm -f scripts/infiles/*.in
+    else
+        rm -f scripts/batch_scripts/*.sh
+        rm -f scripts/infiles/*.in
+    fi
+    rm -f scripts/infiles/*.tar
+    rm -f scripts/infiles/*.tar.gz
+    echo "Done"
+}
+
 clear_results(){
     read -p "Are you sure you want to delete all current results ? " -n 1 -r
     echo    # (optional) move to a new line
@@ -810,8 +817,8 @@ clear_results(){
 clear_files
 clear_results
 #submit_Z_dyturbo
-#submit_allProg
+submit_allProg
 #submit_Wwidth
 #submit_grid
-submit_Benchmark
+#submit_Benchmark
 
