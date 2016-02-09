@@ -26,9 +26,9 @@ bool AiMoments::Execute(double pt1, double eta1, double phi1, double m1, int typ
   lep1.SetPtEtaPhiM(pt1, eta1, phi1, m1);
   lep2.SetPtEtaPhiM(pt2, eta2, phi2, m2);
   boson = lep1 + lep2;
-  printf(" ai maarten lep1 "); lep1.Print();
-  printf(" ai maarten lep2 "); lep2.Print();
-  printf(" ai maarten VB   "); boson.Print();
+  //printf(" ai maarten lep1 "); lep1.Print();
+  //printf(" ai maarten lep2 "); lep2.Print();
+  //printf(" ai maarten VB   "); boson.Print();
 
   //if (boson.Pt() <  pt_low) return false;
   //if (boson.Pt() >= pt_hgh) return false;
@@ -37,7 +37,7 @@ bool AiMoments::Execute(double pt1, double eta1, double phi1, double m1, int typ
 
   double costhcs, phics; vector<double> aimomcs;  
   Utils::getCSFAngles(lep1, ((type1>0) ? -1 : 1), lep2, ebeam, costhcs, phics, &aimomcs);
-  printf(" ai maarten costh %f phi %f \n", costhcs, phics);
+  //printf(" ai maarten costh %f phi %f \n", costhcs, phics);
 
   //Z Direction (ZD)
 
