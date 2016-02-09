@@ -8,19 +8,14 @@ muf          = 91.1876e0      # mur, muf
 a_param      = 2.0e0          # a_param
 g_param      = 1.0e0          # g_param
 order        = 2              # order
-part         = tota           # part
 zerowidth    = false          # zerowidth
 rseed        = 123456         # rseed
 LHAPDFset    = CT10nnlo
 LHAPDFmember = 0              # set, member (LHAPDFs)
-outputfile   = default        # outputfile
 
 
 # DYTURBO settings
 # Z
-# resonance mass and width (used for breit wigner unweighting)
-rmass  = 91.1876
-rwidth = 2.495
 # include virtual photon
 useGamma = false
 # Set boundaries of integration
@@ -30,15 +25,11 @@ mlow  = 66.
 mhigh = 116.
 
 #  # W
-#  # resonance mass and width (used for breit wigner unweighting)
-#  rmass = 80.385;
-#  rwidth = 2.091;
 #  # Set boundaries of integration
 #  ylow = -5.;
 #  yhigh = 5.;
 #  mlow = 10.;
 #  mhigh = 1000.;
-
 
 # dimension of integration
 intDimRes = 4

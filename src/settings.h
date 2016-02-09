@@ -64,12 +64,10 @@ public:
   double a_param      ;
   double g_param      ;
   int    order        ;
-  string part         ;
   bool   zerowidth    ;
   int    rseed        ;
   string LHAPDFset    ;
   int    LHAPDFmember ;
-  string outputfile   ;
 
   //resonance mass and width (used for breit wigner unweighting)
   double rmass, rwidth;

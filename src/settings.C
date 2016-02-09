@@ -21,15 +21,11 @@ void settings::readfromfile(const string fname){
     a_param        = in.GetNumber ( "a_param"        ); //2.0e0          # a_param
     g_param        = in.GetNumber ( "g_param"        ); //1.0e0          # g_param
     order          = in.GetNumber ( "order"          ); //1              # order
-    part           = in.GetString ( "part"           ); //virt           # part
     zerowidth      = in.GetBool   ( "zerowidth"      ); //false          # zerowidth
     rseed          = in.GetNumber ( "rseed"          ); //123456         # rseed
     LHAPDFset      = in.GetString ( "LHAPDFset"      ); //CT10nlo.LHgrid
     LHAPDFmember   = in.GetNumber ( "LHAPDFmember"   ); //0              # set,        member   (LHAPDFs)
-    outputfile     = in.GetString ( "outputfile"     ); //'LHC7-Z-nnlo'  # outputfile
 
-    rmass              = in.GetNumber ( "rmass"           ); //91.1876
-    rwidth             = in.GetNumber ( "rwidth"          ); //2.495
     ylow               = in.GetNumber ( "ylow"            ); //2
     yhigh              = in.GetNumber ( "yhigh"           ); //2.4
     mlow               = in.GetNumber ( "mlow"            ); //66.
@@ -87,15 +83,39 @@ void settings::readfromfile(const string fname){
     yrule              = in.GetNumber ( "yrule" );
 
     // additional conditions
-    // finite order (NLO vs NNLO)
-    if (opts.doLO     && opts.order != 1) throw invalid_argument( "You are trying to run LO term calculation, but order is not 1. Check your input file.") ;
-    if (opts.doREAL   && opts.order != 2) throw invalid_argument( "You are trying to run REAL term calculation, but order is not 2. Check your input file.") ;
-    if (opts.doVIRT   && opts.order != 2) throw invalid_argument( "You are trying to run VIRT term calculation, but order is not 2. Check your input file.") ;
     if (order != 1 && order != 2)
       throw invalid_argument("Invalid order, please select 1 (NLO) or 2 (NNLO)");
     if (nproc != 1 && nproc != 2 && nproc != 3)
       throw invalid_argument("Wrong process, please select nproc = 1, 2, or 3");
-    
+
+    // finite order (NLO vs NNLO)
+    /*
+    if (opts.doLO     && opts.order != 1) throw invalid_argument( "You are trying to run LO term calculation, but order is not 1. Check your input file.") ;
+    if (opts.doREAL   && opts.order != 2) throw invalid_argument( "You are trying to run REAL term calculation, but order is not 2. Check your input file.") ;
+    if (opts.doVIRT   && opts.order != 2) throw invalid_argument( "You are trying to run VIRT term calculation, but order is not 2. Check your input file.") ;
+    */
+
+    if (order != 1)
+      opts.doLO = false;
+    if (order != 2)
+      {
+	opts.doREAL = false;
+	opts.doVIRT = false;
+      }
+    //Asked for fixed order predictions, switching off resummation term
+    if (fixedorder == true)
+      doRES = false;
+    //Asked for resummed predictions, switching off double virtual term
+    if (fixedorder == false)
+      doVV = false;
+    //In fixed order mode, a_param must be one
+    if (fixedorder == true)
+      {
+	cout << "Asked for fixed order predictions, enforce a_param = 1.0" << endl;
+	a_param = 1.0;
+      }
+
+		   
     // resummation term integration dimension
     if (intDimRes<4 && intDimRes>1){
         resint2d = (intDimRes == 2);
@@ -126,21 +146,6 @@ void settings::readfromfile(const string fname){
 	resintvegas = true;
       }
 
-    if (fixedorder == true && doRES == true)
-      {
-	cout << "Asked for fixed order predictions, switching off resummation term" << endl;
-	doRES = false;
-      }
-    if (fixedorder == false && doVV == true)
-      {
-	cout << "Asked for resummed predictions, switching off double virtual term" << endl;
-	doVV = false;
-      }
-    if (fixedorder == true)
-      {
-	cout << "Asked for fixed order predictions, enforce a_param = 1.0" << endl;
-	a_param = 1.0;
-      }
     return ;
 }
 
@@ -157,8 +162,6 @@ void settings::initDyresSettings(){
     nnlo_        . order_     = order        ;         //1              # order
     zerowidth_   . zerowidth_ = zerowidth    ;         //false          # zerowidth
 
-    strncpy( part_        . part_      , part         .c_str(), part       .size() ); //virt           # part
-
     zcouple_ . q1_ = (useGamma ? -1 :  0 );
 
     dofill_.doFill_ = 0;
@@ -168,7 +171,7 @@ void settings::dumpAll(){
     printf("==Listing settings==\n");
     bool print_inputs = true;
     bool print_inputsDYRES = true;
-    bool print_masses = false;
+    bool print_masses = true;
 
     if (print_inputsDYRES) {
         printf("Input DYRES settings:\n");
@@ -181,7 +184,6 @@ void settings::dumpAll(){
         dumpD ( "a_param     ",  a_param_     . a_param_    ) ;
         dumpD ( "g_param     ",  g_param_     . g_param_    ) ;
         dumpI ( "order       ",  nnlo_        . order_      ) ;
-        dumpS ( "part        ",  part_        . part_       ) ;
         dumpB ( "zerowidth   ",  zerowidth_   . zerowidth_  ) ;
     }
 
@@ -190,8 +192,6 @@ void settings::dumpAll(){
         dumpS("LHAPDFset          ", LHAPDFset           );
         dumpI("LHAPDFmember       ", LHAPDFmember        );
         dumpI("rseed              ", rseed               );
-        dumpD("rmass              ", rmass               );
-        dumpD("rwidth             ", rwidth              );
         dumpD("ylow               ", ylow                );
         dumpD("yhigh              ", yhigh               );
         dumpD("mlow               ", mlow                );

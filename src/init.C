@@ -13,6 +13,7 @@
 
 #include <math.h>
 #include <iostream>
+#include <cstring>
 
 map <int,string> plabel;
 
@@ -84,15 +85,23 @@ void SMparameters()
 void dyturboinit()
 {
   //move here the flaq.eq.0 initialisation part of resumm() in main2 instead of using this initialisation flag
+
+  //Cut on qt/Q (add to settings)
+  qtcut_.xqtcut_=0.008;
+
+  //initialise MCFM settings
   flag_.flag_ = false;
 
   noglue_.noglue_=false;
   noglue_.ggonly_=false;
   noglue_.gqonly_=false;
 
+  string part = "tota";
+  strncpy(part_.part_ , part.c_str(), part.size());
+
   colc_.colourchoice_=0;
   double rtsmin = 40;
-  cutoff_.cutoff_=0.001; //add to settings (what is this cutoff?)
+  cutoff_.cutoff_=0.001; //add to settings (this is a cut off in mcfm on invariant mass pairs between emitted and radiator)
 
   flags_.qflag_=true;
   flags_.gflag_=true;
@@ -107,16 +116,10 @@ void dyturboinit()
   // Dynamic scale (if true muf=mur=q)
   dynamicscale_.dynamicscale_=false;
 
-  bool removebr=false;
-
   //Set all factorization scales to facscale
   //to avoid problems when dynamicscale=.false.
   for (int nd =0; nd <= 40; nd++)
     dipolescale_.dipscale_[nd]=facscale_.facscale_;
-
-  //Cut on qt/Q
-  //(add to settings)
-  qtcut_.xqtcut_=0.008;
 
   //Limits on invariant mass of vector boson decay products
   //(irrelevant if zerowidth=true)
@@ -144,6 +147,7 @@ void dyturboinit()
     }
 
   //the default behaviour is to remove no branching ratio
+  bool removebr=false;
   brnrat_.brnrat_=1.;
 
   //branching ratios
@@ -158,8 +162,10 @@ void dyturboinit()
       plabel[5]="pp";
       plabel[6]="pp";
       nwz_.nwz_=1;
-      breit_.mass3_=dymasses_.wmass_;
-      breit_.width3_=dymasses_.wwidth_;
+      breit_.mass3_= dymasses_.wmass_;
+      breit_.width3_= dymasses_.wwidth_;
+      opts.rmass = dymasses_.wmass_;
+      opts.rwidth = dymasses_.wwidth_;
       if (removebr)
         brnrat_.brnrat_=brwen;
       
@@ -174,6 +180,8 @@ void dyturboinit()
       nwz_.nwz_=-1;
       breit_.mass3_=dymasses_.wmass_;
       breit_.width3_=dymasses_.wwidth_;
+      opts.rmass = dymasses_.wmass_;
+      opts.rwidth = dymasses_.wwidth_;
       if (removebr)
         brnrat_.brnrat_=brwen;
     }
@@ -186,6 +194,8 @@ void dyturboinit()
       nwz_.nwz_=0;
       breit_.mass3_=dymasses_.zmass_;
       breit_.width3_=dymasses_.zwidth_;
+      opts.rmass = dymasses_.zmass_;
+      opts.rwidth = dymasses_.zwidth_;
 
       zcouple_.l1_=zcouple_.le_;
       zcouple_.r1_=zcouple_.re_;
