@@ -148,7 +148,7 @@ def readinput(fname="") :
 if __name__ == '__main__' :
     commands,names,seedslist = readinput("scripts/cmd_list")
     ##testing = [ "echo test {} ".format(x) for x in range(0,30)]
-    run_all_command(commands, names, seedslist, 3)
+    run_all_command(commands, names, seedslist, 4)
     pass
 
 

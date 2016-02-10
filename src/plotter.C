@@ -31,7 +31,7 @@ plotter::plotter() :
     qt_y_total  (0),
     last_npdf   (-1),
     doAiMoments (true),
-    ai_maarten ("ai_maarten"),
+    //ai_maarten ("ai_maarten"),
     verbose     (false)
 {
     return;
@@ -54,6 +54,10 @@ plotter::~plotter(){
         for (auto ipp=0; ipp<NMOM; ipp++){
             delete p_qtVy_A[ipp];
             p_qtVy_A[ipp]=NULL;
+            delete p_qt_A[ipp];
+            p_qt_A[ipp]=NULL;
+            delete p_qt_A[ipp];
+            p_y_A[ipp]=NULL;
         }
         if(!h_costh   ) delete h_costh   ;
         if(!h_phi     ) delete h_phi     ;
@@ -80,8 +84,10 @@ void plotter::Init(){
     qt_y_virt  = new TH2D ( "qt_y_virt"  ,"qt_y_virt"  , qt_n, qt_array, y_n, y_array );
     qt_y_total = new TH2D ( "qt_y_total" ,"qt_y_total" , qt_n, qt_array, y_n, y_array );
     // differential qt-y binning
-    double bins_qt [] = {50., 0., 100.};
+    double bins_qt [] = {200., 0., 100.};
     double bins_y  [] = {25., 0., 5.};
+    vector<double> bins_prof_qt = { 0, 2.5, 5.0, 8.0, 11.4, 14.9, 18.5, 22.0, 25.5, 29.0, 32.6, 36.4, 40.4, 44.9, 50.2, 56.4, 63.9, 73.4, 85.4, 105.0, 132.0, 173.0, 253.0, 600.0 };
+
     // differential xsection and ai profiles
     h_qt      = new TH1D        ("h_qt"     , "VB qt"   , bins_qt [0] , bins_qt [1] , bins_qt [2] );
     h_y       = new TH1D        ("h_y"      , "VB y"    , bins_y  [0] , bins_y  [1] , bins_y  [2] );
@@ -94,8 +100,14 @@ void plotter::Init(){
             TString title = "A";
             title+= i;
             title+= " qtVy";
-            //p_qtVy_A[i] = new TProfile2D(name.Data(), title.Data(), bins_qt [0] , bins_qt [1] , bins_qt [2] ,  bins_y [0] , bins_y[1] , bins_y[2] );
-            p_qtVy_A[i] = new TProfile(name.Data(), title.Data(), bins_qt [0] , bins_qt [1] , bins_qt [2]);
+            p_qtVy_A[i] = new TProfile2D(name.Data(), title.Data(), bins_qt [0] , bins_qt [1] , bins_qt [2] ,  bins_y [0] , bins_y[1] , bins_y[2] );
+            name = "p_qt_A"; name+=i;
+            title= "A"; title+=i; title=" qt";
+            p_qt_A[i] = new TProfile(name.Data(), title.Data(), bins_prof_qt.size()-1, &bins_prof_qt[0] );
+            //
+            name = "p_y_A"; name+=i;
+            title= "A"; title+=i; title=" y";
+            p_y_A[i] = new TProfile(name.Data(), title.Data(),   bins_y [0] , bins_y[1] , bins_y[2] );
         }
         h_costh       = new TH1D        ("h_costh"      , "VB costh"    , 100, -1,1 );
         h_phi         = new TH1D        ("h_phi"        , "VB phi"      , 100, 0,TMath::TwoPi() );
@@ -116,7 +128,7 @@ void plotter::Init(){
     v_wgt.clear();
     SetPDF(0);
 
-    ai_maarten.Initialize();
+    //ai_maarten.Initialize();
 
     return;
 }
@@ -244,8 +256,9 @@ void plotter::FillRealDipole(double p3[4], double p4[4], double wgt, int nd){
     point.fid   = decide_fiducial(p3,p4);
     dipole_points.push_back(point);
     // fill moments
-    //if(doAiMoments) for (auto i=0; i<NMOM; i++) p_qtVy_A[i]->Fill(qt,y,a[i],wgt);
-    if(doAiMoments) for (auto i=0; i<NMOM; i++) p_qtVy_A[i]->Fill(qt,a[i],wgt);
+    if(doAiMoments) for (auto i=0; i<NMOM; i++) p_qtVy_A[i]->Fill(qt,y,a[i],wgt);
+    if(doAiMoments) for (auto i=0; i<NMOM; i++) p_qt_A[i]->Fill(qt,a[i],wgt);
+    if(doAiMoments) for (auto i=0; i<NMOM; i++) p_y_A[i]->Fill(qt,a[i],wgt);
     return;
 }
 
@@ -279,17 +292,17 @@ void plotter::FillEvent(double p3[4], double p4[4], double wgt){
     //if(int(h_qt->GetEntries()+1)%int(1e6)==0) Finalise(0);
     //
     if (wgt == 0 ) return;
-    TLorentzVector lep1(p3);
-    TLorentzVector lep2(p4);
-    if (verbose){
-        lep1.Print();
-        lep2.Print();
-    }
-    ai_maarten.Execute(
-            lep1.Pt(), lep1.Eta(), lep1.Phi(), 0., 13,
-            lep2.Pt(), lep2.Eta(), lep2.Phi(), 0., -13,
-            7e3, wgt
-            );
+    // TLorentzVector lep1(p3);
+    // TLorentzVector lep2(p4);
+    // if (verbose){
+    //     lep1.Print();
+    //     lep2.Print();
+    // }
+    // ai_maarten.Execute(
+    //         lep1.Pt(), lep1.Eta(), lep1.Phi(), 0., 13,
+    //         lep2.Pt(), lep2.Eta(), lep2.Phi(), 0., -13,
+    //         7e3, wgt
+    //         );
     CalculateKinematics(p3,p4);
     if (verbose){
         printf(" plotter:  histogram filling: \n");
@@ -303,8 +316,9 @@ void plotter::FillEvent(double p3[4], double p4[4], double wgt){
     h_y       ->Fill( y         ,wgt);
     h_qtVy    ->Fill( qt,y      ,wgt);
     if(doAiMoments){
-        //for (int i=0;i<NMOM;i++) p_qtVy_A[i] ->Fill( qt,y,a[i] ,wgt);
-        for (int i=0;i<NMOM;i++) p_qtVy_A[i] ->Fill( qt,a[i] ,wgt);
+        for (int i=0;i<NMOM;i++) p_qtVy_A[i] ->Fill( qt,y,a[i] ,wgt);
+        for (int i=0;i<NMOM;i++) p_qt_A[i] ->Fill( qt,a[i] ,wgt);
+        for (int i=0;i<NMOM;i++) p_y_A[i] ->Fill( y,a[i] ,wgt);
         h_costh   ->Fill( costh                    ,wgt);
         h_phi     ->Fill( TVector2::Phi_0_2pi(phi) ,wgt);
         h_phi_lep ->Fill( phi_lep                  ,wgt);
@@ -595,6 +609,8 @@ void plotter::Finalise(double xsection){
     }
     if(doAiMoments){
         for (auto pp : p_qtVy_A) pp->Write();
+        for (auto pp : p_qt_A) pp->Write();
+        for (auto pp : p_y_A) pp->Write();
         h_costh   -> Write();
         h_phi     -> Write();
         h_phi_lep -> Write();
@@ -609,7 +625,7 @@ void plotter::Finalise(double xsection){
     // close
     outf->Write();
     outf->Close();
-    ai_maarten.Finalize();
+    //ai_maarten.Finalize();
     return;
 }
 
@@ -640,6 +656,6 @@ void hists_real_event_(){ return; }
 void hists_fill_pdf_(double p3[4], double p4[4], double *weight, int *npdf){ return; }
 void hists_real_dipole_pdf_(double p3[4], double p4[4], double *weight,int *nd, int *npdf){ return; }
 void hists_real_event_pdf_(int* npdf){ return; }
-void hists_AiTest_(double* pcosthCS, double* pphiCS) {return};
+yid hists_AiTest_(double* pcosthCS, double* pphiCS) {return};
 
 #endif //USEROOT
