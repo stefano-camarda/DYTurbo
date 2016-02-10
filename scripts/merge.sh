@@ -201,7 +201,8 @@ merge_stefano(){
     DRYRUN=
     #
     indir=results_Stefano/
-    outdir=results_merge/Stefano_dyturbo_v1_160201_o2
+    #outdir=results_merge/Stefano_dyturbo_v1_160201_o2
+    outdir=results_merge/Stefano_dyturbo_v1_160204_WZ
     mkdir -p $outdir
 
     for proc in Wp Wm Z
@@ -321,7 +322,7 @@ merge_benchmark_all(){
 
 #merge_cubatures
 #merge_benchmark
-merge_benchmark_all
-#merge_stefano
+#merge_benchmark_all
+merge_stefano
 
 exit 0
