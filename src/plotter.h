@@ -2,7 +2,7 @@
 #define plotter_h
 
 #include "config.h"
-#include "AiMoments.h"
+//#include "AiMoments.h"
 
 #ifdef USEROOT
 #include <TH1D.h>
@@ -54,8 +54,9 @@ class plotter {
         TH2D * h_qtVy;
         // profiles
         bool doAiMoments;
-        //TProfile2D * p_qtVy_A[NMOM];
-        TProfile * p_qtVy_A[NMOM];
+        TProfile2D * p_qtVy_A[NMOM];
+        TProfile * p_qt_A[NMOM];
+        TProfile * p_y_A[NMOM];
         // final results
         TH2D* qt_y_resum ;
         TH2D* qt_y_ct    ;
@@ -83,7 +84,7 @@ class plotter {
         std::vector<TH2D *> h_qtVy_PDF ;
         TH1 * clone_PDF( TH1 *h, int npdf);
 
-        AiMoments ai_maarten;
+        //AiMoments ai_maarten;
 
 
         double verbose;

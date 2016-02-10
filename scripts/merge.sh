@@ -259,7 +259,7 @@ merge_benchmark_all(){
     DRYRUN=echo 
     DRYRUN=
     #
-    resdir=/etapfs03/atlashpc/cuth/DYTURBO_PROD
+    resdir=/home/cuth/work/unimainz/ATLAS/workarea/DYTURBO/
     qtymerge=qt010y01
     #
     rm -f mergeconf
@@ -267,23 +267,27 @@ merge_benchmark_all(){
     #echo  " z0 bm1          {REAL,VIRT}  $resdir/dyturbo-0.9.6/results_benchmark1 bm0 10105 benchmark_v0_160204_WZ " >> mergeconf
     #echo  " z0 bm1          {REAL,VIRT}  $resdir/dyturbo-0.9.6/results_benchmark1 bm1 10105 benchmark_v1_160204_WZ " >> mergeconf
     #echo  " z0 bm1          {REAL,VIRT}  $resdir/dyturbo-0.9.6/results_benchmark1 bm2 10105 benchmark_v2_160204_WZ " >> mergeconf
-    echo " z0 bm0          {REAL,VIRT}  $resdir/dyturbo-0.9.6.2/results_bm0_WZREALVIRT          bm0 11105 benchmark_v0_160204_WZ " >> mergeconf
-    echo " z0 bm0          {REAL,VIRT}  $resdir/dyturbo-0.9.6.2/results_bm0_WZREALVIRT          bm1 11105 benchmark_v1_160204_WZ " >> mergeconf
-    echo " z0 bm0          {REAL,VIRT}  $resdir/dyturbo-0.9.6.2/results_bm0_WZREALVIRT          bm2 11105 benchmark_v2_160204_WZ " >> mergeconf
-    echo  " z0 bm0          {RES,CT}     $resdir/results_wrongMURMUF_for_WpWm     bm0 11105 benchmark_v0_160204_WZ " >> mergeconf
-    echo  " z0 bm1          {RES,CT}     $resdir/results_wrongMURMUF_for_WpWm     bm1 11105 benchmark_v1_160204_WZ " >> mergeconf
-    echo  " z0 bm2$qtymerge {RES3D,CT3D} $resdir/results_wrongMURMUF_for_WpWm     bm2 10100 benchmark_v2_160204_WZ " >> mergeconf
+    #echo " z0 bm0          {REAL,VIRT}  $resdir/dyturbo-0.9.6.2/results_bm0_WZREALVIRT          bm0 11105 benchmark_v0_160204_WZ " >> mergeconf
+    #echo " z0 bm0          {REAL,VIRT}  $resdir/dyturbo-0.9.6.2/results_bm0_WZREALVIRT          bm1 11105 benchmark_v1_160204_WZ " >> mergeconf
+    #echo " z0 bm0          {REAL,VIRT}  $resdir/dyturbo-0.9.6.2/results_bm0_WZREALVIRT          bm2 11105 benchmark_v2_160204_WZ " >> mergeconf
+    #echo  " z0 bm0          {RES,CT}     $resdir/results_wrongMURMUF_for_WpWm     bm0 11105 benchmark_v0_160204_WZ " >> mergeconf
+    #echo  " z0 bm1          {RES,CT}     $resdir/results_wrongMURMUF_for_WpWm     bm1 11105 benchmark_v1_160204_WZ " >> mergeconf
+    #echo  " z0 bm2$qtymerge {RES3D,CT3D} $resdir/results_wrongMURMUF_for_WpWm     bm2 10100 benchmark_v2_160204_WZ " >> mergeconf
 
     # wpm
-    echo  " w{p,m} bm0          VIRT         $resdir/dyturbo-0.9.6.2/results_bm012_WpWm     bm0 11105 benchmark_v0_160204_WZ " >> mergeconf
-    echo  " w{p,m} bm0          VIRT         $resdir/dyturbo-0.9.6.2/results_bm012_WpWm     bm1 11105 benchmark_v1_160204_WZ " >> mergeconf
-    echo  " w{p,m} bm0          VIRT         $resdir/dyturbo-0.9.6.2/results_bm012_WpWm     bm2 11105 benchmark_v2_160204_WZ " >> mergeconf
-    echo " w{p,m} bm0          REAL         $resdir/dyturbo-0.9.6.2/results_bm0_WZREALVIRT bm0 11105 benchmark_v0_160204_WZ " >> mergeconf
-    echo " w{p,m} bm0          REAL         $resdir/dyturbo-0.9.6.2/results_bm0_WZREALVIRT bm1 11105 benchmark_v1_160204_WZ " >> mergeconf
-    echo " w{p,m} bm0          REAL         $resdir/dyturbo-0.9.6.2/results_bm0_WZREALVIRT bm2 11105 benchmark_v2_160204_WZ " >> mergeconf
-    echo  " w{p,m} bm0          {RES,CT}     $resdir/dyturbo-0.9.6.2/results_bm0_WpmRESCT   bm0 11105 benchmark_v0_160204_WZ " >> mergeconf
-    echo  " w{p,m} bm1          {RES,CT}     $resdir/dyturbo-0.9.6.2/results_bm012_WpWm     bm1 11105 benchmark_v1_160204_WZ " >> mergeconf
-    echo  " w{p,m} bm2$qtymerge {RES3D,CT3D} $resdir/dyturbo-0.9.6.2/results_bm012_WpWm     bm2 10100 benchmark_v2_160204_WZ " >> mergeconf
+    #echo  " w{p,m} bm0          VIRT         $resdir/dyturbo-0.9.6.2/results_bm012_WpWm     bm0 11105 benchmark_v0_160204_WZ " >> mergeconf
+    #echo  " w{p,m} bm0          VIRT         $resdir/dyturbo-0.9.6.2/results_bm012_WpWm     bm1 11105 benchmark_v1_160204_WZ " >> mergeconf
+    #echo  " w{p,m} bm0          VIRT         $resdir/dyturbo-0.9.6.2/results_bm012_WpWm     bm2 11105 benchmark_v2_160204_WZ " >> mergeconf
+    #echo " w{p,m} bm0          REAL         $resdir/dyturbo-0.9.6.2/results_bm0_WZREALVIRT bm0 11105 benchmark_v0_160204_WZ " >> mergeconf
+    #echo " w{p,m} bm0          REAL         $resdir/dyturbo-0.9.6.2/results_bm0_WZREALVIRT bm1 11105 benchmark_v1_160204_WZ " >> mergeconf
+    #echo " w{p,m} bm0          REAL         $resdir/dyturbo-0.9.6.2/results_bm0_WZREALVIRT bm2 11105 benchmark_v2_160204_WZ " >> mergeconf
+    #echo  " w{p,m} bm0          {RES,CT}     $resdir/dyturbo-0.9.6.2/results_bm0_WpmRESCT   bm0 11105 benchmark_v0_160204_WZ " >> mergeconf
+    #echo  " w{p,m} bm1          {RES,CT}     $resdir/dyturbo-0.9.6.2/results_bm012_WpWm     bm1 11105 benchmark_v1_160204_WZ " >> mergeconf
+    #echo  " w{p,m} bm2$qtymerge {RES3D,CT3D} $resdir/dyturbo-0.9.6.2/results_bm012_WpWm     bm2 10100 benchmark_v2_160204_WZ " >> mergeconf
+
+    #
+    echo  " {z0,wp,wm} qt {RES,CT,REAL,VIRT}  results qt 1010 aimoments_test_160209 " >> mergeconf
+
 
 
 
@@ -309,7 +313,7 @@ merge_benchmark_all(){
             #echo
         done
     done < mergeconf > mergeout 2>&1
-
+    echo " output written in mergeout"
 }
 
 

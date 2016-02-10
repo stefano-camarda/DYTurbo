@@ -306,9 +306,13 @@ add_to_tarbal(){
 }
 
 submit_job(){
+    echo $job_name $sh_file $seedlist  >> scripts/cmd_list
     if [[ `hostname` =~ cuth-dell  ]]
     then
         $DRYRUN bash -x $sh_file
+    elif [[ `hostname` =~ precision  ]]
+    then
+        true
     else
         if [ -a results/$job_name.root ]
         then
@@ -557,14 +561,15 @@ submit_allProg(){
     # full phase space
     queue=etapshort
     loqtbin=0
-    hiqtbin=100
+    #hiqtbin=100
+    hiqtbin=600
     loybin=0
     hiybin=5
     fulllloqtbin=$loqtbin
     fulllhiqtbin=$hiqtbin
     fulllloybin=$loybin
     fulllhiybin=$hiybin
-    collider=lhc7
+    collider=lhc8
     random_seed=100101
     startSeed=100201
     variation=0
@@ -573,11 +578,11 @@ submit_allProg(){
     batch_template=$dyturbo_project/scripts/run_DYTURBO_Array_TMPL.sh
     for program in dyturbo #  dyturbo dyres mcfm
     do
-        for process in wp wm z0 # wp wm z0
+        for process in z0 # wp wm z0
         do
             makelepcuts=false
             #if [[ $process =~ z0 ]]; then makelepcuts=true; fi
-            for order in 3 # 3
+            for order in 1 2 # 3
             do
                 # set PDF ?
                 pdfset=CT10nlo
@@ -585,7 +590,7 @@ submit_allProg(){
                 if [[ $order == 3 ]]; then pdfset=WZZPT-CT10; order=2; fi;
                 pdfset=CT10nlo
                 # set terms
-                termlist="ALL"
+                termlist="RES CT LO"
                 if [[ $program =~ ^dyturbo ]] 
                 then
                     cubacores=8
@@ -651,7 +656,7 @@ submit_allProg(){
                             hiqtbin=` splitedBin $fulllloqtbin $fulllhiqtbin $NsplitQT $iqt 1`
                             loybin=`  splitedBin $fulllloybin  $fulllhiybin  $NsplitY  $iy  0`
                             hiybin=`  splitedBin $fulllloybin  $fulllhiybin  $NsplitY  $iy  1`
-                            qtregion=`echo qt${loqtbin}${hiqtbin}y${loybin}${hiybin}t${terms} | sed "s/\.//g;s/ //g"`
+                            qtregion=`echo o${order}qt${loqtbin}${hiqtbin}y${loybin}${hiybin}t${terms} | sed "s/\.//g;s/ //g"`
                             prepare_script
                             submit_job
                         done
@@ -753,7 +758,7 @@ submit_Benchmark(){
         for process in wm wp # wp wm z0
         do
             makelepcuts=false
-            [[ $process =~ z0 ]] &&  makelepcuts=true
+            #[[ $process =~ z0 ]] &&  makelepcuts=true
             for terms in $termlist
             do
                 random_seed=seed
@@ -800,6 +805,7 @@ clear_files(){
     fi
     rm -f scripts/infiles/*.tar
     rm -f scripts/infiles/*.tar.gz
+    rm -f scripts/cmd_list
     echo "Done"
 }
 
@@ -822,3 +828,5 @@ submit_allProg
 #submit_grid
 #submit_Benchmark
 
+# 
+[[ `hostname` =~ precision  ]] && $DRYRUN python scripts/run_parallel.py
