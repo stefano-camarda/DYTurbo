@@ -69,7 +69,7 @@ cubacores        = SETCUBACORES   # parallelization ( 0 = turn off)
 niterRES         = 18 #20   # only for 2d and 3d cuhre integration of resummed part
 niterCT          = 10 #200  # only for 3d cuhre integration of counter term
 vegasncallsRES   = 1e6  #6 # only for res 4d vegas integration
-vegasncallsCT    = 1e8  #8 # only for lo 8d vegas integration
+vegasncallsCT    = 3e8  #8 # only for lo 8d vegas integration
 vegasncallsLO    = 3e8  #8 # only for lo 7d vegas integration
 vegasncallsREAL  = 1e8  #8 # only for real 10d vegas integration 3e8
 vegasncallsVIRT  = 1e8  #8 # only for virt 8d vegas integration 2e8
