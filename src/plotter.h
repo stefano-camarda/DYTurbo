@@ -11,7 +11,7 @@
 #include <TProfile2D.h>
 #endif // USEROOT
 
-#define NMOM 8
+#define NMOM 9
 
 class plotter {
     public :
@@ -53,10 +53,15 @@ class plotter {
         TH1D * h_phi_lep;
         TH2D * h_qtVy;
         // profiles
+        struct AiProf2D { TProfile2D* A[NMOM]; };
+        struct AiProf   { TProfile*   A[NMOM]; };
         bool doAiMoments;
-        TProfile2D * p_qtVy_A[NMOM];
-        TProfile * p_qt_A[NMOM];
-        TProfile * p_y_A[NMOM];
+        //TProfile2D * p_qtVy_A[NMOM];
+        //TProfile * p_qt_A[NMOM];
+        //TProfile * p_y_A[NMOM];
+        AiProf2D pa_qtVy;
+        AiProf pa_qt;
+        AiProf pa_y;
         // final results
         TH2D* qt_y_resum ;
         TH2D* qt_y_ct    ;
@@ -79,10 +84,19 @@ class plotter {
 
         // PDF hists
         int last_npdf;
-        std::vector<TH1D *> h_qt_PDF   ;
-        std::vector<TH1D *> h_y_PDF    ;
-        std::vector<TH2D *> h_qtVy_PDF ;
+        std::vector<TH1D     *> h_qt_PDF      ;
+        std::vector<TH1D     *> h_y_PDF       ;
+        std::vector<TH2D     *> h_qtVy_PDF    ;
+        std::vector<TH1D     *> h_costh_PDF   ;
+        std::vector<TH1D     *> h_phi_PDF     ;
+        std::vector<TH1D     *> h_phi_lep_PDF ;
+        std::vector<AiProf2D >  pa_qtVy_PDF   ;
+        std::vector<AiProf   >  pa_qt_PDF     ;
+        std::vector<AiProf   >  pa_y_PDF      ;
+        //
         TH1 * clone_PDF( TH1 *h, int npdf);
+        template<typename T>
+            void clone_Array_PDF( std::vector<T> &v_ha, int npdf);
 
         //AiMoments ai_maarten;
 
@@ -92,6 +106,13 @@ class plotter {
 
 };
 
+#ifdef USEROOT
+template<typename T>
+void plotter::clone_Array_PDF( std::vector<T> &v_ha, int npdf){
+    v_ha.resize(npdf);
+    for(int i=0;i<NMOM;i++) v_ha.at(npdf).A[i] = clone_PDF(v_ha.at(0).A[i],npdf);
+}
+#endif // USEROOT
 
 
 extern plotter hists;
