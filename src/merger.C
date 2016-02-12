@@ -68,18 +68,22 @@ class OutlierRemoval{
                         if (verbose>1) printf("basename: %s , proj %c \n",basename.Data(), proj);
                         TH2* h2d = (TH2*) it_f->Get(basename.Data());
                         if ( proj == 'x') {
+                            if (is_empty(h2d,objname,objname_out)) continue;
                             o = h2d->ProjectionX("dummy"); // ,-1,0,"e");
                             o->SetName(objname_out);
                             if (doXsecNormalization) normalize(o);
                         } else if (proj == 'y'){
+                            if (is_empty(h2d,objname,objname_out)) continue;
                             o = h2d->ProjectionY("dummy"); // ,-1,0,"e");
                             o->SetName(objname_out);
                             if (doXsecNormalization) normalize(o);
                         } else if (proj == 'u'){
+                            if (is_empty(h2d,objname,objname_out)) continue;
                             o = h2d->ProjectionY("dummy",0,-1,"e");
                             o->SetName(objname_out);
                             if (doXsecNormalization) normalize(o);
                         } else if (proj == 'v'){
+                            if (is_empty(h2d,objname,objname_out)) continue;
                             o = make_projection(h2d);
                             o->SetName(objname_out);
                             if (doXsecNormalization) normalize(o);
@@ -87,6 +91,7 @@ class OutlierRemoval{
                             TString basename = p_objname(0,len-6); // remove "_rebin"
                             if (verbose>1) printf("basename: %s , proj %c \n",basename.Data(), proj);
                             TH1* h1 = (TH1*) it_f->Get(basename.Data());
+                            if (is_empty(h1,objname,objname_out)) continue;
                             if (doXsecNormalization) normalize(h1);
                             o=h1->Rebin(22,objname_out,bins);
                             // divide by bin width
@@ -94,6 +99,7 @@ class OutlierRemoval{
                                 o->SetBinContent(ibin,o->GetBinContent(ibin)/o->GetBinWidth(ibin));
                             }
                         }
+                        if (is_empty(o,objname,objname_out)) continue;
                         for (int ibin=0; ibin < o->GetNbinsX()+1;ibin++){ // check for NAN
                             if (o->GetBinContent(ibin) != o->GetBinContent(ibin))
                                 printf(" NAN bin: %d",ibin);
@@ -123,6 +129,7 @@ class OutlierRemoval{
                     if (verbose>2) printf(" do profile \n");
                     tmp_p=tmp_m;
                     tmp_p->SetName("tot");
+                    tmp_a->SetName("outlier");
                     if(dim==1){
                         tmp_m=((TProfile *)tmp_p)->ProjectionX("average");
                     } else if (dim==2){
@@ -135,30 +142,35 @@ class OutlierRemoval{
                 if (verbose>1) printf("    First Loop \n");
                 create_average_obj(tmp_m,in_objs,"median");
                 create_average_obj(tmp_a,in_objs,"mean");
-                // Stop here for TH1,2,3
-                if (!isProfile){
-                    tmp_m->SetName(name);
-                    tmp_a->SetName((name+"_average").Data());
+                if (isProfile){
+                    for (auto ith : in_objs) tmp_p->Add(ith,1./in_objs.size()); // ordiary addition of profiles
+                } else {
+                    // Stop here for TH1,2,3
+                    tmp_a->SetName(name);
+                    tmp_m->SetName((name+"_median").Data());
                     if (verbose>2) printf("writing histogram with integral %f\n",tmp_m->Integral());
-                    output_objects.push_back(tmp_m);
                     output_objects.push_back(tmp_a);
+                    output_objects.push_back(tmp_m);
                     continue;
                 }
                 // Second Loop -- discard outliers
                 if (verbose>1) printf("    Second Loop \n");
+                int Ncleared=0
                 for(auto ith : in_objs ){
                     double p = chi2prob( ith, tmp_m);
                     if (p < pl(7)){
                         ith=0;
-                    }
+                    } else Ncleared++;
                 }
                 // Third Loop -- calculate average without outliers
                 if (verbose>1) printf("    Third Loop \n");
                 // Add non-outlier profiles
-                for (auto ith : in_objs) tmp_p->Add(ith);
+                for (auto ith : in_objs) tmp_a->Add(ith,,1./Ncleared);
                 tmp_p->SetName(name);
-                if (verbose>2) printf("writing profile with integral %f\n",tmp_m->Integral());
+                tmp_a->SetName((name+"_outlier").Data());
+                if (verbose>2) printf("writing profile with integral %f\n",tmp_a->Integral());
                 output_objects.push_back(tmp_p);
+                output_objects.push_back(tmp_a);
                 // Save average object
                 create_average_obj(tmp_m,in_objs,"mean");
                 name+="_average";
@@ -245,6 +257,14 @@ class OutlierRemoval{
             int nxbins = h2d->GetNbinsX();
             TH1D * o = h2d->ProjectionY("dummy",1,nxbins,"e");
             return o;
+        }
+
+        bool is_empty(TObject *o, const char * objname, const char * objname_out){
+            if (o==0){
+                printf(" skipping object because there is none\n with name:  %s\n objname_out: %s\n", objname, objname_out);
+                return true;
+            }
+            return false;
         }
 
         double median(VecDbl xi) {
