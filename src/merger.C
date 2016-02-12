@@ -155,7 +155,7 @@ class OutlierRemoval{
                 }
                 // Second Loop -- discard outliers
                 if (verbose>1) printf("    Second Loop \n");
-                int Ncleared=0
+                int Ncleared=0;
                 for(auto ith : in_objs ){
                     double p = chi2prob( ith, tmp_m);
                     if (p < pl(7)){
@@ -165,7 +165,7 @@ class OutlierRemoval{
                 // Third Loop -- calculate average without outliers
                 if (verbose>1) printf("    Third Loop \n");
                 // Add non-outlier profiles
-                for (auto ith : in_objs) tmp_a->Add(ith,,1./Ncleared);
+                for (auto ith : in_objs) tmp_a->Add(ith,1./Ncleared);
                 tmp_p->SetName(name);
                 tmp_a->SetName((name+"_outlier").Data());
                 if (verbose>2) printf("writing profile with integral %f\n",tmp_a->Integral());
