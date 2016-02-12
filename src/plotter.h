@@ -2,14 +2,16 @@
 #define plotter_h
 
 #include "config.h"
+//#include "AiMoments.h"
 
 #ifdef USEROOT
 #include <TH1D.h>
 #include <TH2D.h>
+#include <TProfile.h>
 #include <TProfile2D.h>
 #endif // USEROOT
 
-#define NMOM 8
+#define NMOM 9
 
 class plotter {
     public :
@@ -31,6 +33,9 @@ class plotter {
         void Dump();
         void Finalise(double xsection=0);
 
+        double Q2,qt,y,a[NMOM],c[NMOM];
+        double costh,phi,phi_lep;
+
     protected :
 #ifdef USEROOT
         void CalculateKinematics(double p3[4], double p4[4]);
@@ -45,10 +50,18 @@ class plotter {
         TH1D * h_y ;
         TH1D * h_costh;
         TH1D * h_phi;
+        TH1D * h_phi_lep;
         TH2D * h_qtVy;
         // profiles
+        struct AiProf2D { TProfile2D* A[NMOM]; };
+        struct AiProf   { TProfile*   A[NMOM]; };
         bool doAiMoments;
-        TProfile2D * p_qtVy_A[NMOM];
+        //TProfile2D * p_qtVy_A[NMOM];
+        //TProfile * p_qt_A[NMOM];
+        //TProfile * p_y_A[NMOM];
+        AiProf2D pa_qtVy;
+        AiProf pa_qt;
+        AiProf pa_y;
         // final results
         TH2D* qt_y_resum ;
         TH2D* qt_y_ct    ;
@@ -57,12 +70,12 @@ class plotter {
         TH2D* qt_y_virt  ;
         TH2D* qt_y_total ;
         // kinematics
-        double Q2,qt,y,a[NMOM],c[NMOM];
-        double costh,phi;
+        //double Q2,qt,y,a[NMOM],c[NMOM];
+        //double costh,phi;
         // dipole variables
         struct XsecPoint {
             int ibin;
-            double qt,y,wgt;
+            double qt,y,costh,phi,wgt;
             bool fid;
         } point;
         std::vector<XsecPoint> dipole_points;
@@ -71,15 +84,36 @@ class plotter {
 
         // PDF hists
         int last_npdf;
-        std::vector<TH1D *> h_qt_PDF   ;
-        std::vector<TH1D *> h_y_PDF    ;
-        std::vector<TH2D *> h_qtVy_PDF ;
+        std::vector<TH1D     *> h_qt_PDF      ;
+        std::vector<TH1D     *> h_y_PDF       ;
+        std::vector<TH2D     *> h_qtVy_PDF    ;
+        std::vector<TH1D     *> h_costh_PDF   ;
+        std::vector<TH1D     *> h_phi_PDF     ;
+        std::vector<TH1D     *> h_phi_lep_PDF ;
+        std::vector<AiProf2D >  pa_qtVy_PDF   ;
+        std::vector<AiProf   >  pa_qt_PDF     ;
+        std::vector<AiProf   >  pa_y_PDF      ;
+        //
         TH1 * clone_PDF( TH1 *h, int npdf);
+        template<typename T>
+            void clone_Array_PDF( std::vector<T> &v_ha, int npdf);
+
+        //AiMoments ai_maarten;
+
 
         double verbose;
 #endif // USEROOT
 
 };
+
+#ifdef USEROOT
+template<typename T>
+void plotter::clone_Array_PDF( std::vector<T> &v_ha, int npdf){
+    v_ha.resize(npdf);
+    for(int i=0;i<NMOM;i++) v_ha.at(npdf).A[i] = clone_PDF(v_ha.at(0).A[i],npdf);
+}
+#endif // USEROOT
+
 
 extern plotter hists;
 

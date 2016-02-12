@@ -1613,9 +1613,13 @@ def benchmark():
                  #[ "DYRES-v1.0"                        , "results_merge/Stefano_dyturbo_v1_160201"    , "{}{}.root"                                                        , "pt_rebin"   , 4],
 
                  #[ "DYTURBO (pol. inter. PDF) average" , "results_merge/benchmark_v0.2_160201_o2" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root" , "h_qt_rebin_average" , 6],
-                 [ "DYTURBO (pol. inter. PDF)" , "results_merge/benchmark_v0.2_160201_o2" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root" , "h_qt_rebin" , redH],
+                 #[ "DYTURBO (pol. inter. PDF)" , "results_merge/benchmark_v0.2_160201_o2" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root" , "h_qt_rebin" , redH],
                  #[ "DYRES-v1.0 average"                , "results_merge/Stefano_dyturbo_v1_160201_o2"    , "{}{}.root"                                                        , "pt_rebin_average"   , torquaH],
-                 [ "DYRES-v1.0"                , "results_merge/Stefano_dyturbo_v1_160201_o2"    , "{}{}.root"                                                        , "pt_rebin"   , torquaH],
+                 #[ "DYRES-v1.0"                , "results_merge/Stefano_dyturbo_v1_160201_o2"    , "{}{}.root"                                                        , "pt_rebin"   , torquaH],
+                 #[ "DYTURBO (pol. inter. PDF)" , "results_merge/benchmark_v0.2_160201_o2" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root" , "h_qt_rebin" , redH],
+                 #[ "DYRES-v1.0 average"                , "results_merge/Stefano_dyturbo_v1_160201_o2"    , "{}{}.root"                                                        , "pt_rebin_average"   , torquaH],
+                 [ "DYTURBO (pol. inter. PDF)", "results_merge/benchmark_v0_160204_WZ"      , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root", "h_qt_rebin", redH]   ,
+                 [ "DYRES-v1.0"               , "results_merge/Stefano_dyturbo_v1_160201_o2", "{}{}.root"                                                     , "pt_rebin"  , torquaH],
              ],
              [ # terms
                  [ "RES" , ["RES"],                    ["v"]     ],
@@ -1636,33 +1640,35 @@ def benchmark():
                  #[ "RES" , ["v"],                    ["v"]     ],
              ]
          ],
-        #[   "bm1",
-            #[ # samples 
-                #[ "DYTURBO (num. integr. PDF)"  , "results_merge/benchmark_v1_160125"   , "dyturbo_{}_lhc7_CT10nnlo_0_bm1qt0100ym55t{}_seed_outliers.root"   , "h_qt" , blueH   ],
-                #[ "DYTURBO (pol. inter. PDF)" , "results_merge/benchmark_v0_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root" , "h_qt" , redH],
-                ##[ "DYTURBO (pol. inter. PDF)"   , "results_merge/benchmark_v0.1_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0.1qt0100ym55t{}_seed_outliers.root" , "h_qt" , redH ],
-            #],
-            #[ # terms 
-                #[ ""    , ["REAL","VIRT","CT","RES"] , ["REAL","VIRT","CT","RES"] ],
-                #[ "FIN" , ["REAL","VIRT","CT"]       , ["REAL","VIRT","CT"]       ],
-                #[ "RES" , ["RES"]                    , ["RES"]                    ],
-            #]
-        #],
-        # [   "bm2",
-        #     [ # samples
-        #         [ "DYTURBO (QUADRATURE)" , "results_merge/benchmark_v2_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm2qt0100ym55t{}_seed_merge.root" , "qt_y_total" , blueH ],
-        #         [ "DYTURBO (VEGAS)"      , "results_merge/benchmark_v1_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm1qt0100ym55t{}_seed_outliers.root" , "h_qtVy" , greenH ],
-        #     ],
-        #     [ # terms
-        #         [ ""    , ["REAL","VIRT","CT","RES3D"] , ["REAL","VIRT","CT","RES"]  ],
-        #         [ "FIN" , ["REAL","VIRT","CT3D"]       , ["REAL","VIRT","CT"]        ],
-        #         [ "RES" , ["RES3D"]                    , ["RES"]                     ],
-        #     ]
-        # ]
+         [   "bm1",
+             [ # samples 
+                 #[ "DYTURBO (num. integr. PDF)"  , "results_merge/benchmark_v1_160125"   , "dyturbo_{}_lhc7_CT10nnlo_0_bm1qt0100ym55t{}_seed_outliers.root"   , "h_qt" , blueH   ],
+                 #[ "DYTURBO (pol. inter. PDF)" , "results_merge/benchmark_v0_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root" , "h_qt" , redH],
+                 #[ "DYTURBO (pol. inter. PDF)"   , "results_merge/benchmark_v0.1_160125" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0.1qt0100ym55t{}_seed_outliers.root" , "h_qt" , redH ],
+                 [ "DYTURBO (num. integr. PDF)" , "results_merge/benchmark_v1_160202"      , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root" , "h_qt" , blueH ],
+                 [ "DYTURBO (pol. inter.  PDF)" , "results_merge/benchmark_v0.2_160201_o2" , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root" , "h_qt" , redH ],
+             ],
+             [ # terms 
+                 #[ ""    , ["REAL","VIRT","CT","RES"] , ["REAL","VIRT","CT","RES"] ],
+                 #[ "FIN" , ["REAL","VIRT","CT"]       , ["REAL","VIRT","CT"]       ],
+                 [ "RES" , ["RES"]                    , ["RES"]                    ],
+             ]
+         ],
+          [   "bm2",
+              [ # samples
+                 [ "DYTURBO (QUADRATURE)"  , "results_merge/benchmark_v2_160202"   , "dyturbo_{}_lhc7_CT10nnlo_0_bm2qt0100ym55t{}_seed_outliers.root"   , "h_qt" , greenH   ],
+                 [ "DYTURBO (VEGAS)"  , "results_merge/benchmark_v1_160202"   , "dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55t{}_seed_outliers.root"   , "h_qt" , blueH   ],
+              ],
+              [ # terms
+                  #[ ""    , ["REAL","VIRT","CT3D","RES3D"] , ["REAL","VIRT","CT","RES"]  ],
+                  #[ "FIN" , ["REAL","VIRT","CT3D"]       , ["REAL","VIRT","CT"]        ],
+                  [ "RES" , ["RES3D"]                    , ["RES"]                     ],
+              ]
+          ]
     ]
     #
     procs = ["z0", "wp", "wm"] # [ "wp", "wm", "z0" ]
-    projs = ["_px"] # # ["_px","_py"]
+    projs = ["_px", "_py"] # # ["_px","_py"]
     for cfg in CONF :
         bname   = cfg[0]
         samples = cfg[1]
@@ -1693,6 +1699,8 @@ def benchmark():
                             if "v" == trm :
                                 hnametmp+="_average"
                                 #hname+=" average"
+                            #if "3D" in trm :
+                                #hnametmp=
                             tmp=pl.GetHist(fname.format(proc,trm),hnametmp)
                             c=scale
                             # reweight by X section histogram
@@ -2031,6 +2039,26 @@ def cute():
         pass
     pass
 
+def plot_y():
+    pl.CompareHistsInFiles(
+            "proj_y_test",
+            [
+                [ "noNorm y"            , "rebin_noNorm.root", "h_qt"]              ,
+                #[ "noNorm y aver"      , "rebin_noNorm.root", "h_y_average"]      ,
+                [ "noNorm proj y"       , "rebin_noNorm.root", "h_qtVy_px"]        ,
+                #[ "noNorm proj y errors", "rebin_noNorm.root", "h_qtVy_pu"]        ,
+                #[ "noNorm proj y noOver", "rebin_noNorm.root", "h_qtVy_pv"]        ,
+                #[ "noNorm proj y aver" , "rebin_noNorm.root", "h_qtVy_py_average"],
+                #[ "XNorm y"             , "rebin_XNorm.root" , "h_y"]              ,
+                #[ "XNorm y aver"       , "rebin_XNorm.root" , "h_y_average"]      ,
+                #[ "XNorm proj y"        , "rebin_XNorm.root" , "h_qtVy_py"]        ,
+                #[ "XNorm proj y aver"  , "rebin_XNorm.root" , "h_qtVy_py_average"],
+            ],
+            compareType="ratio0",
+            legx=0.6
+            )
+
+
 ## Documentation for main
 #
 # More details. 
@@ -2051,11 +2079,16 @@ if __name__ == '__main__' :
     #DY.DoStudy()
     #DY.DoPDFQuadStudy()
     #plot_profile()
-    #benchmark()
+    #
+    benchmark()
+    #
     #makeStatPlot()
-    cute()
-    cute_ratioWZ()
-    pl.MakePreviewFromList(0,"cute")
+    #
+    #cute()
+    #cute_ratioWZ()
+    #pl.MakePreviewFromList(0,"cute")
+    #
+    #plot_y()
     pass
 
 
