@@ -255,7 +255,7 @@ merge_benchmark(){
     done
 }
 
-merge_benchmark_all(){
+merge_general(){
     DRYRUN=echo 
     DRYRUN=
     #
@@ -286,7 +286,8 @@ merge_benchmark_all(){
     #echo  " w{p,m} bm2$qtymerge {RES3D,CT3D} $resdir/dyturbo-0.9.6.2/results_bm012_WpWm     bm2 10100 benchmark_v2_160204_WZ " >> mergeconf
 
     #
-    echo  " {z0,wp,wm} qt {RES,CT,REAL,VIRT}  results qt 1010 aimoments_test_160209 " >> mergeconf
+    echo  " z0 o1 {RES,CT}  results o1 1010 aimoments_test_160211 " >> mergeconf
+    echo  " z0 o2 {RES,CT}  results o2 1010 aimoments_test_160211 " >> mergeconf
 
 
 
@@ -299,7 +300,8 @@ merge_benchmark_all(){
         #
         for fres in ` eval "ls $indir/dyturbo_${proc}_*_${inbm}*t${term}_*$seednum*root"`
         do
-            MERGER="./bin/merger -X "
+            #MERGER="./bin/merger -X "
+            MERGER="./bin/merger "
             infiles=`echo $fres | sed "s|$seednum|*|g"`
             outfilebase=`basename $fres | sed "s|$seednum.*||g;s|y-55|ym55|g;s|$inbm|$outbm|g"`
             ##
@@ -326,7 +328,7 @@ merge_benchmark_all(){
 
 #merge_cubatures
 #merge_benchmark
-#merge_benchmark_all
-merge_stefano
+merge_general
+#merge_stefano
 
 exit 0

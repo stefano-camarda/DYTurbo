@@ -559,7 +559,8 @@ submit_allProg(){
         DRYRUN=
     fi
     # full phase space
-    queue=etapshort
+    #queue=etapshort
+    queue=atlasshort
     loqtbin=0
     #hiqtbin=100
     hiqtbin=600
@@ -585,17 +586,18 @@ submit_allProg(){
             for order in 1 2 # 3
             do
                 # set PDF ?
-                pdfset=CT10nlo
-                if [[ $order == 2 ]]; then pdfset=ZPT-CT10; fi;
-                if [[ $order == 3 ]]; then pdfset=WZZPT-CT10; order=2; fi;
-                pdfset=CT10nlo
+                #pdfset=CT10nlo
+                #if [[ $order == 2 ]]; then pdfset=ZPT-CT10; fi;
+                #if [[ $order == 3 ]]; then pdfset=WZZPT-CT10; order=2; fi;
+                pdfset=CT10nnlo
                 # set terms
-                termlist="RES CT LO"
+                termlist="RES CT"
                 if [[ $program =~ ^dyturbo ]] 
                 then
                     cubacores=8
                     #termlist="RES CT LO"
-                    if [[ $order == 2 ]]; then termlist="RES CT REAL VIRT"; fi;
+                    #if [[ $order == 2 ]]; then termlist="RES CT REAL VIRT"; fi;
+                    if [[ $order == 2 ]]; then termlist="RES CT"; fi;
                     #if [[ $order == 2 ]]; then termlist="REAL"; fi;
                     #termlist="RES3D CT3D"
                     #if [[ $order == 2 ]]; then termlist="RES3D CT3D REAL VIRT"; fi;
@@ -618,7 +620,8 @@ submit_allProg(){
                 fi
                 for terms in $termlist
                 do
-                    seedlist=1010
+                    seedlist=1010-1110
+                    [[ $terms =~ CT ]] && seedlist=1010
                     #seedlist=1010-1110
                     # run all pdf variations at once
                     if [[ $terms =~ REAL ]]
