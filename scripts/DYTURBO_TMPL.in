@@ -89,9 +89,9 @@ quadnphi    = 20      # number of segments for quadrature rule of phi_lep integr
 ncstart     = 100     # starting sampling for the costh semi-analytical integration (common settings for the trapezoidal and quadrature rules)
 
 # qt-recoil prescriptions
-qtrec_naive = false
-qtrec_cs    = true
-qtrec_kt0   = false
+qtrec_naive = SETQTRECNAIVE
+qtrec_cs    = SETQTRECCS
+qtrec_kt0   = SETQTRECKT0
 
 # debug settings
 timeprofile = false  # debug and time profile resummation integration
