@@ -1,5 +1,6 @@
 #ifndef TLVUtils_cxx
 #define TLVUtils_cxx
+#ifdef USEROOT
 
 #include "TLVUtils.h"
 #include <iostream>
@@ -223,4 +224,5 @@ namespace Utils
 
 }
 
+#endif //USEROOT
 #endif

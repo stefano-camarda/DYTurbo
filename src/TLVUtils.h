@@ -1,5 +1,6 @@
 #ifndef TLVUtils_h
 #define TLVUtils_h
+#ifdef USEROOT
 
 #include <TLorentzVector.h>
 
@@ -65,4 +66,5 @@ namespace Utils {
 
 }
 
+#endif //USEROOT
 #endif

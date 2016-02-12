@@ -1,6 +1,7 @@
 
 #ifndef AIMOMENTS_CXX
 #define AIMOMENTS_CXX
+#ifdef USEROOT
 
 #include "AiMoments.h"
 
@@ -241,4 +242,5 @@ bool AiMoments::Finalize()
 
 
 
+#endif // USEROOT
 #endif

@@ -1,5 +1,6 @@
 #ifndef AIMOMENTS_H
 #define AIMOMENTS_H
+#ifdef USEROOT
 
 #include <vector>
 #include <sstream>
@@ -54,4 +55,5 @@ class AiMoments {
 
 };
 
+#endif // USEROOT
 #endif
