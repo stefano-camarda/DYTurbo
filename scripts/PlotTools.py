@@ -695,6 +695,8 @@ class PlotTools:
                         if float(minY) < ce - lo : lower .append (ce-lo)
                         if float(maxY) > ce + hi : upper .append (ce+hi)
                         pass
+                    if len(lower) ==0 : lower.append(minY)
+                    if len(upper) ==0 : upper.append(maxY)
                     y_mins.append( min(lower) )
                     y_maxs.append( max(upper) )
                 else :
@@ -894,12 +896,13 @@ class PlotTools:
                     s.contourHists[-1].Draw(drawTechnique)
 
     def DrawLegend(s, objList, drawOptions, **kwargs) :
-        scale      = kwargs[ "scale"      ] if "scale"      in kwargs else 1.0
-        x          = kwargs[ "legx"          ] if "legx"          in kwargs else 0.7
-        y          = kwargs[ "legy"          ] if "legy"          in kwargs else 0.88
-        cols       = kwargs[ "legCol"          ] if "legCol"          in kwargs else 1
+        scale = kwargs[ "scale"  ] if "scale"  in kwargs else 1.0
+        x     = kwargs[ "legx"   ] if "legx"   in kwargs else 0.7
+        y     = kwargs[ "legy"   ] if "legy"   in kwargs else 0.88
+        cols  = kwargs[ "legCol" ] if "legCol" in kwargs else 1
+        dy    = kwargs[ "dy"     ] if "dy"     in kwargs else 0.093
         ytop =  y
-        dy = 0.093*scale * (len(objList))
+        dy *= scale * (len(objList))
         dx = 0.48*scale*cols
         s.legend = TLegend(x, ytop-dy, x+dx, ytop)
         s.legend.SetNColumns(cols)
@@ -1160,7 +1163,17 @@ class PlotTools:
         if "logX" in kwargs : ratioArgs["logX"] = kwargs["logX"]
         if "minX" in kwargs : ratioArgs["minX"] = kwargs["minX"]
         if "maxX" in kwargs : ratioArgs["maxX"] = kwargs["maxX"]
-        if compareType == "ratio" :
+        if "none" in  compareType :
+            ratioArgs["minY"]= 0.1
+            ratioArgs["maxY"]= 1.9
+            if "Log" in compareType :
+                ratioArgs["minY"]= 1e-7
+                ratioArgs["maxY"]= 5
+                #ratioArgs["forceRange"]= True
+                ratioArgs["logY"]= True
+            s.SetFrameStyle1D(subHists, **ratioArgs) # scale = 1./(1-cdiv), logY=True, minY=0.04, maxY=25, logX=logx)
+            pass
+        elif compareType == "ratio" :
             #ratioArgs["logY"]=False
             ratioArgs["minY"]= -25
             ratioArgs["maxY"]= 25
@@ -1806,8 +1819,39 @@ kAzure=860
 #
 
 
+### I want hue
+### http://tools.medialab.sciences-po.fr/iwanthue/index.php
 
+# 7 lines -- faint
+# red     #D3695E
+# orange  #C48933
+# grass   #8DA139
+# green   #4EA96F
+# cyan    #589CBF
+# violete #AB8BC8
+# pink    #CB6F9B
 
+# 9 lines -- middle chroma
+# red     #D3544D
+# orange  #C06F2A
+# yellow  #C9AF31
+# green   #7ED13F
+# grass   #4FC887
+# pine    #578533
+# blue    #5A8FC1
+# violete #B379C7
+# pink    #C95686
+
+## CKM order (based on 9 lines middle chroma)
+# red     #D3544D
+# yellow  #C9AF31
+# violete #B379C7
+# orange  #C06F2A
+# green   #7ED13F
+# blue    #5A8FC1
+# pine    #578533
+# grass   #4FC887
+# pink    #C95686
 
 ### Color Brewer 2.0
 

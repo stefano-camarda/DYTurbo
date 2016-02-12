@@ -306,9 +306,13 @@ add_to_tarbal(){
 }
 
 submit_job(){
+    echo $job_name $sh_file $seedlist  >> scripts/cmd_list
     if [[ `hostname` =~ cuth-dell  ]]
     then
         $DRYRUN bash -x $sh_file
+    elif [[ `hostname` =~ precision  ]]
+    then
+        true
     else
         if [ -a results/$job_name.root ]
         then
@@ -557,14 +561,15 @@ submit_allProg(){
     # full phase space
     queue=atlasshort
     loqtbin=0
-    hiqtbin=100
+    #hiqtbin=100
+    hiqtbin=600
     loybin=0
     hiybin=5
     fulllloqtbin=$loqtbin
     fulllhiqtbin=$hiqtbin
     fulllloybin=$loybin
     fulllhiybin=$hiybin
-    collider=lhc7
+    collider=lhc8
     random_seed=100101
     startSeed=100201
     variation=0
@@ -573,24 +578,26 @@ submit_allProg(){
     batch_template=$dyturbo_project/scripts/run_DYTURBO_Array_TMPL.sh
     for program in dyturbo #  dyturbo dyres mcfm
     do
-        for process in wp wm z0 # wp wm z0
+        for process in z0 # wp wm z0
         do
             makelepcuts=false
             #if [[ $process =~ z0 ]]; then makelepcuts=true; fi
-            for order in 3 # 3
+            for order in 1 2 # 3
             do
                 # set PDF ?
                 pdfset=CT10nlo
                 if [[ $order == 2 ]]; then pdfset=ZPT-CT10; fi;
                 if [[ $order == 3 ]]; then pdfset=WZZPT-CT10; order=2; fi;
-                pdfset=CT10nlo
+                pdfset=CT10nnlo
                 # set terms
-                termlist="ALL"
+                #termlist="RES CT LO"
+                termlist="RES CT"
                 if [[ $program =~ ^dyturbo ]] 
                 then
                     cubacores=8
                     #termlist="RES CT LO"
                     if [[ $order == 2 ]]; then termlist="RES CT REAL VIRT"; fi;
+                    if [[ $order == 2 ]]; then termlist="RES CT"; fi;
                     #if [[ $order == 2 ]]; then termlist="REAL"; fi;
                     #termlist="RES3D CT3D"
                     #if [[ $order == 2 ]]; then termlist="RES3D CT3D REAL VIRT"; fi;
@@ -613,8 +620,9 @@ submit_allProg(){
                 fi
                 for terms in $termlist
                 do
-                    seedlist=1010
-                    #seedlist=1010-1110
+                    #seedlist=1010
+                    seedlist=2010-2110
+                    [[ $terms =~ CT ]] && seedlist=2011
                     # run all pdf variations at once
                     if [[ $terms =~ REAL ]]
                     then
@@ -651,7 +659,7 @@ submit_allProg(){
                             hiqtbin=` splitedBin $fulllloqtbin $fulllhiqtbin $NsplitQT $iqt 1`
                             loybin=`  splitedBin $fulllloybin  $fulllhiybin  $NsplitY  $iy  0`
                             hiybin=`  splitedBin $fulllloybin  $fulllhiybin  $NsplitY  $iy  1`
-                            qtregion=`echo qt${loqtbin}${hiqtbin}y${loybin}${hiybin}t${terms} | sed "s/\.//g;s/ //g"`
+                            qtregion=`echo o${order}qt${loqtbin}${hiqtbin}y${loybin}${hiybin}t${terms} | sed "s/\.//g;s/ //g"`
                             prepare_script
                             submit_job
                         done
@@ -753,7 +761,7 @@ submit_Benchmark(){
         for process in wm wp # wp wm z0
         do
             makelepcuts=false
-            [[ $process =~ z0 ]] &&  makelepcuts=true
+            #[[ $process =~ z0 ]] &&  makelepcuts=true
             for terms in $termlist
             do
                 random_seed=seed
@@ -800,6 +808,7 @@ clear_files(){
     fi
     rm -f scripts/infiles/*.tar
     rm -f scripts/infiles/*.tar.gz
+    rm -f scripts/cmd_list
     echo "Done"
 }
 
@@ -822,3 +831,5 @@ submit_allProg
 #submit_grid
 #submit_Benchmark
 
+# 
+[[ `hostname` =~ precision  ]] && $DRYRUN python scripts/run_parallel.py
