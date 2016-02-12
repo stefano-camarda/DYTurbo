@@ -218,6 +218,12 @@ prepare_in(){
         [[ $variation == 53    ]] && gpar=0.88990
         [[ $variation == 54    ]] && gpar=0.77360
     fi;
+    # qT recoil prescription -- default CS
+    qtrec_naive="false"
+    qtrec_cs="true"
+    qtrec_kt0="false"
+    [[ $terms =~ naive ]] && qtrec_naive="true" && qtrec_cs="false" && qtrec_kt0="false"
+    [[ $terms =~ kt0   ]] && qtrec_naive="false" && qtrec_cs="false" && qtrec_kt0="true"
     # set correct input template
     in_tmpl=$dyturbo_in_tmpl
     # because it was redefine benchmark setting I turned off
@@ -257,6 +263,9 @@ prepare_in(){
             s|SETDETFIDUCIAL|$detfiducial|g  ;
             s|SETIH1|$ih1|g                  ;
             s|SETIH2|$ih2|g                  ;
+            s|SETQTRECNAIVE|$qtrec_naive|g   ;
+            s|SETQTRECCS|$qtrec_cs|g         ;
+            s|SETQTRECKT0|$qtrec_kt0|g       ;
             s|SETPDFERRORS|$setPDFerrors|g   ;
             s|SETSROOT|$sroot|g              ; " tmp
     mv tmp $in_file
@@ -586,11 +595,12 @@ submit_allProg(){
             for order in 1 2 # 3
             do
                 # set PDF ?
-                #pdfset=CT10nlo
-                #if [[ $order == 2 ]]; then pdfset=ZPT-CT10; fi;
-                #if [[ $order == 3 ]]; then pdfset=WZZPT-CT10; order=2; fi;
+                pdfset=CT10nlo
+                if [[ $order == 2 ]]; then pdfset=ZPT-CT10; fi;
+                if [[ $order == 3 ]]; then pdfset=WZZPT-CT10; order=2; fi;
                 pdfset=CT10nnlo
                 # set terms
+                #termlist="RES CT LO"
                 termlist="RES CT"
                 if [[ $program =~ ^dyturbo ]] 
                 then
@@ -604,6 +614,7 @@ submit_allProg(){
                     #if [[ $order == 2 ]]; then termlist="VIRT"; fi;
                     #if [[ $order == 2 ]]; then termlist="RES3D"; fi;
                     #termlist="RES3D"
+                    termlist="RESkt0 CTkt0 RESnaive CTnaive"
                 fi
                 if [[ $program =~ ^dyres ]] 
                 then

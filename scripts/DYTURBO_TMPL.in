@@ -69,8 +69,8 @@ cubacores        = SETCUBACORES   # parallelization ( 0 = turn off)
 niterRES         = 18 #20   # only for 2d and 3d cuhre integration of resummed part
 niterCT          = 10 #200  # only for 3d cuhre integration of counter term
 vegasncallsRES   = 1e6  #6 # only for res 4d vegas integration
-vegasncallsCT    = 4e8  #8 # only for lo 8d vegas integration
-vegasncallsLO    = 4e8  #8 # only for lo 7d vegas integration
+vegasncallsCT    = 3e8  #8 # only for lo 8d vegas integration
+vegasncallsLO    = 3e8  #8 # only for lo 7d vegas integration
 vegasncallsREAL  = 1e8  #8 # only for real 10d vegas integration 3e8
 vegasncallsVIRT  = 1e8  #8 # only for virt 8d vegas integration 2e8
 
@@ -89,9 +89,9 @@ quadnphi    = 20      # number of segments for quadrature rule of phi_lep integr
 ncstart     = 100     # starting sampling for the costh semi-analytical integration (common settings for the trapezoidal and quadrature rules)
 
 # qt-recoil prescriptions
-qtrec_naive = false
-qtrec_cs    = true
-qtrec_kt0   = false
+qtrec_naive = SETQTRECNAIVE
+qtrec_cs    = SETQTRECCS
+qtrec_kt0   = SETQTRECKT0
 
 # debug settings
 timeprofile = false  # debug and time profile resummation integration
