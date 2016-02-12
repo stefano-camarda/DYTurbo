@@ -122,7 +122,8 @@ void plotter::Init(){
     N = 1;
     // vector of weights -- for systematics
     v_wgt.clear();
-    SetPDF(0);
+    // Set default pdf for plotting
+    SetPDF(0); //opts.LHAPDFmember);
 
     //ai_maarten.Initialize();
 
@@ -502,6 +503,8 @@ TH1 * plotter::clone_PDF(TH1*h,int npdf){
 
 
 void plotter::SetPDF(int npdf){
+    // if you not doing scanning just testing member
+    if (npdf==0 && opts.LHAPDFmember!=0) npdf=opts.LHAPDFmember;
     // if current npdf still same don't change anything
     if (last_npdf==npdf) return;
     // if empty add current hist to 0-th position
@@ -531,9 +534,9 @@ void plotter::SetPDF(int npdf){
             h_costh_PDF   .push_back( (TH1D *) clone_PDF( h_costh_PDF   [0] , size) );
             h_phi_PDF     .push_back( (TH1D *) clone_PDF( h_phi_PDF     [0] , size) );
             h_phi_lep_PDF .push_back( (TH1D *) clone_PDF( h_phi_lep_PDF [0] , size) );
-            clone_Array_PDF( pa_qtVy_PDF  , size) ;
-            clone_Array_PDF( pa_qt_PDF    , size) ;
-            clone_Array_PDF( pa_y_PDF     , size) ;
+            clone_Array_PDF<AiProf2D, TProfile2D>( pa_qtVy_PDF , size) ;
+            clone_Array_PDF<AiProf,   TProfile>(   pa_qt_PDF   , size) ;
+            clone_Array_PDF<AiProf,   TProfile>(   pa_y_PDF    , size) ;
         }
         // update size value
         size = h_qtVy_PDF.size();
@@ -543,7 +546,7 @@ void plotter::SetPDF(int npdf){
     h_y       = h_y_PDF       [npdf];
     h_qtVy    = h_qtVy_PDF    [npdf];
     if (doAiMoments){
-        h_costh   = h_qt_PDF      [npdf];
+        h_costh   = h_costh_PDF   [npdf];
         h_phi     = h_phi_PDF     [npdf];
         h_phi_lep = h_phi_lep_PDF [npdf];
         for (int i=0; i<NMOM; i++){
@@ -631,15 +634,16 @@ void plotter::Finalise(double xsection){
         h_qt   -> Write();
         h_y    -> Write();
         h_qtVy -> Write();
+        if(doAiMoments){
+            for (auto pp : pa_qtVy .A) pp->Write();
+            for (auto pp : pa_qt   .A) pp->Write();
+            for (auto pp : pa_y    .A) pp->Write();
+            h_costh   -> Write();
+            h_phi     -> Write();
+            h_phi_lep -> Write();
+        } 
+        if (!opts.PDFerrors) break;
     }
-    if(doAiMoments){
-        for (auto pp : pa_qtVy .A) pp->Write();
-        for (auto pp : pa_qt   .A) pp->Write();
-        for (auto pp : pa_y    .A) pp->Write();
-        h_costh   -> Write();
-        h_phi     -> Write();
-        h_phi_lep -> Write();
-    } 
     // results
     qt_y_resum -> Write();
     qt_y_ct    -> Write();
@@ -681,6 +685,6 @@ void hists_real_event_(){ return; }
 void hists_fill_pdf_(double p3[4], double p4[4], double *weight, int *npdf){ return; }
 void hists_real_dipole_pdf_(double p3[4], double p4[4], double *weight,int *nd, int *npdf){ return; }
 void hists_real_event_pdf_(int* npdf){ return; }
-yid hists_AiTest_(double* pcosthCS, double* pphiCS) {return};
+void hists_AiTest_(double* pcosthCS, double* pphiCS) {return; };
 
 #endif //USEROOT

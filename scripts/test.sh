@@ -7,6 +7,7 @@ echo Starting test
 #make -C Cuba-4.2
 
 #./configure --enable-root --enable-debug &&
+#./configure --enable-debug &&
 make install &&
 
 
@@ -26,6 +27,7 @@ mkdir $tdir &&
 cd $tdir &&
 
 /usr/bin/time -v ./../bin/dyturbo ../input/test.in &&
+#gdb --args ./../bin/dyturbo ../input/test.in &&
 
 hadd results_merge.root results*.root &&
 

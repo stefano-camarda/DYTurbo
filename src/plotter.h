@@ -95,7 +95,7 @@ class plotter {
         std::vector<AiProf   >  pa_y_PDF      ;
         //
         TH1 * clone_PDF( TH1 *h, int npdf);
-        template<typename T>
+        template<typename T,typename P>
             void clone_Array_PDF( std::vector<T> &v_ha, int npdf);
 
         //AiMoments ai_maarten;
@@ -107,10 +107,12 @@ class plotter {
 };
 
 #ifdef USEROOT
-template<typename T>
+template<typename T,typename P>
 void plotter::clone_Array_PDF( std::vector<T> &v_ha, int npdf){
-    v_ha.resize(npdf);
-    for(int i=0;i<NMOM;i++) v_ha.at(npdf).A[i] = clone_PDF(v_ha.at(0).A[i],npdf);
+    v_ha.push_back(T());
+    for(int i=0;i<NMOM;i++) {
+            v_ha.at(npdf).A[i] = (P *) clone_PDF(v_ha.at(0).A[i],npdf);
+    } 
 }
 #endif // USEROOT
 

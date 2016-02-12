@@ -1,17 +1,19 @@
 nproc = 3
 g_param = 0.83595
 LHAPDFset    = CT10nnlo
+LHAPDFmember    = 0
+PDFerrors = true
 
-doRES  = true
+doRES  = false
 doCT   = false
-doREAL = false
-doVIRT = false
+doREAL = true
+doVIRT = true
 doLO   = false
 
-order = 1
+order = 2
 
 intDimRes = 8
-intDimCT = 3
+intDimCT = 8
 
 cubaverbosity = 0
 #qtrec_naive = true
@@ -20,9 +22,9 @@ cubaverbosity = 0
 cubacores        = 0   # parallelization ( 0 = turn off)
 niterRES         = 8   # only for 2d and 3d cuhre integration of resummed part
 niterCT          = 8   # only for 2d and 3d cuhre integration of resummed part
-vegasncallsRES   = 1e4 #0000 # only for res 4d vegas integration
+vegasncallsRES   = 1000 #0000 # only for res 4d vegas integration
 vegasncallsCT    = 1000 #00000 # only for lo 8d vegas integration
-vegasncallsLO    = 1e7 #00000 # only for lo 7d vegas integration
+vegasncallsLO    = 1e3 #00000 # only for lo 7d vegas integration
 vegasncallsREAL  = 1000 #000000 # only for real 10d vegas integration
 vegasncallsVIRT  = 100 #00000 # only for virt 8d vegas integration
 
