@@ -76,3 +76,19 @@ make && make install
      - `src/plotter.C` for histograms
      - `src/settings.C` function `cuts` for changing cuts
 
+## Merging results
+ 1. Merging of jobs
+     - we recommend to run DYTURBO per each term (RES,CT,FO,REAL,VIRT) separately
+     - to obtain correct normalization from run of several jobs with different
+       random seeds, please, use our merger
+    ```
+    ./bin/merger -X merged_file.root result_file_1.root result_file_2.root ...
+    ```
+     - Note: in case of real term for NNLO prediction it is better to use median results
+       (object with suffix median in output file of `merger` program). It will remove ouliers
+       from your distribution, which are caused by color dipole cancellations
+ 2. Merging of terms
+     - if you want to obtain finite order prediction you should sum up counter
+       term you should sum up fixed order (i.e. FO for NLO and REAL+VIRT for NNLO)
+       to counter term (simply with hadd)
+     - to obtain final prediction you need to finite order to resummation part ( simply with hadd)
