@@ -110,8 +110,8 @@ class OutlierRemoval{
                 }
                 // temporary objects
                 TString name = p_objname;
-                TH1* tmp_m = (TH1*) in_objs[0]->Clone((name+"median").Data());
-                TH1* tmp_a = (TH1*) in_objs[0]->Clone((name+"average").Data());
+                TH1* tmp_m = (TH1*) in_objs[0]->Clone((name+"_median").Data());
+                TH1* tmp_a = (TH1*) in_objs[0]->Clone((name+"_average").Data());
                 tmp_m->SetDirectory(0);
                 tmp_m->Reset();
                 tmp_a->SetDirectory(0);
@@ -142,34 +142,36 @@ class OutlierRemoval{
                 if (verbose>1) printf("    First Loop \n");
                 create_average_obj(tmp_m,in_objs,"median");
                 create_average_obj(tmp_a,in_objs,"mean");
-                if (isProfile){
-                    for (auto ith : in_objs) tmp_p->Add(ith,1./in_objs.size()); // ordiary addition of profiles
-                } else {
-                    // Stop here for TH1,2,3
+                if (!isProfile){
                     tmp_a->SetName(name);
                     tmp_m->SetName((name+"_median").Data());
                     if (verbose>2) printf("writing histogram with integral %f\n",tmp_m->Integral());
                     output_objects.push_back(tmp_a);
                     output_objects.push_back(tmp_m);
+                    // Stop here for TH1,2,3
                     continue;
                 }
+                // Profiles only
+                for (auto ith : in_objs) tmp_p->Add(ith,1./in_objs.size()); // ordiary addition of profiles
+                tmp_p->SetName(name);
+                output_objects.push_back(tmp_p);
                 // Second Loop -- discard outliers
                 if (verbose>1) printf("    Second Loop \n");
-                int Ncleared=0;
-                for(auto ith : in_objs ){
-                    double p = chi2prob( ith, tmp_m);
-                    if (p < pl(7)){
-                        ith=0;
-                    } else Ncleared++;
-                }
-                // Third Loop -- calculate average without outliers
-                if (verbose>1) printf("    Third Loop \n");
-                // Add non-outlier profiles
-                for (auto ith : in_objs) tmp_a->Add(ith,1./Ncleared);
-                tmp_p->SetName(name);
+                // int Ncleared=0;
+                // for(auto ith : in_objs ){
+                //     double p = chi2prob( ith, tmp_m);
+                //     if (p < pl(7)){
+                //         ith=0;
+                //     } else Ncleared++;
+                // }
+                // // Third Loop -- calculate average without outliers
+                // if (verbose>1) printf("    Third Loop \n");
+                // // Add non-outlier profiles
+                // for (auto ith : in_objs) tmp_a->Add(ith,1./Ncleared);
+                tmp_a = remove_outliers_from_profile(in_objs);
+                if (tmp_a==0) continue; 
+                if (verbose>2) printf("  removed outliers \n");
                 tmp_a->SetName((name+"_outlier").Data());
-                if (verbose>2) printf("writing profile with integral %f\n",tmp_a->Integral());
-                output_objects.push_back(tmp_p);
                 output_objects.push_back(tmp_a);
                 // Save average object
                 create_average_obj(tmp_m,in_objs,"mean");
@@ -178,14 +180,16 @@ class OutlierRemoval{
                 if (verbose>2) printf("writing histogram with integral %f\n",tmp_m->Integral());
                 output_objects.push_back(tmp_m);
             }
-            if (verbose>1) printf("Write \n");
+            if (verbose>1) printf("End of merge, closing files \n");
             close_all_infiles();
         };
 
         void Write(){
+            if (verbose>1) printf("Write \n");
             TFile * fout = new TFile(outfilename.Data(), "RECREATE");
             for (auto ith : output_objects){
-                //ith->Print();
+                if (verbose>4) printf("  writing pointer %p \n", ith);
+                if (verbose>3) ith->Print();
                 ith->Write();
             }
             if(verbose>0) printf("Merged %d files in %s\n", infilenames.size(), outfilename.Data());
@@ -203,8 +207,8 @@ class OutlierRemoval{
         }
 
         void Init(){
-            LOBIN= includeUnderOverFlow ? 0 : 1;
-            HIBIN= includeUnderOverFlow ? 1 : 2;
+            LOBIN= includeUnderOverFlow ? 0 : 1; // start from 0
+            HIBIN= includeUnderOverFlow ? 1 : 0; // add 1 to end
         }
 
         // Public data members
@@ -252,6 +256,43 @@ class OutlierRemoval{
             }
             f->Close();
         }
+
+        void get_nbins_XYZ(TH1* h, int &nx ,int &ny, int &nz ){
+            h->GetBinXYZ(h->GetNcells(), nx,ny,nz);
+            nx-=HIBIN+2;
+            ny-=HIBIN+2;
+            nz-=HIBIN+2;
+        }
+        void get_lohi_bins(TH1*h,int &lobin, int &hibin){
+            int nbinsx,nbinsy,nbinsz;
+            get_nbins_XYZ(h,nbinsx,nbinsy,nbinsz);
+            //
+            lobin = h->GetBin(LOBIN,LOBIN,LOBIN);
+            hibin = h->GetBin(nbinsx+HIBIN,nbinsy+HIBIN,nbinsz+HIBIN);
+        }
+        void get_next_bin(TH1*h, int& ibin){
+            int nbinsx,nbinsy,nbinsz;
+            get_nbins_XYZ(h,nbinsx,nbinsy,nbinsz);
+            //
+            if(verbose>5)printf("   next bin to %d \n",ibin);
+            int ixbin,iybin,izbin;
+            while (ibin<h->GetNcells()){
+                ibin++;
+                // include under/over-flow then no just return bin
+                if (includeUnderOverFlow) return;
+                // no include overflow.. test if 
+                h->GetBinXYZ(ibin, ixbin,iybin,izbin );
+                if(verbose>5)printf("        bin %d, xyz %d %d %d, nb_xyz %d %d %d \n",ibin, ixbin,iybin,izbin, ixbin,iybin,izbin);
+                if ( 
+                        ixbin < nbinsx &&
+                        iybin < nbinsy &&
+                        izbin < nbinsz 
+                    ) return; // none of them is overflow
+                // at least one is overflow skip to next
+            }
+            return;
+        }
+
 
         TH1D* make_projection(TH2*h2d){
             int nxbins = h2d->GetNbinsX();
@@ -368,6 +409,101 @@ class OutlierRemoval{
             }
         }
 
+        TProfile* remove_outliers_from_profile(VecTH1 in_objs){
+            TH1* median = create_denominator_median(in_objs);
+            if (median==0){ return 0;};
+            int dim  = median->GetDimension();
+            TProfile* out_obj = 0;
+            if (dim==1){
+                out_obj = (TProfile *) in_objs.at(0);
+            }
+            else {
+                return 0;
+            }
+            median->SetDirectory(0);
+            out_obj->SetDirectory(0);
+            out_obj->Reset();
+            int blo,bhi; get_lohi_bins(median, blo,bhi);
+            for ( int b = blo; b < bhi; get_next_bin(median,b)){
+                double sumw=0;
+                double sumw2=0;
+                double sumwy=0;
+                double sumwy2=0;
+                int Ncleared = 0;
+                // loop over all objects and skip outliers
+                for (auto ith : in_objs){
+                    TProfile * test = (TProfile*) ith;
+                    double d = test->GetBinEntries(b) - median->GetBinContent(b);
+                    double s = median->GetBinError(b);
+                    double chi2 = 0;
+                    if (s != 0) chi2 = d*d/(s*s);
+                    if (TMath::Prob(chi2,1) < pl(7) ){
+                        sumw   += test->GetBinEntries     (b);
+                        sumw2  += sumw*sumw;
+                        //sumww  += test->GetBinSumw2()->At (b);
+                        sumwy  += test->At                (b);
+                        sumwy2 += sumwy*sumwy;
+                        //sumwyy += test->GetSumw2()->At    (b);
+                        Ncleared++;
+                    }
+                } // objects
+                // set new values from average after outlier removal
+                if (Ncleared){
+                    sumw  /= Ncleared;
+                    sumwy /= Ncleared;
+                    //
+                    sumw2 = (sumw2 - sumw*sumw)/Ncleared;
+                    sumwy2 = (sumwy2 - sumwy*sumwy)/Ncleared;
+                    //
+                    out_obj-> SetBinEntries        (b, sumw   );
+                    out_obj-> SetAt                (b, sumwy  );
+                    //
+                    out_obj-> GetBinSumw2()->SetAt (b, sumw2   );
+                    out_obj-> GetSumw2()->SetAt    (b, sumwy2  );
+                }
+            } // all bins
+            return out_obj;
+        }
+
+        TH1* create_denominator_median( VecTH1 in_objs){
+            TH1* out_obj = 0;
+            int dim  = in_objs.at(0)->GetDimension();
+            if(dim==1){
+                out_obj=((TProfile *) in_objs.at(0))->ProjectionX("average");
+            } else if (dim==2){
+                return 0;
+                //out_obj=((TProfile2D *) in_objs.at(0))->ProjectionXY("average");
+            }
+            out_obj->Reset();
+            int nbinsx= (dim<1) ? 1 : out_obj->GetNbinsX()+HIBIN;
+            int nbinsy= (dim<2) ? 1 : out_obj->GetNbinsY()+HIBIN;
+            int nbinsz= (dim<3) ? 1 : out_obj->GetNbinsZ()+HIBIN;
+            for (int izbin=LOBIN;izbin<nbinsz;izbin++){
+                for (int iybin=LOBIN;iybin<nbinsy;iybin++){
+                    for (int ixbin=LOBIN;ixbin<nbinsx;ixbin++){
+                        int b = out_obj->GetBin(ixbin,iybin,izbin);
+                        double sumw=0;
+                        double sumw2=0;
+                        int Nall = 0;
+                        // loop over all objects and get denominator
+                        for (auto ith : in_objs){
+                            TProfile * test = (TProfile*) ith;
+                            sumw   += test->GetBinEntries     (b);
+                            sumw2  += sumw*sumw;
+                            Nall++;
+                        } // object
+                        // set new values from average after outlier removal
+                        if (Nall){
+                            sumw /= Nall;
+                            sumw2 = (sumw2 - sumw*sumw)/Nall;
+                            out_obj-> SetBinContent (b, sumw );
+                            out_obj-> SetBinError   (b, TMath::Sqrt(sumw2));
+                        }
+                    } // x
+                } // y
+            } // z
+            return out_obj;
+        }
 
         double chi2prob(TH1* test, TH1 * ref, bool cumul=false) {
             if (ref == 0 || test == 0) return 0;
@@ -413,7 +549,7 @@ class OutlierRemoval{
         }
 
         void close_all_infiles(){
-            for (auto it_f : all_files) it_f->Close();
+            for (auto it_f : all_files) if (it_f->IsOpen()) it_f->Close();
         }
 
         void read_Xsection(){
