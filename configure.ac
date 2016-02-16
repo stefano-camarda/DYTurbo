@@ -183,6 +183,7 @@ AC_CONFIG_FILES([Makefile
 		 integrands/Makefile
 		 dyres/Makefile
 		 dynnlo/Makefile
+		 dyqt/Makefile
 		 mcfm/Makefile
 		 cernlib/Makefile
 		 dequad/Makefile
