@@ -87,4 +87,16 @@ void fdist_(int& ih, double& x, double& xmu, double fx[11])
   else if (ih == -1) //antiproton
     for (int i = -5; i <=5; i++)
       fx[5+i]=fPDF[6-i]/x;
+
+  //fx[5-5]=0.;
+  //fx[5-4]=0.;
+  //fx[5-3]=0.;
+  //fx[5-2]=0.;
+  //fx[5-1]=0.;
+  //fx[5+0]=0.;
+  //fx[5+1]=0.;
+  //fx[5+2]=0.;
+  //fx[5+3]=0.;
+  //fx[5+4]=0.;
+  //fx[5+5]=0.;
 }
