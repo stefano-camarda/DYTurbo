@@ -870,7 +870,7 @@ c initialize the points of the gaussian quadrature for the alfa and beta integra
       include 'gauss.f'
       include 'quadrules.f'
 
-c     the output is stired in the common block: /ctweights/ctx,ctw
+c     the output is stored in the common block: /ctweights/ctx,ctw
 
       min = 1d-7
       max = 1d0

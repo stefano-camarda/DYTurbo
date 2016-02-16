@@ -227,6 +227,107 @@ double dyvirt(double m, double y, double qt, double phicm, double phiZ, double c
   cout << "Virt: " << value << "  " << "time " << end_time - begin_time << "s" << endl;
   //******************************************
 }
+double dylow(double m, double y, double qt, double phicm, double phiZ, double cos_th, double zcth)
+{
+  //set up constants
+  double rmass = opts.rmass;
+  double rwidth = opts.rwidth;
+  double minmass = sqrt(taumin_.taumin_)*energy_.sroot_;
+  double sqrts = energy_.sroot_;;
+  double s = sqrts*sqrts;
+  double mmin = opts.mlow;
+  double mmax = opts.mhigh;
+  double xqtcut = qtcut_.xqtcut_;
+
+  //  std::cout << std::setprecision(15);
+  double begin_time, end_time;
+  double value;
+  double rlo[22];
+  double wgt = 1;
+
+  /*
+  //variables to be integrated (1 dimension in total)
+  //1 collinear PDF dimension
+  double zcth;
+  zcth = 0.5;   //polar angle of Z in the CM frame
+  */
+  //invariant mass of the recoil (set to 0 to have the correct LO phase space mapping)
+  double mjj = 0.;
+  
+  //evaluate four momentum of Z in lab frame, given y, m, qt
+  double zql, zqt, zp, ze;
+  zql = 0.5*sqrt(m*m+qt*qt)*(exp(y)-exp(-y));
+  zqt = qt;
+  zp = sqrt(zqt*zqt + zql*zql);
+  ze = sqrt(m*m+zqt*zqt+zql*zql);
+
+  //Compute Z four momentum in CM, given y, m, qt and zcth
+  double zqtcm, zpcm, zqlcm, zecm, zycm;
+  zqtcm = qt;
+  zpcm = zqtcm / sin(acos(zcth)); //absolute momentum of Z in CM
+  zqlcm = zpcm * zcth;         //longitudinal momentum of Z in CM
+  zecm = sqrt(m*m + zpcm*zpcm);//Energy of Z in CM
+  zycm = 0.5 * log((zecm + zqlcm)/(zecm - zqlcm)); //rapidity of Z in CM
+
+  //boost from CM to lab
+  double yboost;
+  yboost = y - zycm;
+
+  //Compute recoil four momentum in CM (massless recoil with mjj = 0)
+  double rqtcm, rqlcm, recm, rycm;
+  rqtcm = zqtcm;
+  rqlcm = zqlcm;
+  recm = sqrt(rqtcm*rqtcm+rqlcm*rqlcm+mjj*mjj);
+  rycm = 0.5*log((recm-rqlcm)/(recm+rqlcm));
+
+  //now apply yboost to the recoil to have the longitudinal momentum of the recoil in the lab frame
+  double rqt, ry, rql, re;
+  rqt = rqtcm;
+  ry = rycm+yboost;
+  rql = 0.5*sqrt(rqtcm*rqtcm+mjj*mjj)*(exp(ry)-exp(-ry));
+  re = sqrt(rql*rql+rqt*rqt+mjj*mjj);
+  
+  //compute tau = mtot^2/s
+  double mtot, tau;
+  mtot = sqrt(pow(ze+re,2)-pow(zql+rql,2));
+  tau = mtot*mtot/s;
+
+  /*
+  //cross check that rapidity of the system is the rapidity of the boost
+  double ytot;
+  ytot = 0.5* log((ze+re + zql+rql)/(ze+re - (zql+rql)));
+  cout << ytot << "  " << yboost << endl;
+  */
+
+  //convert invariant mass to 0-1 for Breit-Wigner weighting
+  double m2, m1, s3max, almin, almax, tanal, al, x1;
+  m2 = mjj;
+  m1 = mtot;
+  s3max=(m2-m1)*(m2-m1);
+  almin=atan((0.-rmass*rmass)/rmass/rwidth);
+  almax=atan((s3max-rmass*rmass)/rmass/rwidth);
+  tanal = (m*m - rmass*rmass)/rmass/rwidth;
+  al = atan(tanal);
+  x1 = (al-almin)/(almax-almin);
+
+  //************** VIRTUAL ***************
+  //phase space mapping
+  rlo[0] = x1;                                       //mll
+  rlo[2] = phicm;                                    //phi of Z in CM frame
+  rlo[3] = (cos_th + 1.)/2.;                         //cos_th of dilepton in Z rest frame
+  rlo[4] = phiZ;                                     //phi of dilepton in Z rest frame
+  rlo[5] = log(tau)/log(minmass*minmass/s);          //tau of the system
+  rlo[6] = 0.5 - yboost/log(tau);                    //y of the system
+  //dimension to be integrated
+  rlo[1] = (zcth + 1.)/2.;                           //cos th of Z in CM frame
+  begin_time = clock_real();
+  double f[opts.totpdf];
+  value = lowint_(rlo,wgt);
+  end_time = clock_real();
+  cout << "Virt: " << value << "  " << "time " << end_time - begin_time << "s" << endl;
+  //******************************************
+}
+
 double dyct(double m, double y, double qt, double phicm, double phiZ, double cos_th, double alpha, double beta)
 {
   //set up constants
