@@ -196,7 +196,7 @@ merge_cubatures(){
     done
 }
 
-merge_stefano(){
+merge_stefano_DYRES(){
     DRYRUN=echo 
     DRYRUN=
     #
@@ -217,6 +217,33 @@ merge_stefano(){
             #exit 0
         done
     done
+}
+
+merge_stefano_DYTURBO(){
+    DRYRUN=echo 
+    DRYRUN="/usr/bin/time -v "
+    #
+    indir=results_Stefano/
+    #outdir=results_merge/Stefano_dyturbo_v1_160201_o2
+    outdir=results_merge/Stefano_dyturbo_160214_Zpol
+    mkdir -p $outdir
+    proc=z0
+    echo -n "merging ..."
+    for order in nll nnll
+    do
+        terms="res ct vjlo"
+        [[ $order =~ nnll ]] && terms="res ct real virt"
+        for term in $terms
+        do
+            ORDER=`echo "${order}" | tr '[:lower:]' '[:upper:]'`
+            TERM=`echo "${term}" | tr '[:lower:]' '[:upper:]'`
+            outf=$outdir/dyturbo_z0_lhc8_o${ORDER}t${TERM}_outlier.root
+            inf=results_Stefano/AiMoments/z-8tev-$order-$term/*/results.root
+            $DRYRUN ./bin/merger -X $outf $inf
+            #exit 0
+        done
+    done > mergeout
+    echo " log in mergeout"
 }
 
 merge_benchmark(){
@@ -286,8 +313,8 @@ merge_general(){
     #echo  " w{p,m} bm2$qtymerge {RES3D,CT3D} $resdir/dyturbo-0.9.6.2/results_bm012_WpWm     bm2 10100 benchmark_v2_160204_WZ " >> mergeconf
 
     #
-    echo  " z0 o1 {RES,CT}  results o1 1010 aimoments_test_160211 " >> mergeconf
-    echo  " z0 o2 {RES,CT}  results o2 1010 aimoments_test_160211 " >> mergeconf
+    echo  " z0 o1 {RES,RESnaive,RESkt0,CT,CTnaive,CTkt0}  results o1 1010 aimoments_test_160211 " >> mergeconf
+    #echo  " z0 o2 {RES,RESnaive,RESkt0,CT,CTnaive,CTkt0}  results o2 1010 aimoments_test_160211 " >> mergeconf
 
 
 
@@ -328,7 +355,8 @@ merge_general(){
 
 #merge_cubatures
 #merge_benchmark
-merge_general
-#merge_stefano
+#merge_general
+#merge_stefano_DYRES
+merge_stefano_DYTURBO
 
 exit 0

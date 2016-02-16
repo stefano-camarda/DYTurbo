@@ -482,23 +482,24 @@ class PlotTools:
             raise ValueError("No "+classname+" "+"'"+objname+"'"+" in file '"+"'"+filename+"'"+"'")
         if classname == "histogram" :
             h.SetDirectory(0)
-            if type(h) == TProfile :
+            if "Profile" in h.ClassName() :
                 name  = "prf_"+h.GetName()
-                title = h.GetTitle()
-                title += ";"
-                title += h.GetXaxis().GetTitle()
-                title += ";"
-                title += h.GetYaxis().GetTitle()
-                nbins = h.GetNbinsX()
-                xmin = h.GetXaxis().GetXmin()
-                xmax = h.GetXaxis().GetXmax()
-                hh = TH1D(name, title, nbins, xmin, xmax)
+                #title = h.GetTitle()
+                #title += ";"
+                #title += h.GetXaxis().GetTitle()
+                #title += ";"
+                #title += h.GetYaxis().GetTitle()
+                #nbins = h.GetNbinsX()
+                #xmin = h.GetXaxis().GetXmin()
+                #xmax = h.GetXaxis().GetXmax()
+                #hh = TH1D(name, title, nbins, xmin, xmax)
+                hh = h.ProjectionX(name)
                 hh.SetDirectory(0)
-                for ibin in range(0,h.GetNbinsX()+2):
-                    v = h.GetBinContent ( ibin )
-                    e = h.GetBinError   ( ibin )
-                    hh.SetBinContent ( ibin , v )#if v==v else 0. )
-                    hh.SetBinError   ( ibin , e )#if e==e else 0. )
+                #for ibin in range(0,h.GetNbinsX()+2):
+                    #v = h.GetBinContent ( ibin )
+                    #e = h.GetBinError   ( ibin )
+                    #hh.SetBinContent ( ibin , v )#if v==v else 0. )
+                    #hh.SetBinError   ( ibin , e )#if e==e else 0. )
                 return hh
         return h
 
@@ -766,7 +767,7 @@ class PlotTools:
         #MSG.debug(" x min max: {} {} y min max: {} {}".format( xmin, xmax, ymin,ymax) )
         title = ";{};{}".format( hlist0.GetXaxis().GetTitle(), hlist0.GetYaxis().GetTitle())
         xaxis_orig = hlist0.GetXaxis()
-        if xaxis_orig.GetBinLabel != "" :
+        if not forceRange and xaxis_orig.GetBinLabel != "" :
             # seems the histogram has labels, copy them
             s.axes.append(s.EmptyClone(hlist0,"axis"))
             s.axes[-1].SetTitle(title)
@@ -1591,6 +1592,8 @@ class PlotTools:
     def CompareHistsInFiles(s, name, hflist, **kwargs) :
         # hflist = title, filename, histname
         hists = [ s.GetHistSetTitle(x[0], x[1], x[2]) for x in hflist ]
+        for h in hists :
+            h.Print("range")
         s.CompareHistsInList(name, hists, **kwargs)
 
     def CompareHistsInList(s, name, hists, **kwargs) :

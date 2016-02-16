@@ -1896,7 +1896,7 @@ def cute_ratioWZ():
             #
             y= (yz1/yz2)          ; y[y==np.inf] = 0; graphsRatio.append( newGraph(x,y, name="ratioZ"  , lcolor=blueI, lstyle=3 ))
             y=           (yw1/yw2); y[y==np.inf] = 0; graphsRatio.append( newGraph(x,y, name="ratioW"  , lcolor=redI , lstyle=3 ))
-            y= (yz1/yz2)/(yw1/yw2); y[y==np.inf] = 0; graphsRatio.append( newGraph(x,y, name="ratioWZ" , lcolor=orangeI     ))
+            #y= (yz1/yz2)/(yw1/yw2); y[y==np.inf] = 0; graphsRatio.append( newGraph(x,y, name="ratioWZ" , lcolor=orangeI     ))
             pl.NewCanvas("cute_{}_{}_{}".format(proc+"zratio",pdftitle,termtitle))
             pl.DrawHistCompareSubPlot(graphs,
                                       graphsRatio,
@@ -1911,13 +1911,13 @@ def cute_ratioWZ():
             graphs.append( newGraph(x,yw2, name="#frac{{{}}}{{{}}}".format(PDFtitle1 ,PDFtitle2), lcolor=1,lstyle=3))
             pl.DrawLegend(graphs,"l")
             pl.c1.cd(2)
-            pl.WriteText("#frac{{ {}-{} / {}-{} }}{{ {}-{} / {}-{} }}".format(
-                "Z", PDFtitle1,
-                "Z", PDFtitle2,
-                proctit, PDFtitle1,
-                proctit, PDFtitle2,
-                ),
-                0.45,0.5,tsize=0.08,tcol=orangeI)
+            # pl.WriteText("#frac{{ {}-{} / {}-{} }}{{ {}-{} / {}-{} }}".format(
+            #     "Z", PDFtitle1,
+            #     "Z", PDFtitle2,
+            #     proctit, PDFtitle1,
+            #     proctit, PDFtitle2,
+            #     ),
+            #     0.45,0.5,tsize=0.08,tcol=orangeI)
             pl.Save()
         pass
     pass
@@ -2058,6 +2058,26 @@ def plot_y():
             legx=0.6
             )
 
+def mom_outlier() :
+    for term in ["real", "virt", "fin"]:
+        for ai in [ 0, 4] :
+            var = "p_qt_A{}".format(ai)
+            name = "{}_{}".format(term,var)
+            fname = "{}.root".format(term)
+            pl.CompareHistsInFiles(
+                    name,
+                    [
+                        [ term+" total"   , fname , var            ],
+                        [ term+" outlier" , fname , var+"_outlier" ],
+                    ],
+                    logX=True, minX=0.6, maxX=650, forceRange=True, compareType="ratio0"
+                    )
+            pass
+        pass
+    pl.MakePreviewFromList(0,"mom_outlier")
+    pass
+
+
 
 ## Documentation for main
 #
@@ -2080,7 +2100,7 @@ if __name__ == '__main__' :
     #DY.DoPDFQuadStudy()
     #plot_profile()
     #
-    benchmark()
+    #benchmark()
     #
     #makeStatPlot()
     #
@@ -2089,6 +2109,7 @@ if __name__ == '__main__' :
     #pl.MakePreviewFromList(0,"cute")
     #
     #plot_y()
+    mom_outlier()
     pass
 
 

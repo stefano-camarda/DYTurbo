@@ -128,8 +128,10 @@ prepare_in(){
     # if [[ $pdfset == CT14             ]]; then order=2; fi;
     # if [[ $pdfset == MMHT2014nnlo68cl ]]; then order=2; fi;
     # process (default z0)
-    lomass=66.
-    himass=116.
+    #lomass=66.
+    #himass=116.
+    lomass=80
+    himass=100
     rmass=91.1876
     width=2.495
     nproc=3 
@@ -573,7 +575,7 @@ submit_allProg(){
     loqtbin=0
     #hiqtbin=100
     hiqtbin=600
-    loybin=0
+    loybin=-5
     hiybin=5
     fulllloqtbin=$loqtbin
     fulllhiqtbin=$hiqtbin
@@ -614,7 +616,7 @@ submit_allProg(){
                     #if [[ $order == 2 ]]; then termlist="VIRT"; fi;
                     #if [[ $order == 2 ]]; then termlist="RES3D"; fi;
                     #termlist="RES3D"
-                    termlist="RESkt0 CTkt0 RESnaive CTnaive"
+                    termlist="RES1 RES2 CT CTkt0 CTnaive RES1kt0 RES1naive RES2kt0 RES2naive "
                 fi
                 if [[ $program =~ ^dyres ]] 
                 then
@@ -632,7 +634,9 @@ submit_allProg(){
                 for terms in $termlist
                 do
                     seedlist=1010-1110
-                    [[ $terms =~ CT ]] && seedlist=1010
+                    [[ $terms =~ RES1 ]] && seedlist=2010-2510 && terms=`echo $terms | sed "s|RES1|RES|g"`
+                    [[ $terms =~ RES2 ]] && seedlist=2511-3010 && terms=`echo $terms | sed "s|RES2|RES|g"`
+                    [[ $terms =~ CT ]] && seedlist=2010-2110
                     #seedlist=1010-1110
                     # run all pdf variations at once
                     if [[ $terms =~ REAL ]]

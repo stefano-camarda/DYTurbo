@@ -2,7 +2,7 @@ nproc = 3
 g_param = 0.83595
 LHAPDFset    = CT10nnlo
 LHAPDFmember    = 0
-PDFerrors = true
+PDFerrors = false
 
 doRES  = false
 doCT   = false
