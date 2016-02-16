@@ -50,6 +50,7 @@ class OutlierRemoval{
 	    //            open_all_infiles();
             if (doXsecNormalization) read_Xsection();
             // for object in allobjects
+            if(verbose>0) printf(" Merging .... ");
             for (auto p_objname : all_obj_names){
                 const char* objname = p_objname.Data();
                 size_t len = p_objname.Length();
@@ -136,8 +137,10 @@ class OutlierRemoval{
                 }
                 // First Loop :  get average
                 if (verbose>1) printf("    First Loop \n");
-                if (dim==1||do2D) create_average_obj(tmp_m,in_objs,"median");
-                if(verbose>4) {printf("  average "); tmp_m ->Print("range"); }
+                if (dim==1||do2D) {
+                    create_average_obj(tmp_m,in_objs,"median");
+                    printf("  average "); tmp_m ->Print("range");
+                } 
                 if (tmp_p==0){ // is not profile
                     create_average_obj(tmp_a,in_objs,"mean"); // dont calculate average for profile
                     // save average and median
@@ -148,7 +151,11 @@ class OutlierRemoval{
                         output_objects.push_back(tmp_m);
                         if (verbose>2) printf("saving histogram %s with integral %f\n", tmp_m->GetName(), tmp_m->Integral());
                     }
-
+                    // Second loop -- outlier removal for histogram
+                    tmp_a = clone_empty(in_objs[0],(name+"_average").Data());
+                    remove_outliers_from_hist(tmp_a,tmp_m,in_objs);
+                    tmp_a->SetName((name+"_outliers").Data());
+                    output_objects.push_back(tmp_a);
                     // Stop here for TH1,2,3
                     goto releaseobj;
                 }
@@ -458,9 +465,11 @@ class OutlierRemoval{
                         double value = ith->GetBinContent(ibin);
                         if (isProf){
                             if(dim==1){
-                                entries = ((TProfile*)   ith)->GetBinEntries(ibin);
+                                entries = ((TProfile*)   ith)->GetBinEntries (ibin);
+                                value   = ((TProfile*)   ith)->At            (ibin);
                             } else if (dim==2){
-                                entries = ((TProfile2D*) ith)->GetBinEntries(ibin);
+                                entries = ((TProfile2D*) ith)->GetBinEntries (ibin);
+                                value   = ((TProfile2D*) ith)->At            (ibin);
                             }
                             if (doEntries){
                                 push_sorted(vals,entries);
@@ -488,8 +497,11 @@ class OutlierRemoval{
                     sigma = rms(vals, centr)/sqrtN;
                 }
                 if (isProf&&!doEntries){
+                    if (verbose>5) printf("   filling median profile bin %d cent %f wcent %f prof: %f \n", ibin, centr, wcentr, centr/wcentr);
                     ((TProfile*)tmp_m)-> SetBinEntries ( ibin  , wcentr );
                     ((TProfile*)tmp_m)-> SetAt         ( centr , ibin   );
+                    ((TProfile*)tmp_m)-> GetBinSumw2()->SetAt ( wcentr , ibin );
+                    ((TProfile*)tmp_m)-> GetSumw2()->SetAt    ( sigma  , ibin );
                 } else {
                     tmp_m->SetBinContent( ibin, centr  );
                     tmp_m->SetBinError  ( ibin, sigma );
@@ -497,42 +509,63 @@ class OutlierRemoval{
             } // bins
         }
 
+        void remove_outliers_from_hist(TH1*hist, TH1*ref, VecTH1 in_objs){
+            remove_outliers_from_profile(hist,ref,in_objs, false);
+        }
 
-        void remove_outliers_from_profile(TH1*prof, TH1*med, VecTH1 in_objs){
+        void remove_outliers_from_profile(TH1*out, TH1*med, VecTH1 in_objs,bool isProf = true){
             if (med==0) return;
             int dim = med->GetDimension();
-            TProfile* out_obj = (TProfile*)prof;
             if (dim!=1) return; /// @todo: 2D
             for ( auto b : loop_bins(med) ){
                 VecDbl v_sumw;
                 VecDbl v_sumwy;
                 // loop over all objects and skip outliers
                 for (auto ith : in_objs){
-                    TProfile * test = (TProfile*) ith;
-                    double d = test->GetBinEntries(b) - med->GetBinContent(b);
+                    double d = med->GetBinContent(b);
                     double s = med->GetBinError(b) * TMath::Sqrt(in_objs.size());
+                    double ent = 0;
+                    double val = 0;
+                    if (isProf){
+                        TProfile * test = (TProfile*) ith;
+                        val = test->At (b);
+                        ent = test->GetBinEntries (b);
+                        d -= ent;
+                    } else {
+                        val = ith->GetBinContent(b);
+                        d -= val;
+                    }
                     double chi2 = 0;
                     if (s != 0) chi2 = d*d/(s*s);
                     if (verbose>1) printf("    b %d in_obj %s d %f s %f chi2 %f \n", b, ith->GetName(), d, s, chi2);
                     if ( TMath::Prob(chi2,1) > pl(7) ){
                         if (verbose>1) printf("   taken up to pl %g chi2 prob %g \n", pl(7), TMath::Prob(chi2,1));
-                        push_sorted( v_sumw  ,test->GetBinEntries (b) );
-                        push_sorted( v_sumwy ,test->At            (b) );
+                        if (isProf) push_sorted( v_sumw  , ent );
+                        push_sorted( v_sumwy , val );
                     }
                 } // objects
                 // set new values from average after outlier removal
                 if (!v_sumwy.empty()){
                     //
+                    if (isProf){
                     double sumw = mean(v_sumw);
                     double sumwy = mean(v_sumwy);
                     //double sigmaw = rms(v_sumw, sumw );
                     //double sigma = rms(v_sumwy, sumwy );
                     //double sumwyy = sumwy*sumwy + sigma*sigma;
-                    //
-                    out_obj-> SetBinEntries        ( b      , sumw );
-                    out_obj-> SetAt                ( sumwy  , b    );
+                    TProfile* prof = (TProfile*)out;
+                    prof -> SetBinEntries        ( b      , sumw );
+                    prof -> SetAt                ( sumwy  , b    );
                     //out_obj-> GetBinSumw2()->SetAt ( sumw   , b    );
                     //out_obj-> GetSumw2()->SetAt    ( sumwyy , b    );
+                    } else {
+                        // calculate new average
+                        double centr = mean(v_sumwy);
+                        double sigma = rms(v_sumwy, centr)/TMath::Sqrt(v_sumwy.size());
+                        // set bin content and error
+                        out->SetBinContent( b, centr  );
+                        out->SetBinError  ( b, sigma );
+                    }
                 }
             } // all bins
         }
@@ -609,7 +642,7 @@ int main(int argc, const char * argv[]){
             return 0;
         }
         // parse x section normalization
-        if (isOpt("-x",argv[i])){
+        if (isOpt("-x",argv[i])){ 
             merger.doXsecNormalization=true;
             i++;
         }
