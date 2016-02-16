@@ -199,7 +199,8 @@ class OutlierRemoval{
         }
 
         void Init(){
-            LOBIN= includeUnderOverFlow ? 0 : 1; // start from 0
+  	    TH1::AddDirectory(kFALSE);
+	    LOBIN= includeUnderOverFlow ? 0 : 1; // start from 0
             HIBIN= includeUnderOverFlow ? 1 : 0; // add 1 to end
         }
 
