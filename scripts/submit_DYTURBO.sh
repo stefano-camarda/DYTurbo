@@ -44,6 +44,7 @@ gpar=1
 tarbalfile=unset
 seedlist=unset
 
+queue=atlasshort
 prepare_script(){
     mkdir -p $batch_script_dir
     mkdir -p $result_dir
@@ -54,9 +55,9 @@ prepare_script(){
     # prepare in
     prepare_in
     # prepare script
-    nprocessors=$(($cubacores+1))
+    nprocessors=$cubacores
+    [[ $cubacores == 0 ]] && nprocessors=1
     walltime=5:00
-    queue=atlasshort
     if [[ $program =~ dyres ]] || [[ $variation =~ all ]]
     then
         walltime=20:00
@@ -217,6 +218,12 @@ prepare_in(){
         [[ $variation == 53    ]] && gpar=0.88990
         [[ $variation == 54    ]] && gpar=0.77360
     fi;
+    # qT recoil prescription -- default CS
+    qtrec_naive="false"
+    qtrec_cs="true"
+    qtrec_kt0="false"
+    [[ $terms =~ naive ]] && qtrec_naive="true" && qtrec_cs="false" && qtrec_kt0="false"
+    [[ $terms =~ kt0   ]] && qtrec_naive="false" && qtrec_cs="false" && qtrec_kt0="true"
     # set correct input template
     in_tmpl=$dyturbo_in_tmpl
     # because it was redefine benchmark setting I turned off
@@ -233,6 +240,8 @@ prepare_in(){
             s|SETMHI|$himass|g               ;
             s|SETRMASS|$rmass|g              ;
             s|SETWIDTH|$width|g              ;
+            s|SETMUR|$rmass|g              ;
+            s|SETMUF|$rmass|g              ;
             s|SETNPROC|$nproc|g              ;
             s|SETPDFSET|$pdfsetname|g        ;
             s|SETMEMBER|$member|g            ;
@@ -254,6 +263,9 @@ prepare_in(){
             s|SETDETFIDUCIAL|$detfiducial|g  ;
             s|SETIH1|$ih1|g                  ;
             s|SETIH2|$ih2|g                  ;
+            s|SETQTRECNAIVE|$qtrec_naive|g   ;
+            s|SETQTRECCS|$qtrec_cs|g         ;
+            s|SETQTRECKT0|$qtrec_kt0|g       ;
             s|SETPDFERRORS|$setPDFerrors|g   ;
             s|SETSROOT|$sroot|g              ; " tmp
     mv tmp $in_file
@@ -303,9 +315,13 @@ add_to_tarbal(){
 }
 
 submit_job(){
+    echo $job_name $sh_file $seedlist  >> scripts/cmd_list
     if [[ `hostname` =~ cuth-dell  ]]
     then
         $DRYRUN bash -x $sh_file
+    elif [[ `hostname` =~ precision  ]]
+    then
+        true
     else
         if [ -a results/$job_name.root ]
         then
@@ -552,15 +568,18 @@ submit_allProg(){
         DRYRUN=
     fi
     # full phase space
+    #queue=etapshort
+    queue=atlasshort
     loqtbin=0
-    hiqtbin=100
+    #hiqtbin=100
+    hiqtbin=600
     loybin=0
     hiybin=5
     fulllloqtbin=$loqtbin
     fulllhiqtbin=$hiqtbin
     fulllloybin=$loybin
     fulllhiybin=$hiybin
-    collider=lhc7
+    collider=lhc8
     random_seed=100101
     startSeed=100201
     variation=0
@@ -569,29 +588,33 @@ submit_allProg(){
     batch_template=$dyturbo_project/scripts/run_DYTURBO_Array_TMPL.sh
     for program in dyturbo #  dyturbo dyres mcfm
     do
-        for process in wm # wp wm z0
+        for process in z0 # wp wm z0
         do
             makelepcuts=false
             #if [[ $process =~ z0 ]]; then makelepcuts=true; fi
-            for order in 3 # 3
+            for order in 1 2 # 3
             do
                 # set PDF ?
                 pdfset=CT10nlo
                 if [[ $order == 2 ]]; then pdfset=ZPT-CT10; fi;
                 if [[ $order == 3 ]]; then pdfset=WZZPT-CT10; order=2; fi;
+                pdfset=CT10nnlo
                 # set terms
-                termlist="ALL"
+                #termlist="RES CT LO"
+                termlist="RES CT"
                 if [[ $program =~ ^dyturbo ]] 
                 then
                     cubacores=8
                     #termlist="RES CT LO"
                     #if [[ $order == 2 ]]; then termlist="RES CT REAL VIRT"; fi;
+                    if [[ $order == 2 ]]; then termlist="RES CT"; fi;
                     #if [[ $order == 2 ]]; then termlist="REAL"; fi;
-                    termlist="RES3D CT3D"
+                    #termlist="RES3D CT3D"
                     #if [[ $order == 2 ]]; then termlist="RES3D CT3D REAL VIRT"; fi;
-                    if [[ $order == 2 ]]; then termlist="VIRT"; fi;
-                    if [[ $order == 2 ]]; then termlist="RES3D"; fi;
-                    termlist="RES3D"
+                    #if [[ $order == 2 ]]; then termlist="VIRT"; fi;
+                    #if [[ $order == 2 ]]; then termlist="RES3D"; fi;
+                    #termlist="RES3D"
+                    termlist="RESkt0 CTkt0 RESnaive CTnaive"
                 fi
                 if [[ $program =~ ^dyres ]] 
                 then
@@ -608,21 +631,24 @@ submit_allProg(){
                 fi
                 for terms in $termlist
                 do
+                    seedlist=1010-1110
+                    [[ $terms =~ CT ]] && seedlist=1010
+                    #seedlist=1010-1110
                     # run all pdf variations at once
                     if [[ $terms =~ REAL ]]
                     then
                         variation=all
                         #seedlist=1010
                         # you need two because of array size
-                        seedlist=1010-1510
-                        seedlist=1510-2010
+                        #seedlist=1010-1510
+                        #seedlist=1510-2010
+                        seedlist=1010-1020
                     fi
                     if [[ $terms =~ VIRT ]]
                     then
                         variation=all
-                        #seedlist=1010
-                        seedlist=1010-1110
                     fi
+                    variation=0
                     # for qt/y splits
                     NsplitQT=1
                     NsplitY=1
@@ -644,7 +670,7 @@ submit_allProg(){
                             hiqtbin=` splitedBin $fulllloqtbin $fulllhiqtbin $NsplitQT $iqt 1`
                             loybin=`  splitedBin $fulllloybin  $fulllhiybin  $NsplitY  $iy  0`
                             hiybin=`  splitedBin $fulllloybin  $fulllhiybin  $NsplitY  $iy  1`
-                            qtregion=`echo qt${loqtbin}${hiqtbin}y${loybin}${hiybin}t${terms} | sed "s/\.//g;s/ //g"`
+                            qtregion=`echo o${order}qt${loqtbin}${hiqtbin}y${loybin}${hiybin}t${terms} | sed "s/\.//g;s/ //g"`
                             prepare_script
                             submit_job
                         done
@@ -713,24 +739,6 @@ submit_grid(){
     finalize_grid_submission
 }
 
-
-
-clear_files(){
-    echo "Clearing setup files"
-    if [[ $(bjobs 2> /dev/null) ]] 
-    then
-        echo There are jobs running, skip clearing
-        #rm -f scripts/batch_scripts/*.sh
-        #rm -f scripts/infiles/*.in
-    else
-        rm -f scripts/batch_scripts/*.sh
-        rm -f scripts/infiles/*.in
-    fi
-    rm -f scripts/infiles/*.tar
-    rm -f scripts/infiles/*.tar.gz
-    echo "Done"
-}
-
 submit_Benchmark(){
     # ask about running/submitting
     DRYRUN=echo 
@@ -753,7 +761,7 @@ submit_Benchmark(){
     fulllhiybin=5
     # benchmark dependence 
     benchmark=2
-    for benchmark in 0 1 2 # 0 1 2
+    for benchmark in 1 2 # 0 1 2
     do
         dyturbo_in_tmpl=$dyturbo_project/scripts/DYTURBO_bench_v$benchmark.in
         #termlist="RES CT REAL1 REAL2 VIRT"
@@ -761,10 +769,10 @@ submit_Benchmark(){
         NsplitQT=1
         NsplitY=1
         [[ $benchmark == 2 ]] && termlist="RES3D CT3D" && NsplitQT=10 && NsplitY=10 
-        for process in wm wp z0 # wp wm z0
+        for process in wm wp # wp wm z0
         do
             makelepcuts=false
-            [[ $process =~ z0 ]] &&  makelepcuts=true
+            #[[ $process =~ z0 ]] &&  makelepcuts=true
             for terms in $termlist
             do
                 random_seed=seed
@@ -796,6 +804,25 @@ submit_Benchmark(){
     done
 }
 
+
+
+clear_files(){
+    echo "Clearing setup files"
+    if [[ $(bjobs 2> /dev/null) ]] 
+    then
+        echo There are jobs running, skip clearing
+        #rm -f scripts/batch_scripts/*.sh
+        #rm -f scripts/infiles/*.in
+    else
+        rm -f scripts/batch_scripts/*.sh
+        rm -f scripts/infiles/*.in
+    fi
+    rm -f scripts/infiles/*.tar
+    rm -f scripts/infiles/*.tar.gz
+    rm -f scripts/cmd_list
+    echo "Done"
+}
+
 clear_results(){
     read -p "Are you sure you want to delete all current results ? " -n 1 -r
     echo    # (optional) move to a new line
@@ -810,8 +837,10 @@ clear_results(){
 clear_files
 clear_results
 #submit_Z_dyturbo
-#submit_allProg
+submit_allProg
 #submit_Wwidth
 #submit_grid
-submit_Benchmark
+#submit_Benchmark
 
+# 
+[[ `hostname` =~ precision  ]] && $DRYRUN python scripts/run_parallel.py

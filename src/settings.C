@@ -87,7 +87,7 @@ void settings::readfromfile(const string fname){
     if (order != 1 && order != 2)
       throw invalid_argument("Invalid order, please select 1 (NLO) or 2 (NNLO)");
     if (nproc != 1 && nproc != 2 && nproc != 3)
-      throw invalid_argument("Wrong process, please select nproc = 1, 2, or 3");
+      throw invalid_argument("Wrong process, please select nproc = 1 (W+), 2 (W-), or 3(Z)");
 
     // finite order (NLO vs NNLO)
     /*
