@@ -47,7 +47,7 @@ class OutlierRemoval{
         // Public methods
         void Merge(){
             find_all_objects();
-            open_all_infiles();
+	    //            open_all_infiles();
             if (doXsecNormalization) read_Xsection();
             // for object in allobjects
             for (auto p_objname : all_obj_names){
@@ -57,7 +57,11 @@ class OutlierRemoval{
                 if (verbose>1) printf("objname: %s\n",objname);
                 // get object from all files
                 VecTH1 in_objs;
-                for (auto it_f : all_files){
+		//                for (auto it_f : all_files){
+		for (auto it_fn : infilenames){
+		  const char * fname = it_fn.Data();
+		  TFile * it_f =TFile::Open(fname,"READ");
+
                     /// @todo: test if they are all same binning
                     TString tmp(p_objname); tmp+="__"; tmp+=in_objs.size();
                     const char* objname_out = tmp.Data();
@@ -114,6 +118,7 @@ class OutlierRemoval{
                     } else if (doXsecNormalization && !isProfile(o)) normalize(o);
                     if (verbose>2) o->Print();
                     in_objs.push_back(o);
+		    it_f->Close();
                 } //end loop all files
                 // temporary objects
                 TString name = p_objname;
@@ -173,7 +178,7 @@ class OutlierRemoval{
                     }
             }
             if (verbose>1) printf("End of merge, closing files \n");
-            close_all_infiles();
+	    //            close_all_infiles();
         };
 
         void Write(){
