@@ -158,6 +158,11 @@ class OutlierRemoval{
                 output_objects.push_back(tmp_p);
                 if (verbose>2) printf("saving histogram %s with integral %f\n",tmp_p->GetName(), tmp_p->Integral());
                 if (dim>1&&!do2D) goto releaseobj;
+                tmp_m->SetName((name+"_median").Data());
+                output_objects.push_back(tmp_m);
+                // new median of entries
+                tmp_m = clone_empty(in_objs[0], (name+"_entries_median").Data() );
+                create_average_obj(tmp_m,in_objs,"median_entries");
                 tmp_m->SetName((name)+"_entries_median");
                 if (verbose>2) printf("saving histogram %s with integral %f\n",tmp_m->GetName(), tmp_m->Integral());
                 output_objects.push_back(tmp_m);
@@ -189,18 +194,18 @@ class OutlierRemoval{
                 if (verbose>3) ith->Print();
                 ith->Write();
             }
-            if(verbose>0) printf("Merged %d files in %s\n", infilenames.size(), outfilename.Data());
+            if(verbose>0) printf("Merged %d files in %s\n", (int) infilenames.size(), outfilename.Data());
             fout->Close();
         };
 
         void SetOutputFile(TString _outf){
             outfilename=_outf;
-            if(verbose>0)printf ("merger Target file: %s\n", _outf.Data()); // hadd like comments
+            if(verbose>1)printf ("merger Target file: %s\n", _outf.Data()); // hadd like comments
         }
 
         void AddInputFile(TString _inf){
             infilenames.push_back(_inf); 
-            if(verbose>0) printf ("merger Source file %d: %s\n", infilenames.size(), _inf.Data()); // hadd like comments
+            if(verbose>2) printf ("merger Source file %d: %s\n", (int) infilenames.size(), _inf.Data()); // hadd like comments
         }
 
         void Init(){
@@ -271,7 +276,7 @@ class OutlierRemoval{
                     }
                 }
             }
-            if(verbose>5) printf("    ALL %d \n", bins.size());
+            if(verbose>5) printf("    ALL %d \n", (int) bins.size());
             return bins;
         }
 
@@ -424,10 +429,12 @@ class OutlierRemoval{
 
         void create_average_obj(TH1* &tmp_m, VecTH1 &in_objs, TString type){
             int dim  = tmp_m->GetDimension();
+            bool doEntries = type.CompareTo("median_entries",TString::kIgnoreCase)==0;
+            if (doEntries) type = "median";
             bool isProf = isProfile(tmp_m);
             if (isProf){ // instead of profile value, take profile entries (denominator)
                 TString name=tmp_m->GetName();
-                name+="_entries";
+                if (doEntries) name+="_entries";
                 TH1* old=tmp_m;
                 if(dim==1){
                     tmp_m = ((TProfile*)tmp_m) -> ProjectionX(name);
@@ -446,7 +453,7 @@ class OutlierRemoval{
                 for(auto ith : in_objs){
                     if (ith!=0){
                         double value = 0;
-                        if (isProf){
+                        if (isProf && doEntries){
                             if(dim==1){
                                 value = ((TProfile*)   ith)->GetBinEntries(ibin);
                             } else if (dim==2){
@@ -542,7 +549,7 @@ class OutlierRemoval{
 
 
 void help(const char * prog){
-      printf ("usage: %s [-h] [-v] [-x]  <output> <input list>\n");
+      printf ("usage: %s [-h] [-v] [-x]  <output> <input list>\n", prog);
       printf (" Please keep separated switches!!! Its on my todolist! \n");
       printf ("   -x    Normalize histograms to Xsection. \n");
       printf ("   -v    Increase verbosity (very chatty). \n");
