@@ -119,9 +119,10 @@ int main( int argc , const char * argv[])
   if (opts.doRES  ) cout << " resummation";
   if (opts.doVV   ) cout << " double virtual";
   if (opts.doCT   ) cout << " counterterm";
-  if (opts.doLO   ) cout << " finite order";
-  if (opts.doREAL ) cout << " real part";
-  if (opts.doVIRT ) cout << " virt part";
+  if (opts.doVJ   ) cout << " V+j finite order";
+  if (opts.doLO   ) cout << " V+j LO";
+  if (opts.doREAL ) cout << " V+j NLO real";
+  if (opts.doVIRT ) cout << " V+J NLO virt";
   cout << endl;
 
   print_head();
@@ -187,6 +188,17 @@ int main( int argc , const char * argv[])
           normalise_result(value,error);
           print_result(value,error,b_time,e_time);
           hists.FillResult( plotter::CT , value, error, e_time-b_time );
+          totval += value;
+          toterror2 += error*error;
+      }
+      //analytical
+      if (opts.doVJ) {
+          double b_time = clock_real();
+          vjintegr3d(value, error);
+          double e_time = clock_real();
+          normalise_result(value,error);
+          print_result(value,error,b_time,e_time);
+          //hists.FillResult( plotter::VJ , value, error, e_time-b_time );
           totval += value;
           toterror2 += error*error;
       }
@@ -262,9 +274,10 @@ void print_head(){
     if (opts.doRES ) cout << setw(38) << "resummed "      << " | ";
     if (opts.doVV  ) cout << setw(38) << "double virtual "<< " | ";
     if (opts.doCT  ) cout << setw(38) << "counter term "  << " | ";
-    if (opts.doREAL) cout << setw(38) << "real part "     << " | ";
-    if (opts.doVIRT) cout << setw(38) << "virtual part "  << " | ";
-    if (opts.doLO  ) cout << setw(38) << "Z+j LO "        << " | ";
+    if (opts.doVJ  ) cout << setw(38) << "V+j fixed ord "           << " | ";
+    if (opts.doLO  ) cout << setw(38) << "V+j LO "        << " | ";
+    if (opts.doREAL) cout << setw(38) << "V+j NLO real "     << " | ";
+    if (opts.doVIRT) cout << setw(38) << "V+j NLO virt "  << " | ";
     if (true       ) cout << setw(38) << "TOTAL "         << " | ";
     cout << endl;
     print_line();
@@ -274,9 +287,10 @@ void print_line(){
     if (opts.doRES ) N += 41;
     if (opts.doVV )  N += 41;
     if (opts.doCT  ) N += 41;
+    if (opts.doVJ  ) N += 41;
+    if (opts.doLO  ) N += 41;
     if (opts.doREAL) N += 41;
     if (opts.doVIRT) N += 41;
-    if (opts.doLO  ) N += 41;
     if (true       ) N += 41;
     cout<<string(N,'-').c_str() <<endl;
 }

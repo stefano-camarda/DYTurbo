@@ -8,6 +8,7 @@ void resintegr2d(double &res, double &err);
 void resintegr3d(double &res, double &err);
 void resintegrMC(double &res, double &err);
 
+void vjintegr3d(double &res, double &err);
 void lowintegr(double &res, double &err);
 void realintegr(vector <double> &res, double &err);
 void virtintegr(vector <double> &res, double &err);

@@ -90,7 +90,7 @@ public:
   bool ctint2d, ctint3d, ctintvegas;
 
   //term switch
-  bool doRES  , doVV , doCT   , doREAL , doVIRT , doLO   ;
+  bool doRES  , doVV , doCT   , doREAL , doVIRT , doLO, doVJ   ;
 
   //resummation or fixed order switch
   bool fixedorder;

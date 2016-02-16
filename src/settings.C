@@ -45,6 +45,7 @@ void settings::readfromfile(const string fname){
     doREAL             = in.GetBool   ( "doREAL"          ); //false
     doVIRT             = in.GetBool   ( "doVIRT"          ); //false
     doLO               = in.GetBool   ( "doLO"            ); //false
+    doVJ               = in.GetBool   ( "doVJ"            ); //false
     cubaverbosity      = in.GetNumber ( "cubaverbosity"   ); //0       # Cuba        info     messsages, from    0           to              3
     cubacores          = in.GetNumber ( "cubacores"       ); //0
     niterRES           = in.GetNumber ( "niterRES"        ); //0       # only        for      2d         and     3d          cuhre           integration
@@ -212,6 +213,7 @@ void settings::dumpAll(){
         dumpB("doREAL             ", doREAL              );
         dumpB("doVIRT             ", doVIRT              );
         dumpB("doLO               ", doLO                );
+        dumpB("doVJ               ", doVJ                );
         dumpI("cubaverbosity      ", cubaverbosity       );
         dumpI("cubacores          ", cubacores           );
         dumpI("niterRES           ", niterRES            );

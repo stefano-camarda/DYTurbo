@@ -88,6 +88,7 @@ void dyturboinit()
 
   //Cut on qt/Q (add to settings)
   qtcut_.xqtcut_=0.008;
+  //qtcut_.xqtcut_=0.001;
 
   //initialise MCFM settings
   flag_.flag_ = false;
