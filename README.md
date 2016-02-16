@@ -105,6 +105,15 @@ make && make install
      -h    Print this help message. 
 
   For more info read README.md
+  ./bin/merger --help
+  usage: --help [-h] [-v] [-x]  <output> <input list>
+   Please keep separated switches!!! Its on my todolist! 
+      -x    Normalize histograms to Xsection. 
+      -v    Increase verbosity (very chatty). 
+      -2d   Make 2d projections and outliers for 2D. 
+      -h    Print this help message. 
+
+  For more info read README.md
  ```
 
 ### Detailed description
