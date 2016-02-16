@@ -32,17 +32,17 @@ C---set to zero if x out of range
       fx(-1)=fx(-2)
       fx(-2)=temp
 
-      fx(-5)=0d0
-      fx(-4)=0d0
-      fx(-3)=0d0
-      fx(-2)=0d0
-      fx(-1)=0d0
-      fx(0)=0d0
-      fx(1)=0d0
+c      fx(-5)=0d0
+c      fx(-4)=0d0
+c      fx(-3)=0d0
+c      fx(-2)=0d0
+c      fx(-1)=0d0
+c      fx(0)=0d0
+c      fx(1)=0d0
 c      fx(2)=0d0
-      fx(3)=0d0
-      fx(4)=0d0
-      fx(5)=0d0
+c      fx(3)=0d0
+c      fx(4)=0d0
+c      fx(5)=0d0
       
       return
       end
