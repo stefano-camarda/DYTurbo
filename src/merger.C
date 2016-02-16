@@ -57,10 +57,10 @@ class OutlierRemoval{
                 if (verbose>1) printf("objname: %s\n",objname);
                 // get object from all files
                 VecTH1 in_objs;
-		//                for (auto it_f : all_files){
-		for (auto it_fn : infilenames){
-		  const char * fname = it_fn.Data();
-		  TFile * it_f =TFile::Open(fname,"READ");
+                //                for (auto it_f : all_files){
+                for (auto it_fn : infilenames){
+                    const char * fname = it_fn.Data();
+                    TFile * it_f =TFile::Open(fname,"READ");
 
                     /// @todo: test if they are all same binning
                     TString tmp(p_objname); tmp+="__"; tmp+=in_objs.size();
@@ -483,11 +483,11 @@ class OutlierRemoval{
                 for (auto ith : in_objs){
                     TProfile * test = (TProfile*) ith;
                     double d = test->GetBinEntries(b) - med->GetBinContent(b);
-                    double s = med->GetBinError(b);
+                    double s = med->GetBinError(b) * TMath::Sqrt(in_objs.size());
                     double chi2 = 0;
                     if (s != 0) chi2 = d*d/(s*s);
                     if (verbose>1) printf("    b %d in_obj %s d %f s %f chi2 %f \n", b, ith->GetName(), d, s, chi2);
-                    if ( TMath::Prob(chi2,1) > pl(10) ){
+                    if ( TMath::Prob(chi2,1) > pl(7) ){
                         if (verbose>1) printf("   taken up to pl %g chi2 prob %g \n", pl(7), TMath::Prob(chi2,1));
                         push_sorted( v_sumw  ,test->GetBinEntries (b) );
                         push_sorted( v_sumwy ,test->At            (b) );
