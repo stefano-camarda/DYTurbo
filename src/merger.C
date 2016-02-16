@@ -30,7 +30,7 @@ typedef std::vector<TFile*> VecTFile;
 typedef std::vector<TH1*> VecTH1;
 typedef std::vector<double> VecDbl;
 typedef std::vector<int> VecInt;
-using std::sort;
+//using std::sort;
 
 double bins[23] = {0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 22, 26, 30, 34, 38, 42, 46, 50, 54, 60, 70, 80, 100};
 
@@ -39,8 +39,8 @@ class OutlierRemoval{
         OutlierRemoval() :
             includeUnderOverFlow(true),
             doXsecNormalization(false),
-            doTh2dProjections(true),
             doRebin(true),
+            do2D(false),
             verbose(1) {};
         ~OutlierRemoval(){};
 
@@ -74,21 +74,25 @@ class OutlierRemoval{
                             o = h2d->ProjectionX("dummy"); // ,-1,0,"e");
                             o->SetName(objname_out);
                             if (doXsecNormalization) normalize(o);
+                            delete h2d;
                         } else if (proj == 'y'){
                             if (is_empty(h2d,objname,objname_out)) continue;
                             o = h2d->ProjectionY("dummy"); // ,-1,0,"e");
                             o->SetName(objname_out);
                             if (doXsecNormalization) normalize(o);
+                            delete h2d;
                         } else if (proj == 'u'){
                             if (is_empty(h2d,objname,objname_out)) continue;
                             o = h2d->ProjectionY("dummy",0,-1,"e");
                             o->SetName(objname_out);
                             if (doXsecNormalization) normalize(o);
+                            delete h2d;
                         } else if (proj == 'v'){
                             if (is_empty(h2d,objname,objname_out)) continue;
                             o = make_projection(h2d);
                             o->SetName(objname_out);
                             if (doXsecNormalization) normalize(o);
+                            delete h2d;
                         } else if (proj == 'n') { // its probably pt so rebin to ptz measurement
                             TString basename = p_objname(0,len-6); // remove "_rebin"
                             if (verbose>1) printf("basename: %s , proj %c \n",basename.Data(), proj);
@@ -100,6 +104,7 @@ class OutlierRemoval{
                             for (int ibin =1; ibin<=o->GetNbinsX(); ibin++ ){
                                 o->SetBinContent(ibin,o->GetBinContent(ibin)/o->GetBinWidth(ibin));
                             }
+                            delete h1;
                         }
                         if (is_empty(o,objname,objname_out)) continue;
                         for ( auto ibin : loop_bins(o)){
@@ -112,32 +117,34 @@ class OutlierRemoval{
                 } //end loop all files
                 // temporary objects
                 TString name = p_objname;
-                // median
-                TH1* tmp_m = clone_empty(in_objs[0],(name+"_median").Data());
-                if(verbose>4) {printf("  new obj "); tmp_m ->Print("range"); }
                 // average
                 TH1* tmp_a = clone_empty(in_objs[0],(name+"_average").Data());
+                if(verbose>4) {printf("  new obj "); tmp_a ->Print("range"); }
+                int dim = tmp_a->GetDimension();
+                // median
+                TH1* tmp_m = (dim==1||do2D) ? clone_empty(in_objs[0],(name+"_median").Data()) : 0;
                 // total profile
                 TH1* tmp_p=0;
-                if (isProfile(tmp_m)){
+                if (isProfile(tmp_a)){
                     if (verbose>2) printf(" do profile \n");
                     tmp_p = clone_empty(in_objs[0],(name+"_total").Data());
                 }
-                int dim = tmp_m->GetDimension();
                 // First Loop :  get average
                 if (verbose>1) printf("    First Loop \n");
-                create_average_obj(tmp_m,in_objs,"median");
+                if (dim==1||do2D) create_average_obj(tmp_m,in_objs,"median");
                 if(verbose>4) {printf("  average "); tmp_m ->Print("range"); }
                 if (tmp_p==0){ // is not profile
                     create_average_obj(tmp_a,in_objs,"mean"); // dont calculate average for profile
                     // save average and median
                     tmp_a->SetName(name);
                     output_objects.push_back(tmp_a);
-                    tmp_m->SetName((name+"_median").Data());
-                    output_objects.push_back(tmp_m);
-                    if (verbose>2) printf("saving histogram %s with integral %f\n", tmp_m->GetName(), tmp_m->Integral());
+                    if (dim==1||do2D) {
+                        tmp_m->SetName((name+"_median").Data());
+                        output_objects.push_back(tmp_m);
+                        if (verbose>2) printf("saving histogram %s with integral %f\n", tmp_m->GetName(), tmp_m->Integral());
+                    }
                     // Stop here for TH1,2,3
-                    continue;
+                    goto releaseobj;
                 }
                 // Profiles only -- total profile with a priori uncertainty
                 for (auto ith : in_objs) tmp_p->Add(ith,1./in_objs.size());
@@ -145,6 +152,7 @@ class OutlierRemoval{
                 tmp_p->SetName(name);
                 output_objects.push_back(tmp_p);
                 if (verbose>2) printf("saving histogram %s with integral %f\n",tmp_p->GetName(), tmp_p->Integral());
+                if (dim>1&&!do2D) goto releaseobj;
                 tmp_m->SetName((name)+"_entries_median");
                 if (verbose>2) printf("saving histogram %s with integral %f\n",tmp_m->GetName(), tmp_m->Integral());
                 output_objects.push_back(tmp_m);
@@ -152,10 +160,17 @@ class OutlierRemoval{
                 // Second Loop -- discard outliers
                 if (verbose>1) printf("    Second Loop \n");
                 remove_outliers_from_profile(tmp_a, tmp_m, in_objs);
-                if (tmp_a==0) continue; // if not implemented 
+                if (tmp_a==0) goto releaseobj; // if not implemented 
                 tmp_a->SetName((name+"_outlier").Data());
                 output_objects.push_back(tmp_a);
                 if (verbose>2) {printf("  outliers removed \n"); tmp_a->Print("range"); tmp_p->Print("range");}
+                //
+                // release input histograms
+                releaseobj:
+                    while (!in_objs.empty()){
+                        delete in_objs.back();
+                        in_objs.pop_back();
+                    }
             }
             if (verbose>1) printf("End of merge, closing files \n");
             close_all_infiles();
@@ -191,7 +206,7 @@ class OutlierRemoval{
         // Public data members
         bool includeUnderOverFlow;
         bool doXsecNormalization;
-        bool doTh2dProjections;
+        bool do2D;
         bool doRebin;
         int verbose;
 
@@ -218,7 +233,7 @@ class OutlierRemoval{
                 TString name = o->GetName();
                 all_obj_names.push_back(dirname+name);
                 // make projections on TH2 and remove outlier on 1D separatelly
-                if (doTh2dProjections && cl->InheritsFrom( "TH2"      )) {
+                if (do2D && cl->InheritsFrom( "TH2"      )) {
                     all_obj_names.push_back(dirname+name+"_px");
                     all_obj_names.push_back(dirname+name+"_py");
                     //all_obj_names.push_back(dirname+name+"_pu");
@@ -267,6 +282,12 @@ class OutlierRemoval{
                 return true;
             }
             return false;
+        }
+
+        void push_sorted(VecDbl &vec, const double val){
+            // from:  http://stackoverflow.com/a/15048651
+            VecDbl::iterator it = std::lower_bound( vec.begin(), vec.end(), val, std::greater<double>() ); // find proper position in descending order
+            vec.insert( it, val ); // insert before iterator it
         }
 
         double median(VecDbl xi) {
@@ -339,7 +360,7 @@ class OutlierRemoval{
         }
 
         double pl(int nsigma) {
-            return TMath::Erfc(nsigma*TMath::Sqrt(2));
+            return TMath::Erfc(nsigma/TMath::Sqrt(2));
         }
 
 
@@ -385,7 +406,7 @@ class OutlierRemoval{
         void read_Xsection(){
             VecDbl xi;
             for (auto it_f : all_files){
-                xi.push_back(((TH1*) it_f->Get("qt_y_total"))->Integral());
+                push_sorted(xi, ((TH1*) it_f->Get("qt_y_total"))->Integral());
             }
             Xsection = median(xi);
         }
@@ -426,7 +447,7 @@ class OutlierRemoval{
                                 value = ((TProfile2D*) ith)->GetBinEntries(ibin);
                             }
                         } else value = ith->GetBinContent(ibin);
-                        vals.push_back(value);
+                        push_sorted(vals,value);
                     }
                 }
                 double centr = 0;
@@ -462,14 +483,12 @@ class OutlierRemoval{
                     if (verbose>1) printf("    b %d in_obj %s d %f s %f chi2 %f \n", b, ith->GetName(), d, s, chi2);
                     if ( TMath::Prob(chi2,1) > pl(10) ){
                         if (verbose>1) printf("   taken up to pl %g chi2 prob %g \n", pl(7), TMath::Prob(chi2,1));
-                        v_sumw  .push_back( test->GetBinEntries (b) );
-                        v_sumwy .push_back( test->At            (b) );
+                        push_sorted( v_sumw  ,test->GetBinEntries (b) );
+                        push_sorted( v_sumwy ,test->At            (b) );
                     }
                 } // objects
                 // set new values from average after outlier removal
                 if (!v_sumwy.empty()){
-                    std::sort(v_sumw  .begin(), v_sumw.  end());
-                    std::sort(v_sumwy .begin(), v_sumwy. end());
                     //
                     double sumw = mean(v_sumw);
                     double sumwy = mean(v_sumwy);
@@ -521,6 +540,7 @@ void help(const char * prog){
       printf (" Please keep separated switches!!! Its on my todolist! \n");
       printf ("   -x    Normalize histograms to Xsection. \n");
       printf ("   -v    Increase verbosity (very chatty). \n");
+      printf ("   -2d   Make 2d projections and outliers for 2D. \n");
       printf ("   -h    Print this help message. \n");
       printf ("\n For more info read README.md\n");
 }
@@ -563,6 +583,11 @@ int main(int argc, const char * argv[]){
         // parse verbosity level
         if (isOpt("-v",argv[i])){
             merger.verbose=100;
+            i++;
+        }
+        // parse verbosity level
+        if (isOpt("-2d",argv[i])){
+            merger.do2D=true;
             i++;
         }
         //First non-optional argument is the output file
