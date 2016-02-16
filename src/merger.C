@@ -148,6 +148,7 @@ class OutlierRemoval{
                         output_objects.push_back(tmp_m);
                         if (verbose>2) printf("saving histogram %s with integral %f\n", tmp_m->GetName(), tmp_m->Integral());
                     }
+
                     // Stop here for TH1,2,3
                     goto releaseobj;
                 }
@@ -432,7 +433,7 @@ class OutlierRemoval{
             bool doEntries = type.CompareTo("median_entries",TString::kIgnoreCase)==0;
             if (doEntries) type = "median";
             bool isProf = isProfile(tmp_m);
-            if (isProf){ // instead of profile value, take profile entries (denominator)
+            if (isProf && doEntries){ // instead of profile value, take profile entries (denominator)
                 TString name=tmp_m->GetName();
                 if (doEntries) name+="_entries";
                 TH1* old=tmp_m;
@@ -449,34 +450,53 @@ class OutlierRemoval{
             double sqrtN=sqrt(in_objs.size());
             for ( auto ibin : loop_bins(tmp_m) ){
                 VecDbl vals;
+                VecDbl entrs;
                 if ( verbose>5 ) printf ( " looping bins for average %d \n" , ibin);
                 for(auto ith : in_objs){
                     if (ith!=0){
-                        double value = 0;
-                        if (isProf && doEntries){
+                        double entries = 0;
+                        double value = ith->GetBinContent(ibin);
+                        if (isProf){
                             if(dim==1){
-                                value = ((TProfile*)   ith)->GetBinEntries(ibin);
+                                entries = ((TProfile*)   ith)->GetBinEntries(ibin);
                             } else if (dim==2){
-                                value = ((TProfile2D*) ith)->GetBinEntries(ibin);
+                                entries = ((TProfile2D*) ith)->GetBinEntries(ibin);
                             }
-                        } else value = ith->GetBinContent(ibin);
-                        push_sorted(vals,value);
+                            if (doEntries){
+                                push_sorted(vals,entries);
+                            } else {
+                                push_sorted(vals,value);
+                                push_sorted(entrs,entries);
+                            }
+                        } else push_sorted(vals,value);
                     }
                 }
                 double centr = 0;
                 double sigma = 0;
+                double wcentr = 0;
+                double wsigma = 0;
                 // decide what type of moment to calculate
                 if (type.CompareTo("median",TString::kIgnoreCase)==0){
                     centr = median(vals);
                     sigma = delta(vals, centr, 0.68) / sqrtN;
+                    if (isProf&&!doEntries){
+                        wcentr = median (entrs);
+                        wsigma = delta (entrs, wcentr, 0.68) / sqrtN;
+                    }
                 } else if (type.CompareTo("mean",TString::kIgnoreCase)==0){
                     centr = mean(vals);
                     sigma = rms(vals, centr)/sqrtN;
                 }
-                tmp_m->SetBinContent( ibin, centr  );
-                tmp_m->SetBinError  ( ibin, sigma );
+                if (isProf&&!doEntries){
+                    ((TProfile*)tmp_m)-> SetBinEntries ( ibin  , wcentr );
+                    ((TProfile*)tmp_m)-> SetAt         ( centr , ibin   );
+                } else {
+                    tmp_m->SetBinContent( ibin, centr  );
+                    tmp_m->SetBinError  ( ibin, sigma );
+                }
             } // bins
         }
+
 
         void remove_outliers_from_profile(TH1*prof, TH1*med, VecTH1 in_objs){
             if (med==0) return;
