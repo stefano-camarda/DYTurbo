@@ -283,8 +283,8 @@ merge_benchmark(){
 }
 
 merge_general(){
-    DRYRUN=echo 
-    DRYRUN=
+    #DRYRUN=echo 
+    DRYRUN="/usr/bin/time -v "
     #
     resdir=/home/cuth/work/unimainz/ATLAS/workarea/DYTURBO/
     qtymerge=qt010y01
@@ -313,7 +313,7 @@ merge_general(){
     #echo  " w{p,m} bm2$qtymerge {RES3D,CT3D} $resdir/dyturbo-0.9.6.2/results_bm012_WpWm     bm2 10100 benchmark_v2_160204_WZ " >> mergeconf
 
     #
-    echo  " z0 o1 {RES,RESnaive,RESkt0,CT,CTnaive,CTkt0}  results o1 1010 aimoments_test_160211 " >> mergeconf
+    echo  " z0 o1 {RES,RESnaive,RESkt0,CT,CTnaive,CTkt0}  results o1 2010 aimoments_test_160216 " >> mergeconf
     #echo  " z0 o2 {RES,RESnaive,RESkt0,CT,CTnaive,CTkt0}  results o2 1010 aimoments_test_160211 " >> mergeconf
 
 
@@ -355,8 +355,8 @@ merge_general(){
 
 #merge_cubatures
 #merge_benchmark
-#merge_general
+merge_general
 #merge_stefano_DYRES
-merge_stefano_DYTURBO
+#merge_stefano_DYTURBO
 
 exit 0

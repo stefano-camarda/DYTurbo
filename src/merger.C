@@ -24,6 +24,7 @@
 #include <TKey.h>
 #include <TString.h>
 #include <TMath.h>
+#include <TObjectTable.h>
 
 typedef std::vector<TString> VecTStr;
 typedef std::vector<TFile*> VecTFile;
@@ -42,7 +43,13 @@ class OutlierRemoval{
             doRebin(true),
             do2D(false),
             verbose(1) {};
-        ~OutlierRemoval(){};
+        ~OutlierRemoval(){
+            if (verbose >8) {
+                printf ( " Destructor:\n");
+                gDirectory->ls("-m");
+                gObjectTable->Print();
+            }
+        };
 
         // Public methods
         void Merge(){
@@ -139,7 +146,7 @@ class OutlierRemoval{
                 if (verbose>1) printf("    First Loop \n");
                 if (dim==1||do2D) {
                     create_average_obj(tmp_m,in_objs,"median");
-                    printf("  average "); tmp_m ->Print("range");
+                    if (verbose>3) printf("  median average "); tmp_m ->Print("range");
                 } 
                 if (tmp_p==0){ // is not profile
                     create_average_obj(tmp_a,in_objs,"mean"); // dont calculate average for profile
@@ -220,6 +227,11 @@ class OutlierRemoval{
   	    TH1::AddDirectory(kFALSE);
 	    LOBIN= includeUnderOverFlow ? 0 : 1; // start from 0
             HIBIN= includeUnderOverFlow ? 1 : 0; // add 1 to end
+            if (verbose >8) {
+                printf ( " Init:\n");
+                gDirectory->ls("-m");
+                gObjectTable->Print();
+            }
         }
 
         // Public data members
@@ -440,6 +452,7 @@ class OutlierRemoval{
             bool doEntries = type.CompareTo("median_entries",TString::kIgnoreCase)==0;
             if (doEntries) type = "median";
             bool isProf = isProfile(tmp_m);
+            TProfile* prof = (isProf&&!doEntries) ? (TProfile*)tmp_m : 0;
             if (isProf && doEntries){ // instead of profile value, take profile entries (denominator)
                 TString name=tmp_m->GetName();
                 if (doEntries) name+="_entries";
@@ -452,8 +465,8 @@ class OutlierRemoval{
                     delete old;
                 }
                 tmp_m->SetDirectory(0);
-                tmp_m->Reset();
             }
+            tmp_m->Reset();
             double sqrtN=sqrt(in_objs.size());
             for ( auto ibin : loop_bins(tmp_m) ){
                 VecDbl vals;
@@ -474,8 +487,8 @@ class OutlierRemoval{
                             if (doEntries){
                                 push_sorted(vals,entries);
                             } else {
-                                push_sorted(vals,value);
-                                push_sorted(entrs,entries);
+                                //push_sorted(vals,value);
+                                //push_sorted(entrs,entries);
                             }
                         } else push_sorted(vals,value);
                     }
@@ -491,6 +504,7 @@ class OutlierRemoval{
                     if (isProf&&!doEntries){
                         wcentr = median (entrs);
                         wsigma = delta (entrs, wcentr, 0.68) / sqrtN;
+                        if (verbose>5) printf("   calculated median profile nom %f +- %f denom %f +- %f prof %f \n", ibin, centr, sigma, wcentr, wsigma, centr/wcentr);
                     }
                 } else if (type.CompareTo("mean",TString::kIgnoreCase)==0){
                     centr = mean(vals);
@@ -498,10 +512,15 @@ class OutlierRemoval{
                 }
                 if (isProf&&!doEntries){
                     if (verbose>5) printf("   filling median profile bin %d cent %f wcent %f prof: %f \n", ibin, centr, wcentr, centr/wcentr);
-                    ((TProfile*)tmp_m)-> SetBinEntries ( ibin  , wcentr );
-                    ((TProfile*)tmp_m)-> SetAt         ( centr , ibin   );
-                    ((TProfile*)tmp_m)-> GetBinSumw2()->SetAt ( wcentr , ibin );
-                    ((TProfile*)tmp_m)-> GetSumw2()->SetAt    ( sigma  , ibin );
+                    //TProfile* prof = (TProfile*)tmp_m;
+                    //double x = prof->GetBinCenter(ibin);
+                    //double y = centr/wcentr;
+                    //double w = wcentr;
+                    //prof-> Fill(x,y,w);
+                    //prof-> SetBinContent        ( ibin                    , centr );
+                    //prof-> SetBinEntries        ( ibin                    , wcentr );
+                    //prof-> GetBinSumw2()->SetAt ( TMath::Abs(wcentr)      , ibin   );
+                    //prof-> GetSumw2()->SetAt    ( sigma*sigma+centr*centr , ibin   );
                 } else {
                     tmp_m->SetBinContent( ibin, centr  );
                     tmp_m->SetBinError  ( ibin, sigma );

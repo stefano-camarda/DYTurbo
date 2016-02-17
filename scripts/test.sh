@@ -44,10 +44,10 @@ make install &&
 
 #python scripts/pt_plot.py &&
 
-/usr/bin/time -v ./bin/merger -X real.root results_Stefano/AiMoments/z-8tev-nnll-real/{1,2,3,4}*/results.root &&
-/usr/bin/time -v ./bin/merger -X virt.root results_Stefano/AiMoments/z-8tev-nnll-virt/{1,2,3,4}*/results.root &&
+/usr/bin/time -v ./bin/merger -v real.root results_Stefano/AiMoments/z-8tev-nnll-real/{1,2,3,4}/results.root &&
+#/usr/bin/time -v ./bin/merger -X virt.root results_Stefano/AiMoments/z-8tev-nnll-virt/{1,2,3,4}*/results.root &&
 
-python scripts/pt_plot.py &&
+#python scripts/pt_plot.py &&
 #set +x
 echo Finished test || echo TEST FAILURE
 
