@@ -255,9 +255,9 @@ void plotter::FillRealDipole(double p3[4], double p4[4], double wgt, int nd){
     dipole_points.push_back(point);
     // fill moments
     if(doAiMoments) for (auto i=0; i<NMOM; i++){
-        pa_qtVy .A[i]->Fill(qt,y, a[i],wgt);
-        pa_qt   .A[i]->Fill(qt,   a[i],wgt);
-        pa_y    .A[i]->Fill(qt,   a[i],wgt);
+        pa_qtVy .A[i]->Fill(qt,y , a[i],wgt);
+        pa_qt   .A[i]->Fill(qt   , a[i],wgt);
+        pa_y    .A[i]->Fill(y    , a[i],wgt);
     } 
     return;
 }
