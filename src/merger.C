@@ -132,7 +132,6 @@ class OutlierRemoval{
                 TString name = p_objname;
                 // average
                 TH1* tmp_a = clone_empty(in_objs[0],(name+"_average").Data());
-                if(verbose>4) {printf("  new obj "); tmp_a ->Print("range"); }
                 int dim = tmp_a->GetDimension();
                 // median
                 TH1* tmp_m = (dim==1||do2D) ? clone_empty(in_objs[0],(name+"_median").Data()) : 0;
@@ -146,7 +145,7 @@ class OutlierRemoval{
                 if (verbose>1) printf("    First Loop \n");
                 if (dim==1||do2D) {
                     create_average_obj(tmp_m,in_objs,"median");
-                    if (verbose>3) printf("  median average "); tmp_m ->Print("range");
+                    if (verbose>3) printf("  median average "); print_range(tmp_m);
                 } 
                 if (tmp_p==0){ // is not profile
                     create_average_obj(tmp_a,in_objs,"mean"); // dont calculate average for profile
@@ -188,7 +187,7 @@ class OutlierRemoval{
                 if (tmp_a==0) goto releaseobj; // if not implemented 
                 tmp_a->SetName((name+"_outlier").Data());
                 output_objects.push_back(tmp_a);
-                if (verbose>2) {printf("  outliers removed \n"); tmp_a->Print("range"); tmp_p->Print("range");}
+                if (verbose>2) {printf("  outliers removed \n"); print_range(tmp_a); print_range(tmp_p);}
                 //
                 // release input histograms
                 releaseobj:
@@ -286,17 +285,17 @@ class OutlierRemoval{
             int nbinsx= (dim<1) ? LOBIN : h->GetNbinsX()+HIBIN;
             int nbinsy= (dim<2) ? LOBIN : h->GetNbinsY()+HIBIN;
             int nbinsz= (dim<3) ? LOBIN : h->GetNbinsZ()+HIBIN;
-            if(verbose>5) printf("    LOOP BINS LO %d HI %d nx %d ny %d nz %d \n", LOBIN, HIBIN, nbinsx, nbinsy, nbinsz);
+            if(verbose>30) printf("    LOOP BINS LO %d HI %d nx %d ny %d nz %d \n", LOBIN, HIBIN, nbinsx, nbinsy, nbinsz);
             for (int izbin=LOBIN;izbin<=nbinsz;izbin++){
                 for (int iybin=LOBIN;iybin<=nbinsy;iybin++){
                     for (int ixbin=LOBIN;ixbin<=nbinsx;ixbin++){
                         int ibin=h->GetBin(ixbin,iybin,izbin);
-                        if(verbose>5) printf("    bin %d x %d y %d z %d \n",  ibin, ixbin, iybin, izbin);
+                        if(verbose>30) printf("    bin %d x %d y %d z %d \n",  ibin, ixbin, iybin, izbin);
                         bins.push_back(ibin);
                     }
                 }
             }
-            if(verbose>5) printf("    ALL %d \n", (int) bins.size());
+            if(verbose>30) printf("    ALL %d \n", (int) bins.size());
             return bins;
         }
 
@@ -471,7 +470,7 @@ class OutlierRemoval{
             for ( auto ibin : loop_bins(tmp_m) ){
                 VecDbl vals;
                 VecDbl entrs;
-                if ( verbose>5 ) printf ( " looping bins for average %d \n" , ibin);
+                if ( verbose>30 ) printf ( " looping bins for average %d \n" , ibin);
                 for(auto ith : in_objs){
                     if (ith!=0){
                         double entries = 0;
@@ -487,8 +486,8 @@ class OutlierRemoval{
                             if (doEntries){
                                 push_sorted(vals,entries);
                             } else {
-                                //push_sorted(vals,value);
-                                //push_sorted(entrs,entries);
+                                push_sorted(vals,value);
+                                push_sorted(entrs,entries);
                             }
                         } else push_sorted(vals,value);
                     }
@@ -504,7 +503,7 @@ class OutlierRemoval{
                     if (isProf&&!doEntries){
                         wcentr = median (entrs);
                         wsigma = delta (entrs, wcentr, 0.68) / sqrtN;
-                        if (verbose>5) printf("   calculated median profile nom %f +- %f denom %f +- %f prof %f \n", ibin, centr, sigma, wcentr, wsigma, centr/wcentr);
+                        if (verbose>5) printf("   calculated median profile nom %f +- %f denom %f +- %f prof %f \n", centr, sigma, wcentr, wsigma, centr/wcentr);
                     }
                 } else if (type.CompareTo("mean",TString::kIgnoreCase)==0){
                     centr = mean(vals);
@@ -517,10 +516,10 @@ class OutlierRemoval{
                     //double y = centr/wcentr;
                     //double w = wcentr;
                     //prof-> Fill(x,y,w);
-                    //prof-> SetBinContent        ( ibin                    , centr );
-                    //prof-> SetBinEntries        ( ibin                    , wcentr );
-                    //prof-> GetBinSumw2()->SetAt ( TMath::Abs(wcentr)      , ibin   );
-                    //prof-> GetSumw2()->SetAt    ( sigma*sigma+centr*centr , ibin   );
+                    prof-> SetBinEntries        ( ibin                    , wcentr );
+                    prof-> SetAt                ( centr                   , ibin   );
+                    prof-> GetBinSumw2()->SetAt ( TMath::Abs(wcentr)      , ibin   );
+                    prof-> GetSumw2()->SetAt    ( sigma*sigma+centr*centr , ibin   );
                 } else {
                     tmp_m->SetBinContent( ibin, centr  );
                     tmp_m->SetBinError  ( ibin, sigma );
@@ -570,13 +569,14 @@ class OutlierRemoval{
                     double sumw = mean(v_sumw);
                     double sumwy = mean(v_sumwy);
                     //double sigmaw = rms(v_sumw, sumw );
-                    //double sigma = rms(v_sumwy, sumwy );
+                    double sigmawy = rms(v_sumwy, sumwy );
                     //double sumwyy = sumwy*sumwy + sigma*sigma;
                     TProfile* prof = (TProfile*)out;
-                    prof -> SetBinEntries        ( b      , sumw );
-                    prof -> SetAt                ( sumwy  , b    );
-                    //out_obj-> GetBinSumw2()->SetAt ( sumw   , b    );
-                    //out_obj-> GetSumw2()->SetAt    ( sumwyy , b    );
+                    prof ->SetBinEntries        ( b                , sumw );
+                    prof ->SetAt                ( sumwy            , b    );
+                    prof ->GetBinSumw2()->SetAt ( TMath::Abs(sumw) , b    );
+                    prof-> GetSumw2()->SetAt    ( sigmawy*sigmawy + sumwy*sumwy , b    );
+                    //prof-> GetSumw2()->SetAt    ( sumwyy , b    );
                     } else {
                         // calculate new average
                         double centr = mean(v_sumwy);
@@ -593,12 +593,49 @@ class OutlierRemoval{
             return TString(h->ClassName()).Contains("Profile");
         }
 
+        void print_range(TH1*h){
+            if(!isProfile(h)) {
+                h->Print("range");
+                return;
+            }
+            // assuming its profile
+            TProfile * p = (TProfile *) h;
+            double stat[10]; p->GetStats(stat);
+            printf( " TProfile dump: name=%s, mem=%p, tsumwy=%f, tsumwyy=%f, tsumw=%f, tsumww=%f, tsumwx=%f, tsumwxx=%f \n",
+                    p->GetName(), p,
+                    stat[4], stat[5], stat[0], stat[1], stat[2], stat[3]
+                    );
+            if (
+                    stat[0]==0 &&
+                    stat[1]==0 &&
+                    stat[2]==0 &&
+                    stat[3]==0 &&
+                    stat[4]==0 &&
+                    stat[5]==0
+                    ) {
+                printf("seems empty..\n");
+                return;
+            }
+            for (auto b: loop_bins(p)){
+                double prof = p->GetBinContent(b);
+                double err = p->GetBinError(b);
+                double sumwy = p->At(b);
+                double sumww = (p->GetBinSumw2()->GetSize()==0) ? 0 : p->GetBinSumw2()->At(b);
+                double sumw = p->GetBinEntries(b);
+                double sumwyy = p->GetSumw2()->At(b);
+                printf( " bin[%d]=%f+-%f\tsumwy=%f,\tsumwyy=%f,\tsumw=%f,\tsumww=%f \n",
+                        b, prof,err,sumwy,sumwyy,sumw,sumww
+                        );
+            }
+            return;
+        }
+
         TH1* clone_empty(TH1* h,TString newname){
             if (verbose>2) printf( " empty clone %s \n", newname.Data());
             TH1* tmp = (TH1*) h->Clone(newname.Data());
             tmp->SetDirectory(0);
             tmp->Reset();
-            if (verbose>2) tmp->Print();
+            if (verbose>2) print_range(tmp);
             return tmp;
         }
 
@@ -667,7 +704,7 @@ int main(int argc, const char * argv[]){
         }
         // parse verbosity level
         if (isOpt("-v",argv[i])){
-            merger.verbose=100;
+            merger.verbose=10;
             i++;
         }
         // parse verbosity level
