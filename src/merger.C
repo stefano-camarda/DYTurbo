@@ -208,8 +208,9 @@ class OutlierRemoval{
                 if (verbose>3) ith->Print();
                 ith->Write();
             }
+            if(verbose>0) printf("Merged %d files in %s, closing file ... \n", (int) infilenames.size(), outfilename.Data());
             fout->Close();
-            if(verbose>0) printf("Merged %d files in %s\n", (int) infilenames.size(), outfilename.Data());
+            if(verbose>0) printf(" file closed.\n");
         };
 
         void SetOutputFile(TString _outf){
