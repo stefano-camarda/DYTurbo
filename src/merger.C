@@ -145,7 +145,7 @@ class OutlierRemoval{
                 if (verbose>1) printf("    First Loop \n");
                 if (dim==1||do2D) {
                     create_average_obj(tmp_m,in_objs,"median");
-                    if (verbose>3) printf("  median average "); print_range(tmp_m);
+                    if (verbose>3) {printf("  median average "); print_range(tmp_m);}
                 } 
                 if (tmp_p==0){ // is not profile
                     create_average_obj(tmp_a,in_objs,"mean"); // dont calculate average for profile
@@ -208,8 +208,8 @@ class OutlierRemoval{
                 if (verbose>3) ith->Print();
                 ith->Write();
             }
-            if(verbose>0) printf("Merged %d files in %s\n", (int) infilenames.size(), outfilename.Data());
             fout->Close();
+            if(verbose>0) printf("Merged %d files in %s\n", (int) infilenames.size(), outfilename.Data());
         };
 
         void SetOutputFile(TString _outf){
