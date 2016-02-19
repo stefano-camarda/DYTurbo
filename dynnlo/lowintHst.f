@@ -22,6 +22,7 @@ C
       include 'qcdcouple.f'
       include 'rescoeff.f'
       include 'dynamicscale.f'
+      include 'options.f'
 
 c --- To use VEGAS random number sequence :
       double precision ran2
@@ -74,6 +75,7 @@ CC
 
       logical binner
       external binner
+      external hists_fill
 
       if (first) then
          first=.false.
@@ -618,6 +620,9 @@ C     Include missing term from contact term in 2 loop AP
     
 
       val=lowintHst*wgt
+      if (doFill.ne.0) then
+          call hists_fill(p(3,:),p(4,:),val)
+      endif
 
 
 
