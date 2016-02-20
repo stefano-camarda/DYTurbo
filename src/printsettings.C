@@ -170,6 +170,15 @@ void printsettings()
       }
     else
       cout << setw(25) << "fiducial cuts:"      << setw(20) << opts.fiducial << endl;
+  if (!opts.fixedorder && (opts.doRES || opts.doCT))
+    {
+      cout << endl;
+      cout << "======================== Resummation damping ====================" << endl;
+      cout << endl;
+      cout << setw(20) << "damping mode:"  << setw(10) << opts.dampmode << endl;
+      cout << setw(20) << "damp above:" << setw(10) << opts.dampk*opts.rmass  << setw(7) << "GeV" << endl;
+      cout << setw(20) << "damping width:" << setw(10) << opts.dampdelta*opts.rmass  << setw(7) << "GeV" << endl;
+    }
   cout << endl;
   cout << "======================== Debug settings ====================" << endl;
   cout << endl;
