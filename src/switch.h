@@ -2,12 +2,13 @@
 #define switch_h
 
 namespace switching {
-  void init(int md, double kk);
+  void init();
   double swtch(double qt, double m);
   double qtlimit(double m);
   extern double k;
-  extern double cutoff;
+  extern double delta;
   extern int mode;
+  extern const double cutoff;
 }
 
 extern "C" {
