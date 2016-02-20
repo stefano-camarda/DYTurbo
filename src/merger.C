@@ -57,7 +57,7 @@ class OutlierRemoval{
 	    //            open_all_infiles();
             if (doXsecNormalization) read_Xsection();
             // for object in allobjects
-            if(verbose>0) printf(" Merging .... ");
+            if(verbose>0) {printf(" Merging .... "); fflush(stdout);}
             for (auto p_objname : all_obj_names){
                 const char* objname = p_objname.Data();
                 size_t len = p_objname.Length();
@@ -145,7 +145,7 @@ class OutlierRemoval{
                 if (verbose>1) printf("    First Loop \n");
                 if (dim==1||do2D) {
                     create_average_obj(tmp_m,in_objs,"median");
-                    if (verbose>3) printf("  median average "); print_range(tmp_m);
+                    if (verbose>3) {printf("  median average "); print_range(tmp_m);}
                 } 
                 if (tmp_p==0){ // is not profile
                     create_average_obj(tmp_a,in_objs,"mean"); // dont calculate average for profile
@@ -208,8 +208,12 @@ class OutlierRemoval{
                 if (verbose>3) ith->Print();
                 ith->Write();
             }
-            if(verbose>0) printf("Merged %d files in %s\n", (int) infilenames.size(), outfilename.Data());
+            if(verbose>0){
+                printf("Merged %d files in %s, closing file ...", (int) infilenames.size(), outfilename.Data());
+                fflush(stdout);
+            }
             fout->Close();
+            if(verbose>0) printf(" file closed.\n");
         };
 
         void SetOutputFile(TString _outf){
@@ -509,17 +513,22 @@ class OutlierRemoval{
                     centr = mean(vals);
                     sigma = rms(vals, centr)/sqrtN;
                 }
-                if (isProf&&!doEntries){
+                if (isProf&&!doEntries&&wcentr!=0){
                     if (verbose>5) printf("   filling median profile bin %d cent %f wcent %f prof: %f \n", ibin, centr, wcentr, centr/wcentr);
+                    double r_centr2 = TMath::Power(centr/wcentr,2);
+                    double r_sigma2 = 0;
+                    r_sigma2+= TMath::Power( sigma  / centr  ,2);
+                    r_sigma2+= TMath::Power( wsigma / wcentr ,2);
+                    r_sigma2*= r_centr2;
                     //TProfile* prof = (TProfile*)tmp_m;
                     //double x = prof->GetBinCenter(ibin);
                     //double y = centr/wcentr;
                     //double w = wcentr;
                     //prof-> Fill(x,y,w);
-                    prof-> SetBinEntries        ( ibin                    , wcentr );
-                    prof-> SetAt                ( centr                   , ibin   );
-                    prof-> GetBinSumw2()->SetAt ( TMath::Abs(wcentr)      , ibin   );
-                    prof-> GetSumw2()->SetAt    ( sigma*sigma+centr*centr , ibin   );
+                    prof-> SetBinEntries        ( ibin               , wcentr );
+                    prof-> SetAt                ( centr              , ibin   );
+                    prof-> GetBinSumw2()->SetAt ( TMath::Abs(wcentr) , ibin   );
+                    prof-> GetSumw2()->SetAt    ( r_sigma2+r_centr2  , ibin   );
                 } else {
                     tmp_m->SetBinContent( ibin, centr  );
                     tmp_m->SetBinError  ( ibin, sigma );
@@ -568,14 +577,20 @@ class OutlierRemoval{
                     if (isProf){
                     double sumw = mean(v_sumw);
                     double sumwy = mean(v_sumwy);
-                    //double sigmaw = rms(v_sumw, sumw );
-                    double sigmawy = rms(v_sumwy, sumwy );
+                    double sigmaw = rms(v_sumw, sumw )/TMath::Sqrt(v_sumw.size());
+                    double sigmawy = rms(v_sumwy, sumwy )/TMath::Sqrt(v_sumwy.size());
+                    double r_centr2 = TMath::Power(sumwy/sumw,2);
+                    double r_sigma2 = 0;
+                    r_sigma2+= TMath::Power( sigmawy  / sumwy  ,2);
+                    r_sigma2+= TMath::Power( sigmaw / sumw ,2);
+                    r_sigma2*= r_centr2;
                     //double sumwyy = sumwy*sumwy + sigma*sigma;
                     TProfile* prof = (TProfile*)out;
-                    prof ->SetBinEntries        ( b                , sumw );
-                    prof ->SetAt                ( sumwy            , b    );
-                    prof ->GetBinSumw2()->SetAt ( TMath::Abs(sumw) , b    );
-                    prof-> GetSumw2()->SetAt    ( sigmawy*sigmawy + sumwy*sumwy , b    );
+                    prof   ->SetBinEntries        ( b                 , sumw );
+                    prof   ->SetAt                ( sumwy             , b    );
+                    prof   ->GetBinSumw2()->SetAt ( TMath::Abs(sumw)  , b    );
+                    prof-> GetSumw2()->SetAt      ( r_sigma2+r_centr2 , b    );
+                    //prof-> GetSumw2()->SetAt    ( sigmawy*sigmawy + sumwy*sumwy , b    );
                     //prof-> GetSumw2()->SetAt    ( sumwyy , b    );
                     } else {
                         // calculate new average

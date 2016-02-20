@@ -174,7 +174,7 @@ int main( int argc , const char * argv[])
           double e_time = clock_real();
           normalise_result(value,error);
           print_result(value,error,b_time,e_time);
-	  //          hists.FillResult( plotter::DoubleV , value, error, e_time-b_time );
+	  hists.FillResult( plotter::VV , value, error, e_time-b_time );
           totval += value;
           toterror2 += error*error;
       }
@@ -199,7 +199,7 @@ int main( int argc , const char * argv[])
           double e_time = clock_real();
           normalise_result(value,error);
           print_result(value,error,b_time,e_time);
-          //hists.FillResult( plotter::VJ , value, error, e_time-b_time );
+          hists.FillResult( plotter::VJ , value, error, e_time-b_time );
           totval += value;
           toterror2 += error*error;
       }
@@ -359,7 +359,7 @@ void save_result(vector <double> vals, double err)
 void close_file()
 {
   outfile.close();
-  system("mv results.txt temp.txt && column -t temp.txt > results.txt && rm temp.txt");
+  int rc = system("mv results.txt temp.txt && column -t temp.txt > results.txt && rm temp.txt");
 }
 
 void vadd(vector <double> &totvals, vector <double> vals)
