@@ -25,11 +25,26 @@ void settings::readfromfile(const string fname){
     rseed          = in.GetNumber ( "rseed"          ); //123456         # rseed
     LHAPDFset      = in.GetString ( "LHAPDFset"      ); //CT10nlo.LHgrid
     LHAPDFmember   = in.GetNumber ( "LHAPDFmember"   ); //0              # set,        member   (LHAPDFs)
-
+    Gf              = in.GetNumber ( "Gf"        );
+    zmass           = in.GetNumber ( "zmass"        );
+    wmass           = in.GetNumber ( "wmass"        );
+    xw              = in.GetNumber ( "xw"        );
+    aemmz           = in.GetNumber ( "aemmz"        );
+    zwidth           = in.GetNumber ( "zwidth"        );
+    wwidth           = in.GetNumber ( "wwidth"        );
+    Vud              = in.GetNumber ( "Vud"        );
+    Vus              = in.GetNumber ( "Vus"        );
+    Vub              = in.GetNumber ( "Vub"        );
+    Vcd              = in.GetNumber ( "Vcd"        );
+    Vcs              = in.GetNumber ( "Vcs"        );
+    Vcb              = in.GetNumber ( "Vcb"        );
     ylow               = in.GetNumber ( "ylow"            ); //2
     yhigh              = in.GetNumber ( "yhigh"           ); //2.4
     mlow               = in.GetNumber ( "mlow"            ); //66.
     mhigh              = in.GetNumber ( "mhigh"           ); //116.
+    dampk              = in.GetNumber ( "dampk"           );
+    dampdelta              = in.GetNumber ( "dampdelta"           );
+    dampmode              = in.GetNumber ( "dampmode"           );
     intDimRes          = in.GetNumber ( "intDimRes"       ); //3
     //resint2d              = in.GetBool   ( "resint2d"           ); //false
     //resint3d              = in.GetBool   ( "resint3d"           ); //true
@@ -193,10 +208,26 @@ void settings::dumpAll(){
         dumpS("LHAPDFset          ", LHAPDFset           );
         dumpI("LHAPDFmember       ", LHAPDFmember        );
         dumpI("rseed              ", rseed               );
+	dumpD("Gf"                 , Gf);
+	dumpD("zmass"              , zmass);
+	dumpD("wmass"              , wmass   );
+	dumpD("xw"                 , xw);
+	dumpD("aemmz"              , aemmz);
+	dumpD("zwidth"             , zwidth);
+	dumpD("wwidth"             , wwidth);
+	dumpD( "Vud",        Vud);
+	dumpD( "Vus",        Vus);
+	dumpD( "Vub",        Vub);
+	dumpD( "Vcd",        Vcd);
+	dumpD( "Vcs",        Vcs);
+	dumpD( "Vcb",        Vcb);
         dumpD("ylow               ", ylow                );
         dumpD("yhigh              ", yhigh               );
         dumpD("mlow               ", mlow                );
         dumpD("mhigh              ", mhigh               );
+        dumpD("dampk",             dampk       );
+        dumpD("dampdelta",     dampdelta      );
+        dumpD("dampmode",       dampmode     );
         dumpB("useGamma           ", useGamma            );
         dumpI("intDimRes          ", intDimRes           );
         dumpB("resint2d           ", resint2d            );
