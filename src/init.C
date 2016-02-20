@@ -19,6 +19,8 @@ map <int,string> plabel;
 
 void SMparameters()
 {
+  //None of these parameters is actually needed, check and clean up and remove this function
+  
   //Calculational scheme for EW couplings
   //     ewscheme=-1  : MCFM default 
   //                    input values = Gf,alpha(m_Z),m_W,m_Z
@@ -31,23 +33,14 @@ void SMparameters()
 
   ewscheme_.ewscheme_=1;
 
-  ewinput_.Gf_inp_= 1.1663787e-5;
-  ewinput_.aemmz_inp_= 7.7585538055706e-03;
-  ewinput_.xw_inp_= 0.2312;
-  ewinput_.wmass_inp_= 80.385;
-  ewinput_.zmass_inp_= 91.1876;
+  //  ewinput_.Gf_inp_= 1.1663787e-5;
+  //  ewinput_.wmass_inp_= 80.385;
+  //  ewinput_.zmass_inp_= 91.1876;
+  //  ewinput_.aemmz_inp_= 7.7585538055706e-03;
+  //  ewinput_.xw_inp_= 0.2312;
 
-
-  dymasses_.wwidth_ = 2.091;
-  dymasses_.zwidth_ = 2.4950;
-
-  //     CKM matrix entries
-  cabib_.Vud_ = 0.97427;
-  cabib_.Vus_ = 0.2253;
-  cabib_.Vub_ = 0.00351;
-  cabib_.Vcd_ = 0.2252;
-  cabib_.Vcs_ = 0.97344;
-  cabib_.Vcb_ = 0.0412;
+  //  dymasses_.wwidth_ = 2.091;
+  //  dymasses_.zwidth_ = 2.4950;
 
 
   // ******************************* The following parameters are not used ***************************
@@ -90,6 +83,17 @@ void dyturboinit()
   qtcut_.xqtcut_=0.008;
   //qtcut_.xqtcut_=0.001;
 
+  //    CKM matrix entries
+  cabib_.Vud_ = opts.Vud;
+  cabib_.Vus_ = opts.Vus;
+  cabib_.Vub_ = opts.Vub;
+  cabib_.Vcd_ = opts.Vcd;
+  cabib_.Vcs_ = opts.Vcs;
+  cabib_.Vcb_ = opts.Vcb;
+
+  dymasses_.wwidth_ = opts.wwidth;
+  dymasses_.zwidth_ = opts.zwidth;
+  
   //initialise MCFM settings
   flag_.flag_ = false;
 

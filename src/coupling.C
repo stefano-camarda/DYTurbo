@@ -40,7 +40,44 @@ void coupling::init()
   ewcharge_.tau_[NF+4] = 1.;
   ewcharge_.tau_[NF+5] = -1.;
 
-  if (ewscheme_.ewscheme_ == -1)
+
+  //Gmu scheme, inputs: Gf, MZ, MW
+  Gf = opts.Gf;
+  zmass = opts.zmass;
+  wmass = opts.wmass;
+
+  if (opts.aemmz == 0. && opts.xw == 0.)
+    {
+      //Gmu scheme: tree level derived sin2thetaW and alphaEM(MZ)
+      xw  = 1.-pow(wmass/zmass,2);
+      aemmz = sqrt(2)*Gf*pow(wmass,2)*xw/M_PI;
+    }
+  else if (opts.aemmz != 0. && opts.xw != 0.) 
+    {
+      //Scheme completely determined by the user
+      aemmz = opts.aemmz;
+      xw = opts.xw;
+    }
+  else if (opts.aemmz != 0.)
+  //If the input aemmz is non zero the scheme
+  //used is the old MCFM default, corresponding to an effective
+  //field theory approach valid for scales below the top-mass
+  //(see Georgi, Nucl. Phys. B 363 (1991) 301).
+    {
+      aemmz = opts.aemmz;
+      xw  = 4*M_PI*aemmz/(8.*pow(wmass,2)*Gf/sqrt(2));
+      dymasses_.mt_  = sqrt(16.*pow(M_PI,2)/3./sqrt(2)/Gf*(pow(wmass,2)/(zmass,2)/(1.-xw)-1.)); //is the top mass actually used at all?
+    }
+  else if (opts.xw != 0.)
+    {
+      //Effective value of the weak mixing angle
+      xw = opts.xw;
+      //!!!!! Check this value, should use  1.-pow(wmass/zmass,2) instead of xw?
+      aemmz = sqrt(2)*Gf*pow(wmass,2)*xw/M_PI;
+    }
+
+
+  /*  if (ewscheme_.ewscheme_ == -1)
     {
       //This is the old MCFM default, corresponding to an effective
       //field theory approach valid for scales below the top-mass
@@ -54,6 +91,8 @@ void coupling::init()
         
       //Derived: sin2thetaW
       xw  = 4*M_PI*aemmz/(8.*pow(wmass,2)*Gf/sqrt(2));
+
+      //is the top mass actually used at all?
       dymasses_.mt_  = sqrt(16.*pow(M_PI,2)/3./sqrt(2)/Gf*(pow(wmass,2)/(zmass,2)/(1.-xw)-1.));
     }
   else if (ewscheme_.ewscheme_ = 1)
@@ -72,6 +111,7 @@ void coupling::init()
       cout << "ewscheme = " << ewscheme_.ewscheme_ << " is not implemented." << endl;
       exit(0);
     }
+  */
 
   ewcouple_.Gf_ = Gf;
   ewcouple_.xw_ = xw;
