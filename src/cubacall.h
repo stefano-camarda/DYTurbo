@@ -13,6 +13,7 @@ void lowintegr(double &res, double &err);
 void realintegr(vector <double> &res, double &err);
 void virtintegr(vector <double> &res, double &err);
 void ctintegr(double &res, double &err);
+void ctintegrMC(double &res, double &err);
 void ctintegr3d(double &res, double &err);
 void ctintegr2d(double &res, double &err);
 void doublevirtintegr(double &res, double &err);
