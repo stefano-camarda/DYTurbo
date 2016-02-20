@@ -1,11 +1,3 @@
-#include "config.h"
-#include <iostream>
-#include <LHAPDF/LHAPDF.h>
-#include <gsl/gsl_integration.h>
-#include <gsl/gsl_math.h>
-#include <cuba.h>
-#include <iomanip>
-
 #include "init.h"
 #include "integr.h"
 #include "resintegr.h"
@@ -16,6 +8,13 @@
 #include "cubacall.h"
 #include "plotter.h"
 #include "printsettings.h"
+#include "switch.h"
+
+#include "config.h"
+#include <cuba.h>
+
+#include <iostream>
+#include <iomanip>
 
 using namespace std;
 
@@ -68,6 +67,7 @@ int main( int argc , const char * argv[])
   gaussinit_();
   iniflavreduce_();
   dyturboinit();
+  switching::init();
   rescinit_();
   //bins.init();
   bins.readfromfile(conf_file.c_str());
@@ -104,7 +104,7 @@ int main( int argc , const char * argv[])
   else
     {
       costh = 0.; m = opts.rmass; qt = 1; y = 0;
-      resumm_(costh,m,qt,y,mode);
+      cout << resumm_(costh,m,qt,y,mode) << endl;
     }
   countterm_(costh,m,qt,y,mode);
   /****************************************/
@@ -183,7 +183,8 @@ int main( int argc , const char * argv[])
           double b_time = clock_real();
 	  if (opts.ctint2d) ctintegr2d(value, error);
 	  if (opts.ctint3d) ctintegr3d(value, error);
-          if (opts.ctintvegas) ctintegr(value, error);
+	  //if (opts.ctintvegas) ctintegr(value, error);
+	  if (opts.ctintvegas) ctintegrMC(value, error);
           double e_time = clock_real();
           normalise_result(value,error);
           print_result(value,error,b_time,e_time);
