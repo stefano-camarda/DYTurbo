@@ -366,53 +366,27 @@ integrand_t resintegrandMC(const int &ndim, const double x[], const int &ncomp, 
 {
   clock_t begin_time, end_time;
 
-  double r[ndim];
-  for (int i = 0; i < ndim; i++)
-    r[i]=x[i];
-
-  double resumm,tempp,ran2;
-  int ii,j,ij;
-  double m,m2,qt2,s,wgt;
-  double p[5][5],pV[4],p4cm[4],ptemp[4],kap1[5],kap1b[5];
-  double pjet[4][12];
-  double phi,costh,phi_lep;
-  int n2,n3;
-  double msq,wt,swtch,kk,zeta1,zeta1b,kt1,kt2,mt2,costh_CS,qP1,qP2,ritmx;
-
-  double wsqmin = pow(mmin,2);
-  double wsqmax = pow(mmax,2);
+  begin_time = clock();
   
-  double lowintHst=0;
-  double lowintHst0=0;
-
-  int jstop = 0;
-
-  //double azloopmax = 1;
-  //double azloop = 0;
-
-  ptemp[0]=0.;
-  ptemp[1]=0.;
-  ptemp[2]=0.;
-  ptemp[3]=0.;
-  for (int i=0; i < 5; i++)
-    {
-      p[i][1]=0.;
-      p[i][2]=0.;
-      p[i][3]=0.;
-      p[i][4]=0.;
-    }
+  //Jacobian of the change of variables from the unitary hypercube x[6] to the m, y, qt, phi, costh, philep boundaries
+  double jac = 1.;
 
   // Generate the boson invariant mass
-
-  double jac=1.;
-  double x1=r[0];
-  breitw_(x1,wsqmin,wsqmax,opts.rmass,opts.rwidth,msq,wt);
-  m2=msq;
-  m=sqrt(m2);
+  double wsqmin = pow(mmin,2);
+  double wsqmax = pow(mmax,2);
+  if (wsqmin >= wsqmax)
+    {
+      f[0]=0.;
+      return 0;
+    }
+  double x1=x[0];
+  double m2, wt;
+  breitw_(x1,wsqmin,wsqmax,opts.rmass,opts.rwidth,m2,wt);
+  double m=sqrt(m2);
   jac=jac*wt;
+  
   //     Dynamic scale
   //      if(dynamicscale) call scaleset(m2)
-
 
   //Limit y boundaries to the kinematic limit in y
   double ylim = 0.5*log(pow(energy_.sroot_,2)/m2);
@@ -425,7 +399,7 @@ integrand_t resintegrandMC(const int &ndim, const double x[], const int &ncomp, 
     }
 
   //integrate between ymin and ymax
-  double y=ymn+(ymx-ymn)*r[1];
+  double y=ymn+(ymx-ymn)*x[1];
   jac=jac*(ymx-ymn);
 
   //integrate between qtmin and qtmax
@@ -442,7 +416,7 @@ integrand_t resintegrandMC(const int &ndim, const double x[], const int &ncomp, 
       f[0]=0.;
       return 0;
     }
-  double qt=qtmn+(qtmx-qtmn)*r[2];
+  double qt=qtmn+(qtmx-qtmn)*x[2];
   jac=jac*(qtmx-qtmn);
   
 
@@ -450,7 +424,7 @@ integrand_t resintegrandMC(const int &ndim, const double x[], const int &ncomp, 
   /*  //integrate between qtmin and qtmax
   double qtmn = 0.1;
   double qtmx = sqrt(pow(pow(energy_.sroot_,2)+m*m,2)/(4*pow(energy_.sroot_,2)*cosh2y34)-m*m);
-  double qt=qtmn+qtmx*r[2];
+  double qt=qtmn+qtmx*x[2];
   if (qt < qtmin || qt >= qtmax)
     {
       f[0]=0.;
@@ -459,157 +433,133 @@ integrand_t resintegrandMC(const int &ndim, const double x[], const int &ncomp, 
     jac=jac*qtmx;*/
   /******************************************************************/
   
-  qt2=pow(qt,2);
+  double qt2=pow(qt,2);
 
+  // incoming quarks (are they actually used?)
   double xx1=sqrt(m2/pow(energy_.sroot_,2))*expy;
   double xx2=sqrt(m2/pow(energy_.sroot_,2))*expmy;
-
-
-  // incoming quarks
-  p[1][1]=0.;
-  p[1][2]=0.;
-  p[1][3]=xx1*0.5*energy_.sroot_;
-  p[1][4]=xx1*0.5*energy_.sroot_;
-  p[2][1]=0.;
-  p[2][2]=0.;
-  p[2][3]=-xx2*0.5*energy_.sroot_;
-  p[2][4]=xx2*0.5*energy_.sroot_;
-
+  double p1[4];
+  p1[0]=0.;
+  p1[1]=0.;
+  p1[2]=xx1*0.5*energy_.sroot_;
+  p1[3]=xx1*0.5*energy_.sroot_;
+  double p2[4];  
+  p2[0]=0.;
+  p2[1]=0.;
+  p2[2]=-xx2*0.5*energy_.sroot_;
+  p2[3]=xx2*0.5*energy_.sroot_;
 
   // First lepton direction: Cos of the polar angle
-  costh=-1.+2.*r[3];
+  double costh=-1.+2.*x[3];
   jac=jac*2.;
   
-  mt2=m2+qt2;
-
-  int mode = 0;
-
-  // LOOP over (vector boson and lepton) azimuthal angles 
-  //for (int j=0; j < azloopmax; j++)
-  //    {
-      // Vector boson azimuthal angle
-      //      phi = 2.*M_PI*((double)rand()/(double)RAND_MAX);
-      // Azimuthal angle of the first lepton in the center of mass frame 
-      //phi_lep = 2.*M_PI*((double)rand()/(double)RAND_MAX);
-
-      phi = 2.*M_PI*r[4];
-      phi_lep = 2.*M_PI*r[5];
+  //Generate vector boson and lepton azimuthal angles 
+  double phi = 2.*M_PI*x[4];
+  double phi_lep = 2.*M_PI*x[5];
       
-      //  vector boson momentum: pV(4)^2-pV(1)^2-pV(2)^2-pV(3)^2=m2
-      pV[0]=qt*cos(phi);
-      pV[1]=qt*sin(phi);
-      pV[2]=0.5*sqrt(mt2)*(exp(y)-exp(-y));
-      pV[3]=0.5*sqrt(mt2)*(exp(y)+exp(-y));
+  //  vector boson momentum: pV(4)^2-pV(1)^2-pV(2)^2-pV(3)^2=m2
+  double mt2=m2+qt2;
+  double pV[4];
+  pV[0]=qt*cos(phi);
+  pV[1]=qt*sin(phi);
+  pV[2]=0.5*sqrt(mt2)*(expy-expmy);
+  pV[3]=0.5*sqrt(mt2)*(expy+expmy);
 
-      // momentum of the first lepton 
-      p4cm[3]=m/2.;
-      p4cm[0]=p4cm[3]*sin(acos(costh))*sin(phi_lep);
-      p4cm[1]=p4cm[3]*sin(acos(costh))*cos(phi_lep);
-      p4cm[2]=p4cm[3]*costh;
+  // momentum of the first lepton 
+  double p4cm[4];
+  p4cm[3]=m/2.;
+  p4cm[0]=p4cm[3]*sin(acos(costh))*sin(phi_lep);
+  p4cm[1]=p4cm[3]*sin(acos(costh))*cos(phi_lep);
+  p4cm[2]=p4cm[3]*costh;
 
-      // Boost to go in the Lab frame
-      boost_(m,pV,p4cm,ptemp);
-      p[4][1]=ptemp[0];
-      p[4][2]=ptemp[1];
-      p[4][3]=ptemp[2];
-      p[4][4]=ptemp[3];
+  // Boost to go in the Lab frame
+  double p4[4];
+  boost_(m,pV,p4cm,p4);
 
-      //  momentum of the second lepton
-      p[3][4]=pV[3]-p[4][4];
-      p[3][1]=pV[0]-p[4][1];
-      p[3][2]=pV[1]-p[4][2];
-      p[3][3]=pV[2]-p[4][3];
+  //  momentum of the second lepton
+  double p3[4];
+  p3[3]=pV[3]-p4[3];
+  p3[0]=pV[0]-p4[0];
+  p3[1]=pV[1]-p4[1];
+  p3[2]=pV[2]-p4[2];
 
-      //CS frame prescription
-      if (opts.qtrec_cs)
-	{
-	  kt1 = pV[0]/2.;
-	  kt2 = pV[1]/2.;
-	}
-
-      //MY (DYRES) prescription
-      if (opts.qtrec_naive)
-	{
-	  kt1=(1.+pV[2]/(sqrt(m2)+pV[3]))*pV[0]/2;
-	  kt2=(1.+pV[2]/(sqrt(m2)+pV[3]))*pV[1]/2;
-	}  
-
-      //alternative k1t = 0 prescription
-      if (opts.qtrec_kt0)
-	{
-	  kt1 = 0;
-	  kt2 = 0;
-	}
-
-      zeta1=1./m2/2.*(m2+2.*(pV[0]*kt1+pV[1]*kt2)+sqrt(pow((m2+2.*(pV[0]*kt1+pV[1]*kt2)),2)-4.*mt2*(pow(kt1,2)+pow(kt2,2))));
-
-      qP1=(pV[3]-pV[2])*energy_.sroot_/2.;
-      qP2=(pV[3]+pV[2])*energy_.sroot_/2.;
-
-      kap1[4]=energy_.sroot_/2.*(zeta1*m2/2./qP1+(pow(kt1,2)+pow(kt2,2))/zeta1*qP1/m2/pow(energy_.sroot_,2)*2.);
-      kap1[1]=kt1;
-      kap1[2]=kt2;
-      kap1[3]=energy_.sroot_/2.*(zeta1*m2/2./qP1-(pow(kt1,2)+pow(kt2,2))/zeta1*qP1/m2/pow(energy_.sroot_,2)*2.);
-
-      costh_CS=1.-4.*(kap1[4]*p[4][4]-kap1[3]*p[4][3]-kap1[2]*p[4][2]-kap1[1]*p[4][1])/m2;
-
-       // see whether this point will pass cuts - if it will not, do not
-       // bother calculating the matrix elements for it, instead bail out
-      for (int i=0; i < 4; i++)
-	{
-	  pjet[i][0] = p[1][i+1];
-	  pjet[i][1] = p[2][i+1];
-	  pjet[i][2] = p[3][i+1];
-	  pjet[i][3] = p[4][i+1];
-	}
-      int njet = 0;
-       //       cout << qt << "  " <<  y << "  " <<  m << "  " << sqrt(p[3][1]*p[3][1] + p[3][2] * p[3][2]) << endl;
-      if (opts.makelepcuts)
-	if (cuts_(pjet,njet))  //if (!cuts::lep(p3, p4)) // continue;
-	  {
-	    f[0]=0.;
-	    return 0;
-	  }
-			    
-      //  SWITCHING FUNCTIONS
-      //      swtch=1.;
-      //      if (qt >= m*3/4.)  swtch=exp(-pow((m*3/4.-qt),2)/pow((m/2.),2)); // GAUSS SWITCH
-      swtch = switching::swtch(qt, m);
-
-      if (swtch <= 0.01) //break;
-	{
-	  f[0]=0.;
-	  return 0;
-	}
-
-      if (jstop != 1)
-	{
-	  jstop=1;
-
-	  //Call to the resummation part
-	  if (swtch < 0.01)
-	    tempp=0.;
-	  else
-	    tempp=resumm_(costh_CS,m,qt,y,mode)/(8./3.);  // CS PRESCRIPTION
-	    //tempp=resumm_(costh,m,qt,y,mode)/(8./3.);
-	   if (tempp != tempp)
-	     tempp=0.;    //  avoid nans
-	   
-	   lowintHst0=jac*tempp;
-	   lowintHst0=lowintHst0*swtch; // SWITCHING
-	 }
-      if (iter==4){
-  	double wt = weight*lowintHst0;///azloopmax;
-        //hists_fill_(p[4]+1,p[3]+1,&wt);
-	hists_fill_(p[3]+1,p[4]+1,&wt);
-        //hists_AiTest_(pjet,p4cm,&m,&qt,&y,&costh_CS,&phi_lep,&phi,&wt,&lowintHst0);
-      } 
-      //azloop=azloop+1;
-      //}
-
-      lowintHst=lowintHst0;//*double(azloop)/double(azloopmax);
+  //apply lepton cuts
+  if (opts.makelepcuts)
+    if (!cuts::lep(p3, p4))
+      {
+	f[0]=0.;
+	return 0;
+      }
   
-  f[0] = lowintHst;
+  //Calculate costh according to a qt-recoil prescription
+  double kt1,kt2;
+  
+  //CS frame prescription
+  if (opts.qtrec_cs)
+    {
+      kt1 = pV[0]/2.;
+      kt2 = pV[1]/2.;
+    }
 
+  //MY (DYRES) prescription
+  if (opts.qtrec_naive)
+    {
+      kt1=(1.+pV[2]/(sqrt(m2)+pV[3]))*pV[0]/2;
+      kt2=(1.+pV[2]/(sqrt(m2)+pV[3]))*pV[1]/2;
+    }  
+
+  //alternative k1t = 0 prescription
+  if (opts.qtrec_kt0)
+    {
+      kt1 = 0;
+      kt2 = 0;
+    }
+
+  double zeta1=1./m2/2.*(m2+2.*(pV[0]*kt1+pV[1]*kt2)+sqrt(pow((m2+2.*(pV[0]*kt1+pV[1]*kt2)),2)-4.*mt2*(pow(kt1,2)+pow(kt2,2))));
+  
+  double qP1=(pV[3]-pV[2])*energy_.sroot_/2.;
+  double qP2=(pV[3]+pV[2])*energy_.sroot_/2.;
+  
+  double kap1[4];
+  kap1[3]=energy_.sroot_/2.*(zeta1*m2/2./qP1+(pow(kt1,2)+pow(kt2,2))/zeta1*qP1/m2/pow(energy_.sroot_,2)*2.);
+  kap1[0]=kt1;
+  kap1[1]=kt2;
+  kap1[2]=energy_.sroot_/2.*(zeta1*m2/2./qP1-(pow(kt1,2)+pow(kt2,2))/zeta1*qP1/m2/pow(energy_.sroot_,2)*2.);
+
+  double costh_CS=1.-4.*(kap1[3]*p4[3]-kap1[2]*p4[2]-kap1[1]*p4[1]-kap1[0]*p4[0])/m2;
+
+  //apply resummation switching
+  double swtch = switching::swtch(qt, m);
+  if (swtch <= 0.01)
+    {
+      f[0]=0.;
+      return 0;
+    }
+  
+  //Call the resummation integrand
+  int mode = 0;
+  f[0] = resumm_(costh_CS,m,qt,y,mode)/(8./3.);
+  
+  //avoid nans
+  if (f[0] != f[0])
+    f[0] = 0.;
+      
+  //apply switching and jacobian
+  f[0] = f[0]*jac*swtch;
+  
+  if (iter==4){
+    double wt = weight*f[0];
+    //hists_fill_(p4,p3,&wt);
+    hists_fill_(p3,p4,&wt);
+    //hists_AiTest_(pjet,p4cm,&m,&qt,&y,&costh_CS,&phi_lep,&phi,&wt,&lowintHst0);
+  } 
+
+  end_time = clock();
+  if (opts.timeprofile)
+    cout << setw (3) << "m" << setw(10) << m << setw(4) << "qt" << setw(10) <<  qt
+	 << setw (3) << "y" << setw(10) << y << setw(4) << "costh" << setw(10) <<  costh
+	 << setw(8) << "result" << setw(10) << f[0]
+	 << setw(10) << "tot time" << setw(10) << float( end_time - begin_time ) /  CLOCKS_PER_SEC
+	 << endl;
   return 0;
 }
