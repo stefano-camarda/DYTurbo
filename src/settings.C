@@ -89,7 +89,6 @@ void settings::readfromfile(const string fname){
     qtrec_kt0          = in.GetBool   ( "qtrec_kt0"       ); //true
     timeprofile        = in.GetBool   ( "timeprofile"     ); //false   # debug       and      time       profile resummation integration
     verbose            = in.GetBool   ( "verbose"         ); //false   # debug       and      time       profile costh       phi_lep         integration
-    HackBinnerToFiller = in.GetBool   ( "HackBinnerToFiller"         ); //false   # debug       and      time       profile costh       phi_lep         integration
     useGamma           = in.GetBool ( "useGamma" );//
     fiducial           = static_cast<cuts::DetFiducial>( in.GetNumber( "fiducial" )); //0
     PDFerrors           = in.GetBool ( "PDFerrors" );//
@@ -275,7 +274,6 @@ void settings::dumpAll(){
         dumpB("qtrec_kt0          ", qtrec_kt0           );
         dumpB("timeprofile        ", timeprofile         );
         dumpB("verbose            ", verbose             );
-        dumpB("HackBinnerToFiller ", HackBinnerToFiller  );
         dumpI("approxpdf          ", opts_.approxpdf_    );
         dumpI("pdfintervals       ", opts_.pdfintervals_ );
         dumpB("PDFerrors          ", PDFerrors           );

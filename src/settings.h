@@ -159,7 +159,6 @@ public:
   //debug settings
   bool timeprofile;
   bool verbose;
-  bool HackBinnerToFiller;
 
   // fiducial switches
   cuts::DetFiducial fiducial;

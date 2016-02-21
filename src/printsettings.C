@@ -186,7 +186,6 @@ void printsettings()
   cout << setw(25) << "timeprofile:"      << setw(30) << (opts.timeprofile ? "true" : "false") << endl;
   cout << setw(25) << "verbose:"          << setw(30) << (opts.verbose ? "true" : "false") << endl;
   cout << setw(25) << "cubaverbosity:"    << setw(30) << opts.cubaverbosity << endl;
-  cout << setw(25) << "HackBinnerToFiller:"<< setw(30) << (opts.HackBinnerToFiller ? "true" : "false") << endl;
   cout << endl;
   cout << "============================================================" << endl;
 }
