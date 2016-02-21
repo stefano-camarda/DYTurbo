@@ -104,7 +104,7 @@ int main( int argc , const char * argv[])
   else
     {
       costh = 0.; m = opts.rmass; qt = 1; y = 0;
-      resumm_(costh,m,qt,y,mode) << endl;
+      resumm_(costh,m,qt,y,mode);
     }
   countterm_(costh,m,qt,y,mode);
   /****************************************/

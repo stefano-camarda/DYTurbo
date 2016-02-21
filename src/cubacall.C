@@ -1,12 +1,12 @@
-#include <cuba.h>
-#include <iostream>
-
 #include "cubacall.h"
 #include "settings.h"
-#include "integr.h"
-#include "finintegr.h"
 #include "resintegr.h"
+#include "ctintegr.h"
+#include "finintegr.h"
 #include "plotter.h"
+
+#include <cuba.h>
+#include <iostream>
 
 void resintegr2d(double &res, double &err)
 {

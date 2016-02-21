@@ -6,6 +6,7 @@
 #include <ctime>
 #include "settings.h"
 #include "interface.h"
+#include "finintegr.h"
 #include "finitemapping.h"
 
 

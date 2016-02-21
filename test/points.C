@@ -4,9 +4,10 @@
 
 #include "init.h"
 #include "integr.h"
-#include "resintegr.h"
 #include "settings.h"
 #include "interface.h"
+#include "resintegr.h"
+#include "ctintegr.h"
 #include "finintegr.h"
 #include "finitemapping.h"
 #include "printsettings.h"

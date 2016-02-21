@@ -394,6 +394,7 @@ extern "C" {
     double p2ext_[4];
   } pext_;
 
+  //mcfm cut off on invariant mass pairs between emitted and radiator
   extern struct {
     double cutoff_;
   } cutoff_;
@@ -414,19 +415,9 @@ extern "C" {
     int ntotshot_;
   } efficiency_;
 
-  double realvirt2_(double r[22], double &wgt);
-
-  double lowint_(double r[22], double &wgt);
-  double realint_(double r[22], double &wgt, double f[]);
-  double virtint_(double r[22], double &wgt, double f[]);
   double countint_(double r[22], double &wgt);
-  double vjfo_(double &m, double &pt, double &y);
-
-  double lowinthst_(double r[22], double &wgt);
-
   double countterm_(double &costh, double &mm, double &qtt, double &yy, int &mode);
 
-  int binner_(double p3[4], double p4[4]);
   void hists_setpdf_(int * npdf);
   void hists_fill_(double p3[4], double p4[4], double *weight);
   void hists_AiTest_(double pjet[4][12], double p4cm[4],double *Q,double *qt,double *y,double* pcosthCS, double* pphiCS, double *pphiVB, double *wt, double *loHst );
