@@ -11,7 +11,7 @@
 //#include <vector>
 //#include <random>
 
-double const qtcutoff = 0.02;
+//double const qtcutoff = 0.02;
 
 integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, double f[])
 {
@@ -45,14 +45,14 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
 
   //integrate between qtmin and qtmax
   /*
-  double qtmn = max(qtcutoff, qtmin);
+  double qtmn = max(opts.qtcutoff, qtmin);
   double qt=qtmn+(qtmax-qtmn)*x[1];
   jac=jac*(qtmax-qtmn);
   */
     
   //integrate between qtmin and qtmax
   //limit qtmax to the qT kinematical limit, or to the switching function boundary
-  double qtmn = max(qtcutoff, qtmin);
+  double qtmn = max(opts.qtcutoff, qtmin);
   double miny;
   if (ymn * ymx <= 0)
     miny = 0;
@@ -288,13 +288,13 @@ integrand_t resintegrand3d(const int &ndim, const double x[], const int &ncomp, 
 
   //integrate between qtmin and qtmax
   /*
-  double qtmn = max(qtcutoff, qtmin);
+  double qtmn = max(opts.qtcutoff, qtmin);
   double qt=qtmn+(qtmax-qtmn)*x[2];
   jac=jac*(qtmax-qtmn);
   */
 
   //integrate between qtmin and qtmax
-  double qtmn = max(qtcutoff, qtmin);
+  double qtmn = max(opts.qtcutoff, qtmin);
   double cosh2y34=pow((exp(y)+exp(-y))*0.5,2);
   double kinqtlim = sqrt(pow(pow(energy_.sroot_,2)+m*m,2)/(4*pow(energy_.sroot_,2)*cosh2y34)-m*m);
   double switchqtlim = switching::qtlimit(m);
@@ -406,7 +406,7 @@ integrand_t resintegrandMC(const int &ndim, const double x[], const int &ncomp, 
   double expy=exp(y);
   double expmy=exp(-y);
   double cosh2y34=pow((expy+expmy)*0.5,2);
-  double qtmn = max(qtcutoff, qtmin);
+  double qtmn = max(opts.qtcutoff, qtmin);
   double kinqtlim = sqrt(pow(pow(energy_.sroot_,2)+m*m,2)/(4*pow(energy_.sroot_,2)*cosh2y34)-m*m);
   double switchqtlim = switching::qtlimit(m);
   double qtlim = min(kinqtlim, switchqtlim);

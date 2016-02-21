@@ -49,10 +49,13 @@ mhigh = 116.
 #  mlow = 10.;
 #  mhigh = 1000.;
 
-#resummation damping
+# resummation damping
 dampk = 0.5
 dampdelta = 0.5
 dampmode = 1
+
+# resummation cutoff
+qtcutoff = 0.02
 
 # dimension of integration
 intDimRes = 4

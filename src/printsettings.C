@@ -178,6 +178,7 @@ void printsettings()
       cout << setw(20) << "damping mode:"  << setw(10) << opts.dampmode << endl;
       cout << setw(20) << "damp above:" << setw(10) << opts.dampk*opts.rmass  << setw(7) << "GeV" << endl;
       cout << setw(20) << "damping width:" << setw(10) << opts.dampdelta*opts.rmass  << setw(7) << "GeV" << endl;
+      cout << setw(20) << "resummation cutoff:" << setw(10) << opts.qtcutoff*1000  << setw(7) << "MeV" << endl;
     }
   cout << endl;
   cout << "======================== Debug settings ====================" << endl;
