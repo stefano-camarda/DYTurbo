@@ -7,7 +7,6 @@
       include 'npart.f'
       include 'scale.f'
       include 'facscale.f'
-      include 'efficiency.f'
       include 'process.f'
       include 'dynamicscale.f'
       include 'dipolescale.f'
@@ -21,15 +20,11 @@
       double precision dipfx1(0:maxd,-nf:nf),dipfx2(0:maxd,-nf:nf)
       double precision p(mxpart,4),pjet(mxpart,4),p1ext(4),p2ext(4)
       double precision ptrans(mxpart,4)
-      double precision pswt,rscalestart,fscalestart
+      double precision pswt
       double precision s(mxpart,mxpart),wgt,msq(-nf:nf,-nf:nf)
       double precision msqc(maxd,-nf:nf,-nf:nf),xmsq(0:maxd)
       double precision flux,BrnRat
       double precision xx1,xx2,dot,q2
-      integer n2,n3
-      double precision mass2,width2,mass3,width3
-      common/breit/n2,n3,mass2,width2,mass3,width3
-      logical first
       logical incldip(0:maxd),includedipole,includereal
       external qqb_z2jet,qqb_z1jet_gs,qqb_w2jet,qqb_w1jet_gs
       common/density/ih1,ih2
@@ -44,8 +39,6 @@ C      external hists_fill
       external hists_setpdf
       external hists_real_dipole
       external hists_real_event
-C      external hists_real_dipole_PDF
-C      external hists_real_event_PDF
 
       double precision x,omx,sij,sik,sjk
       integer ip,jp,kp
@@ -205,7 +198,7 @@ c     intitialise xmsq to 0 for the real and all dipoles
 
 c     evaluate PDFs
          if (dynamicscale) then
-            do nd=0,ndmax
+            do nd=0,6
                if (incldip(nd)) then
                   call fdist(ih1,xx1,dipscale(nd),dipfx1(nd,:))
                   call fdist(ih2,xx2,dipscale(nd),dipfx2(nd,:))
@@ -214,7 +207,7 @@ c     evaluate PDFs
          else
             call fdist(ih1,xx1,dipscale(0),fx1)
             call fdist(ih2,xx2,dipscale(0),fx2)
-            do nd=0,ndmax
+            do nd=0,6
                do j=-nf,nf
                   dipfx1(nd,j)=fx1(j)
                   dipfx2(nd,j)=fx2(j)
@@ -233,14 +226,16 @@ c     calculate xmsq for the real event
          endif
       
 c     calculate xmsq for the dipole contributions
-         do nd=1,ndmax
-            do j=-nf,nf
-               do k=-nf,nf
-                  xmsq(nd)=xmsq(nd)
-     .                 +dipfx1(nd,j)*dipfx2(nd,k)*(-msqc(nd,j,k))
-     .                 *(gsq/gsqcentral)**2
+         do nd=1,6
+            if (incldip(nd)) then
+               do j=-nf,nf
+                  do k=-nf,nf
+                     xmsq(nd)=xmsq(nd)
+     .                    +dipfx1(nd,j)*dipfx2(nd,k)*(-msqc(nd,j,k))
+     .                    *(gsq/gsqcentral)**2
+                  enddo
                enddo
-            enddo
+            endif
          enddo
 
 c     Sum up the real and all the dipole contributions

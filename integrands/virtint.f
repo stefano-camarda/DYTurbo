@@ -14,11 +14,8 @@
       include 'qcdcouple.f'
       include 'scale.f'
       include 'facscale.f'
-      include 'clustering.f'
-      include 'efficiency.f'
       include 'lc.f'
       include 'process.f'
-      include 'limits.f'
       include 'b0.f'
       include 'dynamicscale.f'
       include 'options.f'
@@ -26,23 +23,22 @@
       double precision msqx(0:2,-nf:nf,-nf:nf,-nf:nf,-nf:nf)
       double precision msqx_cs(0:2,-nf:nf,-nf:nf)
       double precision AP(-1:1,-1:1,3)
-      double precision qt2,qq2,dot
+      double precision qq2,dot
       double precision f(*)
 
       integer ih1,ih2,j,k,cs,nvec,is,ia,ib,ic
       double precision p(mxpart,4),pjet(mxpart,4),r(mxdim),W,sqrts,xmsq,
      . val,fx1(-nf:nf),fx2(-nf:nf),fx1z(-nf:nf),fx2z(-nf:nf)
-      double precision pswt,xjac,rscalestart,fscalestart,
+      double precision pswt,xjac,
      . wgt,msq(-nf:nf,-nf:nf),msqv(-nf:nf,-nf:nf),msqvdk(-nf:nf,-nf:nf),
      . msq_qq,msq_aa,msq_aq,msq_qa,msq_qg,msq_gq,epcorr
       double precision xx(2),z,x1onz,x2onz,flux,omz,
      . BrnRat,xmsq_old,tmp
-      integer nshot,rvcolourchoice,sgnj,sgnk
-      logical bin,first,includedipole
+      integer rvcolourchoice
+      logical includedipole
       character*4 mypart
       common/density/ih1,ih2
       common/energy/sqrts
-      common/bin/bin
       common/x1x2/xx
       common/BrnRat/BrnRat
       common/rvcolourchoice/rvcolourchoice
@@ -51,23 +47,12 @@
       common/nproc/nproc
 
       data p/48*0d0/
-      data nshot/1/
-      data first/.true./
-      save first,rscalestart,fscalestart
-      logical binner
-      external binner
       external hists_setpdf
       external hists_fill
 C      external hists_fill_PDF
 
       integer npdf,maxpdf
       double precision gsqcentral
-
-c      if (first) then
-c         first=.false.
-c         rscalestart=scale
-c         fscalestart=facscale
-c      endif
 
       virtint=0d0
       do npdf=0,totpdf-1
@@ -91,7 +76,7 @@ c      print*,'pt',sqrt((p(4,1)+p(3,1))**2 + (p(4,2)+p(3,2))**2)
 c      print*
       
       qq2=2*dot(p,3,4)
-      qt2=p(5,1)**2+p(5,2)**2  
+c      qt2=p(5,1)**2+p(5,2)**2  
     
       nvec=npart+2
 
