@@ -136,7 +136,7 @@ c     check which dipoles are to be included
                      
 c     ptrans is the transformation of p into the dipole kinematic
          call transform(p,ptrans,x,ip,jp,kp)
-c     ptrans is stored into ptilde (is it really needed to store the 4-momenta in ptilde? it is done also in includedipole)
+c     ptrans is stored into ptilde(nd), to be used by dips in  dipolesub.f
          call storeptilde(nd,ptrans)
          if (nd.le.4) then
             incldip(nd)=includedipole(nd,ptrans)
@@ -154,7 +154,8 @@ c     If the real and all the dipoles fail cuts, then exit
          return
       endif
       
-CC   Dynamic scale: set it only if point passes cuts
+CC   Dynamic scale: set it only if point passes cuts 
+c     !!!this does not look correct, should be only if(dynamicscale)!!!
       if(dynamicscale.and.includereal) then
        call scaleset(q2)
        dipscale(0)=facscale
@@ -255,13 +256,14 @@ c---  add to total
 
 C---  Fill only if it's last iteration
             if (doFill.ne.0) then
-c     this call can be removed, because pjet and ptildejet are both equal to ptrans,
+c     this call to getptildejet can be removed, because pjet and ptildejet are both equal to ptrans,
 c     which is the transformation of p into the dipole kinematic
+c     ptrans is stored in ptilde(nd), which should be used for filling
                call getptildejet(nd,pjet)
                val=xmsq(nd)*wgt
 C---        store information per each dipole
-C             call hists_fill(p(3,:),p(4,:),val)
               call hists_real_dipole(pjet(3,:),pjet(4,:),val,nd)
+C             call hists_fill(ptilde(nd,3,:),ptilde(nd,4,:),val)
             endif
          enddo                  !End loop on real+dipoles contributions
 
