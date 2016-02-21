@@ -132,7 +132,7 @@ integrand_t lowintegrand(const int &ndim, const double x[], const int &ncomp, do
 
 
   dofill_.doFill_ = int(iter==last_iter);
-  f[0] = lowint_(rlo,weight);
+  f[0] = lowint_(rlo,weight,f);
   
   return 0;
 }

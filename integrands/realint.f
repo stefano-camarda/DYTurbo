@@ -52,7 +52,7 @@ C      external hists_real_event_PDF
 
       data p/48*0d0/
 
-      integer npdf
+      integer npdf,maxpdf
       double precision gsqcentral
 
       pswt=0d0
@@ -141,7 +141,9 @@ c     check which dipoles are to be included
          endif
          x=one-omx
                      
+c     ptrans is the transformation of p into the dipole kinematic
          call transform(p,ptrans,x,ip,jp,kp)
+c     ptrans is stored into ptilde (is it really needed to store the 4-momenta in ptilde? it is done also in includedipole)
          call storeptilde(nd,ptrans)
          if (nd.le.4) then
             incldip(nd)=includedipole(nd,ptrans)
@@ -188,12 +190,14 @@ c--- Calculate the required matrix elements  (dipscale(nd) are set appropriately
 
       flux=fbGeV2/(two*xx1*xx2*W)
 
+c     skip PDF loop in the preconditioning phase
+      maxpdf=0
+      if (dofill.ne.0) maxpdf = totpdf-1
+      
 c     start PDF loop
-      do npdf=0,totpdf-1
+      do npdf=0,maxpdf
          call setpdf(npdf)
          call hists_setpdf(npdf)
-c     skip for scanning events
-         if (npdf.ne.0.and.dofill.eq.0) goto 333
 c     intitialise xmsq to 0 for the real and all dipoles
          do nd=0,ndmax
             xmsq(nd)=0d0
@@ -256,26 +260,23 @@ c---  add to total
 
 C---  Fill only if it's last iteration
             if (doFill.ne.0) then
+c     this call can be removed, because pjet and ptildejet are both equal to ptrans,
+c     which is the transformation of p into the dipole kinematic
                call getptildejet(nd,pjet)
                val=xmsq(nd)*wgt
-C           print*,'fort wt', val
-C           print*,'fort p3', pjet(3,1), pjet(3,2), pjet(3,3), pjet(3,4)
-C           print*,'fort p4', pjet(4,1), pjet(4,2), pjet(4,3), pjet(4,4)
 C---        store information per each dipole
+C             call hists_fill(p(3,:),p(4,:),val)
               call hists_real_dipole(pjet(3,:),pjet(4,:),val,nd)
-C             call hists_real_dipole_PDF(pjet(3,:),pjet(4,:),val,nd,npdf)
             endif
          enddo                  !End loop on real+dipoles contributions
 
 C---  Fill only if it's last iteration
          if (doFill.ne.0) then
-C        call hists_fill(p(3,:),p(4,:),val)
 C---     fill the dipole contribution to each bin separatelly
             call hists_real_event()
-C            call hists_real_event_PDF(npdf)
          endif
       enddo ! end of PDF loop
- 333  realint = f(1)
+      realint = f(1)
       return
 
  999  realint=0d0

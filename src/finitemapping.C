@@ -323,7 +323,7 @@ double dylow(double m, double y, double qt, double phicm, double phiZ, double co
   rlo[1] = (zcth + 1.)/2.;                           //cos th of Z in CM frame
   begin_time = clock_real();
   double f[opts.totpdf];
-  value = lowint_(rlo,wgt);
+  value = lowint_(rlo,wgt,f);
   end_time = clock_real();
   cout << "Virt: " << value << "  " << "time " << end_time - begin_time << "s" << endl;
   //******************************************

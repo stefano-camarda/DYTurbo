@@ -60,7 +60,7 @@
       external hists_fill
 C      external hists_fill_PDF
 
-      integer npdf
+      integer npdf,maxpdf
       double precision gsqcentral
 
 c      if (first) then
@@ -175,12 +175,14 @@ c--- Calculate the required matrix elements
        call qqb_w1jet_z(p,z)
       endif
 
+c     skip PDF loop in the preconditioning phase
+      maxpdf=0
+      if (dofill.ne.0) maxpdf = totpdf-1
+      
 c     start PDF loop
-      do npdf=0,totpdf-1
+      do npdf=0,maxpdf
          call setpdf(npdf)
          call hists_setpdf(npdf)
-c     skip for scanning events
-         if (npdf.ne.0.and.dofill.eq.0) goto 333
 c     intitialise xmsq to 0
          xmsq=0d0
 
@@ -360,20 +362,14 @@ c now add born part (proportional to as)
       xmsq=flux*xjac*pswt*xmsq/BrnRat
       f(npdf+1)=xmsq
 
-      if (npdf.eq.0) then
-         virtint=xmsq
-      endif
-
 C     Fill only if it's last iteration
       if (doFill.ne.0) then
-C          print *, "PDF rew test: ", npdf,fx1(0),fx1(1),fx1(-1)
           call hists_fill(p(3,:),p(4,:),xmsq*wgt)
-C          call hists_fill_PDF(p(3,:),p(4,:),virtint*wgt,npdf)
       endif
 
       enddo                     ! end PDF loop
 
- 333  virtint = f(1)
+      virtint = f(1)
 
       return
 

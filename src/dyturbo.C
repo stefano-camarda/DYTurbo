@@ -206,20 +206,22 @@ int main( int argc , const char * argv[])
       // leading order
       if (opts.doLO) {
           double b_time = clock_real();
-          lowintegr(value, error);
+          lowintegr(vals, error);
           double e_time = clock_real();
+	  value = vals[0];
           normalise_result(value,error);
           print_result(value,error,b_time,e_time);
           hists.FillResult( plotter::LO , value, error, e_time-b_time );
           totval += value;
           toterror2 += error*error;
+	  vadd(totvals,vals);
       }
       // real part
       if (opts.doREAL) {
           double b_time = clock_real();
           realintegr(vals, error);
-	  value = vals[0];
           double e_time = clock_real();
+	  value = vals[0];
           normalise_result(value,error);
           print_result(value,error,b_time,e_time);
           hists.FillResult( plotter::Real , value, error, e_time-b_time );
@@ -231,8 +233,8 @@ int main( int argc , const char * argv[])
       if (opts.doVIRT) {
           double b_time = clock_real();
           virtintegr(vals, error);
-	  value = vals[0];
 	  double e_time = clock_real();
+	  value = vals[0];
           normalise_result(value,error);
           print_result(value,error,b_time,e_time);
           hists.FillResult( plotter::Virt , value, error, e_time-b_time );
