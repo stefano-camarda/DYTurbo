@@ -80,8 +80,7 @@ void dyturboinit()
   //move here the flaq.eq.0 initialisation part of resumm() in main2 instead of using this initialisation flag
 
   //Cut on qt/Q (add to settings)
-  qtcut_.xqtcut_=0.008;
-  //qtcut_.xqtcut_=0.001;
+  qtcut_.xqtcut_= opts.xqtcut; //0.008;
 
   //    CKM matrix entries
   cabib_.Vud_ = opts.Vud;

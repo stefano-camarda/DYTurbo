@@ -97,6 +97,9 @@ public:
   //Resummation cutoff
   double qtcutoff;
 
+  //qtcut
+  double xqtcut, qtcut;
+
   //dimension of integration
   int intDimRes;
   bool resint2d, resint3d, resintvegas;

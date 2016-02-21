@@ -46,6 +46,8 @@ void settings::readfromfile(const string fname){
     dampdelta      = in.GetNumber ( "dampdelta"           );
     dampmode       = in.GetNumber ( "dampmode"           );
     qtcutoff       = in.GetNumber ( "qtcutoff"           );
+    xqtcut         = in.GetNumber ( "xqtcut"           );
+    qtcut          = in.GetNumber ( "qtcut"           );
     intDimRes      = in.GetNumber ( "intDimRes"       ); //3
     //resint2d              = in.GetBool   ( "resint2d"           ); //false
     //resint3d              = in.GetBool   ( "resint3d"           ); //true
@@ -229,7 +231,9 @@ void settings::dumpAll(){
         dumpD("dampk",             dampk       );
         dumpD("dampdelta",     dampdelta      );
         dumpI("dampmode",       dampmode     );
-	dumpI("qtcutoff",       qtcutoff     );
+	dumpD("qtcutoff",       qtcutoff     );
+	dumpD("xqtcut",       xqtcut     );
+	dumpD("qtcut",       qtcut     );
         dumpB("useGamma           ", useGamma            );
         dumpI("intDimRes          ", intDimRes           );
         dumpB("resint2d           ", resint2d            );
