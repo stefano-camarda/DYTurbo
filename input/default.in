@@ -57,6 +57,10 @@ dampmode = 1
 # resummation cutoff
 qtcutoff = 0.02
 
+# qtcut
+xqtcut = 0.008
+qtcut = 0.
+
 # dimension of integration
 intDimRes = 4
 #int2d = false
