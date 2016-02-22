@@ -2,7 +2,7 @@
       implicit none
       include 'constants.f'
       include 'noglue.f'
-      include 'vegas_common.f'
+      include 'mxdim.f'
       include 'sprods_com.f'
       include 'npart.f'
       include 'epinv.f'

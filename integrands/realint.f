@@ -2,7 +2,7 @@
       implicit none
       include 'constants.f'
       include 'noglue.f'
-      include 'vegas_common.f'
+      include 'mxdim.f'
       include 'ptilde.f'
       include 'npart.f'
       include 'scale.f'
