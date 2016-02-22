@@ -3,7 +3,7 @@ C     Scale dependence included
 
 C     March 2015: Bug in muf dependence corrected
 
-      double precision function lowintHst(r,wgt)
+      double precision function lowintHst_dynnlo(r,wgt,f)
       implicit none
       include 'constants.f'
       include 'masses.f'
@@ -15,7 +15,6 @@ C     March 2015: Bug in muf dependence corrected
       include 'facscale.f'
       include 'noglue.f'
       include 'process.f'
-      include 'efficiency.f'
       include 'phasemin.f'
 
 C
@@ -24,15 +23,14 @@ C
       include 'dynamicscale.f'
       include 'options.f'
 
-c --- To use VEGAS random number sequence :
-      double precision ran2
+      double precision f(*)
       integer ih1,ih2,j,k,l,nvec,flgq
       double precision r(mxdim),W,sqrts,xmsq,val,
      . fx10(-nf:nf),fx20(-nf:nf),p(mxpart,4),pjet(mxpart,4),
-     . pswt,rscalestart,fscalestart
+     . pswt
       double precision wgt,msqc(-nf:nf,-nf:nf)
       double precision xx(2),flux,BrnRat
-      logical bin,first,includedipole
+      logical includedipole
 CC
       logical cuts
       external cuts
@@ -58,49 +56,32 @@ C
       integer order,a,b
       common/nnlo/order
 CC
-      integer jets,ndec,nproc
-      common/parts_int/jets
+      integer ndec,nproc
       common/nproc/nproc
 CC
       common/density/ih1,ih2
       common/energy/sqrts
-      common/bin/bin
       common/x1x2/xx
       common/BrnRat/BrnRat
      
 
       data p/48*0d0/
-      data first/.true./
-      save first,rscalestart,fscalestart
 
       logical binner
       external binner
       external hists_fill
 
-      if (first) then
-         first=.false.
-         rscalestart=scale
-         fscalestart=facscale
-      endif
-
-      ntotshot=ntotshot+1
-      lowintHst=0d0
-
-C     The number of jets is zero for this peice
-
-      jets=0      
-
-C
+      integer npdf,maxpdf
+      
+      lowintHst_dynnlo=0d0
+      do npdf=0,totpdf-1
+         f(npdf+1)=0d0
+      enddo
 
       W=sqrts**2
 
-
-
       npart=2
       call gen2(r,p,pswt,*999)
-
-
-
 
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
@@ -109,52 +90,36 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       call masscuts(s,*999)
       
-                                                
-
 c--- see whether this point will pass cuts - if it will not, do not
 c--- bother calculating the matrix elements for it, instead bail out
       if (cuts(p,0)) goto 999
       if (.not.binner(p(3,:),p(4,:))) goto 999
 
-c      if(cuts(p,0) .eqv. .true.) then
-c        goto 999
-c      endif
-      
       
       xx(1)=-2d0*p(1,4)/sqrts
       xx(2)=-2d0*p(2,4)/sqrts
 
-
-c--- Calculate the required matrix element      
-
-
-      if(nproc.eq.3) then
-       call qqb_z(p,msqc)
-      else
-       call qqb_w(p,msqc)
+c     Load central PDF and QCD coupling (not needed)
+      if (pdferr) then
+         call setpdf(0)
       endif
 
+c--- Calculate the required matrix element      
+      if(nproc.eq.3) then
+         call qqb_z(p,msqc)
+      else
+         call qqb_w(p,msqc)
+      endif
             
       flux=fbGeV2/(2d0*xx(1)*xx(2)*W)
       
-c--- initialize a PDF set here, if calculating errors
-  777 continue    
-      xmsq=0d0
-
-
-    
-
-
 C     Compute Q2
 
       q2=2*dot(p,3,4)
 
-
 C     Dynamic scale
 
       if(dynamicscale) call scaleset(q2)
-
-      asopi=ason2pi*2
 
       LF=dlog(q2/facscale**2)
       LR=dlog(q2/scale**2)
@@ -179,8 +144,18 @@ C ndim here is 6 as for H->2gamma
       z1=xx10**beta
       z2=xx20**alfa
 
-
-
+c     skip PDF loop in the preconditioning phase
+      maxpdf=0
+      if (doFill.ne.0) maxpdf = totpdf-1
+      
+c     start PDF loop
+      do npdf=0,maxpdf
+         call setpdf(npdf)
+         asopi=ason2pi*2
+         call hists_setpdf(npdf)
+c     intitialise xmsq to 0
+         xmsq=0d0
+      
 c--- calculate PDF's  
 
       call fdist(ih1,xx10,facscale,fx10)
@@ -610,32 +585,25 @@ C     Include missing term from contact term in 2 loop AP
       endif     
 
 
-      lowintHst=flux*pswt*xmsq/BrnRat
-
-
+      xmsq=flux*pswt*xmsq/BrnRat
+      f(npdf+1)=xmsq
+c      print *,npdf,xmsq
       call getptildejet(0,pjet)
       
-      call dotem(nvec,pjet,s)
+c      call dotem(nvec,pjet,s)
 
-    
-
-      val=lowintHst*wgt
       if (doFill.ne.0) then
+         val=xmsq*wgt
           call hists_fill(p(3,:),p(4,:),val)
       endif
 
+      enddo                     ! end PDF loop
 
-
-      if (bin) then
-        val=val/dfloat(itmx)
-CC      call plotter(pjet,val,0)
-c        call plotter(p,val,0)
-      endif
+      lowintHst_dynnlo=f(1)
 
       return
 
  999  continue
-      ntotzero=ntotzero+1
       
       return
       end
