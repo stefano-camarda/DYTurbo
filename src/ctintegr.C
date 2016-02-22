@@ -223,7 +223,7 @@ integrand_t ctintegrandMC(const int &ndim, const double x[], const int &ncomp, d
   //Call the counterterm
   int mode = 0;
   dofill_.doFill_ = int(iter==last_iter);
-  f[0] = ctint_(costh_CS,m,qt,y,mode,weight,f);
+  f[0] = ctint_(costh_CS,m,qt,y,mode,f);
   
   //avoid nans
   if (f[0] != f[0])
@@ -372,13 +372,12 @@ integrand_t ctintegrand3d(const int &ndim, const double x[], const int &ncomp, d
   //Then the epxressions 1, costh and costh^2 in sigmaij are substituted by these costh moments
   double costh = 0;
   int mode = 1;
-  double weight = 1.;
   dofill_.doFill_ = 1;
   if (swtch < 0.01)
     f[0]=0.;
   else
     //evaluate the fixed order expansion of the resummed cross section
-    f[0]=ctint_(costh,m,qt,y,mode,weight,f);
+    f[0]=ctint_(costh,m,qt,y,mode,f);
 
   //avoid nans
   if (f[0] != f[0])
@@ -503,13 +502,12 @@ integrand_t ctintegrand2d(const int &ndim, const double x[], const int &ncomp, d
   //Then the epxressions 1, costh and costh^2 in sigmaij are substituted by these costh moments
   double costh = 0;
   int mode = 2;
-  double weight = 1.;
   dofill_.doFill_ = 1;
 
   //evaluate the fixed order expansion of the resummed cross section
   double qt = (qtmn+qtmx)/2.;
   clock_t cbt = clock();
-  f[0]=ctint_(costh,m,qt,y,mode,weight,f);
+  f[0]=ctint_(costh,m,qt,y,mode,f);
   clock_t cet = clock();
 
   //avoid nans

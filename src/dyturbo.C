@@ -108,8 +108,8 @@ int main( int argc , const char * argv[])
       resumm_(costh,m,qt,y,mode);
     }
   double f[opts.totpdf];
-  double weight = 1.;
-  ctint_(costh,m,qt,y,mode,weight,f);
+  cout << "pippo" << endl;
+  ctint_(costh,m,qt,y,mode,f);
   /****************************************/
   
 

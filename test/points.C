@@ -156,7 +156,7 @@ void test_ct_speed(double costh,double m,double qt,double y,int mode){
     begin_time = clock_real();
     double f[opts.totpdf];
     double weight=1.;
-    value = ctint_(costh,m,qt,y,mode,weight,f);
+    value = ctint_(costh,m,qt,y,mode,f);
     end_time = clock_real();
     cout << setw(10) << "Result" << setw(15) << value
          << setw(10) << "time "  << setw(15) << float(end_time - begin_time) << "s" << endl;

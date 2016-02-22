@@ -9,7 +9,7 @@ integrand_t ctintegrand2d (const int &ndim, const double x[], const int &ncomp, 
 
 extern "C" {
   double countint_(double r[22], double &wgt);
-  double ctint_(double &costh, double &mm, double &qtt, double &yy, int &mode, double &wgt, double f[]);
+  double ctint_(double &costh, double &mm, double &qtt, double &yy, int &mode, double f[]);
 }
 
 #endif

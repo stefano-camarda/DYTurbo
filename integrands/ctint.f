@@ -5,7 +5,7 @@ C     Version that allows to separate also qg channel
 
 C     Scale dependence included up to NNLO
 
-      double precision function ctint(costh,mm,qtt,yy,mode,wgt,f)
+      double precision function ctint(costh,mm,qtt,yy,mode,f)
       implicit none
       double precision costh,mm,qtt,yy
       integer mode
@@ -33,7 +33,7 @@ C
       double precision W
       double precision p(mxpart,4)
       double precision s(mxpart,mxpart)
-      double precision msqc(-nf:nf,-nf:nf),xmsq,wgt
+      double precision msqc(-nf:nf,-nf:nf),xmsq
       double precision flux,BrnRat
       double precision qtcut,xqtcut,switch,qt,m
       double precision switching

@@ -6,7 +6,6 @@ void yline()
   double qt = 0.1;
   double y = 0.;
   int mode = 1;
-  double weight=1.;
   double f[opts.totpdf];
 
   double y1 = opts.ylow;
@@ -28,11 +27,11 @@ void yline()
       genV4p(m, qt, y, 0.);//generate boson 4-momentum, with m, qt, y and phi=0
       //      yf << "gy->SetPoint(gy->GetN(), " << i*hy+y1 << ", " << resumm_(costh,m,qt,y,mode) << ");" << endl;
       if (vjfo_(m,qt,y) != 0)
-	yf << "gy->SetPoint(gy->GetN(), " << i*hy+y1 << ", " << (-ctint_(costh,m,qt,y,mode,weight,f)*2*qt)/vjfo_(m,qt,y) << ");" << endl;
-      yf << "gy1->SetPoint(gy1->GetN(), " << i*hy+y1 << ", " << -ctint_(costh,m,qt,y,mode,weight,f)*2*qt << ");" << endl;
+	yf << "gy->SetPoint(gy->GetN(), " << i*hy+y1 << ", " << (-ctint_(costh,m,qt,y,mode,f)*2*qt)/vjfo_(m,qt,y) << ");" << endl;
+      yf << "gy1->SetPoint(gy1->GetN(), " << i*hy+y1 << ", " << -ctint_(costh,m,qt,y,mode,f)*2*qt << ");" << endl;
       yf << "gy2->SetPoint(gy2->GetN(), " << i*hy+y1 << ", " << vjfo_(m,qt,y) << ");" << endl;
       // check of y asymmetry
-      // yf << "gy1->SetPoint(gy1->GetN(), " << i*hy+y1 << ", " << -ctint_(costh,m,qt,y,mode,weight,f)*2*qt+ctint_(costh,m,qt,ym,mode,weight,f)*2*qt << ");" << endl;
+      // yf << "gy1->SetPoint(gy1->GetN(), " << i*hy+y1 << ", " << -ctint_(costh,m,qt,y,mode,f)*2*qt+ctint_(costh,m,qt,ym,mode,f)*2*qt << ");" << endl;
       // yf << "gy2->SetPoint(gy2->GetN(), " << i*hy+y1 << ", " << vjfo_(m,qt,y)-vjfo_(m,qt,ym) << ");" << endl;
     }
   yf << "gy->Draw();" << endl;
@@ -49,7 +48,6 @@ void mline()
   double qt = 0.1;
   double y =  (opts.ylow + opts.yhigh)/2.;
   int mode = 1;
-  double weight=1.;
   double f[opts.totpdf];
 
   double m1 = opts.mlow;
@@ -68,8 +66,8 @@ void mline()
       setcthmqty(costh, m, qt, y);//set global variables to costh, m, qt, y
       genV4p(m, qt, y, 0.);//generate boson 4-momentum, with m, qt, y and phi=0
       //mf << "gm->SetPoint(gm->GetN(), " << i*hm+m1 << ", " << resumm_(costh,m,qt,y,mode) << ");" << endl;
-      mf << "gm->SetPoint(gm1->GetN(), " << i*hm+m1 << ", " << -ctint_(costh,m,qt,y,mode,weight,f)*2*qt/vjfo_(m,qt,y) << ");" << endl;
-      mf << "gm1->SetPoint(gm1->GetN(), " << i*hm+m1 << ", " << -ctint_(costh,m,qt,y,mode,weight,f)*2*qt << ");" << endl;
+      mf << "gm->SetPoint(gm1->GetN(), " << i*hm+m1 << ", " << -ctint_(costh,m,qt,y,mode,f)*2*qt/vjfo_(m,qt,y) << ");" << endl;
+      mf << "gm1->SetPoint(gm1->GetN(), " << i*hm+m1 << ", " << -ctint_(costh,m,qt,y,mode,f)*2*qt << ");" << endl;
       mf << "gm2->SetPoint(gm2->GetN(), " << i*hm+m1 << ", " << vjfo_(m,qt,y) << ");" << endl;
     }
   mf << "gm->Draw();" << endl;
@@ -194,7 +192,6 @@ void ptline()
   double y = 1.0;
   int mode = 1;
   double f[opts.totpdf];
-  double weight=1.;
   setbounds(opts.mlow, opts.mhigh, 0, 100, opts.ylow, opts.yhigh);
   cacheyrapint_(ymin, ymax);
   rapint::cache(ymin, ymax);
@@ -215,8 +212,8 @@ void ptline()
       setcthmqty(costh, m, qt, y);//set global variables to costh, m, qt, y
       genV4p(m, qt, y, 0.);//generate boson 4-momentum, with m, qt, y and phi=0
       //pf << "gp->SetPoint(gp->GetN(), " << i*hp+p1 << ", " << resumm_(costh,m,qt,y,mode) << ");" << endl;
-      pf << "gp->SetPoint(gp->GetN(), "   << i*hp+p1 << ", " << vjfo_(m,qt,y)+ctint_(costh,m,qt,y,mode,weight,f)*2*qt << ");" << endl;
-      pf << "gp1->SetPoint(gp1->GetN(), " << i*hp+p1 << ", " << -ctint_(costh,m,qt,y,mode,weight,f)*2*qt << ");" << endl;
+      pf << "gp->SetPoint(gp->GetN(), "   << i*hp+p1 << ", " << vjfo_(m,qt,y)+ctint_(costh,m,qt,y,mode,f)*2*qt << ");" << endl;
+      pf << "gp1->SetPoint(gp1->GetN(), " << i*hp+p1 << ", " << -ctint_(costh,m,qt,y,mode,f)*2*qt << ");" << endl;
       pf << "gp2->SetPoint(gp2->GetN(), " << i*hp+p1 << ", " << vjfo_(m,qt,y) << ");" << endl;
     }
   pf << "gp->Draw();" << endl;
