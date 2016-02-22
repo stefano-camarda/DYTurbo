@@ -271,6 +271,46 @@ void virtintegr(vector <double> &res, double &err)
   return;
 }
 
+//Cuba integration of double virtual
+void doublevirtintegr(vector <double> &res, double &err)
+{
+  const int ndim = 6;   //dimensions of the integral
+  const int ncomp = opts.totpdf;  //components of the integrand
+  void *userdata;
+  const int nvec = 1;
+  const double epsrel = 0.;
+  const double epsabs = 0.;
+  const char *statefile = "";
+  void *spin=NULL;
+  int neval;
+  int fail;
+  double integral[ncomp];
+  double error[ncomp];
+  double prob[ncomp];
+  const int flags = 8+4+opts.cubaverbosity;
+  const int seed = opts.rseed;
+  const int mineval   = opts.vegasncallsVV;
+  const int maxeval   = opts.vegasncallsVV;
+  const int nstart    = max(10, int(opts.vegasncallsVV/10));
+  const int nincrease = max(10, int(opts.vegasncallsVV/10));
+  const int nbatch    = 1000;
+  const int gridno = 0;
+  Vegas(ndim, ncomp, (integrand_t)doublevirtintegrand, userdata, nvec,
+	epsrel, epsabs,
+	flags, seed,
+	mineval, maxeval,
+	nstart, nincrease, nbatch,
+	gridno, statefile, spin,
+	&neval, &fail,
+	integral, error, prob);
+  res.clear();
+  for (int i = 0; i < opts.totpdf; i++)
+    res.push_back(integral[i]);
+  err = error[0];
+
+  return;
+}
+
 //Cuba integration of the counterterm
 void ctintegr(double &res, double &err)
 {
@@ -310,10 +350,10 @@ void ctintegr(double &res, double &err)
 }
 
 //Cuba integration of the counterterm
-void ctintegrMC(double &res, double &err)
+void ctintegrMC(vector <double> &res, double &err)
 {
   const int ndim = 6;   //dimensions of the integral
-  const int ncomp = 1;  //components of the integrand
+  const int ncomp = opts.totpdf;  //components of the integrand
   void *userdata;
   const int nvec = 1;
   const double epsrel = 0.;
@@ -322,9 +362,9 @@ void ctintegrMC(double &res, double &err)
   void *spin=NULL;
   int neval;
   int fail;
-  double integral[1];
-  double error[1];
-  double prob[1];
+  double integral[ncomp];
+  double error[ncomp];
+  double prob[ncomp];
   const int flags = 8+4+opts.cubaverbosity;
   const int seed = opts.rseed;
   const int mineval = opts.vegasncallsCT;
@@ -341,16 +381,18 @@ void ctintegrMC(double &res, double &err)
 	gridno, statefile, spin,
 	&neval, &fail,
 	integral, error, prob);
-  res = integral[0];
+  res.clear();
+  for (int i = 0; i < opts.totpdf; i++)
+    res.push_back(integral[i]);
   err = error[0];
 
   return;
 }
 
-void ctintegr3d(double &res, double &err)
+void ctintegr3d(vector <double> &res, double &err)
 {
   const int ndim = 3;     //dimensions of the integral
-  const int ncomp = 1;  //components of the integrand
+  const int ncomp = opts.totpdf;  //components of the integrand
   void *userdata;
   const int nvec = 1;
   const double epsrel = 0.;
@@ -359,9 +401,9 @@ void ctintegr3d(double &res, double &err)
   void *spin=NULL;
   int neval;
   int fail;
-  double integral[1];
-  double error[1];
-  double prob[1];
+  double integral[ncomp];
+  double error[ncomp];
+  double prob[ncomp];
   const int flags = 0+opts.cubaverbosity;
   const int mineval = 127+2*127*opts.niterCT;
   const int maxeval = 127+2*127*opts.niterCT;
@@ -375,17 +417,19 @@ void ctintegr3d(double &res, double &err)
 	key, statefile, NULL,
 	&nregions, &neval, &fail,
   	integral, error, prob);
-
-  res = integral[0];
+  res.clear();
+  for (int i = 0; i < opts.totpdf; i++)
+    res.push_back(integral[i]);
   err = error[0];
-  hists.FillQuadrature(res,err);
+
+  hists.FillQuadrature(res[0],err);
   return;
 }
 
-void ctintegr2d(double &res, double &err)
+void ctintegr2d(vector <double> &res, double &err)
 {
   const int ndim = 2;     //dimensions of the integral
-  const int ncomp = 1;  //components of the integrand
+  const int ncomp = opts.totpdf;  //components of the integrand
   void *userdata;
   const int nvec = 1;
   const double epsrel = 0.;
@@ -394,9 +438,9 @@ void ctintegr2d(double &res, double &err)
   void *spin=NULL;
   int neval;
   int fail;
-  double integral[1];
-  double error[1];
-  double prob[1];
+  double integral[ncomp];
+  double error[ncomp];
+  double prob[ncomp];
   const int flags = 0+opts.cubaverbosity;
   const int mineval = 65+2*65*opts.niterCT;
   const int maxeval = 65+2*65*opts.niterCT;
@@ -410,48 +454,12 @@ void ctintegr2d(double &res, double &err)
 	key, statefile, NULL,
 	&nregions, &neval, &fail,
   	integral, error, prob);
-
-  res = integral[0];
-  err = error[0];
-  hists.FillQuadrature(res,err);
-  return;
-}
-
-//Cuba integration of double virtual
-void doublevirtintegr(double &res, double &err)
-{
-  const int ndim = 6;   //dimensions of the integral
-  const int ncomp = 1;  //components of the integrand
-  void *userdata;
-  const int nvec = 1;
-  const double epsrel = 0.;
-  const double epsabs = 0.;
-  const char *statefile = "";
-  void *spin=NULL;
-  int neval;
-  int fail;
-  double integral[1];
-  double error[1];
-  double prob[1];
-  const int flags = 8+4+opts.cubaverbosity;
-  const int seed = opts.rseed;
-  const int mineval   = opts.vegasncallsVV;
-  const int maxeval   = opts.vegasncallsVV;
-  const int nstart    = max(10, int(opts.vegasncallsVV/10));
-  const int nincrease = max(10, int(opts.vegasncallsVV/10));
-  const int nbatch    = 1000;
-  const int gridno = 0;
-  Vegas(ndim, ncomp, (integrand_t)doublevirtintegrand, userdata, nvec,
-	epsrel, epsabs,
-	flags, seed,
-	mineval, maxeval,
-	nstart, nincrease, nbatch,
-	gridno, statefile, spin,
-	&neval, &fail,
-	integral, error, prob);
-  res = integral[0];
+  res.clear();
+  for (int i = 0; i < opts.totpdf; i++)
+    res.push_back(integral[i]);
   err = error[0];
 
+  hists.FillQuadrature(res[0],err);
   return;
 }
 

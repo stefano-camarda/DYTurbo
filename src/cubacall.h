@@ -12,12 +12,12 @@ void vjintegr3d(double &res, double &err);
 void lowintegr(vector <double> &res, double &err);
 void realintegr(vector <double> &res, double &err);
 void virtintegr(vector <double> &res, double &err);
-void doublevirtintegr(double &res, double &err);
+void doublevirtintegr(vector <double> &res, double &err);
 
 void ctintegr(double &res, double &err);
-void ctintegrMC(double &res, double &err);
-void ctintegr3d(double &res, double &err);
-void ctintegr2d(double &res, double &err);
+void ctintegrMC(vector <double> &res, double &err);
+void ctintegr3d(vector <double> &res, double &err);
+void ctintegr2d(vector <double> &res, double &err);
 
 void exitfun(void * input, const int &core);
 
