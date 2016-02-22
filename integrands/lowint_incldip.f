@@ -81,12 +81,13 @@ c--- bother calculating the matrix elements for it, instead bail out
       xx(1)=-2d0*p(1,4)/sqrts
       xx(2)=-2d0*p(2,4)/sqrts
 
-c--- Calculate the required matrix elements      
+c     Load central PDF and QCD coupling
       if (pdferr) then
          call setpdf(0)
       endif
       gsqcentral=gsq
 
+c--- Calculate the required matrix elements      
        if(nproc.eq.3) then
           call qqb_z_g(p,msq)
        else
