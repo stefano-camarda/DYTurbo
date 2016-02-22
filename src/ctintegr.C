@@ -39,7 +39,11 @@ integrand_t ctintegrandMC(const int &ndim, const double x[], const int &ncomp, d
   clock_t begin_time, end_time;
 
   begin_time = clock();
-  
+
+  if (opts.PDFerrors)
+    for (int i = 1; i < opts.totpdf; i++)
+      f[i] = 0.;
+    
   //Jacobian of the change of variables from the unitary hypercube x[6] to the m, y, qt, phi, costh, philep boundaries
   double jac = 1.;
 
@@ -219,15 +223,25 @@ integrand_t ctintegrandMC(const int &ndim, const double x[], const int &ncomp, d
 
   //Call the counterterm
   int mode = 0;
-  f[0] = countterm_(costh_CS,m,qt,y,mode);
+  dofill_.doFill_ = int(iter==last_iter);
+  f[0] = countterm_(costh_CS,m,qt,y,mode,f);
   
   //avoid nans
   if (f[0] != f[0])
-    f[0] = 0.;
+    {
+      f[0]=0.;
+      if (opts.PDFerrors)
+	for (int i = 1; i < opts.totpdf; i++)
+	  f[i] = 0.;
+      return 0;
+    }
 	   
   //apply switching and jacobian
   f[0] = f[0]*jac*swtch;
-
+  if (opts.PDFerrors)
+    for (int i = 1; i < opts.totpdf; i++)
+      f[i] = f[i]*jac*swtch;
+  
   if (iter==4){
     double wt = weight*f[0];
     hists_fill_(p3, p4, &wt);
@@ -253,6 +267,10 @@ integrand_t ctintegrand3d(const int &ndim, const double x[], const int &ncomp, d
   clock_t begin_time, end_time;
 
   begin_time = clock();
+
+  if (opts.PDFerrors)
+    for (int i = 1; i < opts.totpdf; i++)
+      f[i] = 0.;
 
   //Jacobian of the change of variables from the unitary hypercube x[3] to the m, y, qt boundaries
   double jac = 1.;
@@ -352,30 +370,27 @@ integrand_t ctintegrand3d(const int &ndim, const double x[], const int &ncomp, d
   //Then the epxressions 1, costh and costh^2 in sigmaij are substituted by these costh moments
   double costh = 0;
   int mode = 1;
+  dofill_.doFill_ = 1;
   if (swtch < 0.01)
     f[0]=0.;
   else
     //evaluate the fixed order expansion of the resummed cross section
-    f[0]=countterm_(costh,m,qt,y,mode);
+    f[0]=countterm_(costh,m,qt,y,mode,f);
 
+  //avoid nans
   if (f[0] != f[0])
-    f[0]=0.;  //avoid nans
+    {
+      f[0]=0.;
+      if (opts.PDFerrors)
+	for (int i = 1; i < opts.totpdf; i++)
+	  f[i] = 0.;
+      return 0;
+    }
 	   
   f[0] = f[0]*jac; //*swtch; switching function is inside countterm_
-
-  /*  { // filling event
-      // only VB information pt and y
-      double p3[4] = {0., 0., 0., 0.};
-      double p4[4] = {0., 0., 0., 0.};  // dont need this
-      p3[0] = qt;  // just x component
-      // rapidity = -.5 log (E+z/E-z) let E=1 just need z
-      double e2y = exp(-2*y);
-      double sqY = pow( (1-e2y)/(1+e2y), 2);
-      double pz2 = (m*m + qt*qt) * sqY/(1-sqY);
-      p3[2] = sqrt(pz2);
-      p3[3] = sqrt(m*m + qt*qt + pz2);
-      hists_fill_(p3,p4,f);
-      }*/
+  if (opts.PDFerrors)
+    for (int i = 1; i < opts.totpdf; i++)
+      f[i] = f[i]*jac;
 
   end_time = clock();
   if (opts.timeprofile)
@@ -395,6 +410,10 @@ integrand_t ctintegrand2d(const int &ndim, const double x[], const int &ncomp, d
   clock_t begin_time, end_time;
 
   begin_time = clock();
+
+  if (opts.PDFerrors)
+    for (int i = 1; i < opts.totpdf; i++)
+      f[i] = 0.;
 
   //Jacobian of the change of variables from the unitary hypercube x[3] to the m, y, qt boundaries
   double jac = 1.;
@@ -481,17 +500,28 @@ integrand_t ctintegrand2d(const int &ndim, const double x[], const int &ncomp, d
   //Then the epxressions 1, costh and costh^2 in sigmaij are substituted by these costh moments
   double costh = 0;
   int mode = 2;
+  dofill_.doFill_ = 1;
 
   //evaluate the fixed order expansion of the resummed cross section
   double qt = (qtmn+qtmx)/2.;
   clock_t cbt = clock();
-  f[0]=countterm_(costh,m,qt,y,mode);
+  f[0]=countterm_(costh,m,qt,y,mode,f);
   clock_t cet = clock();
 
+  //avoid nans
   if (f[0] != f[0])
-    f[0]=0.;  //avoid nans
+    {
+      f[0]=0.;
+      if (opts.PDFerrors)
+	for (int i = 1; i < opts.totpdf; i++)
+	  f[i] = 0.;
+      return 0;
+    }
 	   
   f[0] = f[0]*jac;
+  if (opts.PDFerrors)
+    for (int i = 1; i < opts.totpdf; i++)
+      f[i] = f[i]*jac;
 
   end_time = clock();
   if (opts.timeprofile)
