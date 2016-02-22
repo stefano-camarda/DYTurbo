@@ -132,8 +132,13 @@ void settings::readfromfile(const string fname){
 	cout << "Asked for fixed order predictions, enforce a_param = 1.0" << endl;
 	a_param = 1.0;
       }
-
-		   
+    
+    if (PDFerrors = true && LHAPDFmember != 0)
+      {
+	cout << "Asked for PDFerrors, enforce LHAPDFmember  = 0" << endl;
+	LHAPDFmember = 0;
+      }
+      
     // resummation term integration dimension
     if (intDimRes<4 && intDimRes>1){
         resint2d = (intDimRes == 2);
