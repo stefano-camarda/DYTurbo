@@ -30,13 +30,24 @@ void pdfini_()
     }
 
   //setalphas();
-  setg();
+  //setg();
 }
 
 void setpdf_(int& member)
 {
-  LHAPDF::initPDF(member);
+
+  if (member == 0)
+    {
+      if (opts.PDFerrors && opts.totpdf > 1)
+	LHAPDF::initPDF(0);
+      else
+	LHAPDF::initPDF(opts.LHAPDFmember);
+    }
+  else
+    LHAPDF::initPDF(member);
+  
   setalphas();
+  setg();
 }
 
 //set value of alphas
