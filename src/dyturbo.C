@@ -108,7 +108,8 @@ int main( int argc , const char * argv[])
       resumm_(costh,m,qt,y,mode);
     }
   double f[opts.totpdf];
-  countterm_(costh,m,qt,y,mode,f);
+  double weight = 1.;
+  ctint_(costh,m,qt,y,mode,weight,f);
   /****************************************/
   
 
