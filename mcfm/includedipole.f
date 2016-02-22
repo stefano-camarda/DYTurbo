@@ -1,10 +1,8 @@
       logical function includedipole(nd,ptrans)
       implicit none
       include 'constants.f'
-      include 'clustering.f'
       include 'npart.f'
       include 'ptilde.f'
-      include 'jetlabel.f'
       double precision ptrans(mxpart,4),pjet(mxpart,4),rcut,pt34
       double precision qt2,xqtcut,Q2
       integer i,j,nd,nqcdjets,nqcdstart,notag,isub
@@ -45,7 +43,7 @@ c      print *,nd, q2, qt2
       enddo
 
 c--- check the lepton cuts
-      failedcuts=(cuts(pjet,jets))
+      failedcuts=(cuts(pjet,0))
       if (failedcuts) includedipole=.false.
       if (.not.binner(pjet(3,:),pjet(4,:))) includedipole=.false.
       
