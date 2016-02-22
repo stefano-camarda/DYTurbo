@@ -1,14 +1,15 @@
 #include "init.h"
-#include "integr.h"
-#include "resintegr.h"
 #include "settings.h"
 #include "interface.h"
+#include "integr.h"
+#include "resintegr.h"
+#include "ctintegr.h"
 #include "finintegr.h"
-#include "finitemapping.h"
 #include "cubacall.h"
 #include "plotter.h"
 #include "printsettings.h"
 #include "switch.h"
+#include "clock_real.h"
 
 #include "config.h"
 #include <cuba.h>
@@ -106,7 +107,8 @@ int main( int argc , const char * argv[])
       costh = 0.; m = opts.rmass; qt = 1; y = 0;
       resumm_(costh,m,qt,y,mode);
     }
-  countterm_(costh,m,qt,y,mode);
+  double f[opts.totpdf];
+  countterm_(costh,m,qt,y,mode,f);
   /****************************************/
   
 
@@ -170,27 +172,31 @@ int main( int argc , const char * argv[])
       // double virtual
       if (opts.doVV) {
           double b_time = clock_real();
-          doublevirtintegr(value, error);
+          doublevirtintegr(vals, error);
           double e_time = clock_real();
+	  value = vals[0];
           normalise_result(value,error);
           print_result(value,error,b_time,e_time);
 	  hists.FillResult( plotter::VV , value, error, e_time-b_time );
           totval += value;
           toterror2 += error*error;
+	  vadd(totvals,vals);
       }
       // counter term
       if (opts.doCT) {
           double b_time = clock_real();
-	  if (opts.ctint2d) ctintegr2d(value, error);
-	  if (opts.ctint3d) ctintegr3d(value, error);
+	  if (opts.ctint2d) ctintegr2d(vals, error);
+	  if (opts.ctint3d) ctintegr3d(vals, error);
 	  //if (opts.ctintvegas) ctintegr(value, error);
-	  if (opts.ctintvegas) ctintegrMC(value, error);
+	  if (opts.ctintvegas) ctintegrMC(vals, error);
           double e_time = clock_real();
+	  value = vals[0];
           normalise_result(value,error);
           print_result(value,error,b_time,e_time);
           hists.FillResult( plotter::CT , value, error, e_time-b_time );
           totval += value;
           toterror2 += error*error;
+	  vadd(totvals,vals);
       }
       //analytical
       if (opts.doVJ) {
