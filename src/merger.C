@@ -504,36 +504,30 @@ class OutlierRemoval{
                 if (type.CompareTo("median",TString::kIgnoreCase)==0){
                     centr = median(vals);
                     sigma = delta(vals, centr, 0.68) / sqrtN;
+                    // if zero sigma take the value of first input object
+                    if (sigma==0) sigma = in_objs[0]->GetBinError(ibin);
                     if (isProf&&!doEntries){
                         wcentr = median (entrs);
                         wsigma = delta (entrs, wcentr, 0.68) / sqrtN;
-                        if (verbose>5) printf("   calculated median profile nom %f +- %f denom %f +- %f prof %f \n", centr, sigma, wcentr, wsigma, centr/wcentr);
+                        //if (verbose>5) printf("   calculated median profile nom %f +- %f denom %f +- %f prof %f \n", centr, sigma, wcentr, wsigma, centr/wcentr);
                     }
                 } else if (type.CompareTo("mean",TString::kIgnoreCase)==0){
                     centr = mean(vals);
                     sigma = rms(vals, centr)/sqrtN;
                 }
                 if (isProf&&!doEntries&&wcentr!=0){
-                    if (verbose>5) printf("   filling median profile bin %d cent %f wcent %f prof: %f \n", ibin, centr, wcentr, centr/wcentr);
-                    double r_centr2 = TMath::Power(centr/wcentr,2);
-                    double r_sigma2 = 0;
-                    r_sigma2+= TMath::Power( sigma  / centr  ,2);
-                    r_sigma2+= TMath::Power( wsigma / wcentr ,2);
-                    r_sigma2*= r_centr2;
-                    //TProfile* prof = (TProfile*)tmp_m;
-                    //double x = prof->GetBinCenter(ibin);
-                    //double y = centr/wcentr;
-                    //double w = wcentr;
-                    //prof-> Fill(x,y,w);
-                    prof-> SetBinEntries        ( ibin               , wcentr );
-                    prof-> SetAt                ( centr              , ibin   );
-                    prof-> GetBinSumw2()->SetAt ( TMath::Abs(wcentr) , ibin   );
-                    prof-> GetSumw2()->SetAt    ( r_sigma2+r_centr2  , ibin   );
+                    // if zero sigma take the value of first input object
+                    if (wsigma==0){
+                        wsigma = ((TProfile*) in_objs[0])->GetBinSumw2()->At(ibin);
+                        wsigma = TMath::Sqrt(wsigma);
+                    }
+                    set_profile_bin(prof,ibin,centr,sigma,wcentr,wsigma);
                 } else {
                     tmp_m->SetBinContent( ibin, centr  );
                     tmp_m->SetBinError  ( ibin, sigma );
                 }
             } // bins
+            if (prof!=0)  prof->SetErrorOption("i");
         }
 
         void remove_outliers_from_hist(TH1*hist, TH1*ref, VecTH1 in_objs){
@@ -543,6 +537,7 @@ class OutlierRemoval{
         void remove_outliers_from_profile(TH1*out, TH1*med, VecTH1 in_objs,bool isProf = true){
             if (med==0) return;
             int dim = med->GetDimension();
+            TProfile* prof = (isProf) ? (TProfile*)out : 0;
             if (dim!=1) return; /// @todo: 2D
             for ( auto b : loop_bins(med) ){
                 VecDbl v_sumw;
@@ -575,23 +570,13 @@ class OutlierRemoval{
                 if (!v_sumwy.empty()){
                     //
                     if (isProf){
-                    double sumw = mean(v_sumw);
-                    double sumwy = mean(v_sumwy);
-                    double sigmaw = rms(v_sumw, sumw )/TMath::Sqrt(v_sumw.size());
-                    double sigmawy = rms(v_sumwy, sumwy )/TMath::Sqrt(v_sumwy.size());
-                    double r_centr2 = TMath::Power(sumwy/sumw,2);
-                    double r_sigma2 = 0;
-                    r_sigma2+= TMath::Power( sigmawy  / sumwy  ,2);
-                    r_sigma2+= TMath::Power( sigmaw / sumw ,2);
-                    r_sigma2*= r_centr2;
-                    //double sumwyy = sumwy*sumwy + sigma*sigma;
-                    TProfile* prof = (TProfile*)out;
-                    prof   ->SetBinEntries        ( b                 , sumw );
-                    prof   ->SetAt                ( sumwy             , b    );
-                    prof   ->GetBinSumw2()->SetAt ( TMath::Abs(sumw)  , b    );
-                    prof-> GetSumw2()->SetAt      ( r_sigma2+r_centr2 , b    );
-                    //prof-> GetSumw2()->SetAt    ( sigmawy*sigmawy + sumwy*sumwy , b    );
-                    //prof-> GetSumw2()->SetAt    ( sumwyy , b    );
+                        // calculate new average
+                        double sumw = mean(v_sumw);
+                        double sumwy = mean(v_sumwy);
+                        double sigmaw = rms(v_sumw, sumw )/TMath::Sqrt(v_sumw.size());
+                        double sigmawy = rms(v_sumwy, sumwy )/TMath::Sqrt(v_sumwy.size());
+                        // set bin content and error
+                        set_profile_bin(prof,b, sumwy,sigmawy, sumw, sigmaw);
                     } else {
                         // calculate new average
                         double centr = mean(v_sumwy);
@@ -602,6 +587,54 @@ class OutlierRemoval{
                     }
                 }
             } // all bins
+            if (prof!=0)  prof->SetErrorOption("i");
+        }
+
+        void set_profile_bin(TProfile* prof,int ibin, double centr, double sigma, double  wcentr, double  wsigma, int  N=1){
+            double p_centr2 = TMath::Power(centr/wcentr,2);
+            /// Propagate error to ratio
+            double p_sigma2 = 0;
+            p_sigma2+= TMath::Power( sigma  / centr  ,2);
+            p_sigma2+= TMath::Power( wsigma / wcentr ,2);
+            p_sigma2*= p_centr2;
+            /// Error definition inside TProfile:
+            ///
+            /// ERR = spread/sqrt(Neff)
+            /// spread = sqrt(abs(  sumwyy/sumw - p_centr2 ) )
+            /// Neff = sumw2 / sumww
+            ///
+            /// ERR**2 = abs(sumwyy/sumw - p_centr2 ) * sumww / sumw2
+            /// ERR**2 * sumw2 / sumww = abs(sumwyy/sumw - p_centr2)
+            ///
+            /// let ERR**2 = p_sigma2
+            ///
+            /// sumwyy = ( p_sigma2*sumw2/sumww +  p_centr2) * sumw
+            /// or
+            /// sumwyy = ( p_sigma2*sumw2/sumww -  p_centr2) * sumw
+            /// let Neff == 1
+            /// sumwyy = ( p_sigma2 + p_centr2) * sumw
+            /// or
+            /// sumwyy = ( p_sigma2 - p_centr2) * sumw
+            double new_sumw   = wcentr;
+            double new_sumww  = wcentr*wcentr;
+            double new_sumwy  = centr;
+            int sign= (wcentr<0 ? -1: 1 );
+            double new_sumwyy = (p_sigma2+sign*p_centr2)*TMath::Abs(wcentr);
+            /// cross check
+            double Neff= new_sumww/(new_sumw*new_sumw);
+            double spread = TMath::Abs(new_sumwyy/new_sumw - TMath::Power(new_sumwy/new_sumw,2));
+            double ERR = spread/Neff;
+            ERR = sqrt(ERR);
+            if (verbose>5) printf("   filling median profile bin %d cent %f+-%f wcent %f+-%f prof: %f+-%f+-%f \n",
+                    ibin,
+                    centr, sigma,
+                    wcentr, wsigma, 
+                    TMath::Sqrt(p_centr2), TMath::Sqrt(p_sigma2),ERR );
+            prof-> SetBinEntries        ( ibin       , new_sumw );
+            prof-> GetBinSumw2()->SetAt ( new_sumww  , ibin   );
+            prof-> SetAt                ( new_sumwy  , ibin   );
+            prof-> GetSumw2()->SetAt    ( new_sumwyy , ibin   );
+            return;
         }
 
         bool isProfile(TH1*h){
@@ -616,9 +649,10 @@ class OutlierRemoval{
             // assuming its profile
             TProfile * p = (TProfile *) h;
             double stat[10]; p->GetStats(stat);
-            printf( " TProfile dump: name=%s, mem=%p, tsumwy=%f, tsumwyy=%f, tsumw=%f, tsumww=%f, tsumwx=%f, tsumwxx=%f \n",
+            printf( " TProfile dump: name=%s, mem=%p, tsumwy=%f, tsumwyy=%f, tsumw=%f, tsumww=%f, tsumwx=%f, tsumwxx=%f, erroropt=%s \n",
                     p->GetName(), p,
-                    stat[4], stat[5], stat[0], stat[1], stat[2], stat[3]
+                    stat[4], stat[5], stat[0], stat[1], stat[2], stat[3],
+                    p->GetErrorOption()
                     );
             if (
                     stat[0]==0 &&
