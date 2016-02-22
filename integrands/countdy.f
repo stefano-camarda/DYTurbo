@@ -5,7 +5,7 @@ C     Version that allows to separate also qg channel
 
 C     Scale dependence included up to NNLO
 
-      double precision function countterm(costh,mm,qtt,yy,mode)
+      double precision function countterm(costh,mm,qtt,yy,mode,f)
       implicit none
       double precision costh,mm,qtt,yy
       integer mode
@@ -28,6 +28,8 @@ C
       include 'rescoeff.f'
       include 'dynamicscale.f'
 C
+      double precision f(*)
+
       integer j,k,l,nd,order
       integer nproc
       common/nproc/nproc
@@ -35,7 +37,7 @@ C
       double precision p(mxpart,4)
       double precision rscalestart,fscalestart
       double precision s(mxpart,mxpart)
-      double precision msqc(-nf:nf,-nf:nf),xmsq(0:maxd)
+      double precision msqc(-nf:nf,-nf:nf),xmsq(0:maxd),val,wgt
       double precision flux,BrnRat
       double precision xx1,xx2,q(mxpart,4)
       double precision m3,m4,m5,qtcut,xqtcut,switch,qt,m
@@ -147,6 +149,8 @@ c     Input large logs from ctqtint
       double precision LL3jk(-nf:nf,-nf:nf),LL4jk(-nf:nf,-nf:nf)
       common/largelogs/LL1jk,LL2jk,LL3jk,LL4jk
 
+      integer npdf,maxpdf
+
 
       if(first)  then           !! ONE TIME INITIALIZATION
          print *, 'first call to countterm'
@@ -155,6 +159,9 @@ c     Input large logs from ctqtint
       end if
 
       countterm=0d0 
+      do npdf=0,totpdf-1
+         f(npdf+1)=0d0
+      enddo
       do nd=0,1
          xmsq(nd)=0d0
       enddo     
@@ -403,9 +410,6 @@ c---check if x is out of normal range
       logxx10=dlog(xx10)
       logxx20=dlog(xx20)
       
-      call fdist(ih1,xx10,facscale,fx10)
-      call fdist(ih2,xx20,facscale,fx20)
-      
 C Scaled momentum fractions
       Pqqint1 = Pqqint(xx10)
       D0intx1 = D0int(xx10)
@@ -427,10 +431,6 @@ c     Preliminary loop for caching
          logz2 = dlog(z2)
          log1z1(ii) = dlog(1-z1)
          log1z2(ii) = dlog(1-z2)
-         call fdist(ih1,xx10**(1-ctx(ii)),facscale,fx1p)
-         call fdist(ih2,xx20**(1-ctx(ii)),facscale,fx2p)
-         cfx1p(:,ii)=fx1p
-         cfx2p(:,ii)=fx2p
          Cqqz1(ii) = Cqq(z1)
          Cqqz2(ii) = Cqq(z2)
 c         Cqgz1(ii) = Cqg(z1)
@@ -466,6 +466,29 @@ c         Pqgz2(ii) = Pqg(z2)
          P2qgz2(ii) = P2qg(z2)
       enddo
       flgq=1
+
+
+c     skip PDF loop in the preconditioning phase
+      maxpdf=0
+      if (doFill.ne.0) maxpdf = totpdf-1
+      
+c     start PDF loop
+      do npdf=0,maxpdf
+         call setpdf(npdf)
+         call hists_setpdf(npdf)
+c     intitialise xmsq to 0
+         xmsq(1)=0d0
+         
+c     cache PDF      
+      call fdist(ih1,xx10,facscale,fx10)
+      call fdist(ih2,xx20,facscale,fx20)
+      
+      do ii=1,ctdim
+         call fdist(ih1,xx10**(1-ctx(ii)),facscale,fx1p)
+         call fdist(ih2,xx20**(1-ctx(ii)),facscale,fx2p)
+         cfx1p(:,ii)=fx1p
+         cfx2p(:,ii)=fx2p
+      enddo
 c     start the fast alfa beta integration
       do ii=1,ctdim
          z2=cz2(ii)
@@ -856,8 +879,13 @@ C Multiply by BORN phase space weight
 
 c---Add to total
       xint=xmsq(1)
+
+      f(npdf+1)=xmsq(1)
+c      print *,maxpdf,npdf,xmsq(1)
+      
+      enddo !end loop on pdf
         
-      countterm=xint
+      countterm=f(1)
 c      print *, qtt, mm, yy, countterm
 
       return
