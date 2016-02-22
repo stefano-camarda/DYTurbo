@@ -177,7 +177,7 @@ integrand_t doublevirtintegrand(const int &ndim, const double x[], const int &nc
     rvv[i]=x[i];
 
   dofill_.doFill_ = int(iter==last_iter);
-  f[0] = lowinthst_(rvv,weight);
+  f[0] = lowinthst_dynnlo_(rvv,weight,f);
 
   return 0;
 }

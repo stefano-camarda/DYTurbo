@@ -12,7 +12,7 @@ extern "C" {
   double lowint_(double r[22], double &wgt, double f[]);
   double realint_(double r[22], double &wgt, double f[]);
   double virtint_(double r[22], double &wgt, double f[]);
-  double lowinthst_(double r[22], double &wgt);
+  double lowinthst_dynnlo_(double r[22], double &wgt, double f[]);
   double vjfo_(double &m, double &pt, double &y);
 }
 
