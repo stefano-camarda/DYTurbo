@@ -295,7 +295,9 @@ void plotter::CumulateResult(TermType term, double wgt){
 
 void plotter::SetPDF(int npdf){
     // if you not doing scanning just testing member
-    if (npdf==0 && opts.LHAPDFmember!=0) npdf=opts.LHAPDFmember;
+    if (npdf==0) //central PDF requested
+      if (opts.PDFerrors && opts.totpdf > 1) //not running PDFerrors variations
+	if(opts.LHAPDFmember!=0) npdf=opts.LHAPDFmember; //required PDF member is not the 0 member
     // if current npdf still same don't change anything
     if (last_npdf==npdf) return;
     // if empty add current hist to 0-th position
