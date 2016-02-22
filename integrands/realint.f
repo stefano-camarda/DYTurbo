@@ -10,7 +10,6 @@
       include 'process.f'
       include 'dynamicscale.f'
       include 'dipolescale.f'
-      include 'jetlabel.f'
       include 'qcdcouple.f'
       include 'options.f'
       integer ih1,ih2,j,k,nd,nvec

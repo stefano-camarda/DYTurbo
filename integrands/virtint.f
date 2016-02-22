@@ -96,6 +96,7 @@ c--- bother calculating the matrix elements for it, instead bail out
          return
       endif
 
+c     Load central PDF and QCD coupling
       if (pdferr) then
          call setpdf(0)
       endif
