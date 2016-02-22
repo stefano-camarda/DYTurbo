@@ -69,6 +69,15 @@ public:
   string LHAPDFset    ;
   int    LHAPDFmember ;
 
+  //EW parameters
+  double Gf, zmass, wmass;
+  double xw, aemmz;
+  double zwidth, wwidth;
+
+  //CKM matrix
+  double Vud, Vus, Vub;
+  double Vcd, Vcs, Vcb;
+
   //resonance mass and width (used for breit wigner unweighting)
   double rmass, rwidth;
 
@@ -80,6 +89,16 @@ public:
   double yhigh;
   double mlow;
   double mhigh;
+
+  //Resummation damping
+  double dampk, dampdelta;
+  int dampmode;
+
+  //Resummation cutoff
+  double qtcutoff;
+
+  //qtcut
+  double xqtcut, qtcut;
 
   //dimension of integration
   int intDimRes;

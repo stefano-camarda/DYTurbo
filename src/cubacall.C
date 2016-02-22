@@ -1,12 +1,12 @@
-#include <cuba.h>
-#include <iostream>
-
 #include "cubacall.h"
 #include "settings.h"
-#include "integr.h"
-#include "finintegr.h"
 #include "resintegr.h"
+#include "ctintegr.h"
+#include "finintegr.h"
 #include "plotter.h"
+
+#include <cuba.h>
+#include <iostream>
 
 void resintegr2d(double &res, double &err)
 {
@@ -294,6 +294,44 @@ void ctintegr(double &res, double &err)
   const int nbatch = 1000;
   const int gridno = 0;
   Vegas(ndim, ncomp, (integrand_t)ctintegrand, userdata, nvec,
+	epsrel, epsabs,
+	flags, seed,
+	mineval, maxeval,
+	nstart, nincrease, nbatch,
+	gridno, statefile, spin,
+	&neval, &fail,
+	integral, error, prob);
+  res = integral[0];
+  err = error[0];
+
+  return;
+}
+
+//Cuba integration of the counterterm
+void ctintegrMC(double &res, double &err)
+{
+  const int ndim = 6;   //dimensions of the integral
+  const int ncomp = 1;  //components of the integrand
+  void *userdata;
+  const int nvec = 1;
+  const double epsrel = 0.;
+  const double epsabs = 0.;
+  const char *statefile = "";
+  void *spin=NULL;
+  int neval;
+  int fail;
+  double integral[1];
+  double error[1];
+  double prob[1];
+  const int flags = 8+4+opts.cubaverbosity;
+  const int seed = opts.rseed;
+  const int mineval = opts.vegasncallsCT;
+  const int maxeval = opts.vegasncallsCT;
+  const int nstart = max(10, int(opts.vegasncallsCT/10));
+  const int nincrease = max(10, int(opts.vegasncallsCT/10));
+  const int nbatch = 1000;
+  const int gridno = 0;
+  Vegas(ndim, ncomp, (integrand_t)ctintegrandMC, userdata, nvec,
 	epsrel, epsabs,
 	flags, seed,
 	mineval, maxeval,

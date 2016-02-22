@@ -6,6 +6,7 @@ extern "C" {
   void sety_(double &yy);
   void setqt_(double &qtt);
   void genv4p_();
+  int binner_(double p3[4], double p4[4]);
 }
 
 extern double _costh, _m, _qt, _y;

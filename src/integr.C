@@ -651,3 +651,16 @@ integrand_t thphiintegrand(const int &ndim, const double x[], const int &ncomp, 
   return 0;
 }
 
+int binner_(double p3[4], double p4[4])
+{
+  double qt = sqrt((float)pow(p3[0]+p4[0],2)+pow(p3[1]+p4[1],2));
+  if (qt < qtmin || qt > qtmax)
+    return false;
+
+  double y = 0.5 *log((p3[3] + p4[3] + p3[2] + p4[2]) / (p3[3] + p4[3] - p3[2] - p4[2]));
+  if (y < ymin || y > ymax)
+    return false;
+
+  //cout << "qt " << qt << " y " << y << endl;
+  return true;
+}

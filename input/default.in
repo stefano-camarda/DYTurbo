@@ -15,21 +15,51 @@ LHAPDFmember = 0              # set, member (LHAPDFs)
 
 
 # DYTURBO settings
+# EW parameters (Gmu scheme)
+Gf = 1.1663787e-5
+zmass = 91.1876
+wmass = 80.385
+zwidth = 2.4950
+wwidth = 2.091
+
+# To use an effective weak-mixing angle, set xw to a non-zero value, otherwise it is calculated according to the Gmu scheme
+xw = 0.
+
+# To use an effective value of aEM(MZ), set aemmz to a non-zero value, otherwise it is calculated according to the Gmu scheme
+aemmz = 0.
+
+# CKM matrix
+Vud = 0.97427
+Vus = 0.2253
+Vub = 0.00351
+Vcd = 0.2252
+Vcs = 0.97344
+Vcb = 0.0412
+
 # Z
 # include virtual photon
 useGamma = false
 # Set boundaries of integration
-ylow  = 2
-yhigh = 2.4
+ylow  = -5
+yhigh = 5
 mlow  = 66.
 mhigh = 116.
 
 #  # W
-#  # Set boundaries of integration
-#  ylow = -5.;
-#  yhigh = 5.;
 #  mlow = 10.;
 #  mhigh = 1000.;
+
+# resummation damping
+dampk = 0.5
+dampdelta = 0.5
+dampmode = 1
+
+# resummation cutoff
+qtcutoff = 0.02
+
+# qtcut
+xqtcut = 0.008
+qtcut = 0.
 
 # dimension of integration
 intDimRes = 4
@@ -53,6 +83,7 @@ doCT   = true
 doREAL = true
 doVIRT = true
 doLO   = false
+doVJ   = false
 
 # Cuba settings
 cubaverbosity    = 0   # Cuba info messsages, from 0 to 3

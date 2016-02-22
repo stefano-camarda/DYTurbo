@@ -464,7 +464,9 @@ c All these constants must be initialised only once
       implicit none
       include 'const.h' 
       include 'masses.f' 
-      include 'ewinput.f' 
+c      include 'ewcouple.f' 
+      double precision gGf,ggw,xw,gwsq,esq,vevsq
+      common/ewcouple/gGf,ggw,xw,gwsq,esq,vevsq
 cc******************************************
       pi=dacos(-1d0)!Expensive way of calculating pi?
       pisq329=2d0*pi**2/3d0-16/3d0
@@ -505,12 +507,13 @@ c**************************************
 
 
 c******************************************
-c     Copy or set physics constants, inputs from mdata.f
-      gf=Gf_inp !1.16639d-5
-      Mz=zmass_inp !91.1876d0                        ! z mass ! 
-      Mw=wmass_inp !80.399d0                         ! w mass !
+c     Copy or set physics constants, inputs from ewcouple
+      gf=gGf !1.16639d-5
+      Mz=zmass !91.1876d0                        ! z mass ! 
+      Mw=wmass !80.399d0                         ! w mass !
       zw=zwidth !2.4952d0                         ! z width ! 
       ww=wwidth !2.085d0                          ! w width !
+!!!   Update to effective weak mixing angle if required
       gZ=dsqrt(dsqrt(2d0)*gf*Mz**2)
       gW=dsqrt(4d0*dsqrt(2d0)*gf*Mw**2)
 c******************************************
@@ -523,7 +526,7 @@ c      sw2=pi*aem/(dsqrt(2d0)*gf*Mw**2)
       sw2=1d0-(Mw/Mz)**2
       cw2=1d0-sw2
       aem=dsqrt(2d0)*gf*Mw**2*sw2/pi
-      aweak=aem/sw2     
+      aweak=aem/sw2     ! aweak is not used anywhere
 c******************************************
 
 c******************************************

@@ -332,6 +332,8 @@ cc*******************************************************
       
       if (mode.eq.0) then
          call initsigma(mm,-costh)
+         call initsigmacth(mm,twopi*twopi,-costh*twopi*twopi,
+     .        costh**2*twopi*twopi)
       elseif (mode.eq.1) then
          call cthmoments(cthmom0,cthmom1,cthmom2)
          cthmom0=cthmom0*twopi*twopi

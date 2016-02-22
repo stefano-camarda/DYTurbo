@@ -2,7 +2,7 @@
 #define resintegr_h
 #include "cuba.h"
 
-extern double const qtcutoff;
+//extern double const qtcutoff;
 
 integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, double f[]);
 integrand_t resintegrand3d(const int &ndim, const double x[], const int &ncomp, double f[]);
