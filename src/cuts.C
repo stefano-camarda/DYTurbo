@@ -37,7 +37,7 @@ int cuts_(double p[4][12], int &njet){
         p3[i] = p[i][2];
         p4[i] = p[i][3];
     }
-    // because dyres expects opposite logic false=accept event
+    //MCFM expects opposite logic false=accept event
     return !cuts::lep(p3,p4);
 }
 
