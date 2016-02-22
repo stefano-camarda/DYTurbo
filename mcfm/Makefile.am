@@ -10,4 +10,4 @@ libmcfm_la_SOURCES = qqb_w1jet_gs.f  qqb_w1jet_v.f  qqb_w1jet_z.f  qqb_w2jet.f  
 #modified files
 libmcfm_la_SOURCES +=  alfamz_lhapdf.f dipolesub.f 
 
-pkginclude_HEADERS = agq.f alfacut.f b0.f ckm.f ckm1.f constants.f cutoff.f dipolescale.f dynamicscale.f efficiency.f epinv2.f epinv.f ewcharge.f ewcouple.f ewinput.f facscale.f flags.f gridinfo.f lhapdf.f lc.f limits.f jetcuts.f masses.f jetlabel.f mb_msbar.f msq_cs.f mmsq_cs.f mxdim.f noglue.f npart.f nwz.f phasemin.f PR_cs_new.f PR_new.f process.f ptilde.f qcdcouple.f qqgg.f removebr.f scale.f sprods_com.f zcouple.f scheme.f vegas_common.f zerowidth.f zprods_com.f zprods_decl.f
+pkginclude_HEADERS = agq.f alfacut.f b0.f ckm.f ckm1.f constants.f cutoff.f dipolescale.f dynamicscale.f efficiency.f epinv2.f epinv.f ewcharge.f ewcouple.f ewinput.f facscale.f flags.f gridinfo.f lhapdf.f lc.f limits.f jetcuts.f masses.f jetlabel.f msq_cs.f mmsq_cs.f mxdim.f noglue.f npart.f nwz.f phasemin.f PR_cs_new.f PR_new.f process.f ptilde.f qcdcouple.f qqgg.f removebr.f scale.f sprods_com.f zcouple.f scheme.f vegas_common.f zerowidth.f zprods_com.f zprods_decl.f
