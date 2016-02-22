@@ -10,7 +10,7 @@ AM_FFLAGS =  -I$(srcdir)/../dyres -I$(srcdir)/../mcfm -I$(srcdir)/../src
 
 bin_PROGRAMS = points
 
-points_SOURCES = points.C
+points_SOURCES = points.C finitemapping.C
 points_LDADD = ../src/libdyturbo.la \
 	../cernlib/libcern.la ../dequad/libdequad.la \
 	-lgfortran \
