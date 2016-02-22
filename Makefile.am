@@ -11,7 +11,7 @@ SUBDIRS += origdyres
 endif
 
 #do not ditribute test directories
-DIST_SUBDIRS = cernlib dequad dyres dynnlo mcfm integrands resum src
+DIST_SUBDIRS = cernlib dequad dyres dynnlo dyqt mcfm integrands resum src
 
 dist_bin_SCRIPTS = install-cuba install-lhapdf
 EXTRA_DIST = README.md
