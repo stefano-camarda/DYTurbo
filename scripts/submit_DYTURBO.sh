@@ -574,30 +574,32 @@ submit_allProg(){
     queue=atlasshort
     loqtbin=0
     #hiqtbin=100
-    hiqtbin=600
+    hiqtbin=100
     loybin=-5
     hiybin=5
     fulllloqtbin=$loqtbin
     fulllhiqtbin=$hiqtbin
     fulllloybin=$loybin
     fulllhiybin=$hiybin
-    collider=lhc8
+    collider=lhc7
+    #collider=lhc8
     random_seed=100101
     startSeed=100201
     variation=0
+    variation=all
     gpar=.83175
     # testing the array submission
     batch_template=$dyturbo_project/scripts/run_DYTURBO_Array_TMPL.sh
     for program in dyturbo #  dyturbo dyres mcfm
     do
-        for process in z0 # wp wm z0
+        for process in z0 wp wm # wp wm z0
         do
             makelepcuts=false
             #if [[ $process =~ z0 ]]; then makelepcuts=true; fi
             for order in 1 2 # 3
             do
                 # set PDF ?
-                pdfset=CT10nlo
+                pdfset=CT10nnlo
                 if [[ $order == 2 ]]; then pdfset=ZPT-CT10; fi;
                 if [[ $order == 3 ]]; then pdfset=WZZPT-CT10; order=2; fi;
                 pdfset=CT10nnlo
@@ -606,17 +608,17 @@ submit_allProg(){
                 termlist="RES CT"
                 if [[ $program =~ ^dyturbo ]] 
                 then
-                    cubacores=8
-                    #termlist="RES CT LO"
-                    #if [[ $order == 2 ]]; then termlist="RES CT REAL VIRT"; fi;
-                    if [[ $order == 2 ]]; then termlist="RES CT"; fi;
+                    cubacores=0
+                    termlist="RES CT LO"
+                    if [[ $order == 2 ]]; then termlist="RES CT REAL VIRT"; fi;
+                    #if [[ $order == 2 ]]; then termlist="RES CT"; fi;
                     #if [[ $order == 2 ]]; then termlist="REAL"; fi;
                     #termlist="RES3D CT3D"
                     #if [[ $order == 2 ]]; then termlist="RES3D CT3D REAL VIRT"; fi;
                     #if [[ $order == 2 ]]; then termlist="VIRT"; fi;
                     #if [[ $order == 2 ]]; then termlist="RES3D"; fi;
                     #termlist="RES3D"
-                    termlist="RES1 RES2 CT CTkt0 CTnaive RES1kt0 RES1naive RES2kt0 RES2naive "
+                    #termlist="RES1 RES2 CT CTkt0 CTnaive RES1kt0 RES1naive RES2kt0 RES2naive "
                 fi
                 if [[ $program =~ ^dyres ]] 
                 then
@@ -639,20 +641,20 @@ submit_allProg(){
                     [[ $terms =~ CT ]] && seedlist=2010-2110
                     #seedlist=1010-1110
                     # run all pdf variations at once
-                    if [[ $terms =~ REAL ]]
-                    then
-                        variation=all
-                        #seedlist=1010
-                        # you need two because of array size
-                        #seedlist=1010-1510
-                        #seedlist=1510-2010
-                        seedlist=1010-1020
-                    fi
-                    if [[ $terms =~ VIRT ]]
-                    then
-                        variation=all
-                    fi
-                    variation=0
+                    #  if [[ $terms =~ REAL ]]
+                    #  then
+                    #      variation=all
+                    #      #seedlist=1010
+                    #      # you need two because of array size
+                    #      #seedlist=1010-1510
+                    #      #seedlist=1510-2010
+                    #      seedlist=1010-1020
+                    #  fi
+                    #  if [[ $terms =~ VIRT ]]
+                    #  then
+                    #      variation=all
+                    #  fi
+                    #variation=0
                     # for qt/y splits
                     NsplitQT=1
                     NsplitY=1

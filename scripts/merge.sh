@@ -286,7 +286,8 @@ merge_general(){
     #DRYRUN=echo 
     DRYRUN="/usr/bin/time -v "
     #
-    resdir=/home/cuth/work/unimainz/ATLAS/workarea/DYTURBO/
+    resdir=/home/cuth/work/unimainz/ATLAS/workarea/DYTURBO
+    resdir=/home/cuth/workdir_etapfs/DYTURBO_PROD
     qtymerge=qt010y01
     #
     rm -f mergeconf
@@ -310,10 +311,10 @@ merge_general(){
     #echo " w{p,m} bm0          REAL         $resdir/dyturbo-0.9.6.2/results_bm0_WZREALVIRT bm2 11105 benchmark_v2_160204_WZ " >> mergeconf
     #echo  " w{p,m} bm0          {RES,CT}     $resdir/dyturbo-0.9.6.2/results_bm0_WpmRESCT   bm0 11105 benchmark_v0_160204_WZ " >> mergeconf
     #echo  " w{p,m} bm1          {RES,CT}     $resdir/dyturbo-0.9.6.2/results_bm012_WpWm     bm1 11105 benchmark_v1_160204_WZ " >> mergeconf
-    #echo  " w{p,m} bm2$qtymerge {RES3D,CT3D} $resdir/dyturbo-0.9.6.2/results_bm012_WpWm     bm2 10100 benchmark_v2_160204_WZ " >> mergeconf
+    echo  " w{p,m} bm2$qtymerge {RES3D,CT3D} $resdir/dyturbo-0.9.8.1/results_bm2     bm2 10100 benchmark_v2_160302_WZ " >> mergeconf
 
     #
-    echo  " z0 o1 {RES,RESnaive,RESkt0,CT,CTnaive,CTkt0}  results o1 2010 aimoments_test_160216 " >> mergeconf
+    #echo  " z0 o1 {RES,RESnaive,RESkt0,CT,CTnaive,CTkt0}  results o1 2010 aimoments_test_160216 " >> mergeconf
     #echo  " z0 o2 {RES,RESnaive,RESkt0,CT,CTnaive,CTkt0}  results o2 1010 aimoments_test_160211 " >> mergeconf
 
 
