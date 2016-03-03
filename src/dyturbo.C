@@ -90,23 +90,31 @@ int main( int argc , const char * argv[])
   //Need to throw a random point according to a breit wigner, which is used to determine xtauf in the PDF fit
   double costh, m, qt, y;
   int mode = 0;
-  if (opts_.approxpdf_ == 1)
-    {
-      srand(opts.rseed);
-      double wsqmin = pow(opts.mlow,2);
-      double wsqmax = pow(opts.mhigh,2);
-      double x1=((double)rand()/(double)RAND_MAX);
-      double m2,wt;
-      breitw_(x1,wsqmin,wsqmax,opts.rmass,opts.rwidth,m2,wt);
-      cout << "Initialise PDF fit with mass = " << sqrt(m2) << " xtauf = " << m2 / opts.sroot << endl;
-      costh = 0.; m = sqrt(m2); qt = 1; y = 0;
-      resumm_(costh,m,qt,y,mode);
-    }
-  else
-    {
-      costh = 0.; m = opts.rmass; qt = 1; y = 0;
-      resumm_(costh,m,qt,y,mode);
-    }
+  if (opts.doRES){
+      if (opts_.approxpdf_ == 1) {
+          srand(opts.rseed);
+          double wsqmin = pow(opts.mlow,2);
+          double wsqmax = pow(opts.mhigh,2);
+          double x1=((double)rand()/(double)RAND_MAX);
+          double m2,wt;
+          breitw_(x1,wsqmin,wsqmax,opts.rmass,opts.rwidth,m2,wt);
+          cout << "Initialise PDF fit with mass = " << sqrt(m2) << " xtauf = " << m2 / opts.sroot << endl;
+          costh = 0.; m = sqrt(m2); qt = 1; y = 0;
+          for (int ipdf=0; ipdf<opts.totpdf; ipdf++){
+              //setpdf_(&ipdf);
+              //setmellinpdf_(&ipdf);
+              resumm_(costh,m,qt,y,mode);
+          }
+      }
+      else {
+          costh = 0.; m = opts.rmass; qt = 1; y = 0;
+          for (int ipdf=0; ipdf<opts.totpdf; ipdf++){
+              //setpdf_(&ipdf);
+              //setmellinpdf_(&ipdf);
+              resumm_(costh,m,qt,y,mode);
+          }
+      }
+  }
   double f[opts.totpdf];
   cout << "pippo" << endl;
   ctint_(costh,m,qt,y,mode,f);

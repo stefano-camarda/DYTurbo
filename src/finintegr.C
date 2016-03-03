@@ -11,8 +11,6 @@
 
 using namespace std;
 
-const int last_iter=4;
-
 integrand_t vjintegrand(const int &ndim, const double x[], const int &ncomp, double f[])
 //Generates the phase space 4 vectors
 //Calculates the V+j NLO integrand as a function of m, qt, integrated between ymin and ymax

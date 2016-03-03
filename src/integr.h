@@ -9,6 +9,7 @@ extern "C" {
   int binner_(double p3[4], double p4[4]);
 }
 
+const int last_iter=4;
 extern double _costh, _m, _qt, _y;
 extern void genV4p(double m, double qt, double y, double phi);
 
