@@ -515,7 +515,7 @@ class OutlierRemoval{
                     int jzbin = out->GetZaxis()->FindBin(o->GetZaxis()->GetBinCenter(izbin));
                     int jbin = out->GetBin(jxbin,jybin,jzbin);
                     // sum values
-                    double curr_val = out->GetBinContent(jbin);
+                    curr_val = out->GetBinContent(jbin);
                     if (curr_val!=0) {
                         curr_err = out->GetBinError(jbin)/curr_val;
                         val+=curr_val;
