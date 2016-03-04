@@ -13,6 +13,7 @@
  */
 
 #include <vector>
+#include <set>
 #include <algorithm>
 
 #include <TFile.h>
@@ -452,41 +453,80 @@ class OutlierRemoval{
             TH1*obj=0;
             if (in_objs.empty()) return obj;
             TH1* tmp=in_objs[0];
+            TAxis *ax = 0;
             int dim = tmp->GetDimension();
             std::set<double> xset,yset,zset;
             // loop all objs, get x,y,z bins
             for( TH1* o : in_objs ){
                 //loop all bins
+                ax=o->GetXaxis(); for (int i=0; i<=ax->GetNbins(); i++){ xset.insert(ax->GetBinUpEdge(i)); }
+                ax=o->GetYaxis(); for (int i=0; i<=ax->GetNbins(); i++){ yset.insert(ax->GetBinUpEdge(i)); }
+                ax=o->GetZaxis(); for (int i=0; i<=ax->GetNbins(); i++){ zset.insert(ax->GetBinUpEdge(i)); }
             }
             // create new empty object
             TString title;
             title.Form("%s;%s;%s;%s'",
-                    tmp.GetTitle(),
-                    tmp.GetXaxis().GetTitle(), 
-                    tmp.GetYaxis().GetTitle(), 
-                    tmp.GetZaxis().GetTitle()
+                    tmp->GetTitle(),
+                    tmp->GetXaxis()->GetTitle(), 
+                    tmp->GetYaxis()->GetTitle(), 
+                    tmp->GetZaxis()->GetTitle()
                     );
-            TString name=tmp.GetName(); name+="_allbins";
+            TString name=tmp->GetName(); name+="_allbins";
+            // create array from set (by vector constructor)
             VecDbl xbins(xset.begin(), xset.end());
             VecDbl ybins(yset.begin(), yset.end());
             VecDbl zbins(zset.begin(), zset.end());
             if (dim==1){
                 obj = (TH1*) new TH1D (name.Data(), title.Data(),
                         xbins.size()-1, &xbins[0]
-                        )
+                        );
             } else if (dim==2){
-                obj = (TH1*) new TH1D (name.Data(), title.Data(),
+                obj = (TH1*) new TH2D (name.Data(), title.Data(),
                         xbins.size()-1, &xbins[0],
                         ybins.size()-1, &ybins[0]
-                        )
-            } else if (dim==2){
-                obj = (TH1*) new TH1D (name.Data(), title.Data(),
-                        xbins.size()-1, &xbins[0],
-                        ybins.size()-1, &ybins[0],
-                        zbins.size()-1, &zbins[0]
-                        )
+                        );
+            //} else if (dim==3){
+                //obj = (TH1*) new TH3D (name.Data(), title.Data(),
+                        //xbins.size()-1, &xbins[0],
+                        //ybins.size()-1, &ybins[0],
+                        //zbins.size()-1, &zbins[0]
+                        //);
             }
             return obj;
+        }
+
+        void sum_bins(TH1*out, VecTH1 v_objs){
+            // loop all objs
+            for (TH1* o : v_objs) {
+                // loop all bins
+                for ( int ibin : loop_bins(o)){
+                    double val ,err , curr_val , curr_err;
+                    // get bin error, get bin val
+                    val = o->GetBinContent(ibin);
+                    if (val==0) continue;
+                    err = o->GetBinError(ibin)/val;
+                    // find bin
+                    int ixbin = 0;
+                    int iybin = 0;
+                    int izbin = 0;
+                    o->GetBinXYZ(ibin,ixbin,iybin,izbin);
+                    int jxbin = out->GetXaxis()->FindBin(o->GetXaxis()->GetBinCenter(ixbin));
+                    int jybin = out->GetYaxis()->FindBin(o->GetYaxis()->GetBinCenter(iybin));
+                    int jzbin = out->GetZaxis()->FindBin(o->GetZaxis()->GetBinCenter(izbin));
+                    int jbin = out->GetBin(jxbin,jybin,jzbin);
+                    // sum values
+                    double curr_val = out->GetBinContent(jbin);
+                    if (curr_val!=0) {
+                        curr_err = out->GetBinError(jbin)/curr_val;
+                        val+=curr_val;
+                        err = sqrt(err*err + curr_err*curr_err) * val;
+                    }
+                    // set new value
+                    out->SetBinContent(jbin, val);
+                    out->SetBinError  (jbin, err);
+                }
+            }
+            return;
         }
 
         void read_Xsection(){
