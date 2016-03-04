@@ -13,6 +13,7 @@
  */
 
 #include <vector>
+#include <set>
 #include <algorithm>
 
 #include <TFile.h>
@@ -42,6 +43,7 @@ class OutlierRemoval{
             doXsecNormalization(false),
             doRebin(true),
             do2D(false),
+            doCuba(false),
             verbose(1) {};
         ~OutlierRemoval(){
             if (verbose >8) {
@@ -130,6 +132,13 @@ class OutlierRemoval{
                 } //end loop all files
                 // temporary objects
                 TString name = p_objname;
+                if (doCuba){
+                    TH1* tmp_c = find_all_bins(in_objs);
+                    sum_bins(tmp_c,in_objs);
+                    tmp_c->SetName(name);
+                    output_objects.push_back(tmp_c);
+                    delete_objs(in_objs); continue;
+                }
                 // average
                 TH1* tmp_a = clone_empty(in_objs[0],(name+"_average").Data());
                 int dim = tmp_a->GetDimension();
@@ -163,7 +172,7 @@ class OutlierRemoval{
                     tmp_a->SetName((name+"_outliers").Data());
                     output_objects.push_back(tmp_a);
                     // Stop here for TH1,2,3
-                    goto releaseobj;
+                    delete_objs(in_objs); continue;
                 }
                 // Profiles only -- total profile with a priori uncertainty
                 for (auto ith : in_objs) tmp_p->Add(ith,1./in_objs.size());
@@ -171,7 +180,7 @@ class OutlierRemoval{
                 tmp_p->SetName(name);
                 output_objects.push_back(tmp_p);
                 if (verbose>2) printf("saving histogram %s with integral %f\n",tmp_p->GetName(), tmp_p->Integral());
-                if (dim>1&&!do2D) goto releaseobj;
+                if (dim>1&&!do2D) {delete_objs(in_objs); continue;}
                 tmp_m->SetName((name+"_median").Data());
                 output_objects.push_back(tmp_m);
                 // new median of entries
@@ -184,17 +193,12 @@ class OutlierRemoval{
                 // Second Loop -- discard outliers
                 if (verbose>1) printf("    Second Loop \n");
                 remove_outliers_from_profile(tmp_a, tmp_m, in_objs);
-                if (tmp_a==0) goto releaseobj; // if not implemented 
+                if (tmp_a==0){  delete_objs(in_objs); continue;}; // if not implemented 
                 tmp_a->SetName((name+"_outlier").Data());
                 output_objects.push_back(tmp_a);
                 if (verbose>2) {printf("  outliers removed \n"); print_range(tmp_a); print_range(tmp_p);}
                 //
                 // release input histograms
-                releaseobj:
-                    while (!in_objs.empty()){
-                        delete in_objs.back();
-                        in_objs.pop_back();
-                    }
             }
             if (verbose>1) printf("End of merge, closing files \n");
 	    //            close_all_infiles();
@@ -242,6 +246,7 @@ class OutlierRemoval{
         bool doXsecNormalization;
         bool do2D;
         bool doRebin;
+        bool doCuba;
         int verbose;
 
     private :
@@ -435,6 +440,93 @@ class OutlierRemoval{
 
         void close_all_infiles(){
             for (auto it_f : all_files) if (it_f->IsOpen()) it_f->Close();
+        }
+
+        void delete_objs(VecTH1 &in_objs){
+            while (!in_objs.empty()){
+                delete in_objs.back();
+                in_objs.pop_back();
+            }
+        }
+
+        TH1* find_all_bins(VecTH1 in_objs){
+            TH1*obj=0;
+            if (in_objs.empty()) return obj;
+            TH1* tmp=in_objs[0];
+            TAxis *ax = 0;
+            int dim = tmp->GetDimension();
+            std::set<double> xset,yset,zset;
+            // loop all objs, get x,y,z bins
+            for( TH1* o : in_objs ){
+                //loop all bins
+                ax=o->GetXaxis(); for (int i=0; i<=ax->GetNbins(); i++){ xset.insert(ax->GetBinUpEdge(i)); }
+                ax=o->GetYaxis(); for (int i=0; i<=ax->GetNbins(); i++){ yset.insert(ax->GetBinUpEdge(i)); }
+                ax=o->GetZaxis(); for (int i=0; i<=ax->GetNbins(); i++){ zset.insert(ax->GetBinUpEdge(i)); }
+            }
+            // create new empty object
+            TString title;
+            title.Form("%s;%s;%s;%s'",
+                    tmp->GetTitle(),
+                    tmp->GetXaxis()->GetTitle(), 
+                    tmp->GetYaxis()->GetTitle(), 
+                    tmp->GetZaxis()->GetTitle()
+                    );
+            TString name=tmp->GetName(); name+="_allbins";
+            // create array from set (by vector constructor)
+            VecDbl xbins(xset.begin(), xset.end());
+            VecDbl ybins(yset.begin(), yset.end());
+            VecDbl zbins(zset.begin(), zset.end());
+            if (dim==1){
+                obj = (TH1*) new TH1D (name.Data(), title.Data(),
+                        xbins.size()-1, &xbins[0]
+                        );
+            } else if (dim==2){
+                obj = (TH1*) new TH2D (name.Data(), title.Data(),
+                        xbins.size()-1, &xbins[0],
+                        ybins.size()-1, &ybins[0]
+                        );
+            //} else if (dim==3){
+                //obj = (TH1*) new TH3D (name.Data(), title.Data(),
+                        //xbins.size()-1, &xbins[0],
+                        //ybins.size()-1, &ybins[0],
+                        //zbins.size()-1, &zbins[0]
+                        //);
+            }
+            return obj;
+        }
+
+        void sum_bins(TH1*out, VecTH1 v_objs){
+            // loop all objs
+            for (TH1* o : v_objs) {
+                // loop all bins
+                for ( int ibin : loop_bins(o)){
+                    double val ,err , curr_val , curr_err;
+                    // get bin error, get bin val
+                    val = o->GetBinContent(ibin);
+                    if (val==0) continue;
+                    err = o->GetBinError(ibin)/val;
+                    // find bin
+                    int ixbin = 0;
+                    int iybin = 0;
+                    int izbin = 0;
+                    o->GetBinXYZ(ibin,ixbin,iybin,izbin);
+                    int jxbin = out->GetXaxis()->FindBin(o->GetXaxis()->GetBinCenter(ixbin));
+                    int jybin = out->GetYaxis()->FindBin(o->GetYaxis()->GetBinCenter(iybin));
+                    int jzbin = out->GetZaxis()->FindBin(o->GetZaxis()->GetBinCenter(izbin));
+                    int jbin = out->GetBin(jxbin,jybin,jzbin);
+                    // sum values
+                    curr_val = out->GetBinContent(jbin);
+                    if (curr_val!=0) {
+                        curr_err = out->GetBinError(jbin)/curr_val;
+                        val+=curr_val;
+                        err = sqrt(err*err + curr_err*curr_err) * val;
+                    }
+                    // set new value
+                    out->SetBinContent(jbin, val);
+                    out->SetBinError  (jbin, err);
+                }
+            }
+            return;
         }
 
         void read_Xsection(){
@@ -712,6 +804,7 @@ void help(const char * prog){
       printf ("   -x    Normalize histograms to Xsection. \n");
       printf ("   -v    Increase verbosity (very chatty). \n");
       printf ("   -2d   Make 2d projections and outliers for 2D. \n");
+      printf ("   -cuba Add all histograms from cubature integration. \n");
       printf ("   -h    Print this help message. \n");
       printf ("\n For more info read README.md\n");
 }
@@ -756,9 +849,15 @@ int main(int argc, const char * argv[]){
             merger.verbose=10;
             i++;
         }
-        // parse verbosity level
+        // parse 2d switch
         if (isOpt("-2d",argv[i])){
             merger.do2D=true;
+            i++;
+        }
+        // parse cubature merging swithc
+        if (isOpt("-cuba",argv[i])){
+            merger.doCuba=true;
+            merger.doRebin=false;
             i++;
         }
         //First non-optional argument is the output file

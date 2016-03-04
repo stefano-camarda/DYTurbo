@@ -535,24 +535,29 @@ integrand_t resintegrandMC(const int &ndim, const double x[], const int &ncomp, 
       f[0]=0.;
       return 0;
     }
-  
-  //Call the resummation integrand
-  int mode = 0;
-  f[0] = resumm_(costh_CS,m,qt,y,mode)/(8./3.);
-  
-  //avoid nans
-  if (f[0] != f[0])
-    f[0] = 0.;
-      
-  //apply switching and jacobian
-  f[0] = f[0]*jac*swtch;
-  
-  if (iter==4){
-    double wt = weight*f[0];
-    //hists_fill_(p4,p3,&wt);
-    hists_fill_(p3,p4,&wt);
-    //hists_AiTest_(pjet,p4cm,&m,&qt,&y,&costh_CS,&phi_lep,&phi,&wt,&lowintHst0);
-  } 
+
+  //skip PDF loop in the preconditioning phase
+  int Npdf = (iter!=last_iter ? 1 : opts.totpdf);
+  for(int ipdf=0; ipdf<Npdf; ipdf++){
+      // Set PDF
+      //setpdf_(&ipdf);
+      //setmellinpdf_(&ipdf);
+      //hists_setpdf_(&ipdf);
+      //Call the resummation integrand
+      int mode = 0;
+      f[ipdf] = resumm_(costh_CS,m,qt,y,mode)/(8./3.);
+      //avoid nans
+      if (f[ipdf] != f[ipdf])
+          f[ipdf] = 0.;
+      //apply switching and jacobian
+      f[ipdf] = f[ipdf]*jac*swtch;
+      if (iter==last_iter){
+          double wt = weight*f[ipdf];
+          //hists_fill_(p4,p3,&wt);
+          hists_fill_(p3,p4,&wt);
+          //hists_AiTest_(pjet,p4cm,&m,&qt,&y,&costh_CS,&phi_lep,&phi,&wt,&lowintHst0);
+      }
+  }
 
   end_time = clock();
   if (opts.timeprofile)

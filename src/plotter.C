@@ -28,7 +28,7 @@ plotter::plotter() :
     qt_y_lo     (0),
     qt_y_real   (0),
     qt_y_virt   (0),
-    qt_y_vv     (0),
+    //mellinpdf_  (0),
     qt_y_vj     (0),
     qt_y_total  (0),
     last_npdf   (-1),

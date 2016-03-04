@@ -50,6 +50,19 @@ void setpdf_(int& member)
   setg();
 }
 
+
+void setmellinpdf_(int &member){
+    // if member is still same than dont do anything
+    //if (lastMember==member) return;
+    //if (v_mellinpdf.size()<member) v_mellinpdf.
+    // test current flag
+    //if (v_mellinpdf[lastMember].isInitialized)
+    // weights
+    // moms
+    // set init flag
+    //lastMember=member;
+}
+
 //set value of alphas
 void setalphas()
 {

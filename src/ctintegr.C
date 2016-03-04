@@ -12,7 +12,6 @@
 
 using namespace std;
 
-const int last_iter=4;
 
 integrand_t ctintegrand(const int &ndim, const double x[], const int &ncomp, double f[],
                         void* userdata, const int &nvec, const int &core,
@@ -241,13 +240,12 @@ integrand_t ctintegrandMC(const int &ndim, const double x[], const int &ncomp, d
     for (int i = 1; i < opts.totpdf; i++)
       f[i] = f[i]*jac*swtch;
   
-  if (iter==4)
+  if (iter==last_iter)
     for (int i = 0; i < opts.totpdf; i++)
       {
 	double wt = weight*f[i];
 	hists_setpdf_(&i);
 	hists_fill_(p3, p4, &wt);
-	//hists_AiTest_(pjet,p4cm,&m,&qt,&y,&costh_CS,&phi_lep,&phi,&wt,&lowintHst0);
       }
 
   end_time = clock();
