@@ -90,7 +90,7 @@ int main( int argc , const char * argv[])
   //Need to throw a random point according to a breit wigner, which is used to determine xtauf in the PDF fit
   double costh, m, qt, y;
   int mode = 0;
-  if (opts.doRES){
+  if (opts.doRES || opts.doCT){
       if (opts_.approxpdf_ == 1) {
           srand(opts.rseed);
           double wsqmin = pow(opts.mlow,2);

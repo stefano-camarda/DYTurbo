@@ -4,10 +4,10 @@ LHAPDFset    = CT10nnlo
 LHAPDFmember    = 0
 PDFerrors = true
 
-doRES  = true
+doRES  = false
 doCT   = true
-doREAL = true
-doVIRT = true
+doREAL = false
+doVIRT = false
 doLO   = false
 
 order = 2
