@@ -13,12 +13,12 @@ libdyturbobase_la_SOURCES += AiMoments.cxx TLVUtils.cxx
 
 lib_LTLIBRARIES = libdyturbo.la
 libdyturbo_la_SOURCES =
-libdyturbo_la_LIBADD =  libdyturbobase.la ../integrands/libintegrands.la ../dyres/libdyres.la ../dynnlo/libdynnlo.la ../mcfm/libmcfm.la ../resum/libresum.la ../dyqt/libdyqt.la
+libdyturbo_la_LIBADD =  libdyturbobase.la ../integrands/libintegrands.la ../dyres/libdyres.la ../dynnlo/libdynnlo.la ../mcfm/libmcfm.la ../resum/libresum.la ../dyqt/libdyqt.la ../dequad/libdequad.la 
 
 bin_PROGRAMS = dyturbo
 dyturbo_SOURCES = dyturbo.C
 dyturbo_LDADD = libdyturbo.la \
-	../cernlib/libcern.la ../dequad/libdequad.la \
+	../cernlib/libcern.la \
 	-lgfortran \
 	$(CUBA_LDFLAGS) $(LHAPDF_LDFLAGS) -lgsl -lgslcblas #-lifcore -limf -lifport -lintlc -lquadmath
 
