@@ -14,31 +14,34 @@ double coupling::xw;
 double coupling::zmass;
 double coupling::wmass;
 
+//Number of colours in QCD
+const double coupling::NC = 3.;
+
 void coupling::init()
 {
-  ewcharge_.Q_[NF-5] = +0.333333333333333;
-  ewcharge_.Q_[NF-4] = -0.666666666666667;
-  ewcharge_.Q_[NF-3] = +0.333333333333333;
-  ewcharge_.Q_[NF-2] = -0.666666666666667;
-  ewcharge_.Q_[NF-1] = +0.333333333333333;
-  ewcharge_.Q_[NF]   =  0.	       ;
-  ewcharge_.Q_[NF+1] = -0.333333333333333;
-  ewcharge_.Q_[NF+2] = +0.666666666666667;
-  ewcharge_.Q_[NF+3] = -0.333333333333333;
-  ewcharge_.Q_[NF+4] = +0.666666666666667;
-  ewcharge_.Q_[NF+5] = -0.333333333333333;
+  ewcharge_.Q_[MAXNF-5] = +0.333333333333333;
+  ewcharge_.Q_[MAXNF-4] = -0.666666666666667;
+  ewcharge_.Q_[MAXNF-3] = +0.333333333333333;
+  ewcharge_.Q_[MAXNF-2] = -0.666666666666667;
+  ewcharge_.Q_[MAXNF-1] = +0.333333333333333;
+  ewcharge_.Q_[MAXNF]   =  0.	       ;
+  ewcharge_.Q_[MAXNF+1] = -0.333333333333333;
+  ewcharge_.Q_[MAXNF+2] = +0.666666666666667;
+  ewcharge_.Q_[MAXNF+3] = -0.333333333333333;
+  ewcharge_.Q_[MAXNF+4] = +0.666666666666667;
+  ewcharge_.Q_[MAXNF+5] = -0.333333333333333;
 
-  ewcharge_.tau_[NF-5] = 1.;
-  ewcharge_.tau_[NF-4] = -1.;
-  ewcharge_.tau_[NF-3] = 1.;
-  ewcharge_.tau_[NF-2] = -1.;
-  ewcharge_.tau_[NF-1] = 1.;
-  ewcharge_.tau_[NF]   = 0.;
-  ewcharge_.tau_[NF+1] = -1.;
-  ewcharge_.tau_[NF+2] = 1.;
-  ewcharge_.tau_[NF+3] = -1.;
-  ewcharge_.tau_[NF+4] = 1.;
-  ewcharge_.tau_[NF+5] = -1.;
+  ewcharge_.tau_[MAXNF-5] = 1.;
+  ewcharge_.tau_[MAXNF-4] = -1.;
+  ewcharge_.tau_[MAXNF-3] = 1.;
+  ewcharge_.tau_[MAXNF-2] = -1.;
+  ewcharge_.tau_[MAXNF-1] = 1.;
+  ewcharge_.tau_[MAXNF]   = 0.;
+  ewcharge_.tau_[MAXNF+1] = -1.;
+  ewcharge_.tau_[MAXNF+2] = 1.;
+  ewcharge_.tau_[MAXNF+3] = -1.;
+  ewcharge_.tau_[MAXNF+4] = 1.;
+  ewcharge_.tau_[MAXNF+5] = -1.;
 
 
   //Gmu scheme, inputs: Gf, MZ, MW
@@ -127,10 +130,10 @@ void coupling::init()
   //Modified to notation of DKS (ie divided by 2*sw*cw)
   //xw=sin^2 theta_w
   zcouple_.sin2w_=2.*sqrt(xw*(1.-xw));
-  for (int j=0; j < NF; j++)
+  for (int j=0; j < MAXNF; j++)
     {
-      zcouple_.l_[j]=(ewcharge_.tau_[j+NF+1]-2.*ewcharge_.Q_[j+NF+1]*xw)/zcouple_.sin2w_;
-      zcouple_.r_[j]=(-2*ewcharge_.Q_[j+NF+1]*xw)/zcouple_.sin2w_;
+      zcouple_.l_[j]=(ewcharge_.tau_[j+MAXNF+1]-2.*ewcharge_.Q_[j+MAXNF+1]*xw)/zcouple_.sin2w_;
+      zcouple_.r_[j]=(-2*ewcharge_.Q_[j+MAXNF+1]*xw)/zcouple_.sin2w_;
     }
 
   zcouple_.le_=(-1.-2.*(-1.)*xw)/zcouple_.sin2w_;
@@ -147,8 +150,8 @@ void coupling::init()
   ewcouple_.vevsq_=1./sqrt(2.)/ewcouple_.Gf_;
   //****************************************************************
 
-  //set up the beta-function
-  b0_.b0_=(XN*11.-2.*NF)/6.;
+  //set up the beta-function (flavour dependence! where is b0_.b0_ used?)
+  b0_.b0_=(NC*11.-2.*MAXNF)/6.;
 
   //initialize the pdf set
   pdfini_();

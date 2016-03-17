@@ -10,6 +10,8 @@ namespace coupling {
   extern double xw;
   extern double zmass;
   extern double wmass;
-}
+
+  extern const double NC;
+ }
 
 #endif
