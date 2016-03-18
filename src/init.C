@@ -2,6 +2,7 @@
 #include "settings.h"
 #include "init.h"
 #include "pdf.h"
+#include "pdfevol.h"
 #include "coupling.h"
 #include "gaussrules.h"
 #include "mellinint.h"
