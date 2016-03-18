@@ -146,8 +146,8 @@ void anomalous::init()
 	fcomplex C2QI;// = 0.; //unused dummy input --> check
 	fcomplex C2GF;// = 0.; //unused dummy input --> check
 
-	//inputs: QQI, QGF, GQI, GGI, GGF, NS1MI, NS1PI, NS1F, QQ1F, QG1F, GQ1I, GQ1F, GG1I, GG1F, C2QI, C2GF, CDYQI, CDYGI (only function of fxn)
-	//outputs ans, am, ap, al, be, ab, rmin, rplus, rqq, rgg, rgqm rgg (are also only function of fxn)
+	//inputs: QQI, QGF, GQI, GGI, GGF, NS1MI, NS1PI, NS1F, QQ1F, QG1F, GQ1I, GQ1F, GG1I, GG1F, C2QI, C2GF, CDYQI, CDYGI (only function of fxn and nf)
+	//outputs ans, am, ap, al, be, ab, rmin, rplus, rqq, rgg, rgq, rgg (are also only function of fxn)
 	anom_(ANS, AM, AP, AL, BE, AB, RMIN, RPLUS, RQQ, RQG,RGQ, RGG, C2Q, C2G, CDYQ, CDYG,
 	      fxn, nf, QQI, QGF, GQI, GGI, GGF, NS1MI, NS1PI, NS1F, QQ1F, QG1F, GQ1I, GQ1F, GG1I, GG1F, C2QI, C2GF, CDYQI, CDYGI);
 
@@ -217,6 +217,7 @@ void anomalous::init()
 	gamma2gg[index(i,sign)]=-1.*((cx(GG1I)+(double)nf*cx(GG1F))/8.);
 
 	// C2 coefficients      
+	//input: fxn and nf from the common block
 	fcomplex C2qg,C2NSqqb,C2NSqq,C2Sqqb;
 	h2calc_(C2qg,C2NSqqb,C2NSqq,C2Sqqb,fxn);
 	C2qgM[index(i,sign)]    = cx(C2qg);

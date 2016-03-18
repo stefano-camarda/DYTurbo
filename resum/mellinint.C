@@ -338,6 +338,7 @@ void mellinint::pdf_mesq_expy(int i1, int i2, int sign)
 complex <double> mellinint::integrand(int i1, int i2, int sign)
 {
   int i = hcoefficients::index(i1,i2,sign);
+  //  cout << i1 << "  " << i2 << "  " << GGN << "  " << hcoefficients::Hgg[i] <<  endl;
   return GGN*hcoefficients::Hgg[i] + QGN_1*hcoefficients::Hqg_1[i] + QGN_2*hcoefficients::Hqg_2[i]
     + QQBN_1*hcoefficients::Hqqb[i] + QQBN_2*hcoefficients::Hqq[i] + QQBN_3*hcoefficients::Hqqp_1[i] + QQBN_4*hcoefficients::Hqqp_2[i];
 }

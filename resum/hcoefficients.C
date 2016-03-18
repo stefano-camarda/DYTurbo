@@ -6,6 +6,8 @@
 #include "interface.h"
 #include <iostream>
 
+const complex <double> H1q=(0.,0.);
+
 complex <double> *hcoefficients::Hqqb;
 complex <double> *hcoefficients::Hqg;
 complex <double> *hcoefficients::Hqg_1;
@@ -68,29 +70,17 @@ void hcoefficients::init()
   aexpqg = new complex <double> [mellinint::mdim*2];
 }
 
-void hcoefficients::calc(double aass, double logmuf2q2, double logq2muf2, double logq2mur2, double loga)
+void hcoefficients::calc(double aass, complex <double> logmuf2q2, complex <double> logq2muf2, complex <double> logq2mur2, complex <double> loga)
 {
-
-  //     Input from resumm
-  //       double complex loga,logmuf2q2,logq2muf2,logq2mur2
-  //       common/clogs/loga,logmuf2q2,logq2muf2,logq2mur2
-  //       double precision aass
-  //       COMMON/aass/aass
-
-  complex <double> H1q=(0.,0.);
-
-  //      nmax = max(nmax1,nmax2)
-  //need to compute in the resumm integrand:
-  //aass, logmuf2q2, loga
-
-  //  double aass = 0;
-  //  double logmuf2q2 = 0;
-  //  double logq2muf2 = 0;
-  //  double logq2mur2 = 0;
-  //  double loga = 0;
+  // logs of scales are computed in resint
+  //  complex <double> logmuf2q2 = resint::logmuf2q2;
+  //  complex <double> logq2muf2 = resint::logq2muf2;
+  //  complex <double> logq2mur2 = resint::logq2mur2;
+  //  complex <double> loga = resint::loga;
+  //  double aass = resint::aass;
 
   
-  //All the following coefficients need to be calculated at each resumm iteration only with dynamic fatorization scale (variable logmuf2q2) or
+  //All the following coefficients need to be calculated at each resumm iteration only with fixed factorization and renormalization scale (variable logmuf2q2) or
   //with fixed resummation scale (variable loga: a = q2/mu_res). Otherwise they can be computed at initialization
   
   if (opts.order == 1)    
@@ -100,7 +90,7 @@ void hcoefficients::calc(double aass, double logmuf2q2, double logq2muf2, double
 	  {
 	    Hqqb[index(i1,i2,sign)]=1.+aass/2.*
 	      (H1q + anomalous::C1QQ[anomalous::index(i1,mesq::positive)] + anomalous::C1QQ[anomalous::index(i2,sign)])
-	      -aass/2.*(anomalous::gamma1qq[anomalous::index(i1,0)]+anomalous::gamma1qq[anomalous::index(i2,sign)])*(logmuf2q2+2*loga)
+	      -aass/2.*(anomalous::gamma1qq[anomalous::index(i1,0)]+anomalous::gamma1qq[anomalous::index(i2,sign)])*(logmuf2q2+2.*loga)
 	      +aass/2.*(-4.*loga)*(resconst::B1q+resconst::A1q*loga);
 	    // channels which do not contribute at NLL
 	    Hgg[index(i1,i2,sign)] = 0.;//                !  Q Q -> Qb Q  = Qb Qb -> Q Qb  
@@ -111,15 +101,15 @@ void hcoefficients::calc(double aass, double logmuf2q2, double logq2muf2, double
 
   if (opts.order == 2)
     {
-      double loga2 = pow(loga,2);
-      double loga3 = pow(loga,3);
-      double logq2muf22 = pow(logq2muf2,2);
+      complex <double> loga2 = pow(loga,2);
+      complex <double> loga3 = pow(loga,3);
+      complex <double> logq2muf22 = pow(logq2muf2,2);
       H1stgg=0;
       for (int sign = mesq::positive; sign <= mesq::negative; sign++)
 	for (int i = 0; i < mellinint::mdim; i++)
 	  {
 	    H1stqg[index(i,sign)] = anomalous::C1QG[anomalous::index(i,sign)]
-	      -anomalous::gamma1qg[anomalous::index(i,sign)]*(logmuf2q2+2*loga);
+	      -anomalous::gamma1qg[anomalous::index(i,sign)]*(logmuf2q2+2.*loga);
 
 	    //  qq  means   Qb Qb -> Qb Q =  Q Q -> Q Qb
 	    H2stqq[index(i,sign)]= anomalous::C2NSqqbM[anomalous::index(i,sign)] + anomalous::C2SqqbM[anomalous::index(i,sign)];
@@ -144,7 +134,7 @@ void hcoefficients::calc(double aass, double logmuf2q2, double logq2muf2, double
 	  for (int i2 = 0; i2 < mellinint::mdim; i2++)
 	    {
 	      H1stqqb[index(i1,i2,sign)]=(H1q+anomalous::C1QQ[anomalous::index(i1,0)]+anomalous::C1QQ[anomalous::index(i2,sign)])
-		-(anomalous::gamma1qq[anomalous::index(i1,0)]+anomalous::gamma1qq[anomalous::index(i2,sign)])*(logmuf2q2+2*loga)
+		-(anomalous::gamma1qq[anomalous::index(i1,0)]+anomalous::gamma1qq[anomalous::index(i2,sign)])*(logmuf2q2+2.*loga)
 		+(-4.*loga)*(resconst::B1q+resconst::A1q*loga);
 
 	      //  All *4 because of normalization (as/2pi)^2 instead of as/pi
@@ -157,13 +147,13 @@ void hcoefficients::calc(double aass, double logmuf2q2, double logq2muf2, double
 	      H2stqqb[index(i1,i2,sign)] = H2stqqb[index(i1,i2,sign)]
 		+ 4.*(+ 1./6.*resconst::A1q*resconst::beta0*8*loga3  
 		      + 1./2.*4*loga2*(resconst::A2q-resconst::beta0*(resconst::B1q+2*resconst::A1q*loga+anomalous::gamma1qq[anomalous::index(i1,0)]/2.+anomalous::gamma1qq[anomalous::index(i2,sign)]/2.))
-		      - 2*loga*(resconst::B2q+2*resconst::A2q*loga-resconst::beta0*(anomalous::C1QQ[anomalous::index(i1,0)]+anomalous::C1QQ[anomalous::index(i2,sign)])/2.
+		      - 2.*loga*(resconst::B2q+2*resconst::A2q*loga-resconst::beta0*(anomalous::C1QQ[anomalous::index(i1,0)]+anomalous::C1QQ[anomalous::index(i2,sign)])/2.
 				+ anomalous::gamma2qqV[anomalous::index(i1,0)]/4. + anomalous::gamma2qqS[anomalous::index(i1,0)]/4. 
 				+ anomalous::gamma2qqV[anomalous::index(i2,sign)]/4. + anomalous::gamma2qqS[anomalous::index(i2,sign)]/4. )      
 		      + resconst::beta0/2.*(anomalous::gamma1qq[anomalous::index(i1,0)]+anomalous::gamma1qq[anomalous::index(i2,sign)])/2.*logq2muf22
 		      + (anomalous::gamma2qqV[anomalous::index(i1,0)]/4. + anomalous::gamma2qqS[anomalous::index(i1,0)]/4. + anomalous::gamma2qqV[anomalous::index(i2,sign)]/4. + anomalous::gamma2qqS[anomalous::index(i2,sign)]/4.)*logq2muf2
 		      - H1stqqb[index(i1,i2,sign)]/2.*resconst::beta0*logq2mur2
-		      + 1./2.*(H1stqqb[index(i1,i2,sign)]+H1q+anomalous::C1QQ[anomalous::index(i1,0)]+anomalous::C1QQ[anomalous::index(i2,sign)])/2.*((anomalous::gamma1qq[anomalous::index(i1,0)]+anomalous::gamma1qq[anomalous::index(i2,sign)])/2.*(logq2muf2-2.*loga)-(resconst::B1q+resconst::A1q*loga)*2*loga)
+		      + 1./2.*(H1stqqb[index(i1,i2,sign)]+H1q+anomalous::C1QQ[anomalous::index(i1,0)]+anomalous::C1QQ[anomalous::index(i2,sign)])/2.*((anomalous::gamma1qq[anomalous::index(i1,0)]+anomalous::gamma1qq[anomalous::index(i2,sign)])/2.*(logq2muf2-2.*loga)-(resconst::B1q+resconst::A1q*loga)*2.*loga)
 		      + 1./4.*(H1stqg[index(i1,0)]+anomalous::C1QG[anomalous::index(i1,0)])
 		      * anomalous::gamma1gq[anomalous::index(i1,0)]/2.*(logq2muf2-2.*loga)
 		      + 1./4.*(H1stqg[index(i2,sign)]+anomalous::C1QG[anomalous::index(i2,sign)])
@@ -171,21 +161,21 @@ void hcoefficients::calc(double aass, double logmuf2q2, double logq2muf2, double
 		
 	      H2stqg_1[index(i1,i2,sign)] = anomalous::C2qgM[anomalous::index(i1,0)] + anomalous::C1QG[anomalous::index(i1,0)]*anomalous::C1QQ[anomalous::index(i2,sign)] 
 		+ 4.*(+ 1./2.*resconst::beta0*4*loga2*(-anomalous::gamma1qg[anomalous::index(i1,0)]/2.)
-		     - 2*loga*(-resconst::beta0 * anomalous::C1QG[anomalous::index(i1,0)]/2. + anomalous::gamma2qg[anomalous::index(i1,0)]/4.)
+		     - 2.*loga*(-resconst::beta0 * anomalous::C1QG[anomalous::index(i1,0)]/2. + anomalous::gamma2qg[anomalous::index(i1,0)]/4.)
 		     + 1./2.*resconst::beta0*logq2muf22*anomalous::gamma1qg[anomalous::index(i1,0)]/2.
 		     + anomalous::gamma2qg[anomalous::index(i1,0)]/4.*logq2muf2
 		     - resconst::beta0*logq2mur2*H1stqg[index(i1,0)]/2.
-		     + 1./2.*(H1stqqb[index(i1,i2,sign)] + H1q + anomalous::C1QQ[anomalous::index(i1,0)] + anomalous::C1QQ[anomalous::index(i2,sign)])/2.*(logq2muf2-2*loga)*anomalous::gamma1qg[anomalous::index(i1,0)]/2.
-		     + 1./2.*(H1stqg[index(i1,0)] + anomalous::C1QG[anomalous::index(i1,0)])/2.*((logq2muf2-2*loga)*(anomalous::gamma1qq[anomalous::index(i2,sign)]+anomalous::gamma1gg[anomalous::index(i1,0)])/2.-(resconst::B1q+resconst::A1q*loga)*2*loga));
+		     + 1./2.*(H1stqqb[index(i1,i2,sign)] + H1q + anomalous::C1QQ[anomalous::index(i1,0)] + anomalous::C1QQ[anomalous::index(i2,sign)])/2.*(logq2muf2-2.*loga)*anomalous::gamma1qg[anomalous::index(i1,0)]/2.
+		     + 1./2.*(H1stqg[index(i1,0)] + anomalous::C1QG[anomalous::index(i1,0)])/2.*((logq2muf2-2.*loga)*(anomalous::gamma1qq[anomalous::index(i2,sign)]+anomalous::gamma1gg[anomalous::index(i1,0)])/2.-(resconst::B1q+resconst::A1q*loga)*2.*loga));
 		
 	      H2stqg_2[index(i1,i2,sign)] = anomalous::C2qgM[anomalous::index(i2,sign)] + anomalous::C1QG[anomalous::index(i2,sign)]*anomalous::C1QQ[anomalous::index(i1,0)]
 		+ 4.*(+ 1./2.*resconst::beta0*4*loga2*(-anomalous::gamma1qg[anomalous::index(i2,sign)]/2.)
-		     - 2*loga*(-resconst::beta0 * anomalous::C1QG[anomalous::index(i2,sign)]/2. + anomalous::gamma2qg[anomalous::index(i2,sign)]/4.)
+		     - 2.*loga*(-resconst::beta0 * anomalous::C1QG[anomalous::index(i2,sign)]/2. + anomalous::gamma2qg[anomalous::index(i2,sign)]/4.)
 		     + 1./2.*resconst::beta0*logq2muf22*(anomalous::gamma1qg[anomalous::index(i2,sign)]/2.)
 		     + anomalous::gamma2qg[anomalous::index(i2,sign)]/4.*logq2muf2
 		     - resconst::beta0*logq2mur2*H1stqg[index(i2,sign)]/2.
-		     + 1./2.*(H1stqqb[index(i1,i2,sign)] + H1q + anomalous::C1QQ[anomalous::index(i2,sign)] + anomalous::C1QQ[anomalous::index(i1,0)])/2.*(logq2muf2-2*loga)*anomalous::gamma1qg[anomalous::index(i2,sign)]/2.
-		     + 1./2.*(H1stqg[index(i2,sign)] + anomalous::C1QG[anomalous::index(i2,sign)])/2. * ((logq2muf2-2*loga)*(anomalous::gamma1qq[anomalous::index(i1,0)] + anomalous::gamma1gg[anomalous::index(i2,sign)])/2.-(resconst::B1q+resconst::A1q*loga)*2*loga));
+		     + 1./2.*(H1stqqb[index(i1,i2,sign)] + H1q + anomalous::C1QQ[anomalous::index(i2,sign)] + anomalous::C1QQ[anomalous::index(i1,0)])/2.*(logq2muf2-2.*loga)*anomalous::gamma1qg[anomalous::index(i2,sign)]/2.
+		     + 1./2.*(H1stqg[index(i2,sign)] + anomalous::C1QG[anomalous::index(i2,sign)])/2. * ((logq2muf2-2.*loga)*(anomalous::gamma1qq[anomalous::index(i1,0)] + anomalous::gamma1gg[anomalous::index(i2,sign)])/2.-(resconst::B1q+resconst::A1q*loga)*2.*loga));
 
 	      //!!! simplification
 	      //H2stqg_2[index(i1,i2,sign)] = H2stqg_1[index(i2,i1,0)]
@@ -193,23 +183,30 @@ void hcoefficients::calc(double aass, double logmuf2q2, double logq2muf2, double
 	      
 	      //  GG done
 	      H2stgg[index(i1,i2,sign)] = anomalous::C1QG[anomalous::index(i2,sign)]*anomalous::C1QG[anomalous::index(i1,0)]
-		-4.*1./2.*(logmuf2q2+2*loga)*((H1stqg[index(i1,0)] + anomalous::C1QG[anomalous::index(i1,0)])/2.*anomalous::gamma1qg[anomalous::index(i2,sign)]/2.+(H1stqg[index(i2,sign)] + anomalous::C1QG[anomalous::index(i2,sign)])/2.*anomalous::gamma1qg[anomalous::index(i1,0)]/2.);
+		-4.*1./2.*(logmuf2q2+2.*loga)*((H1stqg[index(i1,0)] + anomalous::C1QG[anomalous::index(i1,0)])/2.*anomalous::gamma1qg[anomalous::index(i2,sign)]/2.+(H1stqg[index(i2,sign)] + anomalous::C1QG[anomalous::index(i2,sign)])/2.*anomalous::gamma1qg[anomalous::index(i1,0)]/2.);
 	    }
     }
 }
 
 //b-dependent coefficients
-void hcoefficients::calcb(double aass, double logmuf2q2, double loga, double alpq, double aexp, double aexpb)
+void hcoefficients::calcb(double aass, complex <double> logmuf2q2, complex <double> loga, complex <double> alpq, complex <double> aexp, complex <double> aexpb)
 {
-  complex <double> H1q=(0.,0.);
+  // logs of scales are computed in resint
+  //  complex <double> logmuf2q2 = resint::logmuf2q2;
+  //  complex <double> loga = resint::loga;
+  //  double aass = resint::aass;
+
+  // exponents are computes in alphasl from besselint
+  // complex <double> aexpb = besselint:aexpb;
+  // complex <double> aexp = besselint:aexp;
+
+  //b-dependent quantities to be computed in invres(b)
+  // complex <double> alpq = pdfevol::alpq; //(alpqf * alphasl(scale2))
+
   double aassh=aass/2.;
   double aasshsq = pow(aassh,2);
 
-  //b-dependent quantities to be computed in invres(b)
-  //  double alpq = 0; //alpqf * alphasl(scale2)
-  //  double aexpb = 0;
-  //  double aexp = 0;
-  double aexp2 = aexp*aexp;
+  complex <double> aexp2 = aexp*aexp;
 
   double dC1qqn=2.*M_PI*M_PI/3.-16./3.; //= 2.*resconst::C1qqn;
 
@@ -220,7 +217,7 @@ void hcoefficients::calcb(double aass, double logmuf2q2, double loga, double alp
 	for (int i = 0; i < mellinint::mdim; i++)
 	  {         
 	    Hqg[index(i,sign)] = alpq*2.*anomalous::C1QG[anomalous::index(i,sign)]
-	      +(aass/2.)*(-anomalous::gamma1qg[anomalous::index(i,sign)])*(logmuf2q2+2*loga);
+	      +(aass/2.)*(-anomalous::gamma1qg[anomalous::index(i,sign)])*(logmuf2q2+2.*loga);
 	  }
 
       for (int sign = mesq::positive; sign <= mesq::negative; sign++)

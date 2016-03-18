@@ -3,15 +3,20 @@
 #include "besselint.h"
 #include "pdfevol.h"
 #include "mesq.h"
+#include "hcoefficients.h"
+#include "resint.h"
+
 #include <LHAPDF/LHAPDF.h>
 
 //fortran interface
 void besselint_(double &b, double &qt, double &q2)
 {
-  besselint::bint(b, qt, q2);
+  resint::_qt = qt;
+  resint::_m = sqrt(q2);
+  besselint::bint(b);
 };
 
-double besselint::bint(double b, double qt, double q2)
+double besselint::bint(double b)
 {
   //      double complex loga,logmuf2q2,logq2muf2,logq2mur2
   //      common/clogs/loga,logmuf2q2,logq2muf2,logq2mur2
@@ -22,6 +27,9 @@ double besselint::bint(double b, double qt, double q2)
   //      double precision aass
   //      COMMON/aass/aass
 
+  double qt = resint::_qt;
+  double q2 = pow(resint::_m,2);
+  
   complex <double> scale2 = pow(resconst::b0*opts.a_param/b,2);
   complex <double> bb = b;
   //     USES BESSEL FUNCTION SINCE INTEGRATION IS DONE ALONG THE REAL AXIS
@@ -43,11 +51,10 @@ double besselint::bint(double b, double qt, double q2)
   //     ********************
 
   //**************************************
+  // Set scales for evolution in pdfevol
   //     b-dependence
   //...  alphasl gives the LL/NLL evolution of alpha from Qres=Q/a_param to
   //     q2=bo^2/b^2
-//**************************************
-
   double q2s = q2/pow(opts.a_param,2);                   //resummation scale
   pdfevol::alpqf = LHAPDF::alphasPDF(sqrt(q2s))/4./M_PI; //alphas at resummation scale
   fcomplex fscale2 = fcx(scale2);
@@ -59,17 +66,26 @@ double besselint::bint(double b, double qt, double q2)
 
   // SELECT ORDER FOR EVOLUTION LO/NLO
   pdfevol::alpr = pdfevol::alpq *(double)(opts.order-1);
+  //**************************************
 
+  //**************************************
+  //perform PDF evolution from muf to the scale corresponding to the impact parameter b
+  //the scales used in the evolution corresponds to SALP and alpr
   for (int i = 0; i < mellinint::mdim; i++)
     {
-      //perform PDF evolution from muf to the scale corresponding to the impact parameter b
       pdfevol::evolution (i, mesq::positive, 1);
       pdfevol::evolution (i, mesq::positive, 2);
       pdfevol::evolution (i, mesq::negative, 2);
+      //      cout << cx(creno_.cfx1_[i][5]) << endl;
     }
+  //**************************************
+
+  //aexp and aexpb are calculated in alphasl
+  complex <double> aexp = cx(exponent_.aexp_);
+  complex <double> aexpb = cx(exponent_.aexpb_);
+  
   // Cache the positive and negative branch of coefficients which depend only on one I index
-  //  double aass,logmuf2q2,loga,aexp,aexpb;
-  //  hcoefficients::calcb(aass,logmuf2q2,loga,real(pdfevol::alpq),aexp,aexpb); // --> Need to access aass,logmuf2q2,loga,alpq,aexp,aexpb
+  hcoefficients::calcb(resint::aass,resint::logmuf2q2,resint::loga,pdfevol::alpq,aexp,aexpb); // --> Need to access aass,logmuf2q2,loga,alpq,aexp,aexpb
   
   double fun = 0.;
   for (int i1 = 0; i1 < mellinint::mdim; i1++)
@@ -105,6 +121,6 @@ double besselint::bint(double b, double qt, double q2)
       cout << fun << "  " << factorfin << endl;
       invres = 0;
     }
-  //  cout << setprecision(16) << "C++ " << b << "  " << fun << "  " << factorfin << endl;
+  //  cout << setprecision(16) << "C++ " << b << "  " << invres << "  " << fun << "  " << factorfin << endl;
   return invres;
 }

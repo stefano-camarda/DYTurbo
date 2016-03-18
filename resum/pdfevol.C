@@ -451,7 +451,7 @@ void pdfevol::evolution (int i, int sign, int beam) //from reno2
       fx[-2+5] = dtemp;
     }
 
-  //Save the eveolved PDFs into the fortran common block (can actually use a C++ data format since it is only accessed in C++)
+  //Save the evolved PDFs into the fortran common block (can actually use a C++ data format since it is only accessed in C++)
   if (beam == 1)
     {
       creno_.cfx1_[i][0]  = fcx(fx[0]);
