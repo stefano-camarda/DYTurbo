@@ -11,6 +11,7 @@
 #include "resconst.h"
 #include "hcoefficients.h"
 #include "anomalous.h"
+#include "resint.h"
 
 #include <math.h>
 #include <iostream>
@@ -282,5 +283,6 @@ void dyturboinit()
   anomalous::init(); //calculate anomalous dimensions, C1, C2 and gamma coefficients
   hcoefficients::init(); //allocate memory for the H coefficients
   pdfevol::init(); //allocate memory for the pdf in N-space
+  resint::init(); //initialise dequad integration
   //end C++ resum
 }
