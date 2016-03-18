@@ -186,6 +186,7 @@ AC_CONFIG_FILES([Makefile
 		 mcfm/Makefile
 		 cernlib/Makefile
 		 dequad/Makefile
+		 ancont/Makefile
 		 dyturbo-config])
 
 

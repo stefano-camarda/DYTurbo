@@ -1,6 +1,6 @@
 ACLOCAL_AMFLAGS=-I m4
 #add cuba to SUBDIRS to ship cuba
-SUBDIRS = cernlib dequad dyres dynnlo dyqt mcfm integrands resum src
+SUBDIRS = cernlib ancont dequad dyres dynnlo dyqt mcfm integrands resum src
 
 #add test directories if enabled
 if HAVE_TEST
