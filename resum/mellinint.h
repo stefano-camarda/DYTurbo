@@ -1,7 +1,16 @@
 #ifndef mellinint_h
 #define mellinint_h
+#include "fcomplex.h"
+
 #include <map>
 #include <complex>
+
+//fortran interfaces
+extern "C"
+{
+  void mellinint_pdf_mesq_expy_(int& i1, int& i2, int& sign);
+  fcomplex mellinint_integrand_(int& i1, int& i2, int& sign);
+}
 
 using namespace std;
 namespace mellinint

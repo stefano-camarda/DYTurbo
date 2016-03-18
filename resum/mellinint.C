@@ -9,6 +9,7 @@
 
 #include <complex>
 #include <iostream>
+#include <iomanip>
 
 double *mellinint::wn;
 complex <double> *mellinint::Np;
@@ -78,7 +79,7 @@ void mellinint::initgauss()
 	  double jac = max-min;
 	  Np[j+i*opts.mellinrule]=complex <double> (cpoint+cos(phi)*t+1.,sin(phi)*t);
 	  wn[j+i*opts.mellinrule]=gr::www[opts.mellinrule-1][j]*m*jac;
-	  //	  cout << t << " " << Np[j+i*opts.mellinrule] << "  " << wn[j+i*opts.mellinrule] << endl;
+	  //	  cout << setprecision(16) <<  t << " " << Np[j+i*opts.mellinrule] << "  " << wn[j+i*opts.mellinrule] << endl;
 	}
     }      
   // negative branch

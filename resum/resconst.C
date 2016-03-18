@@ -2,6 +2,10 @@
 #include "interface.h"
 #include <math.h>
 
+// constants.f
+#define NF 5
+#define FN -5
+
 const double CA = 3.;
 const double Cf = 4./3.;
 const double Euler = 0.57721566;
