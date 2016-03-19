@@ -161,12 +161,12 @@ int main( int argc , const char * argv[])
       if (opts.doRES) {
           double b_time = clock_real();
           if (opts.resint2d) {
-	    cacheyrapint_(ymin, ymax);
-	    //C++ resum
-	    /*
-	    rapint::cache(ymin, ymax);
-	    */
-	    //end C++ resum
+	    if (opts.resumcpp)
+	      //C++ resum
+	      rapint::cache(ymin, ymax);
+	      //end C++ resum
+	    else	    
+	      cacheyrapint_(ymin, ymax);
 	    resintegr2d(value, error);
           }
           if (opts.resint3d) resintegr3d(value, error);

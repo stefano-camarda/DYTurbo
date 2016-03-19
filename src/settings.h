@@ -160,6 +160,8 @@ public:
   bool timeprofile;
   bool verbose;
 
+  bool resumcpp;
+  
   // fiducial switches
   cuts::DetFiducial fiducial;
 };
