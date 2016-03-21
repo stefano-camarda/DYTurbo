@@ -18,7 +18,11 @@ integrand_t ctintegrand(const int &ndim, const double x[], const int &ncomp, dou
                         double &weight, const int &iter)
 {
   //here generate the phase space according to x[], and pass the p vector to countint_
-  
+
+  if (opts.PDFerrors)
+    for (int i = 1; i < opts.totpdf; i++)
+      f[i] = 0.;
+    
   double rct[22];
   for (int i = 0; i < ndim; i++)
     rct[i]=x[i];
@@ -79,22 +83,11 @@ integrand_t ctintegrandMC(const int &ndim, const double x[], const int &ncomp, d
   
   //integrate between qtmin and qtmax
   //use qt2 to get the correct jacobian!
-  double expy=exp(y);
-  double expmy=exp(-y);
-  double qtcut = qtcut_.xqtcut_*m;
-  double qtmn = max(qtcut, qtmin);
-  double cosh2y34=pow((expy+expmy)*0.5,2);
-  double kinqtlim = sqrt(pow(pow(energy_.sroot_,2)+m*m,2)/(4*pow(energy_.sroot_,2)*cosh2y34)-m*m);
-  double switchqtlim = switching::qtlimit(m);
-  double qtlim = min(kinqtlim, switchqtlim);
-  double qtmx = min(qtlim, qtmax);
-  if (qtmn >= qtmx)
-    {
-      f[0]=0.;
-      return 0;
-    }
 
   //In the fixed order calculation, integrate from qtcut to infinity
+  double expy, expmy;
+  double qtmn, qtmx;
+  double qtcut = qtcut_.xqtcut_*m;
   if (opts.fixedorder)
     {
       if (qtmin > 0)
@@ -104,6 +97,22 @@ integrand_t ctintegrandMC(const int &ndim, const double x[], const int &ncomp, d
 	}
       qtmn = qtcut;
       qtmx = 1e10;
+    }
+  else
+    {
+      expy = exp(y);
+      expmy = exp(-y);
+      qtmn = max(qtcut, qtmin);
+      double cosh2y34=pow((expy+expmy)*0.5,2);
+      double kinqtlim = sqrt(pow(pow(energy_.sroot_,2)+m*m,2)/(4*pow(energy_.sroot_,2)*cosh2y34)-m*m);
+      double switchqtlim = switching::qtlimit(m);
+      double qtlim = min(kinqtlim, switchqtlim);
+      qtmx = min(qtlim, qtmax);
+      if (qtmn >= qtmx)
+	{
+	  f[0]=0.;
+	  return 0;
+	}
     }
   double qtmn2 = pow(qtmn,2);
   double qtmx2 = pow(qtmx,2);
@@ -140,76 +149,113 @@ integrand_t ctintegrandMC(const int &ndim, const double x[], const int &ncomp, d
   double phi = 2.*M_PI*x[4];
   double phi_lep = 2.*M_PI*x[5];
       
-  //  vector boson momentum: pV(4)^2-pV(1)^2-pV(2)^2-pV(3)^2=m2
-  double mt2=m2+qt2;
-  double pV[4];
-  pV[0]=qt*cos(phi);
-  pV[1]=qt*sin(phi);
-  pV[2]=0.5*sqrt(mt2)*(expy-expmy);
-  pV[3]=0.5*sqrt(mt2)*(expy+expmy);
-
-  // momentum of the first lepton 
-  double p4cm[4];
-  p4cm[3]=m/2.;
-  p4cm[0]=p4cm[3]*sin(acos(costh))*sin(phi_lep);
-  p4cm[1]=p4cm[3]*sin(acos(costh))*cos(phi_lep);
-  p4cm[2]=p4cm[3]*costh;
-
-  // Boost to go in the Lab frame
-  double p4[4];
-  boost_(m,pV,p4cm,p4);
-
-  //  momentum of the second lepton
   double p3[4];
-  p3[3]=pV[3]-p4[3];
-  p3[0]=pV[0]-p4[0];
-  p3[1]=pV[1]-p4[1];
-  p3[2]=pV[2]-p4[2];
+  double p4[4];
+  double costh_CS;
+  if (opts.fixedorder)
+    {
+      double pV[4];
+      pV[0]=0.;
+      pV[1]=0.;
+      pV[2]=0.5*m*(expy-expmy);
+      pV[3]=0.5*m*(expy+expmy);
 
-  //apply lepton cuts
-  if (opts.makelepcuts)
-    if (!cuts::lep(p3, p4))
-      {
-	f[0]=0.;
-	return 0;
-      }
+      // momentum of the first lepton 
+      double p4cm[4];
+      p4cm[3]=m/2.;
+      p4cm[0]=p4cm[3]*sin(acos(costh))*sin(phi_lep);
+      p4cm[1]=p4cm[3]*sin(acos(costh))*cos(phi_lep);
+      p4cm[2]=p4cm[3]*costh;
+
+      // Boost to go in the Lab frame
+      boost_(m,pV,p4cm,p4);
+
+      //  momentum of the second lepton
+      p3[3]=pV[3]-p4[3];
+      p3[0]=pV[0]-p4[0];
+      p3[1]=pV[1]-p4[1];
+      p3[2]=pV[2]-p4[2];
+
+      //apply lepton cuts
+      if (opts.makelepcuts)
+	if (!cuts::lep(p3, p4))
+	  {
+	    f[0]=0.;
+	    return 0;
+	  }
+      costh_CS = costh;
+    }
+  else
+    {
+      //  vector boson momentum: pV(4)^2-pV(1)^2-pV(2)^2-pV(3)^2=m2
+      double mt2=m2+qt2;
+      double pV[4];
+      pV[0]=qt*cos(phi);
+      pV[1]=qt*sin(phi);
+      pV[2]=0.5*sqrt(mt2)*(expy-expmy);
+      pV[3]=0.5*sqrt(mt2)*(expy+expmy);
+
+      // momentum of the first lepton 
+      double p4cm[4];
+      p4cm[3]=m/2.;
+      p4cm[0]=p4cm[3]*sin(acos(costh))*sin(phi_lep);
+      p4cm[1]=p4cm[3]*sin(acos(costh))*cos(phi_lep);
+      p4cm[2]=p4cm[3]*costh;
+
+      // Boost to go in the Lab frame
+      boost_(m,pV,p4cm,p4);
+
+      //  momentum of the second lepton
+      p3[3]=pV[3]-p4[3];
+      p3[0]=pV[0]-p4[0];
+      p3[1]=pV[1]-p4[1];
+      p3[2]=pV[2]-p4[2];
+
+      //apply lepton cuts
+      if (opts.makelepcuts)
+	if (!cuts::lep(p3, p4))
+	  {
+	    f[0]=0.;
+	    return 0;
+	  }
   			    
-  //Calculate costh according to a qt-recoil prescription
-  double kt1,kt2;
+      //Calculate costh according to a qt-recoil prescription
+      double kt1,kt2;
   
-  //CS frame prescription
-  if (opts.qtrec_cs)
-    {
-      kt1 = pV[0]/2.;
-      kt2 = pV[1]/2.;
-    }
+      //CS frame prescription
+      if (opts.qtrec_cs)
+	{
+	  kt1 = pV[0]/2.;
+	  kt2 = pV[1]/2.;
+	}
 
-  //MY (DYRES) prescription
-  if (opts.qtrec_naive)
-    {
-      kt1=(1.+pV[2]/(sqrt(m2)+pV[3]))*pV[0]/2;
-      kt2=(1.+pV[2]/(sqrt(m2)+pV[3]))*pV[1]/2;
-    }  
+      //MY (DYRES) prescription
+      if (opts.qtrec_naive)
+	{
+	  kt1=(1.+pV[2]/(sqrt(m2)+pV[3]))*pV[0]/2;
+	  kt2=(1.+pV[2]/(sqrt(m2)+pV[3]))*pV[1]/2;
+	}  
 
-  //alternative k1t = 0 prescription
-  if (opts.qtrec_kt0)
-    {
-      kt1 = 0;
-      kt2 = 0;
-    }
+      //alternative k1t = 0 prescription
+      if (opts.qtrec_kt0)
+	{
+	  kt1 = 0;
+	  kt2 = 0;
+	}
 
-  double zeta1=1./m2/2.*(m2+2.*(pV[0]*kt1+pV[1]*kt2)+sqrt(pow((m2+2.*(pV[0]*kt1+pV[1]*kt2)),2)-4.*mt2*(pow(kt1,2)+pow(kt2,2))));
+      double zeta1=1./m2/2.*(m2+2.*(pV[0]*kt1+pV[1]*kt2)+sqrt(pow((m2+2.*(pV[0]*kt1+pV[1]*kt2)),2)-4.*mt2*(pow(kt1,2)+pow(kt2,2))));
 
-  double qP1=(pV[3]-pV[2])*energy_.sroot_/2.;
-  double qP2=(pV[3]+pV[2])*energy_.sroot_/2.;
+      double qP1=(pV[3]-pV[2])*energy_.sroot_/2.;
+      double qP2=(pV[3]+pV[2])*energy_.sroot_/2.;
   
-  double kap1[4];
-  kap1[3]=energy_.sroot_/2.*(zeta1*m2/2./qP1+(pow(kt1,2)+pow(kt2,2))/zeta1*qP1/m2/pow(energy_.sroot_,2)*2.);
-  kap1[0]=kt1;
-  kap1[1]=kt2;
-  kap1[2]=energy_.sroot_/2.*(zeta1*m2/2./qP1-(pow(kt1,2)+pow(kt2,2))/zeta1*qP1/m2/pow(energy_.sroot_,2)*2.);
+      double kap1[4];
+      kap1[3]=energy_.sroot_/2.*(zeta1*m2/2./qP1+(pow(kt1,2)+pow(kt2,2))/zeta1*qP1/m2/pow(energy_.sroot_,2)*2.);
+      kap1[0]=kt1;
+      kap1[1]=kt2;
+      kap1[2]=energy_.sroot_/2.*(zeta1*m2/2./qP1-(pow(kt1,2)+pow(kt2,2))/zeta1*qP1/m2/pow(energy_.sroot_,2)*2.);
 
-  double costh_CS=1.-4.*(kap1[3]*p4[3]-kap1[2]*p4[2]-kap1[1]*p4[1]-kap1[0]*p4[0])/m2;
+      costh_CS=1.-4.*(kap1[3]*p4[3]-kap1[2]*p4[2]-kap1[1]*p4[1]-kap1[0]*p4[0])/m2;
+    }
 
   //apply resummation switching
   double swtch = switching::swtch(qt, m);
