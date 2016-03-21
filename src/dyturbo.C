@@ -196,8 +196,8 @@ int main( int argc , const char * argv[])
           double b_time = clock_real();
 	  if (opts.ctint2d) ctintegr2d(vals, error);
 	  if (opts.ctint3d) ctintegr3d(vals, error);
-	  //if (opts.ctintvegas) ctintegr(value, error);
-	  if (opts.ctintvegas) ctintegrMC(vals, error);
+	  if (opts.ctintvegas6d) ctintegrMC(vals, error);
+	  if (opts.ctintvegas8d) ctintegr(vals, error);
           double e_time = clock_real();
 	  value = vals[0];
           normalise_result(value,error);
