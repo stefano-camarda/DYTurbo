@@ -77,6 +77,10 @@ void settings::readfromfile(const string fname){
     makelepcuts        = in.GetBool   ( "makelepcuts"     ); //true
     lptcut             = in.GetNumber ( "lptcut"          );
     lycut              = in.GetNumber ( "lycut"          );
+    l1ptcut            = in.GetNumber ( "l1ptcut"          );
+    l1ycut             = in.GetNumber ( "l1ycut"          );
+    l2ptcut            = in.GetNumber ( "l2ptcut"          );
+    l2ycut             = in.GetNumber ( "l2ycut"          );
     cubaint            = in.GetBool   ( "cubaint"         ); //true    # integration with     Cuba       Suave
     trapezint          = in.GetBool   ( "trapezint"       ); //false   # trapezoidal rule     for        the     phi_lep     integration     and         semi-analytical for         costh
     quadint            = in.GetBool   ( "quadint"         ); //false   # quadrature  rule     for        the     phi_lep     integration     and         semi-analytical for         costh
@@ -155,11 +159,13 @@ void settings::readfromfile(const string fname){
     if (intDimCT<4 && intDimCT>1){
         ctint2d = (intDimCT == 2);
         ctint3d = (intDimCT == 3);
-        ctintvegas = false;
+        ctintvegas6d = false;
+	ctintvegas8d = false;
     } else {
         ctint2d = false;
         ctint3d = false;
-        ctintvegas = true;
+        ctintvegas6d = (intDimCT <= 6);
+	ctintvegas8d = (intDimCT > 6);
     }
 
     if (opts_.approxpdf_ == 1)
@@ -247,7 +253,8 @@ void settings::dumpAll(){
         dumpI("intDimCT           ", intDimCT            );
         dumpB("ctint2d            ", ctint2d             );
         dumpB("ctint3d            ", ctint3d             );
-        dumpB("ctintvegas         ", ctintvegas          );
+        dumpB("ctintvegas6d         ", ctintvegas6d          );
+	dumpB("ctintvegas8d         ", ctintvegas8d          );
         dumpB("fixedorder         ", fixedorder          );
 	dumpB("doRES              ", doRES               );
 	dumpB("doVV               ", doVV                );
