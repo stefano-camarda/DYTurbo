@@ -100,21 +100,21 @@ void mellinint::initgauss()
 }
 
 
-//input : fn1 fn2, sigmaij
-//output: ggn, qgn qqbn
-
-// l'integrando della trasformata di Mellin e' composto di vari pezzi:
-// A) le luminosita' partoniche nello spazio di mellin: fn1 * fn2 -> GGN, QGN, QQBN  funzione di (i,j,I1,I2)
-// B) le ampiezze EW sigmaij, funzione di m, costh (e se integrate in costh, i momenti di costh sono funzione di y, pt, m in presenza di tagli sui leptoni) funzione di (i,j)
-// C) la dipendenza esplicita' della rapidita' cex1 cex2 funzione di (I1, I2)
-// D) i coefficienti di Wilson Hgg Hqqb, etc.. funzione di (I1,I2)
-
-//L'integrazione in costh phi entra solamente in B
-//L'integrazione in costh phi e rapidita' entra in B e C, per cui B e C devono essere calcolati insieme
-//Il prodotto con D si puo' fare alla fine separatemente
-
 //This function performs the product of PDF, born level amplitudes and expy piece, and sums over partonic channels (i,j)
 //It is a function of z1 and z2 in Mellin space
+
+// The integrand of the inverse Mellin transform is composed of
+// A) parton luminosities in Mellin space: fn1 * fn2 -> GGN, QGN, QQBN which are functions of the quark flavours (i,j) and Mellin indices (i1, i2)
+// B) the EW born level squared amplitudes mesq::mesqij, which are functions of m, costh and quark flavours (i,j) (if integrated in costh, and in the presence of cuts on the leptons, the costh moments are functions of y, pt, m)
+// C) the x1^-z1 * x2^-z2 piece of the Mellin inverse transform, which depends explicitly on rapidity and on the Mellin indices (i1, i2)
+// D) the Wilson coefficients Hgg, Hqqb, etc.. which are functions of the Mellin indices (i1, i2)
+
+//In mode = 1, the integration in costh and phi enters only in B
+//In mode = 2, the integration in costh, phi and rapidity enters in B and C, hence B and C are calculated together in mesq::mesqij_expy
+//The product with the Wilson coefficients (D) can be performed at the very end, in mellinint::integrand
+
+//input : pdfevol::fn1, pdfevol::fn2, mesq::mesqij_expy
+//output: qqbn, qgn, ggn
 void mellinint::pdf_mesq_expy(int i1, int i2, int sign)
 {
   GGN=0;
