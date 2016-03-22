@@ -31,6 +31,7 @@ double besselint::bint(double b)
   double q2 = pow(resint::_m,2);
   
   complex <double> scale2 = pow(resconst::b0*opts.a_param/b,2);
+  fcomplex fscale2 = fcx(scale2);
   complex <double> bb = b;
   //     USES BESSEL FUNCTION SINCE INTEGRATION IS DONE ALONG THE REAL AXIS
   //     ********************
@@ -53,19 +54,32 @@ double besselint::bint(double b)
   //**************************************
   // Set scales for evolution in pdfevol
   //     b-dependence
-  //...  alphasl gives the LL/NLL evolution of alpha from Qres=Q/a_param to
-  //     q2=bo^2/b^2
+  //...  alphasl gives the LL/NLL evolution of alpha from Qres=Q/a_param to  q2=b0^2/b^2
   double q2s = q2/pow(opts.a_param,2);                   //resummation scale
-  pdfevol::alpqf = LHAPDF::alphasPDF(sqrt(q2s))/4./M_PI; //alphas at resummation scale
-  fcomplex fscale2 = fcx(scale2);
-  pdfevol::alpq = pdfevol::alpqf * cx(alphasl_(fscale2));    //alphas at the resummation scale times alphas at 1/b
 
-  pdfevol::XL = pdfevol::alpqf / pdfevol::alpq; // = 1./cx(alphasl_(fscale2));
+  /********************************************/
+  //pdfevol::alpqf is used as starting scale in pdfevol::evolution
+  //according to Eq. 42 of arXiv:hep-ph/0508068 it should be the factorisation scale,
+  //but in Eq. 98 in the resummation scale is used
+  pdfevol::alpqf = resint::alpqres; //alphas at resummation scale   (as in dyres)
+  //pdfevol::alpqf = resint::alpqfac;            //alphas at factorisation scale (as in Eq. 42 of arXiv:hep-ph/0508068, but see also Eq. 98)
+  /********************************************/
+  
+  /********************************************/
+  //alpq is used in hcoefficients::calcb, it should be alphas(res scale) * alphas(b0^2/b^2)
+  //it is used only at NLL, at NNLL instead aexp and aexpb are used
+  complex <double> alpq = resint::alpqres * cx(alphasl_(fscale2));        //alphas at the resummation scale times alphas at 1/b
+  //complex <double> alpq = resint::alpqfac * cx(alphasl_(fscale2));          //alphas at the factorisation scale times alphas at 1/b
+  /********************************************/
+
+  //pdfevol::XL = pdfevol::alpqf / alpq; // = 1./cx(alphasl_(fscale2));
+  pdfevol::XL = 1./cx(alphasl_(fscale2));
   pdfevol::XL1 = 1.- pdfevol::XL;
   pdfevol::SALP = log(pdfevol::XL);
 
   // SELECT ORDER FOR EVOLUTION LO/NLO
-  pdfevol::alpr = pdfevol::alpq *(double)(opts.order-1);
+  pdfevol::alpr = pdfevol::alpqf * cx(alphasl_(fscale2))*(double)(opts.order-1);
+  //cout << b << "  " << scale2 << "  " << pdfevol::SALP << "  " << log(1./cx(alphasl_(fscale2))) << "  " << pdfevol::alpr << "  " << alpq <<  endl;
   //**************************************
 
   //**************************************
@@ -85,7 +99,7 @@ double besselint::bint(double b)
   complex <double> aexpb = cx(exponent_.aexpb_);
   
   // Cache the positive and negative branch of coefficients which depend only on one I index
-  hcoefficients::calcb(resint::aass,resint::logmuf2q2,resint::loga,pdfevol::alpq,aexp,aexpb); // --> Need to access aass,logmuf2q2,loga,alpq,aexp,aexpb
+  hcoefficients::calcb(resint::aass,resint::logmuf2q2,resint::loga,alpq,aexp,aexpb); // --> Need to access aass,logmuf2q2,loga,alpq,aexp,aexpb
   
   double fun = 0.;
   for (int i1 = 0; i1 < mellinint::mdim; i1++)
