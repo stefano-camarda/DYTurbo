@@ -25,6 +25,11 @@ extern "C"
     int flag1_;
   } flag1_;
 
+  //QCD order in the alphasl evolution
+  extern struct {
+    int iord_;
+  } iorder_;
+  
   //normal or modified sudakov
   extern struct {
     int imod_;
@@ -93,6 +98,10 @@ namespace resint
   extern double alpqr;
   extern double alpqf;
   extern double aass;
+
+  extern double alpqfac;
+  extern double alpqren;
+  extern double alpqres;
   
   extern void init();
   extern double rint(double costh, double m, double qt, double y, int mode);

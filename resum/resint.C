@@ -37,6 +37,10 @@ double resint::alpqr;
 double resint::alpqf;
 double resint::aass;
 
+double resint::alpqfac;
+double resint::alpqren;
+double resint::alpqres;
+
 //void intdeoini(int lenaw, double tiny, double eps, double *aw);
 //void intdeo(double (*f)(double), double a, double omega, double *aw, double *i, double *err);
 
@@ -48,6 +52,7 @@ void resint::init()
       
   //Set values in the common block for the sudakov
   flag1_.flag1_ = opts.order;              //order for the sudakov
+  iorder_.iord_ = opts.order - 1;          //order for LL/NLL running of alphas
   flagrealcomplex_.flagrealcomplex_ = 0;   // choose real axis (complex plane) integration of bstar (b) (always 0)
   modified_.imod_ = 1;                     // normal (imod=0) or modified (imod=1) sudakov      
   a_param_.a_param_ = opts.a_param;        //dynamic resummation scale
@@ -108,7 +113,13 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
     }
   else
     alpqf=LHAPDF::alphasPDF(sqrt(q2s))/4./M_PI;
-         
+
+  //scales
+  alpqfac=LHAPDF::alphasPDF(muf)/4./M_PI;
+  alpqren=LHAPDF::alphasPDF(mur)/4./M_PI;
+  alpqres=LHAPDF::alphasPDF(sqrt(q2s))/4./M_PI;
+
+  
   //aaas is alphas/pi
   aass = alpqr*4.;
 
