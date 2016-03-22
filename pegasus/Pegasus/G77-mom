@@ -1,0 +1,46 @@
+g77 -o momevol.x -O2 evolmom.f usrinit.f usrinp.f usrpinit.f usrpinp.f \
+\
+Objects1/betafct.o \
+Objects1/psifcts.o \
+Objects1/pnsg0mom.o \
+Objects1/pns1mom.o \
+Objects1/psg1mom.o \
+Objects1/pns2mom.o \
+Objects1/psg2mom.o \
+Objects1/lsgmom.o \
+Objects1/usg1mom.o \
+Objects1/usg1hmom.o \
+Objects1/uns2mom.o \
+Objects1/usg2mom.o \
+Objects1/usg2hmom.o \
+Objects1/ans2mom.o \
+Objects1/asg2mom.o \
+\
+Objects1/initinp.o \
+Objects1/inplmom1.o \
+Objects1/inplmom2.o \
+Objects1/ebetafct.o \
+Objects1/evnfthr.o \
+Objects1/asmatch.o \
+\
+Objects1/asrgkt.o \
+Objects1/ensg0n.o \
+Objects1/ens1n.o \
+Objects1/esg1n.o \
+Objects1/ens2n.o \
+Objects1/esg2n.o \
+Objects1/evnvfn.o \
+Objects1/evnffn.o \
+\
+Objects1/psg0pmom.o \
+Objects1/pns1pmom.o \
+Objects1/psg1pmom.o \
+Objects1/ans2pmom.o \
+Objects1/asg2pmom.o \
+Objects1/initpinp.o \
+Objects1/inppmom1.o \
+Objects1/inppmom2.o \
+\
+Objects1/nparton.o \
+Objects1/initmom.o
+

@@ -1,0 +1,35 @@
+ifort -xW -o timeevol.x evoltime.f usrinit.f usrinp.f \
+\
+Objects2/initevol.o \
+Objects2/betafct.o \
+Objects2/psifcts.o \
+Objects2/pnsg0mom.o \
+Objects2/pns1mom.o \
+Objects2/psg1mom.o \
+Objects2/pns2mom.o \
+Objects2/psg2mom.o \
+Objects2/lsgmom.o \
+Objects2/usg1mom.o \
+Objects2/usg1hmom.o \
+Objects2/uns2mom.o \
+Objects2/usg2mom.o \
+Objects2/usg2hmom.o \
+Objects2/ans2mom.o \
+Objects2/asg2mom.o \
+\
+Objects2/initinp.o \
+Objects2/inplmom1.o \
+Objects2/inplmom2.o \
+Objects2/ebetafct.o \
+Objects2/evnfthr.o \
+Objects2/asmatch.o \
+\
+Objects2/asrgkt.o \
+Objects2/ensg0n.o \
+Objects2/ens1n.o \
+Objects2/esg1n.o \
+Objects2/ens2n.o \
+Objects2/esg2n.o \
+Objects2/evnvfn.o \
+Objects2/evnffn.o \
+Objects2/xparton.o 

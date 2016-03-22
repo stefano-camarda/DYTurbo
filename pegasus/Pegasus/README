@@ -1,0 +1,27 @@
+
+The files with the functions and subroutines of are located in 
+./Routines/, wie the exception of the usr-files.  These are in 
+this QCD-Pegasus base directory, together with the main routines.
+
+For running with g77, go to ./Routines/ and execute  G77-obj.
+This will produce the .o-files and move them to ./Objects1. 
+The corresponding files for the Intel compiler are generated 
+and moved to ./Objects2 by running  IFC-obj.
+This needs to be done only once when installing the program.
+
+
+Some sample main programs are provided. These are
+
+- lh01tab  compiled by  G77-tab  for checking against the Les 
+  Houches benchmark tables (see section 4.4 of the manual)
+
+- evoltime  compiled by  G77-time  or  IFC-time  for checking
+  the speed tables of section 6 of the manual)
+
+- evolpol  compiled by  G77-pol, example for the polarized case
+
+- evolmom  compiled by  G77-mom, example for the N-space option
+
+The above compilations generate the executables  tablh01.x,
+timeevol.x, polevol.x and momevol.x
+
