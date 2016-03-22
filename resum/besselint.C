@@ -61,12 +61,12 @@ double besselint::bint(double b)
   //pdfevol::alpqf is used as starting scale in pdfevol::evolution
   //according to Eq. 42 of arXiv:hep-ph/0508068 it should be the factorisation scale,
   //but in Eq. 98 in the resummation scale is used
-  pdfevol::alpqf = resint::alpqres; //alphas at resummation scale   (as in dyres)
-  //pdfevol::alpqf = resint::alpqfac;            //alphas at factorisation scale (as in Eq. 42 of arXiv:hep-ph/0508068, but see also Eq. 98)
+  double alpqf = resint::alpqres;              //alphas at resummation scale   (as in dyres)
+  //double alpqf = resint::alpqfac;            //alphas at factorisation scale (as in Eq. 42 of arXiv:hep-ph/0508068, but see also Eq. 98)
   /********************************************/
   
   /********************************************/
-  //alpq is used in hcoefficients::calcb, it should be alphas(res scale) * alphas(b0^2/b^2)
+  //alpq is used in hcoefficients::calcb, it is alphas(res scale) * alphas(b0^2/b^2)
   //it is used only at NLL, at NNLL instead aexp and aexpb are used
   complex <double> alpq = resint::alpqres * cx(alphasl_(fscale2));        //alphas at the resummation scale times alphas at 1/b
   //complex <double> alpq = resint::alpqfac * cx(alphasl_(fscale2));          //alphas at the factorisation scale times alphas at 1/b
@@ -78,7 +78,7 @@ double besselint::bint(double b)
   pdfevol::SALP = log(pdfevol::XL);
 
   // SELECT ORDER FOR EVOLUTION LO/NLO
-  pdfevol::alpr = pdfevol::alpqf * cx(alphasl_(fscale2))*(double)(opts.order-1);
+  pdfevol::alpr = alpqf * cx(alphasl_(fscale2))*(double)(opts.order-1);
   //cout << b << "  " << scale2 << "  " << pdfevol::SALP << "  " << log(1./cx(alphasl_(fscale2))) << "  " << pdfevol::alpr << "  " << alpq <<  endl;
   //**************************************
 
