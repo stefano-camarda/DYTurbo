@@ -60,9 +60,6 @@ namespace pdfevol
   extern complex <double> XL1;
   extern complex <double> SALP;
 
-  extern double alpqf; //alpha at resummation scale
-  extern double alpqr; //alpha at renormalization scale
-  extern complex <double> alpq;
   extern complex <double> alpr;
   
   extern void init();

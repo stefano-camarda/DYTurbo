@@ -49,9 +49,6 @@ complex <double> pdfevol::XL;
 complex <double> pdfevol::XL1;
 complex <double> pdfevol::SALP;
 
-double pdfevol::alpqf;
-double pdfevol::alpqr;
-complex <double> pdfevol::alpq;
 complex <double> pdfevol::alpr;
 
 
@@ -356,7 +353,8 @@ void pdfevol::evolution (int i, int sign, int beam) //from reno2
   //  complex <double> SALP = log(XL);
 
   complex <double> S = SALP;
-
+  //  cout << S << "  " << <<alpr <<  endl;
+  
   complex <double> ENS = exp(-ANS*S);
   complex <double> EM  = exp(-AM*S);
   complex <double> EP  = exp(-AP*S);
