@@ -147,6 +147,7 @@ void vjintegr3d(double &res, double &err)
 
   res = integral[0];
   err = error[0];
+  hists.FillQuadrature(res,err);
   return;
 }
 
