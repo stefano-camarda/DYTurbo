@@ -336,9 +336,9 @@ void pdfevol::evolution (int i, int sign, int beam) //from reno2
   complex <double> AL = anomalous::al[anomalous::index(i,sign)];
   complex <double> BE = anomalous::be[anomalous::index(i,sign)];
   complex <double> AB = anomalous::ab[anomalous::index(i,sign)];
+  complex <double> AC  = 1. -AL;
   complex <double> RMIN = anomalous::rmin[anomalous::index(i,sign)];
   complex <double> RPLUS = anomalous::rplus[anomalous::index(i,sign)];
-  complex <double> AC  = 1. -AL;
   complex <double> RMMQQ = anomalous::RMMQQ[anomalous::index(i,sign)];
   complex <double> RMMQG = anomalous::RMMQG[anomalous::index(i,sign)];
   complex <double> RMMGQ = anomalous::RMMGQ[anomalous::index(i,sign)];
@@ -384,14 +384,10 @@ void pdfevol::evolution (int i, int sign, int beam) //from reno2
   NS3N = NS3N * ENS * (1.+  alpr * XL1 * RPLUS);
   NS8N = NS8N * ENS * (1.+  alpr * XL1 * RPLUS);
 
-  SIN = EM * ((AL + alpr * (RMMQQ * XL1 + RMPQQ * (EPM-XL)))* SG
-	      + (BE + alpr * (RMMQG * XL1 + RMPQG * (EPM-XL))) * GL)
-    + EP * ((AC + alpr * (RPPQQ * XL1 + RPMQQ * (EMP-XL))) * SG
-	    +(-BE + alpr * (RPPQG * XL1 + RPMQG * (EMP-XL))) * GL);
-  GLN = EM * ((AB + alpr * (RMMGQ * XL1 + RMPGQ * (EPM-XL))) * SG
-	      + (AC + alpr * (RMMGG * XL1 + RMPGG * (EPM-XL))) * GL)
-    + EP *((-AB + alpr * (RPPGQ * XL1 + RPMGQ * (EMP-XL))) * SG
-	   + (AL + alpr * (RPPGG * XL1 + RPMGG * (EMP-XL))) * GL);
+  SIN = EM * ((AL + alpr * (RMMQQ*XL1 + RMPQQ*(EPM-XL)))* SG + (BE + alpr * (RMMQG*XL1 + RMPQG*(EPM-XL))) * GL)
+      + EP * ((AC + alpr * (RPPQQ*XL1 + RPMQQ*(EMP-XL)))* SG + (-BE + alpr * (RPPQG*XL1 + RPMQG*(EMP-XL))) * GL);
+  GLN = EM * ((AB + alpr * (RMMGQ*XL1 + RMPGQ*(EPM-XL)))* SG + (AC + alpr * (RMMGG*XL1 + RMPGG*(EPM-XL))) * GL)
+      + EP *((-AB + alpr * (RPPGQ*XL1 + RPMGQ*(EMP-XL)))* SG + (AL + alpr * (RPPGG*XL1 + RPMGG*(EMP-XL))) * GL);
   
   NS15N = NS15N * ENS * (1.+  alpr * XL1 * RPLUS);
   NS24N = NS24N * ENS * (1.+  alpr * XL1 * RPLUS);
