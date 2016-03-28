@@ -2,6 +2,8 @@
 #include "interface.h"
 #include "mesq.h"
 #include "anomalous.h"
+#include "resconst.h"
+
 #include <iostream>
 
 //PDFs mellin moments at the factorisation scale
@@ -233,8 +235,7 @@ void pdfevol::evolution (int i, int sign, int beam) //from reno2
   //       COMMON/alphasldata/XL,XL1,SALP,alpq,ALPr
 
   //N flavour dependence
-  int nnf = 5;
-  int f = 5;
+  int nf = resconst::NF;
 
   //Moments at the factorisation scale
   complex <double> UVI,	DVI, USI, DSI, SSI, GLI, CHI, BOI;
@@ -298,17 +299,28 @@ void pdfevol::evolution (int i, int sign, int beam) //from reno2
   // this part can be precomputed
   complex <double> UVN = UVI;
   complex <double> DVN = DVI;
-  complex <double> NS3N = UVI + 2.*USI - DVI - 2.*DSI;
-  complex <double> NS8N = UVI + 2.*USI + DVI + 2.*DSI - 4.*SSI;
+  complex <double> NS3N = UVI + 2.*USI - DVI - 2.*DSI;            //(u+ub-d-db)               u-d
+  complex <double> NS8N = UVI + 2.*USI + DVI + 2.*DSI - 4.*SSI;   //(u+ub+d+db-s-sb)          u+d-s
   complex <double> GLN = GLI;
-  complex <double> SIN = UVI + DVI + 2.*USI + 2.*DSI + 2.*SSI + 2.*CHI + 2.*BOI;
-  complex <double> NS15N = UVI + DVI + 2.*USI + 2.*DSI + 2.*SSI - 6.*CHI;
-  complex <double> NS24N = UVI + DVI + 2.*USI + 2.*DSI + 2.*SSI + 2.*CHI - 8.*BOI;
-  complex <double> NS35N = SIN;
- 
-  if (nnf == 3)
+
+  complex <double> SIN, NS15N, NS24N, NS35N;
+  if (nf == 5)
     {
-      SIN = UVI + DVI + 2.*USI + 2.*DSI + 2.*SSI;
+      SIN = UVI + DVI + 2.*USI + 2.*DSI + 2.*SSI + 2.*CHI + 2.*BOI;   //(u+ub+d+db+s+sb+c+cb+b+bb) -> all quarks      u+d+s+c+b
+      NS15N = UVI + DVI + 2.*USI + 2.*DSI + 2.*SSI - 6.*CHI;          //(u+ub+d+db+s+sb-3(c+cb))                      u+d+s-3c
+      NS24N = UVI + DVI + 2.*USI + 2.*DSI + 2.*SSI + 2.*CHI - 8.*BOI; //(u+ub+d+db+s+sb+c+cb-4(b+bb))                 u+d+s+c-4b
+      NS35N = SIN;
+    }
+  if (nf == 4)
+    {
+      SIN = UVI + DVI + 2.*USI + 2.*DSI + 2.*SSI + 2.*CHI;          //(u+ub+d+db+s+sb+c+cb) -> all quarks
+      NS15N = UVI + DVI + 2.*USI + 2.*DSI + 2.*SSI - 6.*CHI;
+      NS24N = UVI + DVI + 2.*USI + 2.*DSI + 2.*SSI + 2.*CHI;
+      NS35N = SIN;
+    }
+  if (nf == 3)
+    {
+      SIN = UVI + DVI + 2.*USI + 2.*DSI + 2.*SSI;     //(u+ub+d+db+s+sb) -> all quarks
       NS15N = SIN;
       NS24N = SIN;
       NS35N = SIN;
@@ -386,13 +398,17 @@ void pdfevol::evolution (int i, int sign, int beam) //from reno2
   NS35N = SIN;
 
   //...  FLAVOUR DECOMPOSITION OF THE QUARK SEA :
-  complex <double> SSN = (10.* SIN + 2.* NS35N + 3.* NS24N + 5.* NS15N - 20.* NS8N) / 120.;
-  complex <double> DSN = (10.* SIN + 2.* NS35N + 3.* NS24N + 5.* NS15N + 10.* NS8N - 30.* NS3N - 60.* DVN) / 120.;
-  complex <double> USN = (10.* SIN + 2.* NS35N + 3.* NS24N + 5.* NS15N + 10.* NS8N + 30.* NS3N - 60.* UVN) / 120.;
-  complex <double> CHN = (UVN + DVN + 2.*USN + 2.*DSN + 2.*SSN - NS15N)/6.;
-  complex <double> BON = (UVN + DVN + 2.*USN + 2.*DSN + 2.*SSN + 2.*CHN - NS24N)/8.;
-      
-  if (nnf == 3) //GRV
+  complex <double> SSN, DSN, USN, CHN, BON;
+  SSN = (10.* SIN + 2.* NS35N + 3.* NS24N + 5.* NS15N - 20.* NS8N) / 120.;
+  DSN = (10.* SIN + 2.* NS35N + 3.* NS24N + 5.* NS15N + 10.* NS8N - 30.* NS3N - 60.* DVN) / 120.;
+  USN = (10.* SIN + 2.* NS35N + 3.* NS24N + 5.* NS15N + 10.* NS8N + 30.* NS3N - 60.* UVN) / 120.;
+  CHN = (UVN + DVN + 2.*USN + 2.*DSN + 2.*SSN - NS15N)/6.;
+  BON = (UVN + DVN + 2.*USN + 2.*DSN + 2.*SSN + 2.*CHN - NS24N)/8.;
+  //equivalent to:
+  //CHN = (10.* SIN + 2. *NS35N + 3.* NS24N - 15.* NS15N) / 120.;
+  //BON = (10.* SIN + 2. *NS35N - 12.* NS24N) / 120.;
+
+  if (nf == 3) //GRV
     {
       SSN= (20.* SIN - 20.* NS8N)/120.;
       DSN = (20.* SIN + 10.* NS8N - 30.* NS3N - 60.* DVN) / 120.;
@@ -400,7 +416,7 @@ void pdfevol::evolution (int i, int sign, int beam) //from reno2
       CHN=0.;
       BON=0.;
     }
-
+  
   // **************************************
 
   // ...  OUTPUT  
@@ -416,7 +432,7 @@ void pdfevol::evolution (int i, int sign, int beam) //from reno2
   fx[-2+5] = DSN;
   fx[3+5] = SSN;
   fx[-3+5] = SSN;
-  if (nnf >= 4)
+  if (nf >= 4)
     {
       fx[4+5] = CHN;
       fx[-4+5] = CHN;
@@ -427,7 +443,7 @@ void pdfevol::evolution (int i, int sign, int beam) //from reno2
       fx[-4+5] = 0.;
     }
   
-  if (nnf >= 5)
+  if (nf >= 5)
     {
       fx[5+5] = BON;
       fx[-5+5] = BON;

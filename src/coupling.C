@@ -150,7 +150,8 @@ void coupling::init()
   ewcouple_.vevsq_=1./sqrt(2.)/ewcouple_.Gf_;
   //****************************************************************
 
-  //set up the beta-function (flavour dependence! where is b0_.b0_ used?)
+  //set up the beta-function
+  //b0 is defined in mcfm/b0.f and is used in virtint.f and mcfm/dipoles.f
   b0_.b0_=(NC*11.-2.*MAXNF)/6.;
 
   //initialize the pdf set

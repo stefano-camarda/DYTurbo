@@ -1,7 +1,10 @@
 #include "anomalous.h"
 #include "mesq.h"
 #include "interface.h"
+#include "resconst.h"
+
 #include <iostream>
+
 complex <double> *anomalous::ans;
 complex <double> *anomalous::am;
 complex <double> *anomalous::ap;
@@ -64,7 +67,7 @@ void anomalous::init()
   // all values are precalculated at the values of the z points used for the complex contour of the Mellin inverse transform
 
   //settings: nf = 5 (flavours)
-  int nf = 5;
+  int nf = resconst::NF;
 
   ans = new complex <double>[mellinint::mdim*2];
   am = new complex <double> [mellinint::mdim*2];

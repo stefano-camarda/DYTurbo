@@ -271,7 +271,7 @@ void dyturboinit()
   pext_.p2ext_[2]=+0.5*energy_.sroot_;
 
   //set NF to 5 (it is used in H2calc)
-  nf_.nf_=5;
+  nf_.nf_ = resconst::NF;
 
   //C++ resum
   //initialise all the C modules

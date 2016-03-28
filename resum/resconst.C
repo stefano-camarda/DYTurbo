@@ -3,19 +3,19 @@
 #include <math.h>
 
 // constants.f
-#define NF 5
-#define FN -5
+const int resconst::NF = 5;
 
-const double CA = 3.;
-const double Cf = 4./3.;
-const double Euler = 0.57721566;
-const double Z2 = 1.64493406685; //1.644934;
-const double Z3 = 1.20205690316;// 1.202057;
+const double resconst::CA = 3.;
+const double resconst::Cf = 4./3.;
+
+const double resconst::Euler = 0.57721566;
+const double resconst::Z2 = 1.64493406685; //1.644934;
+const double resconst::Z3 = 1.20205690316;// 1.202057;
 //higher precision
 /*
-const double Euler = 0.57721566490153286;
-const double Z2 = M_PI*M_PI/6.;
-const double Z3 = 1.2020569031595942853;
+const double resconst::Euler = 0.57721566490153286;
+const double resconst::Z2 = M_PI*M_PI/6.;
+const double resconst::Z3 = 1.2020569031595942853;
 */
 
 double resconst::b0;

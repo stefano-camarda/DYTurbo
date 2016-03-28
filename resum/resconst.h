@@ -1,16 +1,23 @@
 #ifndef resconst_h
 #define resconst_h
 
-extern const double CA;
-extern const double Cf;
-extern const double Euler;
-extern const double Z2;
-extern const double Z3;
 
 namespace resconst
 {
   extern void init();
 
+  //number of light flavours
+  extern const int NF;
+
+  //QCD constants
+  extern const double CA;
+  extern const double Cf;
+
+  //Mathematics constants
+  extern const double Euler;
+  extern const double Z2;
+  extern const double Z3;
+  
   //Resummation coefficients
   extern double b0;
   extern double beta0, beta1, beta2, Kappa;

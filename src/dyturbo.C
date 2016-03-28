@@ -116,7 +116,6 @@ int main( int argc , const char * argv[])
       }
   }
   double f[opts.totpdf];
-  cout << "pippo" << endl;
   ctint_(costh,m,qt,y,mode,f);
   /****************************************/
   
