@@ -31,6 +31,10 @@ double besselint::bint(double b)
   double q2 = pow(resint::_m,2);
   
   complex <double> scale2 = pow(resconst::b0*opts.a_param/b,2);
+  //freeze PDF evolution below a certain scale
+  //  if (fabs(sqrt(scale2)) < 5.)
+  //    scale2 = 5.*5.;
+  pdfevol::bscale = sqrt(scale2);
   fcomplex fscale2 = fcx(scale2);
   complex <double> bb = b;
   //     USES BESSEL FUNCTION SINCE INTEGRATION IS DONE ALONG THE REAL AXIS
@@ -79,6 +83,8 @@ double besselint::bint(double b)
 
   // SELECT ORDER FOR EVOLUTION LO/NLO
   pdfevol::alpr = alpqf * cx(alphasl_(fscale2))*(double)(opts.order-1);
+  //force LO evolution
+  //  pdfevol::alpr = alpqf * cx(alphasl_(fscale2))*(double)(0);
   //cout << b << "  " << scale2 << "  " << pdfevol::SALP << "  " << log(1./cx(alphasl_(fscale2))) << "  " << pdfevol::alpr << "  " << alpq <<  endl;
   //**************************************
 
@@ -135,6 +141,6 @@ double besselint::bint(double b)
       cout << fun << "  " << factorfin << endl;
       invres = 0;
     }
-  //  cout << setprecision(16) << "C++ " << b << "  " << invres << "  " << fun << "  " << factorfin << endl;
+  //cout << setprecision(16) << "C++ " << b << "  " << invres << "  " << fun << "  " << factorfin << endl;
   return invres;
 }
