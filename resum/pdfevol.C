@@ -47,12 +47,13 @@ complex <double> *pdfevol::fn1;
 complex <double> *pdfevol::fn2;
 
 //scales
+complex <double> pdfevol::bscale;
+
 complex <double> pdfevol::XL;
 complex <double> pdfevol::XL1;
 complex <double> pdfevol::SALP;
 
 complex <double> pdfevol::alpr;
-
 
 //fortran interface
 void pdfevol_(int& i1, int& i2, int& sign)
@@ -174,45 +175,62 @@ void pdfevol::evolve(int i1, int i2, int sign)
 {
   //  cout << i1 << endl;
   //  cout << creno_.cfx1_[i1][5].real << "  " << creno_.cfx1_[i1][5].imag << endl;
-  fn1[0] = cx(creno_.cfx1_[i1][0]);
-  fn1[1] = cx(creno_.cfx1_[i1][1]);
-  fn1[2] = cx(creno_.cfx1_[i1][2]);
-  fn1[3] = cx(creno_.cfx1_[i1][3]);
-  fn1[4] = cx(creno_.cfx1_[i1][4]);
-  fn1[5] = cx(creno_.cfx1_[i1][5]);
-  fn1[6] = cx(creno_.cfx1_[i1][6]);
-  fn1[7] = cx(creno_.cfx1_[i1][7]);
-  fn1[8] = cx(creno_.cfx1_[i1][8]);
-  fn1[9] = cx(creno_.cfx1_[i1][9]);
-  fn1[10] = cx(creno_.cfx1_[i1][10]);
+  fn1[-5+MAXNF] = cx(creno_.cfx1_[i1][-5+MAXNF]);
+  fn1[-4+MAXNF] = cx(creno_.cfx1_[i1][-4+MAXNF]);
+  fn1[-3+MAXNF] = cx(creno_.cfx1_[i1][-3+MAXNF]);
+  fn1[-2+MAXNF] = cx(creno_.cfx1_[i1][-2+MAXNF]);
+  fn1[-1+MAXNF] = cx(creno_.cfx1_[i1][-1+MAXNF]);
+  fn1[ 0+MAXNF] = cx(creno_.cfx1_[i1][ 0+MAXNF]);
+  fn1[ 1+MAXNF] = cx(creno_.cfx1_[i1][ 1+MAXNF]);
+  fn1[ 2+MAXNF] = cx(creno_.cfx1_[i1][ 2+MAXNF]);
+  fn1[ 3+MAXNF] = cx(creno_.cfx1_[i1][ 3+MAXNF]);
+  fn1[ 4+MAXNF] = cx(creno_.cfx1_[i1][ 4+MAXNF]);
+  fn1[ 5+MAXNF] = cx(creno_.cfx1_[i1][ 5+MAXNF]);
   if (sign == mesq::positive)
     {
-      fn2[0] = cx(creno_.cfx2p_[i2][0]);
-      fn2[1] = cx(creno_.cfx2p_[i2][1]);
-      fn2[2] = cx(creno_.cfx2p_[i2][2]);
-      fn2[3] = cx(creno_.cfx2p_[i2][3]);
-      fn2[4] = cx(creno_.cfx2p_[i2][4]);
-      fn2[5] = cx(creno_.cfx2p_[i2][5]);
-      fn2[6] = cx(creno_.cfx2p_[i2][6]);
-      fn2[7] = cx(creno_.cfx2p_[i2][7]);
-      fn2[8] = cx(creno_.cfx2p_[i2][8]);
-      fn2[9] = cx(creno_.cfx2p_[i2][9]);
-      fn2[10] = cx(creno_.cfx2p_[i2][10]);
+      fn2[-5+MAXNF] = cx(creno_.cfx2p_[i2][-5+MAXNF]);
+      fn2[-4+MAXNF] = cx(creno_.cfx2p_[i2][-4+MAXNF]);
+      fn2[-3+MAXNF] = cx(creno_.cfx2p_[i2][-3+MAXNF]);
+      fn2[-2+MAXNF] = cx(creno_.cfx2p_[i2][-2+MAXNF]);
+      fn2[-1+MAXNF] = cx(creno_.cfx2p_[i2][-1+MAXNF]);
+      fn2[ 0+MAXNF] = cx(creno_.cfx2p_[i2][ 0+MAXNF]);
+      fn2[ 1+MAXNF] = cx(creno_.cfx2p_[i2][ 1+MAXNF]);
+      fn2[ 2+MAXNF] = cx(creno_.cfx2p_[i2][ 2+MAXNF]);
+      fn2[ 3+MAXNF] = cx(creno_.cfx2p_[i2][ 3+MAXNF]);
+      fn2[ 4+MAXNF] = cx(creno_.cfx2p_[i2][ 4+MAXNF]);
+      fn2[ 5+MAXNF] = cx(creno_.cfx2p_[i2][ 5+MAXNF]);
     }
   else if (sign == mesq::negative)
     {
-      fn2[0] = cx(creno_.cfx2m_[i2][0]);
-      fn2[1] = cx(creno_.cfx2m_[i2][1]);
-      fn2[2] = cx(creno_.cfx2m_[i2][2]);
-      fn2[3] = cx(creno_.cfx2m_[i2][3]);
-      fn2[4] = cx(creno_.cfx2m_[i2][4]);
-      fn2[5] = cx(creno_.cfx2m_[i2][5]);
-      fn2[6] = cx(creno_.cfx2m_[i2][6]);
-      fn2[7] = cx(creno_.cfx2m_[i2][7]);
-      fn2[8] = cx(creno_.cfx2m_[i2][8]);
-      fn2[9] = cx(creno_.cfx2m_[i2][9]);
-      fn2[10] = cx(creno_.cfx2m_[i2][10]);
+      fn2[-5+MAXNF] = cx(creno_.cfx2m_[i2][-5+MAXNF]);
+      fn2[-4+MAXNF] = cx(creno_.cfx2m_[i2][-4+MAXNF]);
+      fn2[-3+MAXNF] = cx(creno_.cfx2m_[i2][-3+MAXNF]);
+      fn2[-2+MAXNF] = cx(creno_.cfx2m_[i2][-2+MAXNF]);
+      fn2[-1+MAXNF] = cx(creno_.cfx2m_[i2][-1+MAXNF]);
+      fn2[ 0+MAXNF] = cx(creno_.cfx2m_[i2][ 0+MAXNF]);
+      fn2[ 1+MAXNF] = cx(creno_.cfx2m_[i2][ 1+MAXNF]);
+      fn2[ 2+MAXNF] = cx(creno_.cfx2m_[i2][ 2+MAXNF]);
+      fn2[ 3+MAXNF] = cx(creno_.cfx2m_[i2][ 3+MAXNF]);
+      fn2[ 4+MAXNF] = cx(creno_.cfx2m_[i2][ 4+MAXNF]);
+      fn2[ 5+MAXNF] = cx(creno_.cfx2m_[i2][ 5+MAXNF]);
     }
+  //set b to 0
+  //  fn2[-5+MAXNF] = 0;  fn1[-5+MAXNF] = 0;
+  //  fn2[5+MAXNF]  = 0;  fn1[5+MAXNF]  = 0;
+  
+  //set s and c to 0
+  //  fn2[-4+MAXNF] = 0;  fn1[-4+MAXNF] = 0;
+  //  fn2[-3+MAXNF] = 0;  fn1[-3+MAXNF] = 0;
+  //  fn2[3+MAXNF]  = 0;  fn1[3+MAXNF]  = 0;
+  //  fn2[4+MAXNF]  = 0;  fn1[4+MAXNF]  = 0;
+
+  //set u and d to 0
+  //  fn2[-2+MAXNF] = 0; fn1[-2+MAXNF] = 0;
+  //  fn2[-1+MAXNF] = 0; fn1[-1+MAXNF] = 0;
+  //  fn2[1+MAXNF]  = 0; fn1[1+MAXNF]  = 0;
+  //  fn2[2+MAXNF]  = 0; fn1[2+MAXNF]  = 0;
+
+  
 }
 
 // PROVIDES MOMENTS OF DENSITIES AT A GIVEN SCALE (INCLUDES EVOLUTION)
@@ -412,6 +430,12 @@ void pdfevol::evolution (int i, int sign, int beam) //from reno2
       CHN=0.;
       BON=0.;
     }
+
+  //  if (fabs(bscale) < 1.4)
+  //    CHN=0.;
+
+  //  if (fabs(bscale) < 4.75)
+  //    BON=0.;
   
   // **************************************
 
@@ -421,44 +445,44 @@ void pdfevol::evolution (int i, int sign, int beam) //from reno2
   // ************************************
 
   complex <double> fx[11];
-  fx[0+5] = GLN;
-  fx[1+5] = UVN + USN;
-  fx[-1+5] = USN;
-  fx[2+5] = DVN + DSN;
-  fx[-2+5] = DSN;
-  fx[3+5] = SSN;
-  fx[-3+5] = SSN;
+  fx[0+MAXNF] = GLN;
+  fx[1+MAXNF] = UVN + USN;
+  fx[-1+MAXNF] = USN;
+  fx[2+MAXNF] = DVN + DSN;
+  fx[-2+MAXNF] = DSN;
+  fx[3+MAXNF] = SSN;
+  fx[-3+MAXNF] = SSN;
   if (nf >= 4)
     {
-      fx[4+5] = CHN;
-      fx[-4+5] = CHN;
+      fx[4+MAXNF] = CHN;
+      fx[-4+MAXNF] = CHN;
     }
   else
     {
-      fx[4+5] = 0.;
-      fx[-4+5] = 0.;
+      fx[4+MAXNF] = 0.;
+      fx[-4+MAXNF] = 0.;
     }
   
   if (nf >= 5)
     {
-      fx[5+5] = BON;
-      fx[-5+5] = BON;
+      fx[5+MAXNF] = BON;
+      fx[-5+MAXNF] = BON;
     }
   else
     {
-      fx[5+5] = 0.;
-      fx[-5+5] = 0.;
+      fx[5+MAXNF] = 0.;
+      fx[-5+MAXNF] = 0.;
     }
 
   //convert proton into antiproton (need to switch only u and d, since the sea is assumed symmetric)
   if ((beam == 1 && opts.ih1 == -1) || (beam == 2 && opts.ih2 == -1))
     {
-      complex <double> utemp = fx[1+5];
-      fx[1+5] = fx[-1+5];
-      fx[-1+5] = utemp;
-      complex <double> dtemp = fx[2+5];
-      fx[2+5] = fx[-2+5];
-      fx[-2+5] = dtemp;
+      complex <double> utemp = fx[1+MAXNF];
+      fx[1+MAXNF] = fx[-1+MAXNF];
+      fx[-1+MAXNF] = utemp;
+      complex <double> dtemp = fx[2+MAXNF];
+      fx[2+MAXNF] = fx[-2+MAXNF];
+      fx[-2+MAXNF] = dtemp;
     }
 
   //Save the evolved PDFs into the fortran common block (can actually use a C++ data format since it is only accessed in C++)
