@@ -192,8 +192,6 @@ void settings::initDyresSettings(){
     nnlo_        . order_     = order        ;         //1              # order
     zerowidth_   . zerowidth_ = zerowidth    ;         //false          # zerowidth
 
-    zcouple_ . q1_ = (useGamma ? -1 :  0 );
-
     dofill_.doFill_ = 0;
 }
 
