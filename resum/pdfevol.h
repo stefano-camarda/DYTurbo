@@ -56,6 +56,8 @@ namespace pdfevol
   extern complex <double> *fn1;
   extern complex <double> *fn2;
 
+  extern complex <double> bscale;
+
   extern complex <double> XL;
   extern complex <double> XL1;
   extern complex <double> SALP;
