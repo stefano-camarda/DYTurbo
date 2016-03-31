@@ -37,12 +37,14 @@ double besselint::bint(double b)
   pdfevol::bscale = sqrt(scale2);
   fcomplex fscale2 = fcx(scale2);
   complex <double> bb = b;
+
   //     USES BESSEL FUNCTION SINCE INTEGRATION IS DONE ALONG THE REAL AXIS
   //     ********************
   //     qt and b dependence (bessel function) (jacobian?)
   double qtb = qt*b;
   double xj0= 2.*fort_besj0_(qtb);
   //     ********************
+
   //     Sudakov is only mass and b dependent
   fcomplex fbb = fcx(bb);
   complex <double> sudak=cx(s_(fbb));
