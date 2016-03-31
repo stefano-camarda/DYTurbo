@@ -139,198 +139,228 @@ void mellinint::pdf_mesq_expy(int i1, int i2, int sign)
       complex <double> mesq_ubu = mesq::mesqij_expy[mesq::index(1,i1,i2,sign)];
       complex <double> mesq_ddb = mesq::mesqij_expy[mesq::index(2,i1,i2,sign)];
       complex <double> mesq_dbd = mesq::mesqij_expy[mesq::index(3,i1,i2,sign)];
-
+      complex <double> mesq_ssb = mesq::mesqij_expy[mesq::index(4,i1,i2,sign)];
+      complex <double> mesq_sbs = mesq::mesqij_expy[mesq::index(5,i1,i2,sign)];
+      complex <double> mesq_ccb = mesq::mesqij_expy[mesq::index(6,i1,i2,sign)];
+      complex <double> mesq_cbc = mesq::mesqij_expy[mesq::index(7,i1,i2,sign)];
+      complex <double> mesq_bbr = mesq::mesqij_expy[mesq::index(8,i1,i2,sign)];
+      complex <double> mesq_brb = mesq::mesqij_expy[mesq::index(9,i1,i2,sign)];
+      
       //NLL part
-      QGN_1 = fn1[g]*((fn2[ub]+fn2[cb])*mesq_uub
-		      + (fn2[db]+fn2[sb]+fn2[bb])*mesq_ddb
-		      + (fn2[u]+fn2[c])*mesq_ubu
-		      + (fn2[d]+fn2[s]+fn2[b])*mesq_dbd);
+      QGN_1 = fn1[g]*(fn2[ub]*mesq_uub
+		      +fn2[cb]*mesq_ccb
+		      +fn2[db]*mesq_ddb
+		      +fn2[sb]*mesq_ssb
+		      +fn2[bb]*mesq_bbr
+		      +fn2[u]*mesq_ubu
+		      +fn2[c]*mesq_cbc
+		      +fn2[d]*mesq_dbd
+		      +fn2[s]*mesq_sbs
+		      +fn2[b]*mesq_brb);
 
-      QGN_2 = fn2[g]*((fn1[u]+fn1[c])*mesq_uub
-		      + (fn1[d]+fn1[s]+fn1[b])*mesq_ddb
-		      + (fn1[ub]+fn1[cb])*mesq_ubu
-		      + (fn1[db]+fn1[sb]+fn1[bb])*mesq_dbd);
+      QGN_2 = fn2[g]*(fn1[u]*mesq_uub
+		      +fn1[c]*mesq_ccb
+		      +fn1[d]*mesq_ddb
+		      +fn1[s]*mesq_ssb
+		      +fn1[b]*mesq_bbr
+		      +fn1[ub]*mesq_ubu
+		      +fn1[cb]*mesq_cbc
+		      +fn1[db]*mesq_dbd
+		      +fn1[sb]*mesq_sbs
+		      +fn1[bb]*mesq_brb);
 
-      QQBN_1 = (fn1[u]*fn2[ub]+fn1[c]*fn2[cb])*mesq_uub
-	+ (fn1[d]*fn2[db]+fn1[s]*fn2[sb]+fn1[b]*fn2[bb])*mesq_ddb
-	+ (fn1[ub]*fn2[u]+fn1[cb]*fn2[c])*mesq_ubu
-	+ (fn1[db]*fn2[d]+fn1[sb]*fn2[s]+fn1[bb]*fn2[b])*mesq_dbd;
+      QQBN_1 = fn1[u]*fn2[ub]*mesq_uub
+	+fn1[c]*fn2[cb]*mesq_ccb
+	+fn1[d]*fn2[db]*mesq_ddb
+	+fn1[s]*fn2[sb]*mesq_ssb
+	+fn1[b]*fn2[bb]*mesq_bbr
+	+fn1[ub]*fn2[u]*mesq_ubu
+	+fn1[cb]*fn2[c]*mesq_cbc
+	+fn1[db]*fn2[d]*mesq_dbd
+	+fn1[sb]*fn2[s]*mesq_sbs
+	+fn1[bb]*fn2[b]*mesq_brb;
 
       //NNLL
       if(opts.order >= 2)
 	{
 	  GGN = fn1[g]*fn2[g]*
-	    (2.*mesq_uub
-	     + 3.*mesq_ddb
-	     + 2.*mesq_ubu
-	     + 3.*mesq_dbd);
+	    (mesq_uub + mesq_ccb
+	     + mesq_ddb + mesq_ssb + mesq_bbr
+	     + mesq_ubu + mesq_cbc
+	     + mesq_dbd + mesq_sbs + mesq_brb);
             
-	  QQBN_2 = (fn1[u]*fn2[u]+fn1[c]*fn2[c])*mesq_uub
-	    + (fn1[d]*fn2[d]+fn1[s]*fn2[s]+fn1[b]*fn2[b])*mesq_ddb
-	    + (fn1[ub]*fn2[ub]+fn1[cb]*fn2[cb])*mesq_ubu
-	    + (fn1[db]*fn2[db]+fn1[sb]*fn2[sb]+fn1[bb]*fn2[bb])*mesq_dbd;
+	  QQBN_2 = fn1[u]*fn2[u]*mesq_uub //fn1[u]*fn2[u]*mesq_ubu
+	    +fn1[c]*fn2[c]*mesq_ccb
+	    +fn1[d]*fn2[d]*mesq_ddb
+	    +fn1[s]*fn2[s]*mesq_ssb
+	    +fn1[b]*fn2[b]*mesq_bbr
+	    +fn1[ub]*fn2[ub]*mesq_ubu
+	    +fn1[cb]*fn2[cb]*mesq_cbc
+	    +fn1[db]*fn2[db]*mesq_dbd
+	    +fn1[sb]*fn2[sb]*mesq_sbs
+	    +fn1[bb]*fn2[bb]*mesq_brb;
 
 	  QQBN_3 = fn1[u]*(fn2[db]*mesq_ddb
-			   +fn2[sb]*mesq_ddb
-			   +fn2[cb]*mesq_uub
-			   +fn2[bb]*mesq_ddb
+			   +fn2[sb]*mesq_ssb
+			   +fn2[cb]*mesq_ccb
+			   +fn2[bb]*mesq_bbr
 			   +fn2[d]*mesq_dbd
-			   +fn2[s]*mesq_dbd
-			   +fn2[c]*mesq_ubu
-			   +fn2[b]*mesq_dbd)
+			   +fn2[s]*mesq_sbs
+			   +fn2[c]*mesq_cbc
+			   +fn2[b]*mesq_brb)
 	    + fn1[d]*(fn2[ub]*mesq_uub
-		      +fn2[sb]*mesq_ddb
-		      +fn2[cb]*mesq_uub
-		      +fn2[bb]*mesq_ddb
+		      +fn2[sb]*mesq_ssb
+		      +fn2[cb]*mesq_ccb
+		      +fn2[bb]*mesq_bbr
 		      +fn2[u]*mesq_ubu
-		      +fn2[s]*mesq_dbd
-		      +fn2[c]*mesq_ubu
-		      +fn2[b]*mesq_dbd)
+		      +fn2[s]*mesq_sbs
+		      +fn2[c]*mesq_cbc
+		      +fn2[b]*mesq_brb)
 	    + fn1[s]*(fn2[ub]*mesq_uub
 		      +fn2[db]*mesq_ddb
-		      +fn2[cb]*mesq_uub
-		      +fn2[bb]*mesq_ddb
+		      +fn2[cb]*mesq_ccb
+		      +fn2[bb]*mesq_bbr
 		      +fn2[u]*mesq_ubu
 		      +fn2[d]*mesq_dbd
-		      +fn2[c]*mesq_ubu
-		      +fn2[b]*mesq_dbd)
+		      +fn2[c]*mesq_cbc
+		      +fn2[b]*mesq_brb)
 	    + fn1[c]*(fn2[ub]*mesq_uub
 		      +fn2[db]*mesq_ddb
-		      +fn2[sb]*mesq_ddb
-		      +fn2[bb]*mesq_ddb
+		      +fn2[sb]*mesq_ssb
+		      +fn2[bb]*mesq_bbr
 		      +fn2[u]*mesq_ubu
 		      +fn2[d]*mesq_dbd
-		      +fn2[s]*mesq_dbd
-		      +fn2[b]*mesq_dbd)
+		      +fn2[s]*mesq_sbs
+		      +fn2[b]*mesq_brb)
 	    + fn1[b]*(fn2[ub]*mesq_uub
 		      +fn2[db]*mesq_ddb
-		      +fn2[sb]*mesq_ddb
-		      +fn2[cb]*mesq_uub
+		      +fn2[sb]*mesq_ssb
+		      +fn2[cb]*mesq_ccb
 		      +fn2[u]*mesq_ubu
 		      +fn2[d]*mesq_dbd
-		      +fn2[s]*mesq_dbd
-		      +fn2[c]*mesq_ubu)
+		      +fn2[s]*mesq_sbs
+		      +fn2[c]*mesq_cbc)
 	    + fn1[ub]*(fn2[db]*mesq_ddb
-		       +fn2[sb]*mesq_ddb
-		       +fn2[cb]*mesq_uub
-		       +fn2[bb]*mesq_ddb
+		       +fn2[sb]*mesq_ssb
+		       +fn2[cb]*mesq_ccb
+		       +fn2[bb]*mesq_bbr
 		       +fn2[d]*mesq_dbd
-		       +fn2[s]*mesq_dbd
-		       +fn2[c]*mesq_ubu
-		       +fn2[b]*mesq_dbd)
+		       +fn2[s]*mesq_sbs
+		       +fn2[c]*mesq_cbc
+		       +fn2[b]*mesq_brb)
 	    + fn1[db]*(fn2[ub]*mesq_uub
-		       +fn2[sb]*mesq_ddb
-		       +fn2[cb]*mesq_uub
-		       +fn2[bb]*mesq_ddb
+		       +fn2[sb]*mesq_ssb
+		       +fn2[cb]*mesq_ccb
+		       +fn2[bb]*mesq_bbr
 		       +fn2[u]*mesq_ubu
-		       +fn2[s]*mesq_dbd
-		       +fn2[c]*mesq_ubu
-		       +fn2[b]*mesq_dbd)
+		       +fn2[s]*mesq_sbs
+		       +fn2[c]*mesq_cbc
+		       +fn2[b]*mesq_brb)
 	    + fn1[sb]*(fn2[ub]*mesq_uub
 		       +fn2[db]*mesq_ddb
-		       +fn2[cb]*mesq_uub
-		       +fn2[bb]*mesq_ddb
+		       +fn2[cb]*mesq_ccb
+		       +fn2[bb]*mesq_bbr
 		       +fn2[u]*mesq_ubu
 		       +fn2[d]*mesq_dbd
-		       +fn2[c]*mesq_ubu
-		       +fn2[b]*mesq_dbd)
+		       +fn2[c]*mesq_cbc
+		       +fn2[b]*mesq_brb)
 	    + fn1[cb]*(fn2[ub]*mesq_uub
 		       +fn2[db]*mesq_ddb
-		       +fn2[sb]*mesq_ddb
-		       +fn2[bb]*mesq_ddb
+		       +fn2[sb]*mesq_ssb
+		       +fn2[bb]*mesq_bbr
 		       +fn2[u]*mesq_ubu
 		       +fn2[d]*mesq_dbd
-		       +fn2[s]*mesq_dbd
-		       +fn2[b]*mesq_dbd)
+		       +fn2[s]*mesq_sbs
+		       +fn2[b]*mesq_brb)
 	    + fn1[bb]*(fn2[ub]*mesq_uub
 		       +fn2[db]*mesq_ddb
-		       +fn2[sb]*mesq_ddb
-		       +fn2[cb]*mesq_uub
+		       +fn2[sb]*mesq_ssb
+		       +fn2[cb]*mesq_ccb
 		       +fn2[u]*mesq_ubu
 		       +fn2[d]*mesq_dbd
-		       +fn2[s]*mesq_dbd
-		       +fn2[c]*mesq_ubu);
+		       +fn2[s]*mesq_sbs
+		       +fn2[c]*mesq_cbc);
 
 	  QQBN_4 = fn2[u]*(fn1[d]*mesq_ddb
-			   +fn1[s]*mesq_ddb
-			   +fn1[c]*mesq_uub
-			   +fn1[b]*mesq_ddb
+			   +fn1[s]*mesq_ssb
+			   +fn1[c]*mesq_ccb
+			   +fn1[b]*mesq_bbr
 			   +fn1[db]*mesq_dbd
-			   +fn1[sb]*mesq_dbd
-			   +fn1[cb]*mesq_ubu
-			   +fn1[bb]*mesq_dbd)
+			   +fn1[sb]*mesq_sbs
+			   +fn1[cb]*mesq_cbc
+			   +fn1[bb]*mesq_brb)
 	    + fn2[d]* (fn1[u]*mesq_uub
-		       +fn1[s]*mesq_ddb
-		       +fn1[c]*mesq_uub
-		       +fn1[b]*mesq_ddb
+		       +fn1[s]*mesq_ssb
+		       +fn1[c]*mesq_ccb
+		       +fn1[b]*mesq_bbr
 		       +fn1[ub]*mesq_ubu
-		       +fn1[sb]*mesq_dbd
-		       +fn1[cb]*mesq_ubu
-		       +fn1[bb]*mesq_dbd)
+		       +fn1[sb]*mesq_sbs
+		       +fn1[cb]*mesq_cbc
+		       +fn1[bb]*mesq_brb)
 	    + fn2[s]* (fn1[u]*mesq_uub
 		       +fn1[d]*mesq_ddb
-		       +fn1[c]*mesq_uub
-		       +fn1[b]*mesq_ddb
+		       +fn1[c]*mesq_ccb
+		       +fn1[b]*mesq_bbr
 		       +fn1[ub]*mesq_ubu
 		       +fn1[db]*mesq_dbd
-		       +fn1[cb]*mesq_ubu
-		       +fn1[bb]*mesq_dbd)
+		       +fn1[cb]*mesq_cbc
+		       +fn1[bb]*mesq_brb)
 	    + fn2[c]* (fn1[u]*mesq_uub
 		       +fn1[d]*mesq_ddb
-		       +fn1[s]*mesq_ddb
-		       +fn1[b]*mesq_ddb
+		       +fn1[s]*mesq_ssb
+		       +fn1[b]*mesq_bbr
 		       +fn1[ub]*mesq_ubu
 		       +fn1[db]*mesq_dbd
-		       +fn1[sb]*mesq_dbd
-		       +fn1[bb]*mesq_dbd)
+		       +fn1[sb]*mesq_sbs
+		       +fn1[bb]*mesq_brb)
 	    + fn2[b]* (fn1[u]*mesq_uub
 		       +fn1[d]*mesq_ddb
-		       +fn1[s]*mesq_ddb
-		       +fn1[c]*mesq_uub
+		       +fn1[s]*mesq_ssb
+		       +fn1[c]*mesq_ccb
 		       +fn1[ub]*mesq_ubu
 		       +fn1[db]*mesq_dbd
-		       +fn1[sb]*mesq_dbd
-		       +fn1[cb]*mesq_ubu)
+		       +fn1[sb]*mesq_sbs
+		       +fn1[cb]*mesq_cbc)
 	    + fn2[ub]*(fn1[d]*mesq_ddb
-		       +fn1[s]*mesq_ddb
-		       +fn1[c]*mesq_uub
-		       +fn1[b]*mesq_ddb
+		       +fn1[s]*mesq_ssb
+		       +fn1[c]*mesq_ccb
+		       +fn1[b]*mesq_bbr
 		       +fn1[db]*mesq_dbd
-		       +fn1[sb]*mesq_dbd
-		       +fn1[cb]*mesq_ubu
-		       +fn1[bb]*mesq_dbd)
+		       +fn1[sb]*mesq_sbs
+		       +fn1[cb]*mesq_cbc
+		       +fn1[bb]*mesq_brb)
 	    + fn2[db]*(fn1[u]*mesq_uub
-		       +fn1[s]*mesq_ddb
-		       +fn1[c]*mesq_uub
-		       +fn1[b]*mesq_ddb
+		       +fn1[s]*mesq_ssb
+		       +fn1[c]*mesq_ccb
+		       +fn1[b]*mesq_bbr
 		       +fn1[ub]*mesq_ubu
-		       +fn1[sb]*mesq_dbd
-		       +fn1[cb]*mesq_ubu
-		       +fn1[bb]*mesq_dbd)
+		       +fn1[sb]*mesq_sbs
+		       +fn1[cb]*mesq_cbc
+		       +fn1[bb]*mesq_brb)
 	    + fn2[sb]*(fn1[u]*mesq_uub
 		       +fn1[d]*mesq_ddb
-		       +fn1[c]*mesq_uub
-		       +fn1[b]*mesq_ddb
+		       +fn1[c]*mesq_ccb
+		       +fn1[b]*mesq_bbr
 		       +fn1[ub]*mesq_ubu
 		       +fn1[db]*mesq_dbd
-		       +fn1[cb]*mesq_ubu
-		       +fn1[bb]*mesq_dbd)
+		       +fn1[cb]*mesq_cbc
+		       +fn1[bb]*mesq_brb)
 	    + fn2[cb]*(fn1[u]*mesq_uub
 		       +fn1[d]*mesq_ddb
-		       +fn1[s]*mesq_ddb
-		       +fn1[b]*mesq_ddb
+		       +fn1[s]*mesq_ssb
+		       +fn1[b]*mesq_bbr
 		       +fn1[ub]*mesq_ubu
 		       +fn1[db]*mesq_dbd
-		       +fn1[sb]*mesq_dbd
-		       +fn1[bb]*mesq_dbd)
+		       +fn1[sb]*mesq_sbs
+		       +fn1[bb]*mesq_brb)
 	    + fn2[bb]*(fn1[u]*mesq_uub
 		       +fn1[d]*mesq_ddb
-		       +fn1[s]*mesq_ddb
-		       +fn1[c]*mesq_uub
+		       +fn1[s]*mesq_ssb
+		       +fn1[c]*mesq_ccb
 		       +fn1[ub]*mesq_ubu
 		       +fn1[db]*mesq_dbd
-		       +fn1[sb]*mesq_dbd
-		       +fn1[cb]*mesq_ubu);
+		       +fn1[sb]*mesq_sbs
+		       +fn1[cb]*mesq_cbc);
 	}
     }
   if (opts.nproc == 1)
