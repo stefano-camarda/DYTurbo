@@ -2360,7 +2360,6 @@ c.....reference scale is factorization scale: muf2=muf**2
       double complex xlambda,aa1,all,alphasl,qq,t,xlt,bstar,b,blog
       double complex log1xlambda
       double complex nq2,aexp,aexpB,aa2
-      real*8 blim05
       integer flagrealcomplex,imod,iord
       COMMON/iorder/iord
       COMMON/aass/aass
@@ -2419,9 +2418,9 @@ c      blim=b0p*(1/q)*exp(1/(4*as*beta0))
 C Set a limit to avoid very large values of b (= very small scales ~1/b)
 !       blim=b0p*(1/q)*exp(1/(2*aass*beta0)) ! avoid Landau pole     
 !       write(*,*) "blim",blim
-       blim05=0.5d0
+      blim=0.5d0
 
-      if (flagrealcomplex.eq.0) bstar=b/sqrt(1+(b**2)/(blim05**2))
+      if (flagrealcomplex.eq.0) bstar=b/sqrt(1+(b**2)/(blim**2))
       if (imod.eq.1) blog=log( (q*bstar/b0p)**2 + 1) !modified sudakov
       if (imod.eq.0) blog= log( (q*bstar/b0p)**2 )    !normal sudakov
 
