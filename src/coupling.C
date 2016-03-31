@@ -76,7 +76,8 @@ void coupling::init()
       //Effective value of the weak mixing angle
       xw = opts.xw;
       //!!!!! Check this value, should use  1.-pow(wmass/zmass,2) instead of xw?
-      aemmz = sqrt(2)*Gf*pow(wmass,2)*xw/M_PI;
+      //      aemmz = sqrt(2)*Gf*pow(wmass,2)*xw/M_PI;
+      aemmz = sqrt(2)*Gf*pow(wmass,2)*(1.-pow(wmass/zmass,2))/M_PI;
     }
 
 
