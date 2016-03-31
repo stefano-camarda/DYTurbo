@@ -189,6 +189,9 @@ void mellinint::pdf_mesq_expy(int i1, int i2, int sign)
 	     + mesq_ubu + mesq_cbc
 	     + mesq_dbd + mesq_sbs + mesq_brb);
             
+	  //I suspect a mistake here: there are different costh couplings for u-ubar and ubar-u,
+	  //the contribution u u -> ub u and u u -> u ub should be separated (need to split hqq_1 and hqq_2)
+	  
 	  QQBN_2 = fn1[u]*fn2[u]*mesq_uub //fn1[u]*fn2[u]*mesq_ubu
 	    +fn1[c]*fn2[c]*mesq_ccb
 	    +fn1[d]*fn2[d]*mesq_ddb
