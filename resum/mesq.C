@@ -74,6 +74,7 @@ void mesq::init()
 
   //Initialize constants
   fac=1./9./M_PI*gevfb;
+
   //Z couplings
   fLpfR = pow(fLZ,2)+pow(fRZ,2);
   fLmfR = pow(fLZ,2)-pow(fRZ,2);
@@ -81,14 +82,16 @@ void mesq::init()
   ugLmgR = pow(gLZu,2)-pow(gRZu,2);
   dgLpgR = pow(gLZd,2)+pow(gRZd,2);
   dgLmgR = pow(gLZd,2)-pow(gRZd,2);
+
   //W coupling
   gLWfLW = pow(gLW,2)*pow(fLW,2)/16.;
+
   //gamma* coupling
   aem2pi = 2.*M_PI*coupling::aemmz;
   aem2pi2 = pow(aem2pi,2);
 
+  //allocate memory
   mesqij_expy = new complex <double> [mellinint::mdim*mellinint::mdim*2*12];
-  //  mesqij = double* malloc(mellinint::mdim*mellinint::mdim);
 
   q2 = 0;
   propZ = 0;
@@ -194,22 +197,6 @@ void mesq::setmesq(T one, T costh1, T costh2)
 {
   T omcosth2 = one - 2.*costh1 + costh2;
   T opcosth2 = one + 2.*costh1 + costh2;
-  if (opts.nproc == 3 && !opts.useGamma) //Z 
-    {
-      mesqij[0]=fac*propZ*(ugLpgR*fLpfR*(one + costh2)-ugLmgR*fLmfR*(2.*costh1));
-      mesqij[6]=mesqij[0];
-	    
-      mesqij[1]=fac*propZ*(ugLpgR*fLpfR*(one + costh2)+ugLmgR*fLmfR*(2.*costh1));
-      mesqij[7]=mesqij[1];
-
-      mesqij[2]=fac*propZ*(dgLpgR*fLpfR*(one + costh2)-dgLmgR*fLmfR*(2.*costh1));
-      mesqij[4]=mesqij[2];
-      mesqij[8]=mesqij[2];
-
-      mesqij[3]=fac*propZ*(dgLpgR*fLpfR*(one + costh2)+dgLmgR*fLmfR*(2.*costh1));
-      mesqij[5]=mesqij[3];
-      mesqij[9]=mesqij[3];
-    }
   if (opts.nproc == 1) //W+ 
     {
       mesqij[0]=fac*propW*gLWfLW*pow(cabib_.Vud_,2)*omcosth2;
@@ -239,6 +226,22 @@ void mesq::setmesq(T one, T costh1, T costh2)
       mesqij[9]=fac*propW*gLWfLW*pow(cabib_.Vcd_,2)*opcosth2;
       mesqij[10]=fac*propW*gLWfLW*pow(cabib_.Vcb_,2)*omcosth2;
       mesqij[11]=fac*propW*gLWfLW*pow(cabib_.Vcb_,2)*opcosth2;
+    }
+  if (opts.nproc == 3 && !opts.useGamma) //Z 
+    {
+      mesqij[0]=fac*propZ*(ugLpgR*fLpfR*(one + costh2)-ugLmgR*fLmfR*(2.*costh1)); //u-ubar
+      mesqij[6]=mesqij[0]; //c-cbar
+	    
+      mesqij[1]=fac*propZ*(ugLpgR*fLpfR*(one + costh2)+ugLmgR*fLmfR*(2.*costh1)); //ubar-u
+      mesqij[7]=mesqij[1]; //cbar-c
+
+      mesqij[2]=fac*propZ*(dgLpgR*fLpfR*(one + costh2)-dgLmgR*fLmfR*(2.*costh1)); //d-dbar
+      mesqij[4]=mesqij[2]; //s-sbar
+      mesqij[8]=mesqij[2]; //b-bbar
+
+      mesqij[3]=fac*propZ*(dgLpgR*fLpfR*(one + costh2)+dgLmgR*fLmfR*(2.*costh1)); //dbar-d
+      mesqij[5]=mesqij[3]; //sbar-s
+      mesqij[9]=mesqij[3]; //bbar-b
     }
   if (opts.nproc == 3 && opts.useGamma) // Z/gamma*
     {
