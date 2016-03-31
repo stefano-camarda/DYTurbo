@@ -91,6 +91,14 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
   mur2=pow(mur,2);
   muf2=pow(muf,2);
 
+  //squared resummation scale (used for the evolution)
+  double q2s=q2/pow(opts.a_param,2);
+
+  //alphas at various scales (alphas convention is alphas/4/pi)
+  alpqfac=LHAPDF::alphasPDF(muf)/4./M_PI;
+  alpqren=LHAPDF::alphasPDF(mur)/4./M_PI;
+  alpqres=LHAPDF::alphasPDF(sqrt(q2s))/4./M_PI;
+
   //alpqr is alphas at the renormalization scale
   if (opts_.approxpdf_ == 1)
     {
@@ -99,12 +107,9 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
       alpqr=dyalphas_mcfm_(scale,couple_.amz_,nloop)/4./M_PI;
     }
   else
-    alpqr=LHAPDF::alphasPDF(mur)/4./M_PI;
+    alpqr=alpqren;
 
-  //squared of resummation scale (used for the evolution)       
-  double q2s=q2/pow(opts.a_param,2);
-  //...  COUPLING CONSTANTS AT INPUT SCALE = ALPHAS/4/PI
-  //     ALPQF = ALPHA AT RESUMMATION SCALE (used to start evolution)
+  //alpqf is alphas at the resummation scale. It is used as starting scale for the PDF evolution
   if (opts_.approxpdf_ == 1)
     {
       int nloop = 3;
@@ -112,30 +117,27 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
       alpqf=dyalphas_mcfm_(scale,couple_.amz_,nloop)/4./M_PI;
     }
   else
-    alpqf=LHAPDF::alphasPDF(sqrt(q2s))/4./M_PI;
-
-  //scales
-  alpqfac=LHAPDF::alphasPDF(muf)/4./M_PI;
-  alpqren=LHAPDF::alphasPDF(mur)/4./M_PI;
-  alpqres=LHAPDF::alphasPDF(sqrt(q2s))/4./M_PI;
-
-  
-  //aaas is alphas/pi
-  aass = alpqr*4.;
+    alpqf=alpqres;
 
   /***************************************************/
-  //set values in the common block for the sudakov
+  //set values in the common blocks for the sudakov
+
+  //aaas is alphas/pi at renormalization scale
+  aass = alpqr*4.;
   aass_.aass_ = aass; 
   double q = m;
-  blimit_.rblim_=a_param_.b0p_*(1./q)*exp(1./(2.*aass*resconst::beta0)); // avoid Landau pole     
-  if (q2 > 2.2*mur2) //AVOID LARGE VALE OF b IN f2(y) WHEN q2>mur2 
-    blimit_.rblim_ = a_param_.b0p_*(1./q)*exp(1./(2.*aass*resconst::beta0))*sqrt(mur2/q2);
+  double blim;
+  if (q2 > 2.2*mur2) //avoid large values of b in f2(y) when q2>mur2 
+    blim = a_param_.b0p_*(1./q)*exp(1./(2.*aass*resconst::beta0))*sqrt(mur2/q2);
+  else
+    blim = a_param_.b0p_*(1./q)*exp(1./(2.*aass*resconst::beta0)); // avoid Landau pole
 
-  blimit_.cblim_= fcx(a_param_.b0p_*(1./q)*exp(1./(2.*aass*resconst::beta0)));
-  if(q2 > 2.2*mur2)
-    blimit_.cblim_ = fcx(a_param_.b0p_*(1./q)*exp(1./(2.*aass*resconst::beta0))*sqrt(mur2/q2));
+  blimit_.rblim_ = blim;
+  blimit_.cblim_ = fcx(blim);
 
-  //common block for scales (in the sudakov)
+  //  cout << q << "  " << blimit_.rblim_ << endl;
+
+  //fill in common block for scales (used in the sudakov)
   scaleh_.qt_ = _qt;
   scaleh_.qt2_ = _qt*_qt;
   scaleh_.xtau_ = 0.;
@@ -190,6 +192,7 @@ double resint::bintegral(double qt)
   // Compute integral using double exponential quadratures for oscillatory functions (intde2.c)
   double res, err;
   intdeo(besselint::bint, 0.0, qt, aw, &res, &err);
-  //  cout << "dequad result of inverse bessel transform  " << res << "  " << err << endl;
+  //cout << "dequad result of inverse bessel transform  " << setprecision(16) << res << " +- " << err/res*100 << "%" << endl;
+  //cout.precision(6); cout.unsetf(ios_base::floatfield);
   return res;
 }
