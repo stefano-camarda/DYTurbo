@@ -21,29 +21,29 @@ void coupling::init()
 {
   //Set up all the couplings used in MCFM
 
-  ewcharge_.Q_[MAXNF-5] = +0.333333333333333;
-  ewcharge_.Q_[MAXNF-4] = -0.666666666666667;
-  ewcharge_.Q_[MAXNF-3] = +0.333333333333333;
-  ewcharge_.Q_[MAXNF-2] = -0.666666666666667;
-  ewcharge_.Q_[MAXNF-1] = +0.333333333333333;
+  ewcharge_.Q_[MAXNF-5] = +0.333333333333333 * opts.Zbb;
+  ewcharge_.Q_[MAXNF-4] = -0.666666666666667 * opts.Zcc;
+  ewcharge_.Q_[MAXNF-3] = +0.333333333333333 * opts.Zss;
+  ewcharge_.Q_[MAXNF-2] = -0.666666666666667 * opts.Zuu;
+  ewcharge_.Q_[MAXNF-1] = +0.333333333333333 * opts.Zdd;
   ewcharge_.Q_[MAXNF]   =  0.	       ;
-  ewcharge_.Q_[MAXNF+1] = -0.333333333333333;
-  ewcharge_.Q_[MAXNF+2] = +0.666666666666667;
-  ewcharge_.Q_[MAXNF+3] = -0.333333333333333;
-  ewcharge_.Q_[MAXNF+4] = +0.666666666666667;
-  ewcharge_.Q_[MAXNF+5] = -0.333333333333333;
+  ewcharge_.Q_[MAXNF+1] = -0.333333333333333 * opts.Zdd;
+  ewcharge_.Q_[MAXNF+2] = +0.666666666666667 * opts.Zuu;
+  ewcharge_.Q_[MAXNF+3] = -0.333333333333333 * opts.Zss;
+  ewcharge_.Q_[MAXNF+4] = +0.666666666666667 * opts.Zcc;
+  ewcharge_.Q_[MAXNF+5] = -0.333333333333333 * opts.Zbb;
 
-  ewcharge_.tau_[MAXNF-5] = 1.;
-  ewcharge_.tau_[MAXNF-4] = -1.;
-  ewcharge_.tau_[MAXNF-3] = 1.;
-  ewcharge_.tau_[MAXNF-2] = -1.;
-  ewcharge_.tau_[MAXNF-1] = 1.;
-  ewcharge_.tau_[MAXNF]   = 0.;
-  ewcharge_.tau_[MAXNF+1] = -1.;
-  ewcharge_.tau_[MAXNF+2] = 1.;
-  ewcharge_.tau_[MAXNF+3] = -1.;
-  ewcharge_.tau_[MAXNF+4] = 1.;
-  ewcharge_.tau_[MAXNF+5] = -1.;
+  ewcharge_.tau_[MAXNF-5] =  1. * opts.Zbb;
+  ewcharge_.tau_[MAXNF-4] = -1. * opts.Zcc;
+  ewcharge_.tau_[MAXNF-3] =  1. * opts.Zss;
+  ewcharge_.tau_[MAXNF-2] = -1. * opts.Zuu;
+  ewcharge_.tau_[MAXNF-1] =  1. * opts.Zdd;
+  ewcharge_.tau_[MAXNF]   =  0.           ;
+  ewcharge_.tau_[MAXNF+1] = -1. * opts.Zdd;
+  ewcharge_.tau_[MAXNF+2] =  1. * opts.Zuu;
+  ewcharge_.tau_[MAXNF+3] = -1. * opts.Zss;
+  ewcharge_.tau_[MAXNF+4] =  1. * opts.Zcc;
+  ewcharge_.tau_[MAXNF+5] = -1. * opts.Zbb;
 
 
   //Gmu scheme, inputs: Gf, MZ, MW
@@ -130,7 +130,7 @@ void coupling::init()
   ewcouple_.gwsq_= 4 * M_PI * aemmz/xw; //= 4*sqrt(2)*Gf*pow(wmass,2);
   ewcouple_.gw_=sqrt(ewcouple_.gwsq_);
 
-  //photon coupling
+  //photon coupling (used also for Z)
   ewcouple_.esq_= ewcouple_.gwsq_* xw; //= 4 * M_PI * aemmz;
 
   //calculate the couplings as given in Kunszt and Gunion
@@ -146,6 +146,7 @@ void coupling::init()
   zcouple_.le_=(-1.-2.*(-1.)*xw)/zcouple_.sin2w_;
   zcouple_.re_=(-2.*(-1.)*xw)/zcouple_.sin2w_;
 
+  //are ln and rn ever used?
   zcouple_.ln_=(+1.-2.*(+0.)*xw)/zcouple_.sin2w_;
   zcouple_.rn_=0.;
 

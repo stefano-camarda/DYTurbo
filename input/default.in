@@ -36,6 +36,13 @@ Vcd = 0.2252
 Vcs = 0.97344
 Vcb = 0.0412
 
+# Z/gamma* coupling to quarks
+Zuu = 1.0
+Zdd = 1.0
+Zss = 1.0
+Zcc = 1.0
+Zbb = 1.0
+
 # Z
 # include virtual photon
 useGamma = false

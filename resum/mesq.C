@@ -20,6 +20,10 @@ double mesq::gLZu;
 double mesq::gLZd;
 double mesq::gRZu;
 double mesq::gRZd;
+
+double mesq::gLZ[MAXNF];
+double mesq::gRZ[MAXNF];
+
 double mesq::fLZ;
 double mesq::fRZ;
 double mesq::fLpfR;
@@ -28,6 +32,10 @@ double mesq::ugLpgR;
 double mesq::ugLmgR;
 double mesq::dgLpgR;
 double mesq::dgLmgR;
+
+double mesq::gLpgR[MAXNF];
+double mesq::gLmgR[MAXNF];
+
 //W coupling
 double mesq::mW2;
 double mesq::wW2;
@@ -66,6 +74,13 @@ void mesq::init()
   gLZd=gZ*(-1./2.-eeqd*coupling::xw);
   gRZu=-gZ*eequ*coupling::xw;
   gRZd=-gZ*eeqd*coupling::xw;
+
+  for (int j = 0; j < MAXNF; j++)
+    {
+      gLZ[j]=gZ*(ewcharge_.tau_[j+MAXNF+1]*1./2.-ewcharge_.Q_[j+MAXNF+1]*coupling::xw);
+      gRZ[j]=-gZ*ewcharge_.Q_[j+MAXNF+1]*coupling::xw;
+    }
+
   fLZ=gZ*(-1./2.+coupling::xw);
   fRZ=gZ*coupling::xw;
 
@@ -82,6 +97,12 @@ void mesq::init()
   ugLmgR = pow(gLZu,2)-pow(gRZu,2);
   dgLpgR = pow(gLZd,2)+pow(gRZd,2);
   dgLmgR = pow(gLZd,2)-pow(gRZd,2);
+
+  for (int j = 0; j < MAXNF; j++)
+    {
+      gLpgR[j] = pow(gLZ[j],2)+pow(gRZ[j],2);
+      gLmgR[j] = pow(gLZ[j],2)-pow(gRZ[j],2);
+    }
 
   //W coupling
   gLWfLW = pow(gLW,2)*pow(fLW,2)/16.;
@@ -229,6 +250,7 @@ void mesq::setmesq(T one, T costh1, T costh2)
     }
   if (opts.nproc == 3 && !opts.useGamma) //Z 
     {
+      /*
       mesqij[0]=fac*propZ*(ugLpgR*fLpfR*(one + costh2)-ugLmgR*fLmfR*(2.*costh1)); //u-ubar
       mesqij[6]=mesqij[0]; //c-cbar
 	    
@@ -242,6 +264,22 @@ void mesq::setmesq(T one, T costh1, T costh2)
       mesqij[3]=fac*propZ*(dgLpgR*fLpfR*(one + costh2)+dgLmgR*fLmfR*(2.*costh1)); //dbar-d
       mesqij[5]=mesqij[3]; //sbar-s
       mesqij[9]=mesqij[3]; //bbar-b
+      */
+      //0 1 2 3 4
+      //d u s c b
+      mesqij[0]=fac*propZ*(gLpgR[1]*fLpfR*(one + costh2)-gLmgR[1]*fLmfR*(2.*costh1)); //u-ubar
+      mesqij[6]=fac*propZ*(gLpgR[3]*fLpfR*(one + costh2)-gLmgR[3]*fLmfR*(2.*costh1)); //c-cbar
+	    
+      mesqij[1]=fac*propZ*(gLpgR[1]*fLpfR*(one + costh2)+gLmgR[1]*fLmfR*(2.*costh1)); //ubar-u
+      mesqij[7]=fac*propZ*(gLpgR[3]*fLpfR*(one + costh2)+gLmgR[3]*fLmfR*(2.*costh1)); //cbar-c
+
+      mesqij[2]=fac*propZ*(gLpgR[0]*fLpfR*(one + costh2)-gLmgR[0]*fLmfR*(2.*costh1)); //d-dbar
+      mesqij[4]=fac*propZ*(gLpgR[2]*fLpfR*(one + costh2)-gLmgR[2]*fLmfR*(2.*costh1)); //s-sbar
+      mesqij[8]=fac*propZ*(gLpgR[4]*fLpfR*(one + costh2)-gLmgR[4]*fLmfR*(2.*costh1)); //b-bbar
+
+      mesqij[3]=fac*propZ*(gLpgR[0]*fLpfR*(one + costh2)+gLmgR[0]*fLmfR*(2.*costh1)); //dbar-d
+      mesqij[5]=fac*propZ*(gLpgR[2]*fLpfR*(one + costh2)+gLmgR[2]*fLmfR*(2.*costh1)); //sbar-s
+      mesqij[9]=fac*propZ*(gLpgR[4]*fLpfR*(one + costh2)+gLmgR[4]*fLmfR*(2.*costh1)); //bbar-b
     }
   if (opts.nproc == 3 && opts.useGamma) // Z/gamma*
     {
