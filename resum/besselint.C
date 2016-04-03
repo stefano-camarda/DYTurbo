@@ -18,15 +18,6 @@ void besselint_(double &b, double &qt, double &q2)
 
 double besselint::bint(double b)
 {
-  //      double complex loga,logmuf2q2,logq2muf2,logq2mur2
-  //      common/clogs/loga,logmuf2q2,logq2muf2,logq2mur2
-      
-  //      double complex aexp,aexpB
-  //      COMMON/exponent/aexp,aexpB
-
-  //      double precision aass
-  //      COMMON/aass/aass
-
   double qt = resint::_qt;
   double q2 = pow(resint::_m,2);
   
@@ -38,30 +29,29 @@ double besselint::bint(double b)
   fcomplex fscale2 = fcx(scale2);
   complex <double> bb = b;
 
-  //     USES BESSEL FUNCTION SINCE INTEGRATION IS DONE ALONG THE REAL AXIS
-  //     ********************
-  //     qt and b dependence (bessel function) (jacobian?)
+  //The integration from b to qt space is done with the bstar prescription (real axis in the b space), and use the bessel function
+  //The (complex) integration in the minimal prescription would require hankel functions
+  //********************
+  //qt and b dependence (bessel function) (is xj0 a jacobian?)
   double qtb = qt*b;
   double xj0= 2.*fort_besj0_(qtb);
-  //     ********************
+  //********************
 
-  //     Sudakov is only mass and b dependent
+  //The Sudakov is mass and b dependent
   fcomplex fbb = fcx(bb);
   complex <double> sudak=cx(s_(fbb));
   if (sudak == 0.)
     return 0.;
-  //     ********************
 
-  //     ********************
-  //     qt and mass dependence
+  //********************
+  //b, qt and mass dependence
   complex <double> factorfin = bb*xj0*sudak;
-  //     ********************
+  //********************
 
   //**************************************
+  //b-dependence
   // Set scales for evolution in pdfevol
-  //     b-dependence
-  //...  alphasl gives the LL/NLL evolution of alpha from Qres=Q/a_param to  q2=b0^2/b^2
-  double q2s = q2/pow(opts.a_param,2);                   //resummation scale
+  //alphasl gives the LL/NLL evolution of alpha from Qres=Q/a_param to  q2=b0^2/b^2
 
   /********************************************/
   //pdfevol::alpqf is used as starting scale in pdfevol::evolution
@@ -86,7 +76,7 @@ double besselint::bint(double b)
   // SELECT ORDER FOR EVOLUTION LO/NLO
   pdfevol::alpr = alpqf * cx(alphasl_(fscale2))*(double)(opts.order-1);
   //force LO evolution
-  //  pdfevol::alpr = alpqf * cx(alphasl_(fscale2))*(double)(0);
+  //pdfevol::alpr = alpqf * cx(alphasl_(fscale2))*(double)(0);
   //cout << b << "  " << scale2 << "  " << pdfevol::SALP << "  " << log(1./cx(alphasl_(fscale2))) << "  " << pdfevol::alpr << "  " << alpq <<  endl;
   //**************************************
 
@@ -95,10 +85,13 @@ double besselint::bint(double b)
   //the scales used in the evolution corresponds to SALP and alpr
   for (int i = 0; i < mellinint::mdim; i++)
     {
-      pdfevol::evolution (i, mesq::positive, 1);
-      pdfevol::evolution (i, mesq::positive, 2);
-      pdfevol::evolution (i, mesq::negative, 2);
-      //      cout << cx(creno_.cfx1_[i][5]) << endl;
+      //original dyres evolution
+      pdfevol::evolution (i);
+
+      //direct mellin inversion at each value of bscale ~ 1/b
+      //      pdfevol::calculate (i);
+
+      //      cout << cx(creno_.cfx1_[i][0]) << "  " << cx(creno_.cfx2p_[i][5]) << "  " <<  cx(creno_.cfx2m_[i][5]) << endl;
     }
   //**************************************
 
@@ -125,10 +118,10 @@ double besselint::bint(double b)
 	//     ccex(I1,I2) is rapidity and mass dependent
 	//     sigma_ij is costh and mass dependent, but becomes rapidity dependent after integration of the costh moments
 	//     The integrals are solved analitically when no cuts on the leptons are applied
-	pdfevol::evolve(i1,i2,mesq::positive);
+	pdfevol::retrieve(i1,i2,mesq::positive);
 	mellinint::pdf_mesq_expy(i1,i2,mesq::positive);
 	complex <double> int1 = mellinint::integrand(i1,i2,mesq::positive);
-	pdfevol::evolve(i1,i2,mesq::negative);
+	pdfevol::retrieve(i1,i2,mesq::negative);
 	mellinint::pdf_mesq_expy(i1,i2,mesq::negative);
 	complex <double> int2 = mellinint::integrand(i1,i2,mesq::negative);
 	//complex <double> FZ=-0.5*(real(int1)-real(int2));
@@ -143,6 +136,6 @@ double besselint::bint(double b)
       cout << fun << "  " << factorfin << endl;
       invres = 0;
     }
-  //cout << setprecision(16) << "C++ " << b << "  " << invres << "  " << fun << "  " << factorfin << endl;
+  //  cout << setprecision(16) << "C++ " << b << "  " << invres << "  " << fun << "  " << factorfin << endl;
   return invres;
 }
