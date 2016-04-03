@@ -15,6 +15,8 @@ namespace hcoefficients
   extern complex <double> *Hqg_2;
   extern complex <double> *Hqq_nnll;
   extern complex <double> *Hqq;
+  extern complex <double> *Hqq_1;
+  extern complex <double> *Hqq_2;
   extern complex <double> *Hqqp;
   extern complex <double> *Hqqp_1;
   extern complex <double> *Hqqp_2;

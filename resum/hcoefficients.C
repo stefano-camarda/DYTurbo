@@ -14,6 +14,8 @@ complex <double> *hcoefficients::Hqg_1;
 complex <double> *hcoefficients::Hqg_2;
 complex <double> *hcoefficients::Hqq_nnll;
 complex <double> *hcoefficients::Hqq;
+complex <double> *hcoefficients::Hqq_1;
+complex <double> *hcoefficients::Hqq_2;
 complex <double> *hcoefficients::Hqqp;
 complex <double> *hcoefficients::Hqqp_1;
 complex <double> *hcoefficients::Hqqp_2;
@@ -51,6 +53,8 @@ void hcoefficients::init()
   Hqg_2 = new complex <double> [mellinint::mdim*mellinint::mdim*2];
   Hqq_nnll = new complex <double> [mellinint::mdim*2];
   Hqq = new complex <double> [mellinint::mdim*mellinint::mdim*2];
+  Hqq_1 = new complex <double> [mellinint::mdim*mellinint::mdim*2];
+  Hqq_2 = new complex <double> [mellinint::mdim*mellinint::mdim*2];
   Hqqp = new complex <double> [mellinint::mdim*2];
   Hqqp_1 = new complex <double> [mellinint::mdim*mellinint::mdim*2];
   Hqqp_2 = new complex <double> [mellinint::mdim*mellinint::mdim*2];
@@ -93,10 +97,12 @@ void hcoefficients::calc(double aass, complex <double> logmuf2q2, complex <doubl
 	      -aass/2.*(anomalous::gamma1qq[anomalous::index(i1,0)]+anomalous::gamma1qq[anomalous::index(i2,sign)])*(logmuf2q2+2.*loga)
 	      +aass/2.*(-4.*loga)*(resconst::B1q+resconst::A1q*loga);
 	    // channels which do not contribute at NLL
-	    Hgg[index(i1,i2,sign)] = 0.;//                !  Q Q -> Qb Q  = Qb Qb -> Q Qb  
-	    Hqq[index(i1,i2,sign)] = 0.;//               !  qqp_1  means   Q' Q -> Qb Q  flavor in sigmaQQb determined by "second parton"
-	    Hqqp_1[index(i1,i2,sign)] = 0.;//           !  qqp_2  means   Q Q' -> Q Qb  flavor in sigmaQQb determined by "first parton"
-	    Hqqp_2[index(i1,i2,sign)] = 0.;//
+	    Hgg[index(i1,i2,sign)] = 0.;//
+	    Hqq[index(i1,i2,sign)] = 0.;//              !  Q Q -> Qb Q  = Qb Qb -> Q Qb
+	    Hqq_1[index(i1,i2,sign)] = 0.;//
+	    Hqq_2[index(i1,i2,sign)] = 0.;//
+	    Hqqp_1[index(i1,i2,sign)] = 0.;//           !  qqp_1  means   Q' Q -> Qb Q  flavor in sigmaQQb determined by "second parton"
+	    Hqqp_2[index(i1,i2,sign)] = 0.;//		!  qqp_2  means   Q Q' -> Q Qb  flavor in sigmaQQb determined by "first parton" 
 	  }
 
   if (opts.order == 2)
@@ -110,6 +116,7 @@ void hcoefficients::calc(double aass, complex <double> logmuf2q2, complex <doubl
 	  {
 	    H1stqg[index(i,sign)] = anomalous::C1QG[anomalous::index(i,sign)]
 	      -anomalous::gamma1qg[anomalous::index(i,sign)]*(logmuf2q2+2.*loga);
+
 
 	    //  qq  means   Qb Qb -> Qb Q =  Q Q -> Q Qb
 	    H2stqq[index(i,sign)]= anomalous::C2NSqqbM[anomalous::index(i,sign)] + anomalous::C2SqqbM[anomalous::index(i,sign)];
@@ -246,31 +253,39 @@ void hcoefficients::calcb(double aass, complex <double> logmuf2q2, complex <doub
 	for (int i1 = 0; i1 < mellinint::mdim; i1++)
 	  for (int i2 = 0; i2 < mellinint::mdim; i2++)
 	    {
+	      int idx12 = index(i1,i2,sign);
+	      int idx1 = index(i1,mesq::positive);
+	      int idx2 = index(i2,sign);
+
 	      //QQb
-	      Hqqb[index(i1,i2,sign)] = (1.+aassh*H1stqqb[index(i1,i2,sign)]+aasshsq*H2stqqb[index(i1,i2,sign)])
-		*aexpqq[index(i1,0)]           //   !leg q
-		*aexpqq[index(i2,sign)];         // !leg qb
+	      Hqqb[idx12] = (1.+aassh*H1stqqb[idx12]+aasshsq*H2stqqb[idx12])
+		*aexpqq[idx1]           //   !leg q
+		*aexpqq[idx2];         // !leg qb
 
 		//  qg_1 means GQ initial state
-	      Hqg_1[index(i1,i2,sign)] = (aassh*H1stqg[index(i1,0)]+aasshsq*H2stqg_1[index(i1,i2,sign)])
+	      Hqg_1[idx12] = (aassh*H1stqg[idx1]+aasshsq*H2stqg_1[idx12])
 		*aexp
-		*aexpqg[index(i1,0)]
-		*aexpqq[index(i1,0)];
+		*aexpqg[idx1]
+		*aexpqq[idx1];
 
 	      //  qg_2 means QG initial state
-	      Hqg_2[index(i1,i2,sign)] = (aassh*H1stqg[index(i2,sign)]+aasshsq*H2stqg_2[index(i1,i2,sign)])
+	      Hqg_2[idx12] = (aassh*H1stqg[idx2]+aasshsq*H2stqg_2[idx12])
 		*aexp
-		*aexpqg[index(i2,sign)]
-		*aexpqq[index(i2,sign)];
+		*aexpqg[idx2]
+		*aexpqq[idx2];
 	      
 	      //  GG
-	      Hgg[index(i1,i2,sign)] = aasshsq*H2stgg[index(i1,i2,sign)]
-		*aexp*aexpqg[index(i1,0)]
-		*aexp*aexpqg[index(i2,sign)];
+	      Hgg[idx12] = aasshsq*H2stgg[idx12]
+		*aexp*aexpqg[idx1]
+		*aexp*aexpqg[idx2];
 
-	      Hqq[index(i1,i2,sign)] = (Hqq_nnll[index(i1,0)]+Hqq_nnll[index(i2,sign)])/2.;// Average QQ->QQb  and QbQb->QQb
-	      Hqqp_1[index(i1,i2,sign)] = Hqqp[index(i1,0)];// qqp_1  means   Q' Q -> Qb Q  flavor in sigmaQQb determined by "second parton"
-	      Hqqp_2[index(i1,i2,sign)] = Hqqp[index(i2,sign)];// qqp_2  means   Q Q' -> Q Qb  flavor in sigmaQQb determined by "first parton"
+	      Hqq[idx12] = (Hqq_nnll[idx1]+Hqq_nnll[idx2])/2.;// Average QQ->QQb  and QbQb->QQb
+
+	      Hqq_1[idx12] = Hqq_nnll[idx1];    // Q Q -> Qb Q and Qb Qb -> Q Qb (sigmaQQb determined by "second parton")
+	      Hqq_2[idx12] = Hqq_nnll[idx2]; // Q Q -> Q Qb and Qb Qb -> Qb Q (sigmaQQb determined by "first parton")
+	      
+	      Hqqp_1[idx12] = Hqqp[idx1];    // qqp_1  means   Q' Q -> Qb Q  flavor in sigmaQQb determined by "second parton"
+	      Hqqp_2[idx12] = Hqqp[idx2]; // qqp_2  means   Q Q' -> Q Qb  flavor in sigmaQQb determined by "first parton"
 	    }
     }
 }
