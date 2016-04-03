@@ -37,10 +37,12 @@ namespace mellinint
   extern complex<double> GGN;
   extern complex<double> QGN_1;
   extern complex<double> QGN_2;
-  extern complex<double> QQBN_1;
-  extern complex<double> QQBN_2;
-  extern complex<double> QQBN_3;
-  extern complex<double> QQBN_4;
+  extern complex<double> QQBN;
+  extern complex<double> QQN;
+  extern complex <double> QQN_1;
+  extern complex <double> QQN_2;
+  extern complex<double> QQPN_1;
+  extern complex<double> QQPN_2;
 }
 
 #endif

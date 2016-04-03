@@ -20,10 +20,12 @@ complex <double> mellinint::CCm;
 complex <double> mellinint::GGN;
 complex <double> mellinint::QGN_1;
 complex <double> mellinint::QGN_2;
-complex <double> mellinint::QQBN_1;
-complex <double> mellinint::QQBN_2;
-complex <double> mellinint::QQBN_3;
-complex <double> mellinint::QQBN_4;
+complex <double> mellinint::QQBN;
+complex <double> mellinint::QQN;
+complex <double> mellinint::QQN_1;
+complex <double> mellinint::QQN_2;
+complex <double> mellinint::QQPN_1;
+complex <double> mellinint::QQPN_2;
 
 int mellinint::mdim;
 
@@ -104,7 +106,7 @@ void mellinint::initgauss()
 //It is a function of z1 and z2 in Mellin space
 
 // The integrand of the inverse Mellin transform is composed of
-// A) parton luminosities in Mellin space: fn1 * fn2 -> GGN, QGN, QQBN which are functions of the quark flavours (i,j) and Mellin indices (i1, i2)
+// A) parton luminosities in Mellin space: fn1 * fn2 -> GGN, QGN, QQBN, QQN, QQPN which are functions of the quark flavours (i,j) and Mellin indices (i1, i2)
 // B) the EW born level squared amplitudes mesq::mesqij, which are functions of m, costh and quark flavours (i,j) (if integrated in costh, and in the presence of cuts on the leptons, the costh moments are functions of y, pt, m)
 // C) the x1^-z1 * x2^-z2 piece of the Mellin inverse transform, which depends explicitly on rapidity and on the Mellin indices (i1, i2)
 // D) the Wilson coefficients Hgg, Hqqb, etc.. which are functions of the Mellin indices (i1, i2)
@@ -120,10 +122,12 @@ void mellinint::pdf_mesq_expy(int i1, int i2, int sign)
   GGN=0;
   QGN_1=0;
   QGN_2=0;
-  QQBN_1=0;
-  QQBN_2=0;
-  QQBN_3=0;
-  QQBN_4=0;
+  QQBN=0;
+  QQN=0;
+  QQN_1=0;
+  QQN_2=0;
+  QQPN_1=0;
+  QQPN_2=0;
 
   complex<double>* fn1 = pdfevol::fn1;
   complex<double>* fn2 = pdfevol::fn2;
@@ -169,7 +173,7 @@ void mellinint::pdf_mesq_expy(int i1, int i2, int sign)
 		      +fn1[sb]*mesq_sbs
 		      +fn1[bb]*mesq_brb);
 
-      QQBN_1 = fn1[u]*fn2[ub]*mesq_uub
+      QQBN = fn1[u]*fn2[ub]*mesq_uub
 	+fn1[c]*fn2[cb]*mesq_ccb
 	+fn1[d]*fn2[db]*mesq_ddb
 	+fn1[s]*fn2[sb]*mesq_ssb
@@ -192,7 +196,7 @@ void mellinint::pdf_mesq_expy(int i1, int i2, int sign)
 	  //I suspect a mistake here: there are different costh couplings for u-ubar and ubar-u,
 	  //the contribution u u -> ub u and u u -> u ub should be separated (need to split hqq_1 and hqq_2)
 	  
-	  QQBN_2 = fn1[u]*fn2[u]*mesq_uub //fn1[u]*fn2[u]*mesq_ubu
+	  QQN = fn1[u]*fn2[u]*mesq_uub
 	    +fn1[c]*fn2[c]*mesq_ccb
 	    +fn1[d]*fn2[d]*mesq_ddb
 	    +fn1[s]*fn2[s]*mesq_ssb
@@ -203,7 +207,29 @@ void mellinint::pdf_mesq_expy(int i1, int i2, int sign)
 	    +fn1[sb]*fn2[sb]*mesq_sbs
 	    +fn1[bb]*fn2[bb]*mesq_brb;
 
-	  QQBN_3 = fn1[u]*(fn2[db]*mesq_ddb
+	  /*	  QQN_1 = fn1[u]*fn2[u]*mesq_ubu
+	    +fn1[c]*fn2[c]*mesq_cbc
+	    +fn1[d]*fn2[d]*mesq_dbd
+	    +fn1[s]*fn2[s]*mesq_sbs
+	    +fn1[b]*fn2[b]*mesq_brb
+	    +fn1[ub]*fn2[ub]*mesq_uub
+	    +fn1[cb]*fn2[cb]*mesq_ccb
+	    +fn1[db]*fn2[db]*mesq_ddb
+	    +fn1[sb]*fn2[sb]*mesq_ssb
+	    +fn1[bb]*fn2[bb]*mesq_bbr;
+	  
+	  QQN_2 = fn1[u]*fn2[u]*mesq_uub
+	    +fn1[c]*fn2[c]*mesq_ccb
+	    +fn1[d]*fn2[d]*mesq_ddb
+	    +fn1[s]*fn2[s]*mesq_ssb
+	    +fn1[b]*fn2[b]*mesq_bbr
+	    +fn1[ub]*fn2[ub]*mesq_ubu
+	    +fn1[cb]*fn2[cb]*mesq_cbc
+	    +fn1[db]*fn2[db]*mesq_dbd
+	    +fn1[sb]*fn2[sb]*mesq_sbs
+	    +fn1[bb]*fn2[bb]*mesq_brb;*/
+
+	  QQPN_1 = fn1[u]*(fn2[db]*mesq_ddb
 			   +fn2[sb]*mesq_ssb
 			   +fn2[cb]*mesq_ccb
 			   +fn2[bb]*mesq_bbr
@@ -284,7 +310,7 @@ void mellinint::pdf_mesq_expy(int i1, int i2, int sign)
 		       +fn2[s]*mesq_sbs
 		       +fn2[c]*mesq_cbc);
 
-	  QQBN_4 = fn2[u]*(fn1[d]*mesq_ddb
+	  QQPN_2 = fn2[u]*(fn1[d]*mesq_ddb
 			   +fn1[s]*mesq_ssb
 			   +fn1[c]*mesq_ccb
 			   +fn1[b]*mesq_bbr
@@ -410,7 +436,7 @@ void mellinint::pdf_mesq_expy(int i1, int i2, int sign)
 		      + fn1[bb]*mesq_bbu
 		      + fn1[bb]*mesq_bbc);
 
-      QQBN_1 = fn1[u]*fn2[db]*mesq_udb
+      QQBN = fn1[u]*fn2[db]*mesq_udb
 	+ fn1[u]*fn2[sb]*mesq_usb
 	+ fn1[u]*fn2[bb]*mesq_ubb
 	+ fn1[c]*fn2[db]*mesq_cdb
@@ -440,7 +466,7 @@ void mellinint::pdf_mesq_expy(int i1, int i2, int sign)
              +   mesq_bbu
 	     +   mesq_bbc);
 
-	  QQBN_2 = fn1[u]*fn2[d]*mesq_udb
+	  QQN = fn1[u]*fn2[d]*mesq_udb
 	    + fn1[u]*fn2[s]*mesq_usb
 	    + fn1[u]*fn2[b]*mesq_ubb
 	    + fn1[c]*fn2[d]*mesq_cdb
@@ -453,7 +479,33 @@ void mellinint::pdf_mesq_expy(int i1, int i2, int sign)
 	    + fn1[bb]*fn2[ub]*mesq_bbu
 	    + fn1[bb]*fn2[cb]*mesq_bbc;
 
-	  QQBN_3 =
+	  /*	  QQN_1 = fn1[ub]*fn2[db]*mesq_udb
+	    + fn1[ub]*fn2[sb]*mesq_usb
+	    + fn1[ub]*fn2[bb]*mesq_ubb
+	    + fn1[cb]*fn2[db]*mesq_cdb
+	    + fn1[cb]*fn2[sb]*mesq_csb
+	    + fn1[cb]*fn2[bb]*mesq_cbb
+	    + fn1[d]*fn2[u]*mesq_dbu
+	    + fn1[d]*fn2[c]*mesq_dbc
+	    + fn1[s]*fn2[u]*mesq_sbu
+	    + fn1[s]*fn2[c]*mesq_sbc
+	    + fn1[b]*fn2[u]*mesq_bbu
+	    + fn1[b]*fn2[c]*mesq_bbc;
+	  
+	  QQN_2 = fn1[u]*fn2[d]*mesq_udb
+	    + fn1[u]*fn2[s]*mesq_usb
+	    + fn1[u]*fn2[b]*mesq_ubb
+	    + fn1[c]*fn2[d]*mesq_cdb
+	    + fn1[c]*fn2[s]*mesq_csb
+	    + fn1[c]*fn2[b]*mesq_cbb
+	    + fn1[db]*fn2[ub]*mesq_dbu
+	    + fn1[db]*fn2[cb]*mesq_dbc
+	    + fn1[sb]*fn2[ub]*mesq_sbu
+	    + fn1[sb]*fn2[cb]*mesq_sbc
+	    + fn1[bb]*fn2[ub]*mesq_bbu
+	    + fn1[bb]*fn2[cb]*mesq_bbc;*/
+
+	  QQPN_1 =
 	    (fn1[u]+fn1[ub])*
 	    ( fn2[db]*mesq_cdb
 	      + fn2[sb]*mesq_csb
@@ -508,7 +560,7 @@ void mellinint::pdf_mesq_expy(int i1, int i2, int sign)
 	      + fn2[u]*mesq_sbu
 	      + fn2[c]*mesq_sbc);
 
-	  QQBN_4 = 
+	  QQPN_2 = 
 	    (fn2[u]+fn2[ub])*
             (fn1[u]*mesq_udb
 	     + fn1[u]*mesq_usb
@@ -608,7 +660,7 @@ void mellinint::pdf_mesq_expy(int i1, int i2, int sign)
 		      + fn1[b]*mesq_bub
 		      + fn1[b]*mesq_bcb);
 
-      QQBN_1 = fn1[ub]*fn2[d]*mesq_ubd
+      QQBN = fn1[ub]*fn2[d]*mesq_ubd
 	+ fn1[ub]*fn2[s]*mesq_ubs
 	+ fn1[ub]*fn2[b]*mesq_ubb
 	+ fn1[cb]*fn2[d]*mesq_cbd
@@ -637,7 +689,7 @@ void mellinint::pdf_mesq_expy(int i1, int i2, int sign)
              +   mesq_bub
 	     +   mesq_bcb);
 
-	  QQBN_2 = fn1[ub]*fn2[db]*mesq_ubd
+	  QQN = fn1[ub]*fn2[db]*mesq_ubd
 	    + fn1[ub]*fn2[sb]*mesq_ubs
 	    + fn1[ub]*fn2[bb]*mesq_ubb
 	    + fn1[cb]*fn2[db]*mesq_cbd
@@ -650,7 +702,33 @@ void mellinint::pdf_mesq_expy(int i1, int i2, int sign)
 	    + fn1[b]*fn2[u]*mesq_bub
 	    + fn1[b]*fn2[c]*mesq_bcb;
 
-	  QQBN_3 =
+	  /*	  QQN_1 = fn1[u]*fn2[d]*mesq_ubd
+	    + fn1[u]*fn2[s]*mesq_ubs
+	    + fn1[u]*fn2[b]*mesq_ubb
+	    + fn1[c]*fn2[d]*mesq_cbd
+	    + fn1[c]*fn2[s]*mesq_cbs
+	    + fn1[c]*fn2[b]*mesq_cbb
+	    + fn1[db]*fn2[ub]*mesq_dub
+	    + fn1[db]*fn2[cb]*mesq_dcb
+	    + fn1[sb]*fn2[ub]*mesq_sub
+	    + fn1[sb]*fn2[cb]*mesq_scb
+	    + fn1[bb]*fn2[ub]*mesq_bub
+	    + fn1[bb]*fn2[cb]*mesq_bcb;
+	  
+	  QQN_2 = fn1[ub]*fn2[db]*mesq_ubd
+	    + fn1[ub]*fn2[sb]*mesq_ubs
+	    + fn1[ub]*fn2[bb]*mesq_ubb
+	    + fn1[cb]*fn2[db]*mesq_cbd
+	    + fn1[cb]*fn2[sb]*mesq_cbs
+	    + fn1[cb]*fn2[bb]*mesq_cbb
+	    + fn1[d]*fn2[u]*mesq_dub
+	    + fn1[d]*fn2[c]*mesq_dcb
+	    + fn1[s]*fn2[u]*mesq_sub
+	    + fn1[s]*fn2[c]*mesq_scb
+	    + fn1[b]*fn2[u]*mesq_bub
+	    + fn1[b]*fn2[c]*mesq_bcb;*/
+
+	  QQPN_1 =
 	    (fn1[ub]+fn1[u])*
 	    ( fn2[d]*mesq_cbd
 	      + fn2[s]*mesq_cbs
@@ -705,7 +783,7 @@ void mellinint::pdf_mesq_expy(int i1, int i2, int sign)
 	      + fn2[ub]*mesq_sub
 	      + fn2[cb]*mesq_scb);
 
-	  QQBN_4 = 
+	  QQPN_2 = 
 	    (fn2[ub]+fn2[u])*
             (fn1[ub]*mesq_ubd
 	     + fn1[ub]*mesq_ubs
@@ -767,6 +845,17 @@ complex <double> mellinint::integrand(int i1, int i2, int sign)
 {
   int i = hcoefficients::index(i1,i2,sign);
   //cout << "C++" << i1 << "  " << i2 << "  " << GGN << "  " << hcoefficients::Hgg[i] << endl;
-  return GGN*hcoefficients::Hgg[i] + QGN_1*hcoefficients::Hqg_1[i] + QGN_2*hcoefficients::Hqg_2[i]
-    + QQBN_1*hcoefficients::Hqqb[i] + QQBN_2*hcoefficients::Hqq[i] + QQBN_3*hcoefficients::Hqqp_1[i] + QQBN_4*hcoefficients::Hqqp_2[i];
+
+  return
+    //contribution starting at LL
+    QQBN*hcoefficients::Hqqb[i]
+
+    //contribution starting at NLL
+    + QGN_1*hcoefficients::Hqg_1[i] + QGN_2*hcoefficients::Hqg_2[i]
+
+    //contributions starting at NNLL
+    + GGN*hcoefficients::Hgg[i]
+    + QQN*hcoefficients::Hqq[i]
+    //    + QQN_1*hcoefficients::Hqq_1[i] + QQN_2*hcoefficients::Hqq_2[i] //I believe this is more correct, since it accounts for which leg undergoes the q -> qb or qb -> q transformation
+    + QQPN_1*hcoefficients::Hqqp_1[i] + QQPN_2*hcoefficients::Hqqp_2[i];
 }
