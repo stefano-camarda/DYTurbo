@@ -38,6 +38,11 @@ void settings::readfromfile(const string fname){
     Vcd            = in.GetNumber ( "Vcd"        );
     Vcs            = in.GetNumber ( "Vcs"        );
     Vcb            = in.GetNumber ( "Vcb"        );
+    Zuu            = in.GetNumber ( "Zuu"        );
+    Zdd            = in.GetNumber ( "Zdd"        );
+    Zcc            = in.GetNumber ( "Zcc"        );
+    Zss            = in.GetNumber ( "Zss"        );
+    Zbb            = in.GetNumber ( "Zbb"        );
     ylow           = in.GetNumber ( "ylow"            ); //2
     yhigh          = in.GetNumber ( "yhigh"           ); //2.4
     mlow           = in.GetNumber ( "mlow"            ); //66.
@@ -233,6 +238,11 @@ void settings::dumpAll(){
 	dumpD( "Vcd",        Vcd);
 	dumpD( "Vcs",        Vcs);
 	dumpD( "Vcb",        Vcb);
+	dumpD( "Zuu",        Zuu);
+	dumpD( "Zdd",        Zdd);
+	dumpD( "Zss",        Zss);
+	dumpD( "Zcc",        Zcc);
+	dumpD( "Zbb",        Zbb);
         dumpD("ylow               ", ylow                );
         dumpD("yhigh              ", yhigh               );
         dumpD("mlow               ", mlow                );

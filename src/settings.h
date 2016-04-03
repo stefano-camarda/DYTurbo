@@ -78,6 +78,9 @@ public:
   double Vud, Vus, Vub;
   double Vcd, Vcs, Vcb;
 
+  //Z/gamma* coupling
+  double Zuu, Zdd, Zss, Zcc, Zbb;
+
   //resonance mass and width (used for breit wigner unweighting)
   double rmass, rwidth;
 
