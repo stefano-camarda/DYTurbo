@@ -5,43 +5,17 @@
 #include "resconst.h"
 
 #include <iostream>
+#include <complex>
 
 //PDFs mellin moments at the factorisation scale
-//Beam 1
-complex <double> *pdfevol::UVP1;
-complex <double> *pdfevol::DVP1;
-complex <double> *pdfevol::USP1;
-complex <double> *pdfevol::DSP1;
-complex <double> *pdfevol::SSP1;
-complex <double> *pdfevol::GLP1;
-complex <double> *pdfevol::CHP1;
-complex <double> *pdfevol::BOP1;
-complex <double> *pdfevol::UVM1;
-complex <double> *pdfevol::DVM1;
-complex <double> *pdfevol::USM1;
-complex <double> *pdfevol::DSM1;
-complex <double> *pdfevol::SSM1;
-complex <double> *pdfevol::GLM1;
-complex <double> *pdfevol::CHM1;
-complex <double> *pdfevol::BOM1;
-
-//Beam 2
-complex <double> *pdfevol::UVP2;
-complex <double> *pdfevol::DVP2;
-complex <double> *pdfevol::USP2;
-complex <double> *pdfevol::DSP2;
-complex <double> *pdfevol::SSP2;
-complex <double> *pdfevol::GLP2;
-complex <double> *pdfevol::CHP2;
-complex <double> *pdfevol::BOP2;
-complex <double> *pdfevol::UVM2;
-complex <double> *pdfevol::DVM2;
-complex <double> *pdfevol::USM2;
-complex <double> *pdfevol::DSM2;
-complex <double> *pdfevol::SSM2;
-complex <double> *pdfevol::GLM2;
-complex <double> *pdfevol::CHM2;
-complex <double> *pdfevol::BOM2;
+complex <double> *pdfevol::UVP;
+complex <double> *pdfevol::DVP;
+complex <double> *pdfevol::USP;
+complex <double> *pdfevol::DSP;
+complex <double> *pdfevol::SSP;
+complex <double> *pdfevol::GLP;
+complex <double> *pdfevol::CHP;
+complex <double> *pdfevol::BOP;
 
 complex <double> *pdfevol::fn1;
 complex <double> *pdfevol::fn2;
@@ -58,61 +32,34 @@ complex <double> pdfevol::alpr;
 //fortran interface
 void pdfevol_(int& i1, int& i2, int& sign)
 {
-  pdfevol::evolve(i1-1, i2-1, sign-1);
+  pdfevol::retrieve(i1-1, i2-1, sign-1);
 };
 
 void pdfevol::init()
 {
-  fn1 = new complex <double>[11];
-  fn2 = new complex <double>[11];
+  fn1 = new complex <double>[2*MAXNF+1];
+  fn2 = new complex <double>[2*MAXNF+1];
 
-  UVP1 = new complex <double>[mellinint::mdim];
-  DVP1 = new complex <double>[mellinint::mdim];
-  USP1 = new complex <double>[mellinint::mdim];
-  DSP1 = new complex <double>[mellinint::mdim];
-  SSP1 = new complex <double>[mellinint::mdim];
-  GLP1 = new complex <double>[mellinint::mdim];
-  CHP1 = new complex <double>[mellinint::mdim];
-  BOP1 = new complex <double>[mellinint::mdim];
-  UVM1 = new complex <double>[mellinint::mdim];
-  DVM1 = new complex <double>[mellinint::mdim];
-  USM1 = new complex <double>[mellinint::mdim];
-  DSM1 = new complex <double>[mellinint::mdim];
-  SSM1 = new complex <double>[mellinint::mdim];
-  GLM1 = new complex <double>[mellinint::mdim];
-  CHM1 = new complex <double>[mellinint::mdim];
-  BOM1 = new complex <double>[mellinint::mdim];
+  UVP = new complex <double>[mellinint::mdim];
+  DVP = new complex <double>[mellinint::mdim];
+  USP = new complex <double>[mellinint::mdim];
+  DSP = new complex <double>[mellinint::mdim];
+  SSP = new complex <double>[mellinint::mdim];
+  GLP = new complex <double>[mellinint::mdim];
+  CHP = new complex <double>[mellinint::mdim];
+  BOP = new complex <double>[mellinint::mdim];
 
-  UVP2 = new complex <double>[mellinint::mdim];
-  DVP2 = new complex <double>[mellinint::mdim];
-  USP2 = new complex <double>[mellinint::mdim];
-  DSP2 = new complex <double>[mellinint::mdim];
-  SSP2 = new complex <double>[mellinint::mdim];
-  GLP2 = new complex <double>[mellinint::mdim];
-  CHP2 = new complex <double>[mellinint::mdim];
-  BOP2 = new complex <double>[mellinint::mdim];
-  UVM2 = new complex <double>[mellinint::mdim];
-  DVM2 = new complex <double>[mellinint::mdim];
-  USM2 = new complex <double>[mellinint::mdim];
-  DSM2 = new complex <double>[mellinint::mdim];
-  SSM2 = new complex <double>[mellinint::mdim];
-  GLM2 = new complex <double>[mellinint::mdim];
-  CHM2 = new complex <double>[mellinint::mdim];
-  BOM2 = new complex <double>[mellinint::mdim];
-
-  //     calculate Mellin moments of PDFs
+  //calculate Mellin moments of PDFs
   cout << "Initialise PDF moments with numerical integration (C++) " << endl;
 
   fcomplex uval,dval,usea,dsea,ssea,glu,charm,bot;
-  //  cout << "beam 1 positive" << endl;
-  //beam 1
   for (int k = 0; k < mellinint::mdim; k++)
     {
-      int hadron = opts.ih1;
-      // positive branch
-      fcomplex XN = fcx(mellinint::Np[k]);
-      pdfmoments_(hadron,XN,uval,dval,usea,dsea,ssea,glu,charm,bot);
-      // cout << "moment " << k << "  " << cx(XN) << endl;
+      int hadron = 1; //opts.ih1;
+      fcomplex XN = fcx(mellinint::Np[k]); //compute positive branch only, the negative branch is obtained by complex conjugation
+      double facscale = opts.muf;
+      pdfmoments_(hadron,facscale,XN,uval,dval,usea,dsea,ssea,glu,charm,bot);
+      // cout << "moment " << k << "  " << cx(XN) << "  ";
       // cout << "uval  " << uval << endl;
       // cout << "dval  " << dval << endl;
       // cout << "usea  " << usea << endl;
@@ -120,117 +67,17 @@ void pdfevol::init()
       // cout << "gluon " << cx(glu) << endl;
       // cout << "charm " << charm << endl;
       // cout << "bottom" << bot << endl;
-      UVP1[k] = cx(uval);
-      DVP1[k] = cx(dval);
-      USP1[k] = cx(usea);
-      DSP1[k] = cx(dsea);
-      SSP1[k] = cx(ssea);
-      GLP1[k] = cx(glu);
-      CHP1[k] = cx(charm);
-      BOP1[k] = cx(bot);
-      // negative branch
-      XN = fcx(mellinint::Nm[k]);
-      pdfmoments_(hadron,XN,uval,dval,usea,dsea,ssea,glu,charm,bot);
-      UVM1[k] = cx(uval);
-      DVM1[k] = cx(dval);
-      USM1[k] = cx(usea);
-      DSM1[k] = cx(dsea);
-      SSM1[k] = cx(ssea);
-      GLM1[k] = cx(glu);
-      CHM1[k] = cx(charm);
-      BOM1[k] = cx(bot);
+      UVP[k] = cx(uval);
+      DVP[k] = cx(dval);
+      USP[k] = cx(usea);
+      DSP[k] = cx(dsea);
+      SSP[k] = cx(ssea);
+      GLP[k] = cx(glu);
+      CHP[k] = cx(charm);
+      BOP[k] = cx(bot);
     }
 
-  //beam 2
-  for (int k = 0; k < mellinint::mdim; k++)
-    {
-      int hadron = opts.ih2;
-      // positive branch
-      fcomplex XN = fcx(mellinint::Np[k]);
-      pdfmoments_(hadron,XN,uval,dval,usea,dsea,ssea,glu,charm,bot);
-      UVP2[k] = cx(uval);
-      DVP2[k] = cx(dval);
-      USP2[k] = cx(usea);
-      DSP2[k] = cx(dsea);
-      SSP2[k] = cx(ssea);
-      GLP2[k] = cx(glu);
-      CHP2[k] = cx(charm);
-      BOP2[k] = cx(bot);
-      // negative branch
-      XN = fcx(mellinint::Nm[k]);
-      pdfmoments_(hadron,XN,uval,dval,usea,dsea,ssea,glu,charm,bot);
-      UVM2[k] = cx(uval);
-      DVM2[k] = cx(dval);
-      USM2[k] = cx(usea);
-      DSM2[k] = cx(dsea);
-      SSM2[k] = cx(ssea);
-      GLM2[k] = cx(glu);
-      CHM2[k] = cx(charm);
-      BOM2[k] = cx(bot);
-    }
   cout << "End PDF moments initialization" << endl;
-}
-
-void pdfevol::evolve(int i1, int i2, int sign)
-{
-  //  cout << i1 << endl;
-  //  cout << creno_.cfx1_[i1][5].real << "  " << creno_.cfx1_[i1][5].imag << endl;
-  fn1[-5+MAXNF] = cx(creno_.cfx1_[i1][-5+MAXNF]);
-  fn1[-4+MAXNF] = cx(creno_.cfx1_[i1][-4+MAXNF]);
-  fn1[-3+MAXNF] = cx(creno_.cfx1_[i1][-3+MAXNF]);
-  fn1[-2+MAXNF] = cx(creno_.cfx1_[i1][-2+MAXNF]);
-  fn1[-1+MAXNF] = cx(creno_.cfx1_[i1][-1+MAXNF]);
-  fn1[ 0+MAXNF] = cx(creno_.cfx1_[i1][ 0+MAXNF]);
-  fn1[ 1+MAXNF] = cx(creno_.cfx1_[i1][ 1+MAXNF]);
-  fn1[ 2+MAXNF] = cx(creno_.cfx1_[i1][ 2+MAXNF]);
-  fn1[ 3+MAXNF] = cx(creno_.cfx1_[i1][ 3+MAXNF]);
-  fn1[ 4+MAXNF] = cx(creno_.cfx1_[i1][ 4+MAXNF]);
-  fn1[ 5+MAXNF] = cx(creno_.cfx1_[i1][ 5+MAXNF]);
-  if (sign == mesq::positive)
-    {
-      fn2[-5+MAXNF] = cx(creno_.cfx2p_[i2][-5+MAXNF]);
-      fn2[-4+MAXNF] = cx(creno_.cfx2p_[i2][-4+MAXNF]);
-      fn2[-3+MAXNF] = cx(creno_.cfx2p_[i2][-3+MAXNF]);
-      fn2[-2+MAXNF] = cx(creno_.cfx2p_[i2][-2+MAXNF]);
-      fn2[-1+MAXNF] = cx(creno_.cfx2p_[i2][-1+MAXNF]);
-      fn2[ 0+MAXNF] = cx(creno_.cfx2p_[i2][ 0+MAXNF]);
-      fn2[ 1+MAXNF] = cx(creno_.cfx2p_[i2][ 1+MAXNF]);
-      fn2[ 2+MAXNF] = cx(creno_.cfx2p_[i2][ 2+MAXNF]);
-      fn2[ 3+MAXNF] = cx(creno_.cfx2p_[i2][ 3+MAXNF]);
-      fn2[ 4+MAXNF] = cx(creno_.cfx2p_[i2][ 4+MAXNF]);
-      fn2[ 5+MAXNF] = cx(creno_.cfx2p_[i2][ 5+MAXNF]);
-    }
-  else if (sign == mesq::negative)
-    {
-      fn2[-5+MAXNF] = cx(creno_.cfx2m_[i2][-5+MAXNF]);
-      fn2[-4+MAXNF] = cx(creno_.cfx2m_[i2][-4+MAXNF]);
-      fn2[-3+MAXNF] = cx(creno_.cfx2m_[i2][-3+MAXNF]);
-      fn2[-2+MAXNF] = cx(creno_.cfx2m_[i2][-2+MAXNF]);
-      fn2[-1+MAXNF] = cx(creno_.cfx2m_[i2][-1+MAXNF]);
-      fn2[ 0+MAXNF] = cx(creno_.cfx2m_[i2][ 0+MAXNF]);
-      fn2[ 1+MAXNF] = cx(creno_.cfx2m_[i2][ 1+MAXNF]);
-      fn2[ 2+MAXNF] = cx(creno_.cfx2m_[i2][ 2+MAXNF]);
-      fn2[ 3+MAXNF] = cx(creno_.cfx2m_[i2][ 3+MAXNF]);
-      fn2[ 4+MAXNF] = cx(creno_.cfx2m_[i2][ 4+MAXNF]);
-      fn2[ 5+MAXNF] = cx(creno_.cfx2m_[i2][ 5+MAXNF]);
-    }
-  //set b to 0
-  //  fn2[-5+MAXNF] = 0;  fn1[-5+MAXNF] = 0;
-  //  fn2[5+MAXNF]  = 0;  fn1[5+MAXNF]  = 0;
-  
-  //set s and c to 0
-  //  fn2[-4+MAXNF] = 0;  fn1[-4+MAXNF] = 0;
-  //  fn2[-3+MAXNF] = 0;  fn1[-3+MAXNF] = 0;
-  //  fn2[3+MAXNF]  = 0;  fn1[3+MAXNF]  = 0;
-  //  fn2[4+MAXNF]  = 0;  fn1[4+MAXNF]  = 0;
-
-  //set u and d to 0
-  //  fn2[-2+MAXNF] = 0; fn1[-2+MAXNF] = 0;
-  //  fn2[-1+MAXNF] = 0; fn1[-1+MAXNF] = 0;
-  //  fn2[1+MAXNF]  = 0; fn1[1+MAXNF]  = 0;
-  //  fn2[2+MAXNF]  = 0; fn1[2+MAXNF]  = 0;
-
-  
 }
 
 // PROVIDES MOMENTS OF DENSITIES AT A GIVEN SCALE (INCLUDES EVOLUTION)
@@ -247,10 +94,10 @@ void pdfevol::evolve(int i1, int i2, int sign)
 
 //Evolve the Mellin moment of PDF corresponding to the index i, sign sign, beam beam, from the scale q2 to the scale scale2(b)
 //Output in fx
-void pdfevol::evolution (int i, int sign, int beam) //from reno2
+void pdfevol::evolution(int i) //from reno2
 {
-  complex <double> alpq,ALPr;
-  //       COMMON/alphasldata/XL,XL1,SALP,alpq,ALPr
+  // i is the index of the complex mellin moment in the z-space for the gaussian quadrature used for the mellin inversion
+  complex <double> alpq, ALPr;
 
   //N flavour dependence
   int nf = resconst::NF;
@@ -258,61 +105,19 @@ void pdfevol::evolution (int i, int sign, int beam) //from reno2
   //Moments at the factorisation scale
   complex <double> UVI,	DVI, USI, DSI, SSI, GLI, CHI, BOI;
 
-  // **************************************
-  //     IFIT is only rapidity dependent, I is the point in the z grid of the gaussian quadrature loop
-  //int IFIT
-  if (beam == 1)
-    if (sign == mesq::positive)
-      {
-	UVI = UVP1[i];
-	DVI = DVP1[i];
-	USI = USP1[i];
-	DSI = DSP1[i];
-	SSI = SSP1[i];
-	GLI = GLP1[i];
-	CHI = CHP1[i];
-	BOI = BOP1[i];
-      }
-    else
-      {
-        UVI = UVM1[i];
-        DVI = DVM1[i];
-        USI = USM1[i];
-        DSI = DSM1[i];
-        SSI = SSM1[i];
-        GLI = GLM1[i];
-        CHI = CHM1[i];
-        BOI = BOM1[i];
-      }
-  else if (beam == 2)
-    if (sign == mesq::positive)
-      {
-        UVI = UVP2[i];
-        DVI = DVP2[i];
-        USI = USP2[i];
-        DSI = DSP2[i];
-        SSI = SSP2[i];
-        GLI = GLP2[i];
-        CHI = CHP2[i];
-        BOI = BOP2[i];
-      }
-    else
-      {
-        UVI = UVM2[i];
-        DVI = DVM2[i];
-        USI = USM2[i];
-        DSI = DSM2[i];
-        SSI = SSM2[i];
-        GLI = GLM2[i];
-        CHI = CHM2[i];
-        BOI = BOM2[i];
-      }
-  else
-    {
-      cout << "Wrong beam in evolution:  " << beam << endl;
-      exit(-1);
-    }
-             
+  //evolve only the moments of the positive branch, the negative branch is obtained by complex conjugation
+  int sign = mesq::positive;
+
+  //Moments of PDFs at the starting scale (factorisation scale)
+  UVI = UVP[i];
+  DVI = DVP[i];
+  USI = USP[i];
+  DSI = DSP[i];
+  SSI = SSP[i];
+  GLI = GLP[i];
+  CHI = CHP[i];
+  BOI = BOP[i];
+
   // ***********************
   // this part can be precomputed
   complex <double> UVN = UVI;
@@ -434,15 +239,13 @@ void pdfevol::evolution (int i, int sign, int beam) //from reno2
   //  if (fabs(bscale) < 1.4)
   //    CHN=0.;
 
-  //  if (fabs(bscale) < 4.75)
+  //  if (fabs(bscale) < 4.5)
   //    BON=0.;
-  
   // **************************************
 
-  // ...  OUTPUT  
-  //   U   UB   D   DB   S   C    B    G 
-  //   1    2   3   4    5   6    7    8 
-  // ************************************
+  // output:
+  // bbar cbar sbar dbar ubar gluon  u   d   s   c   b
+  // -5    -4   -3   -2   -1    0    1   2   3   4   5
 
   complex <double> fx[11];
   fx[0+MAXNF] = GLN;
@@ -474,60 +277,185 @@ void pdfevol::evolution (int i, int sign, int beam) //from reno2
       fx[-5+MAXNF] = 0.;
     }
 
-  //convert proton into antiproton (need to switch only u and d, since the sea is assumed symmetric)
-  if ((beam == 1 && opts.ih1 == -1) || (beam == 2 && opts.ih2 == -1))
+  storemoments(i, fx);
+}
+
+
+void pdfevol::calculate(int i)
+{
+  //N flavour dependence
+  int nf = resconst::NF;
+
+  fcomplex uval,dval,usea,dsea,ssea,glu,charm,bot;
+
+  int hadron = 1;
+  double facscale = fabs(bscale);
+  fcomplex XN = fcx(mellinint::Np[i]);
+  pdfmoments_(hadron,facscale,XN,uval,dval,usea,dsea,ssea,glu,charm,bot);
+
+  complex <double> fx[11];
+  fx[0+MAXNF] = cx(glu);
+  fx[1+MAXNF] = cx(uval) + cx(usea);
+  fx[-1+MAXNF] = cx(usea);
+  fx[2+MAXNF] = cx(dval) + cx(dsea);
+  fx[-2+MAXNF] = cx(dsea);
+  fx[3+MAXNF] = cx(ssea);
+  fx[-3+MAXNF] = cx(ssea);
+  if (nf >= 4)
     {
-      complex <double> utemp = fx[1+MAXNF];
-      fx[1+MAXNF] = fx[-1+MAXNF];
-      fx[-1+MAXNF] = utemp;
-      complex <double> dtemp = fx[2+MAXNF];
-      fx[2+MAXNF] = fx[-2+MAXNF];
-      fx[-2+MAXNF] = dtemp;
+      fx[4+MAXNF] = cx(charm);
+      fx[-4+MAXNF] = cx(charm);
+    }
+  else
+    {
+      fx[4+MAXNF] = 0.;
+      fx[-4+MAXNF] = 0.;
+    }
+  
+  if (nf >= 5)
+    {
+      fx[5+MAXNF] = cx(bot);
+      fx[-5+MAXNF] = cx(bot);
+    }
+  else
+    {
+      fx[5+MAXNF] = 0.;
+      fx[-5+MAXNF] = 0.;
     }
 
+  storemoments(i, fx);
+}
+
+void pdfevol::storemoments(int i, complex <double> fx[11])
+{
   //Save the evolved PDFs into the fortran common block (can actually use a C++ data format since it is only accessed in C++)
-  if (beam == 1)
+
+  //beam 1
+  creno_.cfx1_[i][-5+MAXNF] = fcx(fx[-5+MAXNF]);
+  creno_.cfx1_[i][-4+MAXNF] = fcx(fx[-4+MAXNF]);
+  creno_.cfx1_[i][-3+MAXNF] = fcx(fx[-3+MAXNF]);
+  creno_.cfx1_[i][ 0+MAXNF] = fcx(fx[ 0+MAXNF]);
+  creno_.cfx1_[i][ 3+MAXNF] = fcx(fx[ 3+MAXNF]);
+  creno_.cfx1_[i][ 4+MAXNF] = fcx(fx[ 4+MAXNF]);
+  creno_.cfx1_[i][ 5+MAXNF] = fcx(fx[ 5+MAXNF]);
+  if (opts.ih1 == 1)
     {
-      creno_.cfx1_[i][0]  = fcx(fx[0]);
-      creno_.cfx1_[i][1]  = fcx(fx[1]);
-      creno_.cfx1_[i][2]  = fcx(fx[2]);
-      creno_.cfx1_[i][3]  = fcx(fx[3]);
-      creno_.cfx1_[i][4]  = fcx(fx[4]);
-      creno_.cfx1_[i][5]  = fcx(fx[5]);
-      creno_.cfx1_[i][6]  = fcx(fx[6]);
-      creno_.cfx1_[i][7]  = fcx(fx[7]);
-      creno_.cfx1_[i][8]  = fcx(fx[8]);
-      creno_.cfx1_[i][9]  = fcx(fx[9]);
-      creno_.cfx1_[i][10] = fcx(fx[10]);
+      creno_.cfx1_[i][-2+MAXNF] = fcx(fx[-2+MAXNF]);
+      creno_.cfx1_[i][-1+MAXNF] = fcx(fx[-1+MAXNF]);
+      creno_.cfx1_[i][ 1+MAXNF] = fcx(fx[ 1+MAXNF]);
+      creno_.cfx1_[i][ 2+MAXNF] = fcx(fx[ 2+MAXNF]);
     }
-  else if (beam == 2)
-    if (sign == mesq::positive)
-      {
-      creno_.cfx2p_[i][0]  = fcx(fx[0] );
-      creno_.cfx2p_[i][1]  = fcx(fx[1] );
-      creno_.cfx2p_[i][2]  = fcx(fx[2] );
-      creno_.cfx2p_[i][3]  = fcx(fx[3] );
-      creno_.cfx2p_[i][4]  = fcx(fx[4] );
-      creno_.cfx2p_[i][5]  = fcx(fx[5] );
-      creno_.cfx2p_[i][6]  = fcx(fx[6] );
-      creno_.cfx2p_[i][7]  = fcx(fx[7] );
-      creno_.cfx2p_[i][8]  = fcx(fx[8] );
-      creno_.cfx2p_[i][9]  = fcx(fx[9] );
-      creno_.cfx2p_[i][10] = fcx(fx[10]);
-      }
-    else if (sign == mesq::negative)
-      {
-	creno_.cfx2m_[i][0]  = fcx(fx[0] );
-	creno_.cfx2m_[i][1]  = fcx(fx[1] );
-	creno_.cfx2m_[i][2]  = fcx(fx[2] );
-	creno_.cfx2m_[i][3]  = fcx(fx[3] );
-	creno_.cfx2m_[i][4]  = fcx(fx[4] );
-	creno_.cfx2m_[i][5]  = fcx(fx[5] );
-	creno_.cfx2m_[i][6]  = fcx(fx[6] );
-	creno_.cfx2m_[i][7]  = fcx(fx[7] );
-	creno_.cfx2m_[i][8]  = fcx(fx[8] );
-	creno_.cfx2m_[i][9]  = fcx(fx[9] );
-	creno_.cfx2m_[i][10] = fcx(fx[10]);
-      }
-  // **************************************
+  else if (opts.ih1 == -1)
+    {
+      creno_.cfx1_[i][-2+MAXNF] = fcx(fx[ 2+MAXNF]);
+      creno_.cfx1_[i][-1+MAXNF] = fcx(fx[ 1+MAXNF]);
+      creno_.cfx1_[i][ 1+MAXNF] = fcx(fx[-1+MAXNF]);
+      creno_.cfx1_[i][ 2+MAXNF] = fcx(fx[-2+MAXNF]);
+    }
+
+  //beam 2 positive
+  creno_.cfx2p_[i][-5+MAXNF] = fcx(fx[-5+MAXNF]);
+  creno_.cfx2p_[i][-4+MAXNF] = fcx(fx[-4+MAXNF]);
+  creno_.cfx2p_[i][-3+MAXNF] = fcx(fx[-3+MAXNF]);
+  creno_.cfx2p_[i][ 0+MAXNF] = fcx(fx[ 0+MAXNF]);
+  creno_.cfx2p_[i][ 3+MAXNF] = fcx(fx[ 3+MAXNF]);
+  creno_.cfx2p_[i][ 4+MAXNF] = fcx(fx[ 4+MAXNF]);
+  creno_.cfx2p_[i][ 5+MAXNF] = fcx(fx[ 5+MAXNF]);
+  if (opts.ih2 == 1)
+    {
+      creno_.cfx2p_[i][-2+MAXNF] = fcx(fx[-2+MAXNF]);
+      creno_.cfx2p_[i][-1+MAXNF] = fcx(fx[-1+MAXNF]);
+      creno_.cfx2p_[i][ 1+MAXNF] = fcx(fx[ 1+MAXNF]);
+      creno_.cfx2p_[i][ 2+MAXNF] = fcx(fx[ 2+MAXNF]);
+    }
+  else if (opts.ih2 == -1)
+    {
+      creno_.cfx2p_[i][-2+MAXNF] = fcx(fx[ 2+MAXNF]);
+      creno_.cfx2p_[i][-1+MAXNF] = fcx(fx[ 1+MAXNF]);
+      creno_.cfx2p_[i][ 1+MAXNF] = fcx(fx[-1+MAXNF]);
+      creno_.cfx2p_[i][ 2+MAXNF] = fcx(fx[-2+MAXNF]);
+    }
+
+  //beam 2 negative
+  creno_.cfx2m_[i][-5+MAXNF] = fcx(conj(fx[-5+MAXNF]));
+  creno_.cfx2m_[i][-4+MAXNF] = fcx(conj(fx[-4+MAXNF]));
+  creno_.cfx2m_[i][-3+MAXNF] = fcx(conj(fx[-3+MAXNF]));
+  creno_.cfx2m_[i][ 0+MAXNF] = fcx(conj(fx[ 0+MAXNF]));
+  creno_.cfx2m_[i][ 3+MAXNF] = fcx(conj(fx[ 3+MAXNF]));
+  creno_.cfx2m_[i][ 4+MAXNF] = fcx(conj(fx[ 4+MAXNF]));
+  creno_.cfx2m_[i][ 5+MAXNF] = fcx(conj(fx[ 5+MAXNF]));
+  if (opts.ih2 == 1)
+    {
+      creno_.cfx2m_[i][-2+MAXNF] = fcx(conj(fx[-2+MAXNF]));
+      creno_.cfx2m_[i][-1+MAXNF] = fcx(conj(fx[-1+MAXNF]));
+      creno_.cfx2m_[i][ 1+MAXNF] = fcx(conj(fx[ 1+MAXNF]));
+      creno_.cfx2m_[i][ 2+MAXNF] = fcx(conj(fx[ 2+MAXNF]));
+    }
+  else if (opts.ih2 == -1)
+    {
+      creno_.cfx2m_[i][-2+MAXNF] = fcx(conj(fx[ 2+MAXNF]));
+      creno_.cfx2m_[i][-1+MAXNF] = fcx(conj(fx[ 1+MAXNF]));
+      creno_.cfx2m_[i][ 1+MAXNF] = fcx(conj(fx[-1+MAXNF]));
+      creno_.cfx2m_[i][ 2+MAXNF] = fcx(conj(fx[-2+MAXNF]));
+    }
+}
+
+void pdfevol::retrieve(int i1, int i2, int sign)
+{
+  //  cout << i1 << endl;
+  //  cout << creno_.cfx1_[i1][5].real << "  " << creno_.cfx1_[i1][5].imag << endl;
+  fn1[-5+MAXNF] = cx(creno_.cfx1_[i1][-5+MAXNF]);
+  fn1[-4+MAXNF] = cx(creno_.cfx1_[i1][-4+MAXNF]);
+  fn1[-3+MAXNF] = cx(creno_.cfx1_[i1][-3+MAXNF]);
+  fn1[-2+MAXNF] = cx(creno_.cfx1_[i1][-2+MAXNF]);
+  fn1[-1+MAXNF] = cx(creno_.cfx1_[i1][-1+MAXNF]);
+  fn1[ 0+MAXNF] = cx(creno_.cfx1_[i1][ 0+MAXNF]);
+  fn1[ 1+MAXNF] = cx(creno_.cfx1_[i1][ 1+MAXNF]);
+  fn1[ 2+MAXNF] = cx(creno_.cfx1_[i1][ 2+MAXNF]);
+  fn1[ 3+MAXNF] = cx(creno_.cfx1_[i1][ 3+MAXNF]);
+  fn1[ 4+MAXNF] = cx(creno_.cfx1_[i1][ 4+MAXNF]);
+  fn1[ 5+MAXNF] = cx(creno_.cfx1_[i1][ 5+MAXNF]);
+  if (sign == mesq::positive)
+    {
+      fn2[-5+MAXNF] = cx(creno_.cfx2p_[i2][-5+MAXNF]);
+      fn2[-4+MAXNF] = cx(creno_.cfx2p_[i2][-4+MAXNF]);
+      fn2[-3+MAXNF] = cx(creno_.cfx2p_[i2][-3+MAXNF]);
+      fn2[-2+MAXNF] = cx(creno_.cfx2p_[i2][-2+MAXNF]);
+      fn2[-1+MAXNF] = cx(creno_.cfx2p_[i2][-1+MAXNF]);
+      fn2[ 0+MAXNF] = cx(creno_.cfx2p_[i2][ 0+MAXNF]);
+      fn2[ 1+MAXNF] = cx(creno_.cfx2p_[i2][ 1+MAXNF]);
+      fn2[ 2+MAXNF] = cx(creno_.cfx2p_[i2][ 2+MAXNF]);
+      fn2[ 3+MAXNF] = cx(creno_.cfx2p_[i2][ 3+MAXNF]);
+      fn2[ 4+MAXNF] = cx(creno_.cfx2p_[i2][ 4+MAXNF]);
+      fn2[ 5+MAXNF] = cx(creno_.cfx2p_[i2][ 5+MAXNF]);
+    }
+  else if (sign == mesq::negative)
+    {
+      fn2[-5+MAXNF] = cx(creno_.cfx2m_[i2][-5+MAXNF]);
+      fn2[-4+MAXNF] = cx(creno_.cfx2m_[i2][-4+MAXNF]);
+      fn2[-3+MAXNF] = cx(creno_.cfx2m_[i2][-3+MAXNF]);
+      fn2[-2+MAXNF] = cx(creno_.cfx2m_[i2][-2+MAXNF]);
+      fn2[-1+MAXNF] = cx(creno_.cfx2m_[i2][-1+MAXNF]);
+      fn2[ 0+MAXNF] = cx(creno_.cfx2m_[i2][ 0+MAXNF]);
+      fn2[ 1+MAXNF] = cx(creno_.cfx2m_[i2][ 1+MAXNF]);
+      fn2[ 2+MAXNF] = cx(creno_.cfx2m_[i2][ 2+MAXNF]);
+      fn2[ 3+MAXNF] = cx(creno_.cfx2m_[i2][ 3+MAXNF]);
+      fn2[ 4+MAXNF] = cx(creno_.cfx2m_[i2][ 4+MAXNF]);
+      fn2[ 5+MAXNF] = cx(creno_.cfx2m_[i2][ 5+MAXNF]);
+    }
+  //set b to 0
+  //  fn2[-5+MAXNF] = 0;  fn1[-5+MAXNF] = 0;
+  //  fn2[5+MAXNF]  = 0;  fn1[5+MAXNF]  = 0;
+  
+  //set s and c to 0
+  //  fn2[-4+MAXNF] = 0;  fn1[-4+MAXNF] = 0;
+  //  fn2[-3+MAXNF] = 0;  fn1[-3+MAXNF] = 0;
+  //  fn2[3+MAXNF]  = 0;  fn1[3+MAXNF]  = 0;
+  //  fn2[4+MAXNF]  = 0;  fn1[4+MAXNF]  = 0;
+
+  //set u and d to 0
+  //  fn2[-2+MAXNF] = 0; fn1[-2+MAXNF] = 0;
+  //  fn2[-1+MAXNF] = 0; fn1[-1+MAXNF] = 0;
+  //  fn2[1+MAXNF]  = 0; fn1[1+MAXNF]  = 0;
+  //  fn2[2+MAXNF]  = 0; fn1[2+MAXNF]  = 0;
 }
