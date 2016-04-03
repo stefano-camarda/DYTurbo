@@ -132,6 +132,9 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
   else
     blim = a_param_.b0p_*(1./q)*exp(1./(2.*aass*resconst::beta0)); // avoid Landau pole
 
+  //  blim = resconst::b0*opts.a_param/4.75/2.;
+  //  blim = 0.5;
+
   blimit_.rblim_ = blim;
   blimit_.cblim_ = fcx(blim);
 
