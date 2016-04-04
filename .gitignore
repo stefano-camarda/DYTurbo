@@ -50,7 +50,7 @@ config.sub
 lib/
 libtool
 ltmain.sh
-m4/*
+
 src/.libs/
 dyturbo-config
 .deps/
