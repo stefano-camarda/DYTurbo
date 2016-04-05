@@ -8,7 +8,7 @@ using namespace std;
 
 extern "C"
 {
-  void pdfmoments_(int &beam, double &scale, fcomplex &N, fcomplex &UV, fcomplex &DV, fcomplex &US, fcomplex &DS, fcomplex &SS, fcomplex &GL, fcomplex &CH, fcomplex &BO);
+  void pdfmoments_(int &beam, double &scale, fcomplex &N, fcomplex &UV, fcomplex &DV, fcomplex &US, fcomplex &DS, fcomplex &SP, fcomplex &SM, fcomplex &GL, fcomplex &CH, fcomplex &BO);
 }
 
 namespace pdfevol
@@ -29,6 +29,7 @@ namespace pdfevol
 
   //scales
   extern complex <double> bscale;
+  extern complex <double> bstarscale;
   extern complex <double> XL;
   extern complex <double> XL1;
   extern complex <double> SALP;

@@ -4,6 +4,8 @@
 #include "anomalous.h"
 #include "resconst.h"
 
+#include <LHAPDF/LHAPDF.h>
+
 #include <iostream>
 #include <complex>
 
@@ -22,6 +24,7 @@ complex <double> *pdfevol::fn2;
 
 //scales
 complex <double> pdfevol::bscale;
+complex <double> pdfevol::bstarscale;
 
 complex <double> pdfevol::XL;
 complex <double> pdfevol::XL1;
@@ -52,13 +55,13 @@ void pdfevol::init()
   //calculate Mellin moments of PDFs
   cout << "Initialise PDF moments with numerical integration (C++) " << endl;
 
-  fcomplex uval,dval,usea,dsea,ssea,glu,charm,bot;
+  fcomplex uval,dval,usea,dsea,splus,ssea,glu,charm,bot;
   for (int k = 0; k < mellinint::mdim; k++)
     {
       int hadron = 1; //opts.ih1;
       fcomplex XN = fcx(mellinint::Np[k]); //compute positive branch only, the negative branch is obtained by complex conjugation
       double facscale = opts.muf;
-      pdfmoments_(hadron,facscale,XN,uval,dval,usea,dsea,ssea,glu,charm,bot);
+      pdfmoments_(hadron,facscale,XN,uval,dval,usea,dsea,splus,ssea,glu,charm,bot);
       // cout << "moment " << k << "  " << cx(XN) << "  ";
       // cout << "uval  " << uval << endl;
       // cout << "dval  " << dval << endl;
@@ -236,11 +239,11 @@ void pdfevol::evolution(int i) //from reno2
       BON=0.;
     }
 
-  //  if (fabs(bscale) < 1.4)
-  //    CHN=0.;
+  if (fabs(bstarscale) < LHAPDF::getThreshold(4))
+    CHN=0.;
 
-  //  if (fabs(bscale) < 4.5)
-  //    BON=0.;
+  if (fabs(bstarscale) < LHAPDF::getThreshold(5))
+    BON=0.;
   // **************************************
 
   // output:
@@ -286,12 +289,13 @@ void pdfevol::calculate(int i)
   //N flavour dependence
   int nf = resconst::NF;
 
-  fcomplex uval,dval,usea,dsea,ssea,glu,charm,bot;
+  fcomplex uval,dval,usea,dsea,s,sbar,glu,charm,bot;
 
   int hadron = 1;
-  double facscale = fabs(bscale);
+  //double facscale = fabs(bscale);
+  double facscale = fabs(bstarscale);
   fcomplex XN = fcx(mellinint::Np[i]);
-  pdfmoments_(hadron,facscale,XN,uval,dval,usea,dsea,ssea,glu,charm,bot);
+  pdfmoments_(hadron,facscale,XN,uval,dval,usea,dsea,s,sbar,glu,charm,bot);
 
   complex <double> fx[11];
   fx[0+MAXNF] = cx(glu);
@@ -299,8 +303,8 @@ void pdfevol::calculate(int i)
   fx[-1+MAXNF] = cx(usea);
   fx[2+MAXNF] = cx(dval) + cx(dsea);
   fx[-2+MAXNF] = cx(dsea);
-  fx[3+MAXNF] = cx(ssea);
-  fx[-3+MAXNF] = cx(ssea);
+  fx[3+MAXNF] = cx(s);
+  fx[-3+MAXNF] = cx(sbar);
   if (nf >= 4)
     {
       fx[4+MAXNF] = cx(charm);
@@ -325,6 +329,7 @@ void pdfevol::calculate(int i)
 
   storemoments(i, fx);
 }
+
 
 void pdfevol::storemoments(int i, complex <double> fx[11])
 {
