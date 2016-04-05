@@ -3,6 +3,7 @@
 #include "init.h"
 #include "pdf.h"
 #include "pdfevol.h"
+#include "pegasus.h"
 #include "coupling.h"
 #include "gaussrules.h"
 #include "mellinint.h"
@@ -283,6 +284,7 @@ void dyturboinit()
   anomalous::init(); //calculate anomalous dimensions, C1, C2 and gamma coefficients
   hcoefficients::init(); //allocate memory for the H coefficients
   pdfevol::init(); //allocate memory for the pdf in N-space
+  pegasus::init(); //initialise Pegasus QCD
   resint::init(); //initialise dequad integration
   //end C++ resum
 }
