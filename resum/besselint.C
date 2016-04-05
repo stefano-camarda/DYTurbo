@@ -2,6 +2,7 @@
 #include "settings.h"
 #include "besselint.h"
 #include "pdfevol.h"
+#include "pegasus.h"
 #include "mesq.h"
 #include "hcoefficients.h"
 #include "resint.h"
@@ -18,17 +19,22 @@ void besselint_(double &b, double &qt, double &q2)
 
 double besselint::bint(double b)
 {
+  complex <double> bb = b;
   double qt = resint::_qt;
-  double q2 = pow(resint::_m,2);
-  
+
   complex <double> scale2 = pow(resconst::b0*opts.a_param/b,2);
   //freeze PDF evolution below a certain scale
   //  if (fabs(sqrt(scale2)) < 5.)
   //    scale2 = 5.*5.;
   pdfevol::bscale = sqrt(scale2);
   fcomplex fscale2 = fcx(scale2);
-  complex <double> bb = b;
 
+  double bstar= b / sqrt(1+(b*b)/(blimit_.rblim_*blimit_.rblim_));
+  complex <double> bstarscale2 = pow(resconst::b0*opts.a_param/bstar,2);
+  pdfevol::bstarscale = sqrt(bstarscale2);
+
+  //  cout << b << "  " << bstar << "  " << blimit_.rblim_ << endl;
+  
   //The integration from b to qt space is done with the bstar prescription (real axis in the b space), and use the bessel function
   //The (complex) integration in the minimal prescription would require hankel functions
   //********************
@@ -81,18 +87,24 @@ double besselint::bint(double b)
   //**************************************
 
   //**************************************
-  //perform PDF evolution from muf to the scale corresponding to the impact parameter b
-  //the scales used in the evolution corresponds to SALP and alpr
-  for (int i = 0; i < mellinint::mdim; i++)
-    {
-      //original dyres evolution
+
+  //original dyres evolution: Perform PDF evolution from muf to the scale corresponding to the impact parameter b
+  //the scales used in the evolution correspond to SALP and alpr
+  if (true)
+    for (int i = 0; i < mellinint::mdim; i++)
       pdfevol::evolution (i);
 
-      //direct mellin inversion at each value of bscale ~ 1/b
-      //      pdfevol::calculate (i);
+  //Calculate PDF moments by direct Mellin transformation at each value of bstarscale ~ 1/bstar
+  if (false)
+    for (int i = 0; i < mellinint::mdim; i++)
+      pdfevol::calculate (i);
 
-      //      cout << cx(creno_.cfx1_[i][0]) << "  " << cx(creno_.cfx2p_[i][5]) << "  " <<  cx(creno_.cfx2m_[i][5]) << endl;
-    }
+  //PDF evolution with Pegasus QCD from the starting scale Q20 
+  if (false)
+    pegasus::evolve();
+
+  //for (int i = 0; i < mellinint::mdim; i++)
+  //  cout << cx(creno_.cfx1_[i][0]) << "  " << cx(creno_.cfx2p_[i][5]) << "  " <<  cx(creno_.cfx2m_[i][5]) << endl;
   //**************************************
 
   //aexp and aexpb are calculated in alphasl
@@ -131,9 +143,9 @@ double besselint::bint(double b)
 
   double invres = fun*real(factorfin);
   if (invres != invres)
+    //  if (isnan(invres))
     {
-      cout << "Warning, invres = " << invres << " b = "  << b << " qt = " << qt << endl;
-      cout << fun << "  " << factorfin << endl;
+      cout << "Warning, invres = " << invres << ", qt = " << qt << ", b = "  << b << ", pdf*mesq = " << fun << ", S*bj0 = " << factorfin << endl;
       invres = 0;
     }
   //  cout << setprecision(16) << "C++ " << b << "  " << invres << "  " << fun << "  " << factorfin << endl;
