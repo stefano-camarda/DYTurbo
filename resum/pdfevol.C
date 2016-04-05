@@ -239,11 +239,12 @@ void pdfevol::evolution(int i) //from reno2
       BON=0.;
     }
 
-  if (fabs(bstarscale) < LHAPDF::getThreshold(4))
-    CHN=0.;
+  //if (fabs(bstarscale) < LHAPDF::getThreshold(4))
+  //    CHN *= exp(-pow((LHAPDF::getThreshold(4)-fabs(bstarscale)),2)/pow((LHAPDF::getThreshold(4)/10.) ,2)); //=0
+  //  double delta = 1./5.;
+  //  if (fabs(bstarscale) < LHAPDF::getThreshold(5)*(1+delta/2.))
+  //    BON *= exp(-pow((LHAPDF::getThreshold(5)*(1+delta/2.)-fabs(bstarscale)),2)/pow((LHAPDF::getThreshold(5)*delta),2)); //=0
 
-  if (fabs(bstarscale) < LHAPDF::getThreshold(5))
-    BON=0.;
   // **************************************
 
   // output:
