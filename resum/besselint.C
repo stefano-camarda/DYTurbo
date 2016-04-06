@@ -90,17 +90,17 @@ double besselint::bint(double b)
 
   //original dyres evolution: Perform PDF evolution from muf to the scale corresponding to the impact parameter b
   //the scales used in the evolution correspond to SALP and alpr
-  if (true)
+  if (opts.evolmode == 0)
     for (int i = 0; i < mellinint::mdim; i++)
       pdfevol::evolution (i);
 
-  //Calculate PDF moments by direct Mellin transformation at each value of bstarscale ~ 1/bstar
-  if (false)
+  //Calculate PDF moments by direct Mellin transformation at each value of bstarscale = b0p/bstar
+  if (opts.evolmode == 2)
     for (int i = 0; i < mellinint::mdim; i++)
       pdfevol::calculate (i);
 
   //PDF evolution with Pegasus QCD from the starting scale Q20 
-  if (false)
+  if (opts.evolmode == 1)
     pegasus::evolve();
 
   //for (int i = 0; i < mellinint::mdim; i++)

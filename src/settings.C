@@ -22,7 +22,9 @@ void settings::readfromfile(const string fname){
     g_param        = in.GetNumber ( "g_param"        ); //1.0e0          # g_param
     order          = in.GetNumber ( "order"          ); //1              # order
     zerowidth      = in.GetBool   ( "zerowidth"      ); //false          # zerowidth
+    dynamicscale   = in.GetBool   ( "dynamicscale"   );
     rseed          = in.GetNumber ( "rseed"          ); //123456         # rseed
+    blim           = in.GetNumber ( "blim"           );
     LHAPDFset      = in.GetString ( "LHAPDFset"      ); //CT10nlo.LHgrid
     LHAPDFmember   = in.GetNumber ( "LHAPDFmember"   ); //0              # set,        member   (LHAPDFs)
     Gf             = in.GetNumber ( "Gf"        );
@@ -104,6 +106,7 @@ void settings::readfromfile(const string fname){
     PDFerrors           = in.GetBool ( "PDFerrors" );//
     opts_.approxpdf_    = in.GetNumber ( "opts_approxpdf" ); //0
     opts_.pdfintervals_ = in.GetNumber ( "opts_pdfintervals" ); //100
+    evolmode           = in.GetNumber  ("evolmode");
     opts_.fixedorder_  = fixedorder;
     mellinintervals    = in.GetNumber ( "mellinintervals" );
     mellinrule         = in.GetNumber ( "mellinrule" );
@@ -142,7 +145,13 @@ void settings::readfromfile(const string fname){
 	cout << "Asked for fixed order predictions, enforce a_param = 1.0" << endl;
 	a_param = 1.0;
       }
-    
+
+    if (dynamicscale == true && evolmode != 1)
+      {
+	cout << "dynamicscale possible only with evolmode = 1" << endl;
+	exit (-1);
+      }
+
     if (PDFerrors = true && LHAPDFmember != 0)
       {
 	cout << "Asked for PDFerrors, enforce LHAPDFmember  = 0" << endl;
@@ -196,6 +205,7 @@ void settings::initDyresSettings(){
     g_param_     . g_param_   = g_param      ;         //1.0e0          # g_param
     nnlo_        . order_     = order        ;         //1              # order
     zerowidth_   . zerowidth_ = zerowidth    ;         //false          # zerowidth
+    dynamicscale_. dynamicscale_ = dynamicscale ;
 
     dofill_.doFill_ = 0;
 }
@@ -218,10 +228,12 @@ void settings::dumpAll(){
         dumpD ( "g_param     ",  g_param_     . g_param_    ) ;
         dumpI ( "order       ",  nnlo_        . order_      ) ;
         dumpB ( "zerowidth   ",  zerowidth_   . zerowidth_  ) ;
+	dumpB ( "dynamicscale"      , dynamicscale        );
     }
 
     if (print_inputs) {
         printf("Input settings:\n");
+        dumpD( "blim              ",  blim    ) ;
         dumpS("LHAPDFset          ", LHAPDFset           );
         dumpI("LHAPDFmember       ", LHAPDFmember        );
         dumpI("rseed              ", rseed               );
@@ -298,6 +310,7 @@ void settings::dumpAll(){
 	dumpB("resumcpp           ", resumcpp            );
         dumpI("approxpdf          ", opts_.approxpdf_    );
         dumpI("pdfintervals       ", opts_.pdfintervals_ );
+	dumpI("evolmode           ", evolmode            );
         dumpB("PDFerrors          ", PDFerrors           );
         dumpI("mellinintervals    ", mellinintervals     );
         dumpI("mellinrule         ", mellinrule          );

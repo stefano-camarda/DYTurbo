@@ -9,10 +9,12 @@ a_param      = 2.0e0          # a_param
 g_param      = 1.0e0          # g_param
 order        = 2              # order
 zerowidth    = false          # zerowidth
+dynamicscale = false
 rseed        = 123456         # rseed
 LHAPDFset    = CT10nnlo
 LHAPDFmember = 0              # set, member (LHAPDFs)
 
+blim = -1
 
 # DYTURBO settings
 # EW parameters (Gmu scheme)
@@ -140,6 +142,7 @@ resumcpp    = false  # debug and time profile costh phi_lep integration
 opts_approxpdf = 0
 # number of intervals for integration of PDF moments, relevant only for opts_approxpdf = 0
 opts_pdfintervals = 100
+evolmode = 0
 
 PDFerrors = false
 

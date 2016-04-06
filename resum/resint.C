@@ -84,8 +84,7 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
     return 0;
   
   //Set factorization and renormalization scales (set dynamic scale here)
-  //  if (opts.dynamicscale)
-  if (false)
+  if (opts.dynamicscale)
     {
       mur = m;
       muf = m;
@@ -139,14 +138,12 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
   else
     blim = a_param_.b0p_*(1./q)*exp(1./(2.*aass*resconst::beta0)); // avoid Landau pole
 
-  /*
-  double lambdaqcd = mur/(exp(1./(2.*aass*resconst::beta0)));
-  if (q2 > 2.2*mur2) //avoid large values of b in f2(y) when q2>mur2 
-    blim = a_param_.b0p_/lambdaqcd*sqrt(mur2/q2);
-  else
-    blim = a_param_.b0p_/lambdaqcd;
-  blim = blim/6.;
-  */
+  if (opts.blim > 0)
+    {
+      double lambdaqcd = mur/(exp(1./(2.*aass*resconst::beta0)));
+      blim = a_param_.b0p_/lambdaqcd;
+      blim = blim/opts.blim;
+    }
 
   //  blim = 100;
   //  blim = 4.0;

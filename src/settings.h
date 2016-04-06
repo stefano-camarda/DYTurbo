@@ -69,6 +69,9 @@ public:
   string LHAPDFset    ;
   int    LHAPDFmember ;
 
+  //IR cut-off
+  double blim;
+  
   //EW parameters
   double Gf, zmass, wmass;
   double xw, aemmz;
@@ -165,7 +168,11 @@ public:
   bool verbose;
 
   bool resumcpp;
-  
+
+  bool dynamicscale;
+
+  int evolmode;
+
   // fiducial switches
   cuts::DetFiducial fiducial;
 };
