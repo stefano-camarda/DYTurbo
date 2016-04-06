@@ -153,8 +153,7 @@ c     If the real and all the dipoles fail cuts, then exit
          return
       endif
       
-CC   Dynamic scale: set it only if point passes cuts 
-c     !!!this does not look correct, should be only if(dynamicscale)!!!
+CC   Dynamic scale for real contribution (nd = 0): set it only if point passes cuts 
       if(dynamicscale.and.includereal) then
        call scaleset(q2)
        dipscale(0)=facscale
@@ -168,7 +167,7 @@ c----calculate the x's for the incoming partons from generated momenta
          return
       endif
 
-c--- Calculate the required matrix elements  (dipscale(nd) are set appropriately in dipolesub.f)
+c--- Calculate the required matrix elements  (dipscale(nd) are set appropriately in dipolesub.f, called by qqb_v1jet_gs)
       if (pdferr) then
          call setpdf(0)
       endif
