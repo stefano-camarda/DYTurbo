@@ -152,7 +152,7 @@ void settings::readfromfile(const string fname){
 	exit (-1);
       }
 
-    if (PDFerrors = true && LHAPDFmember != 0)
+    if (PDFerrors == true && LHAPDFmember != 0)
       {
 	cout << "Asked for PDFerrors, enforce LHAPDFmember  = 0" << endl;
 	LHAPDFmember = 0;
