@@ -25,11 +25,12 @@ void yline()
       double ym = -y;
       setcthmqty(costh, m, qt, y);//set global variables to costh, m, qt, y
       genV4p(m, qt, y, 0.);//generate boson 4-momentum, with m, qt, y and phi=0
-      //      yf << "gy->SetPoint(gy->GetN(), " << i*hy+y1 << ", " << resumm_(costh,m,qt,y,mode) << ");" << endl;
-      if (vjfo_(m,qt,y) != 0)
-	yf << "gy->SetPoint(gy->GetN(), " << i*hy+y1 << ", " << (-ctint_(costh,m,qt,y,mode,f)*2*qt)/vjfo_(m,qt,y) << ");" << endl;
-      yf << "gy1->SetPoint(gy1->GetN(), " << i*hy+y1 << ", " << -ctint_(costh,m,qt,y,mode,f)*2*qt << ");" << endl;
-      yf << "gy2->SetPoint(gy2->GetN(), " << i*hy+y1 << ", " << vjfo_(m,qt,y) << ");" << endl;
+      //yf << "gy->SetPoint(gy->GetN(), " << i*hy+y1 << ", " << resumm_(costh,m,qt,y,mode) << ");" << endl;
+      yf << "gy->SetPoint(gy->GetN(), " << i*hy+y1 << ", " << resint::rint(costh,m,qt,y,mode) << ");" << endl;
+      //      if (vjfo_(m,qt,y) != 0)
+      //	yf << "gy->SetPoint(gy->GetN(), " << i*hy+y1 << ", " << (-ctint_(costh,m,qt,y,mode,f)*2*qt)/vjfo_(m,qt,y) << ");" << endl;
+      //      yf << "gy1->SetPoint(gy1->GetN(), " << i*hy+y1 << ", " << -ctint_(costh,m,qt,y,mode,f)*2*qt << ");" << endl;
+      //      yf << "gy2->SetPoint(gy2->GetN(), " << i*hy+y1 << ", " << vjfo_(m,qt,y) << ");" << endl;
       // check of y asymmetry
       // yf << "gy1->SetPoint(gy1->GetN(), " << i*hy+y1 << ", " << -ctint_(costh,m,qt,y,mode,f)*2*qt+ctint_(costh,m,qt,ym,mode,f)*2*qt << ");" << endl;
       // yf << "gy2->SetPoint(gy2->GetN(), " << i*hy+y1 << ", " << vjfo_(m,qt,y)-vjfo_(m,qt,ym) << ");" << endl;
