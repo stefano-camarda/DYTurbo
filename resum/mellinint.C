@@ -47,10 +47,16 @@ void mellinint::initgauss()
        
   double cpoint = 1.;
   double phi = M_PI * 1./2.;
-      
-  double min = 0;
-  double max = 27.; //upper limit for the mellin integration in the complex plane (z). Above 50 the integral becomes unstable (blim issue with Landau pole?)
-      
+
+  double zmin = 0;
+  //upper limit for the mellin integration in the complex plane (z)
+  //Above 50 the integral becomes unstable, especially when m_ll << mur,
+  //due to large logs in the Sudakov, which can be reduced with smaller blim.
+  //The issue can be avoided by using dynamicscale
+  //Also, larger values of zmax requires more support points for the
+  //Mellin inverse transform, i.e. higher mellinintervals or mellinrule.
+  double zmax = opts.zmax;
+
   mdim = opts.mellinintervals*opts.mellinrule;
 
   //allocate memory
@@ -77,8 +83,8 @@ void mellinint::initgauss()
       for (int j=0; j < opts.mellinrule; j++)
 	{
 	  double x = c+m*gr::xxx[opts.mellinrule-1][j];
-	  double t = min+(max-min)*x;
-	  double jac = max-min;
+	  double t = zmin+(zmax-zmin)*x;
+	  double jac = zmax-zmin;
 	  Np[j+i*opts.mellinrule]=complex <double> (cpoint+cos(phi)*t+1.,sin(phi)*t);
 	  wn[j+i*opts.mellinrule]=gr::www[opts.mellinrule-1][j]*m*jac;
 	  //	  cout << setprecision(16) <<  t << " " << Np[j+i*opts.mellinrule] << "  " << wn[j+i*opts.mellinrule] << endl;
@@ -95,7 +101,7 @@ void mellinint::initgauss()
       for (int j=0; j < opts.mellinrule; j ++)
 	{
 	  double x = c+m*gr::xxx[opts.mellinrule-1][j];
-	  double t = min+(max-min)*x;
+	  double t = zmin+(zmax-zmin)*x;
 	  Nm[j+i*opts.mellinrule]=complex <double> (cpoint+cos(phi)*t+1.,-sin(phi)*t);
 	}
     }

@@ -150,6 +150,7 @@ PDFerrors = false
 #number of intervals and gaussian rule for the Mellin integrations
 mellinintervals = 1
 mellinrule = 64
+zmax = 27. #upper limit in the imaginary axis
 
 #number of intervals and gaussian rule for the rapidity integrations
 yintervals = 1

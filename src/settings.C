@@ -106,6 +106,7 @@ void settings::readfromfile(const string fname){
     opts_.fixedorder_  = fixedorder;
     mellinintervals    = in.GetNumber ( "mellinintervals" );
     mellinrule         = in.GetNumber ( "mellinrule" );
+    zmax               = in.GetNumber ( "zmax" );
     yintervals         = in.GetNumber ( "yintervals" );
     yrule              = in.GetNumber ( "yrule" );
 
@@ -329,6 +330,7 @@ void settings::dumpAll(){
         dumpB("PDFerrors          ", PDFerrors           );
         dumpI("mellinintervals    ", mellinintervals     );
         dumpI("mellinrule         ", mellinrule          );
+	dumpD("zmax               ", zmax          );
         dumpI("yintervals         ", yintervals     );
         dumpI("yrule              ", yrule          );
     }

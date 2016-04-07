@@ -156,6 +156,7 @@ public:
   //settings for Mellin integration
   int mellinintervals;
   int mellinrule;
+  double zmax;
   
   //settings for rapidity integration
   int yintervals;

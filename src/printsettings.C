@@ -107,7 +107,10 @@ void printsettings()
 	  cout << setw(25) << "Resummed:"    << setw(30) << "gaussian in dy"  << setw(12) << "nodes ="<< setw(12) << opts.yrule << setw(15) << "intervals ="<< setw(5) << opts.yintervals << endl;
 	}
       if (opts_.approxpdf_ == 0)
-	cout << setw(25) << "Mellin inverse transform:"    << setw(30) << "gaussian" << setw(12) << "nodes ="<< setw(12) << opts.mellinrule << setw(15) << "intervals ="<< setw(5) << opts.mellinintervals << endl;
+	{
+	  cout << setw(25) << "Mellin inverse transform:"    << setw(30) << "gaussian" << setw(12) << "nodes ="<< setw(12) << opts.mellinrule << setw(15) << "intervals ="<< setw(5) << opts.mellinintervals << endl;
+	  cout << setw(25) << "zmax in the imaginary axis:"  << setw(30) << opts.zmax << endl;
+	}
     }
 
   if (opts.doVV)
