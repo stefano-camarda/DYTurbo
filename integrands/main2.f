@@ -106,6 +106,9 @@ c     cached for invres and cachecoeff
 
       integer flag5,brflag,fnwa
       common/flags2/flag5,brflag,fnwa
+
+      double precision cqt,cq2,cy
+      common/kinematic/cqt,cq2,cy
 C     
       include 'ewinput.f' 
       include 'masses.f' 
@@ -126,12 +129,16 @@ c     include 'constants.f'
       include 'scale.f'
       include 'facscale.f'
       include 'quadrules.f'
+
+      cqt=qtt
+      cq2=mm*mm
+      cy=yy
       
       mod = mode
       if(flag.eq.0)  then       !! ONE TIME INITIALIZATION
          print *, 'first call to resum'
          call resummconst
-         call reno2const
+         call reno2const !this seems to be unused
      
 C     Initialization for Gauss inversion
          if (approxpdf.eq.0) then
@@ -549,20 +556,26 @@ c     cached from resumm
       COMMON/aass/aass
 
       COMPLEX *16 mellinint_integrand
+
+      double precision cqt,cq2,cy
+      common/kinematic/cqt,cq2,cy
+
+      double precision besselint
+      external besselint
       
       include 'constants.f' 
-      scale2=cmplx(b0p**2/b**2,0d0)
-      bb=cmplx(b,0d0)
+      scale2=complex(b0p**2/b**2,0d0)
+      bb=complex(b,0d0)
 C     USES BESSEL FUNCTION SINCE INTEGRATION IS DONE ALONG THE REAL AXIS
-c     print *, b
+c      print *, b
 c     ********************
 c     qt and b dependence (bessel function)
-      xj0= 2*dbesj0((qt*b)) 
+      xj0= 2*dbesj0((qt*b))
 c     ********************
 c     ********************
 c     Sudakov is only mass and b dependent
       sudak=S(bb)
-      if (sudak.eq.cmplx(0, 0)) then
+      if (sudak.eq.complex(0, 0)) then
          invres = 0
          return
       endif     
@@ -585,7 +598,7 @@ c     b-dependence
       SALP   = LOG (XL)
       XL1 = 1.- XL
 C     SELECT ORDER FOR EVOLUTION LO/NLO
-      ALPr= ALPQ * cmplx(1d0,0d0)*(NAORD-1)
+      ALPr= ALPQ * complex(1d0,0d0)*(NAORD-1)
 c**************************************
 
 c     ax1, ax2, xx1, xx2, ccex1, ccex2p, ccex2m are cached in resumm, they are eta and mass dependence (AX is mass dependent)
@@ -646,7 +659,7 @@ c     convert proton into antiproton (need to switch only u and d, since the sea
             cfx2m(2,I)=cfx2m(-2,I)
             cfx2m(-2,I)=DTEMP
          endif                
-
+c         print *,I,cfx1(0,I)
 c     Cache the positive and negative branch of coefficients which depend only on one I index
          call cachehcoeff(I,1)
          call cachehcoeff(I,-1)
@@ -713,9 +726,9 @@ c     The integrals are solved analitically when no cuts on the leptons are appl
             funm1p1=funm1p1-DBLE((int1m1p1-int2m1p1)) !*WN(I1)*WN(I2))
             funm2p2=funm2p2-DBLE((int1m2p2-int2m2p2)) !*WN(I1)*WN(I2))
         endif    
-
+c end of orig fortran code
 c *************************************
-cc     C++ rewritten check
+ccc     C++ rewritten check
 c            call pdfevol(I1,I2,1)
 c            call mellinint_pdf_mesq_expy(I1,I2,1)
 c            INT1=mellinint_integrand(I1,I2,1)
@@ -725,7 +738,8 @@ c            INT2=mellinint_integrand(I1,I2,2)
 c            FZ=-DBLE(0.5d0*(INT1-INT2))
 cc     FZ=-0.5d0*(DBLE(INT1)-DBLE(INT2))
 c            FUN= FUN + FZ
-cc *************************************
+cc            print *,'fortran',I1,I2,INT1,INT2
+ccc *************************************
 
 
  10   CONTINUE
@@ -735,7 +749,7 @@ c     ***************************
          INVRES = fun*factorfin
       elseif (mod.eq.2) then
 c     ***************************
-cc orig fortran code            
+c orig fortran code            
          INVRES= 0.5d0*(funp1m1+funp2m2
      1        +funm1p1+funm2p2)*factorfin
 c     ***************************
@@ -747,7 +761,8 @@ c     ***************************
          print *, 'Warning, invres =', invres, 'b =', b, 'qt=', qt
          invres = 0
       endif
-c      print *,b, INVRES, factorfin
+c      print *,'fortran',b, INVRES, fun, factorfin
+c      print *,b, INVRES, besselint(b,cqt,cq2)
       RETURN                           
       END
 
@@ -1808,6 +1823,7 @@ c     1    + sHCRN(-2,2)*sigmaij(-2,2)
          HCRN = GGN*Hgg + FX1(0)*QGN_1*Hqg_1 + FX2(0)*QGN_2*Hqg_2
      1        + QQBN_1*Hqqb + QQBN_2*Hqq + QQBN_3*Hqqp_1 + QQBN_4*Hqqp_2
       endif
+c      print *,I1,I2,GGN,Hgg
       RETURN
       END
 
@@ -2344,7 +2360,6 @@ c.....reference scale is factorization scale: muf2=muf**2
       double complex xlambda,aa1,all,alphasl,qq,t,xlt,bstar,b,blog
       double complex log1xlambda
       double complex nq2,aexp,aexpB,aa2
-      real*8 blim05
       integer flagrealcomplex,imod,iord
       COMMON/iorder/iord
       COMMON/aass/aass
@@ -2403,9 +2418,9 @@ c      blim=b0p*(1/q)*exp(1/(4*as*beta0))
 C Set a limit to avoid very large values of b (= very small scales ~1/b)
 !       blim=b0p*(1/q)*exp(1/(2*aass*beta0)) ! avoid Landau pole     
 !       write(*,*) "blim",blim
-       blim05=0.5d0
+      blim=0.5d0
 
-      if (flagrealcomplex.eq.0) bstar=b/sqrt(1+(b**2)/(blim05**2))
+      if (flagrealcomplex.eq.0) bstar=b/sqrt(1+(b**2)/(blim**2))
       if (imod.eq.1) blog=log( (q*bstar/b0p)**2 + 1) !modified sudakov
       if (imod.eq.0) blog= log( (q*bstar/b0p)**2 )    !normal sudakov
 

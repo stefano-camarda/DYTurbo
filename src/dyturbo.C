@@ -116,7 +116,6 @@ int main( int argc , const char * argv[])
       }
   }
   double f[opts.totpdf];
-  cout << "pippo" << endl;
   ctint_(costh,m,qt,y,mode,f);
   /****************************************/
   
@@ -161,12 +160,12 @@ int main( int argc , const char * argv[])
       if (opts.doRES) {
           double b_time = clock_real();
           if (opts.resint2d) {
-	    cacheyrapint_(ymin, ymax);
-	    //C++ resum
-	    /*
-	    rapint::cache(ymin, ymax);
-	    */
-	    //end C++ resum
+	    if (opts.resumcpp)
+	      //C++ resum
+	      rapint::cache(ymin, ymax);
+	      //end C++ resum
+	    else	    
+	      cacheyrapint_(ymin, ymax);
 	    resintegr2d(value, error);
           }
           if (opts.resint3d) resintegr3d(value, error);
@@ -196,8 +195,8 @@ int main( int argc , const char * argv[])
           double b_time = clock_real();
 	  if (opts.ctint2d) ctintegr2d(vals, error);
 	  if (opts.ctint3d) ctintegr3d(vals, error);
-	  //if (opts.ctintvegas) ctintegr(value, error);
-	  if (opts.ctintvegas) ctintegrMC(vals, error);
+	  if (opts.ctintvegas6d) ctintegrMC(vals, error);
+	  if (opts.ctintvegas8d) ctintegr(vals, error);
           double e_time = clock_real();
 	  value = vals[0];
           normalise_result(value,error);

@@ -66,7 +66,7 @@ void setmellinpdf_(int &member){
 //set value of alphas
 void setalphas()
 {
-  couple_.amz_=LHAPDF::alphasPDF(dymasses_.zmass_) ;
+  couple_.amz_=LHAPDF::alphasPDF(dymasses_.zmass_);
   double scale = fabs(scale_.scale_);
 
   if (opts_.approxpdf_ == 1)

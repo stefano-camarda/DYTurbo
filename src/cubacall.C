@@ -147,6 +147,7 @@ void vjintegr3d(double &res, double &err)
 
   res = integral[0];
   err = error[0];
+  hists.FillQuadrature(res,err);
   return;
 }
 
@@ -312,10 +313,10 @@ void doublevirtintegr(vector <double> &res, double &err)
 }
 
 //Cuba integration of the counterterm
-void ctintegr(double &res, double &err)
+void ctintegr(vector <double> &res, double &err)
 {
   const int ndim = 8;   //dimensions of the integral
-  const int ncomp = 1;  //components of the integrand
+  const int ncomp = opts.totpdf;  //components of the integrand
   void *userdata;
   const int nvec = 1;
   const double epsrel = 0.;
@@ -324,9 +325,9 @@ void ctintegr(double &res, double &err)
   void *spin=NULL;
   int neval;
   int fail;
-  double integral[1];
-  double error[1];
-  double prob[1];
+  double integral[ncomp];
+  double error[ncomp];
+  double prob[ncomp];
   const int flags = 8+4+opts.cubaverbosity;
   const int seed = opts.rseed;
   const int mineval = opts.vegasncallsCT;
@@ -343,7 +344,9 @@ void ctintegr(double &res, double &err)
 	gridno, statefile, spin,
 	&neval, &fail,
 	integral, error, prob);
-  res = integral[0];
+  res.clear();
+  for (int i = 0; i < opts.totpdf; i++)
+    res.push_back(integral[i]);
   err = error[0];
 
   return;

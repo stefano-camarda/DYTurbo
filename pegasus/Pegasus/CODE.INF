@@ -1,0 +1,168 @@
+
+ Name         total lines          w/o header
+
+
+==============================================
+
+User-level programs and date files/routines
+
+==============================================
+
+
+Sample main routines 
+
+lh01tab.f           81                  70
+lh01time.f         100                  91
+lh01mom.f           67                  58
+poltest.f           99                  89
+
+
+Data files and routines for the initialisation
+
+usrinit.dat          6                   6
+usrinit.f           28                  16
+
+usrpinit.dat         6                   6
+usrpinit.f          28                  16
+
+
+Sample data files and routines for the inputs
+
+usrinp.dat          15                  15        
+usrinp.f            84                  74
+
+usrpinp.dat         15                  15
+usrpinp.f           84                  74
+
+
+
+==============================================
+
+Fixed subroutines/functions for the evolution 
+
+==============================================
+
+
+
+Global initialization (section 5.1) :
+-------------------------------------
+
+Main initialization routine
+
+ initevol.f        281                 258
+
+Beta function of QCD
+
+ betafct.f          66                  45         
+
+Unpolarized splitting functions
+
+ psifcts.f         114                 102
+ pnsg0mom.f        126                 102
+ pns1mom.f         142                 117
+ psg1mom.f         148                 126
+ pns2mom.f         165                 143
+ psg2mom.f         194                 172
+
+Obsolete, but for Les-Houches table checksa
+
+ pns2mold.f        174                 146
+ psg2mold.f        195                 168
+
+Coefficients of the evolution operators
+
+ lsgmom.f           82                  64
+ usg1mom.f         100                  76
+ usg1hmom.f        125                 102
+ uns2mom.f         118                  93
+ usg2mom.f         118                  95
+ usg2hmom.f        129                 108
+
+Operator matrix elements for the N_f matching
+
+ ans2mom.f         107                  82
+ asg2mom.f         167                 138
+
+
+Input initialization (section 5.2) :
+------------------------------------
+
+Main unpolarized input routine
+  
+ initinp.f         238                 215
+
+Distributions at initial scale 
+
+ inplmom1.f        199                 165
+ inplmom2.f        216                 182
+ ebetafct.f         96                  83
+
+Distributions at the flavour thresholds
+
+ evnfthr.f         264                 237
+ asmatch.f          93                  71
+
+
+Evolution routines (section 5.3) :
+----------------------------------
+
+alpha_s running 
+
+ asrgkt.f           97                  75
+
+Non-singlet and singlet evolution kernels
+
+ ensg0n.f           65                  45
+ ens1n.f           114                  87
+ esg1n.f           128                 102
+ ens2n.f           110                  86
+ esg2n.f           140                 114
+
+N-space evolution for fixed and variable N_f
+
+ evnffn.f          154                 128
+ evnvfn.f          228                 201
+
+Inversion to x-space
+
+ pdfxinv.f         223                 196
+
+
+Polarized evolution (section 5.4) :
+-----------------------------------
+
+Main initialization routine
+
+ initpol.f         282                 260
+
+Polarized splitting functions
+
+ psg0pmom.f         78                  56
+ pns1pmom.f        140                 115
+ psg1pmom.f        135                 113
+
+Polarized N_f-matching (dummies)
+
+ ans2pmom.f         43                  33
+ asg2pmom.f         46                  36
+
+Main polarized input routine
+
+ initpinp.f        240                 216 
+
+Distributions at initial scale
+
+ inppmom1.f        213                 186
+ inppmom2.f        235                 208
+
+
+Evolution with N-space output (section 5.5) :
+---------------------------------------------
+
+User-interface routine
+
+ nparton.f         125                 103
+
+Initialization routine
+
+ initmom.f         245                 232

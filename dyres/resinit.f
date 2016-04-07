@@ -603,7 +603,7 @@ c n=8 gaussian quadrature
       double precision min,max
       double precision a,b,c,m,x,t,jac
       integer i,j
-      double precision CPOINT,PHI
+      double precision CPOINT,PHI,PI
       double precision CO,SI
       
       include 'quadrules.f'
@@ -624,7 +624,8 @@ c          CPOINT = 1d0
 c          PHI = 3.141592654 * 3./4.
 c     Modified settings to allow numerical integration of PDFs melling moment (need real part of moments always > 0)
       CPOINT = 1d0
-      PHI = 3.141592654 * 1./2.
+      PI = acos(-1d0)
+      PHI = PI * 1./2.
       
       min = 0
 c     upper limit for the mellin integration in the complex plane (z). Above 50 the integral becomes unstable (precision issue?)
@@ -632,15 +633,15 @@ c     upper limit for the mellin integration in the complex plane (z). Above 50 
       
 c     initialise to 0
       do i=1,mdim
-         Np(i)=cmplx(CPOINT+1d0,0d0)
-         Nm(i)=cmplx(CPOINT+1d0,0d0)
+         Np(i)=complex(CPOINT+1d0,0d0)
+         Nm(i)=complex(CPOINT+1d0,0d0)
          WN(i)=0
       enddo
 
 c positive branch      
       CO = dcos(PHI)
       SI = dsin(PHI)
-      CCp = cmplx(CO, SI)
+      CCp = complex(CO, SI)
       do i=1,mellinintervals
          a = 0d0+(1d0-0d0)*(i-1)/mellinintervals
          b = 0d0+(1d0-0d0)*i/mellinintervals
@@ -650,7 +651,7 @@ c positive branch
             x=c+m*xxx(mellinrule,j)
             t=min+(max-min)*x
             jac=max-min
-            Np(j+(i-1)*mellinrule)=cmplx(CPOINT+CO*t+1d0,SI*t)
+            Np(j+(i-1)*mellinrule)=complex(CPOINT+CO*t+1d0,SI*t)
             WN(j+(i-1)*mellinrule)=www(mellinrule,j)*m*jac
 c            print *,t,Np(j+(i-1)*mellinrule),WN(j+(i-1)*mellinrule)
          enddo
@@ -659,7 +660,7 @@ c            print *,t,Np(j+(i-1)*mellinrule),WN(j+(i-1)*mellinrule)
 c negative branch
       CO = dcos(PHI)
       SI = -dsin(PHI)
-      CCm = cmplx(CO, SI)
+      CCm = complex(CO, SI)
       do i=1,mellinintervals
          a = 0d0+(1d0-0d0)*(i-1)/mellinintervals
          b = 0d0+(1d0-0d0)*i/mellinintervals
@@ -668,7 +669,7 @@ c negative branch
          do j=1,mellinrule
             x=c+m*xxx(mellinrule,j)
             t=min+(max-min)*x
-            Nm(j+(i-1)*mellinrule)=cmplx(CPOINT+CO*t+1d0,SI*t)
+            Nm(j+(i-1)*mellinrule)=complex(CPOINT+CO*t+1d0,SI*t)
          enddo
       enddo
 

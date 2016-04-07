@@ -9,10 +9,12 @@ a_param      = 2.0e0          # a_param
 g_param      = 1.0e0          # g_param
 order        = 2              # order
 zerowidth    = false          # zerowidth
+dynamicscale = false
 rseed        = 123456         # rseed
 LHAPDFset    = CT10nnlo
 LHAPDFmember = 0              # set, member (LHAPDFs)
 
+blim = -1
 
 # DYTURBO settings
 # EW parameters (Gmu scheme)
@@ -35,6 +37,13 @@ Vub = 0.00351
 Vcd = 0.2252
 Vcs = 0.97344
 Vcb = 0.0412
+
+# Z/gamma* coupling to quarks
+Zuu = 1.0
+Zdd = 1.0
+Zss = 1.0
+Zcc = 1.0
+Zbb = 1.0
 
 # Z
 # include virtual photon
@@ -101,6 +110,10 @@ vegasncallsVIRT  = 100 #00000 # only for virt 8d vegas integration
 makelepcuts = false
 lptcut = 20
 lycut = 2.5
+l1ptcut = 0
+l1ycut = 1000
+l2ptcut = 0
+l2ycut = 1000
 fiducial = 0
 
 # integration types and settings for costh phi_lep phase space
@@ -121,7 +134,7 @@ qtrec_kt0   = false
 # debug settings
 timeprofile = false  # debug and time profile resummation integration
 verbose     = false  # debug and time profile costh phi_lep integration
-HackBinnerToFiller = false # debug the integration (need no parallelization, full phase-space integration)
+resumcpp    = false  # debug and time profile costh phi_lep integration
 
 
 # Set to 1 to use the dyres approximation of PDFs and integration contour in the complex plane for the Mellin inversion
@@ -129,6 +142,7 @@ HackBinnerToFiller = false # debug the integration (need no parallelization, ful
 opts_approxpdf = 0
 # number of intervals for integration of PDF moments, relevant only for opts_approxpdf = 0
 opts_pdfintervals = 100
+evolmode = 0
 
 PDFerrors = false
 

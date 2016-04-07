@@ -1,17 +1,14 @@
 C     Computes the complex N Mellin moments of pdfs
-      subroutine pdfmoments(beam,N,UV,DV,US,DS,SS,GL,CH,BO)
+      subroutine pdfmoments(hadron,scale,N,UV,DV,US,DS,SP,SM,GL,CH,BO)
       implicit none
       complex(8) N
-      integer beam,hadron
-
-      integer ih1,ih2
-      common/collider/ih1,ih2
+      integer hadron
+      double precision scale
 
       include 'gauss.f'
-      include 'facscale.f'
       include 'quadrules.f'
       
-      complex(8) UV,DV,US,DS,SS,GL,CH,BO
+      complex(8) UV,DV,US,DS,SP,SM,GL,CH,BO
 
       real(8) fx(-5:5)
       real(8) fxtemp(-2:2)
@@ -22,14 +19,9 @@ C     Computes the complex N Mellin moments of pdfs
       double precision xmin,xmax
       double precision a,b,c,m,x,t,jac
 
-c     select beam
-      if (beam.eq.1) then
-         hadron = ih1
-      elseif (beam.eq.2) then
-         hadron = ih2
-      endif
 c     factorization scale
-      muf=facscale
+      muf=scale
+c     muf=facscale
 c     muf=2D0
 
 c     boundaries of integration      
@@ -41,7 +33,8 @@ c     initialise
       dv = 0d0
       us = 0d0
       ds = 0d0
-      ss = 0d0
+      sp = 0d0
+      sm = 0d0
       gl = 0d0
       ch = 0d0
       bo = 0d0
@@ -62,7 +55,8 @@ c     integral_0^1{ x^(N-1) fx dx}
             dv = dv+t**(N-1)*(fx(1)-fx(-1))*www(pdfrule,j)*jac*m
             us = us+t**(N-1)*(fx(-1))*www(pdfrule,j)*jac*m
             ds = ds+t**(N-1)*(fx(-2))*www(pdfrule,j)*jac*m
-            ss = ss+t**(N-1)*(fx(-3))*www(pdfrule,j)*jac*m
+            sp = sp+t**(N-1)*(fx(3))*www(pdfrule,j)*jac*m
+            sm = sm+t**(N-1)*(fx(-3))*www(pdfrule,j)*jac*m
             gl = gl+t**(N-1)*(fx(0))*www(pdfrule,j)*jac*m
             ch = ch+t**(N-1)*(fx(-4))*www(pdfrule,j)*jac*m
             bo = bo+t**(N-1)*(fx(-5))*www(pdfrule,j)*jac*m
@@ -73,7 +67,8 @@ c      print *,uv
 c      print *,dv
 c      print *,us
 c      print *,ds
-c      print *,ss
+c      print *,sp
+c      print *,sm
 c      print *,gl
 c      print *,ch
 c      print *,bo
@@ -133,7 +128,7 @@ c **************************************
 c     IMPLICIT DOUBLE PRECISION (A - Z)
       implicit none
       INTEGER k,ik,NFITMAX
-      COMPLEX*16 uval,dval,usea,dsea,ssea,glu,charm,bot
+      COMPLEX*16 uval,dval,usea,dsea,splus,ssea,glu,charm,bot
       COMPLEX*16 MellinH2qq,MellinH2gg,MellinH2gq
       
       COMPLEX*16 QQI, QGF, GQI, GGI, GGF, NS1MI, NS1PI, NS1F,
@@ -180,7 +175,11 @@ c     Gaussian nodes of the integration contour in the complex plane
       COMPLEX*16 CCp,CCm, Np(136),Nm(136),XN
       COMMON / MOMS2    / Np,Nm,CCP,CCm
 
+      integer ih1,ih2
+      common/collider/ih1,ih2
+
       common/NFITMAX/NFITMAX
+      include 'facscale.f'
       include 'quadrules.f'
 
       Write(6,*)'Initialise PDF moments with numerical integration'
@@ -190,7 +189,8 @@ c     Beam 1
       do k=1,mdim
 C     positive branch
          XN=Np(k)  
-         call pdfmoments(1,XN,uval,dval,usea,dsea,ssea,glu,charm,bot)
+         call pdfmoments(ih1,facscale,XN,
+     .        uval,dval,usea,dsea,splus,ssea,glu,charm,bot)
 c         print *,'beam 1 positive'
 c         print *,'moment',k,XN
 c         print *,'uval  ',uval
@@ -212,7 +212,8 @@ c         print *,'bottom',bot
          enddo 
 c     negative branch
          XN=Nm(k)
-         call pdfmoments(1,XN,uval,dval,usea,dsea,ssea,glu,charm,bot)
+         call pdfmoments(ih1,facscale,XN,
+     .        uval,dval,usea,dsea,splus,ssea,glu,charm,bot)
          do ik=1,NFITMAX
             UVm(k,ik)= uval
             DVm(k,ik)= dval
@@ -225,11 +226,15 @@ c     negative branch
          enddo
       enddo
 
+!!!   In principle there is no need to calculate the moments for the second beam !!!
+!!!   the proton -> antiproton conversion can be done after the evolution        !!!
+      
 c     Beam 2
       do k=1,mdim
 c     positive branch
          XN=Np(k)  
-         call pdfmoments(2,XN,uval,dval,usea,dsea,ssea,glu,charm,bot)
+         call pdfmoments(ih2,facscale,XN,
+     .        uval,dval,usea,dsea,splus,ssea,glu,charm,bot)
          do ik=1,NFITMAX
             UVp2(k,ik)= uval 
             DVp2(k,ik)= dval 
@@ -242,7 +247,8 @@ c     positive branch
          enddo
 c     negative branch
          XN=Nm(k)
-         call pdfmoments(2,XN,uval,dval,usea,dsea,ssea,glu,charm,bot)
+         call pdfmoments(ih2,facscale,XN,
+     .        uval,dval,usea,dsea,splus,ssea,glu,charm,bot)
          do ik=1,NFITMAX
             UVm2(k,ik)= uval 
             DVm2(k,ik)= dval 

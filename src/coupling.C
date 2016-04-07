@@ -14,31 +14,36 @@ double coupling::xw;
 double coupling::zmass;
 double coupling::wmass;
 
+//Number of colours in QCD
+const double coupling::NC = 3.;
+
 void coupling::init()
 {
-  ewcharge_.Q_[NF-5] = +0.333333333333333;
-  ewcharge_.Q_[NF-4] = -0.666666666666667;
-  ewcharge_.Q_[NF-3] = +0.333333333333333;
-  ewcharge_.Q_[NF-2] = -0.666666666666667;
-  ewcharge_.Q_[NF-1] = +0.333333333333333;
-  ewcharge_.Q_[NF]   =  0.	       ;
-  ewcharge_.Q_[NF+1] = -0.333333333333333;
-  ewcharge_.Q_[NF+2] = +0.666666666666667;
-  ewcharge_.Q_[NF+3] = -0.333333333333333;
-  ewcharge_.Q_[NF+4] = +0.666666666666667;
-  ewcharge_.Q_[NF+5] = -0.333333333333333;
+  //Set up all the couplings used in MCFM
 
-  ewcharge_.tau_[NF-5] = 1.;
-  ewcharge_.tau_[NF-4] = -1.;
-  ewcharge_.tau_[NF-3] = 1.;
-  ewcharge_.tau_[NF-2] = -1.;
-  ewcharge_.tau_[NF-1] = 1.;
-  ewcharge_.tau_[NF]   = 0.;
-  ewcharge_.tau_[NF+1] = -1.;
-  ewcharge_.tau_[NF+2] = 1.;
-  ewcharge_.tau_[NF+3] = -1.;
-  ewcharge_.tau_[NF+4] = 1.;
-  ewcharge_.tau_[NF+5] = -1.;
+  ewcharge_.Q_[MAXNF-5] = +0.333333333333333 * opts.Zbb;
+  ewcharge_.Q_[MAXNF-4] = -0.666666666666667 * opts.Zcc;
+  ewcharge_.Q_[MAXNF-3] = +0.333333333333333 * opts.Zss;
+  ewcharge_.Q_[MAXNF-2] = -0.666666666666667 * opts.Zuu;
+  ewcharge_.Q_[MAXNF-1] = +0.333333333333333 * opts.Zdd;
+  ewcharge_.Q_[MAXNF]   =  0.	       ;
+  ewcharge_.Q_[MAXNF+1] = -0.333333333333333 * opts.Zdd;
+  ewcharge_.Q_[MAXNF+2] = +0.666666666666667 * opts.Zuu;
+  ewcharge_.Q_[MAXNF+3] = -0.333333333333333 * opts.Zss;
+  ewcharge_.Q_[MAXNF+4] = +0.666666666666667 * opts.Zcc;
+  ewcharge_.Q_[MAXNF+5] = -0.333333333333333 * opts.Zbb;
+
+  ewcharge_.tau_[MAXNF-5] =  1. * opts.Zbb;
+  ewcharge_.tau_[MAXNF-4] = -1. * opts.Zcc;
+  ewcharge_.tau_[MAXNF-3] =  1. * opts.Zss;
+  ewcharge_.tau_[MAXNF-2] = -1. * opts.Zuu;
+  ewcharge_.tau_[MAXNF-1] =  1. * opts.Zdd;
+  ewcharge_.tau_[MAXNF]   =  0.           ;
+  ewcharge_.tau_[MAXNF+1] = -1. * opts.Zdd;
+  ewcharge_.tau_[MAXNF+2] =  1. * opts.Zuu;
+  ewcharge_.tau_[MAXNF+3] = -1. * opts.Zss;
+  ewcharge_.tau_[MAXNF+4] =  1. * opts.Zcc;
+  ewcharge_.tau_[MAXNF+5] = -1. * opts.Zbb;
 
 
   //Gmu scheme, inputs: Gf, MZ, MW
@@ -73,7 +78,8 @@ void coupling::init()
       //Effective value of the weak mixing angle
       xw = opts.xw;
       //!!!!! Check this value, should use  1.-pow(wmass/zmass,2) instead of xw?
-      aemmz = sqrt(2)*Gf*pow(wmass,2)*xw/M_PI;
+      //      aemmz = sqrt(2)*Gf*pow(wmass,2)*xw/M_PI;
+      aemmz = sqrt(2)*Gf*pow(wmass,2)*(1.-pow(wmass/zmass,2))/M_PI;
     }
 
 
@@ -119,26 +125,33 @@ void coupling::init()
   dymasses_.zmass_ = zmass;
 
   //Now set up the other derived parameters
-  ewcouple_.gwsq_= 4 * M_PI * aemmz/xw;
-  ewcouple_.esq_= ewcouple_.gwsq_* xw;
+
+  //W coupling
+  ewcouple_.gwsq_= 4 * M_PI * aemmz/xw; //= 4*sqrt(2)*Gf*pow(wmass,2);
   ewcouple_.gw_=sqrt(ewcouple_.gwsq_);
+
+  //photon coupling (used also for Z)
+  ewcouple_.esq_= ewcouple_.gwsq_* xw; //= 4 * M_PI * aemmz;
 
   //calculate the couplings as given in Kunszt and Gunion
   //Modified to notation of DKS (ie divided by 2*sw*cw)
   //xw=sin^2 theta_w
   zcouple_.sin2w_=2.*sqrt(xw*(1.-xw));
-  for (int j=0; j < NF; j++)
+  for (int j=0; j < MAXNF; j++)
     {
-      zcouple_.l_[j]=(ewcharge_.tau_[j+NF+1]-2.*ewcharge_.Q_[j+NF+1]*xw)/zcouple_.sin2w_;
-      zcouple_.r_[j]=(-2*ewcharge_.Q_[j+NF+1]*xw)/zcouple_.sin2w_;
+      zcouple_.l_[j]=(ewcharge_.tau_[j+MAXNF+1]-2.*ewcharge_.Q_[j+MAXNF+1]*xw)/zcouple_.sin2w_;
+      zcouple_.r_[j]=(-2*ewcharge_.Q_[j+MAXNF+1]*xw)/zcouple_.sin2w_;
     }
 
   zcouple_.le_=(-1.-2.*(-1.)*xw)/zcouple_.sin2w_;
   zcouple_.re_=(-2.*(-1.)*xw)/zcouple_.sin2w_;
 
+  //are ln and rn ever used?
   zcouple_.ln_=(+1.-2.*(+0.)*xw)/zcouple_.sin2w_;
   zcouple_.rn_=0.;
 
+  //switch off the gamma* contribution if required
+  zcouple_.q1_ = (opts.useGamma ? -1 :  0 );
 
   //******************* this coupling is not used ****************
   //Calculate the appropriate Higgs vacuum expectation value.
@@ -148,7 +161,8 @@ void coupling::init()
   //****************************************************************
 
   //set up the beta-function
-  b0_.b0_=(XN*11.-2.*NF)/6.;
+  //b0 is defined in mcfm/b0.f and is used in virtint.f and mcfm/dipoles.f
+  b0_.b0_=(NC*11.-2.*MAXNF)/6.;
 
   //initialize the pdf set
   pdfini_();

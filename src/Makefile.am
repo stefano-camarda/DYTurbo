@@ -13,7 +13,7 @@ libdyturbobase_la_SOURCES += AiMoments.cxx TLVUtils.cxx
 
 lib_LTLIBRARIES = libdyturbo.la
 libdyturbo_la_SOURCES =
-libdyturbo_la_LIBADD =  libdyturbobase.la ../integrands/libintegrands.la ../dyres/libdyres.la ../dynnlo/libdynnlo.la ../mcfm/libmcfm.la ../resum/libresum.la ../dyqt/libdyqt.la ../dequad/libdequad.la 
+libdyturbo_la_LIBADD =  libdyturbobase.la ../integrands/libintegrands.la ../dyres/libdyres.la ../dynnlo/libdynnlo.la ../mcfm/libmcfm.la ../resum/libresum.la ../dyqt/libdyqt.la ../dequad/libdequad.la ../pegasus/libpegasus.la
 
 bin_PROGRAMS = dyturbo
 dyturbo_SOURCES = dyturbo.C
@@ -32,4 +32,4 @@ merger_SOURCES = merger.C
 merger_LDADD = $(ROOT_LDFLAGS)
 endif
 
-pkginclude_HEADERS = resintegr.h ctintegr.h finintegr.h integr.h interface.h settings.h cubacall.h plotter.h init.h switch.h options.f flred.f gauss.f quadrules.f cuts.h coupling.h pdf.h printsettings.h clock_real.h
+pkginclude_HEADERS = resintegr.h ctintegr.h finintegr.h integr.h interface.h settings.h cubacall.h plotter.h init.h switch.h options.f flred.f gauss.f quadrules.f cuts.h coupling.h pdf.h printsettings.h clock_real.h fcomplex.h

@@ -65,10 +65,11 @@ void mline()
       double m = i*hm+m1;
       setcthmqty(costh, m, qt, y);//set global variables to costh, m, qt, y
       genV4p(m, qt, y, 0.);//generate boson 4-momentum, with m, qt, y and phi=0
-      //mf << "gm->SetPoint(gm->GetN(), " << i*hm+m1 << ", " << resumm_(costh,m,qt,y,mode) << ");" << endl;
-      mf << "gm->SetPoint(gm1->GetN(), " << i*hm+m1 << ", " << -ctint_(costh,m,qt,y,mode,f)*2*qt/vjfo_(m,qt,y) << ");" << endl;
-      mf << "gm1->SetPoint(gm1->GetN(), " << i*hm+m1 << ", " << -ctint_(costh,m,qt,y,mode,f)*2*qt << ");" << endl;
-      mf << "gm2->SetPoint(gm2->GetN(), " << i*hm+m1 << ", " << vjfo_(m,qt,y) << ");" << endl;
+      //      mf << "gm->SetPoint(gm->GetN(), " << i*hm+m1 << ", " << resumm_(costh,m,qt,y,mode) << ");" << endl;
+      mf << "gm->SetPoint(gm->GetN(), " << i*hm+m1 << ", " << resint::rint(costh,m,qt,y,mode) << ");" << endl;
+      //mf << "gm->SetPoint(gm1->GetN(), " << i*hm+m1 << ", " << -ctint_(costh,m,qt,y,mode,f)*2*qt/vjfo_(m,qt,y) << ");" << endl;
+      //mf << "gm1->SetPoint(gm1->GetN(), " << i*hm+m1 << ", " << -ctint_(costh,m,qt,y,mode,f)*2*qt << ");" << endl;
+      //mf << "gm2->SetPoint(gm2->GetN(), " << i*hm+m1 << ", " << vjfo_(m,qt,y) << ");" << endl;
     }
   mf << "gm->Draw();" << endl;
   mf << "//gm1->Draw();" << endl;

@@ -15,6 +15,8 @@ namespace hcoefficients
   extern complex <double> *Hqg_2;
   extern complex <double> *Hqq_nnll;
   extern complex <double> *Hqq;
+  extern complex <double> *Hqq_1;
+  extern complex <double> *Hqq_2;
   extern complex <double> *Hqqp;
   extern complex <double> *Hqqp_1;
   extern complex <double> *Hqqp_2;
@@ -35,9 +37,11 @@ namespace hcoefficients
   extern complex <double> *aexpqg;
       
   extern void init();
-  extern void calc(double aass, double logmuf2q2, double logq2muf2, double logq2mur2, double loga);
-  //  b-dependent quantities
-  extern void calcb(double aass, double logmuf2q2, double loga, double alpq, double aexp, double aexpb);
+  // q2-dependent quantities
+  extern void calc(double aass, complex <double> logmuf2q2, complex <double> logq2muf2, complex <double> logq2mur2, complex <double> loga);
+
+  // b-dependent quantities
+  extern void calcb(double aass, complex <double> logmuf2q2, complex <double> loga, complex <double> alpq, complex <double> aexp, complex <double> aexpb);
 
   inline int index(int i, int sign)
   {return i + mellinint::mdim*sign;}

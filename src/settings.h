@@ -69,6 +69,9 @@ public:
   string LHAPDFset    ;
   int    LHAPDFmember ;
 
+  //IR cut-off
+  double blim;
+  
   //EW parameters
   double Gf, zmass, wmass;
   double xw, aemmz;
@@ -77,6 +80,9 @@ public:
   //CKM matrix
   double Vud, Vus, Vub;
   double Vcd, Vcs, Vcb;
+
+  //Z/gamma* coupling
+  double Zuu, Zdd, Zss, Zcc, Zbb;
 
   //resonance mass and width (used for breit wigner unweighting)
   double rmass, rwidth;
@@ -106,7 +112,7 @@ public:
 
   //type of integration for the counterterm
   int intDimCT;
-  bool ctint2d, ctint3d, ctintvegas;
+  bool ctint2d, ctint3d, ctintvegas6d, ctintvegas8d;
 
   //term switch
   bool doRES  , doVV , doCT   , doREAL , doVIRT , doLO, doVJ   ;
@@ -129,6 +135,7 @@ public:
   //lepton fiducial cuts
   bool makelepcuts;
   double lptcut, lycut;
+  double l1ptcut, l1ycut, l2ptcut, l2ycut;
 
   //integration types and settings for costh phi_lep phase space
   bool cubaint;
@@ -159,6 +166,12 @@ public:
   //debug settings
   bool timeprofile;
   bool verbose;
+
+  bool resumcpp;
+
+  bool dynamicscale;
+
+  int evolmode;
 
   // fiducial switches
   cuts::DetFiducial fiducial;

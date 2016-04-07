@@ -22,7 +22,9 @@ void settings::readfromfile(const string fname){
     g_param        = in.GetNumber ( "g_param"        ); //1.0e0          # g_param
     order          = in.GetNumber ( "order"          ); //1              # order
     zerowidth      = in.GetBool   ( "zerowidth"      ); //false          # zerowidth
+    dynamicscale   = in.GetBool   ( "dynamicscale"   );
     rseed          = in.GetNumber ( "rseed"          ); //123456         # rseed
+    blim           = in.GetNumber ( "blim"           );
     LHAPDFset      = in.GetString ( "LHAPDFset"      ); //CT10nlo.LHgrid
     LHAPDFmember   = in.GetNumber ( "LHAPDFmember"   ); //0              # set,        member   (LHAPDFs)
     Gf             = in.GetNumber ( "Gf"        );
@@ -38,6 +40,11 @@ void settings::readfromfile(const string fname){
     Vcd            = in.GetNumber ( "Vcd"        );
     Vcs            = in.GetNumber ( "Vcs"        );
     Vcb            = in.GetNumber ( "Vcb"        );
+    Zuu            = in.GetNumber ( "Zuu"        );
+    Zdd            = in.GetNumber ( "Zdd"        );
+    Zcc            = in.GetNumber ( "Zcc"        );
+    Zss            = in.GetNumber ( "Zss"        );
+    Zbb            = in.GetNumber ( "Zbb"        );
     ylow           = in.GetNumber ( "ylow"            ); //2
     yhigh          = in.GetNumber ( "yhigh"           ); //2.4
     mlow           = in.GetNumber ( "mlow"            ); //66.
@@ -77,6 +84,10 @@ void settings::readfromfile(const string fname){
     makelepcuts        = in.GetBool   ( "makelepcuts"     ); //true
     lptcut             = in.GetNumber ( "lptcut"          );
     lycut              = in.GetNumber ( "lycut"          );
+    l1ptcut            = in.GetNumber ( "l1ptcut"          );
+    l1ycut             = in.GetNumber ( "l1ycut"          );
+    l2ptcut            = in.GetNumber ( "l2ptcut"          );
+    l2ycut             = in.GetNumber ( "l2ycut"          );
     cubaint            = in.GetBool   ( "cubaint"         ); //true    # integration with     Cuba       Suave
     trapezint          = in.GetBool   ( "trapezint"       ); //false   # trapezoidal rule     for        the     phi_lep     integration     and         semi-analytical for         costh
     quadint            = in.GetBool   ( "quadint"         ); //false   # quadrature  rule     for        the     phi_lep     integration     and         semi-analytical for         costh
@@ -89,11 +100,13 @@ void settings::readfromfile(const string fname){
     qtrec_kt0          = in.GetBool   ( "qtrec_kt0"       ); //true
     timeprofile        = in.GetBool   ( "timeprofile"     ); //false   # debug       and      time       profile resummation integration
     verbose            = in.GetBool   ( "verbose"         ); //false   # debug       and      time       profile costh       phi_lep         integration
+    resumcpp           = in.GetBool   ( "resumcpp"        );
     useGamma           = in.GetBool ( "useGamma" );//
     fiducial           = static_cast<cuts::DetFiducial>( in.GetNumber( "fiducial" )); //0
     PDFerrors           = in.GetBool ( "PDFerrors" );//
     opts_.approxpdf_    = in.GetNumber ( "opts_approxpdf" ); //0
     opts_.pdfintervals_ = in.GetNumber ( "opts_pdfintervals" ); //100
+    evolmode           = in.GetNumber  ("evolmode");
     opts_.fixedorder_  = fixedorder;
     mellinintervals    = in.GetNumber ( "mellinintervals" );
     mellinrule         = in.GetNumber ( "mellinrule" );
@@ -132,8 +145,14 @@ void settings::readfromfile(const string fname){
 	cout << "Asked for fixed order predictions, enforce a_param = 1.0" << endl;
 	a_param = 1.0;
       }
-    
-    if (PDFerrors = true && LHAPDFmember != 0)
+
+    if (dynamicscale == true && evolmode != 1)
+      {
+	cout << "dynamicscale possible only with evolmode = 1" << endl;
+	exit (-1);
+      }
+
+    if (PDFerrors == true && LHAPDFmember != 0)
       {
 	cout << "Asked for PDFerrors, enforce LHAPDFmember  = 0" << endl;
 	LHAPDFmember = 0;
@@ -154,11 +173,13 @@ void settings::readfromfile(const string fname){
     if (intDimCT<4 && intDimCT>1){
         ctint2d = (intDimCT == 2);
         ctint3d = (intDimCT == 3);
-        ctintvegas = false;
+        ctintvegas6d = false;
+	ctintvegas8d = false;
     } else {
         ctint2d = false;
         ctint3d = false;
-        ctintvegas = true;
+        ctintvegas6d = (intDimCT <= 6);
+	ctintvegas8d = (intDimCT > 6);
     }
 
     if (opts_.approxpdf_ == 1)
@@ -184,8 +205,7 @@ void settings::initDyresSettings(){
     g_param_     . g_param_   = g_param      ;         //1.0e0          # g_param
     nnlo_        . order_     = order        ;         //1              # order
     zerowidth_   . zerowidth_ = zerowidth    ;         //false          # zerowidth
-
-    zcouple_ . q1_ = (useGamma ? -1 :  0 );
+    dynamicscale_. dynamicscale_ = dynamicscale ;
 
     dofill_.doFill_ = 0;
 }
@@ -208,10 +228,12 @@ void settings::dumpAll(){
         dumpD ( "g_param     ",  g_param_     . g_param_    ) ;
         dumpI ( "order       ",  nnlo_        . order_      ) ;
         dumpB ( "zerowidth   ",  zerowidth_   . zerowidth_  ) ;
+	dumpB ( "dynamicscale"      , dynamicscale        );
     }
 
     if (print_inputs) {
         printf("Input settings:\n");
+        dumpD( "blim              ",  blim    ) ;
         dumpS("LHAPDFset          ", LHAPDFset           );
         dumpI("LHAPDFmember       ", LHAPDFmember        );
         dumpI("rseed              ", rseed               );
@@ -228,6 +250,11 @@ void settings::dumpAll(){
 	dumpD( "Vcd",        Vcd);
 	dumpD( "Vcs",        Vcs);
 	dumpD( "Vcb",        Vcb);
+	dumpD( "Zuu",        Zuu);
+	dumpD( "Zdd",        Zdd);
+	dumpD( "Zss",        Zss);
+	dumpD( "Zcc",        Zcc);
+	dumpD( "Zbb",        Zbb);
         dumpD("ylow               ", ylow                );
         dumpD("yhigh              ", yhigh               );
         dumpD("mlow               ", mlow                );
@@ -246,7 +273,8 @@ void settings::dumpAll(){
         dumpI("intDimCT           ", intDimCT            );
         dumpB("ctint2d            ", ctint2d             );
         dumpB("ctint3d            ", ctint3d             );
-        dumpB("ctintvegas         ", ctintvegas          );
+        dumpB("ctintvegas6d         ", ctintvegas6d          );
+	dumpB("ctintvegas8d         ", ctintvegas8d          );
         dumpB("fixedorder         ", fixedorder          );
 	dumpB("doRES              ", doRES               );
 	dumpB("doVV               ", doVV                );
@@ -279,8 +307,10 @@ void settings::dumpAll(){
         dumpB("qtrec_kt0          ", qtrec_kt0           );
         dumpB("timeprofile        ", timeprofile         );
         dumpB("verbose            ", verbose             );
+	dumpB("resumcpp           ", resumcpp            );
         dumpI("approxpdf          ", opts_.approxpdf_    );
         dumpI("pdfintervals       ", opts_.pdfintervals_ );
+	dumpI("evolmode           ", evolmode            );
         dumpB("PDFerrors          ", PDFerrors           );
         dumpI("mellinintervals    ", mellinintervals     );
         dumpI("mellinrule         ", mellinrule          );

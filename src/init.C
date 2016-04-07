@@ -2,6 +2,8 @@
 #include "settings.h"
 #include "init.h"
 #include "pdf.h"
+#include "pdfevol.h"
+#include "pegasus.h"
 #include "coupling.h"
 #include "gaussrules.h"
 #include "mellinint.h"
@@ -10,6 +12,7 @@
 #include "resconst.h"
 #include "hcoefficients.h"
 #include "anomalous.h"
+#include "resint.h"
 
 #include <math.h>
 #include <iostream>
@@ -269,7 +272,7 @@ void dyturboinit()
   pext_.p2ext_[2]=+0.5*energy_.sroot_;
 
   //set NF to 5 (it is used in H2calc)
-  nf_.nf_=5;
+  nf_.nf_ = resconst::NF;
 
   //C++ resum
   //initialise all the C modules
@@ -281,5 +284,7 @@ void dyturboinit()
   anomalous::init(); //calculate anomalous dimensions, C1, C2 and gamma coefficients
   hcoefficients::init(); //allocate memory for the H coefficients
   pdfevol::init(); //allocate memory for the pdf in N-space
+  pegasus::init(); //initialise Pegasus QCD
+  resint::init(); //initialise dequad integration
   //end C++ resum
 }

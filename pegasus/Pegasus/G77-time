@@ -1,0 +1,35 @@
+g77 -O2 -o timeevol.x evoltime.f usrinit.f usrinp.f \
+\
+Objects1/initevol.o \
+Objects1/betafct.o \
+Objects1/psifcts.o \
+Objects1/pnsg0mom.o \
+Objects1/pns1mom.o \
+Objects1/psg1mom.o \
+Objects1/pns2mom.o \
+Objects1/psg2mom.o \
+Objects1/lsgmom.o \
+Objects1/usg1mom.o \
+Objects1/usg1hmom.o \
+Objects1/uns2mom.o \
+Objects1/usg2mom.o \
+Objects1/usg2hmom.o \
+Objects1/ans2mom.o \
+Objects1/asg2mom.o \
+\
+Objects1/initinp.o \
+Objects1/inplmom1.o \
+Objects1/inplmom2.o \
+Objects1/ebetafct.o \
+Objects1/evnfthr.o \
+Objects1/asmatch.o \
+\
+Objects1/asrgkt.o \
+Objects1/ensg0n.o \
+Objects1/ens1n.o \
+Objects1/esg1n.o \
+Objects1/ens2n.o \
+Objects1/esg2n.o \
+Objects1/evnvfn.o \
+Objects1/evnffn.o \
+Objects1/xparton.o 

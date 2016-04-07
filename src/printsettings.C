@@ -114,8 +114,10 @@ void printsettings()
     cout << setw(25) << "Double virtual:"      << setw(30) << "vegas" << setw(12) << "ncalls =" << setw(12) << opts.vegasncallsVV << endl;
   
   if (opts.doCT)
-    if (opts.ctintvegas)
-      cout << setw(25) << "Counter term:"      << setw(30) << "vegas" << setw(12) << "ncalls =" << setw(12) << opts.vegasncallsCT << endl;
+    if (opts.ctintvegas6d)
+      cout << setw(25) << "Counter term:"      << setw(30) << "vegas 6d" << setw(12) << "ncalls =" << setw(12) << opts.vegasncallsCT << endl;
+    else if (opts.ctintvegas8d)
+      cout << setw(25) << "Counter term:"      << setw(30) << "vegas 8d" << setw(12) << "ncalls =" << setw(12) << opts.vegasncallsCT << endl;
     else if (opts.ctint3d)
       cout << setw(25) << "Counter term:"      << setw(30) << "cuhre in dm,dy,dpt" << setw(12) << "iter =" << setw(12) << opts.niterCT << endl;
     else if (opts.ctint2d)
@@ -133,20 +135,20 @@ void printsettings()
   if (opts.doREAL)
     cout << setw(25) << "Z+j NLO real:"      << setw(30) << "vegas" << setw(12) << "ncalls =" << setw(12) << opts.vegasncallsREAL << endl;
 
-  if (opts.doRES || opts.doCT)
-    if (opts.resint3d || opts.resint2d || opts.ctint3d || opts.ctint3d)
-      if (opts.cubaint)
-	cout << setw(25) << "Angular variables:"      << setw(30) << "Suave in dcosth,dphi" << setw(12) << "ncalls =" << setw(12) << opts.suavepoints << endl;
-      else if (opts.quadint)
-	{
-	  cout << setw(25) << "Angular variable costh:"      << setw(30) << "semi-analytical" << setw(12) << "ncstart =" << setw(12) << opts.ncstart << endl;
-	  cout << setw(25) << "Angular variables phi:"       << setw(30) << "gaussian"        << setw(12) << "intervals =" << setw(12) << opts.quadnphi << endl;
-	}
-      else if (opts.trapezint)
-	{
-	  cout << setw(25) << "Angular variables costh:"     << setw(30) << "semi-analytical" << setw(12) << "ncstart =" << setw(12) << opts.ncstart << endl;
-	  cout << setw(25) << "Angular variables phi:"       << setw(30) << "trapezoidal"  << setw(12) << "points =" << setw(12) << opts.nphitrape << endl;
-	}
+  if (opts.doRES && (opts.resint3d || opts.resint2d)
+      || opts.doCT && (opts.ctint3d || opts.ctint3d))
+    if (opts.cubaint)
+      cout << setw(25) << "Angular variables:"      << setw(30) << "Suave in dcosth,dphi" << setw(12) << "ncalls =" << setw(12) << opts.suavepoints << endl;
+    else if (opts.quadint)
+      {
+	cout << setw(25) << "Angular variable costh:"      << setw(30) << "semi-analytical" << setw(12) << "ncstart =" << setw(12) << opts.ncstart << endl;
+	cout << setw(25) << "Angular variables phi:"       << setw(30) << "gaussian"        << setw(12) << "intervals =" << setw(12) << opts.quadnphi << endl;
+      }
+    else if (opts.trapezint)
+      {
+	cout << setw(25) << "Angular variables costh:"     << setw(30) << "semi-analytical" << setw(12) << "ncstart =" << setw(12) << opts.ncstart << endl;
+	cout << setw(25) << "Angular variables phi:"       << setw(30) << "trapezoidal"  << setw(12) << "points =" << setw(12) << opts.nphitrape << endl;
+      }
   cout << endl;
   cout << "========================  qt recoil ====================" << endl;
   cout << endl;
@@ -167,6 +169,10 @@ void printsettings()
       {
 	cout << setw(25) << "pt_l > " << setw(6) << opts.lptcut << endl;
 	cout << setw(25) << "|eta_l| < " << setw(6) << opts.lycut << endl;
+	cout << setw(25) << "pt_l(1st) > " << setw(6) << opts.l1ptcut << endl;
+	cout << setw(25) << "|eta_l|(1st) < " << setw(6) << opts.l1ycut << endl;
+	cout << setw(25) << "pt_l(2nd) > " << setw(6) << opts.l1ptcut << endl;
+	cout << setw(25) << "|eta_l|(2nd) < " << setw(6) << opts.l1ycut << endl;
       }
     else
       cout << setw(25) << "fiducial cuts:"      << setw(20) << opts.fiducial << endl;

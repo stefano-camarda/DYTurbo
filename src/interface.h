@@ -2,32 +2,15 @@
 #define interface_h
 
 #include "rapint.h"
-#include "mellinint.h"
-#include "mesq.h"
-#include "pdfevol.h"
-#include "hcoefficients.h"
+#include "fcomplex.h"
 
 #include <complex>
- 
-// constants.f
-#define NF 5
-#define FN -5
-#define NLOOP 2
-#define mxpart 12
 
-#define XN 3
+#define MAXNF 5
 
 using namespace std;
 
 extern "C" {
-
-  struct fcomplex {double real; double imag;};
-  //function to convert from fortran to C complex type
-  inline complex <double> cx(fcomplex fcx) {return complex<double>(fcx.real, fcx.imag);}
-  //function to convert from C to fortran complex type
-  //  inline fcomplex fcx(complex <double> cx) {fcomplex f; f.real = real(cx); f.imag = imag(cx); return f;};
-  inline fcomplex fcx(complex <double> cx) {return (fcomplex) {real(cx), imag(cx)};};
-
 
   // rewritten functions
   double resumm_(double &costh, double &mm, double &qtt, double &yy, int& mode);
@@ -116,8 +99,8 @@ extern "C" {
 
   // z coupling
   extern struct {
-    double l_[NF];
-    double r_[NF];
+    double l_[MAXNF];
+    double r_[MAXNF];
     double q1_;
     double l1_;
     double r1_;
@@ -193,8 +176,8 @@ extern "C" {
   } nf_;
 
   extern struct {
-    double Q_[2*NF+1];
-    double tau_[2*NF+1];
+    double Q_[2*MAXNF+1];
+    double tau_[2*MAXNF+1];
   } ewcharge_;
 
   //branching ratio

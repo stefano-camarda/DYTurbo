@@ -1,6 +1,7 @@
 #ifndef mesq_h
 #define mesq_h
 
+#include "interface.h"
 #include "mellinint.h"
 
 extern const double eequ;
@@ -19,6 +20,8 @@ namespace mesq
   extern double gLZd;
   extern double gRZu;
   extern double gRZd;
+  extern double gLZ[MAXNF];
+  extern double gRZ[MAXNF];
   extern double fLZ;
   extern double fRZ;
   extern double fLpfR;
@@ -27,6 +30,8 @@ namespace mesq
   extern double ugLmgR;
   extern double dgLpgR;
   extern double dgLmgR;
+  extern double gLpgR[MAXNF];
+  extern double gLmgR[MAXNF];
   extern double mW2;   //W coupling
   extern double wW2;
   extern double gLWfLW;
