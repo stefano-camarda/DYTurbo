@@ -56,13 +56,8 @@ void settings::readfromfile(const string fname){
     xqtcut         = in.GetNumber ( "xqtcut"           );
     qtcut          = in.GetNumber ( "qtcut"           );
     intDimRes      = in.GetNumber ( "intDimRes"       ); //3
-    //resint2d              = in.GetBool   ( "resint2d"           ); //false
-    //resint3d              = in.GetBool   ( "resint3d"           ); //true
-    //resintvegas           = in.GetBool   ( "resintvegas"           ); //false
     intDimCT           = in.GetNumber ( "intDimCT"       ); //3
-    //ctint2d            = in.GetBool   ( "ctint2d"         ); //true
-    //ctint3d            = in.GetBool   ( "ctint3d"         ); //false
-    //ctintvegas         = in.GetBool   ( "ctintvegas"      ); //false
+    //    intDimVJ           = in.GetNumber ( "intDimVJ"        );
     fixedorder         = in.GetBool   ( "fixedorder"      ); //false
     doRES              = in.GetBool   ( "doRES"           ); //false
     doVV               = in.GetBool   ( "doVV"            ); //false
@@ -75,6 +70,7 @@ void settings::readfromfile(const string fname){
     cubacores          = in.GetNumber ( "cubacores"       ); //0
     niterRES           = in.GetNumber ( "niterRES"        ); //0       # only        for      2d         and     3d          cuhre           integration
     niterCT            = in.GetNumber ( "niterCT"         ); //0       # only        for      3d          cuhre           integration
+    niterVJ            = in.GetNumber ( "niterVJ"         ); //0       # only        for      3d          cuhre           integration
     vegasncallsRES     = in.GetNumber ( "vegasncallsRES"  ); //10000
     vegasncallsVV      = in.GetNumber ( "vegasncallsVV"   ); //10000
     vegasncallsCT      = in.GetNumber ( "vegasncallsCT"   ); //10000
@@ -182,6 +178,24 @@ void settings::readfromfile(const string fname){
 	ctintvegas8d = (intDimCT > 6);
     }
 
+    /*
+    // V+J integration dimension
+    if (intDimVJ < 4 && intDimVJ > 2){
+        vjint3d = (intDimVJ == 3);
+        vjintvegas7d = false;
+    } else {
+        vjint3d = false;
+        vjintvegas7d = true;
+      }
+   if (makelepcuts)
+      {
+	cout << "Required cuts on the final state leptons, enforce vegas integration for V+J fixed order cross section" << endl;
+	vjint3d = false;
+	vjintvegas7d = true;
+      }
+    */
+
+
     if (opts_.approxpdf_ == 1)
       {
 	cout << "DYRES-style approximate PDF requested, enforce vegas integration for the resummed cross section" << endl;
@@ -189,6 +203,7 @@ void settings::readfromfile(const string fname){
 	resint3d = false;
 	resintvegas = true;
       }
+
 
     return ;
 }

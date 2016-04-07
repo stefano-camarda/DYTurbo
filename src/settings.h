@@ -114,8 +114,12 @@ public:
   int intDimCT;
   bool ctint2d, ctint3d, ctintvegas6d, ctintvegas8d;
 
-  //term switch
-  bool doRES  , doVV , doCT   , doREAL , doVIRT , doLO, doVJ   ;
+  //  //type of integration for the V+j at LO
+  //  int intDimVJ;
+  //  bool vjint3d, vjintvegas7d;
+  
+  //term switches
+  bool doRES, doVV, doCT, doREAL, doVIRT, doLO, doVJ;
 
   //resummation or fixed order switch
   bool fixedorder;
@@ -125,6 +129,7 @@ public:
   int cubacores;
   int niterRES;
   int niterCT;
+  int niterVJ;
   int vegasncallsRES  ;
   int vegasncallsVV   ;
   int vegasncallsCT   ;

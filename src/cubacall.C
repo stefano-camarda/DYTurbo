@@ -119,7 +119,7 @@ void resintegrMC(double &res, double &err)
 void vjintegr3d(double &res, double &err)
 {
   const int ndim = 3;     //dimensions of the integral
-  const int ncomp = 1;  //components of the integrand
+  const int ncomp = 1;    //components of the integrand
   void *userdata;
   const int nvec = 1;
   const double epsrel = 0.;
@@ -132,8 +132,8 @@ void vjintegr3d(double &res, double &err)
   double error[1];
   double prob[1];
   const int flags = 0+opts.cubaverbosity;
-  const int mineval = 65+2*65*opts.niterRES;
-  const int maxeval = 65+2*65*opts.niterRES;
+  const int mineval = 127+2*127*opts.niterVJ;
+  const int maxeval = 127+2*127*opts.niterVJ;
   const int key = 13;
   int nregions;
   Cuhre(ndim, ncomp,
@@ -308,6 +308,7 @@ void doublevirtintegr(vector <double> &res, double &err)
   for (int i = 0; i < opts.totpdf; i++)
     res.push_back(integral[i]);
   err = error[0];
+  hists.FillQuadrature(res[0],err);
 
   return;
 }
