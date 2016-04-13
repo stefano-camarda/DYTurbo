@@ -111,9 +111,9 @@ extern "C" {
   extern double as_ (double &R2, double &R20, double &AS0, int &NF);
   
   extern void evnfthr_(double &MC2, double &MB2, double &MT2);
-  
   extern void evnvfn_(fcomplex PDFN[13][ndim], double &ASI, double &ASF, int &NF, int &NLOW, int &NHIGH, int &IPSTD);
   extern void evnffn_(fcomplex PDFN[13][ndim],  double &ASI,  double &ASF, int &NF, int &NLOW, int &NHIGH, int &IPSTD);
+  extern void dyevnffn_(fcomplex PDFN[13][ndim],  double &ASI,  double &ASF, int &NF, int &NLOW, int &NHIGH, int &IPSTD);
 
   extern struct {
     fcomplex vai_[ndim];
@@ -124,7 +124,14 @@ extern "C" {
     fcomplex p8i_[ndim];
     fcomplex gli_[ndim];
   } painp_;
-  
+
+  extern struct {
+    fcomplex m15i_[ndim];
+    fcomplex m24i_[ndim];
+    fcomplex p15i_[ndim];
+    fcomplex p24i_[ndim];
+  } hfpainp_;
+
 }
 
 

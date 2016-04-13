@@ -9,6 +9,9 @@
 #include "pegasus.h"
 
 #include "pdfevol.h"
+#include "resint.h"
+#include "resconst.h"
+#include "besselint.h"
 #include "LHAPDF/LHAPDF.h"
 
 int pegasus::nff;
@@ -65,10 +68,25 @@ void pegasus::init()
   // Some default settings of the external initialization parameters
   // (standard-speed iterated VFNS evolution at NLO for mu_f/mu_r = 1)
 
-  ivfns = 1; //VFN evolution (read from LHAPDF)
-  nff = 4;   //in FFN evolution, number of flavours  (read from LHAPDF)
-  evmod_.imodev_ = evolution_mode; //mode of evolution: there are three available schemes for solving the evolution equations at NNLO. mode = 1 reproduces evolution in x-space
-  order_.npord_  = LHAPDF::getOrderPDF(); //order of evolution (read from LHAPDF)
+  //reproduce in N-space the LHAPDF evolution in x-space
+  if (opts.evolmode == 1)
+    {
+      ivfns = 1; //VFN evolution (read from LHAPDF)
+      nff = 4;   //in FFN evolution, number of flavours  (read from LHAPDF)
+      order_.npord_  = LHAPDF::getOrderPDF(); //order of evolution (read from LHAPDF)
+    }
+  //reproduce DYRES evolution
+  if (opts.evolmode == 3)
+    {
+      ivfns = 0; //FFN evolution
+      nff = 5;   //5 light flavours
+      order_.npord_  = opts.order - 1; //order of evolution is LO(NLO) for NLL(NNLL)
+    }
+  
+  //mode of evolution in Pegasus-QCD
+  //there are three available schemes for solving the evolution equations in N-space at NNLO
+  // mode = 1 reproduces evolution in x-space
+  evmod_.imodev_ = evolution_mode; 
   
   double FR2 = 1.;//ratio of mur2/muf2
   frrat_.logfr_ = log(FR2);
@@ -192,8 +210,16 @@ void pegasus::init()
   //Some default settings of scales, couplings and input distributions
 
   //Initial scale  M20 = M_0^2 (in GeV^2)  and  ASI = alpha_s(M_0^2)
-  //input values from LHAPDF
+
   asinp_.m20_ = LHAPDF::getQ2min(opts.LHAPDFmember);
+  //input values from LHAPDF and forward evolution
+  if (opts.evolmode == 1)
+    asinp_.m20_ = LHAPDF::getQ2min(opts.LHAPDFmember);
+
+  //backward evolution from the factorisation scale
+  if (opts.evolmode == 3)
+    asinp_.m20_ = pow(opts.muf,2);
+
   double ASI = LHAPDF::alphasPDF(sqrt(asinp_.m20_));
 
   //The heavy quark masses squared, input values from LHAPDF
@@ -287,31 +313,81 @@ void pegasus::init()
       
       painp_.gli_[i] = glu;
       
-      //Arrays of non-singlet and singlet quark combinations for N_f = 3
-      painp_.vai_[i] = fcx(cx(uval) + cx(dval) + (cx(s)-cx(sbar)));
-      painp_.m3i_[i] = fcx(cx(uval) - cx(dval));
-      painp_.m8i_[i] = fcx(cx(painp_.vai_[i]) - 3.*(cx(s)-cx(sbar)));
+      //Arrays of non-singlet and singlet quark combinations for N_f = 3 (and 4 and 5)
+      //defined as in Eq. (2.16) of hep-ph/0408244
+      //Pegasus evoltion: input PDFs at the starting scale, with 3 flavours
+      if (opts.evolmode == 1)
+	{
+	  painp_.vai_[i] = fcx(cx(uval) + cx(dval) + (cx(s)-cx(sbar)));
+	  painp_.m3i_[i] = fcx(cx(uval) - cx(dval));
+	  painp_.m8i_[i] = fcx(cx(painp_.vai_[i]) - 3.*(cx(s)-cx(sbar)));
 
-      painp_.sgi_[i] = fcx(cx(uval) + cx(dval) + 2.* (cx(dbar) + cx(ubar)) + (cx(s)+cx(sbar)));
-      painp_.p3i_[i] = fcx(cx(painp_.m3i_[i]) - 2.* (cx(dbar)-cx(ubar)));
-      painp_.p8i_[i] = fcx(cx(painp_.sgi_[i]) - 3.* (cx(s)+cx(sbar)));
+	  painp_.sgi_[i] = fcx(cx(uval) + cx(dval) + 2.* (cx(dbar) + cx(ubar)) + (cx(s)+cx(sbar)));
+	  painp_.p3i_[i] = fcx(cx(painp_.m3i_[i]) - 2.* (cx(dbar)-cx(ubar)));
+	  painp_.p8i_[i] = fcx(cx(uval) + cx(dval) + 2.* (cx(dbar) + cx(ubar)) - 2.* (cx(s)+cx(sbar)));
+	}
+      //reproduce DYRES evolution: input PDFs at the factorisation scale, with 5 flavours
+      if (opts.evolmode == 3)
+	{
+	  complex <double> qp[5];
+	  qp[0] = cx(uval) + 2.*cx(ubar);
+	  qp[1] = cx(dval) + 2.*cx(dbar);
+	  qp[2] = cx(s) + cx(sbar);
+	  qp[3] = 2.*cx(charm);
+	  qp[4] = 2.*cx(bot);
+	  
+	  complex <double> qm[5];
+	  qm[0] = cx(uval);
+	  qm[1] = cx(dval);
+	  qm[2] = cx(s) - cx(sbar);
+	  qm[3] = 0.;
+	  qm[4] = 0.;
+
+	  painp_.vai_[i] = fcx(qm[0]+qm[1]+qm[2]+qm[3]+qm[4]);
+	  painp_.m3i_[i] = fcx(qm[0]-qm[1]);
+	  painp_.m8i_[i] = fcx(qm[0]+qm[1]-2.*qm[2]);
+	  hfpainp_.m15i_[i] = fcx(qm[0]+qm[1]+qm[2]-3.*qm[3]);
+	  hfpainp_.m24i_[i] = fcx(qm[0]+qm[1]+qm[2]+qm[3]-4.*qm[4]);
+  
+	  painp_.sgi_[i] = fcx(qp[0]+qp[1]+qp[2]+qp[3]+qp[4]);
+	  painp_.p3i_[i] = fcx(qp[0]-qp[1]);
+	  painp_.p8i_[i] = fcx(qp[0]+qp[1]-2.*qp[2]);
+	  hfpainp_.p15i_[i] = fcx(qp[0]+qp[1]+qp[2]-3.*qp[3]);
+	  hfpainp_.p24i_[i] = fcx(qp[0]+qp[1]+qp[2]+qp[3]-4.*qp[4]);
+	}
     }
  
+  //In VFN evolution calculate PDFs at the mc, mb, mt thresholds
   if (ivfns != 0)
     evnfthr_(asfthr_.m2c_, asfthr_.m2b_, asfthr_.m2t_);
+  //  else
+  //    dyevnfthr_(asfthr_.m2c_, asfthr_.m2b_, asfthr_.m2t_);
 }
 
 void pegasus::evolve()
 {
   //Values of a_s and N_f for the call of EVNFFN or EVNVFN below
-  double M2 = pow(fabs(pdfevol::bstarscale),2); //pdfevol::bscale
+  //  double M2 = pow(fabs(pdfevol::bstarscale),2); //pdfevol::bscale
+  double M2 = pow(fabs(pdfevol::qbstar),2); //pdfevol::bscale
 
   //check starting scale
   //  double M2 = asinp_.m20_*10;
   //  pdfevol::bstarscale = sqrt(M2);
 
+  //R2 is the final scale of the evolution, corrected by the ratio of mur2/muf2
   double R2  = M2 * exp(-frrat_.logfr_);
 
+  //Reproduce the L->L~ redefinition by a redefinition of the b0/b scale (see Eq. 17 of hep-ph/0508068)
+  //With the L -> L~ modification, alphas reaches asymptotically
+  //alphas(qres) when bscale -> inf, so that the PDF evolution is frozen at qres as upper scale.
+  //This modification is required to restore the fixed order cross section upon qt-integration
+  double M2tilde = M2 * resint::mures2 / (M2 + resint::mures2);
+  double R2tilde  = M2tilde * exp(-frrat_.logfr_);
+
+  //use the modification L -> L~
+  M2 = M2tilde;
+  R2 = R2tilde;
+  
   //The values of alphas: ASF for the evolution are obtained
   //using the Pegasus alphas function. In order to use the LHAPDF alphas function
   //the code which calculates the evolution at the thresholds should be changed
@@ -319,16 +395,38 @@ void pegasus::evolve()
   double ASI, ASF;
   int NF;
 
-  if (ivfns == 0)  //Fixed number of flavours
+  //DYRES evolution: fixed number of flavours = 5 evolution from the factorisation scale downward
+  if (opts.evolmode == 3)
     {
       NF  = nff;
       double R20 = asinp_.m20_ * R2/M2;
-      ASI = asinp_.as0_;
+      //      ASI = asinp_.as0_;
+
+      //set the resummation scale as initial scale for the evolution 
+      ASI = resint::alpqres;
+
+      //calculate alphas at the final scale with pegasus
       ASF = as_(R2, R20, asinp_.as0_, NF);
+
+      //calculate alphas at the final scale with DYRES (which has the modification L -> L~)
+      //DYRES also has a different solution for the running of alphas beyond 1-loop
+      //      fcomplex scale2 = fcx(pow(pdfevol::bscale,2));
+      //      ASF = fabs(cx(alphasl_(scale2))) * resint::alpqres; //DYRES LL(NLL) running of alphas
+
+      //---> Pegasus and DYRES running of alphas are identical only at LO/LL. At NLO/NLL DYRES evolution is different (it is not a Runge-Kutta solution),
+      //and has dependences on the resummation and renormalisation scales
+      //evolutionmode = 3 allows to check the impact of this difference, since in the VFN evolution it is not possible to use the DYRES running of alphas
+      
+      //      cout << pdfevol::bscale << "  " << resint::_m << "  " <<  as_(R2, R20, asinp_.as0_, NF) << "  " << fabs(cx(alphasl_(scale2))) * resint::alpqres << "  " << LHAPDF::alphasPDF(sqrt(M2)) / (4.* M_PI) << endl;
+      //      cout << pdfevol::qbstar << "  " << pdfevol::SALP << "  " << log(ASI/ASF) << endl;
+      //      cout << pdfevol::bscale << "  " << fabs(cx(alphasl_(scale2)))* resint::alpqres << "  " << as_(R2, R20, asinp_.as0_, NF) << endl;
+      //      cout << "pegasus blog: " << pdfevol::bscale << "  " << resconst::beta0*resint::alpqres*4.*log(resint::mures2/M2tilde) << endl;
     }
-  else      //Variable number of flavours
+
+  //Normal Pegasus evolution: VFNS evolution from the starting scale upward
+  if (opts.evolmode == 1)
     {
-      if (M2 > asfthr_.m2t_)
+      if (M2 > asfthr_.m2t_) //If M2 = M2tilde than the scale is frozen at muf, and never goes above the top
 	{
 	  NF = 6;
 	  double R2T = asfthr_.m2t_ * R2/M2;
@@ -341,6 +439,11 @@ void pegasus::evolve()
 	  NF = 5;
 	  double R2B = asfthr_.m2b_ * R2/M2;
 	  ASI = asfthr_.asb_;
+
+	  //above the bottom mass, calculate alphas at the final scale with DYRES (which has the modification L -> L~)
+	  //	  fcomplex fscale2 = fcx(pow(pdfevol::bscale,2));
+	  //	  ASF = fabs(cx(alphasl_(fscale2))) * resint::alpqres; //DYRES LL(NLL) running of alphas.
+	  
 	  //ASF =  LHAPDF::alphasPDF(sqrt(M2)) / (4.* M_PI);
 	  ASF =  as_(R2, R2B, asfthr_.asb_, NF);
 	}
@@ -368,7 +471,7 @@ void pegasus::evolve()
   int IPSTD = 1;
   fcomplex PDFN[13][144];
   if (ivfns == 0)
-    evnffn_(PDFN, ASI, ASF, NF, nlow, nhigh, IPSTD);
+    dyevnffn_(PDFN, ASI, ASF, NF, nlow, nhigh, IPSTD); //modified ffn evolution with charm and bottom at the starting scale
   else
     evnvfn_(PDFN, ASI, ASF, NF, nlow, nhigh, IPSTD);
 
