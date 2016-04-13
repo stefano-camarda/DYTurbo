@@ -37,6 +37,7 @@ namespace mesq
   extern double gLWfLW;
   extern double aem2pi;   //gamma* coupling
   extern double aem2pi2;
+  extern double Q[MAXNF];
 
   //Initialisation of constants
   extern void init();

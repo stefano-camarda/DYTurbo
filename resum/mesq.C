@@ -43,6 +43,7 @@ double mesq::gLWfLW;
 //gamma* coupling
 double mesq::aem2pi;
 double mesq::aem2pi2;
+double mesq::Q[MAXNF];
 
 //mass dependent variables
 double mesq::q2;
@@ -110,7 +111,9 @@ void mesq::init()
   //gamma* coupling
   aem2pi = 2.*M_PI*coupling::aemmz;
   aem2pi2 = pow(aem2pi,2);
-
+  for (int j = 0; j < MAXNF; j++)
+    Q[j] = ewcharge_.Q_[j+MAXNF+1];
+      
   //allocate memory
   mesqij_expy = new complex <double> [mellinint::mdim*mellinint::mdim*2*12];
 
@@ -284,6 +287,32 @@ void mesq::setmesq(T one, T costh1, T costh2)
   if (opts.nproc == 3 && opts.useGamma) // Z/gamma*
     {
       //                           Z                 gamma*                  interference
+      mesqij[0]=fac*((propZ*gLpgR[1]*fLpfR + propG*aem2pi2*pow(Q[1],2) - propZG*aem2pi*Q[1]*(gLZ[1]+gRZ[1])*(fLZ+fRZ)) * (one + costh2)
+		     -(propZ*gLmgR[1]*fLmfR                            - propZG*aem2pi*Q[1]*(gLZ[1]-gRZ[1])*(fLZ-fRZ)) * (2.*costh1));
+      mesqij[6]=fac*((propZ*gLpgR[3]*fLpfR + propG*aem2pi2*pow(Q[3],2) - propZG*aem2pi*Q[3]*(gLZ[3]+gRZ[3])*(fLZ+fRZ)) * (one + costh2)
+		     -(propZ*gLmgR[3]*fLmfR                            - propZG*aem2pi*Q[3]*(gLZ[3]-gRZ[3])*(fLZ-fRZ)) * (2.*costh1));
+
+      mesqij[1]=fac*((propZ*gLpgR[1]*fLpfR + propG*aem2pi2*pow(Q[1],2) - propZG*aem2pi*Q[1]*(gLZ[1]+gRZ[1])*(fLZ+fRZ)) * (one + costh2)
+		     +(propZ*gLmgR[1]*fLmfR                            - propZG*aem2pi*Q[1]*(gLZ[1]-gRZ[1])*(fLZ-fRZ)) * (2.*costh1));
+      mesqij[7]=fac*((propZ*gLpgR[3]*fLpfR + propG*aem2pi2*pow(Q[3],2) - propZG*aem2pi*Q[3]*(gLZ[3]+gRZ[3])*(fLZ+fRZ)) * (one + costh2)
+		     +(propZ*gLmgR[3]*fLmfR                            - propZG*aem2pi*Q[3]*(gLZ[3]-gRZ[3])*(fLZ-fRZ)) * (2.*costh1));
+
+      mesqij[2]=fac*((propZ*gLpgR[0]*fLpfR + propG*aem2pi2*pow(Q[0],2) - propZG*aem2pi*Q[0]*(gLZ[0]+gRZ[0])*(fLZ+fRZ)) * (one + costh2)
+		     -(propZ*gLmgR[0]*fLmfR                            - propZG*aem2pi*Q[0]*(gLZ[0]-gRZ[0])*(fLZ-fRZ)) * (2.*costh1));
+      mesqij[4]=fac*((propZ*gLpgR[2]*fLpfR + propG*aem2pi2*pow(Q[2],2) - propZG*aem2pi*Q[2]*(gLZ[2]+gRZ[2])*(fLZ+fRZ)) * (one + costh2)
+		     -(propZ*gLmgR[2]*fLmfR                            - propZG*aem2pi*Q[2]*(gLZ[2]-gRZ[2])*(fLZ-fRZ)) * (2.*costh1));
+      mesqij[8]=fac*((propZ*gLpgR[4]*fLpfR + propG*aem2pi2*pow(Q[4],2) - propZG*aem2pi*Q[4]*(gLZ[4]+gRZ[4])*(fLZ+fRZ)) * (one + costh2)
+		     -(propZ*gLmgR[4]*fLmfR                            - propZG*aem2pi*Q[4]*(gLZ[4]-gRZ[4])*(fLZ-fRZ)) * (2.*costh1));
+
+      mesqij[3]=fac*((propZ*gLpgR[0]*fLpfR + propG*aem2pi2*pow(Q[0],2) - propZG*aem2pi*Q[0]*(gLZd+gRZd)*(fLZ+fRZ)) * (one + costh2)
+		     +(propZ*gLmgR[0]*fLmfR                            - propZG*aem2pi*Q[0]*(gLZd-gRZd)*(fLZ-fRZ)) * (2.*costh1));
+      mesqij[5]=fac*((propZ*gLpgR[2]*fLpfR + propG*aem2pi2*pow(Q[2],2) - propZG*aem2pi*Q[2]*(gLZd+gRZd)*(fLZ+fRZ)) * (one + costh2)
+		     +(propZ*gLmgR[2]*fLmfR                            - propZG*aem2pi*Q[2]*(gLZd-gRZd)*(fLZ-fRZ)) * (2.*costh1));
+      mesqij[9]=fac*((propZ*gLpgR[4]*fLpfR + propG*aem2pi2*pow(Q[4],2) - propZG*aem2pi*Q[4]*(gLZd+gRZd)*(fLZ+fRZ)) * (one + costh2)
+		     +(propZ*gLmgR[4]*fLmfR                            - propZG*aem2pi*Q[4]*(gLZd-gRZd)*(fLZ-fRZ)) * (2.*costh1));
+      
+      /*
+      //                           Z                 gamma*                  interference
       mesqij[0]=fac*((propZ*ugLpgR*fLpfR + propG*aem2pi2*pow(eequ,2) - propZG*aem2pi*eequ*(gLZu+gRZu)*(fLZ+fRZ)) * (one + costh2)
 		     -(propZ*ugLmgR*fLmfR                            - propZG*aem2pi*eequ*(gLZu-gRZu)*(fLZ-fRZ)) * (2.*costh1));
       mesqij[6]=mesqij[0];
@@ -301,5 +330,6 @@ void mesq::setmesq(T one, T costh1, T costh2)
 		     +(propZ*dgLmgR*fLmfR                            - propZG*aem2pi*eeqd*(gLZd-gRZd)*(fLZ-fRZ)) * (2.*costh1));
       mesqij[5]=mesqij[3];
       mesqij[9]=mesqij[3];
+      */
     }
 }
