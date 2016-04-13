@@ -22,18 +22,18 @@ double besselint::bint(double b)
   complex <double> bb = b;
   double qt = resint::_qt;
 
-  complex <double> scale2 = pow(resconst::b0*resint::a/b,2);
+  //bscale = a*b0/b
+  pdfevol::bscale = resconst::b0*resint::a/b;
   //freeze PDF evolution below a certain scale
-  //  if (fabs(sqrt(scale2)) < 5.)
-  //    scale2 = 5.*5.;
-  pdfevol::bscale = sqrt(scale2);
-  fcomplex fscale2 = fcx(scale2);
+  //  if (pdfevol::bscale < 5.)
+  //    pdfevol::bscale = 5.;
+  fcomplex fscale2 = fcx(pow(pdfevol::bscale,2));
+  
+  //bstarscale = a*b0/bstar (this scale should actually not be used anymore)
+  double bstar = b / sqrt(1+(b*b)/(blimit_.rblim_*blimit_.rblim_));
+  pdfevol::bstarscale = resconst::b0*resint::a/bstar;
 
-  double bstar= b / sqrt(1+(b*b)/(blimit_.rblim_*blimit_.rblim_));
-  complex <double> bstarscale2 = pow(resconst::b0*resint::a/bstar,2);
-  pdfevol::bstarscale = sqrt(bstarscale2);
-
-  //scale b0/b without a_param
+  //qbstar = b0/bstar (without a_param)
   pdfevol::qbstar = resconst::b0/bstar;
   
   //  cout << b << "  " << bstar << "  " << blimit_.rblim_ << endl;
