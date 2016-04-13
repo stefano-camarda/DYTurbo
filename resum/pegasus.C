@@ -19,6 +19,10 @@ int pegasus::ivfns;
 
 void pegasus::init()
 {
+  //No need to initialise if pegasus is not used
+  if (opts.evolmode != 1 && opts.evolmode != 3)
+    return;
+  
   // From:
   // ..File: initevol.f    
   //                   
