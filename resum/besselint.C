@@ -22,7 +22,7 @@ double besselint::bint(double b)
   complex <double> bb = b;
   double qt = resint::_qt;
 
-  complex <double> scale2 = pow(resconst::b0*opts.a_param/b,2);
+  complex <double> scale2 = pow(resconst::b0*resint::a/b,2);
   //freeze PDF evolution below a certain scale
   //  if (fabs(sqrt(scale2)) < 5.)
   //    scale2 = 5.*5.;
@@ -30,9 +30,12 @@ double besselint::bint(double b)
   fcomplex fscale2 = fcx(scale2);
 
   double bstar= b / sqrt(1+(b*b)/(blimit_.rblim_*blimit_.rblim_));
-  complex <double> bstarscale2 = pow(resconst::b0*opts.a_param/bstar,2);
+  complex <double> bstarscale2 = pow(resconst::b0*resint::a/bstar,2);
   pdfevol::bstarscale = sqrt(bstarscale2);
 
+  //scale b0/b without a_param
+  pdfevol::qbstar = resconst::b0/bstar;
+  
   //  cout << b << "  " << bstar << "  " << blimit_.rblim_ << endl;
   
   //The integration from b to qt space is done with the bstar prescription (real axis in the b space), and use the bessel function
@@ -70,12 +73,12 @@ double besselint::bint(double b)
   /********************************************/
   //alpq is used in hcoefficients::calcb, it is alphas(res scale) * alphas(b0^2/b^2)
   //it is used only at NLL, at NNLL instead aexp and aexpb are used
-  complex <double> alpq = resint::alpqres * cx(alphasl_(fscale2));        //alphas at the resummation scale times alphas at 1/b
+  complex <double> alpq = resint::alpqres * cx(alphasl_(fscale2));        //alpq = alphas(b0^2/b^2)
   //complex <double> alpq = resint::alpqfac * cx(alphasl_(fscale2));          //alphas at the factorisation scale times alphas at 1/b
   /********************************************/
 
   //pdfevol::XL = pdfevol::alpqf / alpq; // = 1./cx(alphasl_(fscale2));
-  pdfevol::XL = 1./cx(alphasl_(fscale2));
+  pdfevol::XL = 1./cx(alphasl_(fscale2)); //XL = alphas(mures2)/alphas(b0^2/b^2)
   pdfevol::XL1 = 1.- pdfevol::XL;
   pdfevol::SALP = log(pdfevol::XL);
 
@@ -88,7 +91,7 @@ double besselint::bint(double b)
 
   //**************************************
 
-  //original dyres evolution: Perform PDF evolution from muf to the scale corresponding to the impact parameter b
+  //original dyres evolution: Perform PDF evolution from muf to the scale b0/b ~ pt
   //the scales used in the evolution correspond to SALP and alpr
   if (opts.evolmode == 0)
     for (int i = 0; i < mellinint::mdim; i++)
@@ -99,8 +102,8 @@ double besselint::bint(double b)
     for (int i = 0; i < mellinint::mdim; i++)
       pdfevol::calculate (i);
 
-  //PDF evolution with Pegasus QCD from the starting scale Q20 
-  if (opts.evolmode == 1)
+  //PDF evolution with Pegasus QCD from the starting scale Q20, or PDF evolution with Pegasus QCD from muf
+  if (opts.evolmode == 1 || opts.evolmode == 3)
     pegasus::evolve();
 
   //for (int i = 0; i < mellinint::mdim; i++)
