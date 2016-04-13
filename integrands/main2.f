@@ -2378,6 +2378,16 @@ c.....reference scale is factorization scale: muf2=muf**2
 c.....Here computes NLL expression for alphas
 c     here nq2=b0^2/b^2 and the result is now  alpha(nq2)/alpha(Qres)  
 
+c     To understand these formulas:
+c     nq2 = a*b0^2/b^2 = a*qb2
+c     Q2 = (m_ll/a)^2
+c     alphas(qb2) = alphas(Q2) / (1 - beta0 * alphas(mur2) * log (Q2/qb2)) (why there is a mismatch between Q2 and mur2?)
+c     with the changes:
+c     IR cut off: b=b0p/nq -> bstar = b/sqrt(1+(b**2)/(blim**2))
+c     modified sudakov: loq(Q2/qb2) -> loq(Q2/qb2 + 1)
+c     The result is actually alphas(qb2)/alphas(Q2), where Q2 is the resummation scale
+
+      
 c     HERE CHANGE: order of alphas related to order of evolution
       if(iord.eq.1) then
       xlp=1
@@ -2392,12 +2402,17 @@ c     HERE CHANGE: order of alphas related to order of evolution
 
 c.....choose bstar (b) for real axis (complex plane) integration
       if (flagrealcomplex.eq.0) bstar=b/sqrt(1+(b**2)/(blim**2))
-
       if (imod.eq.1) blog=log( (q*bstar/b0p)**2 + 1) !modified sudakov
       if (imod.eq.0) blog= log( (q*bstar/b0p)**2 )    !normal sudakov
 
       xlambda=beta0*aass*blog
 
+c     I think it would be more correct to calculate alphas at the resummation scale, rather than aass which is alphas at the renormalisation scale
+c     xlambda=beta0*dyalphas_lhapdf(q/a_param)/pi*blog
+c     --> Not really, the running of alphas in this function reflects the definition of lambda in Eq. 25 of hep-ph/0508068.
+      
+c     print *,aass*pi,dyalphas_lhapdf(q),dyalphas_lhapdf(q/a_param),sqrt(nq2),xlambda
+      
 c     HERE now a dependence (without constant term)!
       log1xlambda=log(1-xlambda)
       aa1=log1xlambda+aass*xlp*
@@ -2465,6 +2480,8 @@ c****************************
 c mass dependence in blim
       blim=cblim
 
+c     In reading these formulas, notice that L = q*bstar/b0p = (q/a_param)*bstar/b0 = Q * bstar/b0, according to Eq. (13) and (17) of hep-ph/0508068.
+      
       bstar=b
 c.....choose bstar (b) for real axis (complex plane) integration
 c mass dependence in bstar
