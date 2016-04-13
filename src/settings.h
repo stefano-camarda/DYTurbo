@@ -69,6 +69,9 @@ public:
   string LHAPDFset    ;
   int    LHAPDFmember ;
 
+  //fixed resummation scale
+  double mures;
+  
   //IR cut-off
   double blim;
   
@@ -175,7 +178,7 @@ public:
 
   bool resumcpp;
 
-  bool dynamicscale;
+  bool dynamicscale, dynamicresscale;
 
   int evolmode;
 

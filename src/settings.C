@@ -18,11 +18,13 @@ void settings::readfromfile(const string fname){
     nproc          = in.GetNumber ( "nproc"          ); //3              # nproc
     mur            = in.GetNumber ( "mur"            ); //91.1876e0
     muf            = in.GetNumber ( "muf"            ); //91.1876e0      # mur,        muf
+    mures          = in.GetNumber ( "mures"            ); //91.1876e0      # mur,        muf
     a_param        = in.GetNumber ( "a_param"        ); //2.0e0          # a_param
     g_param        = in.GetNumber ( "g_param"        ); //1.0e0          # g_param
     order          = in.GetNumber ( "order"          ); //1              # order
     zerowidth      = in.GetBool   ( "zerowidth"      ); //false          # zerowidth
     dynamicscale   = in.GetBool   ( "dynamicscale"   );
+    dynamicresscale= in.GetBool   ( "dynamicresscale"   );
     rseed          = in.GetNumber ( "rseed"          ); //123456         # rseed
     blim           = in.GetNumber ( "blim"           );
     LHAPDFset      = in.GetString ( "LHAPDFset"      ); //CT10nlo.LHgrid
@@ -145,6 +147,7 @@ void settings::readfromfile(const string fname){
 
     if (dynamicscale == true && evolmode != 1)
       {
+	//cannot use a dynamic mur, muf, when the PDFs are converted from x-space to N-space at the factorisation scale
 	cout << "dynamicscale possible only with evolmode = 1" << endl;
 	exit (-1);
       }
@@ -249,6 +252,8 @@ void settings::dumpAll(){
 
     if (print_inputs) {
         printf("Input settings:\n");
+	dumpB ( "dynamicresscale"      , dynamicresscale        );
+	dumpD ( "mures       ",  mures   ) ;
         dumpD( "blim              ",  blim    ) ;
         dumpS("LHAPDFset          ", LHAPDFset           );
         dumpI("LHAPDFmember       ", LHAPDFmember        );
