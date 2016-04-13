@@ -83,8 +83,9 @@ namespace resint
   extern int _mode;
 
   //scales
-  extern double mur, muf;
-  extern double mur2, muf2;
+  extern double mur, muf, mures;
+  extern double mur2, muf2, mures2;
+  extern double a;
 
   //log of scales
   extern complex <double> loga;

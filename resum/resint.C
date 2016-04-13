@@ -12,7 +12,8 @@
 #include <LHAPDF/LHAPDF.h>
 
 double tiny = 1.0e-307;
-double aw[lenaw];
+double awinf[lenaw];
+double awfin[lenaw];
 
 double resint::_qt;
 double resint::_m;
@@ -23,9 +24,12 @@ int resint::_mode;
 
 double resint::mur;
 double resint::muf;
+double resint::mures;
 double resint::mur2;
 double resint::muf2;
+double resint::mures2;
 
+double resint::a;
 complex <double> resint::loga;
 double resint::rloga;
 complex <double> resint::logmuf2q2;
@@ -55,13 +59,20 @@ void resint::init()
   iorder_.iord_ = opts.order - 1;          //order for LL/NLL running of alphas
   flagrealcomplex_.flagrealcomplex_ = 0;   // choose real axis (complex plane) integration of bstar (b) (always 0)
   modified_.imod_ = 1;                     // normal (imod=0) or modified (imod=1) sudakov      
-  a_param_.a_param_ = opts.a_param;        //dynamic resummation scale
+
+  // g-parameter of the non perturbative form factor
+  np_.g_ = opts.g_param;
+
+  //a-parameter of the resummation scale, set it for the dynamic case
+  a = opts.a_param;
+  a_param_.a_param_ = opts.a_param;        
   a_param_.b0p_ = resconst::b0*opts.a_param;
-  np_.g_ = opts.g_param;                   // non perturbative parameter
   rlogs_.rloga_ = rloga;
+  //  clogs_.loga_ = loga; //complex loga is not used
   
   // define points for quadratures integration
-  intdeoini(lenaw, tiny, 1.0e-2, aw);
+  intdeoini(lenaw, tiny, 1.0e-2, awinf);
+  intdeini(lenaw, tiny, 1.0e-2, awfin);
 }
 
 double resint::rint(double costh, double m, double qt, double y, int mode)
@@ -94,16 +105,27 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
       mur = opts.mur;
       muf = opts.muf;
     }
+  if (!opts.dynamicresscale) //for fixed resummation scale need to recompute a_param
+    {
+      a =_m/opts.mures;
+      loga = log(a);
+      rloga = log(a);
+      a_param_.a_param_ = a;
+      a_param_.b0p_ = resconst::b0*a;
+      rlogs_.rloga_ = rloga;
+    }
+
   mur2=pow(mur,2);
   muf2=pow(muf,2);
 
-  //squared resummation scale (used for the evolution)
-  double q2s=q2/pow(opts.a_param,2);
+  //resummation and squared resummation scale (used for the evolution)
+  mures = m/a;
+  mures2 = q2/pow(a,2);
 
   //alphas at various scales (alphas convention is alphas/4/pi)
   alpqfac=LHAPDF::alphasPDF(muf)/4./M_PI;
   alpqren=LHAPDF::alphasPDF(mur)/4./M_PI;
-  alpqres=LHAPDF::alphasPDF(sqrt(q2s))/4./M_PI;
+  alpqres=LHAPDF::alphasPDF(mures)/4./M_PI;
 
   //alpqr is alphas at the renormalization scale
   if (opts_.approxpdf_ == 1)
@@ -119,7 +141,7 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
   if (opts_.approxpdf_ == 1)
     {
       int nloop = 3;
-      double scale = sqrt(q2s);
+      double scale = mures;
       alpqf=dyalphas_mcfm_(scale,couple_.amz_,nloop)/4./M_PI;
     }
   else
@@ -140,8 +162,13 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
 
   if (opts.blim > 0)
     {
-      double lambdaqcd = mur/(exp(1./(2.*aass*resconst::beta0)));
-      blim = a_param_.b0p_/lambdaqcd;
+      double lambdaqcd         = mur/(exp(1./(2.*aass*resconst::beta0)));
+      double lambdasudakov     = mures/(exp(1./(2.*aass*resconst::beta0)));
+
+      //      blim = resconst::b0/lambdasudakov
+      blim = min(resconst::b0/lambdaqcd,resconst::b0/lambdasudakov);
+      //      cout << _m << "  " << resconst::b0/lambdaqcd << "  " << resconst::b0/lambdasudakov << "  " << a_param_.b0p_/lambdaqcd << endl;
+
       blim = blim/opts.blim;
     }
 
@@ -206,9 +233,45 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
 double resint::bintegral(double qt)
 {
   // Compute integral using double exponential quadratures for oscillatory functions (intde2.c)
+
   double res, err;
-  intdeo(besselint::bint, 0.0, qt, aw, &res, &err);
-  //cout << "dequad result of inverse bessel transform  " << setprecision(16) << res << " +- " << err/res*100 << "%" << endl;
-  //cout.precision(6); cout.unsetf(ios_base::floatfield);
+  intdeo(besselint::bint, 0.0, qt, awinf, &res, &err);
+  //  cout << "dequad result of inverse bessel transform, pt=" << _qt << " m=" << _m << " y=" << _y << " : " << setprecision(16) << res << " +- " << err/res*100 << "%" << endl;
+  //  cout.precision(6); cout.unsetf(ios_base::floatfield);
+
+  /*
+  //split the integral above and below the b mass
+  //scale b0/b without a_param
+  double bstar_mb = resconst::b0/LHAPDF::getThreshold(5);
+  
+  //convert bstar to b
+  double b_mb = bstar_mb / sqrt(1-(bstar_mb*bstar_mb)/(blimit_.rblim_*blimit_.rblim_));
+
+
+  double res1, err1;
+  intdeo(besselint::bint, b_mb, qt, awinf, &res1, &err1);
+
+
+  //dequad seems not to be appropriate for this integral, try simple gaussian quadrature
+  double res2, err2;
+  intde(besselint::bint, 0.0, b_mb, awfin, &res2, &err2);
+  cout << "split: dequad result of inverse bessel transform  " << setprecision(16) << res1+res2 << " +- " << err1/res1*100 << "% "  << err2+res2*100 << "%" << endl;
+  cout.precision(6); cout.unsetf(ios_base::floatfield);
+  res = res1+res2;
+
+  //plot the b-integrand
+  cout << "{" << endl;
+  cout << "TGraph *g = new TGraph();" << endl;
+  for (int i = 0; i < 1000; i++)
+    {
+      //      double b = b_mb*0.95+i*(b_mb*1.05 -b_mb*0.95)/100.;
+      double b = 0.+i*(b_mb*50 -0)/1000.;
+  //      cout << b << "  " << b_mb << "  " << besselint::bint(b) << endl;;
+      cout << "g->SetPoint(g->GetN(), " << b << ", " << besselint::bint(b) << ");" << endl;
+    }
+  cout << "g->Draw();" << endl;
+  cout << "}" << endl;
+  */
+
   return res;
 }
