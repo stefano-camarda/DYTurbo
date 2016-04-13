@@ -145,10 +145,16 @@ void settings::readfromfile(const string fname){
 	a_param = 1.0;
       }
 
-    if (dynamicscale == true && evolmode != 1)
+    if (evolmode > 3 || evolmode < 0)
+      {
+	cout << "wrong value for evolmode: available evolmodes: 0,1,2,3" << endl;
+	exit (-1);
+      }
+
+    if (dynamicscale == true && evolmode != 3)
       {
 	//cannot use a dynamic mur, muf, when the PDFs are converted from x-space to N-space at the factorisation scale
-	cout << "dynamicscale possible only with evolmode = 1" << endl;
+	cout << "dynamicscale possible only with evolmode = 3" << endl;
 	exit (-1);
       }
 

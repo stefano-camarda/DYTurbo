@@ -68,19 +68,19 @@ void pegasus::init()
   // Some default settings of the external initialization parameters
   // (standard-speed iterated VFNS evolution at NLO for mu_f/mu_r = 1)
 
-  //reproduce in N-space the LHAPDF evolution in x-space
-  if (opts.evolmode == 1)
-    {
-      ivfns = 1; //VFN evolution (read from LHAPDF)
-      nff = 4;   //in FFN evolution, number of flavours  (read from LHAPDF)
-      order_.npord_  = LHAPDF::getOrderPDF(); //order of evolution (read from LHAPDF)
-    }
   //reproduce DYRES evolution
-  if (opts.evolmode == 3)
+  if (opts.evolmode == 1)
     {
       ivfns = 0; //FFN evolution
       nff = 5;   //5 light flavours
-      order_.npord_  = opts.order - 1; //order of evolution is LO(NLO) for NLL(NNLL)
+      order_.npord_ = opts.order - 1; //order of evolution is LO(NLO) for NLL(NNLL)
+    }
+  //reproduce in N-space the LHAPDF evolution in x-space
+  else if (opts.evolmode == 3)
+    {
+      ivfns = 1; //VFN evolution (read from LHAPDF)
+      nff = 4;   //in FFN evolution, number of flavours  (read from LHAPDF)
+      order_.npord_ = LHAPDF::getOrderPDF(); //order of evolution (read from LHAPDF)
     }
   
   //mode of evolution in Pegasus-QCD
@@ -211,14 +211,13 @@ void pegasus::init()
 
   //Initial scale  M20 = M_0^2 (in GeV^2)  and  ASI = alpha_s(M_0^2)
 
-  asinp_.m20_ = LHAPDF::getQ2min(opts.LHAPDFmember);
-  //input values from LHAPDF and forward evolution
-  if (opts.evolmode == 1)
-    asinp_.m20_ = LHAPDF::getQ2min(opts.LHAPDFmember);
-
   //backward evolution from the factorisation scale
-  if (opts.evolmode == 3)
+  if (opts.evolmode == 1)
     asinp_.m20_ = pow(opts.muf,2);
+
+  //input values from LHAPDF and forward evolution
+  else if (opts.evolmode == 3)
+    asinp_.m20_ = LHAPDF::getQ2min(opts.LHAPDFmember);
 
   double ASI = LHAPDF::alphasPDF(sqrt(asinp_.m20_));
 
@@ -316,18 +315,8 @@ void pegasus::init()
       //Arrays of non-singlet and singlet quark combinations for N_f = 3 (and 4 and 5)
       //defined as in Eq. (2.16) of hep-ph/0408244
       //Pegasus evoltion: input PDFs at the starting scale, with 3 flavours
-      if (opts.evolmode == 1)
-	{
-	  painp_.vai_[i] = fcx(cx(uval) + cx(dval) + (cx(s)-cx(sbar)));
-	  painp_.m3i_[i] = fcx(cx(uval) - cx(dval));
-	  painp_.m8i_[i] = fcx(cx(painp_.vai_[i]) - 3.*(cx(s)-cx(sbar)));
-
-	  painp_.sgi_[i] = fcx(cx(uval) + cx(dval) + 2.* (cx(dbar) + cx(ubar)) + (cx(s)+cx(sbar)));
-	  painp_.p3i_[i] = fcx(cx(painp_.m3i_[i]) - 2.* (cx(dbar)-cx(ubar)));
-	  painp_.p8i_[i] = fcx(cx(uval) + cx(dval) + 2.* (cx(dbar) + cx(ubar)) - 2.* (cx(s)+cx(sbar)));
-	}
       //reproduce DYRES evolution: input PDFs at the factorisation scale, with 5 flavours
-      if (opts.evolmode == 3)
+      if (opts.evolmode == 1)
 	{
 	  complex <double> qp[5];
 	  qp[0] = cx(uval) + 2.*cx(ubar);
@@ -354,6 +343,16 @@ void pegasus::init()
 	  painp_.p8i_[i] = fcx(qp[0]+qp[1]-2.*qp[2]);
 	  hfpainp_.p15i_[i] = fcx(qp[0]+qp[1]+qp[2]-3.*qp[3]);
 	  hfpainp_.p24i_[i] = fcx(qp[0]+qp[1]+qp[2]+qp[3]-4.*qp[4]);
+	}
+      else if (opts.evolmode == 3)
+	{
+	  painp_.vai_[i] = fcx(cx(uval) + cx(dval) + (cx(s)-cx(sbar)));
+	  painp_.m3i_[i] = fcx(cx(uval) - cx(dval));
+	  painp_.m8i_[i] = fcx(cx(painp_.vai_[i]) - 3.*(cx(s)-cx(sbar)));
+
+	  painp_.sgi_[i] = fcx(cx(uval) + cx(dval) + 2.* (cx(dbar) + cx(ubar)) + (cx(s)+cx(sbar)));
+	  painp_.p3i_[i] = fcx(cx(painp_.m3i_[i]) - 2.* (cx(dbar)-cx(ubar)));
+	  painp_.p8i_[i] = fcx(cx(uval) + cx(dval) + 2.* (cx(dbar) + cx(ubar)) - 2.* (cx(s)+cx(sbar)));
 	}
     }
  
@@ -396,7 +395,7 @@ void pegasus::evolve()
   int NF;
 
   //DYRES evolution: fixed number of flavours = 5 evolution from the factorisation scale downward
-  if (opts.evolmode == 3)
+  if (opts.evolmode == 1)
     {
       NF  = nff;
       double R20 = asinp_.m20_ * R2/M2;
@@ -424,7 +423,7 @@ void pegasus::evolve()
     }
 
   //Normal Pegasus evolution: VFNS evolution from the starting scale upward
-  if (opts.evolmode == 1)
+  else if (opts.evolmode == 3)
     {
       if (M2 > asfthr_.m2t_) //If M2 = M2tilde than the scale is frozen at muf, and never goes above the top
 	{
