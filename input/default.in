@@ -9,10 +9,13 @@ a_param      = 2.0e0          # a_param
 g_param      = 1.0e0          # g_param
 order        = 2              # order
 zerowidth    = false          # zerowidth
-dynamicscale = false
 rseed        = 123456         # rseed
 LHAPDFset    = CT10nnlo
 LHAPDFmember = 0              # set, member (LHAPDFs)
+
+dynamicscale = false
+dynamicresscale = true
+mures = 91.1876
 
 blim = -1
 
