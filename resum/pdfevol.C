@@ -25,6 +25,7 @@ complex <double> *pdfevol::fn2;
 //scales
 complex <double> pdfevol::bscale;
 complex <double> pdfevol::bstarscale;
+complex <double> pdfevol::qbstar;
 
 complex <double> pdfevol::XL;
 complex <double> pdfevol::XL1;
@@ -200,7 +201,7 @@ void pdfevol::evolution(int i) //from reno2
   complex <double> EPM = EP/EM;
 
   //...EVOLUTION OF LIGHT PARTON DENSITIES
-  //double q2s = q2/pow(opts.a_param,2);                //resummation scale
+  //double q2s = q2/pow(resint::a,2);                //resummation scale
   //double alpqf = dyalphas_lhapdf_(sqrt(q2s))/4./M_PI; //alphas at the resummation scale
   //complex <double> alpq = alpqf * alphasl(scale2);              //alphas at the resummation scale times alphas at 1/b
   //complex <double> alpr= alpq * 1 *(opts.order-1);
@@ -294,7 +295,8 @@ void pdfevol::calculate(int i)
 
   int hadron = 1;
   //double facscale = fabs(bscale);
-  double facscale = fabs(bstarscale);
+  double facscale = fabs(bstarscale);//better qbstar here? actually better qbstar * resint::mures / sqrt(pow(qbstar,2) + resint::mures2);
+  //double facscale = fabs(opts.muf);
   fcomplex XN = fcx(mellinint::Np[i]);
   pdfmoments_(hadron,facscale,XN,uval,dval,usea,dsea,s,sbar,glu,charm,bot);
 

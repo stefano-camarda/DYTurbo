@@ -30,6 +30,7 @@ namespace pdfevol
   //scales
   extern complex <double> bscale;
   extern complex <double> bstarscale;
+  extern complex <double> qbstar;
   extern complex <double> XL;
   extern complex <double> XL1;
   extern complex <double> SALP;
