@@ -20,7 +20,7 @@ dyturbo_SOURCES = dyturbo.C
 dyturbo_LDADD = libdyturbo.la \
 	../cernlib/libcern.la \
 	-lgfortran \
-	$(CUBA_LDFLAGS) $(LHAPDF_LDFLAGS) -lgsl -lgslcblas #-lifcore -limf -lifport -lintlc -lquadmath
+	$(CUBA_LDFLAGS) $(LHAPDF_LDFLAGS) #-lgsl -lgslcblas -lifcore -limf -lifport -lintlc -lquadmath
 
 if HAVE_ROOT
 dyturbo_LDADD += $(ROOT_LDFLAGS)
