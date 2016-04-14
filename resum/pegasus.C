@@ -221,7 +221,11 @@ void pegasus::init()
 
   //input values from LHAPDF and forward evolution
   else if (opts.evolmode == 3)
-    asinp_.m20_ = LHAPDF::getQ2min(opts.LHAPDFmember);
+    {
+      LHAPDF::PDFInfo info(opts.LHAPDFset, opts.LHAPDFmember);
+      double qmin = info.get_entry_as<double>("QMin", -1);
+      asinp_.m20_ = pow(qmin,2);
+    }
 
   double ASI = LHAPDF::alphasPDF(sqrt(asinp_.m20_));
 
