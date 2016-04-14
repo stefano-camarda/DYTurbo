@@ -48,7 +48,6 @@ Zss = 1.0
 Zcc = 1.0
 Zbb = 1.0
 
-# Z
 # include virtual photon
 useGamma = true
 # Set boundaries of integration
@@ -56,11 +55,6 @@ ylow  = -5
 yhigh = 5
 mlow  = 66.
 mhigh = 116.
-
-# resummation damping
-dampk = 0.5
-dampdelta = 0.5
-dampmode = 1
 
 # Resummation parameters
 resumcpp  = true  # use C++ code for resummation
