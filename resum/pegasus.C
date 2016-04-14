@@ -370,8 +370,8 @@ void pegasus::init()
 void pegasus::evolve()
 {
   //Values of a_s and N_f for the call of EVNFFN or EVNVFN below
-  //  double M2 = pow(fabs(pdfevol::bstarscale),2); //pdfevol::bscale
-  double M2 = pow(fabs(pdfevol::qbstar),2); //pdfevol::bscale
+  double M2 = pow(fabs(pdfevol::bstarscale),2); //pdfevol::bscale
+  //double M2 = pow(fabs(pdfevol::qbstar),2); //pdfevol::bscale
 
   //check starting scale
   //  double M2 = asinp_.m20_*10;
@@ -380,11 +380,13 @@ void pegasus::evolve()
   //R2 is the final scale of the evolution, corrected by the ratio of mur2/muf2
   double R2  = M2 * exp(-frrat_.logfr_);
 
-  //Reproduce the L->L~ redefinition by a redefinition of the b0/b scale (see Eq. 17 of hep-ph/0508068)
+  //Reproduce the L -> L~ redefinition by a redefinition of the b0/b scale (see Eq. 17 of hep-ph/0508068)
   //With the L -> L~ modification, alphas reaches asymptotically
-  //alphas(qres) when bscale -> inf, so that the PDF evolution is frozen at qres as upper scale.
+  //alphas(muf) when bscale -> inf, so that the PDF evolution is frozen at muf as upper scale.
   //This modification is required to restore the fixed order cross section upon qt-integration
-  double M2tilde = M2 * resint::mures2 / (M2 + resint::mures2);
+  //double M2tilde = M2 * resint::mures2 / (M2 + resint::mures2);
+  double M2tilde = M2 * resint::muf2 / (M2 + resint::muf2);
+
   double R2tilde  = M2tilde * exp(-frrat_.logfr_);
 
   //use the modification L -> L~
