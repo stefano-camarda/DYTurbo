@@ -29,7 +29,7 @@ double besselint::bint(double b)
   //    pdfevol::bscale = 5.;
   fcomplex fscale2 = fcx(pow(pdfevol::bscale,2));
   
-  //bstarscale = a*b0/bstar (this scale should actually not be used anymore)
+  //bstarscale = a*b0/bstar (final scale used for the PDF evolution)
   double bstar = b / sqrt(1+(b*b)/(blimit_.rblim_*blimit_.rblim_));
   pdfevol::bstarscale = resconst::b0*resint::a/bstar;
 
