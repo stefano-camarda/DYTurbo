@@ -82,17 +82,18 @@ void setalphas()
   qcdcouple_.gsq_=4*M_PI*qcdcouple_.as_;
 }
 
-//set value of g
+//set the value of the g-parameter of the non perturbative form factor
 void setg()
 {
   LHAPDF::PDFInfo info(opts.LHAPDFset, opts.LHAPDFmember);
   double gformfactor = info.get_entry_as<double>("g", -1);
   if (gformfactor >= 0)
-  {
-    cout << "g form factor: input from PDF member: " << gformfactor << endl;
-    opts.g_param = gformfactor;
-    g_param_.g_param_ = gformfactor;
-  }
+    {
+      cout << "g form factor: input from PDF member: " << gformfactor << endl;
+      opts.g_param = gformfactor;
+      g_param_.g_param_ = gformfactor;
+      np_.g_ = opts.g_param;
+    }
 }
 
 void fdist_(int& ih, double& x, double& xmu, double fx[11])

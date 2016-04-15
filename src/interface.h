@@ -297,9 +297,14 @@ extern "C" {
     double b0p_;
   } a_param_;
 
+  //non perturbative g
   extern struct {
     double g_param_;
   } g_param_;
+
+  extern struct {
+    double g_;
+  } np_;
 
   extern struct {
     int order_;
