@@ -33,6 +33,9 @@ double besselint::bint(double b)
   double bstar = b / sqrt(1+(b*b)/(blimit_.rblim_*blimit_.rblim_));
   pdfevol::bstarscale = resconst::b0*resint::a/bstar;
 
+  //bstarscale with the modification L -> L~, which freezes the scale at muf
+  pdfevol::bstartilde = pdfevol::bstarscale * resint::muf / sqrt((pow(pdfevol::bstarscale,2) + resint::muf2));
+  
   //qbstar = b0/bstar (without a_param)
   pdfevol::qbstar = resconst::b0/bstar;
   
@@ -71,10 +74,53 @@ double besselint::bint(double b)
   /********************************************/
   
   /********************************************/
-  //alpq is used in hcoefficients::calcb, it is alphas(res scale) * alphas(b0^2/b^2)
-  //it is used only at NLL, at NNLL instead aexp and aexpb are used
-  complex <double> alpq = resint::alpqres * cx(alphasl_(fscale2));        //alpq = alphas(b0^2/b^2)
-  //complex <double> alpq = resint::alpqfac * cx(alphasl_(fscale2));          //alphas at the factorisation scale times alphas at 1/b
+  //alpq is used in hcoefficients::calcb, it is alpq = alphas(b0^2/b^2)
+  //it is used only at NLL, at NNLL instead aexp and aexpb are used (aexp is the same as alphasl, but with a different blim)
+  complex <double> alpq;
+  alpq = resint::alpqres * cx(alphasl_(fscale2));
+  if (opts.evolmode == 2 || opts.evolmode == 3)
+    //In order to have variable flavour evolution, should use a VFN definition of alpq
+    //There is possibly an issue here when the renormalisation scale is different from mll, since aass=alphas(muren) is used in xlambda = beta0*aass*blog
+    {
+      double M2 = pow(fabs(pdfevol::bstartilde),2);
+      if (M2 > asfthr_.m2t_) //The scale is frozen at muf, and never goes above the top
+	{
+	  int NF = 6;
+	  double R2T = asfthr_.m2t_;
+	  alpq = as_(M2, R2T, asfthr_.ast_, NF);
+	}
+      else if (M2 > asfthr_.m2b_)
+	{
+	  int NF = 5;
+	  double R2B = asfthr_.m2b_;
+	  alpq = as_(M2, R2B, asfthr_.asb_, NF);
+
+	  /*
+	  //tweak this to look as in dyres, where alphas(mur) is used:
+	  double R20 = resint::_m;
+	  alpq = as_(M2, R20, resint::alpqren, NF);
+	  alpq = alpq/resint::alpqren*resint::alpqres;
+	  */
+	}
+      else if (M2 > asfthr_.m2c_)
+	{
+	  int NF = 4;
+	  double R2C = asfthr_.m2c_;
+	  alpq = as_(M2, R2C, asfthr_.asc_, NF);
+	}
+      else
+	{
+	  int NF = 3;
+	  double R20 = asinp_.m20_;
+	  alpq = as_(M2, R20, asinp_.as0_, NF);
+	}
+      //Based on the definition of aexp, may be need to rescale alpq for as(qres)/(asmur)?
+      //alpq = alpq*resint::alpqres/resint::alpqren;
+    }
+  //---> should do the same also at NNLL with aexp (aexpB should be independent from NF)
+
+  //  complex <double> alpq = LHAPDF::alphasPDF(fabs(pdfevol::bstartilde))/4./M_PI;        //alpq = alphas(b0^2/b^2)
+  //  cout << pdfevol::bstarscale << "  " << resint::alpqres * cx(alphasl_(fscale2)) << "  " <<  LHAPDF::alphasPDF(fabs(pdfevol::bstartilde))/4./M_PI << endl;
   /********************************************/
 
   //pdfevol::XL = pdfevol::alpqf / alpq; // = 1./cx(alphasl_(fscale2));
@@ -117,6 +163,13 @@ double besselint::bint(double b)
 
   //aexp and aexpb are calculated in alphasl
   complex <double> aexp = cx(exponent_.aexp_);
+  //aexp is actually the ratio alphas(a*b0/b)/alphas(muren)
+  if (opts.evolmode == 2 || opts.evolmode == 3) //account for VFN evolution
+    //It seems that the pt-integrated cross section is invariant for variations of a_param if aexp is the ratio of alpq/as(muren) (and not alpq/as(Qres))
+    //Indeed, aexp is always multiplied by aass, which is alphas at the renormalisation scale
+    aexp = alpq / resint::alpqren; 
+  
+  //  cout << pdfevol::bstartilde << "  " << cx(exponent_.aexp_) << "  " << alpq / resint::alpqres << "  " << alpq / resint::alpqren << endl;
   complex <double> aexpb = cx(exponent_.aexpb_);
   
   // Cache the positive and negative branch of coefficients which depend only on one I index
