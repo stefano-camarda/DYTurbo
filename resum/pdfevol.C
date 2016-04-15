@@ -25,6 +25,7 @@ complex <double> *pdfevol::fn2;
 //scales
 complex <double> pdfevol::bscale;
 complex <double> pdfevol::bstarscale;
+complex <double> pdfevol::bstartilde;
 complex <double> pdfevol::qbstar;
 
 complex <double> pdfevol::XL;
