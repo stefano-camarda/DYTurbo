@@ -42,11 +42,6 @@ extern "C"
   } a_param_;
   */
 
-  //non perturbative g
-  extern struct {
-    double g_;
-  } np_;
-
   extern struct {
     double aass_;
   } aass_;
