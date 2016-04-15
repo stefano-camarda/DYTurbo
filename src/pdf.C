@@ -47,7 +47,7 @@ void setpdf_(int& member)
     LHAPDF::initPDF(member);
   
   setalphas();
-  setg();
+  //  setg(); //set g separately when setting a different PDF in the resummed part
 }
 
 
@@ -103,7 +103,9 @@ void fdist_(int& ih, double& x, double& xmu, double fx[11])
   if (x > 1.)
     for (int i = -5; i <=5; i++)
       fx[5+i]=0.;
- 
+  //!!!! should return here??? !!!!
+
+  
   LHAPDF::xfx(x,xmu,fPDF);
   if (ih == 1) //proton
     for (int i = -5; i <=5; i++)
