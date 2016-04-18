@@ -101,7 +101,7 @@ c--- bother calculating the matrix elements for it, instead bail out
 
 c     Load central PDF and QCD coupling (not needed)
       if (pdferr) then
-         call setpdf(0)
+         call dysetpdf(0)
       endif
 
 c--- Calculate the required matrix element      
@@ -150,7 +150,7 @@ c     skip PDF loop in the preconditioning phase
       
 c     start PDF loop
       do npdf=0,maxpdf
-         call setpdf(npdf)
+         call dysetpdf(npdf)
          asopi=ason2pi*2
          call hists_setpdf(npdf)
 c     intitialise xmsq to 0

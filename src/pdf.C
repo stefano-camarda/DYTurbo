@@ -33,7 +33,7 @@ void pdfini_()
   //setg();
 }
 
-void setpdf_(int& member)
+void dysetpdf_(int& member)
 {
 
   if (member == 0)

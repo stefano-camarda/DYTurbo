@@ -461,7 +461,7 @@ c     skip PDF loop in the preconditioning phase
       
 c     start PDF loop
       do npdf=0,maxpdf
-         call setpdf(npdf)
+         call dysetpdf(npdf)
          
 c     intitialise xmsq to 0
          xmsq=0d0

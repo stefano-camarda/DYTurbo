@@ -83,7 +83,7 @@ c--- bother calculating the matrix elements for it, instead bail out
 
 c     Load central PDF and QCD coupling
       if (pdferr) then
-         call setpdf(0)
+         call dysetpdf(0)
       endif
       gsqcentral=gsq
 
@@ -102,7 +102,7 @@ c     skip PDF loop in the preconditioning phase
       
 c     start PDF loop
       do npdf=0,maxpdf
-         call setpdf(npdf)
+         call dysetpdf(npdf)
          call hists_setpdf(npdf)
 c     intitialise xmsq to 0
          xmsq=0d0
