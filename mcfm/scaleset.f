@@ -12,8 +12,8 @@
       double precision dyalphas_mcfm,dyalphas_lhapdf
       common/couple/amz
       
-      scale=dsqrt(q2)
-      facscale=dsqrt(q2)
+      scale=dsqrt(q2)*kmuren
+      facscale=dsqrt(q2)*kmufac
 
       scalemax=3000d0
 

@@ -62,7 +62,7 @@ void pdfevol::init()
     {
       int hadron = 1; //opts.ih1;
       fcomplex XN = fcx(mellinint::Np[k]); //compute positive branch only, the negative branch is obtained by complex conjugation
-      double facscale = opts.muf;
+      double facscale = opts.kmufac*opts.rmass;
       pdfmoments_(hadron,facscale,XN,uval,dval,usea,dsea,splus,ssea,glu,charm,bot);
       // cout << "moment " << k << "  " << cx(XN) << "  ";
       // cout << "uval  " << uval << endl;

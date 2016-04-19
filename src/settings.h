@@ -44,7 +44,6 @@ class settings
 public:
   settings() {};
   void readfromfile(const string fname);
-  void initDyresSettings();
 
   // private:
   void dumpAll();
@@ -53,24 +52,27 @@ public:
   void dumpS(string var, string val );
   void dumpB(string var, bool   val );
 
+  //process settings
+  double sroot;
+  int    ih1;
+  int    ih2;
+  int    nproc;
+  double g_param;
+  int    order;
 
-  //original DYRES settings
-  double sroot        ;
-  int    ih1          ;
-  int    ih2          ;
-  int    nproc        ;
-  double mur          ;
-  double muf          ;
-  double a_param      ;
-  double g_param      ;
-  int    order        ;
-  bool   zerowidth    ;
-  int    rseed        ;
+  //PDF settings
   string LHAPDFset    ;
   int    LHAPDFmember ;
 
-  //fixed resummation scale
-  double mures;
+  //fixed or dynamic QCD scales
+  bool dynamicscale, dynamicresscale;
+  
+  //scale factors for the QCD scales
+  double kmures;
+  double kmuren;
+  double kmufac;
+
+  //  double a_param;
   
   //IR cut-off
   double blim;
@@ -79,6 +81,7 @@ public:
   double Gf, zmass, wmass;
   double xw, aemmz;
   double zwidth, wwidth;
+  bool zerowidth;
 
   //CKM matrix
   double Vud, Vus, Vub;
@@ -108,6 +111,9 @@ public:
 
   //qtcut
   double xqtcut, qtcut;
+
+  //integration settings
+  int rseed;
 
   //dimension of integration
   int intDimRes;
@@ -177,8 +183,6 @@ public:
   bool verbose;
 
   bool resumcpp;
-
-  bool dynamicscale, dynamicresscale;
 
   int evolmode;
 

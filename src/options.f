@@ -8,3 +8,6 @@
 
       integer doFill
       common/doFill/doFill
+
+      double precision kmuren,kmufac,kmures
+      common/scaleopts/kmuren,kmufac,kmures

@@ -4,18 +4,14 @@
 #include "integr.h"
 #include "resintegr.h"
 #include "ctintegr.h"
-#include "finintegr.h"
 #include "cubacall.h"
 #include "plotter.h"
-#include "printsettings.h"
-#include "switch.h"
 #include "clock_real.h"
-
-#include "config.h"
-#include <cuba.h>
 
 #include <iostream>
 #include <iomanip>
+#include <fstream>
+#include <vector>
 
 using namespace std;
 
@@ -41,19 +37,6 @@ double TotXSec ;
 int main( int argc , const char * argv[])
 {
 
-  cout << endl << endl;
-  cout << " (        )              (           )   " << endl;
-  cout << " )\\ )  ( /(   *   )      )\\ )  (  ( /(   " << endl;
-  cout << "(()/(  )\\())` )  /(   ( (()/(( )\\ )\\())  " << endl;
-  cout << " /(_))((_)\\  ( )(_))  )\\ /(_))((_|(_)\\   " << endl;
-  cout << "(_))___ ((_)(_(_())_ ((_|_))((_)_  ((_)  " << endl;
-  cout << " |   \\ \\ / /|_   _| | | | _ \\| _ )/ _ \\  " << endl;
-  cout << " | |) \\ V /   | | | |_| |   /| _ \\ (_) | " << endl;
-  cout << " |___/ |_|    |_|  \\___/|_|_\\|___/\\___/  " << endl;
-  cout << "                                   v " << VERSION << endl;
-  cout << endl;
-  cout << endl;
-
   double begin_time, end_time;
 
   /***********************************/
@@ -62,27 +45,7 @@ int main( int argc , const char * argv[])
   if (argc>1) {
       conf_file = argv[1];
   }
-  SMparameters();
-  opts.readfromfile(conf_file.c_str());
-  opts.initDyresSettings();
-  gaussinit_();
-  iniflavreduce_();
-  dyturboinit();
-  switching::init();
-  rescinit_();
-  //bins.init();
-  bins.readfromfile(conf_file.c_str());
-  cubacores(opts.cubacores,1000000);   //< set number of cores (move this to cubainit)
-  cubaexit((void (*)()) exitfun,NULL); //< merge at the end of the run
-  // histogram output
-  hists.Init();
-  /***********************************/
-
-  /***********************************/
-  //print out EW and QCD parameters and other settings
-  if (opts.verbose)
-    opts.dumpAll();
-  printsettings();
+  dyturboinit(conf_file);
   /***********************************/
 
   /*****************************************/

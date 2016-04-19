@@ -22,11 +22,11 @@ double resint::_costh;
 
 int resint::_mode;
 
-double resint::mur;
-double resint::muf;
+double resint::muren;
+double resint::mufac;
 double resint::mures;
-double resint::mur2;
-double resint::muf2;
+double resint::muren2;
+double resint::mufac2;
 double resint::mures2;
 
 double resint::a;
@@ -50,10 +50,6 @@ double resint::alpqres;
 
 void resint::init()
 {
-  // precompute log of scales
-  loga = log(opts.a_param);
-  rloga = log(opts.a_param);
-      
   //Set values in the common block for the sudakov
   flag1_.flag1_ = opts.order;              //order for the sudakov
   iorder_.iord_ = opts.order - 1;          //order for LL/NLL running of alphas
@@ -64,9 +60,13 @@ void resint::init()
   np_.g_ = opts.g_param;
 
   //a-parameter of the resummation scale, set it for the dynamic case
-  a = opts.a_param;
-  a_param_.a_param_ = opts.a_param;        
-  a_param_.b0p_ = resconst::b0*opts.a_param;
+  a = 1./opts.kmures;
+  a_param_.a_param_ = a;
+  a_param_.b0p_ = resconst::b0*a;
+
+  // precompute log of scales
+  loga = log(a);
+  rloga = log(a);
   rlogs_.rloga_ = rloga;
   //  clogs_.loga_ = loga; //complex loga is not used
   
@@ -97,17 +97,22 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
   //Set factorization and renormalization scales (set dynamic scale here)
   if (opts.dynamicscale)
     {
-      mur = m;
-      muf = m;
+      muren = m*opts.kmuren;
+      mufac = m*opts.kmufac;
     }
   else
     {
-      mur = opts.mur;
-      muf = opts.muf;
+      muren = opts.rmass*opts.kmuren;
+      mufac = opts.rmass*opts.kmufac;
     }
-  if (!opts.dynamicresscale) //for fixed resummation scale need to recompute a_param
+
+  if (opts.dynamicresscale)
+    mures = m*opts.kmures;
+  else
+    //for fixed resummation scale need to recompute a_param
     {
-      a =_m/opts.mures;
+      mures = opts.rmass*opts.kmures;
+      a = m/mures;
       loga = log(a);
       rloga = log(a);
       a_param_.a_param_ = a;
@@ -115,23 +120,20 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
       rlogs_.rloga_ = rloga;
     }
 
-  mur2=pow(mur,2);
-  muf2=pow(muf,2);
-
-  //resummation and squared resummation scale (used for the evolution)
-  mures = m/a;
-  mures2 = q2/pow(a,2);
+  muren2=pow(muren,2);
+  mufac2=pow(mufac,2);
+  mures2=pow(mures,2);
 
   //alphas at various scales (alphas convention is alphas/4/pi)
-  alpqfac=LHAPDF::alphasPDF(muf)/4./M_PI;
-  alpqren=LHAPDF::alphasPDF(mur)/4./M_PI;
+  alpqren=LHAPDF::alphasPDF(muren)/4./M_PI;
+  alpqfac=LHAPDF::alphasPDF(mufac)/4./M_PI;
   alpqres=LHAPDF::alphasPDF(mures)/4./M_PI;
 
   //alpqr is alphas at the renormalization scale
   if (opts_.approxpdf_ == 1)
     {
       int nloop = 3;
-      double scale = sqrt(mur2);
+      double scale = muren;
       alpqr=dyalphas_mcfm_(scale,couple_.amz_,nloop)/4./M_PI;
     }
   else
@@ -155,14 +157,14 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
   aass_.aass_ = aass; 
   double q = m;
   double blim;
-  if (q2 > 2.2*mur2) //avoid large values of b in f2(y) when q2>mur2 
-    blim = a_param_.b0p_*(1./q)*exp(1./(2.*aass*resconst::beta0))*sqrt(mur2/q2);
+  if (q2 > 2.2*muren2) //avoid large values of b in f2(y) when q2>mur2 
+    blim = a_param_.b0p_*(1./q)*exp(1./(2.*aass*resconst::beta0))*sqrt(muren2/q2);
   else
     blim = a_param_.b0p_*(1./q)*exp(1./(2.*aass*resconst::beta0)); // avoid Landau pole
 
   if (opts.blim > 0)
     {
-      double lambdaqcd         = mur/(exp(1./(2.*aass*resconst::beta0)));   //--> corresponds to a divergence in alphas
+      double lambdaqcd         = muren/(exp(1./(2.*aass*resconst::beta0))); //--> corresponds to a divergence in alphas
       double lambdasudakov     = mures/(exp(1./(2.*aass*resconst::beta0))); //--> correspond to a divergence in the Sudakov
 
       //should blim depend or not on a_param? In principle yes because PDFs are evolved to b0/bstar*a
@@ -189,10 +191,10 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
   scaleh_.q2_ = _m*_m;
   scaleh_.shad_ = pow(opts.sroot,2);
   scaleh_.sroot_ = opts.sroot;
-  scaleh_.mur_ = mur;
-  scaleh_.mur2_ = mur2;
-  scaleh_.muf_ = muf;
-  scaleh_.muf2_ = muf2;
+  scaleh_.mur_ = muren;
+  scaleh_.mur2_ = muren2;
+  scaleh_.muf_ = mufac;
+  scaleh_.muf2_ = mufac2;
   /***************************************************/
 
   //******************************************
@@ -206,10 +208,10 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
 
   //*****************************************
   //precompute scales: there is mass dependence in logq2muf2 logq2mur2, only with fixed factorization and renormalization scales
-  logmuf2q2=log(muf2/q2);
-  logq2muf2=log(q2/muf2);
-  logq2mur2=log(q2/mur2);
-  rlogq2mur2=log(q2/mur2);
+  logmuf2q2=log(mufac2/q2);
+  logq2muf2=log(q2/mufac2);
+  logq2mur2=log(q2/muren2);
+  rlogq2mur2=log(q2/muren2);
 
   rlogs_.rlogq2mur2_ = real(logq2mur2);
   

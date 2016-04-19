@@ -248,6 +248,12 @@ extern "C" {
   } pdferropts_;
 
   extern struct {
+    double kmuren_;
+    double kmufac_;
+    double kmures_;
+  } scaleopts_;
+
+  extern struct {
     double amz_;
   } couple_;
 

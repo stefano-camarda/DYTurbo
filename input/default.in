@@ -1,31 +1,30 @@
-# DYRES -- settings
-sroot        = 7e3            # sroot
-ih1          = 1
-ih2          = 1              # ih1, ih2
-nproc        = 3              # nproc
-mur          = 91.1876e0
-muf          = 91.1876e0      # mur, muf
-a_param      = 2.0e0          # a_param
-g_param      = 1.0e0          # g_param
-order        = 2              # order
-zerowidth    = false          # zerowidth
-rseed        = 123456         # rseed
-LHAPDFset    = CT10nnlo
-LHAPDFmember = 0              # set, member (LHAPDFs)
+# Process settings
+sroot        = 7e3            # center-of-mass energy
+ih1          = 1              # hadron 1
+ih2          = 1              # hadron 2
+nproc        = 3              # process: 1) W+; 2)W-; 3)Z(/gamma*)
+g_param      = 1.0            # non perturbative g parameter
+order        = 2              # order: 1) NLO(+NLL), 2) NNLO(+NNLL)
+fixedorder   = false          # resummation or fixed order switch
 
+#PDF settings
+LHAPDFset    = CT10nnlo       # PDF set from LHAPDF
+LHAPDFmember = 0              # PDF member
 
-dynamicscale = false
-dynamicresscale = true
-mures = 91.1876
+#QCD scale settings
+dynamicscale    = false       # if true, the renormalisation and factorisation scales are proportional to m_ll, if false they are proportional to m_V (V=W,Z)
+dynamicresscale = true        # if true, the resummation scale is proportional to m_ll, if false it is proportional to m_V (V=W,Z)
+kmuren          = 1.          # scale factor for the renormalisation scale
+kmufac          = 1.          # scale factor for the factorisation scale
+kmures          = 0.5         # scale factor for the resummation scale
 
-
-# DYTURBO settings
 # EW parameters (Gmu scheme)
-Gf = 1.1663787e-5
-zmass = 91.1876
-wmass = 80.385
-zwidth = 2.4950
-wwidth = 2.091
+Gf = 1.1663787e-5        # G-Fermi
+zmass = 91.1876          # Mass of the Z boson
+wmass = 80.385           # Mass of the W boson
+zwidth = 2.4950          # Width of the Z boson
+wwidth = 2.091           # Width of the W boson
+zerowidth = false        # zero-width approximation (not really implemented)
 
 # To use an effective weak-mixing angle, set xw to a non-zero value, otherwise it is calculated according to the Gmu scheme
 xw = 0.
@@ -48,9 +47,9 @@ Zss = 1.0
 Zcc = 1.0
 Zbb = 1.0
 
-# Z
-# include virtual photon
+# include virtual photon in Z/gamma* production
 useGamma = true
+
 # Set boundaries of integration
 ylow  = -5
 yhigh = 5
@@ -63,8 +62,8 @@ mhigh = 116.
 
 # Resummation parameters
 resumcpp  = true  # use C++ code for resummation
-qtcutoff = 0.02 # resummation cutoff
-blim = -1  # scale factor for blim
+qtcutoff = 0.02   # resummation cutoff
+blim = -1         # scale factor for blim
 
 # Strategy for the direct Mellin transform of PDFs at the factorization scale
 # Set to 1 to use the dyres approximation of PDFs and integration contour in the complex plane for the Mellin inversion
@@ -91,19 +90,18 @@ dampdelta = 0.5
 dampmode = 1
 
 
-
 # qtcut
 xqtcut = 0.008
 qtcut = 0.
 
-# dimension of integration
+# integration settings
+rseed        = 123456         # random seed for MC integration
+
+# type of integration for the resummed cross section
 intDimRes = 4 # can be 2, 3, or 4
 
 # type of integration for counter term
 intDimCT = 8 # can be 2, 3, 6, or 8
-
-#resummation or fixed order switch
-fixedorder  = false
 
 # term switches
 doRES  = true

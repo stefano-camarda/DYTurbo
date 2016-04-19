@@ -69,6 +69,12 @@ void printsettings()
   cout << setw(35) << "Renormalization scale: mur ="  << setw(19) << scale_.scale_ << setw(7) << "GeV" << endl;
   cout << setw(35) << "Factorization scale:   muf ="  << setw(19) << facscale_.facscale_ << setw(7) << "GeV" <<endl;
   cout << setw(35) << "Resummation scale:  m_ll/Q ="  << setw(19) << a_param_.a_param_ << endl;
+
+  cout << setw(25) << "Renormalization scale:" << setw(12) << (opts.dynamicscale ? "dynamic" : "fixed")    << setw(10) <<  "muren ="  << setw(4) << opts.kmuren << setw(3) << "* " << (opts.dynamicscale ? "m_ll" : to_string(opts.rmass)) << endl;
+  cout << setw(25) << "Factorization scale:"   << setw(12) << (opts.dynamicscale ? "dynamic" : "fixed")    << setw(10) <<  "mufac ="  << setw(4) << opts.kmufac << setw(3) << "* " << (opts.dynamicscale ? "m_ll" : to_string(opts.rmass)) << endl;
+  cout << setw(25) << "Resummation scale:"     << setw(12) << (opts.dynamicresscale ? "dynamic" : "fixed") << setw(10) <<  "mures ="  << setw(4) << opts.kmures << setw(3) << "* " << (opts.dynamicscale ? "m_ll" : to_string(opts.rmass)) << endl;
+
+
   cout << setw(35) << "alpha_s(MZ) ="                 << setw(19) << couple_.amz_ << endl;
   cout << setw(35) << "alpha_s(mur) ="                << setw(19) << qcdcouple_.as_ << endl;
   cout << setw(35) << "alpha_s running order ="       << setw(19) << (LHAPDF::getOrderAlphaS()+1) << "-loop" << endl;

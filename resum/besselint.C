@@ -34,7 +34,7 @@ double besselint::bint(double b)
   pdfevol::bstarscale = resconst::b0*resint::a/bstar;
 
   //bstarscale with the modification L -> L~, which freezes the scale at muf
-  pdfevol::bstartilde = pdfevol::bstarscale * resint::muf / sqrt((pow(pdfevol::bstarscale,2) + resint::muf2));
+  pdfevol::bstartilde = pdfevol::bstarscale * resint::mufac / sqrt((pow(pdfevol::bstarscale,2) + resint::mufac2));
   
   //qbstar = b0/bstar (without a_param)
   pdfevol::qbstar = resconst::b0/bstar;
@@ -96,7 +96,7 @@ double besselint::bint(double b)
 	  alpq = as_(M2, R2B, asfthr_.asb_, NF);
 
 	  /*
-	  //tweak this to look as in dyres, where alphas(mur) is used:
+	  //tweak this to look as in dyres, where alphas(muren) is used:
 	  double R20 = resint::_m;
 	  alpq = as_(M2, R20, resint::alpqren, NF);
 	  alpq = alpq/resint::alpqren*resint::alpqres;
@@ -114,7 +114,7 @@ double besselint::bint(double b)
 	  double R20 = asinp_.m20_;
 	  alpq = as_(M2, R20, asinp_.as0_, NF);
 	}
-      //Based on the definition of aexp, may be need to rescale alpq for as(qres)/(asmur)?
+      //Based on the definition of aexp, may be need to rescale alpq for as(qres)/as(muren)?
       //alpq = alpq*resint::alpqres/resint::alpqren;
     }
 

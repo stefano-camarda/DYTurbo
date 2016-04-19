@@ -92,7 +92,7 @@ void pegasus::init()
   // mode = 1 reproduces evolution in x-space
   evmod_.imodev_ = evolution_mode; 
   
-  double FR2 = 1.;//ratio of mur2/muf2
+  double FR2 = 1.;//ratio of muren2/mufac2
   frrat_.logfr_ = log(FR2);
 
   nnused_.nmax_ = mellinint::mdim;
@@ -217,7 +217,7 @@ void pegasus::init()
 
   //backward evolution from the factorisation scale
   if (opts.evolmode == 1)
-    asinp_.m20_ = pow(opts.muf,2);
+    asinp_.m20_ = pow(opts.kmufac*opts.rmass,2);
 
   //input values from LHAPDF and forward evolution
   else if (opts.evolmode == 3)
@@ -381,7 +381,7 @@ void pegasus::evolve()
   //  double M2 = asinp_.m20_*10;
   //  pdfevol::bstarscale = sqrt(M2);
 
-  //R2 is the final scale of the evolution, corrected by the ratio of mur2/muf2
+  //R2 is the final scale of the evolution, corrected by the ratio of muren2/mufac2
   double R2  = M2 * exp(-frrat_.logfr_);
 
   //Reproduce the L -> L~ redefinition by a redefinition of the b0/b scale (see Eq. 17 of hep-ph/0508068)
@@ -389,7 +389,7 @@ void pegasus::evolve()
   //alphas(muf) when bscale -> inf, so that the PDF evolution is frozen at muf as upper scale.
   //This modification is required to restore the fixed order cross section upon qt-integration
   //double M2tilde = M2 * resint::mures2 / (M2 + resint::mures2);
-  double M2tilde = M2 * resint::muf2 / (M2 + resint::muf2);
+  double M2tilde = M2 * resint::mufac2 / (M2 + resint::mufac2);
 
   double R2tilde  = M2tilde * exp(-frrat_.logfr_);
 

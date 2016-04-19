@@ -16,10 +16,10 @@ void settings::readfromfile(const string fname){
     ih1            = in.GetNumber ( "ih1"            ); //1
     ih2            = in.GetNumber ( "ih2"            ); //1              # ih1,        ih2
     nproc          = in.GetNumber ( "nproc"          ); //3              # nproc
-    mur            = in.GetNumber ( "mur"            ); //91.1876e0
-    muf            = in.GetNumber ( "muf"            ); //91.1876e0      # mur,        muf
-    mures          = in.GetNumber ( "mures"            ); //91.1876e0      # mur,        muf
-    a_param        = in.GetNumber ( "a_param"        ); //2.0e0          # a_param
+    kmuren         = in.GetNumber ( "kmuren"            ); //91.1876e0
+    kmufac         = in.GetNumber ( "kmufac"            ); //91.1876e0      # mur,        muf
+    kmures         = in.GetNumber ( "kmures"            ); //91.1876e0      # mur,        muf
+    //    a_param        = in.GetNumber ( "a_param"        ); //2.0e0          # a_param
     g_param        = in.GetNumber ( "g_param"        ); //1.0e0          # g_param
     order          = in.GetNumber ( "order"          ); //1              # order
     zerowidth      = in.GetBool   ( "zerowidth"      ); //false          # zerowidth
@@ -141,8 +141,8 @@ void settings::readfromfile(const string fname){
     //In fixed order mode, a_param must be one
     if (fixedorder == true)
       {
-	cout << "Asked for fixed order predictions, enforce a_param = 1.0" << endl;
-	a_param = 1.0;
+	cout << "Asked for fixed order predictions, enforce kmures = 1.0" << endl;
+	kmures = 1.0;
       }
 
     if (evolmode > 3 || evolmode < 0)
@@ -153,7 +153,7 @@ void settings::readfromfile(const string fname){
 
     if (dynamicscale == true && evolmode != 3)
       {
-	//cannot use a dynamic mur, muf, when the PDFs are converted from x-space to N-space at the factorisation scale
+	//cannot use a dynamic muren, mufac, when the PDFs are converted from x-space to N-space at the factorisation scale
 	cout << "dynamicscale possible only with evolmode = 3" << endl;
 	exit (-1);
       }
@@ -214,26 +214,9 @@ void settings::readfromfile(const string fname){
 	resintvegas = true;
       }
 
-
     return ;
 }
 
-
-void settings::initDyresSettings(){
-    energy_      . sroot_     = sroot        ;         //7e3
-    density_     . ih1_       = ih1          ;         //1
-    density_     . ih2_       = ih2          ;         //1              # ih1,       ih2
-    nproc_       . nproc_     = nproc        ;         //3              # nproc
-    scale_       . scale_     = mur          ;         //91.1876e0
-    facscale_    . facscale_  = muf          ;         //91.1876e0      # mur,       muf
-    a_param_     . a_param_   = a_param      ;         //2.0e0          # a_param
-    g_param_     . g_param_   = g_param      ;         //1.0e0          # g_param
-    nnlo_        . order_     = order        ;         //1              # order
-    zerowidth_   . zerowidth_ = zerowidth    ;         //false          # zerowidth
-    dynamicscale_. dynamicscale_ = dynamicscale ;
-
-    dofill_.doFill_ = 0;
-}
 
 void settings::dumpAll(){
     printf("==Listing settings==\n");
@@ -247,19 +230,19 @@ void settings::dumpAll(){
         dumpI ( "ih1         ",  density_     . ih1_        ) ;
         dumpI ( "ih2         ",  density_     . ih2_        ) ;
         dumpI ( "nproc       ",  nproc_       . nproc_      ) ;
-        dumpD ( "mur         ",  scale_       . scale_      ) ;
-        dumpD ( "muf         ",  facscale_    . facscale_   ) ;
-        dumpD ( "a_param     ",  a_param_     . a_param_    ) ;
+	//        dumpD ( "a_param     ",  a_param_     . a_param_    ) ;
         dumpD ( "g_param     ",  g_param_     . g_param_    ) ;
         dumpI ( "order       ",  nnlo_        . order_      ) ;
         dumpB ( "zerowidth   ",  zerowidth_   . zerowidth_  ) ;
-	dumpB ( "dynamicscale"      , dynamicscale        );
     }
 
     if (print_inputs) {
         printf("Input settings:\n");
+	dumpB ( "dynamicscale"      , dynamicscale        );
 	dumpB ( "dynamicresscale"      , dynamicresscale        );
-	dumpD ( "mures       ",  mures   ) ;
+        dumpD ( "kmuren      ",  kmuren                     ) ;
+        dumpD ( "kmufac      ",  kmufac                     ) ;
+	dumpD ( "kmures       ",  kmures   ) ;
         dumpD( "blim              ",  blim    ) ;
         dumpS("LHAPDFset          ", LHAPDFset           );
         dumpI("LHAPDFmember       ", LHAPDFmember        );

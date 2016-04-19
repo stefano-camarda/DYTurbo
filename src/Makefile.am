@@ -7,7 +7,7 @@ AM_CPPFLAGS = -fpermissive -I$(srcdir)/../include -I$(srcdir)/../dequad -I$(srcd
 AM_FFLAGS =  -I$(srcdir)/../dyres -I$(srcdir)/../mcfm #-I$(srcdir)/../src
 
 noinst_LTLIBRARIES = libdyturbobase.la
-libdyturbobase_la_SOURCES = resintegr.C ctintegr.C finintegr.C integr.C settings.C init.C cubacall.C plotter.C switch.C cuts.C usercuts.C pdf.C printsettings.C coupling.C clock_real.C
+libdyturbobase_la_SOURCES = resintegr.C ctintegr.C finintegr.C integr.C settings.C init.C cubacall.C plotter.C switch.C cuts.C usercuts.C pdf.C printsettings.C coupling.C clock_real.C banner.C
 libdyturbobase_la_SOURCES += flavreduce.f gaussinit.f rescinit.f pdfmoments.f vjfo.f
 libdyturbobase_la_SOURCES += AiMoments.cxx TLVUtils.cxx
 
@@ -32,4 +32,4 @@ merger_SOURCES = merger.C
 merger_LDADD = $(ROOT_LDFLAGS)
 endif
 
-pkginclude_HEADERS = resintegr.h ctintegr.h finintegr.h integr.h interface.h settings.h cubacall.h plotter.h init.h switch.h options.f flred.f gauss.f quadrules.f cuts.h coupling.h pdf.h printsettings.h clock_real.h fcomplex.h
+pkginclude_HEADERS = resintegr.h ctintegr.h finintegr.h integr.h interface.h settings.h cubacall.h plotter.h init.h switch.h options.f flred.f gauss.f quadrules.f cuts.h coupling.h pdf.h printsettings.h clock_real.h fcomplex.h banner.h
