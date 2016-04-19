@@ -241,18 +241,8 @@ void dyturboinit(string conf_file)
   //set NF to 5 (it is used in H2calc)
   nf_.nf_ = resconst::NF;
 
-  //Set up QCD scales in the fortran common blocks
-  scale_.scale_               = opts.kmuren*opts.rmass;
-  facscale_.facscale_         = opts.kmufac*opts.rmass;
-  a_param_.a_param_           = 1./opts.kmures;
-
-  scaleopts_.kmuren_ = opts.kmuren;
-  scaleopts_.kmufac_ = opts.kmufac;
-  scaleopts_.kmures_ = opts.kmures;
+  coupling::initscales();
   
-  //initialize alpha_s
-  setalphas();
-
   //C++ resum
   //initialise all the C modules
   gr::init(); //nodes and weights of gaussian quadrature rules

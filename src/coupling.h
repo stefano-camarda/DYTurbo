@@ -5,7 +5,8 @@ namespace coupling {
 
   extern void init();
   extern void SMparameters();
-
+  extern void initscales();
+  
   extern double aemmz;
   extern double Gf;
   extern double xw;

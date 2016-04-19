@@ -232,3 +232,18 @@ void coupling::SMparameters()
   epinv2_.epinv2_= 1000;
   // ************************************************************************************************
 }
+
+void coupling::initscales()
+{
+  //Set up QCD scales in the fortran common blocks
+  scale_.scale_               = opts.kmuren*opts.rmass;
+  facscale_.facscale_         = opts.kmufac*opts.rmass;
+  a_param_.a_param_           = 1./opts.kmures;
+
+  scaleopts_.kmuren_ = opts.kmuren;
+  scaleopts_.kmufac_ = opts.kmufac;
+  scaleopts_.kmures_ = opts.kmures;
+  
+  //initialize alpha_s
+  setalphas();
+}
