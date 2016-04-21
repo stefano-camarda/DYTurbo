@@ -379,7 +379,7 @@ void pegasus::evolve()
 
   //Values of a_s and N_f for the call of EVNFFN or EVNVFN below
 
-  double M2 = pow(fabs(pdfevol::qbstar),2);   //qbstar = b0/bstar (without a_param) --> The factorisation scale of the PDFs should always be b0/b(star), and never scaled by a
+  double M2 = pow(fabs(pdfevol::qbstar),2);   //qbstar = b0/bstar (without a_param) --> The factorisation scale of the PDFs should always be b0/b(star), and never scaled by a_param
 
   //check to reproduce bb->Z peak as in the old plots
   //M2 = pow(fabs(pdfevol::bstarscale),2); //bstarscale = a*b0/bstar
