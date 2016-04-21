@@ -77,7 +77,7 @@ opts_pdfintervals = 100
 evolmode = 0
 
 #Settings for the Bessel integration
-bintaccuracy = 1.0e-2  #accuracy
+bintaccuracy = 1.0e-4  #accuracy
 
 #Settings for the inverse Mellin integrations
 mellinintervals = 1 #number of intervals
