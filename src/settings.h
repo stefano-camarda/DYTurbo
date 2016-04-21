@@ -162,6 +162,9 @@ public:
   bool quadint;
   int quadnphi;
 
+  //settings for Bessel integration
+  double bintaccuracy;
+
   //settings for Mellin integration
   int mellinintervals;
   int mellinrule;

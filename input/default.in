@@ -10,6 +10,7 @@ fixedorder   = false          # resummation or fixed order switch
 #PDF settings
 LHAPDFset    = CT10nnlo       # PDF set from LHAPDF
 LHAPDFmember = 0              # PDF member
+PDFerrors    = false	      # calculate PDF errors
 
 #QCD scale settings
 dynamicscale    = false       # if true, the renormalisation and factorisation scales are proportional to m_ll, if false they are proportional to m_V (V=W,Z)
@@ -27,10 +28,10 @@ wwidth = 2.091           # Width of the W boson
 zerowidth = false        # zero-width approximation (not really implemented)
 
 # To use an effective weak-mixing angle, set xw to a non-zero value, otherwise it is calculated according to the Gmu scheme
-xw = 0.
+xw = 0.   # effective weak-mixing angle
 
-# To use an effective value of aEM(MZ), set aemmz to a non-zero value, otherwise it is calculated according to the Gmu scheme
-aemmz = 0.
+# To use an effective value of alpha_EM(MZ), set aemmz to a non-zero value, otherwise it is calculated according to the Gmu scheme
+aemmz = 0.  #effective value of alpha_EM(MZ)
 
 # CKM matrix
 Vud = 0.97427
@@ -75,6 +76,9 @@ opts_pdfintervals = 100
 # Type of PDF evolution (0: DYRES, 1: Pegasus as DYRES, 2: Mellin transform, 3: Pegasus VFN)
 evolmode = 0
 
+#Settings for the Bessel integration
+bintaccuracy = 1.0e-2  #accuracy
+
 #Settings for the inverse Mellin integrations
 mellinintervals = 1 #number of intervals
 mellinrule = 64     #number of nodes
@@ -116,14 +120,14 @@ doVJ   = false
 cubaverbosity    = 0   # Cuba info messsages, from 0 to 3
 cubacores        = 4   # parallelization ( 0 = turn off)
 niterRES         = 5   # only for 2d and 3d cuhre integration of resummed part
-niterCT          = 5   # only for 3d cuhre integration of counter term
+niterCT          = 5   # only for 2d and 3d cuhre integration of counter term
 niterVJ          = 10       # only for 3d cuhre integration of V+J
 vegasncallsRES   = 1000     # only for res 4d vegas integration
 vegasncallsVV    = 100000   # only for double virtual 6d vegas integration
-vegasncallsCT    = 100000   # only for lo 8d vegas integration
+vegasncallsCT    = 100000   # only for 6d and 8d vegas integration of the counter term
 vegasncallsLO    = 10000000 # only for lo 7d vegas integration
-vegasncallsREAL  = 10000000 #000000 # only for real 10d vegas integration
-vegasncallsVIRT  = 1000000  #00000 # only for virt 8d vegas integration
+vegasncallsREAL  = 10000000 # only for real 10d vegas integration
+vegasncallsVIRT  = 1000000  # only for virt 8d vegas integration
 
 # total or with lepton cuts
 makelepcuts = false
@@ -154,8 +158,6 @@ qtrec_kt0   = false
 timeprofile = false  # debug and time profile resummation integration
 verbose     = false  # debug and time profile costh phi_lep integration
 
-
-PDFerrors = false
 
 # binning
 

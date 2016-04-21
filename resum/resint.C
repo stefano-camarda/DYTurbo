@@ -71,7 +71,7 @@ void resint::init()
   //  clogs_.loga_ = loga; //complex loga is not used
   
   // define points for quadratures integration
-  intdeoini(lenaw, tiny, 1.0e-2, awinf);
+  intdeoini(lenaw, tiny, opts.bintaccuracy, awinf);
   intdeini(lenaw, tiny, 1.0e-2, awfin);
 }
 

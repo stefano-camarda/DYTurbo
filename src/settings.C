@@ -106,6 +106,7 @@ void settings::readfromfile(const string fname){
     opts_.pdfintervals_ = in.GetNumber ( "opts_pdfintervals" ); //100
     evolmode           = in.GetNumber  ("evolmode");
     opts_.fixedorder_  = fixedorder;
+    bintaccuracy       = in.GetNumber ( "bintaccuracy" );
     mellinintervals    = in.GetNumber ( "mellinintervals" );
     mellinrule         = in.GetNumber ( "mellinrule" );
     zmax               = in.GetNumber ( "zmax" );
@@ -145,9 +146,9 @@ void settings::readfromfile(const string fname){
 	kmures = 1.0;
       }
 
-    if (evolmode > 3 || evolmode < 0)
+    if (evolmode > 4 || evolmode < 0)
       {
-	cout << "wrong value for evolmode: available evolmodes: 0,1,2,3" << endl;
+	cout << "wrong value for evolmode: available evolmodes: 0,1,2,3,4" << endl;
 	exit (-1);
       }
 
