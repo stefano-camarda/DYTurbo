@@ -82,7 +82,13 @@ double besselint::bint(double b)
     //In order to have variable flavour evolution, use here a VFN definition of alpq
     //There is possibly an issue here when the renormalisation scale is (very) different from mll, since aass=alphas(muren) is used in xlambda = beta0*aass*blog
     {
-      double M2 = pow(fabs(pdfevol::bstartilde),2);
+      //      double M2 = pow(fabs(pdfevol::bstartilde),2);
+
+      double M2 = pow(fabs(pdfevol::qbstar),2);   //qbstar = b0/bstar (without a_param)
+      double M2tilde = M2 * resint::mures2 / (M2 + resint::mures2);
+      double M2prime = M2tilde * resint::muren2/resint::mures2; //scale for differences between muren and mures
+      M2 = M2prime;
+
       if (M2 > asfthr_.m2t_) //The scale is frozen at muf, and never goes above the top
 	{
 	  int NF = 6;
@@ -115,7 +121,7 @@ double besselint::bint(double b)
 	  alpq = as_(M2, R20, asinp_.as0_, NF);
 	}
       //Based on the definition of aexp, may be need to rescale alpq for as(qres)/as(muren)?
-      //alpq = alpq*resint::alpqres/resint::alpqren;
+      //alpq = alpq/resint::alpqren*resint::alpqres;
     }
 
   //  complex <double> alpq = LHAPDF::alphasPDF(fabs(pdfevol::bstartilde))/4./M_PI;        //alpq = alphas(b0^2/b^2)
@@ -126,7 +132,7 @@ double besselint::bint(double b)
   pdfevol::XL = 1./cx(alphasl_(fscale2)); //XL = alphas(mures2)/alphas(b0^2/b^2)
   pdfevol::XL1 = 1.- pdfevol::XL;
   pdfevol::SALP = log(pdfevol::XL);
-
+  //cout << pdfevol::bscale << "  " << pdfevol::XL << endl;
   // SELECT ORDER FOR EVOLUTION LO/NLO
   pdfevol::alpr = alpqf * cx(alphasl_(fscale2))*(double)(opts.order-1);
   //force LO evolution
@@ -156,6 +162,10 @@ double besselint::bint(double b)
   else if (opts.evolmode == 3)
     pegasus::evolve();
 
+  //PDF evolution with Pegasus QCD from the starting scale Q20, in VFN, and using alphasl(nq2) to evaluate ASF at the final scale
+  else if (opts.evolmode == 4)
+    pegasus::evolve();
+
   //for (int i = 0; i < mellinint::mdim; i++)
   //  cout << cx(creno_.cfx1_[i][0]) << "  " << cx(creno_.cfx2p_[i][5]) << "  " <<  cx(creno_.cfx2m_[i][5]) << endl;
   //**************************************
@@ -163,11 +173,12 @@ double besselint::bint(double b)
   //aexp and aexpb are calculated in alphasl, they are used in hcoefficients::calcb only for the NNLL cross section
   complex <double> aexp = cx(exponent_.aexp_); //aexp is actually the ratio alphas(a*b0/b)/alphas(muren)
   
+  //In order to have variable flavour evolution, use here a VFN definition of aexp (aexpB instead, should be independent from NF)
+  //It seems that the pt-integrated cross section is invariant for variations of a_param if aexp is the ratio of alpq/as(muren) (and not alpq/as(Qres))
+  //Indeed, aexp is always multiplied by aass, which is alphas at the renormalisation scale
   if (opts.evolmode == 2 || opts.evolmode == 3) //account for VFN evolution
-    //In order to have variable flavour evolution, use here a VFN definition of aexp (aexpB instead, should be independent from NF)
-    //It seems that the pt-integrated cross section is invariant for variations of a_param if aexp is the ratio of alpq/as(muren) (and not alpq/as(Qres))
-    //Indeed, aexp is always multiplied by aass, which is alphas at the renormalisation scale
-    aexp = alpq / resint::alpqren; 
+    aexp = alpq / resint::alpqren;
+    //aexp = alpq / resint::alpqres;
   
   //  cout << pdfevol::bstartilde << "  " << cx(exponent_.aexp_) << "  " << alpq / resint::alpqres << "  " << alpq / resint::alpqren << endl;
   complex <double> aexpb = cx(exponent_.aexpb_);

@@ -20,7 +20,7 @@ int pegasus::ivfns;
 void pegasus::init()
 {
   //No need to initialise if pegasus is not used
-  if (opts.evolmode != 1 && opts.evolmode != 3)
+  if (opts.evolmode != 1 && opts.evolmode != 3 && opts.evolmode != 4)
     return;
   
   // From:
@@ -80,7 +80,7 @@ void pegasus::init()
       order_.npord_ = opts.order - 1; //order of evolution is LO(NLO) for NLL(NNLL)
     }
   //reproduce in N-space the LHAPDF evolution in x-space
-  else if (opts.evolmode == 3)
+  else if (opts.evolmode == 3 || opts.evolmode == 4)
     {
       ivfns = 1; //VFN evolution (read from LHAPDF)
       nff = 4;   //in FFN evolution, number of flavours  (read from LHAPDF)
@@ -220,7 +220,7 @@ void pegasus::init()
     asinp_.m20_ = pow(opts.kmufac*opts.rmass,2);
 
   //input values from LHAPDF and forward evolution
-  else if (opts.evolmode == 3)
+  else if (opts.evolmode == 3 || opts.evolmode == 4)
     {
       LHAPDF::PDFInfo info(opts.LHAPDFset, opts.LHAPDFmember);
       double qmin = info.get_entry_as<double>("QMin", -1);
@@ -352,7 +352,7 @@ void pegasus::init()
 	  hfpainp_.p15i_[i] = fcx(qp[0]+qp[1]+qp[2]-3.*qp[3]);
 	  hfpainp_.p24i_[i] = fcx(qp[0]+qp[1]+qp[2]+qp[3]-4.*qp[4]);
 	}
-      else if (opts.evolmode == 3)
+      else if (opts.evolmode == 3 || opts.evolmode == 4)
 	{
 	  painp_.vai_[i] = fcx(cx(uval) + cx(dval) + (cx(s)-cx(sbar)));
 	  painp_.m3i_[i] = fcx(cx(uval) - cx(dval));
@@ -373,11 +373,18 @@ void pegasus::init()
 
 void pegasus::evolve()
 {
-  //Values of a_s and N_f for the call of EVNFFN or EVNVFN below
-  double M2 = pow(fabs(pdfevol::bstarscale),2); //pdfevol::bscale
-  //double M2 = pow(fabs(pdfevol::qbstar),2); //pdfevol::bscale
+  //The values of alphas: ASF for the evolution are obtained
+  //using the Pegasus alphas function. In order to use the LHAPDF alphas function
+  //the code which calculates the evolution at the thresholds should be changed
 
-  //check starting scale
+  //Values of a_s and N_f for the call of EVNFFN or EVNVFN below
+
+  double M2 = pow(fabs(pdfevol::qbstar),2);   //qbstar = b0/bstar (without a_param) --> The factorisation scale of the PDFs should always be b0/b(star), and never scaled by a
+
+  //check to reproduce bb->Z peak as in the old plots
+  //M2 = pow(fabs(pdfevol::bstarscale),2); //bstarscale = a*b0/bstar
+  
+  //check PDFs at the starting scale
   //  double M2 = asinp_.m20_*10;
   //  pdfevol::bstarscale = sqrt(M2);
 
@@ -386,21 +393,33 @@ void pegasus::evolve()
 
   //Reproduce the L -> L~ redefinition by a redefinition of the b0/b scale (see Eq. 17 of hep-ph/0508068)
   //With the L -> L~ modification, alphas reaches asymptotically
-  //alphas(muf) when bscale -> inf, so that the PDF evolution is frozen at muf as upper scale.
+  //alphas(mures/mufac/muren?) when bscale -> inf, so that the PDF evolution is frozen at muf as upper scale.
   //This modification is required to restore the fixed order cross section upon qt-integration
-  //double M2tilde = M2 * resint::mures2 / (M2 + resint::mures2);
-  double M2tilde = M2 * resint::mufac2 / (M2 + resint::mufac2);
+
+  double M2tilde = M2 * resint::mures2 / (M2 + resint::mures2);
+  //  double M2tilde = M2 * resint::mufac2 / (M2 + resint::mufac2);
+  //  double M2tilde = M2 * resint::muren2 / (M2 + resint::muren2);
 
   double R2tilde  = M2tilde * exp(-frrat_.logfr_);
 
   //use the modification L -> L~
   M2 = M2tilde;
   R2 = R2tilde;
-  
-  //The values of alphas: ASF for the evolution are obtained
-  //using the Pegasus alphas function. In order to use the LHAPDF alphas function
-  //the code which calculates the evolution at the thresholds should be changed
 
+  //Further modification of the final scale to account for the fact that alphas(muren)
+  //instead of alphas(mures) is used as starting alphas(mu0) in alphasl(nq2) (variable aass)
+  //This procedure should hold also for evolmode = 3 (VFN) as far as muf=mur? -> not really working, used only in evolmode = 1
+  double M2prime = M2tilde * resint::muren2/resint::mures2; //scale for differences between muren and mures
+  double R2prime = M2prime * exp(-frrat_.logfr_);
+
+  /*
+  //use the modification alphas(mures) -> alphas(muren)
+  M2 = M2prime;
+  R2 = R2prime;
+  */
+
+  //  R2 = R2 * resint::mures2 / resint::muren2;
+    
   double ASI, ASF;
   int NF;
 
@@ -408,33 +427,56 @@ void pegasus::evolve()
   if (opts.evolmode == 1)
     {
       NF  = nff;
-      double R20 = asinp_.m20_ * R2/M2;
-      //      ASI = asinp_.as0_;
+      //set the factorisation scale as initial scale for the evolution 
+      //ASI = asinp_.as0_;
 
       //set the resummation scale as initial scale for the evolution 
       ASI = resint::alpqres;
 
-      //calculate alphas at the final scale with pegasus
-      ASF = as_(R2, R20, asinp_.as0_, NF);
+      //to set muf as initial scale, ASF should be multiplied by an additional alphas(muf)/alphas(mures) factor (i.e. change alpqres to alpqfac also in ASF)
+      //-> consider to do it so that ASF is a valid final scale for the VFN evolution
+      
+      //set the factorisation scale as initial scale for the evolution 
+      //ASI = resint::alpqfac;
 
+      /*
+      //calculate alphas at the final scale with pegasus, including the modification alpha(mures) -> alpha(muren)
+      //      double R20 = asinp_.m20_ * R2/M2;
+      //      double AS0 = asinp_.as0_;
+      //Start the running of alphas from the renormalisation scale, to mimick alphasl(nq2)
+      double R20 = resint::muren2 * R2/M2;
+      double AS0 = resint::alpqren;
+      //hence use the modification of the scale which accounts for alphas(mures) -> alphas(muren)
+      M2 = M2prime;
+      R2 = R2prime;
+      //alphas from Pegasus (it is identical to the DYRES alphas at LO/LL running, but differs at low scales at NLO/NLL running)
+      ASF = as_(R2, R20, AS0, NF)/resint::alpqren * resint::alpqres;
+      */
+  
       //calculate alphas at the final scale with DYRES (which has the modification L -> L~)
       //DYRES also has a different solution for the running of alphas beyond 1-loop
-      //      fcomplex scale2 = fcx(pow(pdfevol::bscale,2));
-      //      ASF = fabs(cx(alphasl_(scale2))) * resint::alpqres; //DYRES LL(NLL) running of alphas
+      fcomplex scale2 = fcx(pow(pdfevol::bscale,2));
+      ASF = fabs(cx(alphasl_(scale2))) * resint::alpqres; //DYRES LL(NLL) running of alphas
 
       //---> Pegasus and DYRES running of alphas are identical only at LO/LL. At NLO/NLL DYRES evolution is different (it is not a Runge-Kutta solution),
       //and has dependences on the resummation and renormalisation scales
-      //evolutionmode = 3 allows to check the impact of this difference, since in the VFN evolution it is not possible to use the DYRES running of alphas
+      //evolutionmode = 1 allows to check the impact of this difference.
+      //To use the DYRES running of alphas in the VFN evolution set evolmode = 4
+
+      //      cout << pdfevol::bscale << " dyres " << fabs(cx(alphasl_(scale2))) * resint::alpqres << " pegasus " << as_(R2, R20, AS0, NF)/resint::alpqren * resint::alpqres << endl;
       
       //      cout << pdfevol::bscale << "  " << resint::_m << "  " <<  as_(R2, R20, asinp_.as0_, NF) << "  " << fabs(cx(alphasl_(scale2))) * resint::alpqres << "  " << LHAPDF::alphasPDF(sqrt(M2)) / (4.* M_PI) << endl;
       //      cout << pdfevol::qbstar << "  " << pdfevol::SALP << "  " << log(ASI/ASF) << endl;
-      //      cout << pdfevol::bscale << "  " << fabs(cx(alphasl_(scale2)))* resint::alpqres << "  " << as_(R2, R20, asinp_.as0_, NF) << endl;
       //      cout << "pegasus blog: " << pdfevol::bscale << "  " << resconst::beta0*resint::alpqres*4.*log(resint::mures2/M2tilde) << endl;
     }
 
   //Normal Pegasus evolution: VFNS evolution from the starting scale upward
   else if (opts.evolmode == 3)
     {
+      //use the modification alphas(mures) -> alphas(muren)
+      //M2 = M2prime;
+      //R2 = R2prime;
+      
       if (M2 > asfthr_.m2t_) //If M2 = M2tilde than the scale is frozen at muf, and never goes above the top
 	{
 	  NF = 6;
@@ -472,8 +514,69 @@ void pegasus::evolve()
 	  //ASF =  LHAPDF::alphasPDF(sqrt(M2)) / (4.* M_PI);
 	  ASF =  as_(R2, R20, asinp_.as0_, NF);
 	}
+      //      ASF = ASF/resint::alpqren * resint::alpqfac; //--> this is very crude
+      
+      //In the forward evolution need to rescale the final alphas ASF to account for the fact that the backward PDF evolution
+      //is done from Qres to b0/b starting from PDFs at muf, while the residual evolution
+      //from muf to Qres is factorised in the (H?) coefficients
+      ASF = ASF/resint::alpqres * resint::alpqfac;
+      
+      //As a consequence of the ASF rescaling, recompute NF and ASI
+      if (ASF < asfthr_.ast_)
+	{
+	  NF = 6;
+	  ASI = asfthr_.ast_;
+	}
+      else if (ASF < asfthr_.asb_)
+	{
+	  NF = 5;
+	  ASI = asfthr_.asb_;
+	}
+      else if (ASF < asfthr_.asc_)
+	{
+	  NF = 4;
+	  ASI = asfthr_.asc_;
+	}
+      else
+	{
+	  NF = 3;
+	  ASI = asinp_.as0_;
+	}
     }
-
+  
+  //VFN forward evolution mode in which ASF is evaluated by DYRES
+  else if (opts.evolmode == 4)
+    {
+      //calculate alphas at the final scale with DYRES (which has the modification L -> L~)
+      //DYRES also has a different solution for the running of alphas beyond 1-loop
+      fcomplex scale2 = fcx(pow(pdfevol::bscale,2));
+      ASF = fabs(cx(alphasl_(scale2))) * resint::alpqres; //DYRES LL(NLL) running of alphas
+      
+      //Rescale the final alphas ASF for the fact that the PDF evolution is done from Qres to b0/b
+      //starting from PDFs at muf, while the residual evolution from muf to Qres is factorised in the (H?) coefficients
+      ASF = ASF/resint::alpqres * resint::alpqfac; 
+      if (ASF < asfthr_.ast_) //If M2 = M2tilde than the scale is frozen at muf, and never goes above the top
+	{
+	  NF = 6;
+	  ASI = asfthr_.ast_;
+	}
+      else if (ASF < asfthr_.asb_)
+	{
+	  NF = 5;
+	  ASI = asfthr_.asb_;
+	}
+      else if (ASF < asfthr_.asc_)
+	{
+	  NF = 4;
+	  ASI = asfthr_.asc_;
+	}
+      else
+	{
+	  NF = 3;
+	  ASI = asinp_.as0_;
+	}
+    }
+  
   //Calculation of the moments of the parton densities and output
   int nlow = 1;
   int nhigh = mellinint::mdim;
