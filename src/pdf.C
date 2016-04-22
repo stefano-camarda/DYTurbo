@@ -35,7 +35,6 @@ void pdfini_()
 
 void dysetpdf_(int& member)
 {
-
   if (member == 0)
     {
       if (opts.PDFerrors && opts.totpdf > 1)

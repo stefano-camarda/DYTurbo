@@ -83,7 +83,8 @@ c      qt2=p(5,1)**2+p(5,2)**2
       nvec=npart+2
 
 C     Dynamic scale
-      if(dynamicscale) call scaleset(qq2)
+c      if(dynamicscale) call scaleset(qq2)
+      call scaleset(qq2)
 
       call dotem(nvec,p,s)
 

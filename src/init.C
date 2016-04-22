@@ -92,11 +92,6 @@ void dyturboinit(string conf_file)
   // Dynamic scale (if true mufac=muren=q)
   dynamicscale_.dynamicscale_=false;
 
-  //Set all factorization scales to facscale
-  //to avoid problems when dynamicscale=.false.
-  for (int nd =0; nd <= 40; nd++)
-    dipolescale_.dipscale_[nd]=facscale_.facscale_;
-
   //Limits on invariant mass of vector boson decay products
   //(irrelevant if zerowidth=true)
   limits_.wsqmin_=pow(opts.mlow,2);
@@ -242,7 +237,11 @@ void dyturboinit(string conf_file)
   nf_.nf_ = resconst::NF;
 
   coupling::initscales();
-  
+  //Set all factorization scales to facscale
+  //to avoid problems when dynamicscale=.false.
+  for (int nd =0; nd <= 40; nd++)
+    dipolescale_.dipscale_[nd]=facscale_.facscale_;
+
   //C++ resum
   //initialise all the C modules
   gr::init(); //nodes and weights of gaussian quadrature rules
