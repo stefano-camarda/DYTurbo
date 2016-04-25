@@ -174,7 +174,8 @@ int main( int argc , const char * argv[])
           double b_time = clock_real();
           vjintegr3d(value, error);
           double e_time = clock_real();
-	  vals[0] = value;
+	  vals.clear();
+	  vals.push_back(value);
           normalise_result(value,error);
           print_result(value,error,b_time,e_time);
           hists.FillResult( plotter::VJ , value, error, e_time-b_time );
