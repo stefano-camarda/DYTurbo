@@ -4,8 +4,11 @@
 #include "coupling.h"
 #include "integr.h"
 #include "rapint.h"
+#include "parton.h"
 #include <iostream>
 #include <cmath>
+
+using namespace parton;
 
 //constants
 const double eequ =2./3.;
@@ -124,6 +127,21 @@ void mesq::init()
   propZG = 0;
 }
 
+void mesq::setpropagators(double m)
+{
+  q2 = pow(m,2);
+  if (opts.nproc == 3)
+    propZ = q2/(pow(q2-mZ2,2)+mZ2*wZ2);
+  else
+    propW = q2/(pow(q2-mW2,2)+mW2*wW2);
+  if (opts.useGamma)
+    {
+      propG = 1./q2;
+      propZG = (q2-mZ2)/(pow(q2-mZ2,2)+mZ2*wZ2);
+    }
+}
+
+
 void mesq::setmesq_expy(int mode, double m, double costh, double y)
 {
   //Number of partonic channels
@@ -144,7 +162,8 @@ void mesq::setmesq_expy(int mode, double m, double costh, double y)
       propG = 1./q2;
       propZG = (q2-mZ2)/(pow(q2-mZ2,2)+mZ2*wZ2);
     }
-
+  //setpropagators(m);
+  
   if (mode < 2)
     {
       //costh dependent part
@@ -331,5 +350,63 @@ void mesq::setmesq(T one, T costh1, T costh2)
       mesqij[5]=mesqij[3];
       mesqij[9]=mesqij[3];
       */
+    }
+}
+
+//fortran interfaces
+void initsigma_cpp_(double &m, double &cthmom0, double &cthmom1, double &cthmom2)
+{
+  //mass dependent part
+  mesq::setpropagators(m);
+
+  //  double one, costh1, costh2;
+  //  one = 1.;
+  //  costh1 = costh;
+  //  costh2 = pow(costh,2);
+  mesq::setmesq(cthmom0, cthmom1, cthmom2);
+
+  //fortan array indices are inverted: [ub][u] means (u,ub)
+  if (opts.nproc == 3)
+    {
+      sigmaij_.sigmaij_[ub][u ] = real(mesq::mesqij[0]);
+      sigmaij_.sigmaij_[cb][c ] = real(mesq::mesqij[6]);
+      sigmaij_.sigmaij_[u ][ub] = real(mesq::mesqij[1]);
+      sigmaij_.sigmaij_[c ][cb] = real(mesq::mesqij[7]);
+      sigmaij_.sigmaij_[db][d ] = real(mesq::mesqij[2]);
+      sigmaij_.sigmaij_[sb][s ] = real(mesq::mesqij[4]);
+      sigmaij_.sigmaij_[bb][b ] = real(mesq::mesqij[8]);
+      sigmaij_.sigmaij_[d ][db] = real(mesq::mesqij[3]);
+      sigmaij_.sigmaij_[s ][sb] = real(mesq::mesqij[5]);
+      sigmaij_.sigmaij_[b ][bb] = real(mesq::mesqij[9]);
+    }
+  else if (opts.nproc == 1)
+    {
+      sigmaij_.sigmaij_[db][u ] = real(mesq::mesqij[0]);
+      sigmaij_.sigmaij_[u ][db] = real(mesq::mesqij[1]);
+      sigmaij_.sigmaij_[sb][u ] = real(mesq::mesqij[2]);
+      sigmaij_.sigmaij_[u ][sb] = real(mesq::mesqij[3]);
+      sigmaij_.sigmaij_[bb][u ] = real(mesq::mesqij[4]);
+      sigmaij_.sigmaij_[u ][bb] = real(mesq::mesqij[5]);
+      sigmaij_.sigmaij_[sb][c ] = real(mesq::mesqij[6]);
+      sigmaij_.sigmaij_[c ][sb] = real(mesq::mesqij[7]);
+      sigmaij_.sigmaij_[db][c ] = real(mesq::mesqij[8]);
+      sigmaij_.sigmaij_[c ][db] = real(mesq::mesqij[9]);
+      sigmaij_.sigmaij_[bb][c ] = real(mesq::mesqij[10]);
+      sigmaij_.sigmaij_[c ][bb] = real(mesq::mesqij[11]);
+    }
+  else if (opts.nproc == 2)
+    {
+      sigmaij_.sigmaij_[ub][d ] = real(mesq::mesqij[0]);
+      sigmaij_.sigmaij_[d ][ub] = real(mesq::mesqij[1]);
+      sigmaij_.sigmaij_[ub][s ] = real(mesq::mesqij[2]);
+      sigmaij_.sigmaij_[s ][ub] = real(mesq::mesqij[3]);
+      sigmaij_.sigmaij_[ub][b ] = real(mesq::mesqij[4]);
+      sigmaij_.sigmaij_[b ][ub] = real(mesq::mesqij[5]);
+      sigmaij_.sigmaij_[cb][s ] = real(mesq::mesqij[6]);
+      sigmaij_.sigmaij_[s ][cb] = real(mesq::mesqij[7]);
+      sigmaij_.sigmaij_[cb][d ] = real(mesq::mesqij[8]);
+      sigmaij_.sigmaij_[d ][cb] = real(mesq::mesqij[9]);
+      sigmaij_.sigmaij_[cb][b ] = real(mesq::mesqij[10]);
+      sigmaij_.sigmaij_[b ][cb] = real(mesq::mesqij[11]);
     }
 }

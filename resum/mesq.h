@@ -4,6 +4,12 @@
 #include "interface.h"
 #include "mellinint.h"
 
+//fortran interfaces for ctint
+extern "C"
+{
+  void initsigma_cpp_(double &m, double &cthmom0, double &cthmom1, double &cthmom2);
+}
+
 extern const double eequ;
 extern const double eeqd;
 extern const double gevfb;
@@ -48,6 +54,8 @@ namespace mesq
   extern double propW;
   extern double propG;
   extern double propZG;
+  //Calculate the W, Z, gamma* propagators
+  extern void setpropagators(double m);
   
   //Amplitudes times mellin inverse transform piece x1^-z1 * x2^-z2
   //Depending on the mode 0, 1, 2 they can be differential, cos theta integrated, or cos theta and y integrated
