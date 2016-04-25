@@ -201,7 +201,7 @@ void dyturboinit(string conf_file)
 
   ckmfill_(nwz_.nwz_);
 
-  // Set-up incoming beams and PS integration cut-offs
+  // Set-up PS integration cut-offs
   rtsmin = min (rtsmin, sqrt(limits_.wsqmin_ + cutoff_.cutoff_));
 
   if (zerowidth_.zerowidth_)
