@@ -24,7 +24,6 @@ c      integer i
       double precision yv,expyp,expym
       common/yv/yv,expyp,expym
       common/internal/qt,q,q2
-      common/quarks/eq(5),alq(5),arq(5),ckm(6,6),delta(5,5),tau3(5,5)
       common/couplings/xw,cw,sw,alpha0
       common/const2/pi,cf,ca,tr,xnc
       common/gevpb/gevpb
@@ -34,8 +33,6 @@ c      integer i
       common/cdyqt/amv,y1,y2,qtbis,gf,ppi,ssroot,sw2,aem,ic
 
 c.....definition of constants and couplings
-c.....quarks are ordered according to mass:
-c.....1,2,3,4,5=u,d,s,c,b,t
       ca=3d0
       xnc=3d0
       cf=4/3d0
@@ -45,64 +42,6 @@ c.....1,2,3,4,5=u,d,s,c,b,t
       xw=sw2
       sw=sqrt(xw)                       ! sin_w ! 
       cw=sqrt(1-xw)                     ! cos_w !
-      equ=2/3d0                          ! up-quarks electric charge !
-      eqd=-1/3d0                         ! down-quarks electric charge !
-      eq(1)=equ                 
-      eq(2)=eqd                 
-      eq(3)=eqd                 
-      eq(4)=equ                 
-      eq(5)=eqd                 
-c.....definition of 'generalized' ckm matrix:
-c.....    (uu ud us uc ub ut)
-c.....    (du dd ds dc db dt)
-c.....ckm=(su sd ss sc sb st)
-c.....    (cu cd cs cc cb ct)
-c.....    (bu bd bs bc bb bt)
-c.....    (tu td ts tc tb tt)
-      do i=1,6
-         do j=1,6
-            ckm(i,j)=0d0
-         enddo
-      enddo
-      ckm(1,2)=vud
-      ckm(1,3)=vus
-      ckm(1,5)=vub
-      ckm(2,1)=vud
-      ckm(2,4)=vcd
-      ckm(2,6)=vtd
-      ckm(3,1)=vus
-      ckm(3,4)=vcs
-      ckm(3,6)=vts
-      ckm(4,2)=vcd
-      ckm(4,3)=vcs
-      ckm(4,5)=vcb
-      ckm(5,1)=vub
-      ckm(5,4)=vcb
-      ckm(5,6)=vtb
-      ckm(6,2)=vtd
-      ckm(6,3)=vts
-      ckm(6,5)=vtb
-c.....definition of 'delta' matrix
-      do i=1,nf
-         do j=1,nf
-            delta(i,j)=0d0
-         enddo
-      enddo
-      do i=1,nf
-         delta(i,i)=1d0
-      enddo
-c.....definition of tau3's Pauli matrix
-      do i=1,nf
-         do j=1,nf
-            tau3(i,j)=0d0
-         enddo
-      enddo
-      tau3(1,1)=1d0
-      tau3(2,2)=-1d0
-      tau3(3,3)=-1d0
-      tau3(4,4)=1d0
-      tau3(5,5)=-1d0
-
 
 c.....read the input file
       if(ic.eq.1) then

@@ -84,7 +84,25 @@ c
       double precision vjfo
       double precision res
 
-      gevpb=3.8937966d8
+c     define quarks couplings
+      double precision equ,eqd
+      double precision eq(5),alq(5),arq(5)
+      double precision ckm(6,6),delta(5,5),tau3(5,5)
+      common/quarks/eq,alq,arq,ckm,delta,tau3
+      integer i,j
+
+c     use charge and tau matrix from MCFM, so that the Z couplings can be switched off
+c      integer nf
+c      parameter(nf=5)
+c      include "ewcharge.f"
+
+      double precision Q(-5:5),tau(-5:5)
+      common/ewcharge/Q,tau
+      save /ewcharge/
+      
+      
+c      gevpb=3.8937966d8 !MCFM 6.8 value
+      gevpb=0.389379d9 !dyres value
       ppi=dacos(-1d0)
       
       nf=5
@@ -143,6 +161,79 @@ c
      .     /((q2-zmass**2)**2+zmass**2*zwidth**2)*
      /        (-1d0+4d0*sw2)/(2d0*sqrt(sw2*cw2))               !sqrt(sw2/cw2)/2d0
 
+
+
+
+
+c.....quarks are ordered according to mass:
+c.....1,2,3,4,5=u,d,s,c,b,t
+      equ=2/3d0                          ! up-quarks electric charge !
+      eqd=-1/3d0                         ! down-quarks electric charge !
+c      eq(1)=equ                 
+c      eq(2)=eqd                 
+c      eq(3)=eqd                 
+c      eq(4)=equ                 
+c      eq(5)=eqd                 
+      eq(1)=Q(2)
+      eq(2)=Q(1)                
+      eq(3)=Q(3)                 
+      eq(4)=Q(4)                
+      eq(5)=Q(5)                
+c.....definition of 'generalized' ckm matrix:
+c.....    (uu ud us uc ub ut)
+c.....    (du dd ds dc db dt)
+c.....ckm=(su sd ss sc sb st)
+c.....    (cu cd cs cc cb ct)
+c.....    (bu bd bs bc bb bt)
+c.....    (tu td ts tc tb tt)
+      do i=1,6
+         do j=1,6
+            ckm(i,j)=0d0
+         enddo
+      enddo
+      ckm(1,2)=vud
+      ckm(1,3)=vus
+      ckm(1,5)=vub
+      ckm(2,1)=vud
+      ckm(2,4)=vcd
+      ckm(2,6)=vtd
+      ckm(3,1)=vus
+      ckm(3,4)=vcs
+      ckm(3,6)=vts
+      ckm(4,2)=vcd
+      ckm(4,3)=vcs
+      ckm(4,5)=vcb
+      ckm(5,1)=vub
+      ckm(5,4)=vcb
+      ckm(5,6)=vtb
+      ckm(6,2)=vtd
+      ckm(6,3)=vts
+      ckm(6,5)=vtb
+c.....definition of 'delta' matrix
+      do i=1,nf
+         do j=1,nf
+            delta(i,j)=0d0
+         enddo
+      enddo
+      do i=1,nf
+         delta(i,i)=1d0
+      enddo
+c.....definition of tau3's Pauli matrix
+      do i=1,nf
+         do j=1,nf
+            tau3(i,j)=0d0
+         enddo
+      enddo
+c      tau3(1,1)=1d0
+c      tau3(2,2)=-1d0
+c      tau3(3,3)=-1d0
+c      tau3(4,4)=1d0
+c      tau3(5,5)=-1d0
+      tau3(1,1)=tau(2)
+      tau3(2,2)=tau(1)
+      tau3(3,3)=tau(3)
+      tau3(4,4)=tau(4)
+      tau3(5,5)=tau(5)
 
       
       amv=m
