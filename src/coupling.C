@@ -179,6 +179,7 @@ void coupling::init()
 void coupling::SMparameters()
 {
   //None of these parameters is actually needed, check and clean up and remove this function
+  //(The squared HF masses are actually used in the MCFM function for the running of alphas)
   
   //Calculational scheme for EW couplings
   //     ewscheme=-1  : MCFM default 
@@ -240,6 +241,14 @@ void coupling::initscales()
   facscale_.facscale_         = opts.kmufac*opts.rmass;
   a_param_.a_param_           = 1./opts.kmures;
 
+  scale_.musq_=pow(scale_.scale_,2);
+
+  //Set all factorization scales of the dipole contributions to facscale
+  //to avoid problems when dynamicscale=.false.
+  for (int nd =0; nd <= 40; nd++)
+    dipolescale_.dipscale_[nd]=facscale_.facscale_;
+
+  //Set the scale pre-factors in the fortran common block
   scaleopts_.kmuren_ = opts.kmuren;
   scaleopts_.kmufac_ = opts.kmufac;
   scaleopts_.kmures_ = opts.kmures;

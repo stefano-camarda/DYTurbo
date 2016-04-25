@@ -401,13 +401,13 @@ extern "C" {
     int doFill_;
   } dofill_;
 
-  //efficiency variables (get rid of these)
+  /*  //efficiency variables (get rid of these)
   extern struct {
     int njetzero_;
     int ncutzero_;
     int ntotzero_;
     int ntotshot_;
-  } efficiency_;
+    } efficiency_;*/
 
   void hists_setpdf_(int * npdf);
   void hists_fill_(double p3[4], double p4[4], double *weight);

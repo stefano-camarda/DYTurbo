@@ -32,7 +32,6 @@ void dyturboinit(string conf_file)
   banner();
   coupling::SMparameters();
   opts.readfromfile(conf_file.c_str());
-  //  opts.initDyresSettings();
 
   //Initialise some DYRES and MCFM settings
   energy_.sroot_              = opts.sroot;
@@ -51,7 +50,7 @@ void dyturboinit(string conf_file)
   
   //move here the flaq.eq.0 initialisation part of resumm() in main2 instead of using this initialisation flag
 
-  //Cut on qt/Q (add to settings)
+  //Cut on qt/Q
   qtcut_.xqtcut_= opts.xqtcut; //0.008;
 
   //    CKM matrix entries
@@ -171,8 +170,8 @@ void dyturboinit(string conf_file)
       zcouple_.l1_=zcouple_.le_;
       zcouple_.r1_=zcouple_.re_;
 
-      //with q1=0 the photon contribution is switch off
-      //with q1=-1 the photon contribution is switch on
+      //with q1=0 the photon contribution is switched off
+      //with q1=-1 the photon contribution is switched on
 
       dyphoton_.phot_=zcouple_.q1_;
 
@@ -202,14 +201,6 @@ void dyturboinit(string conf_file)
 
   ckmfill_(nwz_.nwz_);
 
-  scale_.musq_=pow(scale_.scale_,2);
-
-  // Initialize efficiency variables (get rid of these)
-  efficiency_.njetzero_ = 0;
-  efficiency_.ncutzero_ = 0;
-  efficiency_.ntotzero_ = 0;
-  efficiency_.ntotshot_ = 0;
-  
   // Set-up incoming beams and PS integration cut-offs
   rtsmin = min (rtsmin, sqrt(limits_.wsqmin_ + cutoff_.cutoff_));
 
@@ -223,6 +214,7 @@ void dyturboinit(string conf_file)
   taumin_.logtaumin_=log(taumin_.taumin_);
   xmin_.xmin_=taumin_.taumin_;
 
+  //Set-up incoming beams (used only in realint.f)
   pext_.p1ext_[3]=-0.5*energy_.sroot_;
   pext_.p1ext_[0]=0.;
   pext_.p1ext_[1]=0.;
@@ -237,10 +229,6 @@ void dyturboinit(string conf_file)
   nf_.nf_ = resconst::NF;
 
   coupling::initscales();
-  //Set all factorization scales to facscale
-  //to avoid problems when dynamicscale=.false.
-  for (int nd =0; nd <= 40; nd++)
-    dipolescale_.dipscale_[nd]=facscale_.facscale_;
 
   //C++ resum
   //initialise all the C modules
@@ -253,7 +241,7 @@ void dyturboinit(string conf_file)
   hcoefficients::init(); //allocate memory for the H coefficients
   pdfevol::init(); //allocate memory for the pdf in N-space
   pegasus::init(); //initialise Pegasus QCD
-  resint::init(); //initialise dequad integration
+  resint::init(); //initialise dequad integration for the bessel integral
   //end C++ resum
 
   switching::init();

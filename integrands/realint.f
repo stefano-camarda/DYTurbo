@@ -154,10 +154,10 @@ c     If the real and all the dipoles fail cuts, then exit
       endif
       
 CC   Dynamic scale for real contribution (nd = 0): set it only if point passes cuts 
-c      if(dynamicscale.and.includereal) then
+      if(dynamicscale.and.includereal) then
        call scaleset(q2)
        dipscale(0)=facscale
-c      endif
+      endif
 
 c----calculate the x's for the incoming partons from generated momenta
       xx1=two*(p(1,4)*p2ext(4)-p(1,3)*p2ext(3))/W
