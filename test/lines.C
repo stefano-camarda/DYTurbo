@@ -13,6 +13,7 @@ void yline()
   int ny = 100;
 
   ofstream yf("yline.C");
+  yf << std::setprecision(15);
   yf << "{" << endl;
   yf << "TGraph *gy = new TGraph();" << endl;
   yf << "TGraph *gy1 = new TGraph();" << endl;
@@ -26,9 +27,9 @@ void yline()
       setcthmqty(costh, m, qt, y);//set global variables to costh, m, qt, y
       genV4p(m, qt, y, 0.);//generate boson 4-momentum, with m, qt, y and phi=0
       //yf << "gy->SetPoint(gy->GetN(), " << i*hy+y1 << ", " << resumm_(costh,m,qt,y,mode) << ");" << endl;
-      yf << "gy->SetPoint(gy->GetN(), " << i*hy+y1 << ", " << resint::rint(costh,m,qt,y,mode) << ");" << endl;
+      //      yf << "gy->SetPoint(gy->GetN(), " << i*hy+y1 << ", " << resint::rint(costh,m,qt,y,mode) << ");" << endl;
       //      if (vjfo_(m,qt,y) != 0)
-      //	yf << "gy->SetPoint(gy->GetN(), " << i*hy+y1 << ", " << (-ctint_(costh,m,qt,y,mode,f)*2*qt)/vjfo_(m,qt,y) << ");" << endl;
+      yf << "gy->SetPoint(gy->GetN(), " << i*hy+y1 << ", " << (-ctint_(costh,m,qt,y,mode,f)*2*qt)/vjfo_(m,qt,y) << ");" << endl;
       //      yf << "gy1->SetPoint(gy1->GetN(), " << i*hy+y1 << ", " << -ctint_(costh,m,qt,y,mode,f)*2*qt << ");" << endl;
       //      yf << "gy2->SetPoint(gy2->GetN(), " << i*hy+y1 << ", " << vjfo_(m,qt,y) << ");" << endl;
       // check of y asymmetry
@@ -56,6 +57,7 @@ void mline()
   int nm = 200;
 
   ofstream mf("mline.C");
+  mf << std::setprecision(15);
   mf << "{" << endl;
   mf << "TGraph *gm = new TGraph();" << endl;
   mf << "TGraph *gm1 = new TGraph();" << endl;
@@ -67,11 +69,11 @@ void mline()
       setcthmqty(costh, m, qt, y);//set global variables to costh, m, qt, y
       genV4p(m, qt, y, 0.);//generate boson 4-momentum, with m, qt, y and phi=0
       //      mf << "gm->SetPoint(gm->GetN(), " << i*hm+m1 << ", " << resumm_(costh,m,qt,y,mode) << ");" << endl;
-      mf << "gm->SetPoint(gm->GetN(), " << i*hm+m1 << ", " << resint::rint(costh,m,qt,y,mode) << ");" << endl;
+      //mf << "gm->SetPoint(gm->GetN(), " << i*hm+m1 << ", " << resint::rint(costh,m,qt,y,mode) << ");" << endl;
       //      mf << "gm->SetPoint(gm->GetN(), " << i*hm+m1 << ", " << resint::rint(costh,m,qt,y,mode) << ");" << endl;
-      //mf << "gm->SetPoint(gm1->GetN(), " << i*hm+m1 << ", " << -ctint_(costh,m,qt,y,mode,f)*2*qt/vjfo_(m,qt,y) << ");" << endl;
-      //mf << "gm1->SetPoint(gm1->GetN(), " << i*hm+m1 << ", " << -ctint_(costh,m,qt,y,mode,f)*2*qt << ");" << endl;
-      //mf << "gm2->SetPoint(gm2->GetN(), " << i*hm+m1 << ", " << vjfo_(m,qt,y) << ");" << endl;
+      mf << "gm->SetPoint(gm->GetN(), " << i*hm+m1 << ", " << -ctint_(costh,m,qt,y,mode,f)*2*qt/vjfo_(m,qt,y) << ");" << endl;
+      mf << "gm1->SetPoint(gm1->GetN(), " << i*hm+m1 << ", " << -ctint_(costh,m,qt,y,mode,f)*2*qt << ");" << endl;
+      mf << "gm2->SetPoint(gm2->GetN(), " << i*hm+m1 << ", " << vjfo_(m,qt,y) << ");" << endl;
     }
   mf << "gm->Draw();" << endl;
   mf << "//gm1->Draw();" << endl;
