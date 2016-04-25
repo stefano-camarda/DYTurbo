@@ -138,6 +138,9 @@ prepare_in(){
     nprocmcfm=41
     lepPtCut=20
     lepYCut=2.4
+    # resboslike
+    lomass=66.
+    himass=116.
     #nprocmcfm=41
     #if [[ $order == 2 ]]; then nprocmcfm=44; fi;
     if [[ $process =~ ^w[pm]$ ]]
@@ -150,6 +153,9 @@ prepare_in(){
         width=2.091
         lepPtCut=0
         lepYCut=100
+        # resboslike
+        lomass=40.
+        himass=500.
     fi
     if [[ $process =~ ^wp$ ]];
     then
@@ -560,6 +566,19 @@ splitedBin(){
     echo -n $edge
 }
 
+# resbos like selection
+# NLO+NLL = RES,CT,LO
+#   g: 1.1
+#   ptlep: 1 1000
+#   eta: -10 10
+#   qt: 0.05 200
+#   y: -10 10
+# W:
+#   M: 40 500
+# Z:
+#   M: 66. 116.
+
+
 submit_allProg(){
     # ask about running/submitting
     DRYRUN=echo 
@@ -586,17 +605,18 @@ submit_allProg(){
     random_seed=100101
     startSeed=100201
     variation=0
-    variation=all
     gpar=.83175
+    # resbos like
+    gpar=1.1
     # testing the array submission
     batch_template=$dyturbo_project/scripts/run_DYTURBO_Array_TMPL.sh
-    for program in dyturbo #  dyturbo dyres mcfm
+    for program in dyturbo # dyturbo dyres mcfm
     do
         for process in z0 wp wm # wp wm z0
         do
             makelepcuts=false
             #if [[ $process =~ z0 ]]; then makelepcuts=true; fi
-            for order in 1 2 # 3
+            for order in 1  # 1 2 3
             do
                 # set PDF ?
                 pdfset=CT10nnlo
@@ -609,7 +629,9 @@ submit_allProg(){
                 if [[ $program =~ ^dyturbo ]] 
                 then
                     cubacores=0
-                    termlist="RES CT LO"
+                    #termlist="RES CT LO"
+                    termlist="RES3D CT3D LO"
+                    #termlist="LO"
                     if [[ $order == 2 ]]; then termlist="RES CT REAL VIRT"; fi;
                     #if [[ $order == 2 ]]; then termlist="RES CT"; fi;
                     #if [[ $order == 2 ]]; then termlist="REAL"; fi;
@@ -635,6 +657,7 @@ submit_allProg(){
                 fi
                 for terms in $termlist
                 do
+                    variation=all
                     seedlist=1010-1110
                     [[ $terms =~ RES1 ]] && seedlist=2010-2510 && terms=`echo $terms | sed "s|RES1|RES|g"`
                     [[ $terms =~ RES2 ]] && seedlist=2511-3010 && terms=`echo $terms | sed "s|RES2|RES|g"`
@@ -660,25 +683,39 @@ submit_allProg(){
                     NsplitY=1
                     if [[ $terms =~ 3D ]]
                     then
+                        #
+                        seed=133
+                        #seedlist=100
+                        #
                         NsplitQT=10
                         NsplitY=5
                         variation=array
-                        #seedlist=100
                         seedlist=101-154
+                        # TEST
+                        #NsplitQT=2
+                        #NsplitY=2
+                        #variation=`seq 0 4`
+                        # -- for maarten produce all input file pdf variations
+                        variation=`seq 0 50`
+                        seedlist=10
                     fi
-                    for iqt in `seq $NsplitQT`
+                    variationlist=$variation
+                    for variation in $variationlist
                     do
-                        for iy in `seq $NsplitY`
+                        for iqt in `seq $NsplitQT`
                         do
-                            #
-                            random_seed=seed
-                            loqtbin=` splitedBin $fulllloqtbin $fulllhiqtbin $NsplitQT $iqt 0`
-                            hiqtbin=` splitedBin $fulllloqtbin $fulllhiqtbin $NsplitQT $iqt 1`
-                            loybin=`  splitedBin $fulllloybin  $fulllhiybin  $NsplitY  $iy  0`
-                            hiybin=`  splitedBin $fulllloybin  $fulllhiybin  $NsplitY  $iy  1`
-                            qtregion=`echo o${order}qt${loqtbin}${hiqtbin}y${loybin}${hiybin}t${terms} | sed "s/\.//g;s/ //g"`
-                            prepare_script
-                            submit_job
+                            for iy in `seq $NsplitY`
+                            do
+                                #
+                                random_seed=seed
+                                loqtbin=` splitedBin $fulllloqtbin $fulllhiqtbin $NsplitQT $iqt 0`
+                                hiqtbin=` splitedBin $fulllloqtbin $fulllhiqtbin $NsplitQT $iqt 1`
+                                loybin=`  splitedBin $fulllloybin  $fulllhiybin  $NsplitY  $iy  0`
+                                hiybin=`  splitedBin $fulllloybin  $fulllhiybin  $NsplitY  $iy  1`
+                                qtregion=`echo o${order}qt${loqtbin}${hiqtbin}y${loybin}${hiybin}t${terms} | sed "s/\.//g;s/ //g"`
+                                prepare_script
+                                submit_job
+                            done
                         done
                     done
                 done
@@ -811,10 +848,9 @@ submit_Benchmark(){
 }
 
 
-
 clear_files(){
     echo "Clearing setup files"
-    if [[ $(bjobs 2> /dev/null) ]] 
+    if [[ $(bjobs -o name 2> /dev/null | grep dyturbo) ]] 
     then
         echo There are jobs running, skip clearing
         #rm -f scripts/batch_scripts/*.sh

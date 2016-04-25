@@ -26,7 +26,7 @@ alias CP='rsync -avPL'
 #source ATLAS + ROOT
 export ATLAS_LOCAL_ROOT_BASE=/cvmfs/atlas.cern.ch/repo/ATLASLocalRootBase
 source ${ATLAS_LOCAL_ROOT_BASE}/user/atlasLocalSetup.sh
-localSetupROOT # 5.34.25-x86_64-slc6-gcc48-opt
+lsetup root # 5.34.25-x86_64-slc6-gcc48-opt
 # setup lhapdf
 #export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/etapfs03/atlashpc/cuth/resbos/lhapdf/LHAPDF-6.1.4/install/lib/
 #LD_LIBRARY_PATH=$LD_LIBRARY_PATH:DYTURBOROOTDIR/../RESBOS/lhapdf/lhapdf-5.6.0/install/lib/

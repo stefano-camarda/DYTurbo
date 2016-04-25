@@ -2077,6 +2077,21 @@ def mom_outlier() :
     pl.MakePreviewFromList(0,"mom_outlier")
     pass
 
+def plot_PDFprofiled():
+    profiled="results_merge/grid_151201/dyturbo_{}_lhc7_WZZPT-CT10_0_v1447428851qt0100y05tTOT_outliers.root"
+    nominal="results_merge/benchmark_v0_160125/dyturbo_{}_lhc7_CT10nnlo_0_bm0qt0100ym55tFIN_seed_outliers.root"
+    for proc in ["z0", "wp", "wm"] :
+        pl.CompareHistsInFiles(
+                proc+"_profPDF",
+                [
+                    [ "nominal"  , nominal  .format(proc),  "h_qt"],
+                    [ "profiled" , profiled .format(proc), "h_qt"],
+                ], compareType="ratio", normalise=True, cdiv=0.4
+                )
+        pass
+    pl.MakePreviewFromList(0,"profPDF_ratio")
+    pass
+
 
 
 ## Documentation for main
@@ -2109,7 +2124,8 @@ if __name__ == '__main__' :
     #pl.MakePreviewFromList(0,"cute")
     #
     #plot_y()
-    mom_outlier()
+    #mom_outlier()
+    plot_PDFprofiled()
     pass
 
 
