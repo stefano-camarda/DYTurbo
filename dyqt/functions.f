@@ -1568,11 +1568,11 @@ c.....Dilogarithmic function Li2
 c********************************
      
 c.....Function Li2(x) for arguments x < = 1.0                             
-      function LI2(x)                                                     
+      function dyLI2(x)                                                     
       implicit none                                                           
       real*8 X,Y,T,S,A,PI3,PI6,ZERO,ONE,HALF,MALF,MONE,MTWO  
       real*8 C(0:18),H,ALFA,B0,B1,B2,LI2OLD                 
-      real*8 Li2                                             
+      real*8 dyLi2                                             
       integer i                                                       
       
       data ZERO /0.0d0/, ONE /1.0d0/                               
@@ -1600,7 +1600,7 @@ c.....Function Li2(x) for arguments x < = 1.0
       data C(18) /-0.0000000000000001d0/                              
       
       if(x .gt. 1.00000000001d0) then                                    
-         write(6,*)'problems in LI2'
+         write(6,*)'problems in dyLI2'
          write(6,*)'x=',x 
          stop                                               
       elseif(x .gt. 1.0d0) then                                          
@@ -1608,11 +1608,11 @@ c.....Function Li2(x) for arguments x < = 1.0
       endif                                                              
       if(X .eq. ONE) then                                                
          LI2OLD=PI6
-         LI2=LI2OLD                                                       
+         dyLI2=LI2OLD                                                       
          return                                                            
       else if(X .eq. MONE) then                                          
          LI2OLD=MALF*PI6
-         LI2=LI2OLD                                                  
+         dyLI2=LI2OLD                                                  
          return                                                            
       end if                                                             
       T=-X                                                               
@@ -1654,7 +1654,7 @@ c.....Function Li2(x) for arguments x < = 1.0
          B1=B0                                                            
       enddo                                                              
       LI2OLD=-(S*(B0-H*B2)+A) 
-      LI2=LI2OLD
+      dyLI2=LI2OLD
       end     
       
 c*************************************************************
@@ -1663,7 +1663,7 @@ c*************************************************************
 
       subroutine utilities(sh,th,uh,q2,s2)
       implicit real *8 (a-h,o-z)
-      real *8 la,LI2
+      real *8 la,dyLI2
       common/fractions/x1,x2
       common/scales2/xmur,xmuf,xmur2,xmuf2
       common/denominators/dt,du,ds,dst,dsu,dtu,la
@@ -1706,10 +1706,10 @@ c.....transcendental functions
       ftu=log((th*uh-s2*q2)/((s2-th)*(s2-uh)))
       flat=log(sh*q2*(s2-th)**2/(s2*(2*q2-uh)-q2*th)**2)
       flau=log(sh*q2*(s2-uh)**2/(s2*(2*q2-th)-q2*uh)**2)
-      f1t=LI2(q2/(q2-th))+1d0/2d0*(log(q2/(q2-th)))**2
-      f2t=LI2(q2/sh)+1/2d0*fs**2+fs*log(-th/(sh-q2))
-      f1u=LI2(q2/(q2-uh))+1d0/2d0*(log(q2/(q2-uh)))**2
-      f2u=LI2(q2/sh)+1d0/2d0*fs**2+fs*log(-uh/(sh-q2))
+      f1t=dyLI2(q2/(q2-th))+1d0/2d0*(log(q2/(q2-th)))**2
+      f2t=dyLI2(q2/sh)+1/2d0*fs**2+fs*log(-th/(sh-q2))
+      f1u=dyLI2(q2/(q2-uh))+1d0/2d0*(log(q2/(q2-uh)))**2
+      f2u=dyLI2(q2/sh)+1d0/2d0*fs**2+fs*log(-uh/(sh-q2))
 
       return
       end

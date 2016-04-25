@@ -33,9 +33,8 @@ void pdfini_()
   //setg();
 }
 
-void setpdf_(int& member)
+void dysetpdf_(int& member)
 {
-
   if (member == 0)
     {
       if (opts.PDFerrors && opts.totpdf > 1)
@@ -47,7 +46,7 @@ void setpdf_(int& member)
     LHAPDF::initPDF(member);
   
   setalphas();
-  setg();
+  //  setg(); //set g separately when setting a different PDF in the resummed part
 }
 
 
@@ -66,7 +65,7 @@ void setmellinpdf_(int &member){
 //set value of alphas
 void setalphas()
 {
-  couple_.amz_=LHAPDF::alphasPDF(dymasses_.zmass_) ;
+  couple_.amz_=LHAPDF::alphasPDF(dymasses_.zmass_);
   double scale = fabs(scale_.scale_);
 
   if (opts_.approxpdf_ == 1)
@@ -82,17 +81,18 @@ void setalphas()
   qcdcouple_.gsq_=4*M_PI*qcdcouple_.as_;
 }
 
-//set value of g
+//set the value of the g-parameter of the non perturbative form factor
 void setg()
 {
   LHAPDF::PDFInfo info(opts.LHAPDFset, opts.LHAPDFmember);
   double gformfactor = info.get_entry_as<double>("g", -1);
   if (gformfactor >= 0)
-  {
-    cout << "g form factor: input from PDF member: " << gformfactor << endl;
-    opts.g_param = gformfactor;
-    g_param_.g_param_ = gformfactor;
-  }
+    {
+      cout << "g form factor: input from PDF member: " << gformfactor << endl;
+      opts.g_param = gformfactor;
+      g_param_.g_param_ = gformfactor;
+      np_.g_ = opts.g_param;
+    }
 }
 
 void fdist_(int& ih, double& x, double& xmu, double fx[11])
@@ -103,7 +103,9 @@ void fdist_(int& ih, double& x, double& xmu, double fx[11])
   if (x > 1.)
     for (int i = -5; i <=5; i++)
       fx[5+i]=0.;
- 
+  //!!!! should return here??? !!!!
+
+  
   LHAPDF::xfx(x,xmu,fPDF);
   if (ih == 1) //proton
     for (int i = -5; i <=5; i++)

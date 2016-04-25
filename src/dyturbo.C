@@ -4,18 +4,14 @@
 #include "integr.h"
 #include "resintegr.h"
 #include "ctintegr.h"
-#include "finintegr.h"
 #include "cubacall.h"
 #include "plotter.h"
-#include "printsettings.h"
-#include "switch.h"
 #include "clock_real.h"
-
-#include "config.h"
-#include <cuba.h>
 
 #include <iostream>
 #include <iomanip>
+#include <fstream>
+#include <vector>
 
 using namespace std;
 
@@ -41,19 +37,6 @@ double TotXSec ;
 int main( int argc , const char * argv[])
 {
 
-  cout << endl << endl;
-  cout << " (        )              (           )   " << endl;
-  cout << " )\\ )  ( /(   *   )      )\\ )  (  ( /(   " << endl;
-  cout << "(()/(  )\\())` )  /(   ( (()/(( )\\ )\\())  " << endl;
-  cout << " /(_))((_)\\  ( )(_))  )\\ /(_))((_|(_)\\   " << endl;
-  cout << "(_))___ ((_)(_(_())_ ((_|_))((_)_  ((_)  " << endl;
-  cout << " |   \\ \\ / /|_   _| | | | _ \\| _ )/ _ \\  " << endl;
-  cout << " | |) \\ V /   | | | |_| |   /| _ \\ (_) | " << endl;
-  cout << " |___/ |_|    |_|  \\___/|_|_\\|___/\\___/  " << endl;
-  cout << "                                   v " << VERSION << endl;
-  cout << endl;
-  cout << endl;
-
   double begin_time, end_time;
 
   /***********************************/
@@ -62,27 +45,7 @@ int main( int argc , const char * argv[])
   if (argc>1) {
       conf_file = argv[1];
   }
-  SMparameters();
-  opts.readfromfile(conf_file.c_str());
-  opts.initDyresSettings();
-  gaussinit_();
-  iniflavreduce_();
-  dyturboinit();
-  switching::init();
-  rescinit_();
-  //bins.init();
-  bins.readfromfile(conf_file.c_str());
-  cubacores(opts.cubacores,1000000);   //< set number of cores (move this to cubainit)
-  cubaexit((void (*)()) exitfun,NULL); //< merge at the end of the run
-  // histogram output
-  hists.Init();
-  /***********************************/
-
-  /***********************************/
-  //print out EW and QCD parameters and other settings
-  if (opts.verbose)
-    opts.dumpAll();
-  printsettings();
+  dyturboinit(conf_file);
   /***********************************/
 
   /*****************************************/
@@ -116,7 +79,6 @@ int main( int argc , const char * argv[])
       }
   }
   double f[opts.totpdf];
-  cout << "pippo" << endl;
   ctint_(costh,m,qt,y,mode,f);
   /****************************************/
   
@@ -161,12 +123,12 @@ int main( int argc , const char * argv[])
       if (opts.doRES) {
           double b_time = clock_real();
           if (opts.resint2d) {
-	    cacheyrapint_(ymin, ymax);
-	    //C++ resum
-	    /*
-	    rapint::cache(ymin, ymax);
-	    */
-	    //end C++ resum
+	    if (opts.resumcpp)
+	      //C++ resum
+	      rapint::cache(ymin, ymax);
+	      //end C++ resum
+	    else	    
+	      cacheyrapint_(ymin, ymax);
 	    resintegr2d(value, error);
           }
           if (opts.resint3d) resintegr3d(value, error);
@@ -196,8 +158,8 @@ int main( int argc , const char * argv[])
           double b_time = clock_real();
 	  if (opts.ctint2d) ctintegr2d(vals, error);
 	  if (opts.ctint3d) ctintegr3d(vals, error);
-	  //if (opts.ctintvegas) ctintegr(value, error);
-	  if (opts.ctintvegas) ctintegrMC(vals, error);
+	  if (opts.ctintvegas6d) ctintegrMC(vals, error);
+	  if (opts.ctintvegas8d) ctintegr(vals, error);
           double e_time = clock_real();
 	  value = vals[0];
           normalise_result(value,error);
@@ -212,11 +174,14 @@ int main( int argc , const char * argv[])
           double b_time = clock_real();
           vjintegr3d(value, error);
           double e_time = clock_real();
+	  vals.clear();
+	  vals.push_back(value);
           normalise_result(value,error);
           print_result(value,error,b_time,e_time);
           hists.FillResult( plotter::VJ , value, error, e_time-b_time );
           totval += value;
           toterror2 += error*error;
+	  vadd(totvals,vals);
       }
       // leading order
       if (opts.doLO) {

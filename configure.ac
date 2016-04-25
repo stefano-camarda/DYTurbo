@@ -1,4 +1,4 @@
-AC_INIT([dyturbo], [0.9.8.1], [stefano.camarda@cern.ch,jakub.cuth@cern.ch])
+AC_INIT([dyturbo], [0.9.10], [stefano.camarda@cern.ch,jakub.cuth@cern.ch])
 AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE([foreign -Wall -Werror])
 
@@ -17,12 +17,11 @@ LT_INIT
 AC_CONFIG_MACRO_DIR([m4])
 
 #optimisation flags O3
-AC_ARG_ENABLE([O3],
-  AC_HELP_STRING(--enable-O3, [Use compiler optimization flags -O3. (default=no)]))
-  AS_IF([test "x$enable_O3" = "xyes"], [
+AC_ARG_ENABLE([O3], AC_HELP_STRING(--enable-O3, [Use compiler optimization flags -O3. (default=yes)])): ${enable_O3=yes}
+
+AS_IF([test "x$enable_O3" = "xyes"], [
     CXXFLAGS="${CXXFLAGS} -O3"
-    FFLAGS="${FFLAGS} -O3"
-])
+    FFLAGS="${FFLAGS} -O3"])
 
 #optimisation flags, O3 or Ofast
 AC_ARG_ENABLE([Ofast],
@@ -187,6 +186,8 @@ AC_CONFIG_FILES([Makefile
 		 mcfm/Makefile
 		 cernlib/Makefile
 		 dequad/Makefile
+		 ancont/Makefile
+		 pegasus/Makefile
 		 dyturbo-config])
 
 

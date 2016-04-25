@@ -1,7 +1,14 @@
 #ifndef mesq_h
 #define mesq_h
 
+#include "interface.h"
 #include "mellinint.h"
+
+//fortran interfaces for ctint
+extern "C"
+{
+  void initsigma_cpp_(double &m, double &cthmom0, double &cthmom1, double &cthmom2);
+}
 
 extern const double eequ;
 extern const double eeqd;
@@ -19,6 +26,8 @@ namespace mesq
   extern double gLZd;
   extern double gRZu;
   extern double gRZd;
+  extern double gLZ[MAXNF];
+  extern double gRZ[MAXNF];
   extern double fLZ;
   extern double fRZ;
   extern double fLpfR;
@@ -27,11 +36,14 @@ namespace mesq
   extern double ugLmgR;
   extern double dgLpgR;
   extern double dgLmgR;
+  extern double gLpgR[MAXNF];
+  extern double gLmgR[MAXNF];
   extern double mW2;   //W coupling
   extern double wW2;
   extern double gLWfLW;
   extern double aem2pi;   //gamma* coupling
   extern double aem2pi2;
+  extern double Q[MAXNF];
 
   //Initialisation of constants
   extern void init();
@@ -42,6 +54,8 @@ namespace mesq
   extern double propW;
   extern double propG;
   extern double propZG;
+  //Calculate the W, Z, gamma* propagators
+  extern void setpropagators(double m);
   
   //Amplitudes times mellin inverse transform piece x1^-z1 * x2^-z2
   //Depending on the mode 0, 1, 2 they can be differential, cos theta integrated, or cos theta and y integrated

@@ -11,6 +11,7 @@
 #include "finintegr.h"
 #include "finitemapping.h"
 #include "printsettings.h"
+#include "resint.h"
 
 using namespace std;
 
@@ -29,15 +30,7 @@ int main( int argc , const char * argv[])
   if (argc>1) {
       conf_file = argv[1];
   }
-  SMparameters();
-  opts.readfromfile(conf_file.c_str());
-  opts.initDyresSettings();
-  gaussinit_();
-  iniflavreduce_();
-  dyturboinit();
-  rescinit_();
-  //bins.init();
-  bins.readfromfile(conf_file.c_str());
+  dyturboinit(conf_file.c_str());
   /***********************************/
 
   /***********************************/
@@ -96,8 +89,8 @@ int main( int argc , const char * argv[])
   test_ct_speed(costh,m,qt,y,mode);
 
   //costhline();
-  ptline();
-  //yline();
+  //ptline();
+  yline();
   //mline();
   //mlinebw();
   //xline();
@@ -147,6 +140,11 @@ void test_resum_speed(double costh,double m,double qt,double y,int mode){
     end_time = clock_real();
     cout << setw(10) << "Result" << setw(15) << value
          << setw(10) << "time "  << setw(15) << float(end_time - begin_time) << "s" << endl;
+    begin_time = clock_real();
+    value = resint::rint(costh,m,qt,y,mode);
+    end_time = clock_real();
+    cout << setw(10) << "Result" << setw(15) << value
+	 << setw(10) << "time "  << setw(15) << float(end_time - begin_time) << "s" << endl;
     return;
 }
 

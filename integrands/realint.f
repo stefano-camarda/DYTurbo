@@ -153,8 +153,7 @@ c     If the real and all the dipoles fail cuts, then exit
          return
       endif
       
-CC   Dynamic scale: set it only if point passes cuts 
-c     !!!this does not look correct, should be only if(dynamicscale)!!!
+CC   Dynamic scale for real contribution (nd = 0): set it only if point passes cuts 
       if(dynamicscale.and.includereal) then
        call scaleset(q2)
        dipscale(0)=facscale
@@ -168,9 +167,9 @@ c----calculate the x's for the incoming partons from generated momenta
          return
       endif
 
-c--- Calculate the required matrix elements  (dipscale(nd) are set appropriately in dipolesub.f)
+c--- Calculate the required matrix elements  (dipscale(nd) are set appropriately in dipolesub.f, called by qqb_v1jet_gs)
       if (pdferr) then
-         call setpdf(0)
+         call dysetpdf(0)
       endif
       gsqcentral=gsq
       if(nproc.eq.3) then
@@ -189,7 +188,7 @@ c     skip PDF loop in the preconditioning phase
       
 c     start PDF loop
       do npdf=0,maxpdf
-         call setpdf(npdf)
+         call dysetpdf(npdf)
          call hists_setpdf(npdf)
 c     intitialise xmsq to 0 for the real and all dipoles
          do nd=0,ndmax

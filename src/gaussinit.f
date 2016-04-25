@@ -1,4 +1,5 @@
       subroutine gaussinit
+      implicit none
       include 'gauss.f'
       integer i,j
 

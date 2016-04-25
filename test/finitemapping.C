@@ -1,7 +1,7 @@
 #include <iostream>
 #include <LHAPDF/LHAPDF.h>
-#include <gsl/gsl_integration.h>
-#include <gsl/gsl_math.h>
+//#include <gsl/gsl_integration.h>
+//#include <gsl/gsl_math.h>
 #include <ctime>
 
 #include "settings.h"

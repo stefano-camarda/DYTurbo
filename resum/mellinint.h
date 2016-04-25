@@ -1,7 +1,16 @@
 #ifndef mellinint_h
 #define mellinint_h
+#include "fcomplex.h"
+
 #include <map>
 #include <complex>
+
+//fortran interfaces
+extern "C"
+{
+  void mellinint_pdf_mesq_expy_(int& i1, int& i2, int& sign);
+  fcomplex mellinint_integrand_(int& i1, int& i2, int& sign);
+}
 
 using namespace std;
 namespace mellinint
@@ -28,10 +37,12 @@ namespace mellinint
   extern complex<double> GGN;
   extern complex<double> QGN_1;
   extern complex<double> QGN_2;
-  extern complex<double> QQBN_1;
-  extern complex<double> QQBN_2;
-  extern complex<double> QQBN_3;
-  extern complex<double> QQBN_4;
+  extern complex<double> QQBN;
+  extern complex<double> QQN;
+  extern complex <double> QQN_1;
+  extern complex <double> QQN_2;
+  extern complex<double> QQPN_1;
+  extern complex<double> QQPN_2;
 }
 
 #endif

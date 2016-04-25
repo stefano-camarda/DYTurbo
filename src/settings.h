@@ -44,7 +44,6 @@ class settings
 public:
   settings() {};
   void readfromfile(const string fname);
-  void initDyresSettings();
 
   // private:
   void dumpAll();
@@ -53,30 +52,43 @@ public:
   void dumpS(string var, string val );
   void dumpB(string var, bool   val );
 
+  //process settings
+  double sroot;
+  int    ih1;
+  int    ih2;
+  int    nproc;
+  double g_param;
+  int    order;
 
-  //original DYRES settings
-  double sroot        ;
-  int    ih1          ;
-  int    ih2          ;
-  int    nproc        ;
-  double mur          ;
-  double muf          ;
-  double a_param      ;
-  double g_param      ;
-  int    order        ;
-  bool   zerowidth    ;
-  int    rseed        ;
+  //PDF settings
   string LHAPDFset    ;
   int    LHAPDFmember ;
 
+  //fixed or dynamic QCD scales
+  bool dynamicscale, dynamicresscale;
+  
+  //scale factors for the QCD scales
+  double kmures;
+  double kmuren;
+  double kmufac;
+
+  //  double a_param;
+  
+  //IR cut-off
+  double blim;
+  
   //EW parameters
   double Gf, zmass, wmass;
   double xw, aemmz;
   double zwidth, wwidth;
+  bool zerowidth;
 
   //CKM matrix
   double Vud, Vus, Vub;
   double Vcd, Vcs, Vcb;
+
+  //Z/gamma* coupling
+  double Zuu, Zdd, Zss, Zcc, Zbb;
 
   //resonance mass and width (used for breit wigner unweighting)
   double rmass, rwidth;
@@ -100,16 +112,23 @@ public:
   //qtcut
   double xqtcut, qtcut;
 
+  //integration settings
+  int rseed;
+
   //dimension of integration
   int intDimRes;
   bool resint2d, resint3d, resintvegas;
 
   //type of integration for the counterterm
   int intDimCT;
-  bool ctint2d, ctint3d, ctintvegas;
+  bool ctint2d, ctint3d, ctintvegas6d, ctintvegas8d;
 
-  //term switch
-  bool doRES  , doVV , doCT   , doREAL , doVIRT , doLO, doVJ   ;
+  //  //type of integration for the V+j at LO
+  //  int intDimVJ;
+  //  bool vjint3d, vjintvegas7d;
+  
+  //term switches
+  bool doRES, doVV, doCT, doREAL, doVIRT, doLO, doVJ;
 
   //resummation or fixed order switch
   bool fixedorder;
@@ -119,6 +138,7 @@ public:
   int cubacores;
   int niterRES;
   int niterCT;
+  int niterVJ;
   int vegasncallsRES  ;
   int vegasncallsVV   ;
   int vegasncallsCT   ;
@@ -129,6 +149,7 @@ public:
   //lepton fiducial cuts
   bool makelepcuts;
   double lptcut, lycut;
+  double l1ptcut, l1ycut, l2ptcut, l2ycut;
 
   //integration types and settings for costh phi_lep phase space
   bool cubaint;
@@ -141,9 +162,13 @@ public:
   bool quadint;
   int quadnphi;
 
+  //settings for Bessel integration
+  double bintaccuracy;
+
   //settings for Mellin integration
   int mellinintervals;
   int mellinrule;
+  double zmax;
   
   //settings for rapidity integration
   int yintervals;
@@ -159,6 +184,10 @@ public:
   //debug settings
   bool timeprofile;
   bool verbose;
+
+  bool resumcpp;
+
+  int evolmode;
 
   // fiducial switches
   cuts::DetFiducial fiducial;

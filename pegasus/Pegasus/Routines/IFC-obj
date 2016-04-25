@@ -1,0 +1,52 @@
+ifort -xW -c \
+\
+initevol.f \
+betafct.f \
+psifcts.f \
+pnsg0mom.f \
+pns1mom.f \
+psg1mom.f \
+pns2mom.f \
+psg2mom.f \
+pns2mold.f \
+psg2mold.f \
+lsgmom.f \
+usg1mom.f \
+usg1hmom.f \
+uns2mom.f \
+usg2mom.f \
+usg2hmom.f \
+ans2mom.f \
+asg2mom.f \
+\
+initinp.f \
+inplmom1.f \
+inplmom2.f \
+ebetafct.f \
+evnfthr.f \
+asmatch.f \
+\
+asrgkt.f \
+ensg0n.f \
+ens1n.f \
+esg1n.f \
+ens2n.f \
+esg2n.f \
+evnvfn.f \
+evnffn.f \
+xparton.f \
+\
+initpol.f \
+psg0pmom.f \
+pns1pmom.f \
+psg1pmom.f \
+ans2pmom.f \
+asg2pmom.f \
+initpinp.f \
+inppmom1.f \
+inppmom2.f \
+\
+nparton.f \
+initmom.f
+
+mv *.o ../Objects2/

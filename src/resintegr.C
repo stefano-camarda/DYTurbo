@@ -3,6 +3,7 @@
 #include "settings.h"
 #include "interface.h"
 #include "switch.h"
+#include "resint.h"
 //#include "plotter.h"
 
 #include <math.h>
@@ -145,17 +146,21 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
   //for consistency, has to keep the integration between ymin and ymax
   if (opts.makelepcuts)
     {
-      rapintegrals_(ymin,ymax,m,nocuts);
-      //C++ rewritten resum
-      //rapint::integrate(ymin,ymax,m);
-      //end
+      if (opts.resumcpp)
+	//C++ resum
+	rapint::integrate(ymin,ymax,m);
+        //end C++ resum
+      else
+	rapintegrals_(ymin,ymax,m,nocuts);
     }
   else
     {
-      rapintegrals_(ymn,ymx,m,nocuts);
-      //C++ rewritten resum
-      //rapint::integrate(ymn,ymx,m);
-      //end
+      if (opts.resumcpp)
+	//C++ rewritten resum
+	rapint::integrate(ymn,ymx,m);
+        //end C++ resum
+      else
+	rapintegrals_(ymn,ymx,m,nocuts);
     }
   yet = clock();
   
@@ -177,7 +182,10 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
   if (swtch < 0.01)
     f[0]=0.;
   else
-    f[0]=resumm_(costh,m,qt,y,mode)/(8./3.);
+      if (opts.resumcpp)
+	f[0]=resint::rint(costh,m,qt,y,mode)/(8./3.);
+      else
+	f[0]=resumm_(costh,m,qt,y,mode)/(8./3.);
   clock_t ret = clock();
 
   if (f[0] != f[0])

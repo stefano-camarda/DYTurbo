@@ -1,6 +1,6 @@
 ACLOCAL_AMFLAGS=-I m4
 #add cuba to SUBDIRS to ship cuba
-SUBDIRS = cernlib dequad dyres dynnlo dyqt mcfm integrands resum src
+SUBDIRS = cernlib ancont pegasus dequad dyres dynnlo dyqt mcfm integrands resum src
 
 #add test directories if enabled
 if HAVE_TEST
@@ -11,7 +11,7 @@ SUBDIRS += origdyres
 endif
 
 #do not ditribute test directories
-DIST_SUBDIRS = cernlib dequad dyres dynnlo dyqt mcfm integrands resum src
+DIST_SUBDIRS = cernlib ancont pegasus dequad dyres dynnlo dyqt mcfm integrands resum src
 
 dist_bin_SCRIPTS = install-cuba install-lhapdf
 EXTRA_DIST = README.md
@@ -29,4 +29,5 @@ dist_share_DATA = ${srcdir}/input/*.in ${srcdir}/pdfsets.list ${srcdir}/scripts/
 
 distclean-local:
 	rm -rf Cuba-$(CUBA_VERSION)
+	rm -rf lhapdf6
 	rm -rf origdyres/*.f origdyres/*.h origdyres/DYRes-v1.0

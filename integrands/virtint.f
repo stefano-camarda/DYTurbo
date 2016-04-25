@@ -46,6 +46,8 @@
       integer nproc
       common/nproc/nproc
 
+      double precision xmsq_as,xmsq_as2
+      
       data p/48*0d0/
       external hists_setpdf
       external hists_fill
@@ -98,7 +100,7 @@ c--- bother calculating the matrix elements for it, instead bail out
 
 c     Load central PDF and QCD coupling
       if (pdferr) then
-         call setpdf(0)
+         call dysetpdf(0)
       endif
       gsqcentral=gsq
      
@@ -167,10 +169,12 @@ c     skip PDF loop in the preconditioning phase
       
 c     start PDF loop
       do npdf=0,maxpdf
-         call setpdf(npdf)
+         call dysetpdf(npdf)
          call hists_setpdf(npdf)
 c     intitialise xmsq to 0
          xmsq=0d0
+         xmsq_as=0d0
+         xmsq_as2=0d0
 
          call fdist(ih1,xx(1),facscale,fx1)
          call fdist(ih2,xx(2),facscale,fx2)
@@ -218,7 +222,7 @@ c--- dipole contributions
 c--- SUM BY TOTAL MATRIX ELEMENTS: everything else
 C--QQ
       if     ((j .gt. 0) .and. (k.gt.0)) then
-      xmsq=xmsq+(msqv(j,k)
+      xmsq_as2=xmsq_as2+(msqv(j,k)
      & + msq(j,k)*(AP(q,q,1)-AP(q,q,3)+Q1(q,q,q,1)-Q1(q,q,q,3)
      &                +AP(q,q,1)-AP(q,q,3)+Q2(q,q,q,1)-Q2(q,q,q,3)))
      &                *fx1(j)*fx2(k)
@@ -228,7 +232,7 @@ C--QQ
      & + msq(j,g)*(AP(g,q,2)+Q2(g,q,q,2)))*fx1(j)*fx2z(k)/z
 C--QbarQbar
       elseif ((j .lt. 0) .and. (k.lt.0)) then
-      xmsq=xmsq+(msqv(j,k)
+      xmsq_as2=xmsq_as2+(msqv(j,k)
      & + msq(j,k)*(AP(a,a,1)-AP(a,a,3)+Q1(a,a,a,1)-Q1(a,a,a,3)
      &                +AP(a,a,1)-AP(a,a,3)+Q2(a,a,a,1)-Q2(a,a,a,3)))
      &                *fx1(j)*fx2(k)
@@ -238,7 +242,7 @@ C--QbarQbar
      & + msq(j,g)*(AP(g,a,2)+Q2(g,a,a,2)))*fx1(j)*fx2z(k)/z
 C--QQbar
       elseif ((j .gt. 0) .and. (k.lt.0)) then
-      xmsq=xmsq+(msqv(j,k)
+      xmsq_as2=xmsq_as2+(msqv(j,k)
      & + msq(j,k)*(AP(q,q,1)-AP(q,q,3)+Q1(q,q,a,1)-Q1(q,q,a,3)
      &                +AP(a,a,1)-AP(a,a,3)+Q2(a,a,q,1)-Q2(a,a,q,3)))
      &                *fx1(j)*fx2(k)
@@ -249,7 +253,7 @@ C--QQbar
 
       elseif ((j .lt. 0) .and. (k.gt.0)) then
 C--QbarQ
-      xmsq=xmsq+(msqv(j,k)
+      xmsq_as2=xmsq_as2+(msqv(j,k)
      & +msq(j,k)*(AP(a,a,1)-AP(a,a,3)+Q1(a,a,q,1)-Q1(a,a,q,3)
      &               +AP(q,q,1)-AP(q,q,3)+Q2(q,q,a,1)-Q2(q,q,a,3)))
      &               *fx1(j)*fx2(k)
@@ -264,7 +268,7 @@ C--gg
      &       +msq(-5,g)+msq(-4,g)+msq(-3,g)+msq(-2,g)+msq(-1,g)
        msq_gq=msq(g,+5)+msq(g,+4)+msq(g,+3)+msq(g,+2)+msq(g,+1)
      &       +msq(g,-5)+msq(g,-4)+msq(g,-3)+msq(g,-2)+msq(g,-1)
-       xmsq=xmsq+(msqv(g,g)
+       xmsq_as2=xmsq_as2+(msqv(g,g)
      &  +msq(g,g)*(AP(g,g,1)-AP(g,g,3)+Q1(g,g,g,1)-Q1(g,g,g,3)
      &                +AP(g,g,1)-AP(g,g,3)+Q2(g,g,g,1)-Q2(g,g,g,3)))
      &                *fx1(g)*fx2(g)
@@ -278,7 +282,7 @@ C--gQ
        if    (k .gt. 0) then
        msq_aq=msq(-1,k)+msq(-2,k)+msq(-3,k)+msq(-4,k)+msq(-5,k)
        msq_qq=msq(+1,k)+msq(+2,k)+msq(+3,k)+msq(+4,k)+msq(+5,k)
-       xmsq=xmsq+(msqv(g,k)
+       xmsq_as2=xmsq_as2+(msqv(g,k)
      & +msq(g,k)*(AP(g,g,1)-AP(g,g,3)+Q1(g,g,q,1)-Q1(g,g,q,3)
      &               +AP(q,q,1)-AP(q,q,3)+Q2(q,q,g,1)-Q2(q,q,g,3)))
      &               *fx1(g)*fx2(k)
@@ -292,7 +296,7 @@ C--gQbar
        elseif (k.lt.0) then
        msq_qa=msq(+1,k)+msq(+2,k)+msq(+3,k)+msq(+4,k)+msq(+5,k)
        msq_aa=msq(-1,k)+msq(-2,k)+msq(-3,k)+msq(-4,k)+msq(-5,k)
-       xmsq=xmsq+(msqv(g,k)
+       xmsq_as2=xmsq_as2+(msqv(g,k)
      & +msq(g,k)*(AP(g,g,1)-AP(g,g,3)+Q1(g,g,a,1)-Q1(g,g,a,3)
      &               +AP(a,a,1)-AP(a,a,3)+Q2(a,a,g,1)-Q2(a,a,g,3)))
      &               *fx1(g)*fx2(k)
@@ -307,7 +311,7 @@ C--Qg
        if     (j.gt.0) then
        msq_qa=msq(j,-1)+msq(j,-2)+msq(j,-3)+msq(j,-4)+msq(j,-5)
        msq_qq=msq(j,+1)+msq(j,+2)+msq(j,+3)+msq(j,+4)+msq(j,+5)
-       xmsq=xmsq+(msqv(j,g)
+       xmsq_as2=xmsq_as2+(msqv(j,g)
      & +msq(j,g)*(
      &                AP(q,q,1)-AP(q,q,3)+Q1(q,q,g,1)-Q1(q,q,g,3)
      &               +AP(g,g,1)-AP(g,g,3)+Q2(g,g,q,1)-Q2(g,g,q,3)))
@@ -321,7 +325,7 @@ C--Qbarg
        elseif (j.lt.0) then
        msq_aq=msq(j,+1)+msq(j,+2)+msq(j,+3)+msq(j,+4)+msq(j,+5)
        msq_aa=msq(j,-1)+msq(j,-2)+msq(j,-3)+msq(j,-4)+msq(j,-5)
-       xmsq=xmsq+(msqv(j,g)
+       xmsq_as2=xmsq_as2+(msqv(j,g)
      & +msq(j,g)*(AP(a,a,1)-AP(a,a,3)+Q1(a,a,g,1)-Q1(a,a,g,3)
      &               +AP(g,g,1)-AP(g,g,3)+Q2(g,g,a,1)-Q2(g,g,a,3)))
      &                *fx1(j)*fx2(g)
@@ -337,15 +341,18 @@ C--Qbarg
 c until now added part proportional to as**2
 c now add born part (proportional to as)
 
-      xmsq=xmsq *(gsq/gsqcentral)**2
-     .     +(msq(j,k))*fx1(j)*fx2(k) *(gsq/gsqcentral)
+      xmsq_as=xmsq_as+(msq(j,k))*fx1(j)*fx2(k)
 
  20   continue
 
       enddo
       enddo
-      
+
+c     add as and as**2 terms, and scale by (eventual) alphas change in the PDF member
+      xmsq=(xmsq_as*(gsq/gsqcentral)+xmsq_as2*(gsq/gsqcentral)**2)
+
       xmsq=flux*xjac*pswt*xmsq/BrnRat
+
       f(npdf+1)=xmsq
 
 C     Fill only if it's last iteration

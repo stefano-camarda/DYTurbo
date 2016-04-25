@@ -16,7 +16,7 @@ C     Scale dependence included up to NNLO
       include 'scale.f'
       include 'facscale.f'
       include 'zerowidth.f'
-      include 'efficiency.f'
+c      include 'efficiency.f'
       include 'masses.f'
       include 'limits.f'
 C
@@ -109,7 +109,7 @@ C
          rscalestart=scale
          fscalestart=facscale
       endif
-      ntotshot=ntotshot+1
+c      ntotshot=ntotshot+1
       pswt=0d0
       countint=0d0 
 
@@ -707,7 +707,7 @@ C     Fill only if it's last iteration
       return
 
  999  countint=0d0
-      ntotzero=ntotzero+1
+c      ntotzero=ntotzero+1
  
       return
       end

@@ -14,31 +14,36 @@ double coupling::xw;
 double coupling::zmass;
 double coupling::wmass;
 
+//Number of colours in QCD
+const double coupling::NC = 3.;
+
 void coupling::init()
 {
-  ewcharge_.Q_[NF-5] = +0.333333333333333;
-  ewcharge_.Q_[NF-4] = -0.666666666666667;
-  ewcharge_.Q_[NF-3] = +0.333333333333333;
-  ewcharge_.Q_[NF-2] = -0.666666666666667;
-  ewcharge_.Q_[NF-1] = +0.333333333333333;
-  ewcharge_.Q_[NF]   =  0.	       ;
-  ewcharge_.Q_[NF+1] = -0.333333333333333;
-  ewcharge_.Q_[NF+2] = +0.666666666666667;
-  ewcharge_.Q_[NF+3] = -0.333333333333333;
-  ewcharge_.Q_[NF+4] = +0.666666666666667;
-  ewcharge_.Q_[NF+5] = -0.333333333333333;
+  //Set up all the couplings used in MCFM
 
-  ewcharge_.tau_[NF-5] = 1.;
-  ewcharge_.tau_[NF-4] = -1.;
-  ewcharge_.tau_[NF-3] = 1.;
-  ewcharge_.tau_[NF-2] = -1.;
-  ewcharge_.tau_[NF-1] = 1.;
-  ewcharge_.tau_[NF]   = 0.;
-  ewcharge_.tau_[NF+1] = -1.;
-  ewcharge_.tau_[NF+2] = 1.;
-  ewcharge_.tau_[NF+3] = -1.;
-  ewcharge_.tau_[NF+4] = 1.;
-  ewcharge_.tau_[NF+5] = -1.;
+  ewcharge_.Q_[MAXNF-5] = +0.333333333333333 * opts.Zbb;
+  ewcharge_.Q_[MAXNF-4] = -0.666666666666667 * opts.Zcc;
+  ewcharge_.Q_[MAXNF-3] = +0.333333333333333 * opts.Zss;
+  ewcharge_.Q_[MAXNF-2] = -0.666666666666667 * opts.Zuu;
+  ewcharge_.Q_[MAXNF-1] = +0.333333333333333 * opts.Zdd;
+  ewcharge_.Q_[MAXNF]   =  0.	       ;
+  ewcharge_.Q_[MAXNF+1] = -0.333333333333333 * opts.Zdd;
+  ewcharge_.Q_[MAXNF+2] = +0.666666666666667 * opts.Zuu;
+  ewcharge_.Q_[MAXNF+3] = -0.333333333333333 * opts.Zss;
+  ewcharge_.Q_[MAXNF+4] = +0.666666666666667 * opts.Zcc;
+  ewcharge_.Q_[MAXNF+5] = -0.333333333333333 * opts.Zbb;
+
+  ewcharge_.tau_[MAXNF-5] =  1. * opts.Zbb;
+  ewcharge_.tau_[MAXNF-4] = -1. * opts.Zcc;
+  ewcharge_.tau_[MAXNF-3] =  1. * opts.Zss;
+  ewcharge_.tau_[MAXNF-2] = -1. * opts.Zuu;
+  ewcharge_.tau_[MAXNF-1] =  1. * opts.Zdd;
+  ewcharge_.tau_[MAXNF]   =  0.           ;
+  ewcharge_.tau_[MAXNF+1] = -1. * opts.Zdd;
+  ewcharge_.tau_[MAXNF+2] =  1. * opts.Zuu;
+  ewcharge_.tau_[MAXNF+3] = -1. * opts.Zss;
+  ewcharge_.tau_[MAXNF+4] =  1. * opts.Zcc;
+  ewcharge_.tau_[MAXNF+5] = -1. * opts.Zbb;
 
 
   //Gmu scheme, inputs: Gf, MZ, MW
@@ -73,7 +78,8 @@ void coupling::init()
       //Effective value of the weak mixing angle
       xw = opts.xw;
       //!!!!! Check this value, should use  1.-pow(wmass/zmass,2) instead of xw?
-      aemmz = sqrt(2)*Gf*pow(wmass,2)*xw/M_PI;
+      //      aemmz = sqrt(2)*Gf*pow(wmass,2)*xw/M_PI;
+      aemmz = sqrt(2)*Gf*pow(wmass,2)*(1.-pow(wmass/zmass,2))/M_PI;
     }
 
 
@@ -119,26 +125,33 @@ void coupling::init()
   dymasses_.zmass_ = zmass;
 
   //Now set up the other derived parameters
-  ewcouple_.gwsq_= 4 * M_PI * aemmz/xw;
-  ewcouple_.esq_= ewcouple_.gwsq_* xw;
+
+  //W coupling
+  ewcouple_.gwsq_= 4 * M_PI * aemmz/xw; //= 4*sqrt(2)*Gf*pow(wmass,2);
   ewcouple_.gw_=sqrt(ewcouple_.gwsq_);
+
+  //photon coupling (used also for Z)
+  ewcouple_.esq_= ewcouple_.gwsq_* xw; //= 4 * M_PI * aemmz;
 
   //calculate the couplings as given in Kunszt and Gunion
   //Modified to notation of DKS (ie divided by 2*sw*cw)
   //xw=sin^2 theta_w
   zcouple_.sin2w_=2.*sqrt(xw*(1.-xw));
-  for (int j=0; j < NF; j++)
+  for (int j=0; j < MAXNF; j++)
     {
-      zcouple_.l_[j]=(ewcharge_.tau_[j+NF+1]-2.*ewcharge_.Q_[j+NF+1]*xw)/zcouple_.sin2w_;
-      zcouple_.r_[j]=(-2*ewcharge_.Q_[j+NF+1]*xw)/zcouple_.sin2w_;
+      zcouple_.l_[j]=(ewcharge_.tau_[j+MAXNF+1]-2.*ewcharge_.Q_[j+MAXNF+1]*xw)/zcouple_.sin2w_;
+      zcouple_.r_[j]=(-2*ewcharge_.Q_[j+MAXNF+1]*xw)/zcouple_.sin2w_;
     }
 
   zcouple_.le_=(-1.-2.*(-1.)*xw)/zcouple_.sin2w_;
   zcouple_.re_=(-2.*(-1.)*xw)/zcouple_.sin2w_;
 
+  //are ln and rn ever used?
   zcouple_.ln_=(+1.-2.*(+0.)*xw)/zcouple_.sin2w_;
   zcouple_.rn_=0.;
 
+  //switch off the gamma* contribution if required
+  zcouple_.q1_ = (opts.useGamma ? -1 :  0 );
 
   //******************* this coupling is not used ****************
   //Calculate the appropriate Higgs vacuum expectation value.
@@ -148,7 +161,8 @@ void coupling::init()
   //****************************************************************
 
   //set up the beta-function
-  b0_.b0_=(XN*11.-2.*NF)/6.;
+  //b0 is defined in mcfm/b0.f and is used in virtint.f and mcfm/dipoles.f
+  b0_.b0_=(NC*11.-2.*MAXNF)/6.;
 
   //initialize the pdf set
   pdfini_();
@@ -158,6 +172,87 @@ void coupling::init()
   //      bmass=dsqrt(mbsq)
   scale_.musq_ = pow(scale_.scale_,2);
  
+  //read g from the PDF
+  setg();
+}      
+
+void coupling::SMparameters()
+{
+  //None of these parameters is actually needed, check and clean up and remove this function
+  //(The squared HF masses are actually used in the MCFM function for the running of alphas)
+  
+  //Calculational scheme for EW couplings
+  //     ewscheme=-1  : MCFM default 
+  //                    input values = Gf,alpha(m_Z),m_W,m_Z
+  //                    output values = sin^2(theta_W),mtop
+  //
+  //     ewscheme=1   : New Madevent default, "G_mu scheme"
+  //                    = LUSIFER and AlpGen (iewopt=3) defaults
+  //                    input values = G_F,m_Z,m_W
+  //                    output values = sin^2(theta_W),alpha(m_Z).
+
+  ewscheme_.ewscheme_=1;
+
+  //  ewinput_.Gf_inp_= 1.1663787e-5;
+  //  ewinput_.wmass_inp_= 80.385;
+  //  ewinput_.zmass_inp_= 91.1876;
+  //  ewinput_.aemmz_inp_= 7.7585538055706e-03;
+  //  ewinput_.xw_inp_= 0.2312;
+
+  //  dymasses_.wwidth_ = 2.091;
+  //  dymasses_.zwidth_ = 2.4950;
+
+
+  // ******************************* The following parameters are not used ***************************
+  //Masses, widths and initial-state flavour information
+  // Masses: note that "mtausq", "mcsq" and "mbsq" are typically used
+  // throughout the program to calculate couplings that depend on the
+  // mass, while "mtau","mc" and "mb" are the masses that appear in
+  // the rest of the matrix elements and phase space (and may be set
+  // to zero in the program, depending on the process number) 
+  dymasses_.mtausq_ = 3.157729;
+  dymasses_.mcsq_ = 2.25;
+  dymasses_.mbsq_ = 21.3444;
+  dymasses_.mtau_ = 1.777;
+  dymasses_.mc_ = 1.5;  //-> read HF masses from the PDF
+  dymasses_.mb_ = 4.62; //-> read HF masses from the PDF
+  dymasses_.mt_ = 178;
+
+  // Widths: note that the top width is calculated in the program
+  dymasses_.tauwidth_ = 2.269e-12;
+
+  // Masses below here are currently unused      
+  dymasses_.md_ = 5e-3;
+  dymasses_.mu_ = 5e-3;
+  dymasses_.ms_ = 1e-1;
+  dymasses_.mel_ = 0.510997e-3;
+  dymasses_.mmu_ = 0.105658389;
+
+  //Dim. Reg. parameter epsilon (not used)
+  epinv_.epinv_ = 1000;
+  epinv2_.epinv2_= 1000;
+  // ************************************************************************************************
+}
+
+void coupling::initscales()
+{
+  //Set up QCD scales in the fortran common blocks
+  scale_.scale_               = opts.kmuren*opts.rmass;
+  facscale_.facscale_         = opts.kmufac*opts.rmass;
+  a_param_.a_param_           = 1./opts.kmures;
+
+  scale_.musq_=pow(scale_.scale_,2);
+
+  //Set all factorization scales of the dipole contributions to facscale
+  //to avoid problems when dynamicscale=.false.
+  for (int nd =0; nd <= 40; nd++)
+    dipolescale_.dipscale_[nd]=facscale_.facscale_;
+
+  //Set the scale pre-factors in the fortran common block
+  scaleopts_.kmuren_ = opts.kmuren;
+  scaleopts_.kmufac_ = opts.kmufac;
+  scaleopts_.kmures_ = opts.kmures;
+  
   //initialize alpha_s
   setalphas();
-}      
+}

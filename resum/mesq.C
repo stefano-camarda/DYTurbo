@@ -4,8 +4,11 @@
 #include "coupling.h"
 #include "integr.h"
 #include "rapint.h"
+#include "parton.h"
 #include <iostream>
 #include <cmath>
+
+using namespace parton;
 
 //constants
 const double eequ =2./3.;
@@ -20,6 +23,10 @@ double mesq::gLZu;
 double mesq::gLZd;
 double mesq::gRZu;
 double mesq::gRZd;
+
+double mesq::gLZ[MAXNF];
+double mesq::gRZ[MAXNF];
+
 double mesq::fLZ;
 double mesq::fRZ;
 double mesq::fLpfR;
@@ -28,6 +35,10 @@ double mesq::ugLpgR;
 double mesq::ugLmgR;
 double mesq::dgLpgR;
 double mesq::dgLmgR;
+
+double mesq::gLpgR[MAXNF];
+double mesq::gLmgR[MAXNF];
+
 //W coupling
 double mesq::mW2;
 double mesq::wW2;
@@ -35,6 +46,7 @@ double mesq::gLWfLW;
 //gamma* coupling
 double mesq::aem2pi;
 double mesq::aem2pi2;
+double mesq::Q[MAXNF];
 
 //mass dependent variables
 double mesq::q2;
@@ -66,6 +78,13 @@ void mesq::init()
   gLZd=gZ*(-1./2.-eeqd*coupling::xw);
   gRZu=-gZ*eequ*coupling::xw;
   gRZd=-gZ*eeqd*coupling::xw;
+
+  for (int j = 0; j < MAXNF; j++)
+    {
+      gLZ[j]=gZ*(ewcharge_.tau_[j+MAXNF+1]*1./2.-ewcharge_.Q_[j+MAXNF+1]*coupling::xw);
+      gRZ[j]=-gZ*ewcharge_.Q_[j+MAXNF+1]*coupling::xw;
+    }
+
   fLZ=gZ*(-1./2.+coupling::xw);
   fRZ=gZ*coupling::xw;
 
@@ -74,6 +93,7 @@ void mesq::init()
 
   //Initialize constants
   fac=1./9./M_PI*gevfb;
+
   //Z couplings
   fLpfR = pow(fLZ,2)+pow(fRZ,2);
   fLmfR = pow(fLZ,2)-pow(fRZ,2);
@@ -81,14 +101,24 @@ void mesq::init()
   ugLmgR = pow(gLZu,2)-pow(gRZu,2);
   dgLpgR = pow(gLZd,2)+pow(gRZd,2);
   dgLmgR = pow(gLZd,2)-pow(gRZd,2);
+
+  for (int j = 0; j < MAXNF; j++)
+    {
+      gLpgR[j] = pow(gLZ[j],2)+pow(gRZ[j],2);
+      gLmgR[j] = pow(gLZ[j],2)-pow(gRZ[j],2);
+    }
+
   //W coupling
   gLWfLW = pow(gLW,2)*pow(fLW,2)/16.;
+
   //gamma* coupling
   aem2pi = 2.*M_PI*coupling::aemmz;
   aem2pi2 = pow(aem2pi,2);
-
+  for (int j = 0; j < MAXNF; j++)
+    Q[j] = ewcharge_.Q_[j+MAXNF+1];
+      
+  //allocate memory
   mesqij_expy = new complex <double> [mellinint::mdim*mellinint::mdim*2*12];
-  //  mesqij = double* malloc(mellinint::mdim*mellinint::mdim);
 
   q2 = 0;
   propZ = 0;
@@ -96,6 +126,21 @@ void mesq::init()
   propG = 0;
   propZG = 0;
 }
+
+void mesq::setpropagators(double m)
+{
+  q2 = pow(m,2);
+  if (opts.nproc == 3)
+    propZ = q2/(pow(q2-mZ2,2)+mZ2*wZ2);
+  else
+    propW = q2/(pow(q2-mW2,2)+mW2*wW2);
+  if (opts.useGamma)
+    {
+      propG = 1./q2;
+      propZG = (q2-mZ2)/(pow(q2-mZ2,2)+mZ2*wZ2);
+    }
+}
+
 
 void mesq::setmesq_expy(int mode, double m, double costh, double y)
 {
@@ -117,7 +162,8 @@ void mesq::setmesq_expy(int mode, double m, double costh, double y)
       propG = 1./q2;
       propZG = (q2-mZ2)/(pow(q2-mZ2,2)+mZ2*wZ2);
     }
-
+  //setpropagators(m);
+  
   if (mode < 2)
     {
       //costh dependent part
@@ -194,22 +240,6 @@ void mesq::setmesq(T one, T costh1, T costh2)
 {
   T omcosth2 = one - 2.*costh1 + costh2;
   T opcosth2 = one + 2.*costh1 + costh2;
-  if (opts.nproc == 3 && !opts.useGamma) //Z 
-    {
-      mesqij[0]=fac*propZ*(ugLpgR*fLpfR*(one + costh2)-ugLmgR*fLmfR*(2.*costh1));
-      mesqij[6]=mesqij[0];
-	    
-      mesqij[1]=fac*propZ*(ugLpgR*fLpfR*(one + costh2)+ugLmgR*fLmfR*(2.*costh1));
-      mesqij[7]=mesqij[1];
-
-      mesqij[2]=fac*propZ*(dgLpgR*fLpfR*(one + costh2)-dgLmgR*fLmfR*(2.*costh1));
-      mesqij[4]=mesqij[2];
-      mesqij[8]=mesqij[2];
-
-      mesqij[3]=fac*propZ*(dgLpgR*fLpfR*(one + costh2)+dgLmgR*fLmfR*(2.*costh1));
-      mesqij[5]=mesqij[3];
-      mesqij[9]=mesqij[3];
-    }
   if (opts.nproc == 1) //W+ 
     {
       mesqij[0]=fac*propW*gLWfLW*pow(cabib_.Vud_,2)*omcosth2;
@@ -240,8 +270,67 @@ void mesq::setmesq(T one, T costh1, T costh2)
       mesqij[10]=fac*propW*gLWfLW*pow(cabib_.Vcb_,2)*omcosth2;
       mesqij[11]=fac*propW*gLWfLW*pow(cabib_.Vcb_,2)*opcosth2;
     }
+  if (opts.nproc == 3 && !opts.useGamma) //Z 
+    {
+      /*
+      mesqij[0]=fac*propZ*(ugLpgR*fLpfR*(one + costh2)-ugLmgR*fLmfR*(2.*costh1)); //u-ubar
+      mesqij[6]=mesqij[0]; //c-cbar
+	    
+      mesqij[1]=fac*propZ*(ugLpgR*fLpfR*(one + costh2)+ugLmgR*fLmfR*(2.*costh1)); //ubar-u
+      mesqij[7]=mesqij[1]; //cbar-c
+
+      mesqij[2]=fac*propZ*(dgLpgR*fLpfR*(one + costh2)-dgLmgR*fLmfR*(2.*costh1)); //d-dbar
+      mesqij[4]=mesqij[2]; //s-sbar
+      mesqij[8]=mesqij[2]; //b-bbar
+
+      mesqij[3]=fac*propZ*(dgLpgR*fLpfR*(one + costh2)+dgLmgR*fLmfR*(2.*costh1)); //dbar-d
+      mesqij[5]=mesqij[3]; //sbar-s
+      mesqij[9]=mesqij[3]; //bbar-b
+      */
+      //0 1 2 3 4
+      //d u s c b
+      mesqij[0]=fac*propZ*(gLpgR[1]*fLpfR*(one + costh2)-gLmgR[1]*fLmfR*(2.*costh1)); //u-ubar
+      mesqij[6]=fac*propZ*(gLpgR[3]*fLpfR*(one + costh2)-gLmgR[3]*fLmfR*(2.*costh1)); //c-cbar
+	    
+      mesqij[1]=fac*propZ*(gLpgR[1]*fLpfR*(one + costh2)+gLmgR[1]*fLmfR*(2.*costh1)); //ubar-u
+      mesqij[7]=fac*propZ*(gLpgR[3]*fLpfR*(one + costh2)+gLmgR[3]*fLmfR*(2.*costh1)); //cbar-c
+
+      mesqij[2]=fac*propZ*(gLpgR[0]*fLpfR*(one + costh2)-gLmgR[0]*fLmfR*(2.*costh1)); //d-dbar
+      mesqij[4]=fac*propZ*(gLpgR[2]*fLpfR*(one + costh2)-gLmgR[2]*fLmfR*(2.*costh1)); //s-sbar
+      mesqij[8]=fac*propZ*(gLpgR[4]*fLpfR*(one + costh2)-gLmgR[4]*fLmfR*(2.*costh1)); //b-bbar
+
+      mesqij[3]=fac*propZ*(gLpgR[0]*fLpfR*(one + costh2)+gLmgR[0]*fLmfR*(2.*costh1)); //dbar-d
+      mesqij[5]=fac*propZ*(gLpgR[2]*fLpfR*(one + costh2)+gLmgR[2]*fLmfR*(2.*costh1)); //sbar-s
+      mesqij[9]=fac*propZ*(gLpgR[4]*fLpfR*(one + costh2)+gLmgR[4]*fLmfR*(2.*costh1)); //bbar-b
+    }
   if (opts.nproc == 3 && opts.useGamma) // Z/gamma*
     {
+      //                           Z                 gamma*                  interference
+      mesqij[0]=fac*((propZ*gLpgR[1]*fLpfR + propG*aem2pi2*pow(Q[1],2) - propZG*aem2pi*Q[1]*(gLZ[1]+gRZ[1])*(fLZ+fRZ)) * (one + costh2)
+		     -(propZ*gLmgR[1]*fLmfR                            - propZG*aem2pi*Q[1]*(gLZ[1]-gRZ[1])*(fLZ-fRZ)) * (2.*costh1));
+      mesqij[6]=fac*((propZ*gLpgR[3]*fLpfR + propG*aem2pi2*pow(Q[3],2) - propZG*aem2pi*Q[3]*(gLZ[3]+gRZ[3])*(fLZ+fRZ)) * (one + costh2)
+		     -(propZ*gLmgR[3]*fLmfR                            - propZG*aem2pi*Q[3]*(gLZ[3]-gRZ[3])*(fLZ-fRZ)) * (2.*costh1));
+
+      mesqij[1]=fac*((propZ*gLpgR[1]*fLpfR + propG*aem2pi2*pow(Q[1],2) - propZG*aem2pi*Q[1]*(gLZ[1]+gRZ[1])*(fLZ+fRZ)) * (one + costh2)
+		     +(propZ*gLmgR[1]*fLmfR                            - propZG*aem2pi*Q[1]*(gLZ[1]-gRZ[1])*(fLZ-fRZ)) * (2.*costh1));
+      mesqij[7]=fac*((propZ*gLpgR[3]*fLpfR + propG*aem2pi2*pow(Q[3],2) - propZG*aem2pi*Q[3]*(gLZ[3]+gRZ[3])*(fLZ+fRZ)) * (one + costh2)
+		     +(propZ*gLmgR[3]*fLmfR                            - propZG*aem2pi*Q[3]*(gLZ[3]-gRZ[3])*(fLZ-fRZ)) * (2.*costh1));
+
+      mesqij[2]=fac*((propZ*gLpgR[0]*fLpfR + propG*aem2pi2*pow(Q[0],2) - propZG*aem2pi*Q[0]*(gLZ[0]+gRZ[0])*(fLZ+fRZ)) * (one + costh2)
+		     -(propZ*gLmgR[0]*fLmfR                            - propZG*aem2pi*Q[0]*(gLZ[0]-gRZ[0])*(fLZ-fRZ)) * (2.*costh1));
+      mesqij[4]=fac*((propZ*gLpgR[2]*fLpfR + propG*aem2pi2*pow(Q[2],2) - propZG*aem2pi*Q[2]*(gLZ[2]+gRZ[2])*(fLZ+fRZ)) * (one + costh2)
+		     -(propZ*gLmgR[2]*fLmfR                            - propZG*aem2pi*Q[2]*(gLZ[2]-gRZ[2])*(fLZ-fRZ)) * (2.*costh1));
+      mesqij[8]=fac*((propZ*gLpgR[4]*fLpfR + propG*aem2pi2*pow(Q[4],2) - propZG*aem2pi*Q[4]*(gLZ[4]+gRZ[4])*(fLZ+fRZ)) * (one + costh2)
+		     -(propZ*gLmgR[4]*fLmfR                            - propZG*aem2pi*Q[4]*(gLZ[4]-gRZ[4])*(fLZ-fRZ)) * (2.*costh1));
+
+      mesqij[3]=fac*((propZ*gLpgR[0]*fLpfR + propG*aem2pi2*pow(Q[0],2) - propZG*aem2pi*Q[0]*(gLZd+gRZd)*(fLZ+fRZ)) * (one + costh2)
+		     +(propZ*gLmgR[0]*fLmfR                            - propZG*aem2pi*Q[0]*(gLZd-gRZd)*(fLZ-fRZ)) * (2.*costh1));
+      mesqij[5]=fac*((propZ*gLpgR[2]*fLpfR + propG*aem2pi2*pow(Q[2],2) - propZG*aem2pi*Q[2]*(gLZd+gRZd)*(fLZ+fRZ)) * (one + costh2)
+		     +(propZ*gLmgR[2]*fLmfR                            - propZG*aem2pi*Q[2]*(gLZd-gRZd)*(fLZ-fRZ)) * (2.*costh1));
+      mesqij[9]=fac*((propZ*gLpgR[4]*fLpfR + propG*aem2pi2*pow(Q[4],2) - propZG*aem2pi*Q[4]*(gLZd+gRZd)*(fLZ+fRZ)) * (one + costh2)
+		     +(propZ*gLmgR[4]*fLmfR                            - propZG*aem2pi*Q[4]*(gLZd-gRZd)*(fLZ-fRZ)) * (2.*costh1));
+      
+      /*
       //                           Z                 gamma*                  interference
       mesqij[0]=fac*((propZ*ugLpgR*fLpfR + propG*aem2pi2*pow(eequ,2) - propZG*aem2pi*eequ*(gLZu+gRZu)*(fLZ+fRZ)) * (one + costh2)
 		     -(propZ*ugLmgR*fLmfR                            - propZG*aem2pi*eequ*(gLZu-gRZu)*(fLZ-fRZ)) * (2.*costh1));
@@ -260,5 +349,64 @@ void mesq::setmesq(T one, T costh1, T costh2)
 		     +(propZ*dgLmgR*fLmfR                            - propZG*aem2pi*eeqd*(gLZd-gRZd)*(fLZ-fRZ)) * (2.*costh1));
       mesqij[5]=mesqij[3];
       mesqij[9]=mesqij[3];
+      */
+    }
+}
+
+//fortran interfaces
+void initsigma_cpp_(double &m, double &cthmom0, double &cthmom1, double &cthmom2)
+{
+  //mass dependent part
+  mesq::setpropagators(m);
+
+  //  double one, costh1, costh2;
+  //  one = 1.;
+  //  costh1 = costh;
+  //  costh2 = pow(costh,2);
+  mesq::setmesq(cthmom0, cthmom1, cthmom2);
+
+  //fortan array indices are inverted: [ub][u] means (u,ub)
+  if (opts.nproc == 3)
+    {
+      sigmaij_.sigmaij_[ub][u ] = real(mesq::mesqij[0]);
+      sigmaij_.sigmaij_[cb][c ] = real(mesq::mesqij[6]);
+      sigmaij_.sigmaij_[u ][ub] = real(mesq::mesqij[1]);
+      sigmaij_.sigmaij_[c ][cb] = real(mesq::mesqij[7]);
+      sigmaij_.sigmaij_[db][d ] = real(mesq::mesqij[2]);
+      sigmaij_.sigmaij_[sb][s ] = real(mesq::mesqij[4]);
+      sigmaij_.sigmaij_[bb][b ] = real(mesq::mesqij[8]);
+      sigmaij_.sigmaij_[d ][db] = real(mesq::mesqij[3]);
+      sigmaij_.sigmaij_[s ][sb] = real(mesq::mesqij[5]);
+      sigmaij_.sigmaij_[b ][bb] = real(mesq::mesqij[9]);
+    }
+  else if (opts.nproc == 1)
+    {
+      sigmaij_.sigmaij_[db][u ] = real(mesq::mesqij[0]);
+      sigmaij_.sigmaij_[u ][db] = real(mesq::mesqij[1]);
+      sigmaij_.sigmaij_[sb][u ] = real(mesq::mesqij[2]);
+      sigmaij_.sigmaij_[u ][sb] = real(mesq::mesqij[3]);
+      sigmaij_.sigmaij_[bb][u ] = real(mesq::mesqij[4]);
+      sigmaij_.sigmaij_[u ][bb] = real(mesq::mesqij[5]);
+      sigmaij_.sigmaij_[sb][c ] = real(mesq::mesqij[6]);
+      sigmaij_.sigmaij_[c ][sb] = real(mesq::mesqij[7]);
+      sigmaij_.sigmaij_[db][c ] = real(mesq::mesqij[8]);
+      sigmaij_.sigmaij_[c ][db] = real(mesq::mesqij[9]);
+      sigmaij_.sigmaij_[bb][c ] = real(mesq::mesqij[10]);
+      sigmaij_.sigmaij_[c ][bb] = real(mesq::mesqij[11]);
+    }
+  else if (opts.nproc == 2)
+    {
+      sigmaij_.sigmaij_[ub][d ] = real(mesq::mesqij[0]);
+      sigmaij_.sigmaij_[d ][ub] = real(mesq::mesqij[1]);
+      sigmaij_.sigmaij_[ub][s ] = real(mesq::mesqij[2]);
+      sigmaij_.sigmaij_[s ][ub] = real(mesq::mesqij[3]);
+      sigmaij_.sigmaij_[ub][b ] = real(mesq::mesqij[4]);
+      sigmaij_.sigmaij_[b ][ub] = real(mesq::mesqij[5]);
+      sigmaij_.sigmaij_[cb][s ] = real(mesq::mesqij[6]);
+      sigmaij_.sigmaij_[s ][cb] = real(mesq::mesqij[7]);
+      sigmaij_.sigmaij_[cb][d ] = real(mesq::mesqij[8]);
+      sigmaij_.sigmaij_[d ][cb] = real(mesq::mesqij[9]);
+      sigmaij_.sigmaij_[cb][b ] = real(mesq::mesqij[10]);
+      sigmaij_.sigmaij_[b ][cb] = real(mesq::mesqij[11]);
     }
 }
