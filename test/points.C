@@ -30,15 +30,7 @@ int main( int argc , const char * argv[])
   if (argc>1) {
       conf_file = argv[1];
   }
-  SMparameters();
-  opts.readfromfile(conf_file.c_str());
-  opts.initDyresSettings();
-  gaussinit_();
-  iniflavreduce_();
-  dyturboinit();
-  rescinit_();
-  //bins.init();
-  bins.readfromfile(conf_file.c_str());
+  dyturboinit(conf_file.c_str());
   /***********************************/
 
   /***********************************/
@@ -98,8 +90,8 @@ int main( int argc , const char * argv[])
 
   //costhline();
   //ptline();
-  //yline();
-  mline();
+  yline();
+  //mline();
   //mlinebw();
   //xline();
   //ptavar();
