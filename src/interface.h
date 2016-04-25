@@ -401,6 +401,10 @@ extern "C" {
     int doFill_;
   } dofill_;
 
+  extern struct {
+    double sigmaij_[11][11];
+  } sigmaij_;
+
   void hists_setpdf_(int * npdf);
   void hists_fill_(double p3[4], double p4[4], double *weight);
   void hists_AiTest_(double pjet[4][12], double p4cm[4],double *Q,double *qt,double *y,double* pcosthCS, double* pphiCS, double *pphiVB, double *wt, double *loHst );
