@@ -325,15 +325,20 @@ cc     End of ME check
 cc*******************************************************
       
       if (mode.eq.0) then
-         call initsigma(mm,-costh)
-         call initsigmacth(mm,twopi*twopi,-costh*twopi*twopi,
+c         call initsigma(mm,-costh)
+c         call initsigmacth(mm,twopi*twopi,-costh*twopi*twopi,
+c     .        costh**2*twopi*twopi)
+c     use the C++ module mesq.C
+         call initsigma_cpp(mm,twopi*twopi,-costh*twopi*twopi,
      .        costh**2*twopi*twopi)
       elseif (mode.eq.1) then
          call cthmoments(cthmom0,cthmom1,cthmom2)
          cthmom0=cthmom0*twopi*twopi
          cthmom1=cthmom1*twopi*twopi
          cthmom2=cthmom2*twopi*twopi
-         call initsigmacth(mm,cthmom0,cthmom1,cthmom2)
+c        call initsigmacth(mm,cthmom0,cthmom1,cthmom2)
+c     use the C++ module mesq.C
+         call initsigma_cpp(mm,cthmom0,cthmom1,cthmom2)
       endif
 
       if (mode.eq.0.or.mode.eq.1) then
@@ -980,7 +985,8 @@ c     store moments and amplitudes
          cthmom0=cthmom0*twopi*twopi
          cthmom1=cthmom1*twopi*twopi
          cthmom2=cthmom2*twopi*twopi
-         call initsigmacth(m,cthmom0,cthmom1,cthmom2)
+c         call initsigmacth(m,cthmom0,cthmom1,cthmom2)
+         call initsigma_cpp(m,cthmom0,cthmom1,cthmom2)
 
          do jk = 1, nfme
             msqc1(jk) = sigmaij(jjs(jk),kks(jk))*pi*6d0/fbGeV2*(2*q2)
@@ -1027,7 +1033,8 @@ c     xmio is used in besselkfast for Itilde
                cthmom0=cthmom0*twopi*twopi
                cthmom1=cthmom1*twopi*twopi
                cthmom2=cthmom2*twopi*twopi
-               call initsigmacth(m,cthmom0,cthmom1,cthmom2)
+c               call initsigmacth(m,cthmom0,cthmom1,cthmom2)
+               call initsigma_cpp(m,cthmom0,cthmom1,cthmom2)
 
                do jk = 1, nfme
                msqc1(jk) = sigmaij(jjs(jk),kks(jk))*pi*6d0/fbGeV2*(2*q2)
