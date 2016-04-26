@@ -194,16 +194,16 @@ void ptline()
   double costh = 0.;
   double m = opts.rmass;
   double qt = 5.;
-  double y = 1.0;
+  double y = 0.0;
   int mode = 1;
   double f[opts.totpdf];
   setbounds(opts.mlow, opts.mhigh, 0, 100, opts.ylow, opts.yhigh);
   cacheyrapint_(ymin, ymax);
   rapint::cache(ymin, ymax);
 
-  double p1 = 0.02;
-  double p2 = 5;
-  int np = 200;
+  double p1 = 0.1;
+  double p2 = 20;
+  int np = 199;
 
   ofstream pf("ptline.C");
   pf << "{" << endl;
@@ -217,10 +217,10 @@ void ptline()
       setcthmqty(costh, m, qt, y);//set global variables to costh, m, qt, y
       genV4p(m, qt, y, 0.);//generate boson 4-momentum, with m, qt, y and phi=0
       //pf << "gp->SetPoint(gp->GetN(), " << i*hp+p1 << ", " << resumm_(costh,m,qt,y,mode) << ");" << endl;
-      pf << "gp->SetPoint(gp->GetN(), " << i*hp+p1 << ", " << resint::rint(costh,m,qt,y,mode) << ");" << endl;
-      //      pf << "gp->SetPoint(gp->GetN(), "   << i*hp+p1 << ", " << vjfo_(m,qt,y)+ctint_(costh,m,qt,y,mode,f)*2*qt << ");" << endl;
-      //      pf << "gp1->SetPoint(gp1->GetN(), " << i*hp+p1 << ", " << -ctint_(costh,m,qt,y,mode,f)*2*qt << ");" << endl;
-      //      pf << "gp2->SetPoint(gp2->GetN(), " << i*hp+p1 << ", " << vjfo_(m,qt,y) << ");" << endl;
+      //pf << "gp->SetPoint(gp->GetN(), " << i*hp+p1 << ", " << resint::rint(costh,m,qt,y,mode) << ");" << endl;
+      pf << "gp->SetPoint(gp->GetN(), "   << i*hp+p1 << ", " << vjfo_(m,qt,y)+ctint_(costh,m,qt,y,mode,f)*2*qt << ");" << endl;
+      pf << "gp1->SetPoint(gp1->GetN(), " << i*hp+p1 << ", " << -ctint_(costh,m,qt,y,mode,f)*2*qt << ");" << endl;
+      pf << "gp2->SetPoint(gp2->GetN(), " << i*hp+p1 << ", " << vjfo_(m,qt,y) << ");" << endl;
     }
   pf << "gp->Draw();" << endl;
   pf << "//gp1->Draw();" << endl;
