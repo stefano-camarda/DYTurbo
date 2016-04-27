@@ -41,7 +41,7 @@ void resintegr2d(double &res, double &err)
 	  integral, error, prob);
   else
     {
-      const int eval = opts.niterRES + pow(2,opts.niterRES);
+      const int eval = 65+2*65*opts.niterRES;
       double xmin[2] = {0, 0};
       double xmax[2] = {1, 1};
       if (opts.cubacores == 0)
