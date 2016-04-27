@@ -1,10 +1,15 @@
 AUTOMAKE_OPTIONS = foreign
-AM_CPPFLAGS = -fpermissive -I$(srcdir)/../include -I$(srcdir)/../dequad -I$(srcdir)/../resum \
+AM_CPPFLAGS = -fpermissive \
+	-I$(srcdir)/../include \
+	-I$(srcdir)/../dequad \
+	-I$(srcdir)/../resum \
+	-I$(srcdir)/../cubature \
 	-Wl,Bstatic \
 	$(CUBA_CPPFLAGS) $(LHAPDF_CPPFLAGS) \
 	-DSHAREDIR=\"${datadir}/${PACKAGE}\"
 
-AM_FFLAGS =  -I$(srcdir)/../dyres -I$(srcdir)/../mcfm #-I$(srcdir)/../src
+AM_FFLAGS =  -I$(srcdir)/../dyres \
+	-I$(srcdir)/../mcfm
 
 noinst_LTLIBRARIES = libdyturbobase.la
 libdyturbobase_la_SOURCES = resintegr.C ctintegr.C finintegr.C integr.C settings.C init.C cubacall.C plotter.C switch.C cuts.C usercuts.C pdf.C printsettings.C coupling.C clock_real.C banner.C
@@ -13,7 +18,16 @@ libdyturbobase_la_SOURCES += AiMoments.cxx TLVUtils.cxx
 
 lib_LTLIBRARIES = libdyturbo.la
 libdyturbo_la_SOURCES =
-libdyturbo_la_LIBADD =  libdyturbobase.la ../integrands/libintegrands.la ../dyres/libdyres.la ../dynnlo/libdynnlo.la ../mcfm/libmcfm.la ../resum/libresum.la ../dyqt/libdyqt.la ../dequad/libdequad.la ../pegasus/libpegasus.la
+libdyturbo_la_LIBADD = libdyturbobase.la \
+	../integrands/libintegrands.la \
+	../resum/libresum.la \
+	../dynnlo/libdynnlo.la \
+	../dyres/libdyres.la \
+	../mcfm/libmcfm.la \
+	../dyqt/libdyqt.la \
+	../pegasus/libpegasus.la \
+	../dequad/libdequad.la \
+	../cubature/libcubature.la
 
 bin_PROGRAMS = dyturbo
 dyturbo_SOURCES = dyturbo.C
