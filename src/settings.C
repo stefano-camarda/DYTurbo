@@ -112,6 +112,7 @@ void settings::readfromfile(const string fname){
     mellinintervals    = in.GetNumber ( "mellinintervals" );
     mellinrule         = in.GetNumber ( "mellinrule" );
     zmax               = in.GetNumber ( "zmax" );
+    mellincores        = in.GetNumber ( "mellincores" );
     yintervals         = in.GetNumber ( "yintervals" );
     yrule              = in.GetNumber ( "yrule" );
 
@@ -330,6 +331,7 @@ void settings::dumpAll(){
         dumpI("mellinintervals    ", mellinintervals     );
         dumpI("mellinrule         ", mellinrule          );
 	dumpD("zmax               ", zmax          );
+	dumpD("mellincores        ", mellincores          );
         dumpI("yintervals         ", yintervals     );
         dumpI("yrule              ", yrule          );
     }

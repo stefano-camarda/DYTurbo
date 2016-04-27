@@ -187,6 +187,7 @@ double besselint::bint(double b)
   hcoefficients::calcb(resint::aass,resint::logmuf2q2,resint::loga,alpq,aexp,aexpb); // --> Need to access aass,logmuf2q2,loga,alpq,aexp,aexpb
   
   double fun = 0.;
+#pragma omp parallel for reduction(+:fun) num_threads(opts.mellincores) copyin(creno_,mesq::mesqij_expy,hcoefficients::Hqqb,hcoefficients::Hqg_1,hcoefficients::Hqg_2,hcoefficients::Hgg,hcoefficients::Hqq,hcoefficients::Hqq_1,hcoefficients::Hqq_2,hcoefficients::Hqqp_1,hcoefficients::Hqqp_2)
   for (int i1 = 0; i1 < mellinint::mdim; i1++)
     for (int i2 = 0; i2 < mellinint::mdim; i2++)
       {
@@ -210,7 +211,7 @@ double besselint::bint(double b)
 	complex <double> int2 = mellinint::integrand(i1,i2,mesq::negative);
 	//complex <double> FZ=-0.5*(real(int1)-real(int2));
 	fun = fun -real(0.5*(int1-int2));
-	//	cout << "C++ " << setprecision(16) << i1 << "  " << i2 << "  " << int1 << "  " << int2 << endl;
+	//cout << "C++ " << setprecision(16) << i1 << "  " << i2 << "  " << int1 << "  " << int2 << endl;
       }
 
   double invres = fun*real(factorfin);
