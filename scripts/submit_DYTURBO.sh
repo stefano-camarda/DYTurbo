@@ -289,7 +289,7 @@ prepare_tarbal(){
     gridv=v`date +%s`
     DYTURBOVERSION=`grep PACKAGE_VERSION config.h | cut -d\" -f2`
     echo "Making a tarbal.. please wait"
-    if ! make install > /dev/null && make dist > /dev/null
+    if ! make dist > /dev/null
     then
         echo "Compilation problem.. exiting."
         exit 3
@@ -331,8 +331,8 @@ finalize_grid_submission(){
     # on-site scripts
     $CP scripts/compile_grid.sh GRID/
     $CP scripts/run_grid.sh GRID/
-    $CP infiles/default.in
-    # 
+    $CP input/default.in GRID/
+    #
     ls -hla --color=auto GRID
     echo
     echo "Take look at GRID folder edit subm.sh and run it "
@@ -372,7 +372,7 @@ submit_job(){
 }
 
 submit_job2grid(){
-    $DRYRUN 
+    # $DRYRUN 
     # intargz=`basename $tarbalfile`.gz
     # echo prun --exec \". run_grid.sh ${job_name} %RNDM:1 \" \
     # --outDS user.\$GRIDUSER.${job_name}.out \

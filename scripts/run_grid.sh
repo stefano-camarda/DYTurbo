@@ -28,6 +28,7 @@ export LHAPDF_DATA_PATH=/cvmfs/sft.cern.ch/lcg/external/lhapdfsets/current/
 export LHAPATH=$LHAPDF_DATA_PATH
 # dyturbo libs
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:./lib
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/cvmfs/sft.cern.ch/lcg/external/gcc/4.8.1/x86_64-slc6-gcc48-opt/lib/../lib64
 
 echo
 echo LD_LIBRARY_PATH
