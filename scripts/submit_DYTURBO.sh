@@ -175,7 +175,10 @@ prepare_in(){
     [[ $fiducial == CDF    ]] && detfiducial=2
     [[ $fiducial == ATLAS  ]] && detfiducial=3
     [[ $fiducial == CMS7   ]] && detfiducial=4
+    # COLLIDER
     sroot=7e3
+    ih1=1
+    ih2=1
     # TEV1
     if [[ $collider == tev1 ]]
     then
@@ -339,10 +342,10 @@ finalize_grid_submission(){
 add_to_tarbal(){
     # hack the interations
     sed -i "s|^cubaverbosity   *=.*$|cubaverbosity    = 2  |g" $in_files_dir/$job_name.in
-    sed -i "s|^vegasncallsRES  *=.*$|vegasncallsRES   = 5e5|g" $in_files_dir/$job_name.in
-    sed -i "s|^vegasncallsCT   *=.*$|vegasncallsCT    = 5e7|g" $in_files_dir/$job_name.in
+    sed -i "s|^vegasncallsRES  *=.*$|vegasncallsRES   = 1e6|g" $in_files_dir/$job_name.in
+    sed -i "s|^vegasncallsCT   *=.*$|vegasncallsCT    = 1e8|g" $in_files_dir/$job_name.in
     sed -i "s|^vegasncallsLO   *=.*$|vegasncallsLO    = 1e8|g" $in_files_dir/$job_name.in
-    sed -i "s|^vegasncallsREAL *=.*$|vegasncallsREAL  = 2e8|g" $in_files_dir/$job_name.in
+    sed -i "s|^vegasncallsREAL *=.*$|vegasncallsREAL  = 1e8|g" $in_files_dir/$job_name.in
     sed -i "s|^vegasncallsVIRT *=.*$|vegasncallsVIRT  = 1e8|g" $in_files_dir/$job_name.in
     # add input file
     #tar rf $tarbalfile scripts/infiles/$job_name.in
