@@ -29,27 +29,30 @@ void resintegr2d(double &res, double &err)
   const int maxeval = 65+2*65*opts.niterRES;
   const int key = 13;
   int nregions;
-  /*  Cuhre(ndim, ncomp,
-	(integrand_t) resintegrand2d, userdata, nvec,
-	epsrel, epsabs,
-	flags,
-	mineval, maxeval,
-	key, statefile, NULL,
-	&nregions, &neval, &fail,
-  	integral, error, prob);*/
 
-  const int eval = 40; //opts.niterRES + pow(2,opts.niterRES);
-  double xmin[2] = {0, 0};
-  double xmax[2] = {1, 1};
-  if (opts.cubacores == 0)
-    pcubature(ncomp, resintegrand2d_cubature, userdata, 
-	   ndim, xmin, xmax, 
-	   eval, epsabs, 0.001, ERROR_INDIVIDUAL, integral, error);
+  if (!opts.pcubature)
+    Cuhre(ndim, ncomp,
+	  (integrand_t) resintegrand2d, userdata, nvec,
+	  epsrel, epsabs,
+	  flags,
+	  mineval, maxeval,
+	  key, statefile, NULL,
+	  &nregions, &neval, &fail,
+	  integral, error, prob);
   else
-    pcubature_v(ncomp, resintegrand2d_cubature_v, userdata, 
-		ndim, xmin, xmax, 
-		eval, epsabs, epsrel, ERROR_INDIVIDUAL, integral, error);
-
+    {
+      const int eval = opts.niterRES + pow(2,opts.niterRES);
+      double xmin[2] = {0, 0};
+      double xmax[2] = {1, 1};
+      if (opts.cubacores == 0)
+	pcubature(ncomp, resintegrand2d_cubature, userdata, 
+		  ndim, xmin, xmax, 
+		  eval, epsabs, 0.001, ERROR_INDIVIDUAL, integral, error);
+      else
+	pcubature_v(ncomp, resintegrand2d_cubature_v, userdata, 
+		    ndim, xmin, xmax, 
+		    eval, epsabs, epsrel, ERROR_INDIVIDUAL, integral, error);
+    }
   
   res = integral[0];
   err = error[0];

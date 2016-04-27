@@ -129,6 +129,9 @@ vegasncallsLO    = 10000000 # only for lo 7d vegas integration
 vegasncallsREAL  = 10000000 # only for real 10d vegas integration
 vegasncallsVIRT  = 1000000  # only for virt 8d vegas integration
 
+# cubature settings
+pcubature = false
+
 # total or with lepton cuts
 makelepcuts = false
 lptcut = 20
