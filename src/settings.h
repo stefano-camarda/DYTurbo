@@ -148,6 +148,7 @@ public:
 
   //cubature settings
   bool pcubature;
+  double pcubaccuracy;
 
   //lepton fiducial cuts
   bool makelepcuts;

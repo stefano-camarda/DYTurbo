@@ -41,13 +41,15 @@ void resintegr2d(double &res, double &err)
 	  integral, error, prob);
   else
     {
-      const int eval = 65+2*65*opts.niterRES;
+      const int eval = 0;
+      const double epsrel = opts.pcubaccuracy;
+      const double epsabs = 0.;
       double xmin[2] = {0, 0};
       double xmax[2] = {1, 1};
       if (opts.cubacores == 0)
 	pcubature(ncomp, resintegrand2d_cubature, userdata, 
 		  ndim, xmin, xmax, 
-		  eval, epsabs, 0.001, ERROR_INDIVIDUAL, integral, error);
+		  eval, epsabs, epsrel, ERROR_INDIVIDUAL, integral, error);
       else
 	pcubature_v(ncomp, resintegrand2d_cubature_v, userdata, 
 		    ndim, xmin, xmax, 

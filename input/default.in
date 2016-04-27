@@ -131,6 +131,7 @@ vegasncallsVIRT  = 1000000  # only for virt 8d vegas integration
 
 # cubature settings
 pcubature = false
+pcubaccuracy = 1e-3
 
 # total or with lepton cuts
 makelepcuts = false

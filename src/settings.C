@@ -80,6 +80,7 @@ void settings::readfromfile(const string fname){
     vegasncallsREAL    = in.GetNumber ( "vegasncallsREAL" ); //10000
     vegasncallsVIRT    = in.GetNumber ( "vegasncallsVIRT" ); //10000
     pcubature          = in.GetBool   ( "pcubature" );
+    pcubaccuracy       = in.GetNumber ( "pcubaccuracy" );
     makelepcuts        = in.GetBool   ( "makelepcuts"     ); //true
     lptcut             = in.GetNumber ( "lptcut"          );
     lycut              = in.GetNumber ( "lycut"          );
@@ -306,6 +307,7 @@ void settings::dumpAll(){
         dumpD("vegasncallsREAL    ", vegasncallsREAL     );
         dumpD("vegasncallsVIRT    ", vegasncallsVIRT     );
 	dumpB("pcubature          ", pcubature     );
+	dumpD("pcubaccuracy       ", pcubaccuracy     );
         dumpB("makelepcuts        ", makelepcuts         );
         dumpI("fiducial           ", fiducial            );
         dumpB("cubaint            ", cubaint             );
