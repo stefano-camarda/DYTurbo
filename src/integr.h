@@ -11,6 +11,8 @@ extern "C" {
 
 const int last_iter=4;
 extern double _costh, _m, _qt, _y;
+#pragma omp threadprivate(_costh, _m, _qt, _y)
+
 extern void genV4p(double m, double qt, double y, double phi);
 
 extern void setcosth(double costh);

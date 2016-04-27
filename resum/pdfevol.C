@@ -42,9 +42,6 @@ void pdfevol_(int& i1, int& i2, int& sign)
 
 void pdfevol::init()
 {
-  fn1 = new complex <double>[2*MAXNF+1];
-  fn2 = new complex <double>[2*MAXNF+1];
-
   UVP = new complex <double>[mellinint::mdim];
   DVP = new complex <double>[mellinint::mdim];
   USP = new complex <double>[mellinint::mdim];
@@ -83,6 +80,17 @@ void pdfevol::init()
     }
 
   cout << "End PDF moments initialization" << endl;
+}
+void pdfevol::allocate()
+{
+  fn1 = new complex <double>[2*MAXNF+1];
+  fn2 = new complex <double>[2*MAXNF+1];
+}
+
+void pdfevol::free()
+{
+  delete[] fn1;
+  delete[] fn2;
 }
 
 // PROVIDES MOMENTS OF DENSITIES AT A GIVEN SCALE (INCLUDES EVOLUTION)

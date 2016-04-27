@@ -15,11 +15,6 @@ extern "C"
 using namespace std;
 namespace mellinint
 {
-  //DYRES convention
-  // bb cb sb db ub g u d s c b
-  // -5 -4 -3 -2 -1 0 1 2 3 4 5
-  enum quark {bb=0, cb=1, sb=2, db=3, ub=4, g=5, u=6, d=7, s=8, c=9, b=10};
-    
   extern int mdim;
   extern double *wn; //weights of the gaussian quadrature rule
   extern complex <double> *Np; //nodes on the positive branch of the contour
@@ -39,10 +34,12 @@ namespace mellinint
   extern complex<double> QGN_2;
   extern complex<double> QQBN;
   extern complex<double> QQN;
-  extern complex <double> QQN_1;
-  extern complex <double> QQN_2;
+  extern complex<double> QQN_1;
+  extern complex<double> QQN_2;
   extern complex<double> QQPN_1;
   extern complex<double> QQPN_2;
+#pragma omp threadprivate(GGN,QGN_1,QGN_2,QQBN,QQN,QQN_1,QQN_2,QQPN_1,QQPN_2)
+
 }
 
 #endif

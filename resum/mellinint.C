@@ -6,10 +6,13 @@
 #include "pdfevol.h"
 #include "interface.h"
 #include "anomalous.h"
+#include "parton.h"
 
 #include <complex>
 #include <iostream>
 #include <iomanip>
+
+using namespace parton;
 
 double *mellinint::wn;
 complex <double> *mellinint::Np;

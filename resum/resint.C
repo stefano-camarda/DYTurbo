@@ -4,6 +4,7 @@
 #include "resconst.h"
 #include "mesq.h"
 #include "hcoefficients.h"
+#include "pdfevol.h"
 #include "besselint.h"
 #include <iostream>
 
@@ -13,7 +14,7 @@
 
 double tiny = 1.0e-307;
 double awinf[lenaw];
-double awfin[lenaw];
+//double awfin[lenaw];
 
 double resint::_qt;
 double resint::_m;
@@ -45,8 +46,8 @@ double resint::alpqfac;
 double resint::alpqren;
 double resint::alpqres;
 
-//void intdeoini(int lenaw, double tiny, double eps, double *aw);
-//void intdeo(double (*f)(double), double a, double omega, double *aw, double *i, double *err);
+//using namespace resint;
+//#pragma omp threadprivate(_qt,_m,_y,_costh,_mode,muren,mufac,mures,muren2,mufac2,mures2,a,loga,rloga,logmuf2q2,logq2muf2,logq2mur2,rlogq2mur2,alpqr,alpqf,aass,alpqfac,alpqren,alpqres)
 
 void resint::init()
 {
@@ -60,19 +61,22 @@ void resint::init()
   np_.g_ = opts.g_param;
 
   //a-parameter of the resummation scale, set it for the dynamic case
-  a = 1./opts.kmures;
-  a_param_.a_param_ = a;
-  a_param_.b0p_ = resconst::b0*a;
+  if (opts.dynamicresscale)
+    {
+      a = 1./opts.kmures;
+      a_param_.a_param_ = a;
+      a_param_.b0p_ = resconst::b0*a;
 
-  // precompute log of scales
-  loga = log(a);
-  rloga = log(a);
-  rlogs_.rloga_ = rloga;
-  //  clogs_.loga_ = loga; //complex loga is not used
+      // precompute log of scales
+      loga = log(a);
+      rloga = log(a);
+      rlogs_.rloga_ = rloga;
+      //  clogs_.loga_ = loga; //complex loga is not used
+    }
   
   // define points for quadratures integration
   intdeoini(lenaw, tiny, opts.bintaccuracy, awinf);
-  intdeini(lenaw, tiny, 1.0e-2, awfin);
+  //  intdeini(lenaw, tiny, 1.0e-2, awfin);
 }
 
 double resint::rint(double costh, double m, double qt, double y, int mode)
@@ -82,7 +86,7 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
   _y = y;
   _m = m;
   _costh = costh;
-
+  
   //mode 0: differential mode 1: integrated in costh mode 2: integrated in costh and y  
   _mode = mode;
 
@@ -203,6 +207,8 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
   //     when costh is integrated and costh moments are provided, mesqij_expy
   //     are convoluted with the rapidity depent expression
   //      and they depend also on rapidity
+
+  mesq::allocate();
   mesq::setmesq_expy(mode, m, costh, y);
   //******************************************
 
@@ -217,18 +223,26 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
   
   //no need to recompute coefficients with variable scales
   //if (!dynamicscale || fixedresummationscale)
+  hcoefficients::allocate();
   hcoefficients::calc(aass,logmuf2q2,logq2muf2,logq2mur2,loga);
   //*****************************************
 
+  pdfevol::allocate();
+  
   //*****************************************
   //dependence on qt, m, also y, and costh unless integrated
   //perform b integration (int_0^inf db)
   double res = bintegral(qt);
-  // cout << "phase space point in resumm" << "  " << _qt << "  " <<  _y << "  " <<  _m << "  " << _costh << "  " << res << endl;
+  //  cout << "phase space point in resumm" << "  " << _qt << "  " <<  _y << "  " <<  _m << "  " << _costh << "  " << res << endl;
   //*****************************************
 
   // Normalization
   res *= qt/2./pow(opts.sroot,2);
+
+  //free allocated Local Thread Storage (LTS) memory
+  pdfevol::free();
+  hcoefficients::free();
+  mesq::free();
 
   return res;
 }
@@ -239,7 +253,7 @@ double resint::bintegral(double qt)
 
   double res, err;
   intdeo(besselint::bint, 0.0, qt, awinf, &res, &err);
-  //  cout << "dequad result of inverse bessel transform, pt=" << _qt << " m=" << _m << " y=" << _y << " : " << setprecision(16) << res << " +- " << err/res*100 << "%" << endl;
+  //cout << "dequad result of inverse bessel transform, pt=" << _qt << " m=" << _m << " y=" << _y << " : " << setprecision(16) << res << " +- " << err/res*100 << "%" << endl;
   //  cout.precision(6); cout.unsetf(ios_base::floatfield);
 
   /*

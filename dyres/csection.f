@@ -266,7 +266,7 @@ C Integrates over full rapidity range using 20 points gaussian quadratures
      .                    xsection,ax,xborn,xborn2,xnormal,resu,
      .                    xsection2,resummed,ss,etaintegrate
        integer jjj,isetproton,ih1,ih2
-       include 'scales.h' 
+       include 'scales_inc.f' 
 !       COMMON/isetproton/isetproton
        COMMON/collider/ih1,ih2
        COMMON / ETA / ETA

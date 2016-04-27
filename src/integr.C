@@ -29,16 +29,19 @@ double _m, _qt, _y, _costh;
 double pV[4];
 double gam;
 double beta[3];
+#pragma omp threadprivate(pV,gam,beta)
 
 //leptons 4-momenta
 double p4[4];
 double p3[4];
+#pragma omp threadprivate(p4,p3)
 
 //CS framework
 double kap1[4];
 double xax[3];
 double yax[3];
 double zax[3];
+#pragma omp threadprivate(kap1,xax,yax,zax)
 
 //quadrature rules
 const double xq4[4]={-0.3399810435848563,0.3399810435848563,-0.8611363115940526,0.8611363115940526};

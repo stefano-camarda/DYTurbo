@@ -35,6 +35,9 @@ complex <double> *hcoefficients::H2stgg;
 complex <double> *hcoefficients::aexpqq;
 complex <double> *hcoefficients::aexpqg;
 
+//using namespace hcoefficients;
+//#pragma omp threadprivate(Hqqb,Hqg,Hqg_1,Hqg_2,Hqq_nnll,Hqq,Hqq_1,Hqq_2,Hqqp,Hqqp_1,Hqqp_2,Hgg,H1stgg,H1stqg,H1stqqb,H2stqq,H2stqqp,H2stqqb,H2stqg_1,H2stqg_2,H2stgg,aexpqq,aexpqg)
+
 //fortran interface
 void hcoeff_calc_(double& aass, double& logmuf2q2, double& logq2muf2, double& logq2mur2, double& loga)
 {
@@ -45,8 +48,9 @@ void hcoeff_calcb_(double& aass, double& logmuf2q2, double& loga, double& alpq, 
   hcoefficients::calcb(aass, logmuf2q2, loga, alpq, aexp, aexpb);
 };
 
-void hcoefficients::init()
+void hcoefficients::allocate()
 {
+  //allocate memory
   Hqqb = new complex <double> [mellinint::mdim*mellinint::mdim*2];
   Hqg = new complex <double> [mellinint::mdim*2];
   Hqg_1 = new complex <double> [mellinint::mdim*mellinint::mdim*2];
@@ -288,4 +292,29 @@ void hcoefficients::calcb(double aass, complex <double> logmuf2q2, complex <doub
 	      Hqqp_2[idx12] = Hqqp[idx2]; // qqp_2  means   Q Q' -> Q Qb  flavor in sigmaQQb determined by "first parton"
 	    }
     }
+}
+void hcoefficients::free()
+{
+  delete[] Hqqb;
+  delete[] Hqg;
+  delete[] Hqg_1;
+  delete[] Hqg_2;
+  delete[] Hqq_nnll;
+  delete[] Hqq;
+  delete[] Hqq_1;
+  delete[] Hqq_2;
+  delete[] Hqqp;
+  delete[] Hqqp_1;
+  delete[] Hqqp_2;
+  delete[] Hgg;
+  delete[] H1stqg;
+  delete[] H1stqqb;
+  delete[] H2stqq;
+  delete[] H2stqqp;
+  delete[] H2stqqb;
+  delete[] H2stqg_1;
+  delete[] H2stqg_2;
+  delete[] H2stgg;
+  delete[] aexpqq;
+  delete[] aexpqg;
 }

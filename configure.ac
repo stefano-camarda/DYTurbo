@@ -16,6 +16,15 @@ AC_PROG_LIBTOOL
 LT_INIT
 AC_CONFIG_MACRO_DIR([m4])
 
+# openmp suport
+AC_ARG_ENABLE([openmp], AC_HELP_STRING(--enable-openmp, [Enable openMP compiler flag -fopenmp. (default=yes)])): ${enable_openmp=yes}
+AS_IF([test "x$enable_openmp" = "xyes"], [
+#AX_OPENMP #[, AC_MSG_ERROR([openmp macro not found])])
+#AC_SUBST(OPENMP_CXXFLAGS)
+#AC_SUBST(OPENMP_LDFLAGS)
+    CXXFLAGS="${CXXFLAGS} -fopenmp"
+    FFLAGS="${FFLAGS} -fopenmp"])
+
 #optimisation flags O3
 AC_ARG_ENABLE([O3], AC_HELP_STRING(--enable-O3, [Use compiler optimization flags -O3. (default=yes)])): ${enable_O3=yes}
 
@@ -188,6 +197,7 @@ AC_CONFIG_FILES([Makefile
 		 dequad/Makefile
 		 ancont/Makefile
 		 pegasus/Makefile
+		 cubature/Makefile
 		 dyturbo-config])
 
 

@@ -117,9 +117,6 @@ void mesq::init()
   for (int j = 0; j < MAXNF; j++)
     Q[j] = ewcharge_.Q_[j+MAXNF+1];
       
-  //allocate memory
-  mesqij_expy = new complex <double> [mellinint::mdim*mellinint::mdim*2*12];
-
   q2 = 0;
   propZ = 0;
   propW = 0;
@@ -141,6 +138,11 @@ void mesq::setpropagators(double m)
     }
 }
 
+void mesq::allocate()
+{
+  //allocate memory
+  mesqij_expy = new complex <double> [mellinint::mdim*mellinint::mdim*2*12];
+}
 
 void mesq::setmesq_expy(int mode, double m, double costh, double y)
 {
@@ -233,6 +235,10 @@ void mesq::setmesq_expy(int mode, double m, double costh, double y)
 	      mesqij_expy[mesq::index(pch, i1, i2, mesq::negative)] = mesqij[pch];
 	  }
     }
+}
+void mesq::free()
+{
+  delete[] mesqij_expy;
 }
 
 template <class T>

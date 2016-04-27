@@ -61,13 +61,6 @@ extern "C" {
 	     fcomplex &CDYQI, fcomplex &CDYGI);
   void h2calc_(fcomplex &C2qg, fcomplex &C2NSqqb, fcomplex &C2NSqq, fcomplex &C2Sqqb,fcomplex &xn);
 
-  //access dyres PDF in N-space
-  extern struct {
-    fcomplex cfx1_[136][11];
-    fcomplex cfx2p_[136][11];
-    fcomplex cfx2m_[136][11];
-  } creno_;
-  
   //Catani-Seymour subtraction cut-offs for initial-initial, initial-final, final-initial, and final-final dipoles
   extern struct {
     double aii_;
@@ -302,7 +295,7 @@ extern "C" {
     double a_param_;
     double b0p_;
   } a_param_;
-
+  
   //non perturbative g
   extern struct {
     double g_param_;
@@ -414,5 +407,6 @@ extern "C" {
   void hists_real_dipole_pdf_(double p3[4], double p4[4], double *weight,int *nd, int *npdf);
   void hists_real_event_pdf_(int* npdf);
 }
+#pragma omp threadprivate(a_param_)
 
 #endif

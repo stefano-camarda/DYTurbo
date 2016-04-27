@@ -23,5 +23,6 @@ extern "C"
     fcomplex aexpb_;
   } exponent_;
 }
+#pragma omp threadprivate(exponent_)
 
 #endif

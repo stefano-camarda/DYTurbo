@@ -54,18 +54,25 @@ namespace mesq
   extern double propW;
   extern double propG;
   extern double propZG;
+#pragma omp threadprivate(q2,propZ,propW,propG,propZG)
+
   //Calculate the W, Z, gamma* propagators
   extern void setpropagators(double m);
   
   //Amplitudes times mellin inverse transform piece x1^-z1 * x2^-z2
   //Depending on the mode 0, 1, 2 they can be differential, cos theta integrated, or cos theta and y integrated
   extern complex <double> *mesqij_expy;
+#pragma omp threadprivate(mesqij_expy)
+
+  extern void allocate();
   extern void setmesq_expy(int mode, double m, double costh, double y);
+  extern void free();
 
   //amplitudes
   template <class T>
   extern void setmesq(T one, T costh1, T costh2);
   extern complex <double> mesqij[12];
+#pragma omp threadprivate(mesqij)
 
   enum sign {positive=0, negative=1};
 
@@ -124,6 +131,7 @@ namespace mesq
 
   inline int index(int f1, int f2, int i1, int i2, bool sign)
   {return i2 + mellinint::mdim*(i1 + mellinint::mdim*(sign + 2*(pchindx(f1,f2))));}
+
 }
 
 #endif

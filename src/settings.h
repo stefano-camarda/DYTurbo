@@ -146,6 +146,9 @@ public:
   int vegasncallsREAL ;
   int vegasncallsVIRT ;
 
+  //cubature settings
+  bool pcubature;
+
   //lepton fiducial cuts
   bool makelepcuts;
   double lptcut, lycut;

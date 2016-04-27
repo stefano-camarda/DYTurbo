@@ -24,14 +24,6 @@ void rapint::init()
   //variables to cache the rapidity dependent exponentials
   cfpy = new complex <double>[mellinint::mdim*mellinint::mdim*ydim];
   cfmy = new complex <double>[mellinint::mdim*mellinint::mdim*ydim];
-
-  //integration results
-  Ith0p = new complex <double>[mellinint::mdim*mellinint::mdim];
-  Ith1p = new complex <double>[mellinint::mdim*mellinint::mdim];
-  Ith2p = new complex <double>[mellinint::mdim*mellinint::mdim];
-  Ith0m = new complex <double>[mellinint::mdim*mellinint::mdim];
-  Ith1m = new complex <double>[mellinint::mdim*mellinint::mdim];
-  Ith2m = new complex <double>[mellinint::mdim*mellinint::mdim];
 }
 
 void rapint::cache(double ymin, double ymax)
@@ -59,8 +51,20 @@ void rapint::cache(double ymin, double ymax)
     }
 }
 
+void rapint::allocate()
+{
+  //allocate memory
+  Ith0p = new complex <double>[mellinint::mdim*mellinint::mdim];
+  Ith1p = new complex <double>[mellinint::mdim*mellinint::mdim];
+  Ith2p = new complex <double>[mellinint::mdim*mellinint::mdim];
+  Ith0m = new complex <double>[mellinint::mdim*mellinint::mdim];
+  Ith1m = new complex <double>[mellinint::mdim*mellinint::mdim];
+  Ith2m = new complex <double>[mellinint::mdim*mellinint::mdim];
+}
 void rapint::integrate(double ymin, double ymax, double m)
 {
+  //integration results are stored in Ithxx
+  
   double q2 = m*m;
   double bjx= q2/pow(opts.sroot,2);
   double ax = log(bjx);
@@ -189,4 +193,15 @@ void rapint::integrate(double ymin, double ymax, double m)
       //	for (int i2 = 0; i2 < 3; i2++)
       //	  cout << i1 << "  " << i2 << "  " << Ith1p[mellinint::index(i1,i2)] << "  " << cfpm[i1][i2] << endl;
     }
+}
+
+void rapint::free()
+{
+  //integration results
+  delete[] Ith0p;
+  delete[] Ith1p;
+  delete[] Ith2p;
+  delete[] Ith0m;
+  delete[] Ith1m;
+  delete[] Ith2m;
 }
