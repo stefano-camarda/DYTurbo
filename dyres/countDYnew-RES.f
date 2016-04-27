@@ -75,8 +75,9 @@ CC    Variables passed from virtint or lowint
 CC
       common/count/qt2,q2,shat
 CC
-       COMMON/a_param/a_param,b0p
-       double precision a_param,b0p
+c       COMMON/a_param/a_param,b0p
+c     double precision a_param,b0p
+      include "sudakov_inc.f"
 C
       integer n2,n3,sgnj,sgnk,flgq
       double precision mass2,width2,mass3,width3

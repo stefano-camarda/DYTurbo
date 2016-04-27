@@ -1015,11 +1015,11 @@ c     NOW b0->b0p INCLUDED
       function IK(m)
       implicit none
       external BK
-      real *8 BK,IK,argum,dloqt,a_param,b0p
+      real *8 BK,IK,argum,dloqt
       integer m
-      include 'scales.h'
+      include 'scales_inc.f'
+      include 'sudakov_inc.f'
       include 'const.h'
-      common/a_param/a_param,b0p
 
       argum=b0p*qt/q
       dloqt=DLOG(a_param*qt/q)

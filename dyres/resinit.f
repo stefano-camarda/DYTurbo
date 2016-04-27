@@ -237,10 +237,12 @@ c     cache gamma1 gamma2: NORMALIZED ANOMALOUS DIMENSIONS AND COEFFICIENTS
       SUBROUTINE cachecoeff
       implicit none
 c     Input from resumm
-       double complex loga,logmuf2q2,logq2muf2,logq2mur2
-       common/clogs/loga,logmuf2q2,logq2muf2,logq2mur2
-       double precision aass
-       COMMON/aass/aass
+      double complex loga,logmuf2q2,logq2muf2,logq2mur2
+      common/clogs/loga,logmuf2q2,logq2muf2,logq2mur2
+c       double precision aass
+c     COMMON/aass/aass
+
+      include "sudakov_inc.f"
 
 c     input from cacheanom
       DOUBLE COMPLEX cgamma1qq(136,2),cgamma1qg(136,2),cgamma1gq(136,2),
