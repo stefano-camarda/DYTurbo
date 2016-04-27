@@ -177,20 +177,24 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
   if (opts.makelepcuts)
     {
       if (opts.resumcpp)
-	//C++ resum
-	rapint::allocate();
-	rapint::integrate(ymin,ymax,m);
-        //end C++ resum
+	{
+	  //C++ resum
+	  rapint::allocate();
+	  rapint::integrate(ymin,ymax,m);
+	  //end C++ resum
+	}
       else
 	rapintegrals_(ymin,ymax,m,nocuts);
     }
   else
     {
       if (opts.resumcpp)
-	//C++ rewritten resum
-	rapint::allocate();
-	rapint::integrate(ymn,ymx,m);
-        //end C++ resum
+	{
+	  //C++ rewritten resum
+	  rapint::allocate();
+	  rapint::integrate(ymn,ymx,m);
+	  //end C++ resum
+	}
       else
 	rapintegrals_(ymn,ymx,m,nocuts);
     }
