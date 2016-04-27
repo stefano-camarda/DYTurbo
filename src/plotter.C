@@ -147,8 +147,7 @@ bool plotter::IsInitialized(){return (qt_y_total!=0);};
 void plotter::FillEvent(double p3[4], double p4[4], double wgt){
     // save after 10M events
     // if(int(h_qt->GetEntries()+1)%int(1e6)==0) Finalise(0);
-    //
-    if (wgt == 0 ) return;
+    // if (wgt == 0 ) return;
     // TLorentzVector lep1(p3);
     // TLorentzVector lep2(p4);
     // if (verbose){
@@ -307,7 +306,7 @@ void plotter::SetPDF(int npdf){
         h_qt_PDF   .push_back( h_qt   );
         h_y_PDF    .push_back( h_y    );
         h_qtVy_PDF .push_back( h_qtVy );
-        h_Q_PDF    .push_back( h_Q );
+        h_Q_PDF    .push_back( h_Q    );
         if (doAiMoments) {
             h_costh_PDF   .push_back( h_costh   );
             h_phi_PDF     .push_back( h_phi     );
@@ -324,6 +323,7 @@ void plotter::SetPDF(int npdf){
         h_qt_PDF   .push_back( (TH1D *) clone_PDF( h_qt_PDF   [0] , size) );
         h_y_PDF    .push_back( (TH1D *) clone_PDF( h_y_PDF    [0] , size) );
         h_qtVy_PDF .push_back( (TH2D *) clone_PDF( h_qtVy_PDF [0] , size) );
+        h_Q_PDF    .push_back( (TH1D *) clone_PDF( h_Q_PDF    [0] , size) );
         if (doAiMoments){
             h_costh_PDF   .push_back( (TH1D *) clone_PDF( h_costh_PDF   [0] , size) );
             h_phi_PDF     .push_back( (TH1D *) clone_PDF( h_phi_PDF     [0] , size) );
@@ -503,7 +503,7 @@ void plotter::calculate_kinematics(double p3[4], double p4[4]){
     p[3] = p3[3]+p4[3];
     //
     Q2 = calcQ2(p);
-    Q = sqrt(Q);
+    Q = sqrt(Q2);
     qt = calcQt(p);
     y  = calcY(p);
     if (!doAiMoments) return; // turn off ai moments
