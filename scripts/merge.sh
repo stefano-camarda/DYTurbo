@@ -311,7 +311,8 @@ merge_general(){
     #echo " w{p,m} bm0          REAL         $resdir/dyturbo-0.9.6.2/results_bm0_WZREALVIRT bm2 11105 benchmark_v2_160204_WZ " >> mergeconf
     #echo  " w{p,m} bm0          {RES,CT}     $resdir/dyturbo-0.9.6.2/results_bm0_WpmRESCT   bm0 11105 benchmark_v0_160204_WZ " >> mergeconf
     #echo  " w{p,m} bm1          {RES,CT}     $resdir/dyturbo-0.9.6.2/results_bm012_WpWm     bm1 11105 benchmark_v1_160204_WZ " >> mergeconf
-    echo  " w{p,m} bm2$qtymerge {RES3D,CT3D} $resdir/dyturbo-0.9.8.1/results_bm2     bm2 10100 benchmark_v2_160302_WZ " >> mergeconf
+    #echo  " w{p,m} bm2$qtymerge {RES3D,CT3D} $resdir/dyturbo-0.9.8.1/results_bm2     bm2 10100 benchmark_v2_160302_WZ " >> mergeconf
+    #echo  " w{p,m} bm1          {RES,CT}     $resdir/dyturbo-0.9.8.1/results     bm1 11105 benchmark_v1_160204_WZ " >> mergeconf
 
     #
     #echo  " z0 o1 {RES,RESnaive,RESkt0,CT,CTnaive,CTkt0}  results o1 2010 aimoments_test_160216 " >> mergeconf
@@ -319,7 +320,14 @@ merge_general(){
 
 
 
+    #echo  " w{p,m} bm0          {RES,CT}     $resdir/dyturbo-0.9.6.2/results_bm0_WpmRESCT   bm0 11105 benchmark_v0_160311_WZ " >> mergeconf
+    echo " {wp,wm} bm1 {RES,CT} $resdir/dyturbo-0.9.8.1/results_bm1_lsetupFail bm1 11102 benchmark_v1_160317_WZ " >> mergeconf
+    echo " z0      bm1 {RES,CT} $resdir/dyturbo-0.9.8.1/results_bm1_lsetupFail bm1 11101 benchmark_v1_160317_WZ " >> mergeconf
 
+
+
+
+    echo -n " merging ... "
     while read -r mline
     do
         read proc inbm term indir outbm seednum prodname <<< $(echo $mline)
@@ -334,7 +342,7 @@ merge_general(){
             outfilebase=`basename $fres | sed "s|$seednum.*||g;s|y-55|ym55|g;s|$inbm|$outbm|g"`
             ##
             [[ $fres =~ t*3D_ ]] &&
-                MERGER="hadd -f " &&
+                MERGER="./bin/merger -cuba " &&
                 infiles=`echo $fres | sed "s|$seednum|*|g;s|$qtymerge|*|g"` &&
                 outfilebase=`basename $fres | sed "s|$seednum.*||g;s|$qtymerge|qt0100ym55|g;"`
             #echo infiles: `ls $infiles | wc -l`

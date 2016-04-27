@@ -150,20 +150,41 @@ make && make install
 - in first step we create denominator median `sumhat(w_i) = median ( sum(w_ij)`
   from all merged files `j`, per each bin `i`
 - we calculate chi-square from denominator
+
   ```
             (sum(w_ij)-sumhat(w_i))**2
   chi2_ij = --------------------------
              (delta (sum(w_ij)) )**2
   ```
+
 - then we decide about outlier by `Prob(chi2_ij,1) > 7 sigma ` throw away
 - from the rest we get files with indexes `l`
 - final `outlier` profile values terms are: 
+
   ```
   sum(w_i*y_i) = sum(w_il*y_il) / N_i
   sum(w_i) = sum(w_il) / N_i
   ```
+
   where `N_i` is number of jobs contributing to bin `i`.
 - the `TProfile` is then created with hard-set of above values
 
+
+## Submission script
+Basic script for submission is `submit_DYTURBO.sh`. It could be customize to
+submit jobs to any batch system. If you need help, please run:
+
+     ./scripts/submit_DYTURBO.sh --help
+
+Or contact me [Jakub.Cuth@cern.ch]. An example for grid is here
+
+    ./scripts/submit_DYTURBO.sh --grid --proc wp,wm,z0 --collider lhc7 --order 2 --term RES,CT,REAL,VIRT --pdfvar all
+
+
+There are several grid related scripts in `scripts` folder, which you can edit for your need 
+
+* `run_prun.sh`: function for submit jobs with prun command
+* `compile_grid.sh`: compilation on grid side
+* `run_grid.sh`: running on grid side
 
 

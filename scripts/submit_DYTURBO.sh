@@ -11,6 +11,8 @@
 DRYRUN=echo
 #DRYRUN=
 
+#set -x
+
 
 # define directories
 dyturbo_project=`pwd -P`
@@ -128,28 +130,32 @@ prepare_in(){
     # if [[ $pdfset == CT14             ]]; then order=2; fi;
     # if [[ $pdfset == MMHT2014nnlo68cl ]]; then order=2; fi;
     # process (default z0)
-    #lomass=66.
-    #himass=116.
-    lomass=80
-    himass=100
+    lomass=66.
+    himass=116.
+    #lomass=80
+    #himass=100
     rmass=91.1876
     width=2.495
     nproc=3 
     nprocmcfm=41
-    lepPtCut=20
-    lepYCut=2.4
+    #lepPtCut=0
+    #lepYCut=1000
+    # resboslike
+    lomass=66.
+    himass=116.
     #nprocmcfm=41
     #if [[ $order == 2 ]]; then nprocmcfm=44; fi;
     if [[ $process =~ ^w[pm]$ ]]
     then
         #lomass=10
         #himass=1000
-        lomass=2
-        himass=500
         rmass=80.385
         width=2.091
-        lepPtCut=0
-        lepYCut=100
+        #lepPtCut=0
+        #lepYCut=1000
+        # resboslike
+        lomass=10.
+        himass=1000.
     fi
     if [[ $process =~ ^wp$ ]];
     then
@@ -169,11 +175,10 @@ prepare_in(){
     [[ $fiducial == CDF    ]] && detfiducial=2
     [[ $fiducial == ATLAS  ]] && detfiducial=3
     [[ $fiducial == CMS7   ]] && detfiducial=4
-    [[ $fiducial == CMS8   ]] && detfiducial=5
-    # collider: default lhc7
+    # COLLIDER
+    sroot=7e3
     ih1=1
     ih2=1
-    sroot=7e3
     # TEV1
     if [[ $collider == tev1 ]]
     then
@@ -208,18 +213,18 @@ prepare_in(){
     [[ $variation =~ all   ]] && member=0 && setPDFerrors=true;      
     [[ $variation =~ array ]] && member=array;                     
     # gpar
-    if [[ $pdfset == WZZPT-CT10 ]]
-    then
-        gpar=0.9097
-        [[ $variation == 53    ]] && gpar=0.97330
-        [[ $variation == 54    ]] && gpar=0.84610
-    fi;
-    if [[ $pdfset == ZPT-CT10 ]]
-    then
-        gpar=0.83175
-        [[ $variation == 53    ]] && gpar=0.88990
-        [[ $variation == 54    ]] && gpar=0.77360
-    fi;
+    # if [[ $pdfset == WZZPT-CT10 ]]
+    # then
+    #     #gpar=0.9097
+    #     #[[ $variation == 53    ]] && gpar=0.97330
+    #     #[[ $variation == 54    ]] && gpar=0.84610
+    # fi;
+    # if [[ $pdfset == ZPT-CT10 ]]
+    # then
+    #     #gpar=0.83175
+    #     #[[ $variation == 53    ]] && gpar=0.88990
+    #     #[[ $variation == 54    ]] && gpar=0.77360
+    # fi;
     # qT recoil prescription -- default CS
     qtrec_naive="false"
     qtrec_cs="true"
@@ -254,6 +259,8 @@ prepare_in(){
             s|SETDOREA|$doREA|g              ;
             s|SETDOVIR|$doVIR|g              ;
             s|SETDOLOR|$doLOR|g              ;
+            s|SETDOVJ|false|g                ;
+            s|SETDOVV|false|g                ;
             s|SETCUBACORES|$cubacores|g      ;
             s|SETRESUMDIM|$resumdim|g        ;
             s|SETCTDIM|$ctdim|g              ;
@@ -279,41 +286,71 @@ splitBins(){
 }
 
 prepare_tarbal(){
-    tarbalfile=$in_files_dir/${program}_${pdfset}_${gridv}.tar
-    exclude="-X scripts/excl" #'--exclude="*.o" --exclude="*.lo" --exclude="*.Po" --exclude="*.Plo" --exclude="*.deps*" --exclude="*.a" --exclude="*.pdf"'
+    gridv=v`date +%s`
+    DYTURBOVERSION=`grep PACKAGE_VERSION config.h | cut -d\" -f2`
+    echo "Making a tarbal.. please wait"
+    if ! make dist > /dev/null
+    then
+        echo "Compilation problem.. exiting."
+        exit 3
+    fi
+    #tarbalfile=$in_files_dir/${program}_${pdfset}_${gridv}.tar
+    #exclude="-X scripts/excl" #'--exclude="*.o" --exclude="*.lo" --exclude="*.Po" --exclude="*.Plo" --exclude="*.deps*" --exclude="*.a" --exclude="*.pdf"'
     # add scripts and default input
-    tar cf $tarbalfile --transform='s|.*/||g' scripts/run_grid.sh scripts/compile_grid.sh input/default.in
+    #tar cf $tarbalfile --transform='s|.*/||g' scripts/run_grid.sh scripts/compile_grid.sh input/default.in
     # add libraries
-    tar rf $tarbalfile lib/lib* bin/dyturbo
+    #tar rf $tarbalfile lib/lib* bin/dyturbo
     #  # add autotools config
     #  tar rf $tarbalfile configure.ac install-cuba dyturbo-config.in Makefile.am input/
     #  # add dyturbo source code
     #  tar rf $tarbalfile $exclude src/ dyres/ mcfm/ dynnlo/ dyres/ cernlib/ Cuba-4.2/
     # add wanted PDFset
-    tar rhf $tarbalfile -C lhapdf6/share/LHAPDF/ $pdfset/ lhapdf.conf pdfsets.index
+    #tar rhf $tarbalfile -C lhapdf6/share/LHAPDF/ $pdfset/ lhapdf.conf pdfsets.index
+    #tar rf $tarbalfile dyturbo-0.9.8.tar
+
+    # prepare PRUN command
+    cat  scripts/run_prun.sh              >  scripts/grid_submit.cmd
+    echo ""                               >> scripts/grid_submit.cmd
+    echo "gridv=$gridv"                   >> scripts/grid_submit.cmd
+    echo "CERNUSER=$USER"                   >> scripts/grid_submit.cmd
+    echo "DYTURBOVERSION=$DYTURBOVERSION" >> scripts/grid_submit.cmd
+    echo ""                               >> scripts/grid_submit.cmd
+    # clear submistion dir
+    rm -rf GRID/*
+    mkdir -p GRID/inputs
 }
 
 finalize_grid_submission(){
-    echo "compressing... $tarbalfile"
-    gzip $tarbalfile
-    rm -rf GRID/*
-    rsync -avP $tarbalfile.gz GRID/
-    cat scripts/grid_submit.cmd | column -t > GRID/subm.sh
+    CP="rsync -a"
+    #echo "compressing... $tarbalfile"
+    #gzip $tarbalfile
+    $CP dyturbo-${DYTURBOVERSION}.tar.gz GRID/
+    # submision scripts
+    cat scripts/grid_submit.cmd > GRID/subm.sh
     chmod +x GRID/subm.sh
-    ls -l GRID
+    # on-site scripts
+    $CP scripts/compile_grid.sh GRID/
+    $CP scripts/run_grid.sh GRID/
+    $CP input/default.in GRID/
+    #
+    ls -hla --color=auto GRID
+    echo
+    echo "Take look at GRID folder edit subm.sh and run it "
 }
 
 
 add_to_tarbal(){
     # hack the interations
     sed -i "s|^cubaverbosity   *=.*$|cubaverbosity    = 2  |g" $in_files_dir/$job_name.in
-    sed -i "s|^vegasncallsRES  *=.*$|vegasncallsRES   = 5e5|g" $in_files_dir/$job_name.in
-    sed -i "s|^vegasncallsCT   *=.*$|vegasncallsCT    = 5e7|g" $in_files_dir/$job_name.in
+    sed -i "s|^vegasncallsRES  *=.*$|vegasncallsRES   = 1e6|g" $in_files_dir/$job_name.in
+    sed -i "s|^vegasncallsCT   *=.*$|vegasncallsCT    = 1e8|g" $in_files_dir/$job_name.in
     sed -i "s|^vegasncallsLO   *=.*$|vegasncallsLO    = 1e8|g" $in_files_dir/$job_name.in
-    sed -i "s|^vegasncallsREAL *=.*$|vegasncallsREAL  = 2e8|g" $in_files_dir/$job_name.in
+    sed -i "s|^vegasncallsREAL *=.*$|vegasncallsREAL  = 1e8|g" $in_files_dir/$job_name.in
     sed -i "s|^vegasncallsVIRT *=.*$|vegasncallsVIRT  = 1e8|g" $in_files_dir/$job_name.in
     # add input file
-    tar rf $tarbalfile scripts/infiles/$job_name.in
+    #tar rf $tarbalfile scripts/infiles/$job_name.in
+    # add to dir
+    rsync -a $in_files_dir/$job_name.in GRID/infiles/
 }
 
 submit_job(){
@@ -335,21 +372,23 @@ submit_job(){
 }
 
 submit_job2grid(){
-    $DRYRUN 
-    intargz=`basename $tarbalfile`.gz
-    echo prun --exec \". run_grid.sh ${job_name} %RNDM:1 \" \
-    --outDS user.\$GRIDUSER.${job_name}.out \
-    --outputs=HIST:results_merge.root \
-    --noCompile \
-    --nJobs $seedlist \
-    --inTarBall=$intargz \
-    >> scripts/grid_submit.cmd
+    # $DRYRUN 
+    # intargz=`basename $tarbalfile`.gz
+    # echo prun --exec \". run_grid.sh ${job_name} %RNDM:1 \" \
+    # --outDS user.\$GRIDUSER.${job_name}.out \
+    # --outputs=HIST:results_merge.root \
+    # --noCompile \
+    # --nJobs $seedlist \
+    # --inTarBall=$intargz \
+    # >> scripts/grid_submit.cmd
     #--site ANALY_CERN_SHORT \
     #--excludeFile="out_*"
     #--nJobs 1 \
     #--long \
     #--bexec \"./compile_grid.sh\" \
     #--rootVer=6.02/12 --cmtConfig=x86_64-slc6-gcc48-opt \
+
+    echo "PRUN $job_name $seedlist" >> scripts/grid_submit.cmd
 }
 
 jobsDone(){
@@ -560,6 +599,19 @@ splitedBin(){
     echo -n $edge
 }
 
+# resbos like selection
+# NLO+NLL = RES,CT,LO
+#   g: 1.1
+#   ptlep: 1 1000
+#   eta: -10 10
+#   qt: 0.05 200
+#   y: -10 10
+# W:
+#   M: 40 500
+# Z:
+#   M: 66. 116.
+
+
 submit_allProg(){
     # ask about running/submitting
     DRYRUN=echo 
@@ -586,17 +638,18 @@ submit_allProg(){
     random_seed=100101
     startSeed=100201
     variation=0
-    variation=all
     gpar=.83175
+    # resbos like
+    gpar=1.1
     # testing the array submission
     batch_template=$dyturbo_project/scripts/run_DYTURBO_Array_TMPL.sh
-    for program in dyturbo #  dyturbo dyres mcfm
+    for program in dyturbo # dyturbo dyres mcfm
     do
         for process in z0 wp wm # wp wm z0
         do
             makelepcuts=false
             #if [[ $process =~ z0 ]]; then makelepcuts=true; fi
-            for order in 1 2 # 3
+            for order in 1  # 0 1 2 3
             do
                 # set PDF ?
                 pdfset=CT10nnlo
@@ -609,7 +662,9 @@ submit_allProg(){
                 if [[ $program =~ ^dyturbo ]] 
                 then
                     cubacores=0
-                    termlist="RES CT LO"
+                    #termlist="RES CT LO"
+                    termlist="RES3D CT3D LO"
+                    #termlist="LO"
                     if [[ $order == 2 ]]; then termlist="RES CT REAL VIRT"; fi;
                     #if [[ $order == 2 ]]; then termlist="RES CT"; fi;
                     #if [[ $order == 2 ]]; then termlist="REAL"; fi;
@@ -635,6 +690,7 @@ submit_allProg(){
                 fi
                 for terms in $termlist
                 do
+                    variation=all
                     seedlist=1010-1110
                     [[ $terms =~ RES1 ]] && seedlist=2010-2510 && terms=`echo $terms | sed "s|RES1|RES|g"`
                     [[ $terms =~ RES2 ]] && seedlist=2511-3010 && terms=`echo $terms | sed "s|RES2|RES|g"`
@@ -660,25 +716,39 @@ submit_allProg(){
                     NsplitY=1
                     if [[ $terms =~ 3D ]]
                     then
+                        #
+                        seed=133
+                        #seedlist=100
+                        #
                         NsplitQT=10
                         NsplitY=5
                         variation=array
-                        #seedlist=100
                         seedlist=101-154
+                        # TEST
+                        #NsplitQT=2
+                        #NsplitY=2
+                        #variation=`seq 0 4`
+                        # -- for maarten produce all input file pdf variations
+                        variation=`seq 0 50`
+                        seedlist=10
                     fi
-                    for iqt in `seq $NsplitQT`
+                    variationlist=$variation
+                    for variation in $variationlist
                     do
-                        for iy in `seq $NsplitY`
+                        for iqt in `seq $NsplitQT`
                         do
-                            #
-                            random_seed=seed
-                            loqtbin=` splitedBin $fulllloqtbin $fulllhiqtbin $NsplitQT $iqt 0`
-                            hiqtbin=` splitedBin $fulllloqtbin $fulllhiqtbin $NsplitQT $iqt 1`
-                            loybin=`  splitedBin $fulllloybin  $fulllhiybin  $NsplitY  $iy  0`
-                            hiybin=`  splitedBin $fulllloybin  $fulllhiybin  $NsplitY  $iy  1`
-                            qtregion=`echo o${order}qt${loqtbin}${hiqtbin}y${loybin}${hiybin}t${terms} | sed "s/\.//g;s/ //g"`
-                            prepare_script
-                            submit_job
+                            for iy in `seq $NsplitY`
+                            do
+                                #
+                                random_seed=seed
+                                loqtbin=` splitedBin $fulllloqtbin $fulllhiqtbin $NsplitQT $iqt 0`
+                                hiqtbin=` splitedBin $fulllloqtbin $fulllhiqtbin $NsplitQT $iqt 1`
+                                loybin=`  splitedBin $fulllloybin  $fulllhiybin  $NsplitY  $iy  0`
+                                hiybin=`  splitedBin $fulllloybin  $fulllhiybin  $NsplitY  $iy  1`
+                                qtregion=`echo o${order}qt${loqtbin}${hiqtbin}y${loybin}${hiybin}t${terms} | sed "s/\.//g;s/ //g"`
+                                prepare_script
+                                submit_job
+                            done
                         done
                     done
                 done
@@ -743,6 +813,90 @@ submit_grid(){
         done
     done
     finalize_grid_submission
+}
+
+submit_parsed(){
+    DRYRUN=echo 
+    program=dyturbo
+    queue=atlasshort
+    cubacores=0
+    loqtbin=0
+    hiqtbin=100
+    loybin=-5
+    hiybin=5
+    fulllloqtbin=$loqtbin
+    fulllhiqtbin=$hiqtbin
+    fulllloybin=$loybin
+    fulllhiybin=$hiybin
+    random_seed=seed
+
+    if [[ $target =~ grid ]]
+    then
+        cubacores=0
+        prepare_tarbal
+    fi
+
+    for process in $proclist
+    do
+        for collider in $colliderlist
+        do
+            for terms in $termlist
+            do
+                [[ $target =~ grid ]] || [[ $seedlist =~ - ]]  || seedlist=1-$seedlist
+                [[ $terms  =~ 3D   ]] && seedlist=1
+                for order in $orderlist
+                do
+                    # skip incorrect terms and order combinations
+                    [[ $order == 1 ]] && [[ $terms =~ REAL|VIRT ]] && continue;
+                    [[ $order == 2 ]] && [[ $terms =~ LO        ]] && continue;
+                    # split variations if 3D or 2D in term
+                    variationlist=$pdfvarlist
+                    NsplitQT=1
+                    NsplitY=1
+                    if [[ $terms =~ 3D ]] || [[ $terms =~ 2D ]]
+                    then
+                        # split per variation
+                        if [[ $pdfvarlist =~ all ]]
+                        then
+                            if [[ $pdfset == CT10nnlo ]] || [[ $pdfset =~ CT14 ]]
+                            then
+                                variationlist=`seq 0 50`
+                            else
+                                echo "FixMe: I dont know how many PDF members $pdfset has."
+                                exit 3
+                            fi
+                        fi
+                        # split per kinematic region
+                        NsplitQT=10
+                        NsplitY=5
+                    fi
+                    for variation in $variationlist
+                    do
+                        # special spliting for cubature
+                        for iqt in `seq $NsplitQT`
+                        do
+                            for iy in `seq $NsplitY`
+                            do
+                                random_seed=seed
+                                # split binning automaticaly
+                                loqtbin=` splitedBin $fulllloqtbin $fulllhiqtbin $NsplitQT $iqt 0`
+                                hiqtbin=` splitedBin $fulllloqtbin $fulllhiqtbin $NsplitQT $iqt 1`
+                                loybin=`  splitedBin $fulllloybin  $fulllhiybin  $NsplitY  $iy  0`
+                                hiybin=`  splitedBin $fulllloybin  $fulllhiybin  $NsplitY  $iy  1`
+                                qtregion=`echo o${order}qt${loqtbin}${hiqtbin}y${loybin}${hiybin}t${terms} | sed "s/\.//g;s/ //g"`
+                                # submit
+                                prepare_script
+                                [[ $target == mogon ]] &&  submit_job
+                                [[ $target == grid ]]  && add_to_tarbal && submit_job2grid
+                            done
+                        done
+                    done
+                done
+            done
+        done
+    done
+
+    [[ $target == grid ]] && finalize_grid_submission
 }
 
 submit_Benchmark(){
@@ -811,10 +965,9 @@ submit_Benchmark(){
 }
 
 
-
 clear_files(){
     echo "Clearing setup files"
-    if [[ $(bjobs 2> /dev/null) ]] 
+    if [[ $(bjobs -o name 2> /dev/null | grep dyturbo) ]] 
     then
         echo There are jobs running, skip clearing
         #rm -f scripts/batch_scripts/*.sh
@@ -839,14 +992,149 @@ clear_results(){
     echo "Done"
 }
 
+help(){
+    echo "Help of submit scripts: 
+USAGE: ./scripts/submit_DYTURBO.sh --target [settings]
+
+  Targets:
+    --local         Prepare for run localy.
+    --grid          Prepare grid submission directory.
+    --mogon         Prepare standard scripts for mogon (Mainz cluster).
+    --help          Print this help and die.
+
+
+  Setting      [default]   possibilities     description
+
+    --proc     [z0,wp,wm]  {z0,wp,wm}             set the mass and scales
+    --pdfset   [CT10nnlo]  {LHAPDFname}           set LHAPDF set name
+    --pdfvar   [0]         {0,1,2...,all}         set member number or run all
+    --collider [lhc7]      {tev1,tev2,lhc7,lhc8}  set hadron type and energy
+    --order    [2]         {1,2}                  1: NLL+NLO 2: NNLL+NNLO
+    --term     [RES3D]     {RES,CT}               Monte-Carlo integration with order as above
+                           {RES3D,CT3D}           Cubature integration with order set above
+                           {REAL,VIRT}            Real and virt for order=2 with MC
+                           {LO}                   Fixed term for order=1 with MC
+    --gpar     [1.0]       {float}                Set gpar value
+    --lepcutPt [20.0]      {float}                This will turn on make lepton cuts and set pt>ptcut
+    --lepcutY  [2.5]       {float}                This will turn on make lepton cuts and set absY>ycut
+    --seeds    [1000]      {int}                  Set range (for mogon) or Njobs (grid)
+
+    most of then can used with comma separation.
+
+    Binning is automatic and it follow AiMoment histogram definition. (Except is also negative in eta)
+
+    Example:
+
+./scripts/submit_DYTURBO.sh --grid --proc wp,wm,z0 --collider lhc7 --order 2 --term RES3D,CT3D,REAL,VIRT --pdfvar all
+"
+
+}
+
+parse_inputs(){
+    #echo debug $*
+    target=unset
+    proclist="z0 wp wm"
+    pdfset=CT10nnlo
+    pdfvarlist=0
+    colliderlist=lhc7
+    orderlist=2
+    makelepcuts=false
+    lepPtCut=20.
+    lepYCut=2.5
+    termlist=RES3D
+    gpar=1.0
+    seedlist=1000
+    batch_template=$dyturbo_project/scripts/run_DYTURBO_Array_TMPL.sh
+
+    while [[ $# > 0 ]]
+    do
+        key=$1
+        #echo debug key $key
+        case $key in
+            # TARGET
+            --local)
+                target=localrun
+                ;;
+            --grid)
+                target=grid
+                ;;
+            --mogon)
+                target=mogon
+                ;;
+            # OPTIONS
+            --proc)
+                proclist="`echo $2|sed 's|,| |g'`"
+                shift
+                ;;
+            --pdfset)
+                pdfset=$2
+                shift
+                ;;
+            --pdfvar)
+                pdfvarlist="`echo $2|sed 's|,| |g'`"
+                shift
+                ;;
+            --collider)
+                colliderlist="`echo $2|sed 's|,| |g'`"
+                shift
+                ;;
+            --order)
+                orderlist="`echo $2|sed 's|,| |g'`"
+                shift
+                ;;
+            --term)
+                termlist="`echo $2|sed 's|,| |g'`"
+                shift
+                ;;
+            --gpar)
+                gpar=$2
+                shift
+                ;;
+            --seeds)
+                seedlist=$2
+                shift
+                ;;
+            --lepcutPt)
+                makelepcuts=true
+                lepPtCut=$2
+                shift
+                ;;
+            --lepcutY)
+                makelepcuts=true
+                lepYCut=$2
+                shift
+                ;;
+            #  HELP and OTHER
+            -h|--help)
+                help
+                exit 0
+                ;;
+            *)
+                echo Uknown option: $key
+                help
+                exit 3
+                ;;
+        esac
+        shift
+    done
+}
+
+parse_inputs $*
+
 # MAIN
 clear_files
-clear_results
-#submit_Z_dyturbo
-submit_allProg
-#submit_Wwidth
-#submit_grid
-#submit_Benchmark
+
+if [[ $target =~ unset ]]
+then
+    clear_results
+    #submit_Z_dyturbo
+    submit_allProg
+    #submit_Wwidth
+    #submit_grid
+    #submit_Benchmark
+else
+    submit_parsed
+fi
 
 # 
 [[ `hostname` =~ precision  ]] && $DRYRUN python scripts/run_parallel.py
