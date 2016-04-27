@@ -11,7 +11,21 @@ void pdfini_()
   //printf(" ==Initialize PDF set from LHAPDF==\n\n");
   //printf("\n");
   LHAPDF::Info& cfg = LHAPDF::getConfig();
-  cfg.set_entry("Verbosity", 0);
+
+  cfg.set_entry("Verbosity"             , 0              );
+  cfg.set_entry("Interpolator"          , "logcubic"     );
+  cfg.set_entry("Extrapolator"          , "continuation" );
+  cfg.set_entry("ForcePositive"         , 0              );
+  cfg.set_entry("AlphaS_Type"           , "analytic"     );
+  cfg.set_entry("MZ"                    , 91.1876        );
+  cfg.set_entry("MUp"                   , 0.002          );
+  cfg.set_entry("MDown"                 , 0.005          );
+  cfg.set_entry("MStrange"              , 0.10           );
+  cfg.set_entry("MCharm"                , 1.29           );
+  cfg.set_entry("MBottom"               , 4.19           );
+  cfg.set_entry("MTop"                  , 172.9          );
+  cfg.set_entry("Pythia6LambdaV5Compat" , true           );
+
   LHAPDF::initPDFSetByName(opts.LHAPDFset);
   LHAPDF::initPDF(opts.LHAPDFmember);
   // initialization of alphas
