@@ -9,10 +9,40 @@
 #include <math.h>
 #include <iomanip>
 #include <iostream>
-//#include <vector>
-//#include <random>
+#include <omp.h>
 
-//double const qtcutoff = 0.02;
+int resintegrand2d_cubature_v(unsigned ndim, long unsigned npts, const double x[], void *data, unsigned ncomp, double f[])
+{
+  //The current issue with openmp parallelisation, is that the resummation integrand has many
+  //global variables, and the use of these variables has a race
+  
+  //  cout << "parallel " << npts << endl;
+
+#pragma omp parallel for num_threads(opts.cubacores) copyin(a_param_,rlogs_,resint::a,resint::loga,resint::rloga)
+  for (unsigned i = 0; i < npts; i++)
+    {
+      //      int nThreads = omp_get_num_threads();
+      //      printf("Total number of threads: %d\n", nThreads);
+      
+      // evaluate the integrand for npts points
+      double xi[ndim];
+      double fi[ncomp];
+      for (unsigned j = 0; j < ndim; j++)
+	xi[j] = x[i*ndim + j];
+
+      resintegrand2d(ndim, xi, ncomp, fi);
+      
+      for (unsigned k = 0; k < ncomp; ++k)
+	f[i*ncomp + k] = fi[k];
+    }
+  return 0;
+}
+
+int resintegrand2d_cubature(unsigned ndim, const double x[], void *data, unsigned ncomp, double f[])
+{
+  resintegrand2d(ndim, x, ncomp, f);
+  return 0;
+}
 
 integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, double f[])
 {
@@ -182,10 +212,10 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
   if (swtch < 0.01)
     f[0]=0.;
   else
-      if (opts.resumcpp)
-	f[0]=resint::rint(costh,m,qt,y,mode)/(8./3.);
-      else
-	f[0]=resumm_(costh,m,qt,y,mode)/(8./3.);
+    if (opts.resumcpp)
+      f[0]=resint::rint(costh,m,qt,y,mode)/(8./3.);
+    else
+      f[0]=resumm_(costh,m,qt,y,mode)/(8./3.);
   clock_t ret = clock();
 
   if (f[0] != f[0])
@@ -200,6 +230,8 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
 	 << setw(10) << "rapint"  << setw(10) << float( yet - ybt ) /  CLOCKS_PER_SEC
 	 << setw(10) << "resumm"  << setw(10) << float( ret - rbt ) /  CLOCKS_PER_SEC
 	 << endl;
+  if (opts.resumcpp)
+    rapint::free_integrate();
   return 0;
 }
 

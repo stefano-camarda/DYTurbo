@@ -9,4 +9,8 @@ integrand_t resintegrand3d(const int &ndim, const double x[], const int &ncomp, 
 integrand_t resintegrandMC(const int &ndim, const double x[], const int &ncomp, double f[],
 			   void* userdata, const int &nvec, const int &core,
 			   double &weight, const int &iter);
+
+int resintegrand2d_cubature(unsigned ndim, const double x[], void *data, unsigned ncomp, double f[]);
+int resintegrand2d_cubature_v(unsigned ndim, long unsigned npts, const double x[], void *data, unsigned ncomp, double f[]);
+
 #endif
