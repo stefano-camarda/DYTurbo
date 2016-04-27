@@ -227,8 +227,7 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
   hcoefficients::calc(aass,logmuf2q2,logq2muf2,logq2mur2,loga);
   //*****************************************
 
-  pdfevol::allocate();
-  
+
   //*****************************************
   //dependence on qt, m, also y, and costh unless integrated
   //perform b integration (int_0^inf db)
@@ -240,7 +239,6 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
   res *= qt/2./pow(opts.sroot,2);
 
   //free allocated Local Thread Storage (LTS) memory
-  pdfevol::free();
   hcoefficients::free();
   mesq::free();
 

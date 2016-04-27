@@ -34,8 +34,8 @@ namespace pdfevol
   //#pragma omp threadprivate(UVP,DVP,USP,DSP,SSP,GLP,CHP,BOP)
 
   //moments for the PDFs convolution
-  extern complex <double> *fn1;
-  extern complex <double> *fn2;
+  extern complex <double> fn1[2*MAXNF+1];
+  extern complex <double> fn2[2*MAXNF+1];
 #pragma omp threadprivate(fn1,fn2)
 
   //scales
@@ -51,10 +51,6 @@ namespace pdfevol
   
   //initialise and compute Mellin moments of PDFs at the starting scale (factorisation scale)
   extern void init();
-  //allocate memory for fn1, fn2;
-  extern void allocate();
-  //free memory for fn1, fn2;
-  extern void free();
   //evolve Mellin moments of PDFs from the factorisation scale to the scale ~1/b, set in bscale
   extern void evolution(int i);
   //calculate Mellin moments of PDFs at all scales by direct Mellin transform
