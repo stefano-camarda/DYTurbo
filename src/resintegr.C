@@ -178,6 +178,7 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
     {
       if (opts.resumcpp)
 	//C++ resum
+	rapint::allocate();
 	rapint::integrate(ymin,ymax,m);
         //end C++ resum
       else
@@ -187,6 +188,7 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
     {
       if (opts.resumcpp)
 	//C++ rewritten resum
+	rapint::allocate();
 	rapint::integrate(ymn,ymx,m);
         //end C++ resum
       else
@@ -231,7 +233,7 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
 	 << setw(10) << "resumm"  << setw(10) << float( ret - rbt ) /  CLOCKS_PER_SEC
 	 << endl;
   if (opts.resumcpp)
-    rapint::free_integrate();
+    rapint::free();
   return 0;
 }
 

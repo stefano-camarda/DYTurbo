@@ -11,7 +11,6 @@
 #include "rapint.h"
 #include "mesq.h"
 #include "resconst.h"
-#include "hcoefficients.h"
 #include "anomalous.h"
 #include "resint.h"
 #include "switch.h"
@@ -238,9 +237,8 @@ void dyturboinit(string conf_file)
   rapint::init(); //allocate memory for the rapidity quadrature
   resconst::init(); //calculate beta, A and B coefficients
   anomalous::init(); //calculate anomalous dimensions, C1, C2 and gamma coefficients
-  hcoefficients::init(); //allocate memory for the H coefficients
-  pdfevol::init(); //allocate memory for the pdf in N-space
-  pegasus::init(); //initialise Pegasus QCD
+  pdfevol::init(); //transform the PDF from x- to N-space at the factorisation scale
+  pegasus::init(); //initialise Pegasus QCD and transform the PDF from x- to N-space at the starting scale
   resint::init(); //initialise dequad integration for the bessel integral
   //end C++ resum
 
