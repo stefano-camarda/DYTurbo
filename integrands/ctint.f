@@ -77,8 +77,9 @@ c      double precision x1,x2
       common/qtcut/xqtcut
       common/nnlo/order 
 
-      double precision a_param,b0p
-      common/a_param/a_param,b0p
+      include "sudakov_inc.f"
+c      double precision a_param,b0p
+c      common/a_param/a_param,b0p
 
       integer flgq
       integer ih1,ih2
@@ -930,8 +931,9 @@ c perform qt integration
       double precision Itilde
       external Itilde
       
-      common/a_param/a_param,b0p
-      double precision a_param,b0p
+      include "sudakov_inc.f"
+c      common/a_param/a_param,b0p
+c      double precision a_param,b0p
       
       include 'constants.f'
       double precision cthmom0,cthmom1,cthmom2

@@ -16,9 +16,9 @@ c     IMPLICIT DOUBLE PRECISION (A-I,L-Z)
       double precision resu
       double precision cthmom0,cthmom1,cthmom2
       INTEGER N, NVP, ISET, NAORD, NNF, ih,flag1,IER,flag
-      double precision mv2,g_param,a_param !  real *16 mm,qtt,yy,theta
+      double precision mv2,g_param !  real *16 mm,qtt,yy,theta
       integer icoll,ih1,ih2,inorm
-      integer cc, iord, flagrealcomplex,imod,mord,kk,sii,sjj
+      integer cc,mord,kk,sii,sjj
       double precision sigmaij(-5:5,-5:5)
 C     Parameters for Bessel quadratures
       integer lenaw
@@ -48,16 +48,9 @@ c     alphas(Mz) from lhapdf
       double precision v
       COMMON/v/v
       COMMON/NFLAVORS/nnF
-      COMMON/iorder/iord
       COMMON/morder/mord
-      double precision aass
-      COMMON/aass/aass
-      COMMON/flagrealcomplex/flagrealcomplex
-      COMMON/modified/imod
       COMMON/flag1/flag1
       COMMON/flag/flag
-      double precision b0p
-      COMMON/a_param/a_param,b0p
       COMMON/g_param/g_param
 c     COMMON/binteg/phi2,min,max
       double precision Vud,Vus,Vub,Vcd,Vcs,Vcb
@@ -68,13 +61,7 @@ c     COMMON/binteg/phi2,min,max
       common/dyphoton/phot
       double complex loga,logmuf2q2,logq2muf2,logq2mur2
       common/clogs/loga,logmuf2q2,logq2muf2,logq2mur2
-      double precision rloga,rlogq2mur2
-      common/rlogs/rloga,rlogq2mur2
-
-      double precision rblim
-      complex *16 cblim
-      common/blimit/rblim,cblim
-
+      
 c     cached for invres and cachecoeff
       DOUBLE PRECISION ax1,ax2,xx1,xx2
       integer nmax1,nmax2
@@ -114,7 +101,8 @@ C
       include 'masses.f' 
       include 'const.h' 
 c     include 'constants.f' 
-      include 'scales.h' 
+      include 'sudakov_inc.f'
+      include 'scales_inc.f' 
       double precision gevpb
       data gevpb/3.8937966d8/
       double precision gevfb
@@ -488,8 +476,8 @@ c     print *,'dequad result of inverse bessel transform',resu, errt
  
       FUNCTION INVres (b)    
       IMPLICIT NONE
-      DOUBLE PRECISION INVRES,b0p,b,dbesj0,xj0,ax,eta,
-     .     FZ,a_param,C,CO,SI,qt,FUN
+      DOUBLE PRECISION INVRES,b,dbesj0,xj0,ax,eta,
+     .     FZ,C,CO,SI,qt,FUN
       double precision funp1m1,funp2m2,funm1p1,funm2p2
 c     cached from resumm
       DOUBLE PRECISION ax1,ax2,xx1,xx2
@@ -508,7 +496,6 @@ c     cached from resumm
       COMMON / ETA / ETA
       COMMON / WEIGHTS2 / WN
       COMMON / MOMS2    / Np,Nm,CCp,CCm
-      COMMON/a_param/a_param,b0p
       COMMON/transverse/qt
       external S       
 
@@ -524,8 +511,9 @@ c     cached from resumm
       integer iq
       DOUBLE COMPLEX fn1(9),fn2(9),fn3(9)
       COMPLEX *16 fx1(-5:5), fx2(-5:5), fx3(-5:5)
-      COMPLEX *16 cFX1(-5:5,136), cFX2p(-5:5,136), cFX2m(-5:5,136)
-      common/creno/cfx1,cfx2p,cfx2m
+      include "pdfn_inc.f"
+c      COMPLEX *16 cFX1(-5:5,136), cFX2p(-5:5,136), cFX2m(-5:5,136)
+c      common/creno/cfx1,cfx2p,cfx2m
 
       integer ih1,ih2
       COMMON/collider/ih1,ih2
@@ -546,14 +534,15 @@ c     cached from resumm
       integer mod              !mode 0: differential mode 1: integrated in costh mode 2: integrated in costh and y
       common /mod/mod
 
-      double complex loga,logmuf2q2,logq2muf2,logq2mur2
-      common/clogs/loga,logmuf2q2,logq2muf2,logq2mur2
+      include "sudakov_inc.f"
+c      double complex loga,logmuf2q2,logq2muf2,logq2mur2
+c      common/clogs/loga,logmuf2q2,logq2muf2,logq2mur2
       
-      double complex aexp,aexpB
-      COMMON/exponent/aexp,aexpB
+c      double complex aexp,aexpB
+c      COMMON/exponent/aexp,aexpB
 
-      double precision aass
-      COMMON/aass/aass
+c      double precision aass
+c      COMMON/aass/aass
 
       COMPLEX *16 mellinint_integrand
 
@@ -772,18 +761,17 @@ c      print *,b, INVRES, besselint(b,cqt,cq2)
       integer I, SIG, ISIGN
       double complex H1q      
       
-      DOUBLE PRECISION aass
       DOUBLE PRECISION aassh,aasshsq
-      COMMON/aass/aass
       DOUBLE PRECISION XL, XL1, SALP
       DOUBLE COMPLEX alpq,ALPr
       COMMON/alphasldata/XL,XL1,SALP,alpq,ALPr
       double complex loga,logmuf2q2,logq2muf2,logq2mur2
       common/clogs/loga,logmuf2q2,logq2muf2,logq2mur2
       
-      double complex aexp,aexpB
-      COMMON/exponent/aexp,aexpB
-
+c      double complex aexp,aexpB
+c      COMMON/exponent/aexp,aexpB
+      include "sudakov_inc.f"
+      
       integer flag1
       COMMON/flag1/flag1
 
@@ -879,7 +867,6 @@ c break coefficient calculation, which is not dependent on sigmaij
 c       IMPLICIT DOUBLE COMPLEX (A - Z)
        implicit none
        double complex HCRN
-       DOUBLE PRECISION aass
        DOUBLE PRECISION aassh,aasshsq
        DOUBLE COMPLEX aexpqq1,aexpqq2,aexpqg1,aexpqg2
        DOUBLE PRECISION sigmaij(-5:5,-5:5)
@@ -896,15 +883,16 @@ c       IMPLICIT DOUBLE COMPLEX (A - Z)
 
        INTEGER I,J,flag1,I1,I2,isign,ih1,ih2,sig
        INTEGER SI,SJ,SK
-       COMMON/aass/aass
        include 'const.h'
-       include 'scales.h'
+       include 'scales_inc.f'
 
        COMMON/flag1/flag1
 
        COMMON/collider/ih1,ih2
-       double complex aexp,aexpB
-       COMMON/exponent/aexp,aexpB
+
+       include "sudakov_inc.f"
+c      double complex aexp,aexpB
+c       COMMON/exponent/aexp,aexpB
        COMMON/SIGMAIJ/SIGMAIJ
 
       integer nproc
@@ -957,8 +945,9 @@ c      DIMENSION FP1(9), fp2(9), FN(15)
 
 c     cached fps
       integer iq
-      DOUBLE COMPLEX cFX1(-5:5,136), cFX2p(-5:5,136), cFX2m(-5:5,136)
-      common/creno/cfx1,cfx2p,cfx2m
+      include "pdfn_inc.f"
+c      DOUBLE COMPLEX cFX1(-5:5,136), cFX2p(-5:5,136), cFX2m(-5:5,136)
+c      common/creno/cfx1,cfx2p,cfx2m
 
 c      cached hcoefficients
       double complex cHqgnll(136,2),cHqqnnll(136,2),cHqqpnnll(136,2),
@@ -2130,200 +2119,6 @@ c     b dependence and I dependence and ISIGN
 
 C
 C
-C...CALCULATION OF ANOMALOUS DIMENSIONS AND WILSON COEFFICIENTS
-C...UP TO THEIR DEPENDENCE OF THE NUMBER OF ACTIVE FLAVOURS F :
-       SUBROUTINE ANCALC (QQI, QGF, GQI, GGI, GGF, NS1MI, NS1PI, NS1F,
-     1                    QQ1F, QG1F, GQ1I, GQ1F, GG1I, GG1F, XN)
-       IMPLICIT DOUBLE COMPLEX (A - Z)
-       DOUBLE PRECISION ZETA2, ZETA3,  Q2, Q2MUR, Q2MUF
-c       COMMON / SCALES / Q2, Q2MUR, Q2MUF
-C
-c       LMQ = LOG(Q2/Q2MUF)
-       XNS = XN * XN
-       XN1 = XN + 1.
-       XN2 = XN + 2.
-       XNM = XN - 1.
-C...LEADING ORDER :
-       CPSI = PSIFN (XN1) + 0.577216
-       QQI = (8./3.) * (-3.- 2./(XN * XN1) + 4.* CPSI)
-       QGF = -4.* (XNS + XN +2.) / (XN * XN1 * XN2)
-       GQI = -(16./3.) * (XNS + XN + 2.) / (XN * XN1 * XNM)
-       GGI = -22.- 24./(XN * XNM) - 24./(XN1 * XN2) + 24.* CPSI
-       GGF = 4./3.
-C...NEXT OT LEADING ORDER :
-       XNT = XNS * XN
-       XNFO = XNT * XN
-       XN1S = XN1 * XN1
-       XN1T = XN1S * XN1
-C...ANALYTIC CONTINUATIONS OF N-SUMS AS GIVEN IN GLUECK ET AL. (1990) :
-       ZETA2 = 1.644934
-       ZETA3 = 1.202057
-       CPSI1 = ZETA2 - PSIFN1 (XN1)
-*       CPSI2 = 0.5 * PSIFN2 (XN1) - ZETA2
-*       SPMOM = 1.01/XN1 - 0.846/XN2 + 1.155/(XN+3.) - 1.074/(XN+4.) +
-*     1         0.55/(XN+5.)
-       SPMOM = 1.004D0 / XN1 - 0.846D0 / XN2 + 1.342D0 / (XN+3.) -
-     1         1.532D0 / (XN+4.) + 0.839D0 / (XN+5.)
-       SLC = -5./8.* ZETA3
-       SLV = - ZETA2/2.* (PSIFN (XN1/2.) - PSIFN (XN/2.))
-     1       + CPSI/XNS + SPMOM
-       SSCHLM = SLC - SLV
-       SSTR2M = ZETA2 - PSIFN1 (XN1/2.)
-       SSTR3M = 0.5 * PSIFN2 (XN1/2.) + ZETA3
-       SSCHLP = SLC + SLV
-       SSTR2P = ZETA2 - PSIFN1 (XN2/2.)
-       SSTR3P = 0.5 * PSIFN2 (XN2/2.) + ZETA3
-C...NON-SINGLET PIECES AS GIVEN IN CURCI ET AL. (1980) :
-       NS1MA = 16.* CPSI * (2.* XN + 1.) / (XNS * XN1S) +
-     1         16.* (2.* CPSI - 1./(XN * XN1)) * ( CPSI1 - SSTR2M ) +
-     2         64.* SSCHLM + 24.* CPSI1 - 3. - 8.* SSTR3M -
-     3         8.* (3.* XNT + XNS -1.) / (XNT * XN1T) +
-     4         16.* (2.* XNS + 2.* XN +1.) / (XNT * XN1T)
-       NS1PA = 16.* CPSI * (2.* XN + 1.) / (XNS * XN1S) +
-     1         16.* (2.* CPSI - 1./(XN * XN1)) * ( CPSI1 - SSTR2P ) +
-     2         64.* SSCHLP + 24.* CPSI1 - 3. - 8.* SSTR3P -
-     3         8.* (3.* XNT + XNS -1.) / (XNT * XN1T) -
-     4         16.* (2.* XNS + 2.* XN +1.) / (XNT * XN1T)
-       NS1B = CPSI * (536./9. + 8.* (2.* XN + 1.) / (XNS * XN1S)) -
-     1        (16.* CPSI + 52./3.- 8./(XN * XN1)) * CPSI1 - 43./6. -
-     2        (151.* XNFO + 263.* XNT + 97.* XNS + 3.* XN + 9.) *
-     3        4./ (9.* XNT * XN1T)
-       NS1C = -160./9.* CPSI + 32./3.* CPSI1 + 4./3. +
-     1        16.* (11.* XNS + 5.* XN - 3.) / (9.* XNS * XN1S)
-       NS1MI = -2./9.* NS1MA + 4.* NS1B
-       NS1PI = -2./9.* NS1PA + 4.* NS1B
-       NS1F = 2./3. * NS1C
-C...SINGLET PIECES AS GIVEN IN FLORATOS ET AL. (1981) :
-       XNFI = XNFO * XN
-       XNSI = XNFI * XN
-       XNSE = XNSI * XN
-       XNE = XNSE * XN
-       XNN = XNE * XN
-       XNMS = XNM * XNM
-       XN2S = XN2 * XN2
-       XN2T = XN2S * XN2
-       QQ1F = (5.* XNFI + 32.* XNFO + 49.* XNT + 38.* XNS + 28.* XN
-     1          + 8.) / (XNM * XNT * XN1T * XN2S) * (-32./3.)
-       QG1A = (-2.* CPSI * CPSI + 2.* CPSI1 - 2.* SSTR2P)
-     1          * (XNS + XN + 2.) / (XN * XN1 * XN2)
-     2        + (8.* CPSI * (2.* XN + 3.)) / (XN1S * XN2S)
-     3        + 2.* (XNN + 6.* XNE + 15. * XNSE + 25.* XNSI + 36.* XNFI
-     4          + 85.* XNFO + 128.* XNT + 104.* XNS + 64.* XN + 16.)
-     5          / (XNM * XNT * XN1T * XN2T)
-       QG1B = (2.* CPSI * CPSI - 2.* CPSI1 + 5.) * (XNS + XN + 2.)
-     1          / (XN * XN1 * XN2)   -   4.* CPSI / XNS
-     2        + (11.* XNFO + 26.* XNT + 15.* XNS + 8.* XN + 4.)
-     3          / (XNT * XN1T * XN2)
-       QG1F = - 12.* QG1A - 16./3.* QG1B
-       GQ1A = (-2.* CPSI * CPSI + 10.* CPSI - 2.* CPSI1)
-     1          * (XNS + XN + 2.) / (XNM * XN * XN1)  -  4.* CPSI / XN1S
-     2        - (12.* XNSI + 30.* XNFI + 43.* XNFO + 28.* XNT - XNS
-     3          - 12.* XN - 4.) / (XNM * XNT * XN1T)
-       GQ1B = (CPSI * CPSI + CPSI1 - SSTR2P) * (XNS + XN + 2.)
-     1          / (XNM * XN * XN1)
-     2        - CPSI * (17.* XNFO + 41.* XNS - 22.* XN - 12.)
-     3          / (3.* XNMS * XNS * XN1)
-     4        + (109.* XNN + 621.* XNE + 1400.* XNSE + 1678.* XNSI
-     5          + 695.* XNFI - 1031.* XNFO - 1304.* XNT - 152.* XNS
-     6          + 432.* XN + 144.) / (9.* XNMS * XNT * XN1T * XN2S)
-       GQ1C = (CPSI - 8./3.) * (XNS + XN + 2.) / (XNM * XN * XN1)
-     1        + 1./ XN1S
-       GQ1I = - 64./9.* GQ1A - 32.* GQ1B
-       GQ1F = - 64./9.* GQ1C
-       GG1A = 16./9.* (38.* XNFO + 76.* XNT + 94.* XNS + 56.* XN + 12.)
-     1          / (XNM * XNS * XN1S * XN2)   -   160./9.* CPSI + 32./3.
-       GG1B = (2.* XNSI + 4.* XNFI + XNFO - 10.* XNT - 5.* XNS - 4.* XN
-     1          - 4.) * 16. / (XNM * XNT * XN1T * XN2)   +   8.
-       GG1C = (2.* XNFI + 5.* XNFO + 8.* XNT + 7.* XNS - 2.* XN - 2.)
-     1          * 64.* CPSI / (XNMS * XNS * XN1S * XN2S)
-     2        + 536./9.* CPSI - 64./3.
-     3        + 32.* SSTR2P * (XNS + XN + 1.) / (XNM * XN * XN1 * XN2)
-     4        - 16.* CPSI * SSTR2P + 32.* SSCHLP - 4.* SSTR3P
-     5        - 4.* (457.* XNN + 2742.* XNE + 6040.* XNSE + 6098.* XNSI
-     6          + 1567.* XNFI - 2344.* XNFO - 1632.* XNT + 560.* XNS
-     7          + 1488.* XN + 576.) / (9.* XNMS * XNT * XN1T * XN2T)
-       GG1I = 9.* GG1C
-       GG1F = 3./2.* GG1A + 2./3.* GG1B
-
-C...WILSON COEFFICIENTS :
-c       C2QI = 4./3.* (2.* CPSI * CPSI - 2.* CPSI1 + 3.* CPSI - 9.
-c     1       - 2.* CPSI / (XN * XN1) + 3./ XN + 4./ XN1 + 2./ XNS)
-c       C2QI = C2QI - LMQ * QQI/2.      
-c       C2GF = - 2.* (CPSI * (XNS + XN + 2.) / (XN * XN1 * XN2)
-c     1       + 1./ XN - 1./ XNS - 6./ XN1 + 6./ XN2)
-c       C2GF = C2GF - LMQ * QGF/2.    
-C... DRELL-YAN COEFFICIENTS :
-c       CDYQI = 4./3. * (-8. + 8.*ZETA2 + 2./XNS + 2./XN1S - 
-c     1                   4.*CPSI/XN/XN1 + 4.*CPSI*CPSI +
-c     2                   (3. + 2./XN/XN1 - 4.*CPSI)*LMQ )
-c       CDYGI = 1./2. * ( (4. + 14.*XN + 22.*XNS + 11.*XNT + XNFO)/
-c     1                   (XNS*XN1S*XN2S) - 
-c     2                    2.*(2. + XN + XNS)*CPSI/(XN*XN1*XN2) +
-c     3                   (1./XN - 2./XN1 + 2./XN2)*LMQ )       
-       RETURN
-       END
-C
-C
-
-C
-C
-C...PSI - FUNCTION FOR COMPLEX ARGUMENT
-       DOUBLE COMPLEX FUNCTION PSIFN (Z)
-       DOUBLE COMPLEX Z, ZZ, RZ, DZ, SUB
-       SUB = CMPLX (0.,0.)
-       ZZ = Z
-  1    CONTINUE
-       IF (DREAL (ZZ) .LT. 10.) THEN
-         SUB = SUB - 1./ ZZ
-         ZZ = ZZ + 1.
-         GOTO 1
-       END IF
-       RZ = 1./ ZZ
-       DZ = RZ * RZ
-       PSIFN = SUB + LOG(ZZ) - RZ/2.- DZ/2520. * ( 210.+ DZ * (-21.+
-     1         10.*DZ ))
-       RETURN
-       END
-C
-C
-C...FIRST DERIVATIVE OF THE PSI - FUNCTION FOR COMPLEX ARGUMENT :
-       DOUBLE COMPLEX FUNCTION PSIFN1 (Z)
-       DOUBLE COMPLEX Z, ZZ, RZ, DZ, SUB
-       SUB = CMPLX (0.,0.)
-       ZZ = Z
-  1    CONTINUE
-       IF (DREAL (ZZ) .LT. 10.) THEN
-         SUB = SUB + 1./ (ZZ * ZZ)
-         ZZ = ZZ + 1.
-         GOTO 1
-       END IF
-       RZ = 1./ ZZ
-       DZ = RZ * RZ
-       PSIFN1 = SUB + RZ + DZ/2. * ( 1 + RZ/630. * ( 210.- DZ * ( 42.-
-     1         DZ * ( 30.- 42.*DZ ))))
-       RETURN
-       END
-C
-C
-C...SECOND DERIVATIVE OF THE PSI - FUNCTION FOR COMPLEX ARGUMENT :
-       DOUBLE COMPLEX FUNCTION PSIFN2 (Z)
-       DOUBLE COMPLEX Z, ZZ, RZ, DZ, SUB
-       SUB = CMPLX (0.,0.)
-       ZZ = Z
-  1    CONTINUE
-       IF (DREAL (ZZ) .LT. 10.) THEN
-         SUB = SUB - 2./ (ZZ * ZZ * ZZ)
-         ZZ = ZZ + 1.
-         GOTO 1
-       END IF
-       RZ = 1./ ZZ
-       DZ = RZ * RZ
-       PSIFN2 = SUB - DZ/60. * ( 60.+ RZ * ( 60.+ RZ * ( 30.- DZ *
-     1         ( 10.- DZ * ( 10.- DZ * ( 18.- 50.* DZ ))))))
-       RETURN
-       END
-C
-C
 C...BETA FUNCTION FOR COMPLEX ARGUMENT :
        DOUBLE COMPLEX FUNCTION CBETA (Z1, Z2)
        IMPLICIT DOUBLE COMPLEX (A - Z)
@@ -2353,239 +2148,6 @@ C...BETA FUNCTION FOR COMPLEX ARGUMENT :
        END
 *
 
-
-      function alphasl(nq2)
-c.....reference scale is factorization scale: muf2=muf**2
-      implicit real*8(a-h,o-z)
-      double complex xlambda,aa1,all,alphasl,qq,t,xlt,bstar,b,blog
-      double complex log1xlambda
-      double complex nq2,aexp,aexpB,aa2
-      integer flagrealcomplex,imod,iord
-      COMMON/iorder/iord
-      COMMON/aass/aass
-      COMMON/flagrealcomplex/flagrealcomplex
-      COMMON/modified/imod
-      COMMON/a_param/a_param,b0p
-      COMMON/exponent/aexp,aexpB
-      double precision rloga,rlogq2mur2
-      common/rlogs/rloga,rlogq2mur2
-      double precision rblim
-      complex *16 cblim
-      common/blimit/rblim,cblim
-      include 'scales.h'
-      include 'const.h'
-
-c.....Here computes NLL expression for alphas
-c     here nq2=b0^2/b^2 and the result is now  alpha(nq2)/alpha(Qres)  
-
-c     To understand these formulas:
-c     nq2 = a*b0^2/b^2 = a*qb2
-c     Q2 = (m_ll/a)^2
-c     alphas(qb2) = alphas(Q2) / (1 - beta0 * alphas(mur2) * log (Q2/qb2)) (why there is a mismatch between Q2 and mur2?)
-c     with the changes:
-c     IR cut off: b=b0p/nq -> bstar = b/sqrt(1+(b**2)/(blim**2))
-c     modified sudakov: loq(Q2/qb2) -> loq(Q2/qb2 + 1)
-c     The result is actually alphas(qb2)/alphas(Q2), where Q2 is the resummation scale
-
-      
-c     HERE CHANGE: order of alphas related to order of evolution
-      if(iord.eq.1) then
-      xlp=1
-      elseif(iord.eq.0) then
-      xlp=0
-      endif
-
-      b=sqrt((b0p**2/nq2))
-      blim=rblim
-
-      bstar=b
-
-c.....choose bstar (b) for real axis (complex plane) integration
-      if (flagrealcomplex.eq.0) bstar=b/sqrt(1+(b**2)/(blim**2))
-      if (imod.eq.1) blog=log( (q*bstar/b0p)**2 + 1) !modified sudakov
-      if (imod.eq.0) blog= log( (q*bstar/b0p)**2 )    !normal sudakov
-
-      xlambda=beta0*aass*blog
-
-c     I think it would be more correct to calculate alphas at the resummation scale, rather than aass which is alphas at the renormalisation scale
-c     xlambda=beta0*dyalphas_lhapdf(q/a_param)/pi*blog
-c     --> Not really, the running of alphas in this function reflects the definition of lambda in Eq. 25 of hep-ph/0508068.
-      
-c     print *,aass*pi,dyalphas_lhapdf(q),dyalphas_lhapdf(q/a_param),sqrt(nq2),xlambda
-      
-c     HERE now a dependence (without constant term)!
-      log1xlambda=log(1-xlambda)
-      aa1=log1xlambda+aass*xlp*
-     .      (beta1/beta0*log1xlambda/(1-xlambda) 
-     .       + beta0*xlambda/(1-xlambda)*rlogq2mur2
-c     .       +   beta0*log(q2/muf2)
-     .       -2d0*beta0*xlambda*rloga/(1-xlambda)   )
-      alphasl=Exp(-aa1)
-!      write(*,*) iord,alp,b,blim,flagrealcomplex,xlambda,as,a_param
-!     .,mur,blog,nq2,aa1,alphasl
-      
-c.....Now compute the factors
-c.....needed to resum the logs which multiply the N-dependent part
-c.....of the C coefficients
-c  the limit below implies xlambda<1/2 and then aa2<= 1      
-c      blim=b0p*(1/q)*exp(1/(2*as*beta0)) 
-c      blim=b0p*(1/q)*exp(1/(4*as*beta0))
-C Set a limit to avoid very large values of b (= very small scales ~1/b)
-!       blim=b0p*(1/q)*exp(1/(2*aass*beta0)) ! avoid Landau pole     
-!       write(*,*) "blim",blim
-      blim=0.5d0
-
-      if (flagrealcomplex.eq.0) bstar=b/sqrt(1+(b**2)/(blim**2))
-      if (imod.eq.1) blog=log( (q*bstar/b0p)**2 + 1) !modified sudakov
-      if (imod.eq.0) blog= log( (q*bstar/b0p)**2 )    !normal sudakov
-
-      xlambda=beta0*aass*blog
-
-c     HERE now a dependence (without constant term)!
-      log1xlambda=log(1-xlambda)
-      aa1=log1xlambda+aass*xlp*
-     .      (beta1/beta0*log1xlambda/(1-xlambda) 
-     .       + beta0*xlambda/(1-xlambda)*rlogq2mur2
-     .       -2d0*beta0*xlambda*rloga/(1-xlambda)   )
-      aexp=Exp(-aa1)      
-
-      aa2= xlambda/(1- xlambda)
-      aexpB=Exp(aa2) 
-      
-      return
-      end
-      
-c.....Sudakov form factor
-      function S(b)
-      implicit none
-      integer flag1,flagrealcomplex,imod
-      complex *16 S,f0,f1,f2,b,bstar,blim,blog
-      real*8 a_param,b0p,aass,g
-      COMMON/aass/aass
-      COMMON/flag1/flag1
-      COMMON/flagrealcomplex/flagrealcomplex
-      COMMON/modified/imod
-      COMMON/a_param/a_param,b0p
-      common/NP/g
-      complex *16 y
-      complex *16 log1y
-      common/csud/log1y
-      double precision rblim
-      complex *16 cblim
-      common/blimit/rblim,cblim
-      include 'scales.h'
-      include 'const.h'
-!      blim=(1/q)*exp(1/(2*aass*beta0))
-c****************************
-c mass dependence in blim
-      blim=cblim
-
-c     In reading these formulas, notice that L = q*bstar/b0p = (q/a_param)*bstar/b0 = Q * bstar/b0, according to Eq. (13) and (17) of hep-ph/0508068.
-      
-      bstar=b
-c.....choose bstar (b) for real axis (complex plane) integration
-c mass dependence in bstar
-      if (flagrealcomplex.eq.0) bstar=b/sqrt(1+(b**2)/(blim**2))
-
-c mass dependence in blog
-      if (imod.eq.1) blog=log( (q*bstar/b0p)**2+1) !modified sudakov
-      if (imod.eq.0) blog= log( (q*bstar/b0p)**2 )    !normal sudakov
-
-c mass dependence in f0(y), f1(y), f2(y)
-      y = beta0*aass*blog
-      log1y=log(1-y)
-      if (flag1.eq.0) then
-         S=exp(blog*f0(y))
-      elseif (flag1.eq.1) then
-         S=exp(blog*f0(y)+f1(y))
-      elseif (flag1.eq.2) then
-         S=exp(blog*f0(y)+f1(y)+aass*f2(y))
-      endif
-!
-      if(DBLE(S).gt.1d2) then
-      write(*,*) "WARNING! LARGE SUDAKOV, S(b)=",S,"; for bstar=",bstar
-      S=cmplx(0d0,0d0)
-      endif
-!
-      S=S*exp(-g*b**2)
-      return
-c****************************
-      end
-      
-      
-c.....Soft-gluon-Resummation of LL
-      function f0(y)
-      implicit none
-      complex *16 f0,y
-      include 'const.h'
-      include 'scales.h'
-      complex *16 log1y
-      common/csud/log1y
-      f0=(A1q/beta0)*(y+log1y)/(y)
-      return
-      end
-      
-c.....Soft-gluon-Resummation of NLL
-c.....Now we have mu_r dependence!
-      function f1(y)
-      implicit none
-      complex *16 f1,y
-      include 'const.h'
-      include 'scales.h'
-      real *8 a_param,b0p
-      COMMON/a_param/a_param,b0p
-      double precision rloga,rlogq2mur2
-      common/rlogs/rloga,rlogq2mur2
-      complex *16 log1y
-      common/csud/log1y
-      f1=((A1q*beta1)/(beta0**3))*((1d0/2)*log1y*log1y +
-     \     (y)/(1-y)+log1y/(1-y)) -
-     \     (A2q/(beta0**2))*(log1y+(y)/(1-y)) + 
-     \     (B1q/beta0)*log1y +
-     \     (A1q/beta0)*(y/(1-y)+log1y)*rlogq2mur2
-c    a dependence      
-      f1=f1-2*rloga*A1q/beta0*y/(1-y)
-      return
-      end
-
-c.....Soft-gluon-Resummation of NNLL
-c.....Now we have mu_r dependence!
-      function f2(y)
-      implicit none
-      complex *16 f2,y
-      include 'const.h'
-      include 'scales.h'
-      real *8 a_param,b0p
-      COMMON/a_param/a_param,b0p
-      double precision rloga,rlogq2mur2
-      common/rlogs/rloga,rlogq2mur2
-      complex *16 log1y
-      common/csud/log1y
-      f2=((A2q*beta1)/(beta0**3))*((y/2)*((3*y-2d0)/(1-y)**2)-
-     \     ((1-2*y)*log1y/(1-y)/(1-y))) - 
-     \     (B2q/beta0)*((y)/(1-y))+
-     \     (B1q*beta1/beta0**2)*((y)/(1-y)+log1y/(1-y))-
-     \     (A3q/2/beta0**2)*(y)*(y)/(1-y)/(1-y) +
-     \     A1q*((beta1**2/2/beta0**4)*(1-2*y)/(1-y)
-     \     /(1-y)*log1y*log1y +
-     \     log1y*((beta0*beta2-beta1**2)/(beta0**4)+
-     \     beta1**2/beta0**4/(1-y)) +
-c    \     beta1**4/beta0**4/(1-y)) +
-     \     (y)/(2*beta0**4*(1-y)*(1-y))*
-     \     (beta0*beta2*(2d0-3*y)+beta1**2*y)) -
-     \     (A1q/2)*(y)*(y)/(1-y)/(1-y)*rlogq2mur2*rlogq2mur2 +
-     \     rlogq2mur2*(B1q*y/(1-y)+A2q/beta0*y*y/(1-y)/(1-y)+
-     \     A1q*beta1/beta0**2*(y/(1-y)+(1-2*y)/(1-y)/(1-y)*log1y)) 
-     \     +2d0*C1qqn*((y)/(1-y))
-c    a dependence (now without constant term)
-      f2=f2+2*A1q*y*(y-2)/(1-y)**2*rloga**2-rloga
-     \ *(2*B1q*y/(1-y)+2*y/beta0*A2q/(1-y)**2
-     \ -2*A1q*beta1/beta0**2*y*log1y/(1-y)**2)
-!
-     \ + A1q*rloga*rlogq2mur2*y*2d0/(1-y)**2   
-      return
-      end
-      
 
 
 C     Computes the moments of pdfs for beam 1
@@ -2961,7 +2523,7 @@ c nodes for the gaussian quadrature for the double Mellin inversion
       common/energy/SQS 
       integer ih1,ih2
       common/collider/ih1,ih2
-      include 'scales.h'
+      include 'scales_inc.f'
       
       complex *16 yintp,yintm
       complex *16 fpy,fmy
