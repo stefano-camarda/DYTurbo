@@ -34,16 +34,20 @@ echo install DYTURBO
 #autoreconf -i || exit 2
 #cp ../quadrules.f src/.
 ./configure --enable-Ofast --enable-root || exit 3
-make install -j || exit 4
+make && make install || exit 4
 
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:./lib
-#export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/cvmfs/sft.cern.ch/lcg/external/gcc/4.8.1/x86_64-slc6-gcc48-opt/lib/../lib64
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/cvmfs/sft.cern.ch/lcg/external/gcc/4.8.1/x86_64-slc6-gcc48-opt/lib/../lib64
 
 #install
 cd ../
 cp -R ${DYTURBOVERSION}/bin .
 cp -R ${DYTURBOVERSION}/lib .
-./bin/dytests || exit 6
+
+
+ls -la bin/dyturbo || exit 6
+
+echo Compilation successfull
 
 
 exit 0
