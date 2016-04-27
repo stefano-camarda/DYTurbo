@@ -70,17 +70,20 @@ extern "C"
       double rlogq2mur2_;
   } rlogs_;
 }
+#pragma omp threadprivate(blimit_,rlogs_,aass_,scaleh_)
 
 namespace resint
 {
   //point in phase space
   extern double _qt, _y, _m, _costh;
   extern int _mode;
+#pragma omp threadprivate(_qt,_m,_y,_costh,_mode)
 
   //scales
   extern double muren, mufac, mures;
   extern double muren2, mufac2, mures2;
   extern double a;
+#pragma omp threadprivate(muren,mufac,mures,muren2,mufac2,mures2,a)
 
   //log of scales
   extern complex <double> loga;
@@ -89,6 +92,7 @@ namespace resint
   extern complex <double> logq2muf2;
   extern complex <double> logq2mur2;
   extern double rlogq2mur2;
+#pragma omp threadprivate(loga,rloga,logmuf2q2,logq2muf2,logq2mur2,rlogq2mur2)
     
   //alphas
   extern double alpqr;
@@ -98,6 +102,7 @@ namespace resint
   extern double alpqfac;
   extern double alpqren;
   extern double alpqres;
+#pragma omp threadprivate(alpqr,alpqf,aass,alpqfac,alpqren,alpqres)
   
   extern void init();
   extern double rint(double costh, double m, double qt, double y, int mode);

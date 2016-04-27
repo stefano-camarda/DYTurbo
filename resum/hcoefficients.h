@@ -35,13 +35,16 @@ namespace hcoefficients
 
   extern complex <double> *aexpqq;
   extern complex <double> *aexpqg;
-      
-  extern void init();
+#pragma omp threadprivate(Hqqb,Hqg,Hqg_1,Hqg_2,Hqq_nnll,Hqq,Hqq_1,Hqq_2,Hqqp,Hqqp_1,Hqqp_2,Hgg,H1stgg,H1stqg,H1stqqb,H2stqq,H2stqqp,H2stqqb,H2stqg_1,H2stqg_2,H2stgg,aexpqq,aexpqg)
+
+  extern void allocate();
   // q2-dependent quantities
   extern void calc(double aass, complex <double> logmuf2q2, complex <double> logq2muf2, complex <double> logq2mur2, complex <double> loga);
 
   // b-dependent quantities
   extern void calcb(double aass, complex <double> logmuf2q2, complex <double> loga, complex <double> alpq, complex <double> aexp, complex <double> aexpb);
+
+  extern void free();
 
   inline int index(int i, int sign)
   {return i + mellinint::mdim*sign;}

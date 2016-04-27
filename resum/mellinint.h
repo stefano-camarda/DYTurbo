@@ -34,10 +34,12 @@ namespace mellinint
   extern complex<double> QGN_2;
   extern complex<double> QQBN;
   extern complex<double> QQN;
-  extern complex <double> QQN_1;
-  extern complex <double> QQN_2;
+  extern complex<double> QQN_1;
+  extern complex<double> QQN_2;
   extern complex<double> QQPN_1;
   extern complex<double> QQPN_2;
+#pragma omp threadprivate(GGN,QGN_1,QGN_2,QQBN,QQN,QQN_1,QQN_2,QQPN_1,QQPN_2)
+
 }
 
 #endif

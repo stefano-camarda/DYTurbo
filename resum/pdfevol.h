@@ -9,7 +9,16 @@ using namespace std;
 extern "C"
 {
   void pdfmoments_(int &beam, double &scale, fcomplex &N, fcomplex &UV, fcomplex &DV, fcomplex &US, fcomplex &DS, fcomplex &SP, fcomplex &SM, fcomplex &GL, fcomplex &CH, fcomplex &BO);
+
+  //access dyres PDF in N-space
+  extern struct {
+    fcomplex cfx1_[136][11];
+    fcomplex cfx2p_[136][11];
+    fcomplex cfx2m_[136][11];
+  } creno_;
 }
+#pragma omp threadprivate(creno_)
+
 
 namespace pdfevol
 {
@@ -22,10 +31,12 @@ namespace pdfevol
   extern complex <double> *GLP;
   extern complex <double> *CHP;
   extern complex <double> *BOP;
+  //#pragma omp threadprivate(UVP,DVP,USP,DSP,SSP,GLP,CHP,BOP)
 
   //moments for the PDFs convolution
   extern complex <double> *fn1;
   extern complex <double> *fn2;
+#pragma omp threadprivate(fn1,fn2)
 
   //scales
   extern complex <double> bscale;
@@ -36,9 +47,14 @@ namespace pdfevol
   extern complex <double> XL1;
   extern complex <double> SALP;
   extern complex <double> alpr;
+#pragma omp threadprivate(bscale,bstarscale,bstartilde,qbstar,XL,XL1,SALP,alpr)
   
   //initialise and compute Mellin moments of PDFs at the starting scale (factorisation scale)
   extern void init();
+  //allocate memory for fn1, fn2;
+  extern void allocate();
+  //free memory for fn1, fn2;
+  extern void free();
   //evolve Mellin moments of PDFs from the factorisation scale to the scale ~1/b, set in bscale
   extern void evolution(int i);
   //calculate Mellin moments of PDFs at all scales by direct Mellin transform

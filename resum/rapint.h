@@ -22,7 +22,11 @@ namespace rapint
   extern complex <double> *Ith0m;
   extern complex <double> *Ith1m;
   extern complex <double> *Ith2m;
+#pragma omp threadprivate(Ith0p,Ith1p,Ith2p,Ith0m,Ith1m,Ith2m)
+
+  void allocate();
   void integrate(double m, double ymin, double ymax);
+  void free();
 
   inline int index(int i, int j, int i1, int i2)
   {return i2 + mellinint::mdim*(i1 + mellinint::mdim*(j + opts.yrule*i));}
