@@ -19,11 +19,15 @@ source ${ATLAS_LOCAL_ROOT_BASE}/user/atlasLocalSetup.sh
 # LHAPDF and ROOT
 #lsetup "root 6.04.06-x86_64-slc6-gcc48-opt"
 #lsetup "sft releases/MCGenerators/lhapdf/6.1.5-6570e" 
+# --rootVer=6.04/14 --cmtConfig=x86_64-slc6-gcc49-opt
 lsetup "root 6.04.14-x86_64-slc6-gcc49-opt"
-export PATH=/cvmfs/sft.cern.ch/lcg/releases/MCGenerators/lhapdf/6.1.5-6570e/x86_64-slc6-gcc49-opt/bin:$PATH
+lsetup "sft releases/MCGenerators/lhapdf/6.1.5-2f446"
 
 lhapdf-config --version || exit 2
 
+# own lhapdf set
+export LHAPDF_DATA_PATH=./
+# official sets
 export LHAPDF_DATA_PATH=/cvmfs/sft.cern.ch/lcg/external/lhapdfsets/current
 export LHAPATH=$LHAPDF_DATA_PATH
 
@@ -37,7 +41,7 @@ echo install DYTURBO
 make && make install || exit 4
 
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:./lib
-export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/cvmfs/sft.cern.ch/lcg/external/gcc/4.8.1/x86_64-slc6-gcc48-opt/lib/../lib64
+export LD_LIBRARY_PATH=/cvmfs/sft.cern.ch/lcg/external/gcc/4.8.1/x86_64-slc6-gcc48-opt/lib/../lib64:${LD_LIBRARY_PATH}
 
 #install
 cd ../
