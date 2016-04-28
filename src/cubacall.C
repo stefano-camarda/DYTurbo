@@ -483,8 +483,8 @@ void ctintegr2d(vector <double> &res, double &err)
       const int eval = 0;
       const double epsrel = opts.pcubaccuracy;
       const double epsabs = 0.;
-      double xmin[2] = {0, 0.0001};
-      double xmax[2] = {1, 0.9999};
+      double xmin[2] = {0, 0.};
+      double xmax[2] = {1, 1.};
       if (opts.cubacores == 0)
 	pcubature(ncomp, ctintegrand2d_cubature, userdata, 
 		  ndim, xmin, xmax, 

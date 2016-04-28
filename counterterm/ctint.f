@@ -388,8 +388,8 @@ c---  calculate PDF's
       xx0(1)=dsqrt(q2/sqrts**2)*dexp(+yy)
       xx0(2)=dsqrt(q2/sqrts**2)*dexp(-yy)
 c---check if x is out of normal range
-      if   ((xx0(1) .gt. 1d0) 
-     & .or. (xx0(2) .gt. 1d0)
+      if   ((xx0(1) .gt. 1d0-1d-12)
+     & .or. (xx0(2) .gt. 1d0-1d-12)
      & .or. (xx0(1) .lt. xmin)
      & .or. (xx0(2) .lt. xmin)) return
       xx10=xx0(1)
