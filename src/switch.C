@@ -1,5 +1,7 @@
 #include "switch.h"
 #include "settings.h"
+#include <iostream>
+#include <iomanip>
 
 #include <math.h>
 
@@ -9,6 +11,10 @@ double switching::delta = 1./2.;
 int switching::mode = 1;
 
 const double switching::cutoff = 0.01;
+
+//this tolerance on the cutoff is introduced to avoid 0 values at the upper pt limit of integration,
+//it is needed because pcubature evaluate the integrals at the borders of the phase space
+const double switching::tolerance = 1.-1e-10;
 
 void switching::init()
 {
@@ -43,7 +49,7 @@ double switching::swtch(double qt, double m)
       swtch = (cos(M_PI/(delta*m)*(qt-k*m))+1.)/2.;
     }
   
-  if (swtch <= cutoff)
+  if (swtch < cutoff*tolerance)
     swtch = 0;
 
   return swtch;

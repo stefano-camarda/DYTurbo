@@ -207,6 +207,7 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
   //  double swtch=1.;
   //  if (qt >= m*3/4.)  swtch=exp(-pow((m*3/4.-qt),2)/pow((m/2.),2)); // GAUSS SWITCH
   //  if (swtch <= 0.01) swtch = 0;
+
   double swtch = switching::swtch(qt, m);
   
   //Call to the resummation part
@@ -215,13 +216,20 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
   int mode = 2;
 
   clock_t rbt = clock();
-  if (swtch < 0.01)
+
+  /*
+  //No need to check the switching, since the phase space is generated up to the switching qt limit
+  if (swtch < switching::cutoff*switching::tolerance)
+  {
     f[0]=0.;
+    return 0;
+  }
+  */
+
+  if (opts.resumcpp)
+    f[0]=resint::rint(costh,m,qt,y,mode)/(8./3.);
   else
-    if (opts.resumcpp)
-      f[0]=resint::rint(costh,m,qt,y,mode)/(8./3.);
-    else
-      f[0]=resumm_(costh,m,qt,y,mode)/(8./3.);
+    f[0]=resumm_(costh,m,qt,y,mode)/(8./3.);
   clock_t ret = clock();
 
   if (f[0] != f[0])
@@ -381,10 +389,20 @@ integrand_t resintegrand3d(const int &ndim, const double x[], const int &ncomp, 
   //Then the epxressions 1, costh and costh^2 in sigmaij are substituted by these costh moments
   double costh = 0;
   int mode = 1;
-  if (swtch < 0.01)
+
+  /*
+  //No need to check the switching, since the phase space is generated up to the switching qt limit
+  if (swtch < switching::cutoff*switching::tolerance)
+  {
     f[0]=0.;
+    return 0;
+  }
+  */
+  
+  //evaluate the resummed cross section
+  if (opts.resumcpp)
+    f[0]=resint::rint(costh,m,qt,y,mode)/(8./3.);
   else
-    //evaluate the resummed cross section
     f[0]=resumm_(costh,m,qt,y,mode)/(8./3.);
 
   if (f[0] != f[0])
@@ -576,11 +594,15 @@ integrand_t resintegrandMC(const int &ndim, const double x[], const int &ncomp, 
 
   //apply resummation switching
   double swtch = switching::swtch(qt, m);
-  if (swtch <= 0.01)
-    {
-      f[0]=0.;
-      return 0;
-    }
+
+  /*
+  //No need to check the switching, since the phase space is generated up to the switching qt limit
+  if (swtch < switching::cutoff*switching::tolerance)
+  {
+    f[0]=0.;
+    return 0;
+  }
+  */
 
   //skip PDF loop in the preconditioning phase
   int Npdf = (iter!=last_iter ? 1 : opts.totpdf);
