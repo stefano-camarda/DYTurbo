@@ -9,4 +9,4 @@ AM_FFLAGS =  -I$(srcdir)/../dyres #-I$(srcdir)/../mcfm #-I$(srcdir)/../src
 noinst_LTLIBRARIES = libresum.la
 libresum_la_SOURCES = gaussrules.C mellinint.C mesq.C rapint.C anomalous.C resconst.C hcoefficients.C pdfevol.C besselint.C bessel.f resint.C pegasus.C sudakov.f
 
-pkginclude_HEADERS = gaussrules.h mellinint.h mesq.h rapint.h anomalous.h resconst.h hcoefficients.h pdfevol.h besselint.h resint.h pegasus.h parton.h sudakov_inc.f pdfn_inc.f scales_inc.f
+pkginclude_HEADERS = gaussrules.h mellinint.h mesq.h rapint.h anomalous.h resconst.h hcoefficients.h pdfevol.h besselint.h resint.h pegasus.h parton.h sudakov_inc.f pdfn_inc.f scales_inc.f sigmaij_inc.f
