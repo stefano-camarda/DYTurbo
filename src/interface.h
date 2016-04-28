@@ -407,6 +407,6 @@ extern "C" {
   void hists_real_dipole_pdf_(double p3[4], double p4[4], double *weight,int *nd, int *npdf);
   void hists_real_event_pdf_(int* npdf);
 }
-#pragma omp threadprivate(a_param_)
+#pragma omp threadprivate(a_param_,scale_,facscale_,qcdcouple_,sigmaij_)
 
 #endif

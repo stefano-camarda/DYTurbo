@@ -80,6 +80,7 @@ void settings::readfromfile(const string fname){
     vegasncallsREAL    = in.GetNumber ( "vegasncallsREAL" ); //10000
     vegasncallsVIRT    = in.GetNumber ( "vegasncallsVIRT" ); //10000
     pcubature          = in.GetBool   ( "pcubature" );
+    pcubaccuracy       = in.GetNumber ( "pcubaccuracy" );
     makelepcuts        = in.GetBool   ( "makelepcuts"     ); //true
     lptcut             = in.GetNumber ( "lptcut"          );
     lycut              = in.GetNumber ( "lycut"          );
@@ -111,6 +112,7 @@ void settings::readfromfile(const string fname){
     mellinintervals    = in.GetNumber ( "mellinintervals" );
     mellinrule         = in.GetNumber ( "mellinrule" );
     zmax               = in.GetNumber ( "zmax" );
+    mellincores        = in.GetNumber ( "mellincores" );
     yintervals         = in.GetNumber ( "yintervals" );
     yrule              = in.GetNumber ( "yrule" );
 
@@ -306,6 +308,7 @@ void settings::dumpAll(){
         dumpD("vegasncallsREAL    ", vegasncallsREAL     );
         dumpD("vegasncallsVIRT    ", vegasncallsVIRT     );
 	dumpB("pcubature          ", pcubature     );
+	dumpD("pcubaccuracy       ", pcubaccuracy     );
         dumpB("makelepcuts        ", makelepcuts         );
         dumpI("fiducial           ", fiducial            );
         dumpB("cubaint            ", cubaint             );
@@ -328,6 +331,7 @@ void settings::dumpAll(){
         dumpI("mellinintervals    ", mellinintervals     );
         dumpI("mellinrule         ", mellinrule          );
 	dumpD("zmax               ", zmax          );
+	dumpD("mellincores        ", mellincores          );
         dumpI("yintervals         ", yintervals     );
         dumpI("yrule              ", yrule          );
     }

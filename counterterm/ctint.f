@@ -12,8 +12,8 @@ C     Scale dependence included up to NNLO
       double precision cthmom0,cthmom1,cthmom2
       include 'constants.f'
       include 'noglue.f'
-      include 'ptilde.f'
-      include 'npart.f'
+c      include 'ptilde.f'
+c      include 'npart.f'
       include 'scale.f'
       include 'facscale.f'
       include 'zerowidth.f'
@@ -25,6 +25,9 @@ C
       include 'rescoeff.f'
       include 'dynamicscale.f'
 C
+      include 'xmio_inc.f'
+      include 'largelogs_inc.f'
+
       double precision f(*)
 
       integer j,k,l,order
@@ -45,7 +48,7 @@ c      double precision x1,x2
       double precision fx1p(-nf:nf),fx2p(-nf:nf)
       double precision log1x,logz1,logz2
       double precision alfa,beta,diff,Pqq,dyPqg,Pqqint,Cqq,Cqg
-      double precision xmio,fluxborn
+      double precision fluxborn
       double precision shad,zmax,Vol
       double precision xx0(2),xx10,xx20
       double precision logxx10,logxx20
@@ -72,14 +75,11 @@ c      double precision x1,x2
       external Pqqqq,Pqqqg,Pqggq,Pqggg,CqqPqq,CqqPqg,CqgPgq,CqgPgg
       external P2qqV,P2qqbV,P2qg,P2qqS
 
-      common/xmio/xmio
       common/xx0/xx0
       common/qtcut/xqtcut
       common/nnlo/order 
 
-      include "sudakov_inc.f"
-c      double precision a_param,b0p
-c      common/a_param/a_param,b0p
+      include 'sudakov_inc.f'
 
       integer flgq
       integer ih1,ih2
@@ -96,8 +96,7 @@ c      common/a_param/a_param,b0p
       real *8 pV(4),p4cm(4),ptemp(4)
       double precision phi, phi_lep, mt2
 
-      COMMON/SIGMAIJ/SIGMAIJ
-      double precision sigmaij(-5:5,-5:5)
+      include 'sigmaij_inc.f'
 
       double precision kt1,kt2,qP1,qP2,zeta1
 
@@ -135,11 +134,6 @@ c     cached variables for fast integration
 
       double precision sumfx1p,sumfx2p
       
-c     Input large logs from ctqtint
-      double precision LL1jk(-nf:nf,-nf:nf),LL2jk(-nf:nf,-nf:nf)
-      double precision LL3jk(-nf:nf,-nf:nf),LL4jk(-nf:nf,-nf:nf)
-      common/largelogs/LL1jk,LL2jk,LL3jk,LL4jk
-
       integer npdf,maxpdf
 
 
@@ -394,8 +388,8 @@ c---  calculate PDF's
       xx0(1)=dsqrt(q2/sqrts**2)*dexp(+yy)
       xx0(2)=dsqrt(q2/sqrts**2)*dexp(-yy)
 c---check if x is out of normal range
-      if   ((xx0(1) .gt. 1d0) 
-     & .or. (xx0(2) .gt. 1d0)
+      if   ((xx0(1) .gt. 1d0-1d-12)
+     & .or. (xx0(2) .gt. 1d0-1d-12)
      & .or. (xx0(1) .lt. xmin)
      & .or. (xx0(2) .lt. xmin)) return
       xx10=xx0(1)
@@ -845,15 +839,13 @@ CC Include as/pi factors and sum O(as) and O(as^2) contributions
          xmsq=xmsq-(sig1+sig2)*ctw(ii)*ctw(jj)
       endif
 
-
 c      print *,tdelta,tH1st,tH1stF,tH1stQ,tgaga,tcga,tgamma2
-
-         
+      
       endif
       enddo
       enddo
 c     end of alfa beta loops
-      
+
 CC Include iacobians (do not include jacobians)
       shad=sqrts**2
       Vol=1d0
@@ -921,8 +913,7 @@ c perform qt integration
       double precision qt,qt2,qta,qtb,qtx,jac
       double precision qtmax2,qtmin2,tiny
       double precision x,w
-      double precision switch,xmio
-      common/xmio/xmio
+      double precision switch
       integer i,j
 
       double precision switching
@@ -930,10 +921,8 @@ c perform qt integration
 
       double precision Itilde
       external Itilde
-      
-      include "sudakov_inc.f"
-c      common/a_param/a_param,b0p
-c      double precision a_param,b0p
+      include 'xmio_inc.f'      
+      include 'sudakov_inc.f'
       
       include 'constants.f'
       double precision cthmom0,cthmom1,cthmom2
@@ -942,18 +931,15 @@ c      double precision a_param,b0p
       double precision msqc1(12)
       integer jk
       integer jj,kk
-      COMMON/SIGMAIJ/SIGMAIJ
-      double precision sigmaij(-5:5,-5:5)
+      include 'sigmaij_inc.f'
       integer nproc
       common/nproc/nproc
 
       include 'gauss.f'
       include 'quadrules.f'
-c     Common block (output)
       double precision LL1,LL2,LL3,LL4
-      double precision LL1jk(-nf:nf,-nf:nf),LL2jk(-nf:nf,-nf:nf)
-      double precision LL3jk(-nf:nf,-nf:nf),LL4jk(-nf:nf,-nf:nf)
-      common/largelogs/LL1jk,LL2jk,LL3jk,LL4jk
+c     Common block (output) is /largelogs/
+      include 'largelogs_inc.f'
 
       do jj=-nf,nf
          do kk=-nf,nf

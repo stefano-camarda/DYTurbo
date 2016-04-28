@@ -148,6 +148,7 @@ public:
 
   //cubature settings
   bool pcubature;
+  double pcubaccuracy;
 
   //lepton fiducial cuts
   bool makelepcuts;
@@ -172,6 +173,7 @@ public:
   int mellinintervals;
   int mellinrule;
   double zmax;
+  int mellincores;
   
   //settings for rapidity integration
   int yintervals;

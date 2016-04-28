@@ -83,6 +83,7 @@ bintaccuracy = 1.0e-4  #accuracy
 mellinintervals = 1 #number of intervals
 mellinrule = 64     #number of nodes
 zmax = 27.   	    #upper limit of the contour in the imaginary axis
+mellincores = 1     #number of parallel threads for the mellin integration
 
 #number of intervals and gaussian rule for the rapidity integrations
 yintervals = 1
@@ -131,6 +132,7 @@ vegasncallsVIRT  = 1000000  # only for virt 8d vegas integration
 
 # cubature settings
 pcubature = false
+pcubaccuracy = 1e-3
 
 # total or with lepton cuts
 makelepcuts = false

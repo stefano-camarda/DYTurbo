@@ -19,8 +19,8 @@ complex <double> *pdfevol::GLP;
 complex <double> *pdfevol::CHP;
 complex <double> *pdfevol::BOP;
 
-complex <double> *pdfevol::fn1;
-complex <double> *pdfevol::fn2;
+complex <double> pdfevol::fn1[2*MAXNF+1];
+complex <double> pdfevol::fn2[2*MAXNF+1];
 
 //scales
 complex <double> pdfevol::bscale;
@@ -80,17 +80,6 @@ void pdfevol::init()
     }
 
   cout << "End PDF moments initialization" << endl;
-}
-void pdfevol::allocate()
-{
-  fn1 = new complex <double>[2*MAXNF+1];
-  fn2 = new complex <double>[2*MAXNF+1];
-}
-
-void pdfevol::free()
-{
-  delete[] fn1;
-  delete[] fn2;
 }
 
 // PROVIDES MOMENTS OF DENSITIES AT A GIVEN SCALE (INCLUDES EVOLUTION)

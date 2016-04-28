@@ -9,6 +9,7 @@ namespace switching {
   extern double delta;
   extern int mode;
   extern const double cutoff;
+  extern const double tolerance;
 }
 
 extern "C" {

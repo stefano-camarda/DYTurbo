@@ -259,11 +259,14 @@ integrand_t ctintegrandMC(const int &ndim, const double x[], const int &ncomp, d
 
   //apply resummation switching
   double swtch = switching::swtch(qt, m);
-  if (swtch <= 0.01)
-    {
-      f[0]=0.;
-      return 0;
-    }
+  /*
+  //No need to check the switching, since the phase space is generated up to the switching qt limit
+  if (swtch < switching::cutoff*switching::tolerance)
+  {
+    f[0]=0.;
+    return 0;
+  }
+  */
 
   //Call the counterterm
   int mode = 0;
@@ -417,11 +420,18 @@ integrand_t ctintegrand3d(const int &ndim, const double x[], const int &ncomp, d
   double costh = 0;
   int mode = 1;
   dofill_.doFill_ = 1;
-  if (swtch < 0.01)
+
+  /*
+  //No need to check the switching, since the phase space is generated up to the switching qt limit
+  if (swtch < switching::cutoff*switching::tolerance)
+  {
     f[0]=0.;
-  else
-    //evaluate the fixed order expansion of the resummed cross section
-    f[0]=ctint_(costh,m,qt,y,mode,f);
+    return 0;
+  }
+  */
+
+  //evaluate the fixed order expansion of the resummed cross section
+  f[0]=ctint_(costh,m,qt,y,mode,f);
 
   //avoid nans
   if (f[0] != f[0])
@@ -444,6 +454,32 @@ integrand_t ctintegrand3d(const int &ndim, const double x[], const int &ncomp, d
 	 << setw(8) << "result" << setw(10) << f[0]
 	 << setw(10) << "tot time" << setw(10) << float( end_time - begin_time ) /  CLOCKS_PER_SEC
 	 << endl;
+  return 0;
+}
+
+int ctintegrand2d_cubature_v(unsigned ndim, long unsigned npts, const double x[], void *data, unsigned ncomp, double f[])
+{
+  //  cout << "parallel " << npts << endl;
+#pragma omp parallel for num_threads(opts.cubacores) copyin(a_param_,scale_,facscale_,qcdcouple_)
+  for (unsigned i = 0; i < npts; i++)
+    {
+      // evaluate the integrand for npts points
+      double xi[ndim];
+      double fi[ncomp];
+      for (unsigned j = 0; j < ndim; j++)
+	xi[j] = x[i*ndim + j];
+
+      ctintegrand2d(ndim, xi, ncomp, fi);
+      
+      for (unsigned k = 0; k < ncomp; ++k)
+	f[i*ncomp + k] = fi[k];
+    }
+  return 0;
+}
+
+int ctintegrand2d_cubature(unsigned ndim, const double x[], void *data, unsigned ncomp, double f[])
+{
+  ctintegrand2d(ndim, x, ncomp, f);
   return 0;
 }
 

@@ -188,6 +188,7 @@ AS_IF([test "x$enable_checkBounds" = "xyes"], [
 AC_CONFIG_FILES([Makefile 
 	 	 src/Makefile
  	 	 resum/Makefile
+		 counterterm/Makefile
 		 integrands/Makefile
 		 dyres/Makefile
 		 dynnlo/Makefile

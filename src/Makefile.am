@@ -21,6 +21,7 @@ libdyturbo_la_SOURCES =
 libdyturbo_la_LIBADD = libdyturbobase.la \
 	../integrands/libintegrands.la \
 	../resum/libresum.la \
+	../counterterm/libcounterterm.la \
 	../dynnlo/libdynnlo.la \
 	../dyres/libdyres.la \
 	../mcfm/libmcfm.la \

@@ -41,13 +41,15 @@ void resintegr2d(double &res, double &err)
 	  integral, error, prob);
   else
     {
-      const int eval = opts.niterRES + pow(2,opts.niterRES);
+      const int eval = 0;
+      const double epsrel = opts.pcubaccuracy;
+      const double epsabs = 0.;
       double xmin[2] = {0, 0};
       double xmax[2] = {1, 1};
       if (opts.cubacores == 0)
 	pcubature(ncomp, resintegrand2d_cubature, userdata, 
 		  ndim, xmin, xmax, 
-		  eval, epsabs, 0.001, ERROR_INDIVIDUAL, integral, error);
+		  eval, epsabs, epsrel, ERROR_INDIVIDUAL, integral, error);
       else
 	pcubature_v(ncomp, resintegrand2d_cubature_v, userdata, 
 		    ndim, xmin, xmax, 
@@ -451,7 +453,7 @@ void ctintegr2d(vector <double> &res, double &err)
 {
   const int ndim = 2;     //dimensions of the integral
   const int ncomp = opts.totpdf;  //components of the integrand
-  void *userdata;
+  void *userdata = NULL;
   const int nvec = 1;
   const double epsrel = 0.;
   const double epsabs = 0.;
@@ -467,14 +469,32 @@ void ctintegr2d(vector <double> &res, double &err)
   const int maxeval = 65+2*65*opts.niterCT;
   const int key = 13;
   int nregions;
-  Cuhre(ndim, ncomp,
-	(integrand_t) ctintegrand2d, userdata, nvec,
-	epsrel, epsabs,
-	flags,
-	mineval, maxeval,
-	key, statefile, NULL,
-	&nregions, &neval, &fail,
-  	integral, error, prob);
+  if (!opts.pcubature)
+    Cuhre(ndim, ncomp,
+	  (integrand_t) ctintegrand2d, userdata, nvec,
+	  epsrel, epsabs,
+	  flags,
+	  mineval, maxeval,
+	  key, statefile, NULL,
+	  &nregions, &neval, &fail,
+	  integral, error, prob);
+  else
+    {
+      const int eval = 0;
+      const double epsrel = opts.pcubaccuracy;
+      const double epsabs = 0.;
+      double xmin[2] = {0, 0.};
+      double xmax[2] = {1, 1.};
+      if (opts.cubacores == 0)
+	pcubature(ncomp, ctintegrand2d_cubature, userdata, 
+		  ndim, xmin, xmax, 
+		  eval, epsabs, epsrel, ERROR_INDIVIDUAL, integral, error);
+      else
+	pcubature_v(ncomp, ctintegrand2d_cubature_v, userdata, 
+		    ndim, xmin, xmax, 
+		    eval, epsabs, epsrel, ERROR_INDIVIDUAL, integral, error);
+    }
+
   res.clear();
   for (int i = 0; i < opts.totpdf; i++)
     res.push_back(integral[i]);
