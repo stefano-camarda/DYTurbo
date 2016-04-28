@@ -106,6 +106,7 @@ prepare_in(){
     resumdim=4
     ctdim=8
     [[ $terms =~ RES3D  ]] && resumdim=3
+    [[ $terms =~ RES2D  ]] && resumdim=2
     [[ $terms =~ CT3D   ]] &&    ctdim=3
     [[ $terms =~ CT2D   ]] &&    ctdim=2
     # ranges / list of ranges
@@ -113,7 +114,7 @@ prepare_in(){
     sethiqtbin=$hiqtbin
     setloybin=$loybin
     sethiybin=$hiybin
-    if [[ $terms =~ 3D ]];
+    if [[ $terms =~ [23]D ]];
     then
         setloqtbin=` seq -s' ' $loqtbin 0.5 $hiqtbin `
         setloybin=`  seq -s' ' $loybin  0.2 $hiybin  `
@@ -714,7 +715,7 @@ submit_allProg(){
                     # for qt/y splits
                     NsplitQT=1
                     NsplitY=1
-                    if [[ $terms =~ 3D ]]
+                    if [[ $terms =~ [23]D ]]
                     then
                         #
                         seed=133
@@ -843,7 +844,7 @@ submit_parsed(){
             for terms in $termlist
             do
                 [[ $target =~ grid ]] || [[ $seedlist =~ - ]]  || seedlist=1-$seedlist
-                [[ $terms  =~ 3D   ]] && seedlist=1
+                [[ $terms  =~ [23]D   ]] && seedlist=1
                 for order in $orderlist
                 do
                     # skip incorrect terms and order combinations
@@ -853,7 +854,7 @@ submit_parsed(){
                     variationlist=$pdfvarlist
                     NsplitQT=1
                     NsplitY=1
-                    if [[ $terms =~ 3D ]] || [[ $terms =~ 2D ]]
+                    if [[ $terms =~ [23]D ]]
                     then
                         # split per variation
                         if [[ $pdfvarlist =~ all ]]
@@ -945,7 +946,7 @@ submit_Benchmark(){
                 [[ $terms  =~ REAL1 ]] && seedlist=11101-10501 && terms=REAL
                 [[ $terms  =~ REAL2 ]] && seedlist=11501-11101 && terms=REAL
                 #
-                [[ $terms  =~ 3D ]] && seedlist=10100
+                [[ $terms  =~ [23]D ]] && seedlist=10100
                 for iqt in `seq $NsplitQT`
                 do
                     for iy in `seq $NsplitY`
@@ -1011,7 +1012,8 @@ USAGE: ./scripts/submit_DYTURBO.sh --target [settings]
     --collider [lhc7]      {tev1,tev2,lhc7,lhc8}  set hadron type and energy
     --order    [2]         {1,2}                  1: NLL+NLO 2: NNLL+NNLO
     --term     [RES3D]     {RES,CT}               Monte-Carlo integration with order as above
-                           {RES3D,CT3D}           Cubature integration with order set above
+                           {RES3D,CT3D}           Cubature 3D integration with order set above
+                           {RES2D,CT2D}           Cubature 2D integration with order set above
                            {REAL,VIRT}            Real and virt for order=2 with MC
                            {LO}                   Fixed term for order=1 with MC
     --gpar     [1.0]       {float}                Set gpar value
