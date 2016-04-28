@@ -48,11 +48,8 @@ c     input
       integer nproc
       common/nproc/nproc
 
-      double precision facscale 
-      common/facscale/facscale
-
-      double precision scale,musq
-      common/scale/scale,musq
+      include "scale.f"
+      include "facscale.f"
 
       double precision alphasPDF
       external alphasPDF
