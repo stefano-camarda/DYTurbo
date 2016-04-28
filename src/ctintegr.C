@@ -447,6 +447,32 @@ integrand_t ctintegrand3d(const int &ndim, const double x[], const int &ncomp, d
   return 0;
 }
 
+int ctintegrand2d_cubature_v(unsigned ndim, long unsigned npts, const double x[], void *data, unsigned ncomp, double f[])
+{
+  //  cout << "parallel " << npts << endl;
+#pragma omp parallel for num_threads(opts.cubacores) copyin(a_param_,scale_,facscale_,qcdcouple_)
+  for (unsigned i = 0; i < npts; i++)
+    {
+      // evaluate the integrand for npts points
+      double xi[ndim];
+      double fi[ncomp];
+      for (unsigned j = 0; j < ndim; j++)
+	xi[j] = x[i*ndim + j];
+
+      ctintegrand2d(ndim, xi, ncomp, fi);
+      
+      for (unsigned k = 0; k < ncomp; ++k)
+	f[i*ncomp + k] = fi[k];
+    }
+  return 0;
+}
+
+int ctintegrand2d_cubature(unsigned ndim, const double x[], void *data, unsigned ncomp, double f[])
+{
+  ctintegrand2d(ndim, x, ncomp, f);
+  return 0;
+}
+
 integrand_t ctintegrand2d(const int &ndim, const double x[], const int &ncomp, double f[])
 //Calculates the ct integrand as a function of m, y
 //The integration in qt is factorised in LL1, LL2, LL3 and LL4 large logs
