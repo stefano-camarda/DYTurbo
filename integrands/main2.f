@@ -19,7 +19,6 @@ c     IMPLICIT DOUBLE PRECISION (A-I,L-Z)
       double precision mv2,g_param !  real *16 mm,qtt,yy,theta
       integer icoll,ih1,ih2,inorm
       integer cc,mord,kk,sii,sjj
-      double precision sigmaij(-5:5,-5:5)
 C     Parameters for Bessel quadratures
       integer lenaw
       parameter (lenaw = 8000)
@@ -55,7 +54,7 @@ c     alphas(Mz) from lhapdf
 c     COMMON/binteg/phi2,min,max
       double precision Vud,Vus,Vub,Vcd,Vcs,Vcb
       common/cabib/Vud,Vus,Vub,Vcd,Vcs,Vcb
-      common/sigmaij/sigmaij
+      include 'sigmaij_inc.f'
       double precision g
       common/NP/g
       common/dyphoton/phot
@@ -511,9 +510,7 @@ c     cached from resumm
       integer iq
       DOUBLE COMPLEX fn1(9),fn2(9),fn3(9)
       COMPLEX *16 fx1(-5:5), fx2(-5:5), fx3(-5:5)
-      include "pdfn_inc.f"
-c      COMPLEX *16 cFX1(-5:5,136), cFX2p(-5:5,136), cFX2m(-5:5,136)
-c      common/creno/cfx1,cfx2p,cfx2m
+      include 'pdfn_inc.f'
 
       integer ih1,ih2
       COMMON/collider/ih1,ih2
@@ -524,8 +521,7 @@ c      common/creno/cfx1,cfx2p,cfx2m
       integer nproc
       common/nproc/nproc
 
-      COMMON/SIGMAIJ/SIGMAIJ
-      double precision sigmaij(-5:5,-5:5)
+      include 'sigmaij_inc.f'
 
       complex *16 sigmaintijp(-5:5,-5:5,136,136)
       complex *16 sigmaintijm(-5:5,-5:5,136,136)
@@ -534,15 +530,7 @@ c      common/creno/cfx1,cfx2p,cfx2m
       integer mod              !mode 0: differential mode 1: integrated in costh mode 2: integrated in costh and y
       common /mod/mod
 
-      include "sudakov_inc.f"
-c      double complex loga,logmuf2q2,logq2muf2,logq2mur2
-c      common/clogs/loga,logmuf2q2,logq2muf2,logq2mur2
-      
-c      double complex aexp,aexpB
-c      COMMON/exponent/aexp,aexpB
-
-c      double precision aass
-c      COMMON/aass/aass
+      include 'sudakov_inc.f'
 
       COMPLEX *16 mellinint_integrand
 
@@ -768,9 +756,7 @@ c      print *,b, INVRES, besselint(b,cqt,cq2)
       double complex loga,logmuf2q2,logq2muf2,logq2mur2
       common/clogs/loga,logmuf2q2,logq2muf2,logq2mur2
       
-c      double complex aexp,aexpB
-c      COMMON/exponent/aexp,aexpB
-      include "sudakov_inc.f"
+      include 'sudakov_inc.f'
       
       integer flag1
       COMMON/flag1/flag1
@@ -869,7 +855,6 @@ c       IMPLICIT DOUBLE COMPLEX (A - Z)
        double complex HCRN
        DOUBLE PRECISION aassh,aasshsq
        DOUBLE COMPLEX aexpqq1,aexpqq2,aexpqg1,aexpqg2
-       DOUBLE PRECISION sigmaij(-5:5,-5:5)
 
        complex *16 FX1(-5:5), FX2(-5:5)
        complex *16 GGN,QGN_1,QGN_2,QQBN_1,QQBN_2,QQBN_3,QQBN_4
@@ -890,10 +875,8 @@ c       IMPLICIT DOUBLE COMPLEX (A - Z)
 
        COMMON/collider/ih1,ih2
 
-       include "sudakov_inc.f"
-c      double complex aexp,aexpB
-c       COMMON/exponent/aexp,aexpB
-       COMMON/SIGMAIJ/SIGMAIJ
+       include 'sudakov_inc.f'
+       include 'sigmaij_inc.f'
 
       integer nproc
       common/nproc/nproc
@@ -945,9 +928,7 @@ c      DIMENSION FP1(9), fp2(9), FN(15)
 
 c     cached fps
       integer iq
-      include "pdfn_inc.f"
-c      DOUBLE COMPLEX cFX1(-5:5,136), cFX2p(-5:5,136), cFX2m(-5:5,136)
-c      common/creno/cfx1,cfx2p,cfx2m
+      include 'pdfn_inc.f'
 
 c      cached hcoefficients
       double complex cHqgnll(136,2),cHqqnnll(136,2),cHqqpnnll(136,2),
@@ -2939,8 +2920,7 @@ c     setup the sigmaij integrated in costh
       double precision gevfb
       data gevfb/3.8937966d11/
 
-      COMMON/SIGMAIJ/SIGMAIJ
-      double precision sigmaij(-5:5,-5:5)
+      include 'sigmaij_inc.f'
 
       q2=m**2
       facZ=1/9d0/pi*q2/((q2-Mz**2)**2+Mz**2*zw**2)*gevfb
@@ -3097,8 +3077,7 @@ c     setup the sigmaij integrated in costh
       double precision gevfb
       data gevfb/3.8937966d11/
 
-      COMMON/SIGMAIJ/SIGMAIJ
-      double precision sigmaij(-5:5,-5:5)
+      include 'sigmaij_inc.f'
 
       q2=m**2
       facZ=1/9d0/pi*q2/((q2-Mz**2)**2+Mz**2*zw**2)*gevfb
