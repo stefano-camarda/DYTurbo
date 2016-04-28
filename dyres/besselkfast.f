@@ -9,9 +9,8 @@ c.....Itilde defined as in the paper
       double precision zbesselk0,zbesselk1,zbesselk2,zbesselk3
       double precision argum,Itilde
       double precision Eulergamma,b0,z2,z3,logx
-      double precision xmio 
+      include 'xmio_inc.f'
       integer m
-      common/xmio/xmio
 
 
       Eulergamma=0.577215664902d0

@@ -1,11 +1,10 @@
       function xsection(ax,eta,xmuf,ippbar1,ippbar2)
 !!!      function xsection(ax,eta,xmuf2,isetproton,ippbar1,ippbar2)
       IMPLICIT NONE
-      dimension sigmaij(-5:5,-5:5)
       DOUBLE PRECISION ax,ax1,ax2,eta,xmuf,xmuf2, FX1(-5:5),FX2(-5:5),
-     . sigmaij,x1,x2,QQBN,xsection,FX1NEW(-2:2),FX2NEW(-2:2)
+     . x1,x2,QQBN,xsection,FX1NEW(-2:2),FX2NEW(-2:2)
       integer isetproton,ippbar1,ippbar2,nf,si,sj
-      common/sigmaij/sigmaij
+      include 'sigmaij_inc.f'
       COMMON/NFLAVORS/nF
         AX1 = (AX+2*ETA)/2d0 
         AX2 = (AX-2*ETA)/2d0 
@@ -56,11 +55,10 @@ C Q Qb + Qb Q
 !      function xsection2(ax,eta,xmuf2,isetproton,ippbar1,ippbar2)
       function xsection2(ax,eta,xmuf,ippbar1,ippbar2)
       IMPLICIT NONE
-      dimension sigmaij(-5:5,-5:5)
       DOUBLE PRECISION ax,ax1,ax2,eta,xmuf2,xmuf, FX1(-5:5),FX2(-5:5),
-     .  sigmaij,x1,x2,QQBN,xsection2
+     .  x1,x2,QQBN,xsection2
       integer isetproton,ippbar1,ippbar2,nf,si,sj
-      common/sigmaij/sigmaij
+      include 'sigmaij_inc.f'
       COMMON/NFLAVORS/nF
         AX1 = (AX+2*ETA)/2d0 
         AX2 = (AX-2*ETA)/2d0 

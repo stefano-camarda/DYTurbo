@@ -46,7 +46,7 @@ CC
       double precision fx1p(-nf:nf),fx2p(-nf:nf)
       double precision alfa,beta,diff,Pqq,dyPqg,Pqqint,Cqq,Cqg
       double precision xjacq2,xjacqt2,xth,x3,almin,almax
-      double precision xmio,fluxborn,pswt0,xmioOLD
+      double precision fluxborn,pswt0,xmioOLD
       double precision shad,yq,zmax,tauh,Vol,y3
       double precision xx0(2),xx10,xx20,y34,cosh2y34
       double precision sig1,sig2,LR,LF,LQ
@@ -65,7 +65,7 @@ CC
       external Pqqqq,Pqqqg,Pqggq,Pqggg,CqqPqq,CqqPqg,CqgPgq,CqgPgg
       external P2qqV,P2qqbV,P2qg,P2qqS
 
-      common/xmio/xmio
+      include 'xmio_inc.f'
       common/xx0/xx0
       common/qtcut/xqtcut
       common/nnlo/order 
