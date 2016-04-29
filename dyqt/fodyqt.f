@@ -15,22 +15,22 @@ c      integer i
       integer qtpts,iter,locall,nlocall,iord,flagch
       common/flagch/flagch
       common/nf/nf
-      common/scales2/xmur,xmuf,xmur2,xmuf2
-      common/order/iord
+      common/vjorder/iord
       common/isetproton/isetproton
       common/pdf/ih1,ih2
       common/nloop/nloop
       common/para/s,ss
-      double precision yv,expyp,expym
-      common/yv/yv,expyp,expym
-      common/internal/qt,q,q2
+c      common/internal/qt,q,q2
       common/couplings/xw,cw,sw,alpha0
       common/const2/pi,cf,ca,tr,xnc
       common/gevpb/gevpb
       common/prodflag/prodflag
       common/vegint/iter,locall,nlocall
       common/ckm/vud,vus,vub,vcd,vcs,vcb,vtd,vts,vtb
+      double precision amv, y1, y2, qtbis, gf, ppi, ssroot, sw2, aem,cw2
       common/cdyqt/amv,y1,y2,qtbis,gf,ppi,ssroot,sw2,aem,ic
+      include 'fodyqt_inc.f'
+      include 'internal_inc.f'
 
 c.....definition of constants and couplings
       ca=3d0
@@ -43,14 +43,14 @@ c.....definition of constants and couplings
       sw=sqrt(xw)                       ! sin_w ! 
       cw=sqrt(1-xw)                     ! cos_w !
 
-c.....read the input file
-      if(ic.eq.1) then
-         ih1=1                      !beam 1 @ LHC!
-         ih2=1                      !beam 2 @ LHC!
-      elseif(ic.eq.-1) then
-         ih1=1                      !beam 1 @ Tevatron!
-         ih2=-1                     !beam 2 @ Tevatron!
-      endif
+cc.....read the input file
+c      if(ic.eq.1) then
+c         ih1=1                      !beam 1 @ LHC!
+c         ih2=1                      !beam 2 @ LHC!
+c      elseif(ic.eq.-1) then
+c         ih1=1                      !beam 1 @ Tevatron!
+c         ih2=-1                     !beam 2 @ Tevatron!
+c      endif
       ss=ssroot
       s=ss**2
       q=amv
@@ -74,28 +74,31 @@ c      double precision ris,error,chi2a,y1,y2
       integer ord,iord,iwseed,ndim,nloop,n3,ncl3
       integer iter,locall,nlocall
       external xdelta,sing
-      common/asNEW/as
-      common/asp/asp
+c      common/asNEW/as
+c      common/asp/asp
       common/nf/nf
       common/nloop/nloop
-      common/scales2/xmur,xmuf,xmur2,xmuf2
+c      common/scales2/xmur,xmuf,xmur2,xmuf2
       common/rapidities/yy1,yy2
-      double precision yv,expyp,expym
-      common/yv/yv,expyp,expym
+c      double precision yv,expyp,expym
+c      common/yv/yv,expyp,expym
       common/isetproton/isetproton
       common/pdf/ih1,ih2
-      common/order/iord
+      common/vjorder/iord
       common/para/s,ss
-      common/tm/tm
-      common/internal/qt,q,q2
+c      common/tm/tm
+c      common/internal/qt,q,q2
       common/const2/pi,cf,ca,tr,xnc
-      common/mand/sh,th,uh,s2
+c      common/mand/sh,th,uh,s2
       common/gevpb/gevpb
       common/prodflag/prodflag
       integer flagch
       common/flagch/flagch
       common/vegint/iter,locall,nlocall
       common/couplings/xw,cw,sw,alpha0
+      include 'fodyqt_inc.f'
+      include 'scales2_inc.f'
+      include 'internal_inc.f'
 
       include 'gauss.f'
       integer i,j
@@ -115,7 +118,6 @@ c      double precision ris,error,chi2a,y1,y2
       
 !
       tm=sqrt(q2+qt**2)
-
 c.....y2 not greater than y1
       if(y1.gt.y2) then
          ris=0d0
@@ -317,6 +319,7 @@ c         print *,rsing
 c.....final result
       ris=rdelta+rsing
 c      print *,q,qt,yv,ris,error
+c      print *,q,qt,yv,rdelta,rsing
       return
       end
 
@@ -330,31 +333,35 @@ c************************************************************
       real *8 fh1(-5:5),fh2(-5:5)
       integer nf,ih1,ih2,ic,isetproton,nloop,ord,iord,prodflag
       integer flagch
-      common/asp/asp
+c      common/asp/asp
       common/nf/nf
-      common/scales2/xmur,xmuf,xmur2,xmuf2
+c      common/scales2/xmur,xmuf,xmur2,xmuf2
       common/rapidities/y1,y2
-      double precision yv,expyp,expym
-      common/yv/yv,expyp,expym
+c      double precision yv,expyp,expym
+c      common/yv/yv,expyp,expym
       common/isetproton/isetproton
       common/pdf/ih1,ih2
-      common/order/iord
+      common/vjorder/iord
       common/para/s,ss
-      common/tm/tm
-      common/fractions/x1,x2
-      common/internal/qt,q,q2
+c      common/tm/tm
+c      common/fractions/x1,x2
+c      common/internal/qt,q,q2
       common/const2/pi,cf,ca,tr,xnc
-      common/mand/sh,th,uh,s2
+c      common/mand/sh,th,uh,s2
       common/quarks/eq(5),alq(5),arq(5),ckm(6,6),delta(5,5),tau3(5,5)
       common/couplings/xw,cw,sw,alpha0
       common/gevpb/gevpb
       common/prodflag/prodflag
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
       common/flagch/flagch
       double precision ytot,expytotp,expytotm
+      include 'fodyqt_inc.f'
+      include 'internal_inc.f'
+      include 'luminosities_inc.f'
+      include 'scales2_inc.f'
 c...........................................................
 c.....definition of quantitites for phase space integration
 c...........................................................
@@ -371,12 +378,15 @@ c     endif
 
 c.....lower limit of integration for x2
       x2min=(q2-ss*tm*expym)/(ss*tm*expyp-s)
-
+c      print *,'x2min', q,qt,y,x2min
+c      print *,q2,ss,tm,expym,expyp,s
       if(x2min.gt.1d0.or.x2min.lt.0d0) then
          write(*,*) 'error in x2min'
          write(*,*) x2min
-         write(*,*) q,qt,yv
-         stop
+         write(*,*) 'm',q,'pt',qt,'y',yv
+         xdelta=0d0
+         return
+c         stop
       endif
 
 c.....change of variable to allow integration over 0-1
@@ -399,7 +409,8 @@ c.....imposing x1,x2<1
       
 c.....definition of partonic mandelstam invariants and jacobian      
       sh=x1*x2*s
-      
+c      print *,'x1 x2 s',q,qt,y,x1,x2,s
+c      print *,'q2, tm, sh',q,qt,y,sqrt(q2),tm,sh,q2/sh
 c     bug fix in DYqT: th <-> uh
 c      th=q2-ss*x2*tm*expyp
 c      uh=q2-ss*x1*tm*expym
@@ -443,6 +454,7 @@ c.....next to leading order delta(s2) contributions
      /        Cqqb1(sh,th,uh,q2)+D0aa(sh,th,uh,q2)+
      /        Bqqb3(sh,th,uh,q2)
      /        )
+
             if (flagch.eq.0) then
                xnlo=xnloqg+xnloqqb
             elseif (flagch.eq.1.or.flagch.eq.11.or.flagch.eq.12) then
@@ -470,30 +482,34 @@ c**********************************************************
       implicit real *8 (a-h,o-z)
       real *8 zz(1:2),lb
       integer nf,ih1,ih2,ic,isetproton,nloop,ord,iord,prodflag
-      common/asp/asp
+c      common/asp/asp
       common/nf/nf
-      common/scales2/xmur,xmuf,xmur2,xmuf2
+c      common/scales2/xmur,xmuf,xmur2,xmuf2
       common/rapidities/y1,y2
-      double precision yv,expyp,expym
-      common/yv/yv,expyp,expym
+c      double precision yv,expyp,expym
+c      common/yv/yv,expyp,expym
       common/isetproton/isetproton
       common/pdf/ih1,ih2
-      common/order/iord
+      common/vjorder/iord
       common/para/s,ss
-      common/tm/tm
-      common/fractions/x1,x2
-      common/internal/qt,q,q2
+c      common/tm/tm
+c      common/fractions/x1,x2
+c      common/internal/qt,q,q2
       common/const2/pi,cf,ca,tr,xnc
-      common/mand/sh,th,uh,s2
+c      common/mand/sh,th,uh,s2
       common/couplings/xw,cw,sw,alpha0
       common/gevpb/gevpb
       common/prodflag/prodflag
       integer flagch
       common/flagch/flagch
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
+      include 'fodyqt_inc.f'
+      include 'internal_inc.f'
+      include 'luminosities_inc.f'
+      include 'scales2_inc.f'
 
 c.....definition of quantitites for phase space integration
 c.....as defined in formula B.1 of Glosser-Schmidt paper (arXiv:hep-ph/0209248)
@@ -663,6 +679,7 @@ c     /        + EcdLR+EcdLRx !-DcdLL
          print *,'nan in xrqqb, s2 = ',s2
          xrqqb = 0d0
       endif
+c       print *,xreg,factor,sh,th,uh,q2,s2
 
 c.....(log(s2)/s2)_A+ contributions
          xsqg1=(factor/(xnc**2-1d0))*

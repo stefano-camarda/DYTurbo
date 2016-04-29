@@ -5,10 +5,11 @@ c**********************************************
 c.....Real contribution to QG->V+X
       function Aqg0(sh,th,uh,q2)
       implicit real *8 (a-h,o-z)
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
+      include 'luminosities_inc.f'
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
 
       temp=(-sh/th-th/sh-(2d0*uh*q2)/(sh*th))
       Aqg0=temp*xlumqg
@@ -19,10 +20,11 @@ c.....Real contribution to QG->V+X
 c.....Real contribution to GQ->V+X
       function Agq0(sh,th,uh,q2)
       implicit real *8 (a-h,o-z)
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
+      include 'luminosities_inc.f'
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
 
       temp=(-sh/uh-uh/sh-(2d0*th*q2)/(sh*uh))
       Agq0=temp*xlumgq
@@ -37,10 +39,11 @@ c**********************************************
 c.....Real contribution to QQB->V+X
       function Aqqb0(sh,th,uh,q2)
       implicit real *8 (a-h,o-z)
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
+      include 'luminosities_inc.f'
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
 
       temp=(uh/th+th/uh+(2d0*sh*q2)/(uh*th))
       Aqqb0=temp*xlumqqb
@@ -55,17 +58,19 @@ c******************************************************
 c.....Virtual (one-loop) contribution to QG->V+X
       function Bqg1(sh,th,uh,q2)
       implicit real *8 (a-h,o-z)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
       
       temp=(sh/th+th/sh+(2d0*uh*q2)/(sh*th))*
      /     (-8*cf-cf*fu**2-pi**2/3d0*(cf-ca)+
@@ -86,17 +91,19 @@ c.....Virtual (one-loop) contribution to QG->V+X
 c.....Virtual (one-loop) contribution to GQ->V+X
       function Bgq1(sh,th,uh,q2)
       implicit real *8 (a-h,o-z)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
       
       temp=(sh/uh+uh/sh+(2d0*th*q2)/(sh*uh))*
      /     (-8*cf-cf*ft**2-pi**2/3d0*(cf-ca)+
@@ -117,17 +124,19 @@ c.....Virtual (one-loop) contribution to GQ->V+X
 c.....Virtual (renormalization counterterm) contribution to QG->V+X
       function Bqg2(sh,th,uh,q2)
       implicit real *8 (a-h,o-z)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
       
       temp=(sh/th+th/sh+(2d0*uh*q2)/(sh*th))*fmu2/3d0*nf
       Bqg2=temp*xlumqg
@@ -138,17 +147,19 @@ c.....Virtual (renormalization counterterm) contribution to QG->V+X
 c.....Virtual (renormalization counterterm) contribution to GQ->V+X
       function Bgq2(sh,th,uh,q2)
       implicit real *8 (a-h,o-z)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
       
       temp=(sh/uh+uh/sh+(2d0*th*q2)/(sh*uh))*fmu2/3d0*nf
       Bgq2=temp*xlumgq
@@ -159,17 +170,19 @@ c.....Virtual (renormalization counterterm) contribution to GQ->V+X
 c.....Virtual (triangular quark loops) contribution to QG->V+X
       function Bqg3(sh,th,uh,q2)
       implicit real *8 (a-h,o-z)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
       
       temp=(uh+q2)/(uh-q2)*(1-(q2*fu)/(uh-q2))
       Bqg3=temp*xlumqgtr
@@ -180,17 +193,19 @@ c.....Virtual (triangular quark loops) contribution to QG->V+X
 c.....Virtual (triangular quark loops) contribution to GQ->V+X
       function Bgq3(sh,th,uh,q2)
       implicit real *8 (a-h,o-z)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
       
       temp=(th+q2)/(th-q2)*(1-(q2*ft)/(th-q2))
       Bgq3=temp*xlumgqtr
@@ -205,17 +220,19 @@ c********************************************************
 c.....Virtual (one-loop) contribution to QQB->V+X
       function Bqqb1(sh,th,uh,q2)
       implicit real *8 (a-h,o-z)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
       
       temp=(uh/th+th/uh+(2d0*sh*q2)/(uh*th))*
      /     (-8*cf-cf*fs**2+pi**2/6d0*(4*cf-ca)+
@@ -236,17 +253,19 @@ c.....Virtual (one-loop) contribution to QQB->V+X
 c.....Virtual (renormalization counterterm) contribution to QQB->V+X
       function Bqqb2(sh,th,uh,q2)
       implicit real *8 (a-h,o-z)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
       
       temp=-(uh/th+th/uh+(2d0*sh*q2)/(uh*th))*fmu2/3d0*nf
       Bqqb2=temp*xlumqqb
@@ -258,17 +277,19 @@ c.....Virtual (triangular quark loops) contribution to QQB->V+X
       function Bqqb3(sh,th,uh,q2)
       implicit real *8 (a-h,o-z)
       real *8 fh1(-5:5),fh2(-5:5)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
       
       temp=-(sh+q2)/(sh-q2)*(1-(q2*fs)/(sh-q2))
       Bqqb3=temp*xlumqqbtr
@@ -283,17 +304,19 @@ c***************************************************
 c.....First Real contribution to QG->VQG (proportional to delta(s2))
       function Cqg1(sh,th,uh,q2)
       implicit real *8 (a-h,o-z)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
       
       temp=(-sh/th-th/sh-(2d0*uh*q2)/(sh*th))*
      /     (cf*(7/2d0+2*fm2*(fu-fa)+fa**2-3/2d0*(fm2+fa))+
@@ -307,17 +330,19 @@ c.....First Real contribution to QG->VQG (proportional to delta(s2))
 c.....First Real contribution to GQ->VQG (proportional to delta(s2))
       function Cgq1(sh,th,uh,q2)
       implicit real *8 (a-h,o-z)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
       
       temp=(-sh/uh-uh/sh-(2d0*th*q2)/(sh*uh))*
      /     (cf*(7/2d0+2*fm2*(ft-fa)+fa**2-3/2d0*(fm2+fa))+
@@ -331,17 +356,19 @@ c.....First Real contribution to GQ->VQG (proportional to delta(s2))
 c.....Second Real contribution to QG->VQG (proportional to delta(s2))
       function Cqg2(sh,th,uh,q2)
       implicit real *8 (a-h,o-z)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
       
       temp=(-sh/th-th/sh-(2d0*uh*q2)/(sh*th))*fm2/3d0*nf
       Cqg2=temp*xlumqg
@@ -352,17 +379,19 @@ c.....Second Real contribution to QG->VQG (proportional to delta(s2))
 c.....Second Real contribution to GQ->VQG (proportional to delta(s2))
       function Cgq2(sh,th,uh,q2)
       implicit real *8 (a-h,o-z)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
       
       temp=(-sh/uh-uh/sh-(2d0*th*q2)/(sh*uh))*fm2/3d0*nf
       Cgq2=temp*xlumgq
@@ -373,18 +402,20 @@ c.....Second Real contribution to GQ->VQG (proportional to delta(s2))
 c.....Third Real contribution to QG->VQG (for nonzero values of s2)
       function Cqg3(sh,th,uh,q2,what)
       implicit real *8 (a-h,o-z)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton,what
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
-      common/recmass/s2
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
+c      common/recmass/s2
       
 c      s2=sh+th+uh-q2
 
@@ -459,18 +490,20 @@ c     regular term
 c.....Third Real contribution to GQ->VQG (for nonzero values of s2)
       function Cgq3(sh,th,uh,q2,what)
       implicit real *8 (a-h,o-z)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton,what
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
-      common/recmass/s2
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
+c      common/recmass/s2
       
 c      s2=sh+th+uh-q2
 
@@ -549,18 +582,20 @@ c****************************************
 c.....First Real contribution to GG->VQQB 
       function Cgg1(sh,th,uh,q2)
       implicit real *8 (a-h,o-z)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
-      common/recmass/s2
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
+c      common/recmass/s2
       
 c      s2=sh+th+uh-q2
 
@@ -596,18 +631,20 @@ c      s2=sh+th+uh-q2
 c.....Crossed Real contribution to GG->VQQB
       function Cgg1x(sh,th,uh,q2)
       implicit real *8 (a-h,o-z)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
-      common/recmass/s2
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
+c      common/recmass/s2
       
 c      s2=sh+th+uh-q2
 
@@ -647,17 +684,19 @@ c****************************************
 c.....First Real contribution to QQB->VGG (proportional to delta(s2))
       function Cqqb1(sh,th,uh,q2)
       implicit real *8 (a-h,o-z)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
       
       temp=(uh/th+th/uh+(2d0*sh*q2)/(uh*th))*
      /     (ca*(67/18d0-11*fa/6d0+fa**2)+cf*(2*ft+2*fu-4*fa-3)*fm2+
@@ -670,18 +709,20 @@ c.....First Real contribution to QQB->VGG (proportional to delta(s2))
 c.....Second Real contribution to QQB->VGG (for nonzero values of s2)
       function Cqqb2(sh,th,uh,q2,what)
       implicit real *8 (a-h,o-z)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton,what
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
-      common/recmass/s2
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
+c      common/recmass/s2
       
 c      s2=sh+th+uh-q2
       
@@ -709,25 +750,27 @@ c     regular term
       temp=temp1
       endif
       Cqqb2=temp*xlumqqb
-
+      if (Cqqb2.ne.Cqqb2) print *,'Cqqb2',what,s2,fs2
       return
       end
 
 c.....Crossed Second Real contribution to QQB->VGG (for nonzero values of s2)
       function Cqqb2x(sh,th,uh,q2,what)
       implicit real *8 (a-h,o-z)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton,what
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
-      common/recmass/s2
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
+c      common/recmass/s2
       
 c      s2=sh+th+uh-q2
 
@@ -766,17 +809,19 @@ c********************************************************
 c.....First Real contribution to QQB->VQQB
       function D0aa(sh,th,uh,q2)
       implicit real *8 (a-h,o-z)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
       
       temp=(uh/th+th/uh+(2d0*sh*q2)/(uh*th))*(fa/3d0-5/9d0)*nf
       D0aa=temp*xlumqqb
@@ -787,17 +832,19 @@ c.....First Real contribution to QQB->VQQB
 c.....Second Real contribution to QQB->VQQB
       function Daa(sh,th,uh,q2,what)
       implicit real *8 (a-h,o-z)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton,what
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
       
       if (what.eq.2) then
 c     term proportional to (1/s2)_A+
@@ -816,17 +863,19 @@ c     regular term
 c.....Second Real contribution to QQB->VQQB (crossed)
       function Daax(sh,th,uh,q2,what)
       implicit real *8 (a-h,o-z)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton,what
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
       
       if (what.eq.2) then
 c     term proportional to (1/s2)_A+
@@ -845,18 +894,20 @@ c     regular term
 c.....Third real (only for Z production) contribution to QQB->VQQB
       function Dab(sh,th,uh,q2)
       implicit real *8 (a-h,o-z)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
-      common/recmass/s2
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
+c      common/recmass/s2
       
 c      s2=sh+th+uh-q2
 
@@ -871,18 +922,20 @@ c      s2=sh+th+uh-q2
 c.....Third real (only for Z production) contribution to QQB->VQQB (crossed)
       function Dabx(sh,th,uh,q2)
       implicit real *8 (a-h,o-z)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
-      common/recmass/s2
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
+c      common/recmass/s2
       
 c      s2=sh+th+uh-q2
 
@@ -897,18 +950,20 @@ c      s2=sh+th+uh-q2
 c.....Fourth real contribution to QQB->VQQB
       function Dbb(sh,th,uh,q2)
       implicit real *8 (a-h,o-z)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
-      common/recmass/s2
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
+c      common/recmass/s2
       
 c      s2=sh+th+uh-q2
 
@@ -928,18 +983,20 @@ c      s2=sh+th+uh-q2
 c.....Fourth real contribution to QQB->VQQB (crossed)
       function Dbbx(sh,th,uh,q2)
       implicit real *8 (a-h,o-z)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
-      common/recmass/s2
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
+c      common/recmass/s2
       
 c      s2=sh+th+uh-q2
 
@@ -959,18 +1016,20 @@ c      s2=sh+th+uh-q2
 c.....Fifth real contribution to QQB->VQQB
       function Dac(sh,th,uh,q2)
       implicit real *8 (a-h,o-z)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
-      common/recmass/s2
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
+c      common/recmass/s2
       
 c      s2=sh+th+uh-q2
 
@@ -990,18 +1049,20 @@ c      s2=sh+th+uh-q2
 c.....Sixth real contribution to QQB->VQQB
       function Dbc(sh,th,uh,q2)
       implicit real *8 (a-h,o-z)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
-      common/recmass/s2
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
+c      common/recmass/s2
       
 c      s2=sh+th+uh-q2
 
@@ -1023,18 +1084,20 @@ c      s2=sh+th+uh-q2
 c.....Seventh real contribution to QQB->VQQB (Dac crossed)
       function Dad(sh,th,uh,q2)
       implicit real *8 (a-h,o-z)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
-      common/recmass/s2
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
+c      common/recmass/s2
       
 c      s2=sh+th+uh-q2
 
@@ -1055,18 +1118,20 @@ c.....Eigth real contribution to QQB->VQQB (Dbc crossed)
       function Dbd(sh,th,uh,q2)
       implicit real *8 (a-h,o-z)
       real *8 fh1(-5:5),fh2(-5:5)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
-      common/recmass/s2
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
+c      common/recmass/s2
       
 c      s2=sh+th+uh-q2
 
@@ -1088,18 +1153,20 @@ c      s2=sh+th+uh-q2
 c.....Nineth real contribution to QQB->VQQB
       function Dcc(sh,th,uh,q2)
       implicit real *8 (a-h,o-z)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
-      common/recmass/s2
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
+c      common/recmass/s2
       
 c      s2=sh+th+uh-q2
 
@@ -1118,18 +1185,20 @@ c      s2=sh+th+uh-q2
 c.....Tenth real contribution to QQB->VQQB (Dcc crossed)
       function Ddd(sh,th,uh,q2)
       implicit real *8 (a-h,o-z)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
-      common/recmass/s2
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
+c      common/recmass/s2
        
 c      s2=sh+th+uh-q2
 
@@ -1148,18 +1217,20 @@ c      s2=sh+th+uh-q2
 c.....Eleventh real contribution to QQB->VQQB (cd interference/same helicity)
       function DcdLL(sh,th,uh,q2)
       implicit real *8 (a-h,o-z)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
-      common/recmass/s2
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
+c      common/recmass/s2
       
 c      s2=sh+th+uh-q2
 
@@ -1177,18 +1248,20 @@ c      s2=sh+th+uh-q2
 c.....Eleventh real contribution to QQB->VQQB (crossed)
       function DcdLLx(sh,th,uh,q2)
       implicit real *8 (a-h,o-z)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
-      common/recmass/s2
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
+c      common/recmass/s2
       
 c      s2=sh+th+uh-q2
 
@@ -1207,18 +1280,20 @@ c      s2=sh+th+uh-q2
 c.....Twelth real contribution to QQB->VQQB (cd interference/different helicity)
       function DcdLR(sh,th,uh,q2)
       implicit real *8 (a-h,o-z)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
-      common/recmass/s2
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
+c      common/recmass/s2
       
 c      s2=sh+th+uh-q2
 
@@ -1233,18 +1308,20 @@ c      s2=sh+th+uh-q2
 c.....Twelth real contribution to QQB->VQQB (crossed)
       function DcdLRx(sh,th,uh,q2)
       implicit real *8 (a-h,o-z)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
-      common/recmass/s2
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
+c      common/recmass/s2
       
 c      s2=sh+th+uh-q2
 
@@ -1263,18 +1340,20 @@ c********************************************************
 c.....First contribution which is different from D functions
       function Eac(sh,th,uh,q2)
       implicit real *8 (a-h,o-z)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
-      common/recmass/s2
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
+c      common/recmass/s2
       
       temp=(cf-ca/2d0)*((fst+flat)*(4*dt*ds*sh**2/th-2*dt*(1-uh/th)-
      /     4/th)+4*q2/th**2*fst)
@@ -1286,18 +1365,20 @@ c.....First contribution which is different from D functions
 c.....Second contribution which is different from D functions
       function Ead(sh,th,uh,q2)
       implicit real *8 (a-h,o-z)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
-      common/recmass/s2
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
+c      common/recmass/s2
       
 c      s2=sh+th+uh-q2
 
@@ -1312,18 +1393,20 @@ c      s2=sh+th+uh-q2
 c.....Third contribution which is different from D functions (Eac crossed)
       function Ebd(sh,th,uh,q2)
       implicit real *8 (a-h,o-z)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
-      common/recmass/s2
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
+c      common/recmass/s2
       
       temp=(cf-ca/2d0)*((fsu+flau)*(4*du*ds*sh**2/uh-2*du*(1-th/uh)-
      /     4/uh)+4*q2/uh**2*fsu)
@@ -1335,18 +1418,20 @@ c.....Third contribution which is different from D functions (Eac crossed)
 c.....Fourth contribution which is different from D functions (Ead crossed)
       function Ebc(sh,th,uh,q2)
       implicit real *8 (a-h,o-z)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
-      common/recmass/s2
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
+c      common/recmass/s2
       
 c      s2=sh+th+uh-q2
 
@@ -1363,18 +1448,20 @@ c      s2=sh+th+uh-q2
 c.....Nineth real contribution to QQB->VQQB
       function Eaa(sh,th,uh,q2)
       implicit real *8 (a-h,o-z)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
-      common/recmass/s2
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
+c      common/recmass/s2
       
 c      s2=sh+th+uh-q2
 
@@ -1393,18 +1480,20 @@ c      s2=sh+th+uh-q2
 c.....Tenth real contribution to QQB->VQQB (Dcc crossed)
       function Ebb(sh,th,uh,q2)
       implicit real *8 (a-h,o-z)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
-      common/recmass/s2
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
+c      common/recmass/s2
        
 c      s2=sh+th+uh-q2
 
@@ -1422,18 +1511,20 @@ c      s2=sh+th+uh-q2
 c.....Eleventh real contribution to QQB->VQQB (cd interference/same helicity)
       function EabLR(sh,th,uh,q2)
       implicit real *8 (a-h,o-z)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
-      common/recmass/s2
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
+c      common/recmass/s2
       
 c      s2=sh+th+uh-q2
 
@@ -1451,18 +1542,20 @@ c      s2=sh+th+uh-q2
 c.....Eleventh real contribution to QQB->VQQB (crossed)
       function EabLRx(sh,th,uh,q2)
       implicit real *8 (a-h,o-z)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
-      common/recmass/s2
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
+c      common/recmass/s2
       
 c      s2=sh+th+uh-q2
 
@@ -1481,18 +1574,20 @@ c      s2=sh+th+uh-q2
 c.....Twelth real contribution to QQB->VQQB (cd interference/different helicity)
       function EabLL(sh,th,uh,q2)
       implicit real *8 (a-h,o-z)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
-      common/recmass/s2
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
+c      common/recmass/s2
       
 c      s2=sh+th+uh-q2
 
@@ -1507,18 +1602,20 @@ c      s2=sh+th+uh-q2
 c.....Twelth real contribution to QQB->VQQB (crossed)
       function EabLLx(sh,th,uh,q2)
       implicit real *8 (a-h,o-z)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
-      common/recmass/s2
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
+c      common/recmass/s2
       
 c      s2=sh+th+uh-q2
 
@@ -1535,18 +1632,20 @@ c      s2=sh+th+uh-q2
 c     Need to add missing contributions of Eq. (2.21) of [Gonsalves, Pawlowsky, Wai]
       function Ecc(sh,th,uh,q2)
       implicit real *8 (a-h,o-z)
-      real *8 la
+c      real *8 la
       integer prodflag,nf,ih1,ih2,isetproton
       common/nf/nf
       common/const2/pi,cf,ca,tr,xnc
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
-      common/recmass/s2
+      include 'functions_inc.f'
+      include 'luminosities_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
+c      common/recmass/s2
       
 c      s2=sh+th+uh-q2
 
@@ -1661,22 +1760,25 @@ c*************************************************************
 c.....Frequently occurring functions used in defining B,C,D,E
 c*************************************************************
 
-      subroutine utilities(sh,th,uh,q2,s2)
+      subroutine utilities(sh,th,uh,q2,ss2)
       implicit real *8 (a-h,o-z)
-      real *8 la,dyLI2
-      common/fractions/x1,x2
-      common/scales2/xmur,xmuf,xmur2,xmuf2
-      common/denominators/dt,du,ds,dst,dsu,dtu,la
-      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
-     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
-      common/recmass/ss2
-      
+      real *8 dyLI2
+c      common/fractions/x1,x2
+      include 'scales2_inc.f'
+c      common/scales2/xmur,xmuf,xmur2,xmuf2
+      include 'functions_inc.f'
+c      common/denominators/dt,du,ds,dst,dsu,dtu,la
+c      common/transcendentals/fs,ft,fu,fs2,fm2,fmu2,fa,fst,fsu,
+c     /     fla,fstu,ftu,flat,flau,f1t,f2t,f1u,f2u
+c      common/recmass/s2
+      INTEGER :: nthreads, myid
+      INTEGER, EXTERNAL :: OMP_GET_THREAD_NUM, OMP_GET_NUM_THREADS
 c     bug fix in DYqT: th <-> uh
 c      a=-th
       a=-uh
 
 c     pass s2 as a parameter to set it to 0 when appropriate, and improve numerical precision
-      ss2=s2
+      s2=ss2
 c      s2=sh+th+uh-q2
 c      if (s2.lt.1d-7) then
 c         s2=0d0
@@ -1695,7 +1797,9 @@ c.....transcendental functions
       fs=log(sh/q2)
       ft=log(-th/q2)
       fu=log(-uh/q2)
-      fs2=log(s2/q2)
+c      if (s2.eq.0) fs2 = 0d0
+c      else fs2=log(s2/q2)       !when s2 is 0, fs2 is infinity!
+         fs2=log(s2/q2)
       fm2=log(xmuf2/q2)
       fmu2=log(xmur2/q2)
       fa=log(a/q2)
@@ -1707,9 +1811,14 @@ c.....transcendental functions
       flat=log(sh*q2*(s2-th)**2/(s2*(2*q2-uh)-q2*th)**2)
       flau=log(sh*q2*(s2-uh)**2/(s2*(2*q2-th)-q2*uh)**2)
       f1t=dyLI2(q2/(q2-th))+1d0/2d0*(log(q2/(q2-th)))**2
-      f2t=dyLI2(q2/sh)+1/2d0*fs**2+fs*log(-th/(sh-q2))
+      f2t=dyLI2(q2/sh)+1d0/2d0*fs**2+fs*log(-th/(sh-q2))
       f1u=dyLI2(q2/(q2-uh))+1d0/2d0*(log(q2/(q2-uh)))**2
       f2u=dyLI2(q2/sh)+1d0/2d0*fs**2+fs*log(-uh/(sh-q2))
-
+!      print *,OMP_GET_THREAD_NUM(),'mand',sh,uh,th,q2,s2
+!      print *,OMP_GET_THREAD_NUM(),'dens',dt,du,ds,dst,dsu,dtu
+!      print *,OMP_GET_THREAD_NUM(),'trans1',fs,ft,fu,fs2,fm2,fmu2,fa
+!      print *,OMP_GET_THREAD_NUM(),'trans2',fst,fsu,fla,fstu,ftu,flat,flau
+!      print *,OMP_GET_THREAD_NUM(),'dilog',f1t,f2t,f1u,f2u
+!      print *,OMP_GET_THREAD_NUM(),'s',s2,q2,s2,q2,fs2,sh,fs,f1t
       return
       end

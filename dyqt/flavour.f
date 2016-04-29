@@ -51,21 +51,25 @@ c      fx(5)=0d0
       implicit real *8 (a-h,o-z)
       real *8 fh1(-5:5),fh2(-5:5),sumckm(5)
       integer nf,ih1,ih2,ic,isetproton,nloop,ord,prodflag
-      common/scales2/xmur,xmuf,xmur2,xmuf2
+      include 'scales2_inc.f'
+c      common/scales2/xmur,xmuf,xmur2,xmuf2
       common/isetproton/isetproton
       common/pdf/ih1,ih2
       common/nf/nf
-      common/fractions/x1,x2
+c      common/fractions/x1,x2
+      include 'internal_inc.f'
       common/quarks/eq(5),alq(5),arq(5),ckm(6,6),delta(5,5),tau3(5,5)
       common/couplings/xw,cw,sw,alpha0
       common/prodflag/prodflag
-      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
-     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
-     /     xlumqqLL,xlumqqLR
+      include 'luminosities_inc.f'
+c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
+c     /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
+c     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+c     /     xlumqqLL,xlumqqLR
       common/flagfit/flagfit
-      real *8 siggamma,sigint,sigz,sigw
-      common/sigs/siggamma,sigint,sigz,sigw
+      include 'fodyqt_inc.f'
+c      real *8 siggamma,sigint,sigz,sigw
+c      common/sigs/siggamma,sigint,sigz,sigw
             call partons(xmuf2,x1,fh1,nf,isetproton,ih1)
             call partons(xmuf2,x2,fh2,nf,isetproton,ih2)
 c      print *,x1,sqrt(xmuf2),fh1(-1),fh1(-2),fh1(-3),fh1(-4),fh1(-5)
