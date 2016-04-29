@@ -4,6 +4,7 @@
 #include "interface.h"
 #include "switch.h"
 #include "resint.h"
+#include "rapint.h"
 //#include "plotter.h"
 
 #include <math.h>

@@ -6,6 +6,7 @@
 #include "ctintegr.h"
 #include "cubacall.h"
 #include "plotter.h"
+#include "rapint.h"
 #include "clock_real.h"
 
 #include <iostream>

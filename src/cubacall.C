@@ -155,14 +155,31 @@ void vjintegr3d(double &res, double &err)
   const int maxeval = 127+2*127*opts.niterVJ;
   const int key = 13;
   int nregions;
-  Cuhre(ndim, ncomp,
-	(integrand_t) vjintegrand, userdata, nvec,
-	epsrel, epsabs,
-	flags,
-	mineval, maxeval,
-	key, statefile, NULL,
-	&nregions, &neval, &fail,
-  	integral, error, prob);
+  if (!opts.pcubature)
+    Cuhre(ndim, ncomp,
+	  (integrand_t) vjintegrand, userdata, nvec,
+	  epsrel, epsabs,
+	  flags,
+	  mineval, maxeval,
+	  key, statefile, NULL,
+	  &nregions, &neval, &fail,
+	  integral, error, prob);
+  else
+    {
+      const int eval = 0;
+      const double epsrel = opts.pcubaccuracy;
+      const double epsabs = 0.;
+      double xmin[3] = {0, 0, 0};
+      double xmax[3] = {1, 1, 1};
+      if (opts.cubacores == 0)
+	pcubature(ncomp, vjintegrand_cubature, userdata, 
+		  ndim, xmin, xmax, 
+		  eval, epsabs, epsrel, ERROR_INDIVIDUAL, integral, error);
+      else
+	pcubature_v(ncomp, vjintegrand_cubature_v, userdata, 
+		    ndim, xmin, xmax, 
+		    eval, epsabs, epsrel, ERROR_INDIVIDUAL, integral, error);
+    }
 
   res = integral[0];
   err = error[0];

@@ -1,7 +1,6 @@
 #ifndef interface_h
 #define interface_h
 
-#include "rapint.h"
 #include "fcomplex.h"
 
 #include <complex>
@@ -26,8 +25,6 @@ extern "C" {
   void rescinit_();
 
   //C++ rewritten resummation
-  inline void rapint_cache_(double& ymin, double& ymax) {rapint::cache(ymin, ymax);};
-  inline void rapint_integrate_(double& ymin, double& ymax, double& m) {rapint::integrate(ymin, ymax, m);};
   void setmesq_expy_(int& mode, double& m, double& costh, double& y);
   void pdfevol_(int& i1, int& i2, int& sign);
   void mellinint_pdf_mesq_expy_(int& i1, int& i2, int& sign);

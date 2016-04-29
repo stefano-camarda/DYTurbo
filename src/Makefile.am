@@ -3,6 +3,7 @@ AM_CPPFLAGS = -fpermissive \
 	-I$(srcdir)/../include \
 	-I$(srcdir)/../dequad \
 	-I$(srcdir)/../resum \
+	-I$(srcdir)/../vjfo \
 	-I$(srcdir)/../cubature \
 	-Wl,Bstatic \
 	$(CUBA_CPPFLAGS) $(LHAPDF_CPPFLAGS) \
@@ -13,7 +14,7 @@ AM_FFLAGS =  -I$(srcdir)/../dyres \
 
 noinst_LTLIBRARIES = libdyturbobase.la
 libdyturbobase_la_SOURCES = resintegr.C ctintegr.C finintegr.C integr.C settings.C init.C cubacall.C plotter.C switch.C cuts.C usercuts.C pdf.C printsettings.C coupling.C clock_real.C banner.C
-libdyturbobase_la_SOURCES += flavreduce.f gaussinit.f rescinit.f pdfmoments.f vjfo.f
+libdyturbobase_la_SOURCES += flavreduce.f gaussinit.f rescinit.f pdfmoments.f
 libdyturbobase_la_SOURCES += AiMoments.cxx TLVUtils.cxx
 
 lib_LTLIBRARIES = libdyturbo.la
@@ -22,6 +23,7 @@ libdyturbo_la_LIBADD = libdyturbobase.la \
 	../integrands/libintegrands.la \
 	../resum/libresum.la \
 	../counterterm/libcounterterm.la \
+	../vjfo/libvjfo.la \
 	../dynnlo/libdynnlo.la \
 	../dyres/libdyres.la \
 	../mcfm/libmcfm.la \

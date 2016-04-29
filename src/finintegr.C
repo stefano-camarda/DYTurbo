@@ -2,6 +2,7 @@
 #include "finintegr.h"
 #include "integr.h"
 #include "settings.h"
+#include "vjint.h"
 
 #include <iostream>
 #include <iomanip>
@@ -11,11 +12,40 @@
 
 using namespace std;
 
+int vjintegrand_cubature_v(unsigned ndim, long unsigned npts, const double x[], void *data, unsigned ncomp, double f[])
+{
+  //  cout << "parallel " << npts << endl;
+#pragma omp parallel for num_threads(opts.cubacores) copyin(scale_,facscale_,qcdcouple_)
+  for (unsigned i = 0; i < npts; i++)
+    {
+      // evaluate the integrand for npts points
+      double xi[ndim];
+      double fi[ncomp];
+      for (unsigned j = 0; j < ndim; j++)
+	xi[j] = x[i*ndim + j];
+
+      vjintegrand(ndim, xi, ncomp, fi);
+      
+      for (unsigned k = 0; k < ncomp; ++k)
+	f[i*ncomp + k] = fi[k];
+    }
+  return 0;
+}
+
+int vjintegrand_cubature(unsigned ndim, const double x[], void *data, unsigned ncomp, double f[])
+{
+  vjintegrand(ndim, x, ncomp, f);
+  return 0;
+}
+
+
 integrand_t vjintegrand(const int &ndim, const double x[], const int &ncomp, double f[])
 //Generates the phase space 4 vectors
-//Calculates the V+j NLO integrand as a function of m, qt, integrated between ymin and ymax
+//Calculates the V+j LO/NLO integrand as a function of m, qt, and y
 //dOmega integration is already performed in the integrand
+//works only without cuts on the leptons
 {
+  //  cout << x[0] << "  " << x[1] << "  " << x[2] << endl;
   clock_t begin_time, end_time;
 
   begin_time = clock();
@@ -29,7 +59,7 @@ integrand_t vjintegrand(const int &ndim, const double x[], const int &ncomp, dou
   double wsqmax = pow(min(mmax,mcut),2);
   if (wsqmin >= wsqmax)
     {
-      f[0]=0.;
+      f[0] = 0.;
       return 0;
     }
   double x1=x[0];
@@ -49,7 +79,7 @@ integrand_t vjintegrand(const int &ndim, const double x[], const int &ncomp, dou
   double xr=pow((1-z),2)-4*z*pow(qt/q,2);
   if (xr < 0)
     {
-      f[0]=0.;
+      f[0] = 0.;
       return 0;
     }
   
@@ -63,7 +93,7 @@ integrand_t vjintegrand(const int &ndim, const double x[], const int &ncomp, dou
   double ymx = max(min(ylim, ymax),-ylim);
   if (ymn >= ymx)
     {
-      f[0]=0.;
+      f[0] = 0.;
       return 0;
     }
 
@@ -77,11 +107,11 @@ integrand_t vjintegrand(const int &ndim, const double x[], const int &ncomp, dou
   double qtcut = qtcut_.xqtcut_*m;
   double qtmn = max(qtcut, qtmin);
   double cosh2y34=pow((exp(y)+exp(-y))*0.5,2);
-  double kinqtlim = sqrt(pow(pow(energy_.sroot_,2)+m*m,2)/(4*pow(energy_.sroot_,2)*cosh2y34)-m*m);
+  double kinqtlim = sqrt(max(0.,pow(pow(energy_.sroot_,2)+m*m,2)/(4*pow(energy_.sroot_,2)*cosh2y34)-m*m)); //introduced max to avoid neqative argument of sqrt when y=ymax
   double qtmx = min(kinqtlim, qtmax);
   if (qtmn >= qtmx)
     {
-      f[0]=0.;
+      f[0] = 0.;
       return 0;
     }
   double qtmn2 = pow(qtmn,2);
@@ -100,12 +130,14 @@ integrand_t vjintegrand(const int &ndim, const double x[], const int &ncomp, dou
   //  double qt=qtmn+(qtmx-qtmn)*x[2];
   //  jac=jac*(qtmax-qtmn);
 
-  
   //evaluate the Vj (N)LO cross section
-  f[0]=vjfo_(m,qt,y);
+  if (opts.pcubature)
+    f[0] = vjint::vint(m,qt,y);
+  else
+    f[0] = vjfo_(m,qt,y);
 
   if (f[0] != f[0])
-    f[0]=0.;  //avoid nans
+    f[0] = 0.;  //avoid nans
 	   
   f[0] = f[0]*jac;
 

@@ -13,6 +13,7 @@
 #include "resconst.h"
 #include "anomalous.h"
 #include "resint.h"
+#include "vjint.h"
 #include "switch.h"
 #include "plotter.h"
 #include "printsettings.h"
@@ -242,6 +243,10 @@ void dyturboinit(string conf_file)
   resint::init(); //initialise dequad integration for the bessel integral
   //end C++ resum
 
+  //V+j fixed order initialisation
+  vjint::init();
+  
+  //switching function initialisation
   switching::init();
   rescinit_();
   //bins.init();

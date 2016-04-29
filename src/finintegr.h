@@ -8,6 +8,9 @@ integrand_t realintegrand (const int &ndim, const double x[], const int &ncomp, 
 integrand_t virtintegrand (const int &ndim, const double x[], const int &ncomp, double f[], void* userdata, const int &nvec, const int &core, double &weight, const int &iter);
 integrand_t doublevirtintegrand(const int &ndim, const double x[], const int &ncomp, double f[], void* userdata, const int &nvec, const int &core, double &weight, const int &iter);
 
+int vjintegrand_cubature_v(unsigned ndim, long unsigned npts, const double x[], void *data, unsigned ncomp, double f[]);
+int vjintegrand_cubature(unsigned ndim, const double x[], void *data, unsigned ncomp, double f[]);
+
 extern "C" {
   double lowint_(double r[22], double &wgt, double f[]);
   double realint_(double r[22], double &wgt, double f[]);
