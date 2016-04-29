@@ -189,6 +189,7 @@ AC_CONFIG_FILES([Makefile
 	 	 src/Makefile
  	 	 resum/Makefile
 		 counterterm/Makefile
+		 vjfo/Makefile
 		 integrands/Makefile
 		 dyres/Makefile
 		 dynnlo/Makefile

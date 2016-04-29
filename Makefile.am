@@ -1,6 +1,6 @@
 ACLOCAL_AMFLAGS=-I m4
 #add cuba to SUBDIRS to ship cuba
-SUBDIRS = cernlib ancont pegasus cubature dequad dyres dynnlo dyqt mcfm integrands resum counterterm src
+SUBDIRS = cernlib ancont pegasus cubature dequad dyres dynnlo dyqt mcfm integrands resum counterterm vjfo src
 
 #add test directories if enabled
 if HAVE_TEST
@@ -11,7 +11,7 @@ SUBDIRS += origdyres
 endif
 
 #do not ditribute test directories
-DIST_SUBDIRS = cernlib ancont pegasus cubature dequad dyres dynnlo dyqt mcfm integrands resum counterterm src
+DIST_SUBDIRS = cernlib ancont pegasus cubature dequad dyres dynnlo dyqt mcfm integrands resum counterterm vjfo src
 
 dist_bin_SCRIPTS = install-cuba install-lhapdf
 EXTRA_DIST = README.md
