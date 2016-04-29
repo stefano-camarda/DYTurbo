@@ -12,6 +12,8 @@
 #include "resint.h"
 #include "resconst.h"
 #include "besselint.h"
+#include "mellinint.h"
+#include "settings.h"
 #include "LHAPDF/LHAPDF.h"
 
 int pegasus::nff;

@@ -1,5 +1,6 @@
 #include "pdfevol.h"
 #include "interface.h"
+#include "settings.h"
 #include "mesq.h"
 #include "anomalous.h"
 #include "resconst.h"

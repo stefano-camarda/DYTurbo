@@ -32,4 +32,11 @@ namespace rapint
   {return i2 + mellinint::mdim*(i1 + mellinint::mdim*(j + opts.yrule*i));}
 }
 
+extern "C"
+{
+  inline void rapint_cache_(double& ymin, double& ymax) {rapint::cache(ymin, ymax);};
+  inline void rapint_integrate_(double& ymin, double& ymax, double& m) {rapint::integrate(ymin, ymax, m);};
+}
+
+
 #endif
