@@ -238,14 +238,14 @@ c     initialise
          rsing = 0d0
 
 c     boundaries of integration      
-         z1min = 1D-12
+         z1min = 1D-8
          z1max = 1d0
       
          z1intervals=1
          z1rule=64
 
 c     boundaries of integration      
-         z2min = 1D-15
+         z2min = 1D-8
          z2max = 1d0
 
          z2intervals=1

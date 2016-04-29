@@ -169,8 +169,8 @@ void vjintegr3d(double &res, double &err)
       const int eval = 0;
       const double epsrel = opts.pcubaccuracy;
       const double epsabs = 0.;
-      double xmin[3] = {0, 0, 0};
-      double xmax[3] = {1, 1, 1};
+      double xmin[3] = {0, 0.0001, 0.0001};
+      double xmax[3] = {1, 0.9999, 0.9999};
       if (opts.cubacores == 0)
 	pcubature(ncomp, vjintegrand_cubature, userdata, 
 		  ndim, xmin, xmax, 
