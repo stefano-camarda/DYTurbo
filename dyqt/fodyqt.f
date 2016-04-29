@@ -601,9 +601,12 @@ c      print *,'s2',s2,sh+uh+th-q2
       
 c.....imposing s2>0
       if(s2.lt.0) then
-         write(*,*)'s2 < 0 !'
-         print *,z1,z2,x1,x2,sh,th,uh
-       stop
+         write(*,*)'s2 < 0 ! s2 =',s2
+         print *,'z1',z1,'z2',z2,'x1',x1,'x2',x2,'sh',sh,'th',th,'uh',uh
+         write(*,*) 'm',q,'pt',qt,'y',yv
+         xdelta=0d0
+         return
+c       stop
       endif
 
 c.....phase space prefactor
@@ -621,6 +624,8 @@ c.....imposing x1,x2 < 1
          reg=0d0
          xspur=0d0
          xm10=0
+         xdelta=0d0
+         return
       else
 
 c.....compute parton luminosity
