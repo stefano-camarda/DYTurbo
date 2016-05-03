@@ -14,6 +14,9 @@ PRUN(){
     jobname=$1
     njobs=$2
 
+    if [[ $target =~ compile ]]
+    then
+
 prun \
 --bexec "chmod 777 compile_grid.sh; ./compile_grid.sh  $DYTURBOVERSION;" \
 --exec "chmod 777 run_grid.sh; ./run_grid.sh ${jobname} %RNDM:800000 ;" \
@@ -26,5 +29,23 @@ prun \
 --nGBPerJob=MAX \
 --rootVer=6.04.14 --cmtConfig=x86_64-slc6-gcc49-opt \
 --official --voms atlas:/atlas/perf-jets/Role=production
+
+    else
+
+prun \
+--exec "chmod 777 run_grid.sh; ./run_grid.sh ${jobname} %RNDM:800000 ;" \
+--nJobs $njobs \
+--maxFileSize=20000000 \
+--cloud CERN \
+--outDS user.${CERNUSER}.${jobname}_${gridv}/ \
+--outputs results_merge.root \
+--noCompile \
+--tmpDir /tmp/${CERNUSER} \
+--nGBPerJob=MAX \
+--rootVer=6.04.14 --cmtConfig=x86_64-slc6-gcc49-opt \
+--official --voms atlas:/atlas/perf-jets/Role=production
+
+    fi
 }
+
 

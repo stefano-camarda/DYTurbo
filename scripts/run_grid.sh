@@ -17,16 +17,21 @@ sed -i "s|= seed|= 1$random_seed|g        " input.in
 # setup ENV
 export ATLAS_LOCAL_ROOT_BASE=/cvmfs/atlas.cern.ch/repo/ATLASLocalRootBase
 source ${ATLAS_LOCAL_ROOT_BASE}/user/atlasLocalSetup.sh
-# LHAPDF and ROOT
+# ROOT
 lsetup "root 6.04.14-x86_64-slc6-gcc49-opt"
-lsetup "sft releases/MCGenerators/lhapdf/6.1.5-2f446"
 
-lhapdf-config --version || exit 2
-
-# own lhapdf set
-export LHAPDF_DATA_PATH=./
-# official sets
-export LHAPDF_DATA_PATH=/cvmfs/sft.cern.ch/lcg/external/lhapdfsets/current/
+# LHAPDF
+if [[ SETTARGET =~ compile ]]
+then
+    # setup sft
+    lsetup "sft releases/MCGenerators/lhapdf/6.1.5-2f446"
+    lhapdf-config --version || exit 2
+    # official sets
+    export LHAPDF_DATA_PATH=/cvmfs/sft.cern.ch/lcg/external/lhapdfsets/current/
+else
+    # own lhapdf set
+    export LHAPDF_DATA_PATH=./LHAPDF
+fi
 export LHAPATH=$LHAPDF_DATA_PATH
 # dyturbo libs
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:./lib

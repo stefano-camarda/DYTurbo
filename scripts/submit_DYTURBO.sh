@@ -276,6 +276,7 @@ prepare_in(){
             s|SETQTRECNAIVE|$qtrec_naive|g   ;
             s|SETQTRECCS|$qtrec_cs|g         ;
             s|SETQTRECKT0|$qtrec_kt0|g       ;
+            s|SETEVOLMODE|$evolmode|g        ;
             s|SETPDFERRORS|$setPDFerrors|g   ;
             s|SETSROOT|$sroot|g              ; " tmp
     mv tmp $in_file
@@ -289,11 +290,27 @@ splitBins(){
 prepare_tarbal(){
     gridv=v`date +%s`
     DYTURBOVERSION=`grep PACKAGE_VERSION config.h | cut -d\" -f2`
-    echo "Making a tarbal.. please wait"
-    if ! make dist > /dev/null
+    if [[ $target =~ compile ]]
     then
-        echo "Compilation problem.. exiting."
-        exit 3
+        echo "Making a tarbal.. please wait"
+        if ! make dist > /dev/null
+        then
+            echo "Compilation problem.. Try to 'make install'. I am exiting."
+            exit 3
+        fi
+    else
+        echo "Making a executable... please wait"
+        if ! make install > /dev/null
+        then
+            echo "Compilation problem.. Try to 'make install'. I am exiting."
+            exit 3
+        fi
+        # test the lhapdf
+        PATH=$PATH:lhapdf6/bin
+        if ! lhapdf-config --prefix > /dev/null
+        then
+            echo Please setup LHAPDF
+        fi
     fi
     #tarbalfile=$in_files_dir/${program}_${pdfset}_${gridv}.tar
     #exclude="-X scripts/excl" #'--exclude="*.o" --exclude="*.lo" --exclude="*.Po" --exclude="*.Plo" --exclude="*.deps*" --exclude="*.a" --exclude="*.pdf"'
@@ -313,8 +330,9 @@ prepare_tarbal(){
     cat  scripts/run_prun.sh              >  scripts/grid_submit.cmd
     echo ""                               >> scripts/grid_submit.cmd
     echo "gridv=$gridv"                   >> scripts/grid_submit.cmd
-    echo "CERNUSER=$USER"                   >> scripts/grid_submit.cmd
+    echo "CERNUSER=$USER"                 >> scripts/grid_submit.cmd
     echo "DYTURBOVERSION=$DYTURBOVERSION" >> scripts/grid_submit.cmd
+    echo "target=$target"                 >> scripts/grid_submit.cmd
     echo ""                               >> scripts/grid_submit.cmd
     # clear submistion dir
     rm -rf GRID/*
@@ -325,13 +343,30 @@ finalize_grid_submission(){
     CP="rsync -a"
     #echo "compressing... $tarbalfile"
     #gzip $tarbalfile
-    $CP dyturbo-${DYTURBOVERSION}.tar.gz GRID/
+    if [[ $target =~ compile ]]
+    then
+        # put source code
+        $CP dyturbo-${DYTURBOVERSION}.tar.gz GRID/
+    else
+        # prepare folders
+        mkdir -p GRID/bin
+        mkdir -p GRID/lib
+        mkdir -p GRID/LHAPDF
+        # copy exec
+        $CP bin/* GRID/bin/
+        $CP lib/* GRID/lib/
+        # copy pdfset
+        lhapdfdir=`lhapdf-config --datadir`
+        $CP $lhapdfdir/$pdfset GRID/LHAPDF
+        $CP $lhapdfdir/lhapdf.conf GRID/LHAPDF
+        $CP $lhapdfdir/pdfsets.index GRID/LHAPDF
+    fi
     # submision scripts
     cat scripts/grid_submit.cmd > GRID/subm.sh
     chmod +x GRID/subm.sh
     # on-site scripts
-    $CP scripts/compile_grid.sh GRID/
-    $CP scripts/run_grid.sh GRID/
+    sed "s|SETTARGET|$target|g" scripts/compile_grid.sh > GRID/compile_grid.sh
+    sed "s|SETTARGET|$target|g" scripts/run_grid.sh     > GRID/run_grid.sh
     $CP input/default.in GRID/
     #
     ls -hla --color=auto GRID
@@ -888,7 +923,7 @@ submit_parsed(){
                                 # submit
                                 prepare_script
                                 [[ $target == mogon ]] &&  submit_job
-                                [[ $target == grid ]]  && add_to_tarbal && submit_job2grid
+                                [[ $target =~ grid ]]  && add_to_tarbal && submit_job2grid
                             done
                         done
                     done
@@ -897,7 +932,7 @@ submit_parsed(){
         done
     done
 
-    [[ $target == grid ]] && finalize_grid_submission
+    [[ $target =~ grid ]] && finalize_grid_submission
 }
 
 submit_Benchmark(){
@@ -999,7 +1034,8 @@ USAGE: ./scripts/submit_DYTURBO.sh --target [settings]
 
   Targets:
     --local         Prepare for run localy.
-    --grid          Prepare grid submission directory.
+    --grid          Prepare grid submission directory (compilation on local)
+    --grid-compile  Prepare grid submission directory (compilation on grid)
     --mogon         Prepare standard scripts for mogon (Mainz cluster).
     --help          Print this help and die.
 
@@ -1020,10 +1056,11 @@ USAGE: ./scripts/submit_DYTURBO.sh --target [settings]
     --lepcutPt [20.0]      {float}                This will turn on make lepton cuts and set pt>ptcut
     --lepcutY  [2.5]       {float}                This will turn on make lepton cuts and set absY>ycut
     --seeds    [1000]      {int}                  Set range (for mogon) or Njobs (grid)
+    --evolmode [0]         {0,1,2,3}              Set evolmode
 
-    most of then can used with comma separation.
+    many of then can be set with comma separation.
 
-    Binning is automatic and it follow AiMoment histogram definition. (Except is also negative in eta)
+    Binning is automatic and it follow AiMoment histogram definition (eta, has also negative bins).
 
     Example:
 
@@ -1044,6 +1081,7 @@ parse_inputs(){
     lepPtCut=20.
     lepYCut=2.5
     termlist=RES3D
+    evolmode=0
     gpar=1.0
     seedlist=1000
     batch_template=$dyturbo_project/scripts/run_DYTURBO_Array_TMPL.sh
@@ -1059,6 +1097,9 @@ parse_inputs(){
                 ;;
             --grid)
                 target=grid
+                ;;
+            --grid-compile)
+                target=grid-compile
                 ;;
             --mogon)
                 target=mogon
@@ -1104,6 +1145,10 @@ parse_inputs(){
             --lepcutY)
                 makelepcuts=true
                 lepYCut=$2
+                shift
+                ;;
+            --evolmode)
+                evolmode=$2
                 shift
                 ;;
             #  HELP and OTHER
