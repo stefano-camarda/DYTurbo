@@ -12,6 +12,8 @@
 #include "finitemapping.h"
 #include "printsettings.h"
 #include "resint.h"
+#include "rapint.h"
+
 
 using namespace std;
 
