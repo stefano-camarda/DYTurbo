@@ -96,25 +96,25 @@ make && make install
 
 ## Merge program description
  - To print basic usage just run with help argument
- ```
- [user@host DYTURBO]$ ./bin/merger -h
- usage: -h [-h] [-v] [-x]  <output> <input list>
-  Please keep separated switches!!! Its on my todolist! 
-     -x    Normalize histograms to Xsection. 
-     -v    Increase verbosity (very chatty). 
-     -h    Print this help message. 
 
-  For more info read README.md
-  ./bin/merger --help
-  usage: --help [-h] [-v] [-x]  <output> <input list>
-   Please keep separated switches!!! Its on my todolist! 
-      -x    Normalize histograms to Xsection. 
-      -v    Increase verbosity (very chatty). 
-      -2d   Make 2d projections and outliers for 2D. 
-      -h    Print this help message. 
+         [user@host DYTURBO]$ ./bin/merger -h
+         usage: -h [-h] [-v] [-x]  <output> <input list>
+          Please keep separated switches!!! Its on my todolist! 
+             -x    Normalize histograms to Xsection. 
+             -v    Increase verbosity (very chatty). 
+             -h    Print this help message. 
 
-  For more info read README.md
- ```
+          For more info read README.md
+          ./bin/merger --help
+          usage: --help [-h] [-v] [-x]  <output> <input list>
+           Please keep separated switches!!! Its on my todolist! 
+              -x    Normalize histograms to Xsection. 
+              -v    Increase verbosity (very chatty). 
+              -2d   Make 2d projections and outliers for 2D. 
+              -h    Print this help message. 
+
+          For more info read README.md
+
 
 ### Detailed description
 
@@ -151,20 +151,16 @@ make && make install
   from all merged files `j`, per each bin `i`
 - we calculate chi-square from denominator
 
-  ```
-            (sum(w_ij)-sumhat(w_i))**2
-  chi2_ij = --------------------------
-             (delta (sum(w_ij)) )**2
-  ```
+                    (sum(w_ij)-sumhat(w_i))**2
+          chi2_ij = --------------------------
+                     (delta (sum(w_ij)) )**2
 
 - then we decide about outlier by `Prob(chi2_ij,1) > 7 sigma ` throw away
 - from the rest we get files with indexes `l`
 - final `outlier` profile values terms are: 
 
-  ```
-  sum(w_i*y_i) = sum(w_il*y_il) / N_i
-  sum(w_i) = sum(w_il) / N_i
-  ```
+          sum(w_i*y_i) = sum(w_il*y_il) / N_i
+          sum(w_i) = sum(w_il) / N_i
 
   where `N_i` is number of jobs contributing to bin `i`.
 - the `TProfile` is then created with hard-set of above values
@@ -179,6 +175,12 @@ submit jobs to any batch system. If you need help, please run:
 Or contact me [Jakub.Cuth@cern.ch]. An example for grid is here
 
     ./scripts/submit_DYTURBO.sh --grid --proc wp,wm,z0 --collider lhc7 --order 2 --term RES,CT,REAL,VIRT --pdfvar all
+
+Dont forget to configure and compile before submiting
+
+    ./configure --enable-Ofast --enable-root
+    make -j
+    make install
 
 
 There are several grid related scripts in `scripts` folder, which you can edit for your need 
