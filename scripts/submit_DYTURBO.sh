@@ -355,6 +355,7 @@ finalize_grid_submission(){
         # copy exec
         $CP bin/* GRID/bin/
         $CP lib/* GRID/lib/
+        $CP `lhapdf-config --libdir`/libLHAPDF.so GRID/lib/
         # copy pdfset
         lhapdfdir=`lhapdf-config --datadir`
         $CP $lhapdfdir/$pdfset GRID/LHAPDF
