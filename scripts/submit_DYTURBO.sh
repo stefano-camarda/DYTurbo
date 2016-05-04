@@ -334,6 +334,9 @@ prepare_tarbal(){
     echo "DYTURBOVERSION=$DYTURBOVERSION" >> scripts/grid_submit.cmd
     echo "target=$target"                 >> scripts/grid_submit.cmd
     echo ""                               >> scripts/grid_submit.cmd
+    echo "# Setup rucio and panda "       >> scripts/grid_submit.cmd
+    echo "# lsetup rucio panda"           >> scripts/grid_submit.cmd
+    echo "# voms-proxy-init -voms atlas -valid 96:00" >> scripts/grid_submit.cmd
     # clear submistion dir
     rm -rf GRID/*
     mkdir -p GRID/inputs
@@ -372,7 +375,7 @@ finalize_grid_submission(){
     #
     ls -hla --color=auto GRID
     echo
-    echo "Take look at GRID folder edit subm.sh and run it "
+    echo "Go to GRID folder 'cd GRID' edit subm.sh (change user name, role) and run it './subm.sh' "
 }
 
 
@@ -804,7 +807,7 @@ submit_grid(){
     #      DRYRUN=
     #  fi
     # lsetup rucio panda
-    # voms-proxy-init atlas
+    # voms-proxy-init -voms atlas -valid 96:00
     # full phase space
     loqtbin=0
     hiqtbin=100
