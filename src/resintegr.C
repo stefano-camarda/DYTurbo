@@ -14,6 +14,7 @@
 
 int resintegrand2d_cubature_v(unsigned ndim, long unsigned npts, const double x[], void *data, unsigned ncomp, double f[])
 {
+  tell_to_grid_we_are_alive();
   //The current issue with openmp parallelisation, is that the resummation integrand has many
   //global variables, and the use of these variables has a race
   
@@ -41,12 +42,14 @@ int resintegrand2d_cubature_v(unsigned ndim, long unsigned npts, const double x[
 
 int resintegrand2d_cubature(unsigned ndim, const double x[], void *data, unsigned ncomp, double f[])
 {
+  tell_to_grid_we_are_alive();
   resintegrand2d(ndim, x, ncomp, f);
   return 0;
 }
 
 integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, double f[])
 {
+  tell_to_grid_we_are_alive();
   clock_t begin_time, end_time;
 
   begin_time = clock();
@@ -253,6 +256,7 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
 
 integrand_t resintegrand3d(const int &ndim, const double x[], const int &ncomp, double f[])
 {
+  tell_to_grid_we_are_alive();
   clock_t begin_time, end_time;
 
   begin_time = clock();
@@ -429,6 +433,7 @@ integrand_t resintegrandMC(const int &ndim, const double x[], const int &ncomp, 
 			   void* userdata, const int &nvec, const int &core,
 			   double &weight, const int &iter)
 {
+  tell_to_grid_we_are_alive();
   clock_t begin_time, end_time;
 
   begin_time = clock();

@@ -29,12 +29,14 @@ int vjintegrand_cubature_v(unsigned ndim, long unsigned npts, const double x[], 
       for (unsigned k = 0; k < ncomp; ++k)
 	f[i*ncomp + k] = fi[k];
     }
+  tell_to_grid_we_are_alive();
   return 0;
 }
 
 int vjintegrand_cubature(unsigned ndim, const double x[], void *data, unsigned ncomp, double f[])
 {
   vjintegrand(ndim, x, ncomp, f);
+  tell_to_grid_we_are_alive();
   return 0;
 }
 
@@ -148,6 +150,7 @@ integrand_t vjintegrand(const int &ndim, const double x[], const int &ncomp, dou
 	 << setw(10) << "tot time" << setw(10) << float( end_time - begin_time ) /  CLOCKS_PER_SEC
 	 << endl;
   
+  tell_to_grid_we_are_alive();
   return 0;
 }
 
@@ -163,7 +166,7 @@ integrand_t lowintegrand(const int &ndim, const double x[], const int &ncomp, do
 
   dofill_.doFill_ = int(iter==last_iter);
   f[0] = lowint_(rlo,weight,f);
-  
+  tell_to_grid_we_are_alive();
   return 0;
 }
 
@@ -178,6 +181,7 @@ integrand_t realintegrand(const int &ndim, const double x[], const int &ncomp, d
   dofill_.doFill_ = int(iter==last_iter);
   f[0] = realint_(rre,weight,f);
 
+  tell_to_grid_we_are_alive();
   return 0;
 }
 
@@ -194,6 +198,7 @@ integrand_t virtintegrand(const int &ndim, const double x[], const int &ncomp, d
   dofill_.doFill_ = int(iter==last_iter);
   f[0] = virtint_(rvi,weight,f);
   
+  tell_to_grid_we_are_alive();
   return 0;
 }
 
@@ -209,5 +214,6 @@ integrand_t doublevirtintegrand(const int &ndim, const double x[], const int &nc
   dofill_.doFill_ = int(iter==last_iter);
   f[0] = lowinthst_dynnlo_(rvv,weight,f);
 
+  tell_to_grid_we_are_alive();
   return 0;
 }

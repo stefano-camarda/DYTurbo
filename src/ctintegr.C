@@ -17,6 +17,7 @@ integrand_t ctintegrand(const int &ndim, const double x[], const int &ncomp, dou
                         void* userdata, const int &nvec, const int &core,
                         double &weight, const int &iter)
 {
+  tell_to_grid_we_are_alive();
   //here generate the phase space according to x[], and pass the p vector to countint_
 
   if (opts.PDFerrors)
@@ -38,6 +39,7 @@ integrand_t ctintegrandMC(const int &ndim, const double x[], const int &ncomp, d
                         void* userdata, const int &nvec, const int &core,
                         double &weight, const int &iter)
 {
+  tell_to_grid_we_are_alive();
   clock_t begin_time, end_time;
 
   begin_time = clock();
@@ -313,6 +315,7 @@ integrand_t ctintegrand3d(const int &ndim, const double x[], const int &ncomp, d
 //dOmega integration is factorised in the costh moments
 //The integration in alpha and beta is performed inside countdy
 {
+  tell_to_grid_we_are_alive();
   clock_t begin_time, end_time;
 
   begin_time = clock();
@@ -459,6 +462,7 @@ integrand_t ctintegrand3d(const int &ndim, const double x[], const int &ncomp, d
 
 int ctintegrand2d_cubature_v(unsigned ndim, long unsigned npts, const double x[], void *data, unsigned ncomp, double f[])
 {
+  tell_to_grid_we_are_alive();
   //  cout << "parallel " << npts << endl;
 #pragma omp parallel for num_threads(opts.cubacores) copyin(a_param_,scale_,facscale_,qcdcouple_)
   for (unsigned i = 0; i < npts; i++)
@@ -479,6 +483,7 @@ int ctintegrand2d_cubature_v(unsigned ndim, long unsigned npts, const double x[]
 
 int ctintegrand2d_cubature(unsigned ndim, const double x[], void *data, unsigned ncomp, double f[])
 {
+  tell_to_grid_we_are_alive();
   ctintegrand2d(ndim, x, ncomp, f);
   return 0;
 }
@@ -489,6 +494,7 @@ integrand_t ctintegrand2d(const int &ndim, const double x[], const int &ncomp, d
 //dOmega integration is factorised in the costh moments
 //The integration in alpha and beta is performed inside countdy
 {
+  tell_to_grid_we_are_alive();
   clock_t begin_time, end_time;
 
   begin_time = clock();
