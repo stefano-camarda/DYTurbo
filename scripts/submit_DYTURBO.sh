@@ -381,12 +381,13 @@ finalize_grid_submission(){
 
 add_to_tarbal(){
     # hack the interations
-    sed -i "s|^cubaverbosity   *=.*$|cubaverbosity    = 2  |g" $in_files_dir/$job_name.in
-    sed -i "s|^vegasncallsRES  *=.*$|vegasncallsRES   = 1e6|g" $in_files_dir/$job_name.in
-    sed -i "s|^vegasncallsCT   *=.*$|vegasncallsCT    = 1e8|g" $in_files_dir/$job_name.in
-    sed -i "s|^vegasncallsLO   *=.*$|vegasncallsLO    = 1e8|g" $in_files_dir/$job_name.in
-    sed -i "s|^vegasncallsREAL *=.*$|vegasncallsREAL  = 1e8|g" $in_files_dir/$job_name.in
-    sed -i "s|^vegasncallsVIRT *=.*$|vegasncallsVIRT  = 1e8|g" $in_files_dir/$job_name.in
+    sed -i "s|^cubaverbosity   *=.*$|cubaverbosity    = 3     |g" $in_files_dir/$job_name.in
+    sed -i "s|^verbose         *=.*$|verbose          = true  |g" $in_files_dir/$job_name.in
+    #sed -i "s|^vegasncallsRES  *=.*$|vegasncallsRES   = 1e6|g" $in_files_dir/$job_name.in
+    #sed -i "s|^vegasncallsCT   *=.*$|vegasncallsCT    = 1e8|g" $in_files_dir/$job_name.in
+    #sed -i "s|^vegasncallsLO   *=.*$|vegasncallsLO    = 1e8|g" $in_files_dir/$job_name.in
+    #sed -i "s|^vegasncallsREAL *=.*$|vegasncallsREAL  = 1e8|g" $in_files_dir/$job_name.in
+    #sed -i "s|^vegasncallsVIRT *=.*$|vegasncallsVIRT  = 1e8|g" $in_files_dir/$job_name.in
     # add input file
     #tar rf $tarbalfile scripts/infiles/$job_name.in
     # add to dir
