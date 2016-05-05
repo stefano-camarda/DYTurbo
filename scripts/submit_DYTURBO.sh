@@ -381,8 +381,8 @@ finalize_grid_submission(){
 
 add_to_tarbal(){
     # hack the interations
-    sed -i "s|^cubaverbosity   *=.*$|cubaverbosity    = 3     |g" $in_files_dir/$job_name.in
-    sed -i "s|^verbose         *=.*$|verbose          = true  |g" $in_files_dir/$job_name.in
+    sed -i "s|^cubaverbosity *=.*$|cubaverbosity = 3     |g" $in_files_dir/$job_name.in
+    sed -i "s|^verbose *=.*$|verbose = true  |g" $in_files_dir/$job_name.in
     #sed -i "s|^vegasncallsRES  *=.*$|vegasncallsRES   = 1e6|g" $in_files_dir/$job_name.in
     #sed -i "s|^vegasncallsCT   *=.*$|vegasncallsCT    = 1e8|g" $in_files_dir/$job_name.in
     #sed -i "s|^vegasncallsLO   *=.*$|vegasncallsLO    = 1e8|g" $in_files_dir/$job_name.in
