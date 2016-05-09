@@ -1797,9 +1797,9 @@ c.....transcendental functions
       fs=log(sh/q2)
       ft=log(-th/q2)
       fu=log(-uh/q2)
-c      if (s2.eq.0) fs2 = 0d0
-c      else fs2=log(s2/q2)       !when s2 is 0, fs2 is infinity!
-         fs2=log(s2/q2)
+c      fs2=log(s2/q2)
+      if (s2.gt.0d0) fs2=log(s2/q2)
+      else fs2 = 0d0       !when s2 is 0, fs2 is infinity!
       fm2=log(xmuf2/q2)
       fmu2=log(xmur2/q2)
       fa=log(a/q2)

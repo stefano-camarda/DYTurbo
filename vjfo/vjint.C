@@ -2,17 +2,38 @@
 #include "settings.h"
 #include "interface.h"
 #include "resconst.h"
+#include "cubature.h"
+#include "gaussrules.h"
 #include <iomanip>
 
 #include "LHAPDF/LHAPDF.h"
 
 #include <math.h>
 
+const double zmin = 1e-13;
+const double zmax = 1.-1e-10;
+const double lz = log(zmax/zmin);
+
+const int z1rule = 64;
+const int z2rule = 64;
+double t1[z1rule];
+double t2[z2rule];
+
 double vjint::brz;
 double vjint::brw;
 
 void vjint::init()
 {
+  double az = zmin;
+  double bz = zmax;
+  double cz = 0.5*(az+bz);
+  double mz = 0.5*(bz-az);
+  for (int j = 0; j < z1rule; j++)
+    t1[j] = zmin*pow(zmax/zmin, cz+mz*gr::xxx[z1rule-1][j]);
+
+  for (int j = 0; j < z2rule; j++)
+    t2[j] = zmin*pow(zmax/zmin, cz+mz*gr::xxx[z2rule-1][j]);
+
   //gevpb_.gevpb_ = 3.8937966e8; //MCFM 6.8 value
   gevpb_.gevpb_ = 0.389379e9; //dyres value
 
@@ -25,8 +46,8 @@ void vjint::init()
   para_.ss_ =  opts.sroot;
   para_.s_ = pow(para_.ss_,2);
 
-  pdf_.ih1_ = opts.ih1;
-  pdf_.ih2_ = opts.ih2;
+  dypdf_.ih1_ = opts.ih1;
+  dypdf_.ih2_ = opts.ih2;
 
   vjorder_.iord_ = opts.order - 1;
 
@@ -141,19 +162,10 @@ void vjint::init()
   const2_.cf_ = 4./3.;
   const2_.tr_ = resconst::NF/2.;
   const2_.pi_ = M_PI;
-  couplings_.alpha0_ = em_.aemmz_;
-  couplings_.xw_ = ewcouple_.xw_;
-  couplings_.sw_ = sqrt(couplings_.xw_); // sin_w
-  couplings_.cw_ = sqrt(1.-couplings_.xw_); // cos_w
-
-//c.....read the input file
-//      if(ic.eq.1) then
-//         ih1=1                      !beam 1 @ LHC!
-//         ih2=1                      !beam 2 @ LHC!
-//      elseif(ic.eq.-1) then
-//         ih1=1                      !beam 1 @ Tevatron!
-//         ih2=-1                     !beam 2 @ Tevatron!
-//      endif
+  dycouplings_.alpha0_ = em_.aemmz_;
+  dycouplings_.xw_ = ewcouple_.xw_;
+  dycouplings_.sw_ = sqrt(ewcouple_.xw_); // sin_w
+  dycouplings_.cw_ = sqrt(1.-ewcouple_.xw_); // cos_w
 }
 
 
@@ -195,13 +207,137 @@ double vjint::vint(double m, double pt, double y)
     internal_.q_ = opts.rmass;
   
   //call cross section calculation
-  int ord = opts.order - 1;
-  double res, err, chi2a;
-  qtdy_(res,err,chi2a,y,y,ord);
+  //  int ord = opts.order - 1;
+  //  double res, err, chi2a;
+  //  qtdy_(res,err,chi2a,y,y,ord);
+  //  cout << setprecision(16) << "fortran " << m << "  " << pt << "  " << "  " << y << "  " << res << endl;
+    
+  double res = calc(m, pt, y);
   //cout << setprecision(16) << "C++ " << m << "  " << pt << "  " << "  " << y << "  " << res << endl;
-
+  
   //Apply conversion factors:
   //ds/dqt = ds/dqt2 * dqt2/dqt
   //fb = 1000 * pb
   return 2*pt*res*1000.;
+}
+
+int xdelta_cubature(unsigned ndim, const double x[], void *data, unsigned ncomp, double f[])
+{
+  f[0] = xdelta_(x);
+  return 0;
+}
+int sing_cubature(unsigned ndim, const double x[], void *data, unsigned ncomp, double f[])
+{
+  double zz[2];
+  zz[0] = zmin*pow(zmax/zmin,x[0]);
+  double jacz1 = zz[0]*lz;
+
+  zz[1] = zmin*pow(zmax/zmin,x[1]);
+  double jacz2 = zz[1]*lz;
+  
+  f[0] = sing_(zz)*jacz1*jacz2;
+  return 0;
+}
+
+
+double vjint::calc(double m, double pt, double y)
+{
+  double q2 = m*m;
+  tm_.tm_ = sqrt(q2+pt*pt);
+      
+  //.....kinematical limits on qt
+  double z = q2/para_.s_;
+  double xr = pow(1-z,2)-4*z*pow(pt/m,2);
+  if (xr < 0)
+    return 0.;
+
+  //.....kinematical limits on y
+  double tmpx = (q2+para_.s_)/para_.ss_/tm_.tm_;
+  double ymax = log((tmpx+sqrt(pow(tmpx,2)-4))/2);
+
+  if (fabs(y) >= ymax)
+    return 0.;
+  
+  //...compute as at order=nloop
+  asp_.asp_ = asnew_.as_*M_PI;
+
+  //pcubature integration
+  const int ndimx = 1;     //dimensions of the integral
+  const int ncomp = 1;  //components of the integrand
+  void *userdata = NULL;
+  double integral[1];
+  double error[1];
+  const int eval = 0;
+  const double epsrel = min(1e-6,opts.pcubaccuracy);
+  const double epsabs = 0.;
+  //     boundaries of integration      
+  double xmin[1] = {0.};
+  double xmax[1] = {1.};
+
+  pcubature(ncomp, xdelta_cubature, userdata, 
+	    ndimx, xmin, xmax, 
+	    eval, epsabs, epsrel, ERROR_INDIVIDUAL, integral, error);
+  double rdelta = integral[0];
+  double err = error[0];
+
+  //integration of non-delta(s2) terms (only at NLO)
+
+  //initialise
+  double rsing = 0.;
+
+  if (opts.order == 2)
+    {
+      //pcubature integration
+      /*
+      const int ndims = 2;     //dimensions of the integral
+      //     boundaries of integration      
+      double zmn[2] = {zmin,zmin};
+      double zmx[2] = {zmax,zmax};
+      pcubature(ncomp, sing_cubature, userdata, 
+		ndims, zmn, zmx, 
+		eval, epsabs, 1e-4, ERROR_INDIVIDUAL, integral, error);
+      rsing = integral[0];
+      err = sqrt(err*err + error[0]*error[0]);
+      */
+      //      cout << m << "  " << pt << "  " << y << "  " << integral[0] << "  " << error[0] << endl;
+      
+      //gaussian quadrature
+      double zz[2];
+      double az1 = zmin;
+      double bz1 = zmax;
+      double cz1=0.5*(az1+bz1);
+      double mz1=0.5*(bz1-az1);
+      for (int j = 0; j < z1rule; j++)
+	{
+	  double z1 = cz1 + mz1*gr::xxx[z1rule-1][j];
+	  double t = t1[j];//zmin*pow(zmax/zmin,z1);
+	  double jacz1=t*lz;
+	  zz[0]=t;
+	  
+	  double az2 = zmin;
+	  double bz2 = zmax;
+	  double cz2 = 0.5*(az2+bz2);
+	  double mz2 = 0.5*(bz2-az2);
+	  for (int jj = 0; jj < z2rule; jj++)
+	    {
+	      double z2 = cz2 + mz2*gr::xxx[z2rule-1][jj];
+	      double t = t2[jj];//zmin*pow(zmax/zmin,z2);
+	      double jacz2 = t*lz;
+	      zz[1] = t;
+	      rsing=rsing+sing_(zz)*gr::www[z1rule-1][j]*gr::www[z2rule-1][jj]
+		*jacz1*jacz2*mz1*mz2;
+	    }
+	}
+      //      cout << m << "  " << pt << "  " << y << "  " << rsing << endl;
+      
+      rsing = rsing*(asp_.asp_/2./M_PI);
+    }
+  else if (opts.order == 1)
+    rsing = 0.;
+
+  //final result
+  double res = rdelta+rsing;
+  //cout << m << "  " << pt << "  " << y << "  " << res << "  " << err << endl;
+  //      print *,q,qt,yv,rdelta,rsing
+  return res;
 }

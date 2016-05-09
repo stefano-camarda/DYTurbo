@@ -4,6 +4,8 @@
 extern "C"
 {
   void qtdy_(double &res, double &err, double &chi2a, double &y1, double &y2, int &ord);
+  double xdelta_(const double *x);
+  double sing_(double z[2]);
 
   extern struct {
     double gevpb_;
@@ -22,7 +24,7 @@ extern "C"
   extern struct {
     int ih1_;
     int ih2_;
-  } pdf_;
+  } dypdf_;
 
   extern struct {
     int iord_;
@@ -71,7 +73,7 @@ extern "C"
     double cw_;
     double sw_;
     double alpha0_;
-  } couplings_;
+  } dycouplings_;
 
   extern struct {
     double s_;
@@ -101,6 +103,10 @@ extern "C"
   } yv_;
 
   extern struct {
+    double tm_;
+  } tm_;
+  
+  extern struct {
     double xmur_;
     double xmuf_;
     double xmur2_;
@@ -111,6 +117,10 @@ extern "C"
     double as_;
   } asnew_;
 
+  extern struct {
+    double asp_;
+  } asp_;
+  
   extern struct {
     double siggamma_;
     double sigint_;
@@ -125,7 +135,7 @@ extern "C"
   } internal_;
 
 }
-#pragma omp threadprivate(yv_,scales2_,asnew_,sigs_,internal_)
+#pragma omp threadprivate(yv_,tm_,scales2_,asnew_,asp_,sigs_,internal_)
 
 namespace vjint
 {
@@ -134,6 +144,7 @@ namespace vjint
   
   extern void init();
   extern double vint(double m, double pt, double y);
+  extern double calc(double m, double pt, double y);
 
 }
 #endif

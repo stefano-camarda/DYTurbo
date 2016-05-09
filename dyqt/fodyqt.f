@@ -17,11 +17,11 @@ c      integer i
       common/nf/nf
       common/vjorder/iord
       common/isetproton/isetproton
-      common/pdf/ih1,ih2
+c      common/dypdf/ih1,ih2
       common/nloop/nloop
       common/para/s,ss
 c      common/internal/qt,q,q2
-      common/couplings/xw,cw,sw,alpha0
+      common/dycouplings/xw,cw,sw,alpha0
       common/const2/pi,cf,ca,tr,xnc
       common/gevpb/gevpb
       common/prodflag/prodflag
@@ -41,7 +41,7 @@ c.....definition of constants and couplings
       alpha0=aem
       xw=sw2
       sw=sqrt(xw)                       ! sin_w ! 
-      cw=sqrt(1-xw)                     ! cos_w !
+      cw=sqrt(1d0-xw)                     ! cos_w !
 
 cc.....read the input file
 c      if(ic.eq.1) then
@@ -83,7 +83,7 @@ c      common/scales2/xmur,xmuf,xmur2,xmuf2
 c      double precision yv,expyp,expym
 c      common/yv/yv,expyp,expym
       common/isetproton/isetproton
-      common/pdf/ih1,ih2
+c      common/dypdf/ih1,ih2
       common/vjorder/iord
       common/para/s,ss
 c      common/tm/tm
@@ -95,7 +95,7 @@ c      common/mand/sh,th,uh,s2
       integer flagch
       common/flagch/flagch
       common/vegint/iter,locall,nlocall
-      common/couplings/xw,cw,sw,alpha0
+      common/dycouplings/xw,cw,sw,alpha0
       include 'fodyqt_inc.f'
       include 'scales2_inc.f'
       include 'internal_inc.f'
@@ -126,7 +126,7 @@ c.....y2 not greater than y1
       
 c.....kinematical limits on qt
       z=q2/s
-      xr=(1-z)**2-4*z*(qt/q)**2
+      xr=(1d0-z)**2-4*z*(qt/q)**2
       if(xr.lt.0)then
          ris=0d0
          return
@@ -238,14 +238,14 @@ c     initialise
          rsing = 0d0
 
 c     boundaries of integration      
-         z1min = 1D-8
+         z1min = 1D-13
          z1max = 1d0
       
          z1intervals=1
          z1rule=64
 
 c     boundaries of integration      
-         z2min = 1D-8
+         z2min = 1D-13
          z2max = 1d0
 
          z2intervals=1
@@ -289,6 +289,8 @@ c                     jacz2=esp*z2**(esp-1)
                      zz(2)=t
                      rsing=rsing+sing(zz)*www(z1rule,j)*www(z2rule,jj)
      .                    *jacz1*jacz2*mz1*mz2
+c                     print *,sing(zz),www(z1rule,j)*www(z2rule,jj),
+c     .                    jacz1*jacz2,mz1*mz2
                   enddo
                enddo
             enddo
@@ -340,7 +342,7 @@ c      common/scales2/xmur,xmuf,xmur2,xmuf2
 c      double precision yv,expyp,expym
 c      common/yv/yv,expyp,expym
       common/isetproton/isetproton
-      common/pdf/ih1,ih2
+c      common/dypdf/ih1,ih2
       common/vjorder/iord
       common/para/s,ss
 c      common/tm/tm
@@ -349,7 +351,7 @@ c      common/internal/qt,q,q2
       common/const2/pi,cf,ca,tr,xnc
 c      common/mand/sh,th,uh,s2
       common/quarks/eq(5),alq(5),arq(5),ckm(6,6),delta(5,5),tau3(5,5)
-      common/couplings/xw,cw,sw,alpha0
+      common/dycouplings/xw,cw,sw,alpha0
       common/gevpb/gevpb
       common/prodflag/prodflag
 c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
@@ -392,7 +394,7 @@ c         stop
 c.....change of variable to allow integration over 0-1
 c....."esp" introduced for better behavior at small qt
       esp=8d0
-      x2=dexp((1-t**esp)*log(x2min))
+      x2=dexp((1d0-t**esp)*log(x2min))
       xjac=xjac*x2*log(x2min)*esp*t**(esp-1d0)
 c      x2=x2min*exp(1d0/x2min*t)
 c      xjac = xjac*x2(1d0-x2min)
@@ -402,7 +404,7 @@ c.....definition of x1 in function of x2
 
 c.....imposing x1,x2<1
       tiny=0d0 !1d-8
-      if (x1.gt.1-tiny.or.x2.gt.1-tiny) then
+      if (x1.gt.1d0-tiny.or.x2.gt.1d0-tiny) then
          xdelta=0d0
          return
       endif
@@ -489,7 +491,7 @@ c      common/scales2/xmur,xmuf,xmur2,xmuf2
 c      double precision yv,expyp,expym
 c      common/yv/yv,expyp,expym
       common/isetproton/isetproton
-      common/pdf/ih1,ih2
+c      common/dypdf/ih1,ih2
       common/vjorder/iord
       common/para/s,ss
 c      common/tm/tm
@@ -497,7 +499,7 @@ c      common/fractions/x1,x2
 c      common/internal/qt,q,q2
       common/const2/pi,cf,ca,tr,xnc
 c      common/mand/sh,th,uh,s2
-      common/couplings/xw,cw,sw,alpha0
+      common/dycouplings/xw,cw,sw,alpha0
       common/gevpb/gevpb
       common/prodflag/prodflag
       integer flagch
@@ -531,7 +533,7 @@ c      endif
 c.....x1_0,x2_0 and modification by Massimiliano (dcut)
       x10=tm/ss*expyp
       x20=tm/ss*expym
-      dcut=x10*(qt/tm)**2/(1-x10*(1-(qt/tm)**2))
+      dcut=x10*(qt/tm)**2/(1d0-x10*(1d0-(qt/tm)**2))
 c      dcut=qt/(tm+qt)
 c      dcut=0d0
 
@@ -550,17 +552,17 @@ c     lb=qt**2/tm**2*z1/(1-z1)
       lb=qt**2/tm**2*(1d0-z1)/z1
 c******** end ***
 c******** changed z2 -> 1-z2 ***
-c      z2=x10*(1+lb)+(1-x10*(1+lb))*zz(2)
-      z2=(1-x10*(1+lb))*zz(2)
+c      z2=x10*(1d0+lb)+(1-x10*(1d0+lb))*zz(2)
+      z2=(1d0-x10*(1d0+lb))*zz(2)
 c******** end ***
-      xjac=xjac*(1-x10*(1+lb))     
+      xjac=xjac*(1d0-x10*(1d0+lb))     
 
 c.....first term of the integrand for the plus prescription
 
 c.....x1,x2
 c******** changed z2 -> 1-z2 ***
-c      x1=x10/z2*(1+lb)
-      x1=x10/(1d0-z2)*(1+lb)
+c      x1=x10/z2*(1d0+lb)
+      x1=x10/(1d0-z2)*(1d0+lb)
 c******** end ***
 c******** changed z1 -> 1-z1 ***
 c      x2=x20/z1
@@ -569,19 +571,19 @@ c******** end ***
 
 c.....definition of partonic Mandelstam invariants
 c******** changed z2 -> 1-z2  z1 -> 1-z1 ***
-c      sh=tm**2/z1/z2*(1+lb)
-      sh=tm**2/(1d0-z1)/(1d0-z2)*(1+lb)
+c      sh=tm**2/z1/z2*(1d0+lb)
+      sh=tm**2/(1d0-z1)/(1d0-z2)*(1d0+lb)
 c******** end ***
 c     bug fix in DYqT: th <-> uh
-c      th=-tm**2/z1*(1-z1)*(1+lb)
-c      uh=q2-tm**2/z2*(1+lb)
+c      th=-tm**2/z1*(1-z1)*(1d0+lb)
+c      uh=q2-tm**2/z2*(1d0+lb)
 c******** changed z1 -> 1-z1 ***
-c      uh=-tm**2/z1*(1-z1)*(1+lb)
-      uh=-tm**2/(1d0-z1)*(z1)*(1+lb)
+c      uh=-tm**2/z1*(1-z1)*(1d0+lb)
+      uh=-tm**2/(1d0-z1)*(z1)*(1d0+lb)
 c******** end ***
 c******** changed z2 -> 1-z2 ***
-c      th=q2-tm**2/z2*(1+lb)
-      th=q2-tm**2/(1d0-z2)*(1+lb)
+c      th=q2-tm**2/z2*(1d0+lb)
+      th=q2-tm**2/(1d0-z2)*(1d0+lb)
 c******** end ***
       
 c      print *,'sh',sh,x1*x2*s
@@ -589,8 +591,8 @@ c      print *,'th',th,q2-ss*x1*tm*expym
 c      print *,'uh',uh,q2-ss*x2*tm*expyp
       
 c******** changed z2 -> 1-z2  z1 -> 1-z1 ***
-c      s2=tm**2/z1/z2*(1-z2)*(1-z1)*(1+lb)
-      s2=tm**2/(1d0-z1)/(1d0-z2)*z2*z1*(1+lb)
+c      s2=tm**2/z1/z2*(1-z2)*(1-z1)*(1d0+lb)
+      s2=tm**2/(1d0-z1)/(1d0-z2)*z2*z1*(1d0+lb)
 c******** end ***
 c      print *,'s2',s2,sh+uh+th-q2
 
@@ -604,28 +606,28 @@ c.....imposing s2>0
          write(*,*)'s2 < 0 ! s2 =',s2
          print *,'z1',z1,'z2',z2,'x1',x1,'x2',x2,'sh',sh,'th',th,'uh',uh
          write(*,*) 'm',q,'pt',qt,'y',yv
-         xdelta=0d0
+         sing=0d0
          return
 c       stop
       endif
 
 c.....phase space prefactor
 c******** changed z2 -> 1-z2  z1 -> 1-z1 ***
-c      pre1=tm**2*(1+lb)/(z1*z2)**2
-      pre1=tm**2*(1+lb)/((1d0-z1)*(1d0-z2))**2
+c      pre1=tm**2*(1d0+lb)/(z1*z2)**2
+      pre1=tm**2*(1d0+lb)/((1d0-z1)*(1d0-z2))**2
 c******** end ***
 
 c.....imposing x1,x2 < 1
       tiny=0d0 !1d-7
-      if(x1.gt.1-tiny.or.x2.gt.1-tiny) then
+      if(x1.gt.1d0-tiny.or.x2.gt.1d0-tiny) then
          write(*,*)'x1',x1,'x2',x2
          sing2=0d0
          sing1=0d0
          reg=0d0
          xspur=0d0
          xm10=0
-         xdelta=0d0
-         return
+         sing=0d0
+c         return
       else
 
 c.....compute parton luminosity
@@ -727,7 +729,7 @@ c     It corresponds to fs(0) in Eq. (2.5) of [Gonsalves, Pawlowsky, Wai]
 c.....subtraction of z2=1 term according to plus prescription     
 
 c.....x1,x2
-      x1=x10*(1+lb)
+      x1=x10*(1d0+lb)
 c******** changed z1 -> 1-z1 ***
 c      x2=x20/z1
       x2=x20/(1d0-z1)
@@ -735,28 +737,28 @@ c******** end ***
 
 c.....definition of partonic Mandelstam invariants
 c******** changed z1 -> 1-z1 ***
-c      sh=tm**2/z1*(1+lb)
-      sh=tm**2/(1d0-z1)*(1+lb)
+c      sh=tm**2/z1*(1d0+lb)
+      sh=tm**2/(1d0-z1)*(1d0+lb)
 c******** end ***
 c     bug fix in DYqT: th <-> uh
-c      th=-tm**2/z1*(1-z1)*(1+lb)
-c      uh=q2-tm**2*(1+lb)
+c      th=-tm**2/z1*(1-z1)*(1d0+lb)
+c      uh=q2-tm**2*(1d0+lb)
 c******** changed z1 -> 1-z1 ***
-c      uh=-tm**2/z1*(1-z1)*(1+lb)
-      uh=-tm**2/(1d0-z1)*z1*(1+lb)
+c      uh=-tm**2/z1*(1-z1)*(1d0+lb)
+      uh=-tm**2/(1d0-z1)*z1*(1d0+lb)
 c******** end ***
-      th=q2-tm**2*(1+lb)
+      th=q2-tm**2*(1d0+lb)
       
 c      print *,sh,x1*x2*s,th,q2-ss*x1*tm*expym,uh,q2-ss*x2*tm*expyp
 
 c.....phase space prefactor
 c******** changed z1 -> 1-z1 ***
-c      pre10=tm**2*(1+lb)/(z1)**2
-      pre10=tm**2*(1+lb)/(1d0-z1)**2
+c      pre10=tm**2*(1d0+lb)/(z1)**2
+      pre10=tm**2*(1d0+lb)/(1d0-z1)**2
 c******** end ***
 
 c.....imposing x1,x2 < 1
-      if(x1.gt.1-tiny.or.x2.gt.1-tiny) then
+      if(x1.gt.1d0-tiny.or.x2.gt.1d0-tiny) then
          sing2=0d0
          sing1=0d0
          reg=0d0
@@ -824,13 +826,14 @@ c.....I also add mismatch terms (xmism) coming from 0-z2min region.
 
 c     bug fix in DYqT: th <-> uh
 c      a=-th
-      a=-uh
-         z2min=x10*(1+lb)   
+         a=-uh
+            
+         z2min=x10*(1d0+lb)   
 
-         xmism=-0.5d0*xs10*(log(1-z2min))**2-
-     /        (xs10*log(a/q2)+xs20)*log(1-z2min)
+         xmism=-0.5d0*xs10*(log(1d0-z2min))**2-
+     /        (xs10*log(a/q2)+xs20)*log(1d0-z2min)
 
-         xmism=xmism*pre10*(1-dcut-x20)/(a)
+         xmism=xmism*pre10*(1d0-dcut-x20)/(a)
 
 c******** changed z2 -> 1-z2 ***
 c     sing1=log(1-z2)/(1-z2)*(pre1*xs1-pre10*xs10)*xjac/(a)
@@ -862,6 +865,7 @@ c******** end ***
          print *,'nan in xsing', sing1,sing2,reg,xmism
          sing=0d0
       endif
+c      print *,zz(1),zz(2),sing
       return
       end
 

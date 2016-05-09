@@ -54,12 +54,12 @@ c      fx(5)=0d0
       include 'scales2_inc.f'
 c      common/scales2/xmur,xmuf,xmur2,xmuf2
       common/isetproton/isetproton
-      common/pdf/ih1,ih2
+      common/dypdf/ih1,ih2
       common/nf/nf
 c      common/fractions/x1,x2
       include 'internal_inc.f'
       common/quarks/eq(5),alq(5),arq(5),ckm(6,6),delta(5,5),tau3(5,5)
-      common/couplings/xw,cw,sw,alpha0
+      common/dycouplings/xw,cw,sw,alpha0
       common/prodflag/prodflag
       include 'luminosities_inc.f'
 c      common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
