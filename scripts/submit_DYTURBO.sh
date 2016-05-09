@@ -334,6 +334,9 @@ prepare_tarbal(){
     echo "DYTURBOVERSION=$DYTURBOVERSION" >> scripts/grid_submit.cmd
     echo "target=$target"                 >> scripts/grid_submit.cmd
     echo ""                               >> scripts/grid_submit.cmd
+    echo "# Setup rucio and panda "       >> scripts/grid_submit.cmd
+    echo "# lsetup rucio panda"           >> scripts/grid_submit.cmd
+    echo "# voms-proxy-init -voms atlas -valid 96:00" >> scripts/grid_submit.cmd
     # clear submistion dir
     rm -rf GRID/*
     mkdir -p GRID/inputs
@@ -355,6 +358,7 @@ finalize_grid_submission(){
         # copy exec
         $CP bin/* GRID/bin/
         $CP lib/* GRID/lib/
+        $CP `lhapdf-config --libdir`/libLHAPDF.so GRID/lib/
         # copy pdfset
         lhapdfdir=`lhapdf-config --datadir`
         $CP $lhapdfdir/$pdfset GRID/LHAPDF
@@ -371,18 +375,19 @@ finalize_grid_submission(){
     #
     ls -hla --color=auto GRID
     echo
-    echo "Take look at GRID folder edit subm.sh and run it "
+    echo "Go to GRID folder 'cd GRID' edit subm.sh (change user name, role) and run it './subm.sh' "
 }
 
 
 add_to_tarbal(){
     # hack the interations
-    sed -i "s|^cubaverbosity   *=.*$|cubaverbosity    = 2  |g" $in_files_dir/$job_name.in
-    sed -i "s|^vegasncallsRES  *=.*$|vegasncallsRES   = 1e6|g" $in_files_dir/$job_name.in
-    sed -i "s|^vegasncallsCT   *=.*$|vegasncallsCT    = 1e8|g" $in_files_dir/$job_name.in
-    sed -i "s|^vegasncallsLO   *=.*$|vegasncallsLO    = 1e8|g" $in_files_dir/$job_name.in
-    sed -i "s|^vegasncallsREAL *=.*$|vegasncallsREAL  = 1e8|g" $in_files_dir/$job_name.in
-    sed -i "s|^vegasncallsVIRT *=.*$|vegasncallsVIRT  = 1e8|g" $in_files_dir/$job_name.in
+    sed -i "s|^cubaverbosity *=.*$|cubaverbosity = 3     |g" $in_files_dir/$job_name.in
+    sed -i "s|^verbose *=.*$|verbose = true  |g" $in_files_dir/$job_name.in
+    #sed -i "s|^vegasncallsRES  *=.*$|vegasncallsRES   = 1e6|g" $in_files_dir/$job_name.in
+    #sed -i "s|^vegasncallsCT   *=.*$|vegasncallsCT    = 1e8|g" $in_files_dir/$job_name.in
+    #sed -i "s|^vegasncallsLO   *=.*$|vegasncallsLO    = 1e8|g" $in_files_dir/$job_name.in
+    #sed -i "s|^vegasncallsREAL *=.*$|vegasncallsREAL  = 1e8|g" $in_files_dir/$job_name.in
+    #sed -i "s|^vegasncallsVIRT *=.*$|vegasncallsVIRT  = 1e8|g" $in_files_dir/$job_name.in
     # add input file
     #tar rf $tarbalfile scripts/infiles/$job_name.in
     # add to dir
@@ -803,7 +808,7 @@ submit_grid(){
     #      DRYRUN=
     #  fi
     # lsetup rucio panda
-    # voms-proxy-init atlas
+    # voms-proxy-init -voms atlas -valid 96:00
     # full phase space
     loqtbin=0
     hiqtbin=100

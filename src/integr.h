@@ -10,6 +10,8 @@ extern "C" {
 }
 
 const int last_iter=4;
+static int ICALL=0; // number of integrand calls
+void tell_to_grid_we_are_alive();
 extern double _costh, _m, _qt, _y;
 #pragma omp threadprivate(_costh, _m, _qt, _y)
 
