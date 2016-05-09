@@ -8,6 +8,9 @@ namespace cuts {
   extern double getEta(double p[4]);
   extern double getMt(double p3[4], double p4[4]);
   extern double getM(double p3[4], double p4[4]);
+  extern double getEtMiss(double p3[4], double p4[4]);
+  extern double getLPt(double p3[4], double p4[4]);
+  extern double getLY(double p3[4], double p4[4]);
 
   extern bool fiducial_D0(double p3[4], double p4[4]);
   extern bool fiducial_CDF(double p3[4], double p4[4]);
