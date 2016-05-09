@@ -84,6 +84,8 @@ void settings::readfromfile(const string fname){
     makelepcuts        = in.GetBool   ( "makelepcuts"     ); //true
     lptcut             = in.GetNumber ( "lptcut"          );
     lycut              = in.GetNumber ( "lycut"          );
+    mtcut              = in.GetNumber ( "mtcut"          );
+    etmisscut          = in.GetNumber ( "etmisscut"          );
     l1ptcut            = in.GetNumber ( "l1ptcut"          );
     l1ycut             = in.GetNumber ( "l1ycut"          );
     l2ptcut            = in.GetNumber ( "l2ptcut"          );
@@ -155,10 +157,10 @@ void settings::readfromfile(const string fname){
 	exit (-1);
       }
 
-    if (dynamicscale == true && evolmode != 3)
+    if (dynamicscale == true && evolmode < 3)
       {
 	//cannot use a dynamic muren, mufac, when the PDFs are converted from x-space to N-space at the factorisation scale
-	cout << "dynamicscale possible only with evolmode = 3" << endl;
+	cout << "dynamicscale possible only with evolmode = 3 or 4" << endl;
 	exit (-1);
       }
 
@@ -310,6 +312,10 @@ void settings::dumpAll(){
 	dumpB("pcubature          ", pcubature     );
 	dumpD("pcubaccuracy       ", pcubaccuracy     );
         dumpB("makelepcuts        ", makelepcuts         );
+	dumpD("lptcut        ", lptcut         );
+	dumpD("lycut        ", lycut         );
+	dumpD("mtcut        ", mtcut         );
+	dumpD("etmisscut        ", etmisscut         );
         dumpI("fiducial           ", fiducial            );
         dumpB("cubaint            ", cubaint             );
         dumpB("trapezint          ", trapezint           );

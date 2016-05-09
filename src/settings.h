@@ -153,6 +153,7 @@ public:
   //lepton fiducial cuts
   bool makelepcuts;
   double lptcut, lycut;
+  double mtcut, etmisscut;
   double l1ptcut, l1ycut, l2ptcut, l2ycut;
 
   //integration types and settings for costh phi_lep phase space
