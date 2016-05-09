@@ -5,6 +5,33 @@
 #include <iostream>
 #include <math.h>
 
+double cuts::getEtMiss(double p3[4], double p4[4]){
+  double EtMiss = 0.;
+  if (opts.nproc == 1)
+    EtMiss = getPt(p3);
+  else if (opts.nproc == 2)
+    EtMiss = getPt(p4);
+  return EtMiss;
+}
+
+double cuts::getLPt(double p3[4], double p4[4]){
+  double LPt = 0.;
+  if (opts.nproc == 1)
+    LPt = getPt(p4);
+  else if (opts.nproc == 2)
+    LPt = getPt(p3);
+  return LPt;
+}
+
+double cuts::getLY(double p3[4], double p4[4]){
+  double LY = 0.;
+  if (opts.nproc == 1)
+    LY = getY(p4);
+  else if (opts.nproc == 2)
+    LY = getY(p3);
+  return LY;
+}
+
 double cuts::getPt(double p[4]){
     return sqrt(pow(p[0],2)+pow(p[1],2));
 }
@@ -70,25 +97,41 @@ bool cuts::decide_fiducial( double p3[4], double p4[4] ){
 	/*****************************/
 
 	if (opts.lptcut > 0)
-	  {
-	    float pt3 = sqrt((float)pow(p3[0],2)+(float)pow(p3[1],2));
-	    if (pt3 < opts.lptcut)
+	  if (opts.nproc == 3)
+	    {
+	      float pt3 = sqrt((float)pow(p3[0],2)+(float)pow(p3[1],2));
+	      if (pt3 < opts.lptcut)
+		return false;
+	      float pt4 = sqrt((float)pow(p4[0],2)+(float)pow(p4[1],2));
+	      if (pt4 < opts.lptcut)
+		return false;
+	    }
+	  else
+	    if (getLPt(p3, p4) < opts.lptcut)
 	      return false;
-	    float pt4 = sqrt((float)pow(p4[0],2)+(float)pow(p4[1],2));
-	    if (pt4 < opts.lptcut)
-	      return false;
-	  }
 	
 	if (opts.lycut < 100)
-	  {
-	    float y3 = 0.5 *log(((float)p3[3] + (float)p3[2]) / ((float)p3[3] - (float)p3[2]));
-	    if (fabs(y3) > opts.lycut)
+	  if (opts.nproc == 3)
+	    {
+	      float y3 = 0.5 *log(((float)p3[3] + (float)p3[2]) / ((float)p3[3] - (float)p3[2]));
+	      if (fabs(y3) > opts.lycut)
+		return false;
+	      float y4 = 0.5 *log(((float)p4[3] + (float)p4[2]) / ((float)p4[3] - (float)p4[2]));
+	      if (fabs(y4) > opts.lycut)
+		return false;
+	    }
+	  else
+	    if (fabs(getLY(p3, p4)) > opts.lycut)
 	      return false;
-	    float y4 = 0.5 *log(((float)p4[3] + (float)p4[2]) / ((float)p4[3] - (float)p4[2]));
-	    if (fabs(y4) > opts.lycut)
-	      return false;
-	  }
 
+	if (opts.mtcut > 0)
+	    if (getMt(p3, p4) < opts.mtcut)
+	      return false;
+
+	if (opts.etmisscut > 0)
+	    if (getEtMiss(p3, p4) < opts.etmisscut)
+	      return false;
+	
 	if (opts.l1ptcut > 0 || opts.l2ptcut > 0
 	    || opts.l1ycut < 100 || opts.l2ycut < 100)
 	  {

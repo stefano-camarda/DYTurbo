@@ -65,8 +65,10 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
   breitw_(x1,wsqmin,wsqmax,opts.rmass,opts.rwidth,m2,wt);
   double m=sqrt(m2);
   jac=jac*wt;
-  //Dynamic scale (not implemented yet)
-  //if(dynamicscale) call scaleset(m2)
+
+  //Dynamic scale
+  if (opts.dynamicscale)
+    scaleset_(m2);
 
   //Limit the y boundaries to the kinematic limit in y
   double ylim = 0.5*log(pow(energy_.sroot_,2)/m2);
@@ -310,8 +312,9 @@ integrand_t resintegrand3d(const int &ndim, const double x[], const int &ncomp, 
   //  double m=mmin+(mmax-mmin)*x[0];
   //  jac=jac*(mmax-mmin);
 
-  //Dynamic scale (not implemented yet)
-  //if(dynamicscale) call scaleset(m2)
+  //Dynamic scale
+  if (opts.dynamicscale)
+    scaleset_(m2);
 
   //Limit y boundaries to the kinematic limit in y
   double ylim = 0.5*log(pow(energy_.sroot_,2)/m2);
@@ -455,8 +458,9 @@ integrand_t resintegrandMC(const int &ndim, const double x[], const int &ncomp, 
   double m=sqrt(m2);
   jac=jac*wt;
   
-  //     Dynamic scale
-  //      if(dynamicscale) call scaleset(m2)
+  //Dynamic scale
+  if (opts.dynamicscale)
+    scaleset_(m2);
 
   //Limit y boundaries to the kinematic limit in y
   double ylim = 0.5*log(pow(energy_.sroot_,2)/m2);

@@ -41,7 +41,7 @@ void dyturboinit(string conf_file)
   g_param_.g_param_           = opts.g_param;
   nnlo_.order_                = opts.order;
   zerowidth_.zerowidth_       = opts.zerowidth;
-  dynamicscale_.dynamicscale_ = opts.dynamicscale;
+  dynamicscale_.dynamicscale_ = opts.dynamicscale;   // Dynamic scale (if true mufac=muren=q)
 
   dofill_.doFill_ = 0;
   
@@ -87,9 +87,6 @@ void dyturboinit(string conf_file)
   alfacut_.aif_=1.;//0.01;
   alfacut_.afi_=1.;//0.01;
   alfacut_.aff_=1.;//0.01;
-
-  // Dynamic scale (if true mufac=muren=q)
-  dynamicscale_.dynamicscale_=false;
 
   //Limits on invariant mass of vector boson decay products
   //(irrelevant if zerowidth=true)
