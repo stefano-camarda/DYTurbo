@@ -7,6 +7,7 @@
 #ifdef USEROOT
 #include <TH1D.h>
 #include <TH2D.h>
+#include <TH3D.h>
 #include <TProfile.h>
 #include <TProfile2D.h>
 #endif // USEROOT
@@ -50,6 +51,7 @@ class plotter {
         TH1D * h_y ;
         TH2D * h_qtVy;
         TH1D * h_Q;
+        TH3D * h_qtVyVQ;
         // angular histograms
         bool doAiMoments;
         struct AiProf2D { TProfile2D* A[NMOM]; };
@@ -83,6 +85,7 @@ class plotter {
         std::vector<TH1D     *> h_qt_PDF      ;
         std::vector<TH1D     *> h_y_PDF       ;
         std::vector<TH2D     *> h_qtVy_PDF    ;
+        std::vector<TH3D     *> h_qtVyVQ_PDF  ;
         std::vector<TH1D     *> h_Q_PDF       ;
         std::vector<TH1D     *> h_costh_PDF   ;
         std::vector<TH1D     *> h_phi_PDF     ;

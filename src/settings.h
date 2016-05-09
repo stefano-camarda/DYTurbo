@@ -208,6 +208,7 @@ class binning
   vector <double> ybins;
   vector <double> hist_qt_bins;
   vector <double> hist_y_bins;
+  vector <double> hist_Q_bins;
 };
 
 

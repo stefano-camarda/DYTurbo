@@ -23,6 +23,7 @@ plotter::plotter() :
     h_qt        (0),
     h_y         (0),
     h_qtVy      (0),
+    h_qtVyVQ    (0),
     qt_y_resum  (0),
     qt_y_ct     (0),
     qt_y_lo     (0),
@@ -42,10 +43,11 @@ plotter::plotter() :
 plotter::~plotter(){
     for (int i=0; i< h_qtVy_PDF.size(); i++){
         SetPDF(i);
-        if(!h_qt   ) delete h_qt   ;
-        if(!h_y    ) delete h_y    ;
-        if(!h_qtVy ) delete h_qtVy ;
-        if(!h_Q    ) delete h_Q    ;
+        if(!h_qt     ) delete h_qt     ;
+        if(!h_y      ) delete h_y      ;
+        if(!h_qtVy   ) delete h_qtVy   ;
+        if(!h_qtVyVQ ) delete h_qtVyVQ ;
+        if(!h_Q      ) delete h_Q      ;
         if(doAiMoments) {
             for (auto i=0; i<NMOM; i++){
                 delete pa_qtVy .A[i]; pa_qtVy .A[i]=NULL;
@@ -78,7 +80,7 @@ void plotter::Init(){
     int int_y_n  = bins.ybins  .size() -1 ;
     double * int_qt_array = &(bins.qtbins [0]);
     double * int_y_array  = &(bins.ybins  [0]);
-    // histogram for storing result
+    // histograms for storing result table
     qt_y_resum = new TH2D ( "qt_y_resum" ,"qt_y_resum" , int_qt_n, int_qt_array, int_y_n, int_y_array );
     qt_y_ct    = new TH2D ( "qt_y_ct"    ,"qt_y_ct"    , int_qt_n, int_qt_array, int_y_n, int_y_array );
     qt_y_lo    = new TH2D ( "qt_y_lo"    ,"qt_y_lo"    , int_qt_n, int_qt_array, int_y_n, int_y_array );
@@ -91,13 +93,16 @@ void plotter::Init(){
     // get qt-y binning: differental xsection and moments
     int diff_qt_n = bins.hist_qt_bins .size() -1 ;
     int diff_y_n  = bins.hist_y_bins  .size() -1 ;
+    int diff_Q_n  = bins.hist_Q_bins  .size() -1 ;
     double * diff_qt_array = &(bins.hist_qt_bins [0]);
     double * diff_y_array  = &(bins.hist_y_bins  [0]);
+    double * diff_Q_array  = &(bins.hist_Q_bins  [0]);
     // differential xsection and ai profiles
-    h_qt   = new TH1D ("h_qt"   , "VB qt"   , diff_qt_n , diff_qt_array );
-    h_y    = new TH1D ("h_y"    , "VB y"    , diff_y_n  , diff_y_array  );
-    h_qtVy = new TH2D ("h_qtVy" , "VB qtVy" , diff_qt_n , diff_qt_array ,  diff_y_n   ,  diff_y_array );
-    h_Q    = new TH1D ("h_Q"    , "VB mass" , 100       , opts.mlow     ,  opts.mhigh );
+    h_qt     = new TH1D ("h_qt"     , "VB qt"     , diff_qt_n , diff_qt_array );
+    h_y      = new TH1D ("h_y"      , "VB y"      , diff_y_n  , diff_y_array  );
+    h_qtVy   = new TH2D ("h_qtVy"   , "VB qtVy"   , diff_qt_n , diff_qt_array ,  diff_y_n   ,  diff_y_array  );
+    h_qtVyVQ = new TH3D ("h_qtVyVQ" , "VB qtVyVQ" , diff_qt_n , diff_qt_array ,  diff_y_n   ,  diff_y_array, diff_Q_n, diff_Q_array );
+    h_Q      = new TH1D ("h_Q"      , "VB mass"   , 1000      , opts.mlow     ,  opts.mhigh );
     if (doAiMoments){ // ai moments could be turned off
         TString name,title;
         for (int i=0; i<NMOM; i++){
@@ -172,6 +177,7 @@ void plotter::FillEvent(double p3[4], double p4[4], double wgt){
     h_y       ->Fill( y         ,wgt);
     h_qtVy    ->Fill( qt,y      ,wgt);
     h_Q       ->Fill( Q         ,wgt);
+    h_qtVyVQ  ->Fill( qt,y,Q    ,wgt);
     if(doAiMoments){
         for (int i=0;i<NMOM;i++) pa_qtVy.A[i] ->Fill( qt,y,a[i] ,wgt);
         for (int i=0;i<NMOM;i++) pa_qt.A[i] ->Fill( qt,a[i] ,wgt);
@@ -227,10 +233,11 @@ void plotter::FillRealEvent(plotter::TermType term){
         } else ++ipoint; // bin index not same, skip it
         // fill histograms in ibin with sum of all weights
         if (point.fid ){
-            h_qtVy -> Fill(point.qt,point.y ,point.wgt);
-            h_qt   -> Fill(point.qt         ,point.wgt);
-            h_y    -> Fill(point.y          ,point.wgt);
-            h_Q    -> Fill(point.Q          ,point.wgt);
+            h_qtVy   -> Fill(point.qt,point.y         ,point.wgt);
+            h_qt     -> Fill(point.qt                 ,point.wgt);
+            h_y      -> Fill(point.y                  ,point.wgt);
+            h_Q      -> Fill(point.Q                  ,point.wgt);
+            h_qtVyVQ -> Fill(point.qt,point.y,point.Q ,point.wgt);
             if(doAiMoments){
                 for (auto i=0; i<NMOM; i++){
                     pa_qtVy .A[i]->Fill(qt,y , point.A[i], point.wgt);
@@ -248,9 +255,10 @@ void plotter::FillRealEvent(plotter::TermType term){
 
 
 void plotter::FillQuadrature(double int_val, double int_error){
-    addToBin( h_qt    , int_val , int_error);
-    addToBin( h_y     , int_val , int_error);
-    addToBin( h_qtVy  , int_val , int_error);
+    addToBin( h_qt      , int_val , int_error);
+    addToBin( h_y       , int_val , int_error);
+    addToBin( h_qtVy    , int_val , int_error);
+    addToBin( h_qtVyVQ  , int_val , int_error);
 }
 
 void plotter::FillResult(TermType term, double int_val, double int_error, double time){
@@ -303,10 +311,11 @@ void plotter::SetPDF(int npdf){
     // assuming we always starting from central
     int size = h_qtVy_PDF.size();
     if (size==0) {
-        h_qt_PDF   .push_back( h_qt   );
-        h_y_PDF    .push_back( h_y    );
-        h_qtVy_PDF .push_back( h_qtVy );
-        h_Q_PDF    .push_back( h_Q    );
+        h_qt_PDF     .push_back( h_qt     );
+        h_y_PDF      .push_back( h_y      );
+        h_qtVy_PDF   .push_back( h_qtVy   );
+        h_Q_PDF      .push_back( h_Q      );
+        h_qtVyVQ_PDF .push_back( h_qtVyVQ );
         if (doAiMoments) {
             h_costh_PDF   .push_back( h_costh   );
             h_phi_PDF     .push_back( h_phi     );
@@ -320,10 +329,11 @@ void plotter::SetPDF(int npdf){
     size = h_qtVy_PDF.size();
     while (npdf >= size){
         // clone, rename and reset
-        h_qt_PDF   .push_back( (TH1D *) clone_PDF( h_qt_PDF   [0] , size) );
-        h_y_PDF    .push_back( (TH1D *) clone_PDF( h_y_PDF    [0] , size) );
-        h_qtVy_PDF .push_back( (TH2D *) clone_PDF( h_qtVy_PDF [0] , size) );
-        h_Q_PDF    .push_back( (TH1D *) clone_PDF( h_Q_PDF    [0] , size) );
+        h_qt_PDF     .push_back( (TH1D *) clone_PDF( h_qt_PDF     [0] , size) );
+        h_y_PDF      .push_back( (TH1D *) clone_PDF( h_y_PDF      [0] , size) );
+        h_qtVy_PDF   .push_back( (TH2D *) clone_PDF( h_qtVy_PDF   [0] , size) );
+        h_Q_PDF      .push_back( (TH1D *) clone_PDF( h_Q_PDF      [0] , size) );
+        h_qtVyVQ_PDF .push_back( (TH3D *) clone_PDF( h_qtVyVQ_PDF [0] , size) );
         if (doAiMoments){
             h_costh_PDF   .push_back( (TH1D *) clone_PDF( h_costh_PDF   [0] , size) );
             h_phi_PDF     .push_back( (TH1D *) clone_PDF( h_phi_PDF     [0] , size) );
@@ -340,6 +350,7 @@ void plotter::SetPDF(int npdf){
     h_y       = h_y_PDF       [npdf];
     h_qtVy    = h_qtVy_PDF    [npdf];
     h_Q       = h_Q_PDF       [npdf];
+    h_qtVyVQ  = h_qtVyVQ_PDF  [npdf];
     if (doAiMoments){
         h_costh   = h_costh_PDF   [npdf];
         h_phi     = h_phi_PDF     [npdf];
@@ -425,10 +436,11 @@ void plotter::Finalise(double xsection){
     TFile *outf = TFile::Open(outfname.Data(), "recreate");
     for (int i=0; i< h_qtVy_PDF.size(); i++){
         SetPDF(i);
-        h_qt   -> Write();
-        h_y    -> Write();
-        h_qtVy -> Write();
-        h_Q    -> Write();
+        h_qt     -> Write();
+        h_y      -> Write();
+        h_qtVy   -> Write();
+        h_Q      -> Write();
+        h_qtVyVQ -> Write();
         if(doAiMoments){
             for (auto pp : pa_qtVy .A) pp->Write();
             for (auto pp : pa_qt   .A) pp->Write();
@@ -479,9 +491,10 @@ void plotter::addToBin(TH1*h, double int_val, double int_error){
     double qt_val = ( qtmax + qtmin )/2.;
     double y_val  = ( ymax  + ymin  )/2.;
     int ibin = 0;
-    if      (!TString(h->GetName()).CompareTo( "h_qtVy" )) ibin = h->FindBin( qt_val, y_val);
-    else if (!TString(h->GetName()).CompareTo( "h_qt"   )) ibin = h->FindBin( qt_val  );
-    else if (!TString(h->GetName()).CompareTo( "h_y"    )) ibin = h->FindBin( y_val   );
+    if      (!TString(h->GetName()).CompareTo( "h_qtVy"   )) ibin = h->FindBin( qt_val, y_val);
+    else if (!TString(h->GetName()).CompareTo( "h_qtVyVQ" )) ibin = h->FindBin( qt_val, y_val, Q);
+    else if (!TString(h->GetName()).CompareTo( "h_qt"     )) ibin = h->FindBin( qt_val  );
+    else if (!TString(h->GetName()).CompareTo( "h_y"      )) ibin = h->FindBin( y_val   );
     // if there somethin in bin add it properly
     double val = h->GetBinContent (ibin);
     double err = h->GetBinError   (ibin);
