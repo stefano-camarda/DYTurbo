@@ -11,8 +11,15 @@
 jobname=$1
 ln -sf infiles/${jobname}.in input.in
 random_seed=$2
-sed -i "s|= seed|= 1$random_seed|g        " input.in
 
+# random seed (or PDF variations)
+if [[ $jobname =~ _array_ ]]
+then
+    sed -i "s|= seed|= 123|g           " input.in
+    sed -i "s|= array|= $random_seed|g " input.in
+else
+    sed -i "s|= seed|= 1$random_seed|g " input.in
+fi
 
 # setup ENV
 export ATLAS_LOCAL_ROOT_BASE=/cvmfs/atlas.cern.ch/repo/ATLASLocalRootBase
