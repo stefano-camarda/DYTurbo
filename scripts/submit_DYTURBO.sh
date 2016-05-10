@@ -294,6 +294,18 @@ splitBins(){
 prepare_tarbal(){
     gridv=v`date +%s`
     DYTURBOVERSION=`grep PACKAGE_VERSION config.h | cut -d\" -f2`
+    # check you have cvmfs rootconfig
+    rootprefix=`root-config --prefix`
+    if [[ $rootprefix =~ /cvmfs/atlas.cern.ch/.*/[56].[0-9][0-9].[0-9][0-9]-(x86_64|i686)-slc[56]-gcc ]]
+    then
+        ROOTVERSION=`basename $rootprefix | cut -d- -f1`
+        CMTVERSION=`basename $rootprefix | cut -d- -f2-`
+    else
+        echo "Current ROOT path is '$rootprefix'"
+        echo "Your root setup is not comming from cvmfs, please do 'lsetup root'."
+        exit 4
+    fi
+    # prepare executables or tarbal
     if [[ $target =~ compile ]]
     then
         echo "Making a tarbal.. please wait"
@@ -336,6 +348,8 @@ prepare_tarbal(){
     echo "gridv=$gridv"                   >> scripts/grid_submit.cmd
     echo "CERNUSER=$USER"                 >> scripts/grid_submit.cmd
     echo "DYTURBOVERSION=$DYTURBOVERSION" >> scripts/grid_submit.cmd
+    echo "ROOTVERSION=$ROOTVERSION"       >> scripts/grid_submit.cmd
+    echo "CMTVERSION=$CMTVERSION"         >> scripts/grid_submit.cmd
     echo "target=$target"                 >> scripts/grid_submit.cmd
     echo ""                               >> scripts/grid_submit.cmd
     echo "# Setup rucio and panda "       >> scripts/grid_submit.cmd

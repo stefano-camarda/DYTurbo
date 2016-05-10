@@ -27,8 +27,7 @@ prun \
 --outputs results_merge.root \
 --tmpDir /tmp/${CERNUSER} \
 --nGBPerJob=MAX \
---rootVer=6.04.14 --cmtConfig=x86_64-slc6-gcc49-opt \
---official --voms atlas:/atlas/perf-jets/Role=production
+--rootVer=$ROOTVERSION --cmtConfig=$CMTVERSION
 
     else
 
@@ -42,8 +41,7 @@ prun \
 --noCompile \
 --tmpDir /tmp/${CERNUSER} \
 --nGBPerJob=MAX \
---rootVer=6.04.14 --cmtConfig=x86_64-slc6-gcc49-opt \
---official --voms atlas:/atlas/perf-jets/Role=production
+--rootVer=$ROOTVERSION --cmtConfig=$CMTVERSION
 
     fi
 }
