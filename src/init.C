@@ -62,8 +62,7 @@ void dyturboinit(string conf_file)
   //end C++ resum
 
   //V+j fixed order initialisation
-  if (opts.doVJ)
-    vjint::init();
+  vjint::init();
   
   switching::init(); //switching function initialisation
   rescinit_();
