@@ -554,6 +554,9 @@ void pegasus::evolve()
       fcomplex scale2 = fcx(pow(pdfevol::bscale,2));
       ASF = fabs(cx(alphasl_(scale2))) * resint::alpqres; //DYRES LL(NLL) running of alphas
       
+      //cout << pdfevol::bscale << " dyres " << fabs(cx(alphasl_(scale2))) << endl;
+      //cout << pdfevol::bscale << " dyres " << fabs(cx(alphasl_(scale2))) * resint::alpqfac << " LHAPDF " << resint::alpqfac << endl;
+
       //Rescale the final alphas ASF for the fact that the PDF evolution is done from Qres to b0/b
       //starting from PDFs at muf, while the residual evolution from muf to Qres is factorised in the (H?) coefficients
       ASF = ASF/resint::alpqres * resint::alpqfac; 
