@@ -1186,6 +1186,13 @@ class PlotTools:
             ratioArgs["forceRange"]= True
             s.SetFrameStyle1D(subHists, **ratioArgs) # scale = 1./(1-cdiv), logY=True, minY=0.04, maxY=25, logX=logx)
             s.axis.GetYaxis().SetNdivisions(5,2,0,True)
+        elif compareType=="ratio01" :
+            #ratioArgs["logY"]=False
+            ratioArgs["minY"]= 0.985
+            ratioArgs["maxY"]= 1.015
+            ratioArgs["forceRange"]= True
+            s.SetFrameStyle1D(subHists, **ratioArgs) # scale = 1./(1-cdiv), logY=True, minY=0.04, maxY=25, logX=logx)
+            s.axis.GetYaxis().SetNdivisions(5,2,0,True)
         elif compareType=="subtract" :
             ratioArgs["minY"]=-10.
             ratioArgs["maxY"]= 10.
@@ -1592,8 +1599,8 @@ class PlotTools:
     def CompareHistsInFiles(s, name, hflist, **kwargs) :
         # hflist = title, filename, histname
         hists = [ s.GetHistSetTitle(x[0], x[1], x[2]) for x in hflist ]
-        for h in hists :
-            h.Print("range")
+        # for h in hists :
+            # h.Print("range")
         s.CompareHistsInList(name, hists, **kwargs)
 
     def CompareHistsInList(s, name, hists, **kwargs) :
@@ -1606,6 +1613,7 @@ class PlotTools:
         compareType = kwargs[ "compareType" ] if "compareType" in kwargs else "subtract"
         doSave = kwargs[ "doSave" ] if "doSave" in kwargs else True
         doStyle = kwargs[ "doStyle" ] if "doStyle" in kwargs else True
+        rebin = kwargs["rebin"] if "rebin" in kwargs else 0
 
         s.NewCanvas(name)
         if (doStyle) : s.AutoSetStyle(hists)
@@ -1618,6 +1626,9 @@ class PlotTools:
         if normalise :
             [ h.Scale ( 1./ h.Integral()) for h in hists]
 
+        if rebin!=0 :
+            [ h.Rebin (rebin) for h in hists]
+
         if len(hists)<1 :
             compareType=None
 
@@ -1628,7 +1639,7 @@ class PlotTools:
             if compareType == "ratio":
                 s.hRatio = s.CreateRatioHists(hists[0],hists)
                 s.hRatio[0].GetYaxis().SetTitle( hists[0].GetTitle()+"/other")
-            elif compareType == "ratio0":
+            elif "ratio0" in compareType :
                 s.hRatio = s.CreateRatio0Hists(hists[0],hists)
                 s.hRatio[0].GetYaxis().SetTitle( "ratio" ) # "other/"+hists[0].GetTitle())
             elif compareType == "subtract":

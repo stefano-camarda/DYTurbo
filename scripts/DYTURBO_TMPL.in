@@ -115,9 +115,9 @@ doVJ   = SETDOVJ
 # Cuba settings
 cubaverbosity    = 0   # Cuba info messsages, from 0 to 3
 cubacores        = SETCUBACORES   # parallelization ( 0 = turn off)
-niterRES         = 18   # only for 2d and 3d cuhre integration of resummed part
-niterCT          = 10   # only for 2d and 3d cuhre integration of counter term
-niterVJ          = 10   # only for 3d cuhre integration of V+J
+niterRES         = 0 # 18   # only for 2d and 3d cuhre integration of resummed part
+niterCT          = 0 # 10   # only for 2d and 3d cuhre integration of counter term
+niterVJ          = 0 # 10   # only for 3d cuhre integration of V+J
 vegasncallsRES   = 1e6      # only for res 4d vegas integration
 vegasncallsVV    = 1e8      # only for double virtual 6d vegas integration
 vegasncallsCT    = 3e8      # only for 6d and 8d vegas integration of the connter term
@@ -139,6 +139,8 @@ fiducial = SETDETFIDUCIAL
 cubaint   = false   # integration with Cuba Suave
 trapezint = false  # trapezoidal rule for the phi_lep integration and semi-analytical for costh
 quadint   = true  # quadrature rule for the phi_lep integration and semi-analytical for costh
+pcubature = SETPCUBATURE
+pcubaccuracy = 1e-3
 
 suavepoints = 1000000 # number of points for suave integration, newpoints is set to suavepoints/10;
 nphitrape   = 1000    # number of steps for trapezoidal rule of phi_lep integration
