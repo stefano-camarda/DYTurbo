@@ -401,6 +401,7 @@ void binning::readfromfile(const string fname){
     ybins        .clear(); in.GetVectorDouble( "ybins"       , ybins        );
     hist_qt_bins .clear(); in.GetVectorDouble( "plot_qtbins" , hist_qt_bins );
     hist_y_bins  .clear(); in.GetVectorDouble( "plot_ybins"  , hist_y_bins  );
+    hist_Q_bins  .clear(); in.GetVectorDouble( "plot_Qbins"  , hist_Q_bins  );
     return;
 }
 

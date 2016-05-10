@@ -155,7 +155,7 @@ prepare_in(){
         #lepPtCut=0
         #lepYCut=1000
         # resboslike
-        lomass=10.
+        lomass=50.
         himass=1000.
     fi
     if [[ $process =~ ^wp$ ]];
@@ -896,16 +896,22 @@ submit_parsed(){
                     NsplitY=1
                     if [[ $terms =~ [23]D ]]
                     then
+                        NPDF=50
+                        if [[ $pdfset == CT10nnlo ]] || [[ $pdfset =~ CT14 ]]
+                        then
+                            NPDF=50
+                        else
+                            echo "FixMe: I dont know how many PDF members $pdfset has."
+                            exit 3
+                        fi
                         # split per variation
                         if [[ $pdfvarlist =~ all ]]
                         then
-                            if [[ $pdfset == CT10nnlo ]] || [[ $pdfset =~ CT14 ]]
-                            then
-                                variationlist=`seq 0 50`
-                            else
-                                echo "FixMe: I dont know how many PDF members $pdfset has."
-                                exit 3
-                            fi
+                            variationlist=`seq 0 $NPDF`
+                        elif [[ $pdfvarlist =~ array ]]
+                        then
+                            variationlist=array
+                            seedlist=$NPDF
                         fi
                         # split per kinematic region
                         NsplitQT=10
@@ -1049,7 +1055,7 @@ USAGE: ./scripts/submit_DYTURBO.sh --target [settings]
 
     --proc     [z0,wp,wm]  {z0,wp,wm}             set the mass and scales
     --pdfset   [CT10nnlo]  {LHAPDFname}           set LHAPDF set name
-    --pdfvar   [0]         {0,1,2...,all}         set member number or run all
+    --pdfvar   [0]         {int or all or array}  set member number or run all
     --collider [lhc7]      {tev1,tev2,lhc7,lhc8}  set hadron type and energy
     --order    [2]         {1,2}                  1: NLL+NLO 2: NNLL+NNLO
     --term     [RES3D]     {RES,CT}               Monte-Carlo integration with order as above
