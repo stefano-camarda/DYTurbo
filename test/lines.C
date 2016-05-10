@@ -3,7 +3,7 @@ void yline()
 {
   double costh = 0.;
   double m = opts.rmass;
-  double qt = 0.1;
+  double qt = 0.01;
   double y = 0.;
   int mode = 1;
   double f[opts.totpdf];
@@ -207,8 +207,8 @@ void ptline()
 	rapint::integrate(ymin,ymax,m);
       }
 
-  double p1 = 0;
-  double p2 = 200;
+  double p1 = 100;
+  double p2 = 500;
   int np = 199;
 
   ofstream pf("ptline.C");
