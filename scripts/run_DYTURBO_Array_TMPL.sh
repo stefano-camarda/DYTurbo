@@ -11,8 +11,7 @@
 # Setup of BSUB
 #BSUB -J JOBNAME[SEEDLIST]
 #BSUB -L /bin/bash
-#BSUB -o OUTDIR/JOBNAME_%I.out
-#BSUB -e OUTDIR/JOBNAME_%I.err
+#BSUB -oo OUTDIR/JOBNAME_%I.out
 #BSUB -q SETQUEUE
 #BSUB -W SETWALLTIME
 #BSUB -app Reserve5G
@@ -61,7 +60,7 @@ CP DYTURBOROOTDIR/../MCFM/Bin/mcfm .
 CP DYTURBOROOTDIR/input/default.in .
 CP DYTURBOROOTDIR/../MCFM/Bin/process.DAT .
 CP DYTURBOINPUTFILE input.in
-if [[ JOBNAME =~ t*3D_ ]]
+if [[ JOBNAME =~ array ]]
 then
     var=$(( ${LSB_JOBINDEX} - 100))
     sed -i "s|= seed|= 123|g             " input.in
@@ -80,7 +79,7 @@ then
     then
         CP results.root OUTDIR/JOBNAME_${LSB_JOBINDEX}.root
     else
-        hadd -f results_merge.root results*.root
+        hadd -f results_merge.root results*.root || exit 3
         CP results_merge.root OUTDIR/JOBNAME_${LSB_JOBINDEX}.root
     fi
 elif [[ JOBNAME_${LSB_JOBINDEX} =~ ^dyres_ ]]
