@@ -43,8 +43,8 @@ void vjint::init()
   vegint_.locall_ = 10000;
   vegint_.nlocall_ = 20000;
 
-  para_.ss_ =  opts.sroot;
-  para_.s_ = pow(para_.ss_,2);
+  dypara_.ss_ =  opts.sroot;
+  dypara_.s_ = pow(dypara_.ss_,2);
 
   dypdf_.ih1_ = opts.ih1;
   dypdf_.ih2_ = opts.ih2;
@@ -246,13 +246,13 @@ double vjint::calc(double m, double pt, double y)
   tm_.tm_ = sqrt(q2+pt*pt);
       
   //.....kinematical limits on qt
-  double z = q2/para_.s_;
+  double z = q2/dypara_.s_;
   double xr = pow(1-z,2)-4*z*pow(pt/m,2);
   if (xr < 0)
     return 0.;
 
   //.....kinematical limits on y
-  double tmpx = (q2+para_.s_)/para_.ss_/tm_.tm_;
+  double tmpx = (q2+dypara_.s_)/dypara_.ss_/tm_.tm_;
   double ymax = log((tmpx+sqrt(pow(tmpx,2)-4))/2);
 
   if (fabs(y) >= ymax)

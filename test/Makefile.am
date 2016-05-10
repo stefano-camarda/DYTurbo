@@ -1,7 +1,7 @@
 AUTOMAKE_OPTIONS = foreign
 
 if HAVE_TEST
-AM_CPPFLAGS = -fpermissive -I$(srcdir)/../include -I$(srcdir)/../dequad -I$(srcdir)/../resum -I$(srcdir)/../src \
+AM_CPPFLAGS = -fpermissive -I$(srcdir)/../include -I$(srcdir)/../dequad -I$(srcdir)/../resum -I$(srcdir)/../src  -I$(srcdir)/../mcfm \
 	-Wl,Bstatic \
 	$(CUBA_CPPFLAGS) $(LHAPDF_CPPFLAGS) \
 	-DSHAREDIR=\"${datadir}/${PACKAGE}\"
