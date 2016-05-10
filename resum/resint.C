@@ -6,6 +6,7 @@
 #include "hcoefficients.h"
 #include "pdfevol.h"
 #include "besselint.h"
+#include "cubature.h"
 #include <iostream>
 
 #include "intde2.c"
@@ -49,6 +50,12 @@ double resint::alpqres;
 //using namespace resint;
 //#pragma omp threadprivate(_qt,_m,_y,_costh,_mode,muren,mufac,mures,muren2,mufac2,mures2,a,loga,rloga,logmuf2q2,logq2muf2,logq2mur2,rlogq2mur2,alpqr,alpqf,aass,alpqfac,alpqren,alpqres)
 
+
+int besselint_cubature(unsigned ndim, const double x[], void *data, unsigned ncomp, double f[])
+{
+  f[0] = besselint::bint(x[0]);
+  return 0;
+}
 void resint::init()
 {
   //Set values in the common block for the sudakov
@@ -76,7 +83,7 @@ void resint::init()
   
   // define points for quadratures integration
   intdeoini(lenaw, tiny, opts.bintaccuracy, awinf);
-  //  intdeini(lenaw, tiny, 1.0e-2, awfin);
+  //intdeini(lenaw, tiny, 1.0e-2, awfin);
 }
 
 double resint::rint(double costh, double m, double qt, double y, int mode)
@@ -251,7 +258,7 @@ double resint::bintegral(double qt)
 
   double res, err;
   intdeo(besselint::bint, 0.0, qt, awinf, &res, &err);
-  //cout << "dequad result of inverse bessel transform, pt=" << _qt << " m=" << _m << " y=" << _y << " : " << setprecision(16) << res << " +- " << err/res*100 << "%" << endl;
+  //  cout << "dequad result of inverse bessel transform, pt=" << _qt << " m=" << _m << " y=" << _y << " : " << setprecision(16) << res << " +- " << err/res*100 << "%" << endl;
   //  cout.precision(6); cout.unsetf(ios_base::floatfield);
 
   /*
@@ -267,12 +274,34 @@ double resint::bintegral(double qt)
   intdeo(besselint::bint, b_mb, qt, awinf, &res1, &err1);
 
 
-  //dequad seems not to be appropriate for this integral, try simple gaussian quadrature
   double res2, err2;
-  intde(besselint::bint, 0.0, b_mb, awfin, &res2, &err2);
-  cout << "split: dequad result of inverse bessel transform  " << setprecision(16) << res1+res2 << " +- " << err1/res1*100 << "% "  << err2+res2*100 << "%" << endl;
+  //dequad seems not to be appropriate for this integral 
+  //  intde(besselint::bint, 0.0, b_mb, awfin, &res2, &err2);
+
+
+  //try simple pcubature
+  const int ndim = 1;     //dimensions of the integral
+  const int ncomp = 1;  //components of the integrand
+  void *userdata = NULL;
+  double integral[1];
+  double error[1];
+  const int eval = 0;
+  const double epsrel = 1e-2;//opts.bintaccuracy;
+  const double epsabs = 0.;
+  double xmin[1] = {0};
+  double xmax[2] = {b_mb};
+
+  pcubature(ncomp, besselint_cubature, userdata, 
+	    ndim, xmin, xmax, 
+	    eval, epsabs, epsrel, ERROR_INDIVIDUAL, integral, error);
+  res2 = integral[0];
+  err2 = error[0];
+
+  
+  cout << "split: dequad result of inverse bessel transform  " << setprecision(16) << res1+res2 << " +- " << res1 << "  " << err1/res1*100 << "% "  << res2 << "  " << err2/res2*100 << "%" << endl;
   cout.precision(6); cout.unsetf(ios_base::floatfield);
   res = res1+res2;
+  cout << endl;
 
   //plot the b-integrand
   cout << "{" << endl;
