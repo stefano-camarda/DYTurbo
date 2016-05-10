@@ -19,7 +19,7 @@ c      integer i
       common/isetproton/isetproton
 c      common/dypdf/ih1,ih2
       common/nloop/nloop
-      common/para/s,ss
+      common/dypara/s,ss
 c      common/internal/qt,q,q2
       common/dycouplings/xw,cw,sw,alpha0
       common/const2/pi,cf,ca,tr,xnc
@@ -85,7 +85,7 @@ c      common/yv/yv,expyp,expym
       common/isetproton/isetproton
 c      common/dypdf/ih1,ih2
       common/vjorder/iord
-      common/para/s,ss
+      common/dypara/s,ss
 c      common/tm/tm
 c      common/internal/qt,q,q2
       common/const2/pi,cf,ca,tr,xnc
@@ -344,7 +344,7 @@ c      common/yv/yv,expyp,expym
       common/isetproton/isetproton
 c      common/dypdf/ih1,ih2
       common/vjorder/iord
-      common/para/s,ss
+      common/dypara/s,ss
 c      common/tm/tm
 c      common/fractions/x1,x2
 c      common/internal/qt,q,q2
@@ -493,7 +493,7 @@ c      common/yv/yv,expyp,expym
       common/isetproton/isetproton
 c      common/dypdf/ih1,ih2
       common/vjorder/iord
-      common/para/s,ss
+      common/dypara/s,ss
 c      common/tm/tm
 c      common/fractions/x1,x2
 c      common/internal/qt,q,q2

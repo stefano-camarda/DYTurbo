@@ -78,7 +78,7 @@ extern "C"
   extern struct {
     double s_;
     double ss_;
-  } para_;
+  } dypara_;
 
   //variables
   /*
