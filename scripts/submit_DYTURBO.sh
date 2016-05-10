@@ -105,16 +105,19 @@ prepare_in(){
     # dimension of integration
     resumdim=4
     ctdim=8
-    [[ $terms =~ RES3D  ]] && resumdim=3
-    [[ $terms =~ RES2D  ]] && resumdim=2
-    [[ $terms =~ CT3D   ]] &&    ctdim=3
-    [[ $terms =~ CT2D   ]] &&    ctdim=2
-    # ranges / list of ranges
+    [[ $terms =~ RES3[DP]  ]] && resumdim=3
+    [[ $terms =~ RES2[DP]  ]] && resumdim=2
+    [[ $terms =~ CT3[DP]   ]] &&    ctdim=3
+    [[ $terms =~ CT2[DP]   ]] &&    ctdim=2
+    # pcubature
+    pcubature=false
+    [[ $terms =~ [2,3]P   ]] &&    pcubature=true
+    # ranges / list of ranges -- HARDCODED
     setloqtbin=$loqtbin
     sethiqtbin=$hiqtbin
     setloybin=$loybin
     sethiybin=$hiybin
-    if [[ $terms =~ [23]D ]];
+    if [[ $terms =~ [23][DP] ]];
     then
         setloqtbin=` seq -s' ' $loqtbin 0.5 $hiqtbin `
         setloybin=`  seq -s' ' $loybin  0.2 $hiybin  `
@@ -276,6 +279,7 @@ prepare_in(){
             s|SETQTRECNAIVE|$qtrec_naive|g   ;
             s|SETQTRECCS|$qtrec_cs|g         ;
             s|SETQTRECKT0|$qtrec_kt0|g       ;
+            s|SETPCUBATURE|$pcubature|g      ;
             s|SETEVOLMODE|$evolmode|g        ;
             s|SETPDFERRORS|$setPDFerrors|g   ;
             s|SETSROOT|$sroot|g              ; " tmp
@@ -856,8 +860,8 @@ submit_grid(){
     finalize_grid_submission
 }
 
+DRYRUN=echo 
 submit_parsed(){
-    DRYRUN=echo 
     program=dyturbo
     queue=atlasshort
     cubacores=0
@@ -884,7 +888,7 @@ submit_parsed(){
             for terms in $termlist
             do
                 [[ $target =~ grid ]] || [[ $seedlist =~ - ]]  || seedlist=1-$seedlist
-                [[ $terms  =~ [23]D   ]] && seedlist=1
+                [[ $terms  =~ [23][DP]   ]] && seedlist=1
                 for order in $orderlist
                 do
                     # skip incorrect terms and order combinations
@@ -894,7 +898,7 @@ submit_parsed(){
                     variationlist=$pdfvarlist
                     NsplitQT=1
                     NsplitY=1
-                    if [[ $terms =~ [23]D ]]
+                    if [[ $terms =~ [23][DP] ]]
                     then
                         NPDF=50
                         if [[ $pdfset == CT10nnlo ]] || [[ $pdfset =~ CT14 ]]
@@ -912,10 +916,12 @@ submit_parsed(){
                         then
                             variationlist=array
                             seedlist=$NPDF
+                            [[ $target =~ mogon ]] && seedlist=100-$(( 100+$NPDF ))
                         fi
                         # split per kinematic region
                         NsplitQT=10
                         NsplitY=5
+                        [[ $terms =~ [23]P ]] && NsplitQT=5 && NsplitY=5
                     fi
                     for variation in $variationlist
                     do
@@ -1161,6 +1167,10 @@ parse_inputs(){
             --evolmode)
                 evolmode=$2
                 shift
+                ;;
+            # submit jobs
+            RUN)
+                DRYRUN=
                 ;;
             #  HELP and OTHER
             -h|--help)

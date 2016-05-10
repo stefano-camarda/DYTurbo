@@ -2086,11 +2086,48 @@ def plot_PDFprofiled():
                 [
                     [ "nominal"  , nominal  .format(proc),  "h_qt"],
                     [ "profiled" , profiled .format(proc), "h_qt"],
-                ], compareType="ratio", normalise=True, cdiv=0.4
+                ], compareType="ratio0", normalise=True, cdiv=0.4
                 )
         pass
     pl.MakePreviewFromList(0,"profPDF_ratio")
     pass
+
+def gridtest_plots():
+    # print uncertainties
+    mergefile="results_grid_VIRT/merge.root"
+    file1="results_grid_VIRT/user.jcuth.dyturbo_wp_lhc7_CT10nnlo_all_o2qt0100y-55tVIRT_seed_v1462484560_results_merge.root/user.jcuth.8351056._000003.results_merge.root"
+    pl.CompareHistsInFiles(
+            "VIRT_Ai4_merge_test",
+            [
+                [ "merge (average)", mergefile, "p_qt_A4" ],
+                # [ "merge (median)", mergefile, "p_qt_A4_median" ],
+                # [ "merge (outlier)", mergefile, "p_qt_A4_outlier" ],
+                [ "file1", file1, "p_qt_A4" ],
+                ],
+            compareType="ratio0"
+            )
+    # plot pt
+    infile=mergefile
+    pl.CompareHistsInFiles(
+            "VIRT_PDF_test",
+            [
+                [ "central" , infile , "h_qt_median" ]  ,
+                [ "var1"    , infile , "h_qt1_median" ] ,
+                [ "var2"    , infile , "h_qt2_median" ] ,
+                # [ "var3"    , infile , "h_qt3_median" ] ,
+                # [ "var4"    , infile , "h_qt4_median" ] ,
+                # [ "var5"    , infile , "h_qt5_median" ] ,
+                # [ "var6"    , infile , "h_qt6_median" ] ,
+                # [ "var7"    , infile , "h_qt7_median" ] ,
+                # [ "var8"    , infile , "h_qt8_median" ] ,
+                ],
+            compareType="ratio01", minX=50, maxX=90
+            )
+    pl.MakePreviewFromList(0,"Grid_Tests")
+    pass
+
+
+
 
 
 
@@ -2125,7 +2162,8 @@ if __name__ == '__main__' :
     #
     #plot_y()
     #mom_outlier()
-    plot_PDFprofiled()
+    # plot_PDFprofiled()
+    gridtest_plots()
     pass
 
 
