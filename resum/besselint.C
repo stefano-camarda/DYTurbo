@@ -9,6 +9,9 @@
 
 #include <LHAPDF/LHAPDF.h>
 
+double C1 = 1.;//1.2;
+double C3 = 1.;//1.2;
+
 //fortran interface
 void besselint_(double &b, double &qt, double &q2)
 {
@@ -22,22 +25,42 @@ double besselint::bint(double b)
   complex <double> bb = b;
   double qt = resint::_qt;
 
-  //bscale = a*b0/b
-  pdfevol::bscale = resconst::b0*resint::a/b;
+  //pdfevol::bscale is used for
+  //alpq (C1)
+  //pdfevol::alpr (C3)
+  //pdfevol::XL (C3)
+  //aexp (C1)
+  //it also used in evolmode 1 and 4 as factorisation scale
+  
+
+  //The soft scale of the resummation is b0/b. The factor a = mll/mures is introduced because the b scale is used in alphasl
+  //Introduce two scales:
+  //mub = C1*b0/b is the lower integration limit of the Sudakov integral
+  complex <double> mub = resint::a * resconst::b0/b * C1;
+  //pdfevol::bscale = C3*b0/b is the "soft" factorisation scale at which the Wilson coefficient functions are evaluated (see arxiv:1309.1393 for details)
+  pdfevol::bscale = resint::a * resconst::b0/b * C3;
+  
+  //convert to fortran complex number
+  fcomplex fscale2_mub = fcx(pow(mub,2));
+  fcomplex fscale2_mufb = fcx(pow(pdfevol::bscale,2));
+
   //freeze PDF evolution below a certain scale
   //  if (pdfevol::bscale < 5.)
   //    pdfevol::bscale = 5.;
-  fcomplex fscale2 = fcx(pow(pdfevol::bscale,2));
-  
+
+  //pdfevol::bstarscale and pdfevol::bstartilde are not used (be careful, they do no have the C3 scale)
+
   //bstarscale = a*b0/bstar (final scale used for the PDF evolution)
   double bstar = b / sqrt(1+(b*b)/(blimit_.rblim_*blimit_.rblim_));
   pdfevol::bstarscale = resconst::b0*resint::a/bstar;
 
-  //bstarscale with the modification L -> L~, which freezes the scale at muf
+  //bstartilde is bstarscale with the modification L -> L~, which freezes the scale at muf
   pdfevol::bstartilde = pdfevol::bstarscale * resint::mufac / sqrt((pow(pdfevol::bstarscale,2) + resint::mufac2));
   
-  //qbstar = b0/bstar (without a_param)
-  pdfevol::qbstar = resconst::b0/bstar;
+
+  //qbstar is used in evolmode 3
+  //qbstar = b0/bstar, it corresponds to pdfevol::bsstarcale but without a_param
+  pdfevol::qbstar = resconst::b0/bstar*C3;
   
   //  cout << b << "  " << bstar << "  " << blimit_.rblim_ << endl;
   
@@ -77,7 +100,7 @@ double besselint::bint(double b)
   //alpq is used in hcoefficients::calcb, it is alpq = alphas(b0^2/b^2)
   //it is used only at NLL, at NNLL instead aexp and aexpb are used (aexp is the same as alphasl, but with a different blim)
   complex <double> alpq;
-  alpq = resint::alpqres * cx(alphasl_(fscale2));
+  alpq = resint::alpqres * cx(alphasl_(fscale2_mub));
   if (opts.evolmode == 2 || opts.evolmode == 3)
     //In order to have variable flavour evolution, use here a VFN definition of alpq
     //There is possibly an issue here when the renormalisation scale is (very) different from mll, since aass=alphas(muren) is used in xlambda = beta0*aass*blog
@@ -129,12 +152,12 @@ double besselint::bint(double b)
   /********************************************/
 
   //pdfevol::XL = pdfevol::alpqf / alpq; // = 1./cx(alphasl_(fscale2));
-  pdfevol::XL = 1./cx(alphasl_(fscale2)); //XL = alphas(mures2)/alphas(b0^2/b^2)
+  pdfevol::XL = 1./cx(alphasl_(fscale2_mufb)); //XL = alphas(mures2)/alphas(b0^2/b^2)
   pdfevol::XL1 = 1.- pdfevol::XL;
   pdfevol::SALP = log(pdfevol::XL);
   //cout << pdfevol::bscale << "  " << pdfevol::XL << endl;
   // SELECT ORDER FOR EVOLUTION LO/NLO
-  pdfevol::alpr = alpqf * cx(alphasl_(fscale2))*(double)(opts.order-1);
+  pdfevol::alpr = alpqf * cx(alphasl_(fscale2_mufb))*(double)(opts.order-1);
   //force LO evolution
   //pdfevol::alpr = alpqf * cx(alphasl_(fscale2))*(double)(0);
   //cout << b << "  " << scale2 << "  " << pdfevol::SALP << "  " << log(1./cx(alphasl_(fscale2))) << "  " << pdfevol::alpr << "  " << alpq <<  endl;
@@ -171,6 +194,7 @@ double besselint::bint(double b)
   //**************************************
 
   //aexp and aexpb are calculated in alphasl, they are used in hcoefficients::calcb only for the NNLL cross section
+  alphasl_(fscale2_mub);
   complex <double> aexp = cx(exponent_.aexp_); //aexp is actually the ratio alphas(a*b0/b)/alphas(muren)
   
   //In order to have variable flavour evolution, use here a VFN definition of aexp (aexpB instead, should be independent from NF)
