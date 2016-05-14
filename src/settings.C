@@ -444,7 +444,11 @@ InputParser::~InputParser(){
 double InputParser::GetNumber(string name){
     has_key(name);
     string val = data[name];
-    return stod(val);
+    try { return stod(val);
+    } catch (const std::exception &e){
+        printf("Cannot read option '%s' with value '%s' as number.\n",name.c_str(), val.c_str() );
+        throw e;
+    }
 }
 
 string InputParser::GetString(string name){

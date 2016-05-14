@@ -9,7 +9,6 @@
 ## @date 2015-08-13
 
 DRYRUN=echo 
-DRYRUN=
 
 
 mergre_z_run(){
@@ -283,12 +282,12 @@ merge_benchmark(){
 }
 
 merge_general(){
-    #DRYRUN=echo 
+    DRYRUN=echo 
     DRYRUN="/usr/bin/time -v "
     #
     resdir=/home/cuth/work/unimainz/ATLAS/workarea/DYTURBO
     resdir=/home/cuth/workdir_etapfs/DYTURBO_PROD
-    qtymerge=qt010y01
+    qtymerge=qt020y-11
     #
     rm -f mergeconf
     # z0
@@ -321,11 +320,10 @@ merge_general(){
 
 
     #echo  " w{p,m} bm0          {RES,CT}     $resdir/dyturbo-0.9.6.2/results_bm0_WpmRESCT   bm0 11105 benchmark_v0_160311_WZ " >> mergeconf
-    echo " {wp,wm} bm1 {RES,CT} $resdir/dyturbo-0.9.8.1/results_bm1_lsetupFail bm1 11102 benchmark_v1_160317_WZ " >> mergeconf
-    echo " z0      bm1 {RES,CT} $resdir/dyturbo-0.9.8.1/results_bm1_lsetupFail bm1 11101 benchmark_v1_160317_WZ " >> mergeconf
+    #echo " {wp,wm} bm1 {RES,CT} $resdir/dyturbo-0.9.8.1/results_bm1_lsetupFail bm1 11102 benchmark_v1_160317_WZ " >> mergeconf
+    #echo " z0      bm1 {RES,CT} $resdir/dyturbo-0.9.8.1/results_bm1_lsetupFail bm1 11101 benchmark_v1_160317_WZ " >> mergeconf
 
-
-
+    echo " wp      o2$qtymerge {RES2P,CT2P} results  bm1 1  results_merge/ct10nnlo_RESCT_160510 " >> mergeconf
 
     echo -n " merging ... "
     while read -r mline
@@ -341,16 +339,18 @@ merge_general(){
             infiles=`echo $fres | sed "s|$seednum|*|g"`
             outfilebase=`basename $fres | sed "s|$seednum.*||g;s|y-55|ym55|g;s|$inbm|$outbm|g"`
             ##
-            [[ $fres =~ t*3D_ ]] &&
+            [[ $fres =~ t*[23][DP]_ ]] &&
                 MERGER="./bin/merger -cuba " &&
-                infiles=`echo $fres | sed "s|$seednum|*|g;s|$qtymerge|*|g"` &&
-                outfilebase=`basename $fres | sed "s|$seednum.*||g;s|$qtymerge|qt0100ym55|g;"`
-            #echo infiles: `ls $infiles | wc -l`
+                currentseed=`echo $fres |  sed -n "s|.*_seed_1\([0-9]*\).*|\1|p"`
+                infiles=`echo $fres | sed "s|$qtymerge|*|g"` &&
+                outfilebase=`basename $fres | sed "s|array|$currentseed|g;s|$qtymerge|qt0100ym-55|g;s|_seed_.*.root|_seed_outlier.root|g"`
+            #echo $outfilebase $fres infiles: `ls $infiles | wc -l`
             #ls -1 $infiles
             $DRYRUN $MERGER $outdir/${outfilebase}outliers.root $infiles #&& return 0 || return 3
             #echo
         done
     done < mergeconf > mergeout 2>&1
+    #done < mergeconf 2>&1
     echo " output written in mergeout"
 }
 
