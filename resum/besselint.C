@@ -9,9 +9,6 @@
 
 #include <LHAPDF/LHAPDF.h>
 
-double C1 = 1.;//1.2;
-double C3 = 1.;//1.2;
-
 //fortran interface
 void besselint_(double &b, double &qt, double &q2)
 {
@@ -36,9 +33,9 @@ double besselint::bint(double b)
   //The soft scale of the resummation is b0/b. The factor a = mll/mures is introduced because the b scale is used in alphasl
   //Introduce two scales:
   //mub = C1*b0/b is the lower integration limit of the Sudakov integral
-  complex <double> mub = resint::a * resconst::b0/b * C1;
+  complex <double> mub = resint::a * resconst::b0/b * opts.C1;
   //pdfevol::bscale = C3*b0/b is the "soft" factorisation scale at which the Wilson coefficient functions are evaluated (see arxiv:1309.1393 for details)
-  pdfevol::bscale = resint::a * resconst::b0/b * C3;
+  pdfevol::bscale = resint::a * resconst::b0/b * opts.C3;
   
   //convert to fortran complex number
   fcomplex fscale2_mub = fcx(pow(mub,2));
@@ -60,7 +57,7 @@ double besselint::bint(double b)
 
   //qbstar is used in evolmode 3
   //qbstar = b0/bstar, it corresponds to pdfevol::bsstarcale but without a_param
-  pdfevol::qbstar = resconst::b0/bstar*C3;
+  pdfevol::qbstar = resconst::b0/bstar*opts.C3;
   
   //  cout << b << "  " << bstar << "  " << blimit_.rblim_ << endl;
   
