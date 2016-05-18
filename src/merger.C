@@ -134,6 +134,7 @@ class OutlierRemoval{
                 TString name = p_objname;
                 if (doCuba){
                     TH1* tmp_c = find_all_bins(in_objs);
+                    if (tmp_c==0){ continue; }
                     sum_bins(tmp_c,in_objs);
                     tmp_c->SetName(name);
                     output_objects.push_back(tmp_c);
@@ -253,6 +254,7 @@ class OutlierRemoval{
         // Private methods
         void find_all_objects(){
             TFile *f = TFile::Open(infilenames.begin()->Data(), "read");
+            if(f==0||!f->IsOpen()) printf("Cannot Open file: %s \n", infilenames.begin()->Data());
             // get directory
             TIter iKey(f->GetListOfKeys());
             TKey* key=0;

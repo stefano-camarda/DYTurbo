@@ -16,7 +16,7 @@
 #BSUB -W SETWALLTIME
 #BSUB -app Reserve5G
 #BSUB -n SETNPROCESSORS
-#BSUB -R "rusage[atlasio=0],select[hname!='a0135']"
+#BSUB -R "rusage[atlasio=0] select[hname!='a0135' && hname!='a0356' && hname!='a0545']"
 
 shopt -s expand_aliases
 

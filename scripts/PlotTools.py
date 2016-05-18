@@ -1197,6 +1197,10 @@ class PlotTools:
             ratioArgs["minY"]=-10.
             ratioArgs["maxY"]= 10.
             s.SetFrameStyle1D(subHists, **ratioArgs) # scale = 1./(1-cdiv), minY=-10, maxY=10, logX=logx)
+        elif compareType=="rel" :
+            ratioArgs["minY"]=0.
+            ratioArgs["maxY"]=0.1
+            s.SetFrameStyle1D(subHists, **ratioArgs) # scale = 1./(1-cdiv), minY=-10, maxY=10, logX=logx)
         elif compareType=="chi" :
             ratioArgs["minY"]= -3.0
             ratioArgs["maxY"]= 3.0

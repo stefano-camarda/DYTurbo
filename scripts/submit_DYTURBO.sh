@@ -60,7 +60,7 @@ prepare_script(){
     nprocessors=$cubacores
     [[ $cubacores == 0 ]] && nprocessors=1
     walltime=5:00
-    if [[ $program =~ dyres ]] || [[ $variation =~ all ]]
+    if [[ $program =~ dyres ]] || [[ $variation =~ all ]] || [[ $terms =~ [23]P ]]
     then
         walltime=20:00
         queue=atlaslong
@@ -894,6 +894,15 @@ submit_parsed(){
         cubacores=0
         prepare_tarbal
     fi
+    if [[ $rerun =~ dyturbo_ ]]
+    then
+        job_name=$rerun
+        sh_file=$batch_script_dir/${rerun}.sh
+        sed  -i "s|#BSUB -J $rerun.*|#BSUB -J ${rerun}[$seedlist]|g;" $sh_file
+        echo rerun $job_name $seedlist
+        submit_job
+        return
+    fi
 
     for process in $proclist
     do
@@ -935,7 +944,7 @@ submit_parsed(){
                         # split per kinematic region
                         NsplitQT=10
                         NsplitY=5
-                        [[ $terms =~ [23]P ]] && NsplitQT=5 && NsplitY=5
+                        [[ $terms =~ [23]P ]] && NsplitQT=10 && NsplitY=5
                     fi
                     for variation in $variationlist
                     do
@@ -1040,8 +1049,9 @@ clear_files(){
         #rm -f scripts/batch_scripts/*.sh
         #rm -f scripts/infiles/*.in
     else
-        rm -f scripts/batch_scripts/*.sh
-        rm -f scripts/infiles/*.in
+        #rm -f scripts/batch_scripts/*.sh
+        #rm -f scripts/infiles/*.in
+        echo "skiping"
     fi
     rm -f scripts/infiles/*.tar
     rm -f scripts/infiles/*.tar.gz
@@ -1180,6 +1190,12 @@ parse_inputs(){
                 ;;
             --evolmode)
                 evolmode=$2
+                shift
+                ;;
+            --rerun)
+                rerun=$2
+                seedlist=$3
+                shift
                 shift
                 ;;
             # submit jobs
