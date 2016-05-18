@@ -1,4 +1,6 @@
 #include "cuts.h"
+#include "math.h"
+
 bool cuts::user_cuts(double p3[4], double p4[4])
 {
   //uncomment only what is needed
