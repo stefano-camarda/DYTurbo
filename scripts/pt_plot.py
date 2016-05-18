@@ -1067,26 +1067,26 @@ class  makeUncDescrInfo:
 
 class TheoUncStudy:
     def __init__(s):
-        s.processesDesc = [
-                [ "wp" , "W^{+}#rightarrowl^{+}#nu" ],
-                [ "wm" , "W^{-}#rightarrowl^{-}#nu" ],
-                [ "z0" , "Z#rightarrowll"           ],
-                ]
+        s.processesDesc = {
+                  "wp" : "W^{+}#rightarrowl^{+}#nu" ,
+                  "wm" : "W^{-}#rightarrowl^{-}#nu" ,
+                  "z0" : "Z#rightarrowll"           ,
+                }
         s.plotsDesc = [
-                [  "h_qt"         , "q_{T}[GeV];#sigma[pb]" , 100  ],
-                #[  "h_y"          , "y;#sigma[pb]"          , 5   ],
-                #[ "h_qtVy"       , "q_{T}[GeV];y"          , 1e8 ],
-                #[ "p_qtVy_A4"    , "q_{T}[GeV];y;A4"       , 1e8 ],
-                #[  "p_qtVy_A4_prfx" , "q_{T}[GeV];A4"         , 40  ],
-                #[  "p_qtVy_A4_prfy" , "y;A4"                  , 3   ],
-                #[  "p_qtVy_A4_outliers_px" , "q_{T}[GeV];A4"         , 40  ],
-                #[  "p_qtVy_A4_outliers_py" , "y;A4"                  , 3   ],
+                [  "h_qt"                  , "q_{T}[GeV];#sigma[pb]" , 100  ] ,
+                [  "h_y"                   , "y;#sigma[pb]"          , 5   ]  ,
+                [ "h_qtVy"                 , "q_{T}[GeV];y"          , 1e8 ]  ,
+                [ "p_qtVy_A4"              , "q_{T}[GeV];y;A4"       , 1e8 ]  ,
+                [  "p_qtVy_A4_prfx"        , "q_{T}[GeV];A4"         , 40  ]  ,
+                [  "p_qtVy_A4_prfy"        , "y;A4"                  , 3   ]  ,
+                [  "p_qtVy_A4_outliers_px" , "q_{T}[GeV];A4"         , 40  ]  ,
+                [  "p_qtVy_A4_outliers_py" , "y;A4"                  , 3   ]  ,
                 ]
         s.uncDescr =  [
                 ["stat"  , "stat."           , [0]         , "error"       , "#BEC4C9", "#88919A" ],
-                ["alphas", "#alpha_{S} var." , [54,53]     , "pos,neg,sym" , "#FFAB91", "#FF6737" ],
-                ["gpar"  , "g var."          , [52,51]     , "pos,neg,sym" , "#D1FF91", "#ABFE37" ],
-                #["pdf"   , "PDF"             , range(1,51) , "pos,neg,sym" , "#99CDFF", "#45A2FC" ],
+                # ["alphas", "#alpha_{S} var." , [54,53]     , "pos,neg,sym" , "#FFAB91", "#FF6737" ],
+                # ["gpar"  , "g var."          , [52,51]     , "pos,neg,sym" , "#D1FF91", "#ABFE37" ],
+                ["pdf"   , "PDF"             , range(1,51) , "pos,neg,sym" , "#99CDFF", "#45A2FC" ],
                 ]
         s.infoUnc = makeUncDescrInfo(s.uncDescr)
         s.termDesc = [
@@ -1097,8 +1097,21 @@ class TheoUncStudy:
                 [ "REAL" , "(real.)"  , "#66a61e" ] ,
                 [ "VIRT" , "(virt.)"  , "#e6ab02" ] ,
                 ]
-        s.file_template = "results_merge/grid_151123/dyturbo_{}_lhc7_WZZPT-CT10_{}_v1447428851qt0100y05t{}_outliers.root"
         s.MaxUnc=0.015
+        #
+        # s.file_template = "results_merge/grid_151123/dyturbo_{}_lhc7_WZZPT-CT10_{}_v1447428851qt0100y05t{}_outliers.root"
+        s.fname = {
+                "RESCT"        : "results_merge/CT10nnlo_RESCT2P_160512/dyturbo_{}_lhc7_CT10nnlo_{:02d}_o2qt0100y-55t{}.root" ,
+                "VIRT_Maarten" : "results_grid/group.phys-sm.dyturbo_{}_lhc7_CT10nnlo_{}_o2qt0100y-55t{}_seed_v1462837351_results_merge.root/group.phys-sm.8418804._001911.results_merge.root" ,
+                "REAL_Maarten" : "results_grid/group.phys-sm.dyturbo_{}_lhc7_CT10nnlo_{}_o2qt0100y-55t{}_seed_v1462837351_results_merge.root/group.phys-sm.8418801._001202.results_merge.root" ,
+                "VIRT_Fabrice" : "results_grid/group.phys-sm.dyturbo_{}_lhc7_CT10nnlo_{}_o2qt0100y-55t{}_seed_v1462837351_results_merge.root/group.phys-sm.8418804._001911.results_merge.root" ,
+                "REAL_Fabrice" : "results_grid/group.phys-sm.dyturbo_{}_lhc7_CT10nnlo_{}_o2qt0100y-55t{}_seed_v1462837351_results_merge.root/group.phys-sm.8418801._001202.results_merge.root" ,
+                }
+        #
+        s.fname [ "REAL"  ] = s.fname [ "REAL_Maarten" ]
+        s.fname [ "VIRT"  ] = s.fname [ "VIRT_Maarten" ]
+        s.fname [ "RES2P" ] = s.fname [ "RESCT" ]
+        s.fname [ "CT2P"  ] = s.fname [ "RESCT" ]
         pl.MakeNiceGradient()
         pass
 
@@ -1445,59 +1458,119 @@ class TheoUncStudy:
         pl.MakePreviewFromList(0,"unc_study")
         pass
 
+
+    def getHistPDF(s,fnames,hname,term,pdfvar=-1):
+        title=hname+term+pdfvar+str(varOnly)
+        # No PDF variation
+        pdfhname=hname
+        filevar=0
+        if "RES" in term or "CT" in term :
+            # take a pdf variation histogram from ressumed part
+            filevar=pdfvar
+        else if pdfvar>=0 :
+            # take a pdf variation histogram from finite part
+            pdfhname=hname
+            filevar="all"
+        pl.GetHistSetTitNam(title  , fname[term] .format(proc , filevar   , term  )  , pdfhname)   ,
+        return
+        pass
+
+    def getTotalHistPDF(s,hname,pdfvar=0,varOnly=None):
+        #
+        allTerms = list()
+        for term in [ "REAL", "VIRT", "RES2P", "CT2P" ] :
+            pdfvarOnly=pdfvar
+            ## Take PDF variation only per one term
+            if varOnly != None :
+                pdfvarOnly=0
+                if term in str(varOnly) :
+                    pdfvarOnly=pdfvar
+            allTerms .append ( getHistPDF( fname, hname, term, pdfvarOnly))
+            pass
+        #
+        h=allTerms[0].Clone(hname+"TOT"+pdfvar+str(varOnly))
+        [ h.Add(x) for x in allTerms[1:] ]
+        return h
+
+    def DoPDFperTerm(s):
+        proc="wp"
+        hname="h_qt"
+        # make central
+        central = getTotalHistPDF(hname,0)
+        pl.MakePreviewFromList(0,"quadpdf")
+        pass
+
     def DoPDFQuadStudy(s):
         fname1 = "results_merge/quad_151210/dyturbo_wm_lhc7_WZZPT-CT10_{}_qt0100y05t{}_seed_merge.root"
         fname2 = "results_merge/grid_151201/dyturbo_wm_lhc7_WZZPT-CT10_{}_v1447428851qt0100y05t{}_outliers.root"
         fname3 = "results_merge/allPDF_20151216/dyturbo_wm_lhc7_WZZPT-CT10_all_qt0100y05t{}_seed_1010.root"
+                  # results_merge/CT10nnlo_RESCT2P_160512/dyturbo_wp_lhc7_CT10nnlo_{:02d}_o2qt0100y-55tRES2P.root
+        fname1 = "results_merge/CT10nnlo_RESCT2P_160512/dyturbo_{}_lhc7_CT10nnlo_{:02d}_o2qt0100y-55t{}.root"
+        #
         hname1 = "qt_y_total"
         hname2 = "h_qtVy"
+        hname1="h_qt"
         # get
-        centrals = [
-            pl.GetHistSetTitNam("RES3D" , fname1.format(0, "RES3D") , hname1),
-            pl.GetHistSetTitNam("CT3D"  , fname1.format(0, "CT3D")  , hname1),
-            pl.GetHistSetTitNam("REAL"  , fname2.format(0, "REAL")  , hname2),
-            pl.GetHistSetTitNam("VIRT"  , fname2.format(0, "VIRT")  , hname2),
-            #pl.GetHistSetTitNam("REALall", fname3.format(   "REAL") , hname2),
-            #pl.GetHistSetTitNam("VIRTall", fname3.format(   "VIRT") , hname2),
-            ]
-        central = centrals[1].Clone("cent"); centTerms=centrals[1].GetName();
-        #central.Add(centrals[1]); centTerms+=centrals[1].GetName();
-        #central.Add(centrals[2]); centTerms+=centrals[2].GetName();
-        #central.Add(centrals[3]); centTerms+=centrals[3].GetName();
-        central.Print()
-        # do it for total
-        pdfvars=list()
-        for i in range(1,3) :
-            termvars = [
-                pl.GetHistSetTitNam("RES3D" +str(i), fname1.format(i, "RES3D" ) , hname1        ),
-                pl.GetHistSetTitNam("CT3D"  +str(i), fname1.format(i, "CT3D"  ) , hname1        ),
-                pl.GetHistSetTitNam("REAL"  +str(i), fname3.format(   "REAL"  ) , hname2+str(i) ),
-                pl.GetHistSetTitNam("VIRT"  +str(i), fname3.format(   "VIRT"  ) , hname2+str(i) ),
-            ]
-            pdfvar=termvars[1];
-            #pdfvar.Add(termvars[1])
-            #pdfvar.Add(termvars[2])
-            #pdfvar.Add(termvars[3])
-            pdfvars.append(pdfvar)
-            pdfvars[-1].Print()
-        pdfTerms=""
-        #pdfTerms+="RES3D"
-        pdfTerms+="CT3D"
-        #pdfTerms+="REAl"
-        #pdfTerms+="VIRT"
-        # prepare
-        band=pl.MakeUncBand("pdf",[central]+pdfvars,band="pdf",rel=True)
-        band.Print()
-        band.SetMaximum(1e-1)
-        zoom=""
-        zoom="_zoom2"
-        # plot
-        pl.NewCanvas("QuadPDF_"+hname1+"_pdf"+pdfTerms+"_rel"+centTerms+zoom)
-        pl.SetFrameStyle2D([band],maxX=10)
-        band.Draw("same,colz")
-        #central.Draw("same,colz")
-        pl.Save()
-        pl.MakePreviewFromFolder(pl.imgDir+"/QuadPDF_*.pdf")
+        for var in ["wp","wm"] :
+            for term in ["RES2P","CT2P"] :
+                centrals = [
+                    # pl.GetHistSetTitNam("RES3D" , fname1.format(0, "RES3D") , hname1),
+                    # pl.GetHistSetTitNam("CT3D"  , fname1.format(0, "CT3D")  , hname1),
+                    # pl.GetHistSetTitNam("REAL"  , fname2.format(0, "REAL")  , hname2),
+                    # pl.GetHistSetTitNam("VIRT"  , fname2.format(0, "VIRT")  , hname2),
+                    #pl.GetHistSetTitNam("REALall", fname3.format(   "REAL") , hname2),
+                    #pl.GetHistSetTitNam("VIRTall", fname3.format(   "VIRT") , hname2),
+                    pl.GetHistSetTitNam(term , fname1.format(var,0, term) , hname1),
+                    ]
+                central = centrals[0].Clone("cent"); centTerms=centrals[0].GetName();
+                #central.Add(centrals[1]); centTerms+=centrals[1].GetName();
+                #central.Add(centrals[2]); centTerms+=centrals[2].GetName();
+                #central.Add(centrals[3]); centTerms+=centrals[3].GetName();
+                central.Print()
+                # do it for total
+                pdfvars=list()
+                for i in range(1,3) :
+                    termvars = [
+                        # pl.GetHistSetTitNam("RES3D" +str(i), fname1.format(i, "RES3D" ) , hname1        ),
+                        # pl.GetHistSetTitNam("CT3D"  +str(i), fname1.format(i, "CT3D"  ) , hname1        ),
+                        # pl.GetHistSetTitNam("REAL"  +str(i), fname3.format(   "REAL"  ) , hname2+str(i) ),
+                        # pl.GetHistSetTitNam("VIRT"  +str(i), fname3.format(   "VIRT"  ) , hname2+str(i) ),
+                        pl.GetHistSetTitNam(term +str(i)  , fname1.format(var, i , term )  , hname1        ) ,
+                    ]
+                    pdfvar=termvars[0];
+                    # pdfvar.Add(termvars[0])
+                    # pdfvar.Add(termvars[1])
+                    #pdfvar.Add(termvars[2])
+                    #pdfvar.Add(termvars[3])
+                    pdfvars.append(pdfvar)
+                    pdfvars[-1].Print()
+                # calculte PDFVAR
+                pdfvars=list()
+                for ipdf in range (1,51):
+                    pdfvars.append(pl.GetHistSetTitNam(term+str(i),fname1.format(var, i , term  ) , hname1 ) )
+                    pass
+                pdfTerms=""
+                pdfTerms+=term
+                # pdfTerms+="CT3D"
+                #pdfTerms+="REAl"
+                #pdfTerms+="VIRT"
+                # prepare
+                band=pl.MakeUncBand("pdf",[central]+pdfvars,band="pdf",rel=True)
+                # band.Print()
+                # band.SetMaximum(1e-1)
+                zoom=""
+                # zoom="_zoom2"
+                # plot
+                # info=makeInfo(0,0,term,0)
+                # s.PlotCentralWithBand(central,band, info )
+                pl.NewCanvas("QuadPDF_"+var+hname1+"_pdf"+pdfTerms+"_rel"+centTerms+zoom)
+                pl.SetFrameStyle1D([central,band])
+                pl.DrawHistCompareSubPlot([central], [band], compareType="rel")
+                # band.Draw("same,colz")
+                # central.Draw("same")
+                # band.Draw("same")
+                pl.Save()
+        pl.MakePreviewFromList(0,"quadpdf")
         pass
 
 def makeStatPlot():
@@ -2135,35 +2208,77 @@ def gridtest_plots():
 #
 # More details. 
 if __name__ == '__main__' :
-    #print_results();
-    #print_table();
-    #check_cancelation()
-    #w_pt();
-    #w_pt_y();
-    #merge_all_hist()
-    #plot_pt("results/pt_table_CT10nnlo.txt")
-    #quick_calc()
-    #root_file_integral()
-    #wwidth_table()
-    #uncert_as_g()
-    #find_fluctuations()
-    #DY = TheoUncStudy()
-    #DY.DoStudy()
-    #DY.DoPDFQuadStudy()
-    #plot_profile()
-    #
-    #benchmark()
-    #
-    #makeStatPlot()
-    #
-    #cute()
-    #cute_ratioWZ()
-    #pl.MakePreviewFromList(0,"cute")
-    #
-    #plot_y()
-    #mom_outlier()
-    # plot_PDFprofiled()
-    gridtest_plots()
+    # simple arg parse
+    it = sys.argv.__iter__()
+    arg = it.next() # skip file name
+    while True:
+        try :
+            arg = it.next()
+            # print arg
+            if arg == "--print-results" :
+                print_results();
+                print_table();
+                check_cancelation()
+            elif arg == "--wpt" :
+                w_pt();
+                w_pt_y();
+            elif arg == "--merge-all-hist" :
+                merge_all_hist()
+            elif arg == "--plotpt" :
+                plot_pt("results/pt_table_CT10nnlo.txt")
+                quick_calc()
+                root_file_integral()
+            elif arg == "--wwidht-table" :
+                wwidth_table()
+            elif arg == "--uncert-as-g" :
+                uncert_as_g()
+            elif arg == "--find-fluctuations" :
+                find_fluctuations()
+            elif arg == "--theo-unc" :
+                DY = TheoUncStudy()
+                DY.DoStudy()
+            elif arg == "--theo-unc-quad" :
+                DY = TheoUncStudy()
+                DY.DoPDFQuadStudy()
+            elif arg == "--pdf-unc-per-term" :
+                DY = TheoUncStudy()
+                DY.DoPDFperTerm()
+            elif arg == "--plot-profile" :
+                plot_profile()
+            elif arg == "--benchmark" :
+                benchmark()
+            elif arg == "--statplots" :
+                makeStatPlot()
+            elif arg == "--cute" :
+                cute()
+                cute_ratioWZ()
+                pl.MakePreviewFromList(0,"cute")
+            elif arg == "--plot-y" :
+                plot_y()
+            elif arg == "--momemts" :
+                mom_outlier()
+            elif arg == "--pdf" :
+                plot_PDFprofiled()
+            elif arg == "--grid-plots" :
+                gridtest_plots()
+            # elif arg == "--truth" :
+                # s.doTruth=True
+                # add sample and version
+                # sample=it.next()
+                # version=it.next()
+                # s.samples .append ([sample,version])
+                # print "Adding truth ",sample, version
+            elif arg == "--help" or arg == "-h":
+                s.help()
+            elif arg == "-b" :
+                # auto pass of batch mode for root, dont do anything
+                pass
+            else :
+                s.help()
+                raise NotImplementedError ( "Dont know what you mean by "+arg)
+        except StopIteration:
+            break
+        pass
     pass
 
 

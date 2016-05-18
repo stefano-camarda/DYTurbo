@@ -283,11 +283,12 @@ merge_benchmark(){
 
 merge_general(){
     DRYRUN=echo 
-    DRYRUN="/usr/bin/time -v "
+    #DRYRUN="/usr/bin/time -v "
     #
     resdir=/home/cuth/work/unimainz/ATLAS/workarea/DYTURBO
     resdir=/home/cuth/workdir_etapfs/DYTURBO_PROD
-    qtymerge=qt020y-11
+    qtymerge=qt010y-11
+    #qtymerge=qt020y-11
     #
     rm -f mergeconf
     # z0
@@ -304,7 +305,7 @@ merge_general(){
     # wpm
     #echo  " w{p,m} bm0          VIRT         $resdir/dyturbo-0.9.6.2/results_bm012_WpWm     bm0 11105 benchmark_v0_160204_WZ " >> mergeconf
     #echo  " w{p,m} bm0          VIRT         $resdir/dyturbo-0.9.6.2/results_bm012_WpWm     bm1 11105 benchmark_v1_160204_WZ " >> mergeconf
-    #echo  " w{p,m} bm0          VIRT         $resdir/dyturbo-0.9.6.2/results_bm012_WpWm     bm2 11105 benchmark_v2_160204_WZ " >> mergeconf
+    #echo  " w{p,m} bm0          VIRT         $resdir/dyturbo-0.9.6.2/results_bm012_WpWm     bm2 11105 benchmark_v2_160204_WZ " >> mergeconF
     #echo " w{p,m} bm0          REAL         $resdir/dyturbo-0.9.6.2/results_bm0_WZREALVIRT bm0 11105 benchmark_v0_160204_WZ " >> mergeconf
     #echo " w{p,m} bm0          REAL         $resdir/dyturbo-0.9.6.2/results_bm0_WZREALVIRT bm1 11105 benchmark_v1_160204_WZ " >> mergeconf
     #echo " w{p,m} bm0          REAL         $resdir/dyturbo-0.9.6.2/results_bm0_WZREALVIRT bm2 11105 benchmark_v2_160204_WZ " >> mergeconf
@@ -323,7 +324,13 @@ merge_general(){
     #echo " {wp,wm} bm1 {RES,CT} $resdir/dyturbo-0.9.8.1/results_bm1_lsetupFail bm1 11102 benchmark_v1_160317_WZ " >> mergeconf
     #echo " z0      bm1 {RES,CT} $resdir/dyturbo-0.9.8.1/results_bm1_lsetupFail bm1 11101 benchmark_v1_160317_WZ " >> mergeconf
 
-    echo " wp      o2$qtymerge {RES2P,CT2P} results  bm1 1  results_merge/ct10nnlo_RESCT_160510 " >> mergeconf
+    # all
+    #echo " {wp,wm}      o2$qtymerge {RES2P,CT2P} results  bm1 1  results_merge/ct10nnlo_RESCT_160510 " >> mergeconf
+    # separated
+    echo " wp      o2$qtymerge RES2P results  bm1 1  results_merge/ct10nnlo_RESCT_160510 " >> mergeconf
+    echo " wm      o2$qtymerge RES2P results  bm1 1  results_merge/ct10nnlo_RESCT_160510 " >> mergeconf
+    echo " wp      o2$qtymerge CT2P results  bm1 1  results_merge/ct10nnlo_RESCT_160510 " >> mergeconf
+    echo " wm      o2$qtymerge CT2P results  bm1 1  results_merge/ct10nnlo_RESCT_160510 " >> mergeconf
 
     echo -n " merging ... "
     while read -r mline
@@ -332,8 +339,16 @@ merge_general(){
         outdir=results_merge/$prodname
         mkdir -p $outdir
         #
+            #
+            aterm=`echo`
+            aproc=
+            echo mkdir -p results_${aproc}_${aterm}
+            echo mv results/dyturbo_${aproc}_*t${aterm}* results_${aproc}_${aterm}
+        #
+        continue
         for fres in ` eval "ls $indir/dyturbo_${proc}_*_${inbm}*t${term}_*$seednum*root"`
         do
+            #
             #MERGER="./bin/merger -X "
             MERGER="./bin/merger "
             infiles=`echo $fres | sed "s|$seednum|*|g"`
@@ -344,9 +359,13 @@ merge_general(){
                 currentseed=`echo $fres |  sed -n "s|.*_seed_1\([0-9]*\).*|\1|p"`
                 infiles=`echo $fres | sed "s|$qtymerge|*|g"` &&
                 outfilebase=`basename $fres | sed "s|array|$currentseed|g;s|$qtymerge|qt0100ym-55|g;s|_seed_.*.root|_seed_outlier.root|g"`
-            #echo $outfilebase $fres infiles: `ls $infiles | wc -l`
-            #ls -1 $infiles
-            $DRYRUN $MERGER $outdir/${outfilebase}outliers.root $infiles #&& return 0 || return 3
+            if $DRYRUN ;
+            then
+                echo $outfilebase $fres infiles: `ls $infiles | wc -l`
+                #ls -1 $infiles
+            else
+                $DRYRUN $MERGER $outdir/${outfilebase}outliers.root $infiles #&& return 0 || return 3
+            fi
             #echo
         done
     done < mergeconf > mergeout 2>&1
@@ -354,6 +373,158 @@ merge_general(){
     echo " output written in mergeout"
 }
 
+merge_parsed(){
+    mkdir -p $outdir
+    echo "merging"
+    rm -f mergeout
+    for proc in $proclist
+    do
+        for term in $termlist
+        do
+            newindir=$indir
+            if [[ $indir == results ]]
+            then
+                echo -n splitting result files by term $term and proc $proc ....
+                newindir=results_${proc}_${term}
+                mkdir -p $newindir
+                mv $indir/dyturbo_${proc}_*t${term}_*.* $newindir 2> /dev/null 
+                echo "all files moved"
+            fi
+            if [[ $MISSING == qty ]]
+            then
+                echo "find missing $MISSING"
+                oldqt=0
+                for iqt in `seq 10 10 100`
+                do
+                    oldy=-5
+                    for iy in `seq -3 2 5`
+                    do
+                        qty=qt${oldqt}${iqt}y${oldy}${iy}
+                        for seednum in `seq 100 150`
+                        do
+                            ls $newindir/dyturbo_${proc}_${collider}_${pdfset}_array_${order}${qty}t${term}_seed_${seednum}.root > /dev/null
+                        done 
+                        oldy=$iy
+                    done
+                    oldqt=$iqt
+                done
+                continue
+            fi
+            for fres in `find $newindir -name "dyturbo_${proc}_${collider}_${pdfset}_*_${order}${qty}t${term}_seed_${seednum}*root" | sort `
+            do
+                currentseed=`echo $fres |  sed -n "s|.*_seed_1\([0-9]*\).*|\1|p"`
+                infiles=`echo $fres | sed "s|$mergefrom|*|g"`
+                outfilebase=`basename $fres | sed "s|$mergefrom|$mergeto|g"`
+                [[ $fres =~ array ]] &&  outfilebase=`basename $fres | sed "s|array|$currentseed|g;s|$mergefrom|$mergeto|g;s|_seed_.*.root|.root|g"`
+                # merge
+                echo -n $outdir/$outfilebase $fres infiles: `ls $infiles | wc -l` ...
+                #ls -1 $infiles
+                if $DRYRUN $MERGER $outdir/${outfilebase} $infiles  >> mergeout 2>&1 
+                then
+                    echo Done
+                else
+                    cat  mergeout
+                    echo "there was an error with: $MERGER $outdir/${outfilebase} $infiles"
+                    return 3
+                fi
+            done
+        done
+    done
+    [[ $DRYRUN =~ echo ]] && echo This was just test run, please add RUN at the end of commad to confirm merging
+}
+
+help(){
+    echo "
+USAGE:
+    --proc          list of proces'
+    --term          list of terms
+    --indir         path to all root files
+    --merge         merge random seed
+    --qtymerge      merge by qty
+    --outdir        Set outdir
+
+    --find_missing  Try to estimate what is missing
+    RUN|MERGE       Confirm merging
+    -h|--help       Print help and die
+    "
+}
+
+parse_in(){
+    # defaults
+    proclist=wp
+    termlist=VIRT
+    indir=results
+    pdfset=CT10nnlo
+    collider=lhc7
+    seed=10100
+    order=*
+    qty=qt0100y-55
+    mergerby=unset
+    MISSING=unset
+    DRYRUN=echo 
+    MERGER="./bin/merger "
+    outdir="results_merge/`date +%y%m%d`"
+    #
+    echo debug $*
+    while [[ $# > 0 ]]
+    do
+        key=$1
+        #echo debug key $key
+        case $key in
+            # TARGET
+            --proc)
+                proclist="`echo $2|sed 's|,| |g'`"
+                shift
+                ;;
+            --term)
+                termlist="`echo $2|sed 's|,| |g'`"
+                shift
+                ;;
+            --indir)
+                indir=$2
+                shift
+                ;;
+            --merge)
+                mergefrom=$2
+                mergeto=outliers
+                #mergetype=seed
+                seed=$2
+                shift
+                ;;
+            --qtymerge)
+                mergefrom=$2
+                mergeto=$qty
+                #mergetype=qty
+                MERGER="./bin/merger -cuba "
+                qty=$mergefrom
+                seed=
+                shift
+                ;;
+            --outdir)
+                outdir="results_merge/$2"
+                shift
+                ;;
+            --find_missing)
+                MISSING=qty
+                ;;
+            # submit jobs
+            RUN|MERGE)
+                DRYRUN=
+                ;;
+            #  HELP and OTHER
+            -h|--help)
+                help
+                exit 0
+                ;;
+            *)
+                echo Uknown option: $key
+                help
+                exit 3
+                ;;
+        esac
+        shift
+    done
+}
 
 
 #merge_w_pt
@@ -364,8 +535,11 @@ merge_general(){
 
 #merge_cubatures
 #merge_benchmark
-merge_general
+#merge_general
 #merge_stefano_DYRES
 #merge_stefano_DYTURBO
+
+parse_in $*
+merge_parsed
 
 exit 0
