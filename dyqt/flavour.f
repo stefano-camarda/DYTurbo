@@ -13,18 +13,24 @@ C---set to zero if x out of range
           return
       endif
       sqxmu=sqrt(xmu)
-      call evolvePDF(x,sqxmu,fPDF)
+      
+c     call fdist instead of evolvePDF, so that all PDF calls in x space
+c     pass through the same interface, and allows easily to switch off PDFs
+      call fdist(ih,x,sqxmu,fx)
 
-      if (ih.eq.1) then
-        do Iprtn=-5,5
-          fx(Iprtn)=fPDF(Iprtn)/x
-        enddo
-      elseif(ih.eq.-1) then
-        do Iprtn=-5,5
-          fx(+Iprtn)=fPDF(-Iprtn)/x
-       enddo
-      endif
-! Change u and d quarks
+c      call evolvePDF(x,sqxmu,fPDF)
+
+c      if (ih.eq.1) then
+c        do Iprtn=-5,5
+c          fx(Iprtn)=fPDF(Iprtn)/x
+c        enddo
+c      elseif(ih.eq.-1) then
+c        do Iprtn=-5,5
+c          fx(+Iprtn)=fPDF(-Iprtn)/x
+c       enddo
+c     endif
+      
+! Change u and d quarks (convert from LHAPDF to DYRES convention)
       temp=fx(1)
       fx(1)=fx(2)
       fx(2)=temp

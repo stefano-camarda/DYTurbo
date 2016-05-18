@@ -72,6 +72,9 @@ public:
   double kmuren;
   double kmufac;
 
+  //Additional resummation scales
+  double C1,C3;
+  
   //  double a_param;
   
   //IR cut-off

@@ -19,6 +19,10 @@ kmuren          = 1.          # scale factor for the renormalisation scale
 kmufac          = 1.          # scale factor for the factorisation scale
 kmures          = 0.5         # scale factor for the resummation scale
 
+#Additional resummation scales
+C1 = 1.
+C3 = 1.
+
 # EW parameters (Gmu scheme)
 Gf = 1.1663787e-5        # G-Fermi
 zmass = 91.1876          # Mass of the Z boson
