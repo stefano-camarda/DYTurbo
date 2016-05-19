@@ -41,11 +41,33 @@ double cuts::getY(double p[4]){
 double cuts::getEta(double p[4]){
     return atanh(p[2]/sqrt((float) p[0]*p[0] + p[1]*p[1] + p[2]*p[2]));
 }
-double cuts::getMt(double p3[4], double p4[4]){
-    double p[4];
-    p[2]=p3[2]+p4[2];
-    p[3]=p3[3]+p4[3];
-    return sqrt((float)pow(p[3],2)-pow(p[2],2));
+double cuts::getMt(double p3[4], double p4[4])
+{
+  //double p[4];
+  //p[2]=p3[2]+p4[2];
+  //p[3]=p3[3]+p4[3];
+  //return sqrt((float)pow(p[3],2)-pow(p[2],2));
+
+  double cosphi = (p3[0]*p4[0]+p3[1]*p4[1])/sqrt((pow(p3[0],2)+pow(p3[1],2))*(pow(p4[0],2)+pow(p4[1],2)));
+  double mtrans = 2.*sqrt(pow(p3[0],2)+pow(p3[1],2))*sqrt(pow(p4[0],2)+pow(p4[1],2))*(1.-cosphi);
+  mtrans = sqrt(max(mtrans,0.));
+
+  /*
+  TLorentzVector el, nu;
+  if (opts.nproc == 2)
+    {
+      el.SetPxPyPzE(p3[0],p3[1],p3[2],p3[3]);
+      nu.SetPxPyPzE(p4[0],p4[1],p4[2],p4[3]);
+    }
+  else if (opts.nproc == 1)
+    {
+      el.SetPxPyPzE(p4[0],p4[1],p4[2],p4[3]);
+      nu.SetPxPyPzE(p3[0],p3[1],p3[2],p3[3]);
+    }
+  double Mt = sqrt(2 * el.Pt() * nu.Pt() * (1 - TMath::Cos(el.DeltaPhi(nu))));
+  */
+
+  return mtrans;
 }
 double cuts::getM(double p3[4], double p4[4]){
     double p[4];
