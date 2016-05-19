@@ -40,5 +40,11 @@
 
 
 
+# MERGE GRID
+./scripts/merge.sh --proc wp --term REAL --indir results_grid/user.fballi --gridmerge v146.*_results_merge --outdir grid_fabrice_160518 RUN
+
+
+
+
 
 # submit with niter=0 -- same seed

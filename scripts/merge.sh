@@ -390,6 +390,7 @@ merge_parsed(){
                 mv $indir/dyturbo_${proc}_*t${term}_*.* $newindir 2> /dev/null 
                 echo "all files moved"
             fi
+            #
             if [[ $MISSING == qty ]]
             then
                 echo "find missing $MISSING"
@@ -410,12 +411,25 @@ merge_parsed(){
                 done
                 continue
             fi
-            for fres in `find $newindir -name "dyturbo_${proc}_${collider}_${pdfset}_*_${order}${qty}t${term}_seed_${seednum}*root" | sort `
+            #
+            outname="dyturbo_${proc}_${collider}_${pdfset}_*_${order}${qty}t${term}_seed_${seednum}*root"
+            searchfile=$outname
+            if [[ $seed =~ v146 ]]
+            then
+                newindir="$newindir*$outname"
+                searchfile="*results_merge.root* -type d"
+            fi
+            #
+            for fres in `find $newindir -name $searchfile | sort `
             do
                 currentseed=`echo $fres |  sed -n "s|.*_seed_1\([0-9]*\).*|\1|p"`
                 infiles=`echo $fres | sed "s|$mergefrom|*|g"`
                 outfilebase=`basename $fres | sed "s|$mergefrom|$mergeto|g"`
                 [[ $fres =~ array ]] &&  outfilebase=`basename $fres | sed "s|array|$currentseed|g;s|$mergefrom|$mergeto|g;s|_seed_.*.root|.root|g"`
+                if [[ $seed =~ v146 ]]
+                then
+                    infiles="$infiles/*"
+                fi
                 # merge
                 echo -n $outdir/$outfilebase $fres infiles: `ls $infiles | wc -l` ...
                 #ls -1 $infiles
@@ -441,6 +455,7 @@ USAGE:
     --indir         path to all root files
     --merge         merge random seed
     --qtymerge      merge by qty
+    --gridmerge     merge by random seed but from grid
     --outdir        Set outdir
 
     --find_missing  Try to estimate what is missing
@@ -482,6 +497,13 @@ parse_in(){
                 ;;
             --indir)
                 indir=$2
+                shift
+                ;;
+            --gridmerge)
+                mergefrom=$2
+                mergeto=outliers
+                #mergetype=seed
+                seed=v146
                 shift
                 ;;
             --merge)
