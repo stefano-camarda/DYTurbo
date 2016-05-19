@@ -878,9 +878,8 @@ DRYRUN=echo
 submit_parsed(){
     program=dyturbo
     queue=atlasshort
-    cubacores=0
     loqtbin=0
-    hiqtbin=100
+    hiqtbin=50
     loybin=-5
     hiybin=5
     fulllloqtbin=$loqtbin
@@ -1083,21 +1082,24 @@ USAGE: ./scripts/submit_DYTURBO.sh --target [settings]
 
   Setting      [default]   possibilities     description
 
-    --proc     [z0,wp,wm]  {z0,wp,wm}             set the mass and scales
-    --pdfset   [CT10nnlo]  {LHAPDFname}           set LHAPDF set name
-    --pdfvar   [0]         {int or all or array}  set member number or run all
-    --collider [lhc7]      {tev1,tev2,lhc7,lhc8}  set hadron type and energy
-    --order    [2]         {1,2}                  1: NLL+NLO 2: NNLL+NNLO
-    --term     [RES3D]     {RES,CT}               Monte-Carlo integration with order as above
-                           {RES3D,CT3D}           Cubature 3D integration with order set above
-                           {RES2D,CT2D}           Cubature 2D integration with order set above
-                           {REAL,VIRT}            Real and virt for order=2 with MC
-                           {LO}                   Fixed term for order=1 with MC
-    --gpar     [1.0]       {float}                Set gpar value
-    --lepcutPt [20.0]      {float}                This will turn on make lepton cuts and set pt>ptcut
-    --lepcutY  [2.5]       {float}                This will turn on make lepton cuts and set absY>ycut
-    --seeds    [1000]      {int}                  Set range (for mogon) or Njobs (grid)
-    --evolmode [0]         {0,1,2,3}              Set evolmode
+    --proc      [z0,wp,wm]  {z0,wp,wm}             set the mass and scales
+    --pdfset    [CT10nnlo]  {LHAPDFname}           set LHAPDF set name
+    --pdfvar    [0]         {int or all or array}  set member number or run all
+    --collider  [lhc7]      {tev1,tev2,lhc7,lhc8}  set hadron type and energy
+    --order     [2]         {1,2}                  1: NLL+NLO 2: NNLL+NNLO
+    --term      [RES3D]     {RES,CT}               Monte-Carlo integration with order as above
+                            {RES3D,CT3D}           Cubature 3D integration with order set above
+                            {RES2D,CT2D}           Cubature 2D integration with order set above
+                            {REAL,VIRT}            Real and virt for order=2 with MC
+                            {LO}                   Fixed term for order=1 with MC
+    --gpar      [1.0]       {float}                Set gpar value
+    --lepcutPt  [20.0]      {float}                This will turn on make lepton cuts and set pt>ptcut
+    --lepcutY   [2.5]       {float}                This will turn on make lepton cuts and set absY>ycut
+    --seeds     [1000]      {int}                  Set range (for mogon) or Njobs (grid)
+    --evolmode  [0]         {0,1,2,3}              Set evolmode
+    --cubacores [0]         {int}                  Set number of paralel cores for cuba
+
+    --rerun    "jobname"
 
     many of then can be set with comma separation.
 
@@ -1122,6 +1124,7 @@ parse_inputs(){
     lepPtCut=20.
     lepYCut=2.5
     termlist=RES3D
+    cubacores=0
     evolmode=0
     gpar=1.0
     seedlist=1000
@@ -1196,6 +1199,10 @@ parse_inputs(){
                 rerun=$2
                 seedlist=$3
                 shift
+                shift
+                ;;
+            --cores)
+                cubacores=$2
                 shift
                 ;;
             # submit jobs
