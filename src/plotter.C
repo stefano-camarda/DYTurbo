@@ -622,8 +622,7 @@ void plotter::print_dipoleVec(std::vector<XsecPoint> vec ){
 void plotter::rebin_vec(std::vector<double> & in_vec, std::vector<double> & out_vec, int N ){
     for (size_t ibin=0; ibin<in_vec.size(); ibin+=N) out_vec.push_back(in_vec[ibin]);
     if (in_vec.size() % N != 0 ) out_vec.push_back(in_vec.back());
-    // debug
-    printf(" out_vec = [ "); for (auto val: out_vec) printf("%f ",val); printf("] \n ");
+    // debug printf(" out_vec = [ "); for (auto val: out_vec) printf("%f ",val); printf("] \n ");
 }
 
 
