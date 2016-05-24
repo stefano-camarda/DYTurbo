@@ -33,16 +33,20 @@
 #./scripts/submit_DYTURBO.sh --mogon --rerun dyturbo_wm_lhc7_CT10nnlo_array_o2qt90100y35tRES2P_seed 113 RUN
 #./scripts/submit_DYTURBO.sh --mogon --rerun dyturbo_wm_lhc7_CT10nnlo_array_o2qt4050y35tCT2P_seed 121,136,148,149 RUN
 
+#./scripts/submit_DYTURBO.sh --mogon --proc wp --term RES2D,CT2D --pdfset MMHT2014nnlo68cl --pdfvar array
+#./scripts/submit_DYTURBO.sh --mogon --proc wm --term RES2D,CT2D --pdfset MMHT2014nnlo68cl --pdfvar array
+./scripts/submit_DYTURBO.sh --mogon --proc z0 --term RES2D,CT2D --pdfset MMHT2014nnlo68cl --pdfvar array RUN
 
 #RERUN:
-./scripts/submit_DYTURBO.sh --mogon --proc z0 --term RES2P,CT2P --pdfset CT10nnlo --pdfvar array RUN
-#./scripts/merge.sh --proc z0 --term RES2P,CT2P --qtymerge qt05y-11 --outdir CT10nnlo_RESCT2P_160512
+#./scripts/submit_DYTURBO.sh --mogon --proc z0 --term RES2P,CT2P --pdfset CT10nnlo --pdfvar array RUN
+#./scripts/merge.sh --proc z0 --term RES2P,CT2P --qtymerge qt05y-11 --outdir CT10nnlo_RESCT2P_160523 RUN
 
 #./scripts/submit_DYTURBO.sh --mogon --proc wp,wm --term RES2P,CT2P --pdfset CT10nnlo --pdfvar array
 #./scripts/merge.sh --proc wp,wm --term RES2P,CT2P --qtymerge qt010y-11 --outdir CT10nnlo_RESCT2P_160512
 
 # MERGE GRID
-#./scripts/merge.sh --proc wp --term REAL --indir results_grid/user.fballi --gridmerge v146.*_results_merge --outdir grid_fabrice_160518 RUN
+#./scripts/merge.sh --proc wm --term REAL --indir  results_grid/group.perf-jets  --gridmerge v146.*_results_merge --outdir grid_fabrice_160523 RUN
+#./scripts/merge.sh --proc wm --term VIRT --indir  results_grid/group.perf-jets  --gridmerge v146.*_results_merge --outdir grid_fabrice_160523 RUN
 
 
 
