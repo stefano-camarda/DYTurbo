@@ -29,7 +29,8 @@
 
 // CXX option parser: https://raw.githubusercontent.com/jarro2783/cxxopts/master/src/cxxopts.hpp
 #include "cxxopts.hpp"
-namespace po=cxxopts;
+namespace po=cxxopts; // inspired by po = boost::program_options
+
 #define PRINT_HELP(RTN) do {printf("%s\n",opts.help({""}).c_str()); return RTN ;} while (false)
 
 typedef std::string SString;
@@ -892,7 +893,7 @@ bool isOpt(const char* test, const char * argvi){
 int main(int argc, char * argv[]){
 
     // Declare the supported options.
-    po::Options opts(argv[0], " outfile infilenams \n\n Program for merging and averaging histograms.");
+    po::Options opts(argv[0], " outfile infilenames \n\n Program for merging and averaging histograms.");
     // hidden arguments
     opts.add_options("Hidden")
         ("outfile"     , "Name of output file. ", po::value<SString>() )
@@ -908,11 +909,17 @@ int main(int argc, char * argv[]){
         ("p,2D-proj"   , "Make 2d projections and outliers for 2D."                  )
         ("r,rebin"     , "Add pt histograms with Z pt LHC 7TeV rebin."               )
         ("c,cuba"      , "Add all histograms from cubature integration."             )
-        ("v,verbose"   , "Increase verbosity (more v the more chaty (max=vvvvvv))."  )
+        ("v,verbose"   , "Increase verbosity (more v the more chaty (max=vvvvvvv))." )
     ;
     // Parse
-    opts.parse_positional( std::vector<SString>({"outfile", "infilenames"}) );
-    opts.parse(argc,argv);
+    try {
+        opts.parse_positional( std::vector<SString>({"outfile", "infilenames"}) );
+        opts.parse(argc,argv);
+    }
+    catch (cxxopts::OptionException &e){
+        printf("Bad arguments: %s \n",e.what());
+        PRINT_HELP(4);
+    }
     // test and die
     if (opts.count("test")){
         //
@@ -966,70 +973,6 @@ int main(int argc, char * argv[]){
     if (opts.count("cuba"      )) {merger.doCuba=true; merger.doRebin=false;}
     if (opts.count("verbose"   )) merger.verbose=10*opts.count("verbose");
     // run merger
-    merger.Init();
-    merger.Merge();
-    merger.Write();
-    return 0;
-
-
-
-
-
-
-    //---------------
-    // OLD SCHOOL WAY
-    //---------------
-    int i=1;
-    if (argc < 3)
-    {
-        if ( isOpt("-h",argv[i]) || isOpt("--help",argv[i]) ) {
-            help(argv[0]);
-            i++;
-            return 0;
-        }
-        printf("Not enough arguments (at least 1 output and 1 inputs )\n");
-        help(argv[0]);
-        return 1;
-    }
-    //OutlierRemoval merger;
-    // parse argumets
-    bool isInputSet=false;
-    for (; i < argc; i++){
-        // need help ?
-        if ( isOpt("-h",argv[i]) || isOpt("--help",argv[i]) ) {
-            help(argv[0]);
-            return 0;
-        }
-        // parse x section normalization
-        if (isOpt("-x",argv[i])){ 
-            merger.doXsecNormalization=true;
-            i++;
-        }
-        // parse verbosity level
-        if (isOpt("-v",argv[i])){
-            merger.verbose=10;
-            i++;
-        }
-        // parse 2d switch
-        if (isOpt("-2d",argv[i])){
-            merger.do2D=true;
-            i++;
-        }
-        // parse cubature merging swithc
-        if (isOpt("-cuba",argv[i])){
-            merger.doCuba=true;
-            merger.doRebin=false;
-            i++;
-        }
-        //First non-optional argument is the output file
-        if(!isInputSet){
-            merger.SetOutputFile(argv[i]);
-            isInputSet=true;
-            i++;
-        }
-        //Next arguments are input files
-        merger.AddInputFile(argv[i]);
-    }// parse end
     merger.Init();
     merger.Merge();
     merger.Write();
