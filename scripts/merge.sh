@@ -384,10 +384,10 @@ merge_parsed(){
             newindir=$indir
             if [[ $indir == results ]]
             then
-                echo -n splitting result files by term $term and proc $proc ....
-                newindir=results_${proc}_${term}
+                echo -n splitting result files by term $term , pdf $pdfset and proc $proc ....
+                newindir=results_${proc}_${pdfset}_${term}
                 mkdir -p $newindir
-                mv $indir/dyturbo_${proc}_*t${term}_*.* $newindir 2> /dev/null 
+                mv $indir/dyturbo_${proc}_${pdfset}*t${term}_*.* $newindir 2> /dev/null 
                 echo "all files moved"
             fi
             #
@@ -428,7 +428,8 @@ merge_parsed(){
                 [[ $fres =~ array ]] &&  outfilebase=`basename $fres | sed "s|array|$currentseed|g;s|$mergefrom|$mergeto|g;s|_seed_.*.root|.root|g"`
                 if [[ $seed =~ v146 ]]
                 then
-                    infiles="$infiles/*"
+                    # GRIDMERGE
+                    infiles="$infiles/*.root"
                 fi
                 # merge
                 echo -n $outdir/$outfilebase $fres infiles: `ls $infiles | wc -l` ...
@@ -531,7 +532,7 @@ parse_in(){
                 ;;
             # submit jobs
             RUN|MERGE)
-                DRYRUN=
+                DRYRUN="/usr/bin/time -v "
                 ;;
             #  HELP and OTHER
             -h|--help)
