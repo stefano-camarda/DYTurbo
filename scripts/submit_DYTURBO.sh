@@ -923,7 +923,7 @@ submit_parsed(){
                     if [[ $terms =~ [23][DP] ]]
                     then
                         NPDF=50
-                        if [[ $pdfset == CT10nnlo ]] || [[ $pdfset =~ CT14 ]]
+                        if [[ $pdfset == CT10nnlo ]] || [[ $pdfset =~ CT14 ]] || [[ $pdfset =~ MMHT2014nnlo68cl ]]
                         then
                             NPDF=50
                         else
