@@ -81,7 +81,11 @@ class OutlierRemoval{
                     if (verbose>3) printf(" objname out: %s\n",objname_out);
                     // Retrieve object
                     TH1 * o = (TH1*) it_f->Get(objname);
-                    if (o!=0) o = (TH1*)  o->Clone(objname_out);
+                    if (o!=0) {
+                        TH1 * tmp = o;
+                        o = (TH1*)  o->Clone(objname_out);
+                        delete tmp;
+                    } 
                     // If o==0 than we have wrong histogram or retrieved object might by projection. Test it:
                     if (o==0 && len>3 ){
                         // Extract basename: it should end with '_px' where 'x' might be one of: `zyuvn`
@@ -118,6 +122,7 @@ class OutlierRemoval{
                             if (doXsecNormalization) normalize(o);
                             delete h2d;
                         } else if (proj == 'n') {
+                            if(h2d!=0) delete h2d;
                             // Its not projection but rebining to ptz to measuremnt binning
                             TString basename = p_objname(0,len-6); // remove "_rebin" at the end of string
                             if (verbose>1) printf("basename: %s , proj %c \n",basename.Data(), proj);
@@ -132,11 +137,6 @@ class OutlierRemoval{
                             delete h1;
                         }
                         if (is_empty(o,objname,objname_out)) continue;
-                        // Test if it has bin content with NaN
-                        for ( auto ibin : loop_bins(o)){
-                            if (o->GetBinContent(ibin) != o->GetBinContent(ibin))
-                                printf(" NAN bin: %d",ibin);
-                        }
                     } else if (doXsecNormalization && !isProfile(o)) normalize(o);
                     if (verbose>2) o->Print();
                     // adding object to list
@@ -198,7 +198,7 @@ class OutlierRemoval{
                     o_average->SetName((name+"_outliers").Data());
                     output_objects.push_back(o_average);
                     // STOP here for TH1,2,3
-                    delete_objs(in_objs); continue;
+                    delete_objs(in_objs);
                 } else {
                     // Profiles only -- total profile with a priori uncertainty
                     // NOTE: Adding up profiles would be enough for profiles,
@@ -229,7 +229,10 @@ class OutlierRemoval{
                     if (verbose>2) {printf("  outliers removed \n"); print_range(o_average); print_range(o_profile);}
                     //
                     // release input histograms
+                    delete_objs(in_objs);
                 }
+                // just for sure
+                delete_objs(in_objs);
             }
             if (verbose>1) printf("End of merge, closing files \n");
 	    //            close_all_infiles();
@@ -818,7 +821,7 @@ class OutlierRemoval{
         TH1* clone_empty(TH1* h,TString newname){
             if (verbose>2) printf( " empty clone %s \n", newname.Data());
             TH1* tmp = (TH1*) h->Clone(newname.Data());
-            tmp->SetDirectory(0);
+            //tmp->SetDirectory(0);
             tmp->Reset();
             if (verbose>2) print_range(tmp);
             return tmp;
