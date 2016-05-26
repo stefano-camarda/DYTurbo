@@ -18,7 +18,6 @@ DRYRUN=echo
 dyturbo_project=`pwd -P`
 batch_script_dir=$dyturbo_project/scripts/batch_scripts
 in_files_dir=$dyturbo_project/scripts/infiles
-result_dir=$dyturbo_project/results
 # templates
 batch_template=$dyturbo_project/scripts/run_DYTURBO_TMPL.sh
 dyturbo_in_tmpl=$dyturbo_project/scripts/DYTURBO_TMPL.in
@@ -48,6 +47,7 @@ seedlist=unset
 
 queue=atlasshort
 prepare_script(){
+    result_dir=$dyturbo_project/results_${process}_${pdfset}_${terms}
     mkdir -p $batch_script_dir
     mkdir -p $result_dir
     sample=${pdfset}_${variation}

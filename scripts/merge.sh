@@ -354,11 +354,13 @@ merge_general(){
             infiles=`echo $fres | sed "s|$seednum|*|g"`
             outfilebase=`basename $fres | sed "s|$seednum.*||g;s|y-55|ym55|g;s|$inbm|$outbm|g"`
             ##
-            [[ $fres =~ t*[23][DP]_ ]] &&
-                MERGER="./bin/merger -cuba " &&
+            if [[ $fres =~ t*[23][DP]_ ]]
+            then
+                MERGER="./bin/merger -cvvvvvvvv "
                 currentseed=`echo $fres |  sed -n "s|.*_seed_1\([0-9]*\).*|\1|p"`
-                infiles=`echo $fres | sed "s|$qtymerge|*|g"` &&
+                infiles=`echo $fres | sed "s|$qtymerge|*|g"`
                 outfilebase=`basename $fres | sed "s|array|$currentseed|g;s|$qtymerge|qt0100ym-55|g;s|_seed_.*.root|_seed_outlier.root|g"`
+            fi
             if $DRYRUN ;
             then
                 echo $outfilebase $fres infiles: `ls $infiles | wc -l`
@@ -387,7 +389,7 @@ merge_parsed(){
                 echo -n splitting result files by term $term , pdf $pdfset and proc $proc ....
                 newindir=results_${proc}_${pdfset}_${term}
                 mkdir -p $newindir
-                mv $indir/dyturbo_${proc}_${pdfset}*t${term}_*.* $newindir 2> /dev/null 
+                mv $indir/dyturbo_${proc}_*_${pdfset}_*t${term}_*.* $newindir 2> /dev/null 
                 echo "all files moved"
             fi
             #
@@ -429,12 +431,14 @@ merge_parsed(){
                 if [[ $seed =~ v146 ]]
                 then
                     # GRIDMERGE
-                    infiles="$infiles/*.root"
+                    infiles=$infiles/'*.root'
                 fi
                 # merge
                 echo -n $outdir/$outfilebase $fres infiles: `ls $infiles | wc -l` ...
                 #ls -1 $infiles
-                if $DRYRUN $MERGER $outdir/${outfilebase} $infiles  >> mergeout 2>&1 
+                $DRYRUN $MERGER $outdir/${outfilebase} $infiles  >> mergeout 2>&1 
+                #sleep 1
+                if [[ $DRYRUN =~ echo ]] || [ -f $outdir/${outfilebase} ]
                 then
                     echo Done
                 else
@@ -478,7 +482,7 @@ parse_in(){
     mergerby=unset
     MISSING=unset
     DRYRUN=echo 
-    MERGER="./bin/merger "
+    MERGER="./bin/merger " # -tvvvvvvvvv "
     outdir="results_merge/`date +%y%m%d`"
     #
     echo debug $*
@@ -494,6 +498,10 @@ parse_in(){
                 ;;
             --term)
                 termlist="`echo $2|sed 's|,| |g'`"
+                shift
+                ;;
+            --pdfset)
+                pdfset=$2
                 shift
                 ;;
             --indir)
@@ -518,7 +526,7 @@ parse_in(){
                 mergefrom=$2
                 mergeto=$qty
                 #mergetype=qty
-                MERGER="./bin/merger -cuba "
+                MERGER="./bin/merger -c  " #"-vvvvvvvv "
                 qty=$mergefrom
                 seed=
                 shift
