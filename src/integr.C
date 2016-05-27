@@ -9,6 +9,7 @@
 #include "integr.h"
 #include "settings.h"
 #include "interface.h"
+#include "phasespace.h"
 #include "cuba.h"
 
 #include <ctime>
@@ -16,14 +17,6 @@
 #include <iostream>
 #include <iomanip>
 #include <vector>
-
-//integration boundaries
-double mmin, mmax;
-double qtmin, qtmax;
-double ymin, ymax;
-
-//global variables for phase space
-double _m, _qt, _y, _costh;
 
 //Vector boson 4-momentum and boost
 double pV[4];
@@ -51,46 +44,6 @@ const double xq8[8]={-0.1834346424956498,0.1834346424956498,-0.5255324099163290,
 const double wq8[8]={0.3626837833783620,0.3626837833783620,0.3137066458778873,0.3137066458778873,0.2223810344533745,0.2223810344533745,0.1012285362903763,0.1012285362903763};
 
 integrand_t thphiintegrand(const int &ndim, const double x[], const int &ncomp, double f[]);
-
-
-void setbounds(double m1, double m2, double qt1, double qt2, double y1, double y2)
-{
-  mmin = m1;
-  mmax = m2;
-  qtmin = qt1;
-  qtmax = qt2;
-  ymin = y1;
-  ymax = y2;
-    
-  //Check ordering
-  if (mmin > mmax || qtmin > qtmax || ymin > ymax)
-    {
-      cout << "Error on integration boundaries" << endl;
-      exit(-1);
-    }
-}
-
-void setcthmqty(double costh, double mm, double qtt, double yy)
-{
-  _costh = costh;
-  _m = mm;
-  _qt = qtt;
-  _y = yy;
-}
-void setmqty(double mm, double qtt, double yy)
-{
-  _m = mm;
-  _qt = qtt;
-  _y = yy;
-}
-void setcosth(double costh) {_costh = costh;}
-void setm(double mm) {_m = mm;}
-void setqt(double qtt) {_qt = qtt;}
-void sety(double yy) {_y = yy;}
-
-//fortran functions
-void setqt_(double &qtt) {_qt = qtt;}
-void sety_(double &yy) {_y = yy;}
 
 void genV4p(double m, double qt, double y, double phi)
 {
@@ -247,7 +200,7 @@ void genV4p(double m, double qt, double y, double phi)
 //fortran function
 void genv4p_()
 {
-  genV4p(_m, _qt, _y, 0);
+  genV4p(phasespace::m, phasespace::qt, phasespace::y, 0.);
 }
 
 inline void genl4p(float costh, float phi_lep) //quite significant speed up with float numbers for the sine cosine functions
@@ -259,7 +212,7 @@ inline void genl4p(float costh, float phi_lep) //quite significant speed up with
     {
       //with the cuba integration option, the phase space is generated uniformly
       //and costh is calculated using Catani's formulas arXiv:1507.0693 (25-32)
-      p4cm[3]=_m/2.;
+      p4cm[3]=phasespace::m/2.;
       p4cm[0]=p4cm[3]*sin(acos(costh))*sin(phi_lep);
       p4cm[1]=p4cm[3]*sin(acos(costh))*cos(phi_lep);
       p4cm[2]=p4cm[3]*costh;
@@ -269,7 +222,7 @@ inline void genl4p(float costh, float phi_lep) //quite significant speed up with
       {
 	//with the naive prescription, don't need to bother much since the rest frame axes
 	//are the native x,y,z axes of the laboratory frame
-	p4cm[3]=_m/2.;
+	p4cm[3]=phasespace::m/2.;
 	p4cm[0]=p4cm[3]*sin(acos(costh))*sin(phi_lep);
 	p4cm[1]=p4cm[3]*sin(acos(costh))*cos(phi_lep);
 	p4cm[2]=p4cm[3]*costh;
@@ -286,7 +239,7 @@ inline void genl4p(float costh, float phi_lep) //quite significant speed up with
 	  //generate a lepton p4 according to the naive prescription and
 	  //check that costh of Catani's formula is equal to
 	  //the angle between the polar axis of the rest frame and the lepton p4
-	  p4cm[3]=_m/2.;
+	  p4cm[3]=phasespace::m/2.;
 	  p4cm[0]=p4cm[3]*sin(acos(costh))*sin(phi_lep);
 	  p4cm[1]=p4cm[3]*sin(acos(costh))*cos(phi_lep);
 	  p4cm[2]=p4cm[3]*costh;
@@ -298,8 +251,8 @@ inline void genl4p(float costh, float phi_lep) //quite significant speed up with
 	  double costhcs = (zax[0]*p4cm[0]+zax[1]*p4cm[1]+zax[2]*p4cm[2])
 	  / sqrt(pow(zax[0],2)+pow(zax[1],2)+pow(zax[2],2))
 	  / sqrt(pow(p4cm[0],2)+pow(p4cm[1],2)+pow(p4cm[2],2));
-	  cout << "rapidity " << _y << " costh  " <<  costh 
-	  << " costhcs calculated " << costhcs << " costhcs catani " << (1.-4.*(kap1[3]*p4[3]-kap1[2]*p4[2]-kap1[1]*p4[1]-kap1[0]*p4[0])/(_m*_m)) << endl;
+	  cout << "rapidity " << phasespace::y << " costh  " <<  costh 
+	  << " costhcs calculated " << costhcs << " costhcs catani " << (1.-4.*(kap1[3]*p4[3]-kap1[2]*p4[2]-kap1[1]*p4[1]-kap1[0]*p4[0])/(phasespace::m*phasespace::m)) << endl;
 	*/
 	/****************************/
 
@@ -320,7 +273,7 @@ inline void genl4p(float costh, float phi_lep) //quite significant speed up with
 	rot2[1]=(zax[1]*zax[0]*(1-c)+zax[2]*s)*rot1[0] + (c+zax[1]*zax[1]*(1-c))       *rot1[1] + (zax[1]*zax[2]*(1-c)-zax[0]*s)*rot1[2];
 	rot2[2]=(zax[2]*zax[0]*(1-c)-zax[1]*s)*rot1[0] + (zax[2]*zax[1]*(1-c)+zax[0]*s)*rot1[1] + (c+zax[2]*zax[2]*(1-c))       *rot1[2];
 
-	p4cm[3]=_m/2.;
+	p4cm[3]=phasespace::m/2.;
 	p4cm[0]=p4cm[3]*rot2[0];
 	p4cm[1]=p4cm[3]*rot2[1];
 	p4cm[2]=p4cm[3]*rot2[2];
@@ -351,7 +304,7 @@ inline void genl4p(float costh, float phi_lep) //quite significant speed up with
 //CS FRAME PRESCRIPTION
 double costhCS()
 {
-  return (1.-4.*(kap1[3]*p4[3]-kap1[2]*p4[2]-kap1[1]*p4[1]-kap1[0]*p4[0])/(_m*_m));
+  return (1.-4.*(kap1[3]*p4[3]-kap1[2]*p4[2]-kap1[1]*p4[1]-kap1[0]*p4[0])/(phasespace::m*phasespace::m));
 }
 
 void costhbound(double phi_lep, vector<double> &min, vector<double> &max)
@@ -497,7 +450,7 @@ void cthmoments_(double &cthmom0, double &cthmom1, double &cthmom2)
       end_time = clock();
 
       if (opts.verbose)
-	cout << "cuba point " << setw(10) << _m  << setw(10) << _qt  << setw(10) << _y
+	cout << "cuba point " << setw(10) << phasespace::m  << setw(10) << phasespace::qt  << setw(10) << phasespace::y
 	     << setw(13) << integral[0] << setw(13)  << error[0]
 	     << setw(13) << integral[1] << setw(13)  << error[1]
 	     << setw(13) << integral[2] << setw(13)  << error[2]
@@ -556,7 +509,7 @@ void cthmoments_(double &cthmom0, double &cthmom1, double &cthmom2)
       end_time = clock();
 
       if (opts.verbose)
-	cout << "trap point " << setw(10) << _m  << setw(10) << _qt  << setw(10) << _y
+	cout << "trap point " << setw(10) << phasespace::m  << setw(10) << phasespace::qt  << setw(10) << phasespace::y
 	     << setw(13) << cthmom0 << setw(13)  << 0
 	     << setw(13) << cthmom1 << setw(13)  << 0
 	     << setw(13) << cthmom2 << setw(13)  << 0
@@ -608,7 +561,7 @@ void cthmoments_(double &cthmom0, double &cthmom1, double &cthmom2)
       end_time = clock();
 
       if (opts.verbose)
-	cout << "quad point " << setw(10) << _m  << setw(10) << _qt  << setw(10) << _y
+	cout << "quad point " << setw(10) << phasespace::m  << setw(10) << phasespace::qt  << setw(10) << phasespace::y
 	     << setw(13) << cthmom0 << setw(13)  << 0
 	     << setw(13) << cthmom1 << setw(13)  << 0
 	     << setw(13) << cthmom2 << setw(13)  << 0
@@ -652,20 +605,6 @@ integrand_t thphiintegrand(const int &ndim, const double x[], const int &ncomp, 
       f[2] = 0.;
     }
   return 0;
-}
-
-int binner_(double p3[4], double p4[4])
-{
-  double qt = sqrt((float)pow(p3[0]+p4[0],2)+pow(p3[1]+p4[1],2));
-  if (qt < qtmin || qt > qtmax)
-    return false;
-
-  double y = 0.5 *log((p3[3] + p4[3] + p3[2] + p4[2]) / (p3[3] + p4[3] - p3[2] - p4[2]));
-  if (y < ymin || y > ymax)
-    return false;
-
-  //cout << "qt " << qt << " y " << y << endl;
-  return true;
 }
 
 void tell_to_grid_we_are_alive(){

@@ -1,5 +1,6 @@
 #include "resintegr.h"
 #include "integr.h"
+#include "phasespace.h"
 #include "settings.h"
 #include "interface.h"
 #include "switch.h"
@@ -58,8 +59,8 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
   double jac = 1.;
 
   // Generate the boson invariant mass between the integration boundaries
-  double wsqmin = pow(mmin,2);
-  double wsqmax = pow(mmax,2);
+  double wsqmin = pow(phasespace::mmin,2);
+  double wsqmax = pow(phasespace::mmax,2);
   double x1=x[0];
   double m2,wt;
   breitw_(x1,wsqmin,wsqmax,opts.rmass,opts.rwidth,m2,wt);
@@ -72,8 +73,8 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
 
   //Limit the y boundaries to the kinematic limit in y
   double ylim = 0.5*log(pow(energy_.sroot_,2)/m2);
-  double ymn = min(max(-ylim, ymin),ylim);
-  double ymx = max(min(ylim, ymax),-ylim);
+  double ymn = min(max(-ylim, phasespace::ymin),ylim);
+  double ymx = max(min(ylim, phasespace::ymax),-ylim);
   if (ymn >= ymx)
     {
       f[0]=0.;
@@ -82,14 +83,14 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
 
   //integrate between qtmin and qtmax
   /*
-  double qtmn = max(opts.qtcutoff, qtmin);
-  double qt=qtmn+(qtmax-qtmn)*x[1];
-  jac=jac*(qtmax-qtmn);
+  double qtmn = max(opts.qtcutoff, phasespace::qtmin);
+  double qt=qtmn+(phasespace::qtmax-qtmn)*x[1];
+  jac=jac*(phasespace::qtmax-qtmn);
   */
     
   //integrate between qtmin and qtmax
   //limit qtmax to the qT kinematical limit, or to the switching function boundary
-  double qtmn = max(opts.qtcutoff, qtmin);
+  double qtmn = max(opts.qtcutoff, phasespace::qtmin);
   double miny;
   if (ymn * ymx <= 0)
     miny = 0;
@@ -98,7 +99,7 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
   double kinqtlim = sqrt(pow(pow(energy_.sroot_,2)+m*m,2)/(4*pow(energy_.sroot_,2)*cosh2y34)-m*m);
   double switchqtlim = switching::qtlimit(m);
   double qtlim = min(kinqtlim, switchqtlim);
-  double qtmx = min(qtlim, qtmax);
+  double qtmx = min(qtlim, phasespace::qtmax);
   if (qtmn >= qtmx)
     {
       f[0]=0.;
@@ -167,7 +168,7 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
   jac=jac*qt*log(base);*/
   
   //set global variables to m, qt
-  setmqty(m, qt, 0);
+  phasespace::set_mqty(m, qt, 0);
 
   //generate boson 4-momentum, with m, qt, y and phi=0
   genV4p(m, qt, 0, 0.);
@@ -186,11 +187,11 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
 	{
 	  //C++ resum
 	  rapint::allocate();
-	  rapint::integrate(ymin,ymax,m);
+	  rapint::integrate(phasespace::ymin,phasespace::ymax,m);
 	  //end C++ resum
 	}
       else
-	rapintegrals_(ymin,ymax,m,nocuts);
+	rapintegrals_(phasespace::ymin,phasespace::ymax,m,nocuts);
     }
   else
     {
@@ -206,7 +207,7 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
     }
   yet = clock();
   
-  setmqty(m, qt, 0);
+  phasespace::set_mqty(m, qt, 0);
   genV4p(m, qt, 0, 0.);
 
   //  SWITCHING FUNCTIONS
@@ -267,8 +268,8 @@ integrand_t resintegrand3d(const int &ndim, const double x[], const int &ncomp, 
   double jac = 1.;
 
   // Generate the boson invariant mass between the integration boundaries
-  double wsqmin = pow(mmin,2);
-  double wsqmax = pow(mmax,2);
+  double wsqmin = pow(phasespace::mmin,2);
+  double wsqmax = pow(phasespace::mmax,2);
   double x1=x[0];
   double m2,wt;
   breitw_(x1,wsqmin,wsqmax,opts.rmass,opts.rwidth,m2,wt);
@@ -290,14 +291,14 @@ integrand_t resintegrand3d(const int &ndim, const double x[], const int &ncomp, 
   if (x[0] < xl)
     {
       double x1=x[0]/(xl-0.);
-      m=mmin+(bwmn-mmin)*x[0];
-      jac=jac*(bwmn-mmin)/(xl-0.);
+      m=phasespace::mmin+(bwmn-phasespace::mmin)*x[0];
+      jac=jac*(bwmn-phasespace::mmin)/(xl-0.);
     }
   else if (x[0] > xu)
     {
       double x1=(x[0]-xu)/(1.-xu);
-      m=bwmx+(mmax-bwmx)*x1;
-      jac=jac*(mmax-bwmx)/(1.-xu);
+      m=bwmx+(phasespace::mmax-bwmx)*x1;
+      jac=jac*(phasespace::mmax-bwmx)/(1.-xu);
     }
   else
     {
@@ -309,8 +310,8 @@ integrand_t resintegrand3d(const int &ndim, const double x[], const int &ncomp, 
     }
   */
 
-  //  double m=mmin+(mmax-mmin)*x[0];
-  //  jac=jac*(mmax-mmin);
+  //  double m=phasespace::mmin+(phasespace::mmax-phasespace::mmin)*x[0];
+  //  jac=jac*(phasespace::mmax-phasespace::mmin);
 
   //Dynamic scale
   if (opts.dynamicscale)
@@ -318,8 +319,8 @@ integrand_t resintegrand3d(const int &ndim, const double x[], const int &ncomp, 
 
   //Limit y boundaries to the kinematic limit in y
   double ylim = 0.5*log(pow(energy_.sroot_,2)/m2);
-  double ymn = min(max(-ylim, ymin),ylim);
-  double ymx = max(min(ylim, ymax),-ylim);
+  double ymn = min(max(-ylim, phasespace::ymin),ylim);
+  double ymx = max(min(ylim, phasespace::ymax),-ylim);
   if (ymn >= ymx)
     {
       f[0]=0.;
@@ -350,18 +351,18 @@ integrand_t resintegrand3d(const int &ndim, const double x[], const int &ncomp, 
 
   //integrate between qtmin and qtmax
   /*
-  double qtmn = max(opts.qtcutoff, qtmin);
-  double qt=qtmn+(qtmax-qtmn)*x[2];
-  jac=jac*(qtmax-qtmn);
+  double qtmn = max(opts.qtcutoff, phasespace::qtmin);
+  double qt=qtmn+(phasespace::qtmax-qtmn)*x[2];
+  jac=jac*(phasespace::qtmax-qtmn);
   */
 
   //integrate between qtmin and qtmax
-  double qtmn = max(opts.qtcutoff, qtmin);
+  double qtmn = max(opts.qtcutoff, phasespace::qtmin);
   double cosh2y34=pow((exp(y)+exp(-y))*0.5,2);
   double kinqtlim = sqrt(pow(pow(energy_.sroot_,2)+m*m,2)/(4*pow(energy_.sroot_,2)*cosh2y34)-m*m);
   double switchqtlim = switching::qtlimit(m);
   double qtlim = min(kinqtlim, switchqtlim);
-  double qtmx = min(qtlim, qtmax);
+  double qtmx = min(qtlim, phasespace::qtmax);
   if (qtmn >= qtmx)
     {
       f[0]=0.;
@@ -380,7 +381,7 @@ integrand_t resintegrand3d(const int &ndim, const double x[], const int &ncomp, 
 
   
   //set global variables to m, qt, y
-  setmqty(m, qt, y);
+  phasespace::set_mqty(m, qt, y);
 
   //generate boson 4-momentum, with m, qt, y and phi=0
   genV4p(m, qt, y, 0.);
@@ -445,8 +446,8 @@ integrand_t resintegrandMC(const int &ndim, const double x[], const int &ncomp, 
   double jac = 1.;
 
   // Generate the boson invariant mass
-  double wsqmin = pow(mmin,2);
-  double wsqmax = pow(mmax,2);
+  double wsqmin = pow(phasespace::mmin,2);
+  double wsqmax = pow(phasespace::mmax,2);
   if (wsqmin >= wsqmax)
     {
       f[0]=0.;
@@ -464,8 +465,8 @@ integrand_t resintegrandMC(const int &ndim, const double x[], const int &ncomp, 
 
   //Limit y boundaries to the kinematic limit in y
   double ylim = 0.5*log(pow(energy_.sroot_,2)/m2);
-  double ymn = min(max(-ylim, ymin),ylim);
-  double ymx = max(min(ylim, ymax),-ylim);
+  double ymn = min(max(-ylim, phasespace::ymin),ylim);
+  double ymx = max(min(ylim, phasespace::ymax),-ylim);
   if (ymn >= ymx)
     {
       f[0]=0.;
@@ -480,11 +481,11 @@ integrand_t resintegrandMC(const int &ndim, const double x[], const int &ncomp, 
   double expy=exp(y);
   double expmy=exp(-y);
   double cosh2y34=pow((expy+expmy)*0.5,2);
-  double qtmn = max(opts.qtcutoff, qtmin);
+  double qtmn = max(opts.qtcutoff, phasespace::qtmin);
   double kinqtlim = sqrt(pow(pow(energy_.sroot_,2)+m*m,2)/(4*pow(energy_.sroot_,2)*cosh2y34)-m*m);
   double switchqtlim = switching::qtlimit(m);
   double qtlim = min(kinqtlim, switchqtlim);
-  double qtmx = min(qtlim, qtmax);
+  double qtmx = min(qtlim, phasespace::qtmax);
   if (qtmn >= qtmx)
     {
       f[0]=0.;
@@ -499,7 +500,7 @@ integrand_t resintegrandMC(const int &ndim, const double x[], const int &ncomp, 
   double qtmn = 0.1;
   double qtmx = sqrt(pow(pow(energy_.sroot_,2)+m*m,2)/(4*pow(energy_.sroot_,2)*cosh2y34)-m*m);
   double qt=qtmn+qtmx*x[2];
-  if (qt < qtmin || qt >= qtmax)
+  if (qt < phasespace::qtmin || qt >= phasespace::qtmax)
     {
       f[0]=0.;
       return 0;
