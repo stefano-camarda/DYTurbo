@@ -895,12 +895,14 @@ submit_parsed(){
     fulllloybin=$loybin
     fulllhiybin=$hiybin
     random_seed=seed
-
+    fixhiqtbin=$hiqtbin
+    #
     if [[ $target =~ grid ]]
     then
         cubacores=0
         prepare_tarbal
     fi
+    #
     if [[ $rerun =~ dyturbo_ ]]
     then
         job_name=$rerun
@@ -910,7 +912,7 @@ submit_parsed(){
         submit_job
         return
     fi
-
+    #
     for process in $proclist
     do
         for collider in $colliderlist
@@ -951,7 +953,9 @@ submit_parsed(){
                         # split per kinematic region
                         NsplitQT=10
                         NsplitY=5
+                        fulllhiqtbin=$fixhiqtbin
                         [[ $terms =~ [23]P ]] && NsplitQT=10 && NsplitY=5
+                        [[ $terms =~ FIXCT[23][DP] ]] && NsplitQT=1 && NsplitY=5 && fulllhiqtbin=5
                     fi
                     for variation in $variationlist
                     do
