@@ -65,6 +65,7 @@ prepare_script(){
         walltime=20:00
         queue=atlaslong
     fi
+    [[ $target == lxbatch ]] && queue=8nh && walltime=8:00
     #
     cp $batch_template tmp
     sed -i "s|JOBNAME|$job_name|g               " tmp
@@ -88,6 +89,7 @@ prepare_in(){
     doREA="false"
     doVIR="false"
     doLOR="false"
+    doVV="false"
     if [[ $terms =~ ^ALL$ ]]
     then
         doRES="true"
@@ -102,6 +104,7 @@ prepare_in(){
     [[ $terms =~ REAL ]] && doREA="true" && termstring="real"
     [[ $terms =~ VIRT ]] && doVIR="true" && termstring="virt"
     [[ $terms =~ LO   ]] && doLOR="true" && termstring="lord"
+    [[ $terms =~ VV   ]] && doVV="true"
     # dimension of integration
     resumdim=4
     ctdim=8
@@ -112,6 +115,10 @@ prepare_in(){
     # pcubature
     pcubature=false
     [[ $terms =~ [2,3]P   ]] &&    pcubature=true
+    # fixed order
+    fixedorder=false
+    [[ $terms =~ FIX   ]] &&    fixedorder=true
+    [[ $terms =~ VV    ]] &&    fixedorder=true
     # ranges / list of ranges -- HARDCODED
     setloqtbin=$loqtbin
     sethiqtbin=$hiqtbin
@@ -263,8 +270,8 @@ prepare_in(){
             s|SETDOREA|$doREA|g              ;
             s|SETDOVIR|$doVIR|g              ;
             s|SETDOLOR|$doLOR|g              ;
+            s|SETDOVV|$doVV|g                ;
             s|SETDOVJ|false|g                ;
-            s|SETDOVV|false|g                ;
             s|SETCUBACORES|$cubacores|g      ;
             s|SETRESUMDIM|$resumdim|g        ;
             s|SETCTDIM|$ctdim|g              ;
@@ -274,6 +281,7 @@ prepare_in(){
             s|SETLEPPTCUT|$lepPtCut|g        ;
             s|SETLEPYCUT|$lepYCut|g          ;
             s|SETDETFIDUCIAL|$detfiducial|g  ;
+            s|SETFIXEDORDER|$fixedorder|g  ;
             s|SETIH1|$ih1|g                  ;
             s|SETIH2|$ih2|g                  ;
             s|SETQTRECNAIVE|$qtrec_naive|g   ;
@@ -938,7 +946,7 @@ submit_parsed(){
                         then
                             variationlist=array
                             seedlist=$NPDF
-                            [[ $target =~ mogon ]] && seedlist=100-$(( 100+$NPDF ))
+                            [[ $target =~ mogon|lxbatch ]] && seedlist=100-$(( 100+$NPDF ))
                         fi
                         # split per kinematic region
                         NsplitQT=10
@@ -961,7 +969,7 @@ submit_parsed(){
                                 qtregion=`echo o${order}qt${loqtbin}${hiqtbin}y${loybin}${hiybin}t${terms} | sed "s/\.//g;s/ //g"`
                                 # submit
                                 prepare_script
-                                [[ $target == mogon ]] &&  submit_job
+                                [[ $target =~ mogon|lxbatch ]] &&  submit_job
                                 [[ $target =~ grid ]]  && add_to_tarbal && submit_job2grid
                             done
                         done
@@ -1077,6 +1085,7 @@ USAGE: ./scripts/submit_DYTURBO.sh --target [settings]
     --grid          Prepare grid submission directory (compilation on local)
     --grid-compile  Prepare grid submission directory (compilation on grid)
     --mogon         Prepare standard scripts for mogon (Mainz cluster).
+    --lxbatch       Prepare standard scripts for lxbatch (CERN cluster).
     --help          Print this help and die.
 
 
@@ -1147,6 +1156,9 @@ parse_inputs(){
                 ;;
             --mogon)
                 target=mogon
+                ;;
+            --lxbatch)
+                target=lxbatch
                 ;;
             # OPTIONS
             --proc)

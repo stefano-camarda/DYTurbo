@@ -5,7 +5,7 @@ ih2          = SETIH2         # hadron 2
 nproc        = SETNPROC       # process: 1) W+; 2)W-; 3)Z(/gamma*)
 g_param      = SETGPAR        # non perturbative g parameter
 order        = SETORDER       # order: 1) NLO(+NLL), 2) NNLO(+NNLL)
-fixedorder   = false          # resummation or fixed order switch
+fixedorder   = SETFIXEDORDER  # resummation or fixed order switch
 
 #PDF settings
 LHAPDFset    = SETPDFSET      # PDF set from LHAPDF
@@ -119,7 +119,7 @@ niterRES         = 0 # 18   # only for 2d and 3d cuhre integration of resummed p
 niterCT          = 0 # 10   # only for 2d and 3d cuhre integration of counter term
 niterVJ          = 0 # 10   # only for 3d cuhre integration of V+J
 vegasncallsRES   = 1e6      # only for res 4d vegas integration
-vegasncallsVV    = 1e8      # only for double virtual 6d vegas integration
+vegasncallsVV    = 2e7      # only for double virtual 6d vegas integration
 vegasncallsCT    = 3e8      # only for 6d and 8d vegas integration of the connter term
 vegasncallsLO    = 3e8      # only for lo 7d vegas integration
 vegasncallsREAL  = 2e7      # only for real 10d vegas integration
