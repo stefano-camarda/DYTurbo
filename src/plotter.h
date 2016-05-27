@@ -12,7 +12,7 @@
 #include <TProfile2D.h>
 #endif // USEROOT
 
-#define NMOM 9
+#define NMOM 8
 
 class plotter {
     public :
@@ -57,11 +57,11 @@ class plotter {
         struct AiProf2D { TProfile2D* A[NMOM]; };
         struct AiProf   { TProfile*   A[NMOM]; };
         AiProf2D pa_qtVy;
-        AiProf pa_qt;
-        AiProf pa_y;
-        TH1D * h_costh;
-        TH1D * h_phi;
-        TH1D * h_phi_lep;
+        //AiProf pa_qt;
+        //AiProf pa_y;
+        //TH1D * h_costh;
+        //TH1D * h_phi;
+        //TH1D * h_phi_lep;
         // final results
         TH2D* qt_y_resum ;
         TH2D* qt_y_ct    ;
@@ -87,12 +87,12 @@ class plotter {
         std::vector<TH2D     *> h_qtVy_PDF    ;
         std::vector<TH3D     *> h_qtVyVQ_PDF  ;
         std::vector<TH1D     *> h_Q_PDF       ;
-        std::vector<TH1D     *> h_costh_PDF   ;
-        std::vector<TH1D     *> h_phi_PDF     ;
-        std::vector<TH1D     *> h_phi_lep_PDF ;
+        //std::vector<TH1D     *> h_costh_PDF   ;
+        //std::vector<TH1D     *> h_phi_PDF     ;
+        //std::vector<TH1D     *> h_phi_lep_PDF ;
         std::vector<AiProf2D >  pa_qtVy_PDF   ;
-        std::vector<AiProf   >  pa_qt_PDF     ;
-        std::vector<AiProf   >  pa_y_PDF      ;
+        //std::vector<AiProf   >  pa_qt_PDF     ;
+        //std::vector<AiProf   >  pa_y_PDF      ;
 
         // helpers
         double N;
@@ -107,6 +107,7 @@ class plotter {
         template<typename T,typename P>
             void clone_Array_PDF( std::vector<T> &v_ha, int npdf);
         void addToBin(TH1* h, double int_val, double int_err);
+        void rebin_vec(std::vector<double> & in_vec, std::vector<double> & out_vec, int N );
         // calculation of kinematics and angular variables
         void calculate_kinematics(double p3[4], double p4[4]);
         double calcQt(double p[4]);
