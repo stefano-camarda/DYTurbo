@@ -401,13 +401,13 @@ integrand_t ctintegrand3d(const int &ndim, const double x[], const int &ncomp, d
   
   //set global variables to costh, m, qt, y
   if (opts.fixedorder) //In the fixed order calculation evaluate kinematic cuts with qt=0
-    phasespace::set_mqtycth(m, 0.0001, y, 0.);
+    phasespace::set_mqtycth(m, 0., y, 0.);
   else
     phasespace::set_mqtycth(m, qt, y, 0.);
 
   //generate boson 4-momentum, with m, qt, y and phi=0
   if (opts.fixedorder) //In the fixed order calculation evaluate kinematic cuts with qt=0
-    genV4p(m, 0.0001, y, 0.);
+    genV4p(m, 0., y, 0.);
   else
     genV4p(m, qt, y, 0.);
 
@@ -568,7 +568,7 @@ integrand_t ctintegrand2d(const int &ndim, const double x[], const int &ncomp, d
 
   //set global variables to costh, m, qt, y
   if (opts.fixedorder) //In the fixed order calculation evaluate kinematic cuts with qt=0
-    phasespace::set_mqtycth(m, 0.001, y, 0.);
+    phasespace::set_mqtycth(m, 0., y, 0.);
   else
     phasespace::set_mqtycth(m, (qtmn+qtmx)/2., y, 0.);
 
@@ -579,7 +579,7 @@ integrand_t ctintegrand2d(const int &ndim, const double x[], const int &ncomp, d
   
   //generate boson 4-momentum, with m, qt, y and phi=0
   if (opts.fixedorder) //In the fixed order calculation evaluate kinematic cuts with qt=0
-    genV4p(m, 0.0001, y, 0.);
+    genV4p(m, 0., y, 0.);
   else
     genV4p(m, (qtmn+qtmx)/2., y, 0.);
 
