@@ -1,7 +1,8 @@
 #include "init.h"
 #include "settings.h"
 #include "interface.h"
-#include "integr.h"
+//#include "integr.h"
+#include "phasespace.h"
 #include "resintegr.h"
 #include "ctintegr.h"
 #include "cubacall.h"
@@ -113,7 +114,7 @@ int main( int argc , const char * argv[])
       for (int i = 0; i < opts.totpdf; i++)
 	totvals.push_back(0);
       //Set integration boundaries
-      setbounds(opts.mlow, opts.mhigh, *qit, *(qit+1), *yit, *(yit+1) );//  opts.ylow, opts.yhigh);
+      phasespace::setbounds(opts.mlow, opts.mhigh, *qit, *(qit+1), *yit, *(yit+1) );//  opts.ylow, opts.yhigh);
       print_qtbin();
       print_ybin();
       save_qtbin();
@@ -126,10 +127,10 @@ int main( int argc , const char * argv[])
           if (opts.resint2d) {
 	    if (opts.resumcpp)
 	      //C++ resum
-	      rapint::cache(ymin, ymax);
+	      rapint::cache(phasespace::ymin, phasespace::ymax);
 	      //end C++ resum
 	    else	    
-	      cacheyrapint_(ymin, ymax);
+	      cacheyrapint_(phasespace::ymin, phasespace::ymax);
 	    resintegr2d(value, error);
           }
           if (opts.resint3d) resintegr3d(value, error);
@@ -244,10 +245,16 @@ int main( int argc , const char * argv[])
 
 void normalise_result(double &value, double &error){
     TotXSec+=value;
-    //value /= qtmax - qtmin;
-    //error /= qtmax - qtmin;
-    //value /= ymax  - ymin;
-    //error /= ymax  - ymin;
+    if (opts.ptbinwidth)
+      {
+	value /= phasespace::qtmax - phasespace::qtmin;
+	error /= phasespace::qtmax - phasespace::qtmin;
+      }
+    if (opts.ybinwidth)
+      {
+	value /= phasespace::ymax  - phasespace::ymin;
+	error /= phasespace::ymax  - phasespace::ymin;
+      }
 }
 
 void print_head(){
@@ -281,11 +288,11 @@ void print_line(){
 
 void print_qtbin(){
     //      2 + 5 + 3 + 5 + 3 = 18
-   cout << "| " << setw(5) << qtmin << " - " << setw(5) << qtmax << " | " <<  flush; 
+   cout << "| " << setw(5) << phasespace::qtmin << " - " << setw(5) << phasespace::qtmax << " | " <<  flush; 
 }
 void print_ybin(){
     //      2 + 5 + 3 + 5 + 3 = 18
-   cout << setw(5) << ymin << " - " << setw(5) << ymax << " | " <<  flush; 
+   cout << setw(5) << phasespace::ymin << " - " << setw(5) << phasespace::ymax << " | " <<  flush; 
 }
 
 
@@ -320,11 +327,11 @@ void open_file()
 }
 void save_qtbin()
 {
-  outfile << qtmin << " " << qtmax << " " << flush; 
+  outfile << phasespace::qtmin << " " << phasespace::qtmax << " " << flush; 
 }
 void save_ybin()
 {
-  outfile << ymin << " " << ymax << " " << flush; 
+  outfile << phasespace::ymin << " " << phasespace::ymax << " " << flush; 
 }
 void save_result(vector <double> vals, double err)
 {

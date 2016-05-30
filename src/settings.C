@@ -119,6 +119,8 @@ void settings::readfromfile(const string fname){
     mellincores        = in.GetNumber ( "mellincores" );
     yintervals         = in.GetNumber ( "yintervals" );
     yrule              = in.GetNumber ( "yrule" );
+    ptbinwidth         = in.GetBool ( "ptbinwidth" );
+    ybinwidth          = in.GetBool ( "ybinwidth" );
 
     // additional conditions
     if (order != 1 && order != 2)
@@ -344,6 +346,8 @@ void settings::dumpAll(){
 	dumpD("mellincores        ", mellincores          );
         dumpI("yintervals         ", yintervals     );
         dumpI("yrule              ", yrule          );
+        dumpB("ptbinwidth         ", ptbinwidth     );
+        dumpB("ybinwidth          ", ybinwidth         );
     }
 
     if (print_masses){

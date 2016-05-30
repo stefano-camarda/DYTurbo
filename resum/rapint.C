@@ -3,6 +3,7 @@
 #include "gaussrules.h"
 #include "mellinint.h"
 #include "integr.h"
+#include "phasespace.h"
 #include <iostream>
 
 int rapint::ydim;
@@ -155,7 +156,7 @@ void rapint::integrate(double ymin, double ymax, double m)
 	      double y=xc+xm*gr::xxx[opts.yrule-1][j];
 
 	      //calculate costheta moments as a function of y
-	      sety(y);
+	      phasespace::set_y(y);
 	      genv4p_();
 	      double cthmom0, cthmom1, cthmom2;
 	      cthmoments_(cthmom0,cthmom1,cthmom2);

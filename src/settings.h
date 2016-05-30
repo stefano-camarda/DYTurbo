@@ -194,12 +194,17 @@ public:
   bool timeprofile;
   bool verbose;
 
+  //resummed code in C++
   bool resumcpp;
 
+  //dyres or pegasus PDF evolution
   int evolmode;
 
   // fiducial switches
   cuts::DetFiducial fiducial;
+
+  //bin width normalisation
+  bool ptbinwidth, ybinwidth;
 };
 
 class binning

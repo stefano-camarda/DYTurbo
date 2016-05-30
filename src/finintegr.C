@@ -1,6 +1,7 @@
 #include "interface.h"
 #include "finintegr.h"
 #include "integr.h"
+#include "phasespace.h"
 #include "settings.h"
 #include "vjint.h"
 
@@ -56,9 +57,9 @@ integrand_t vjintegrand(const int &ndim, const double x[], const int &ncomp, dou
   double jac = 1.;
 
   // Generate the boson invariant mass between the integration boundaries
-  double mcut = qtmax/qtcut_.xqtcut_;
-  double wsqmin = pow(mmin,2);
-  double wsqmax = pow(min(mmax,mcut),2);
+  double mcut = phasespace::qtmax/qtcut_.xqtcut_;
+  double wsqmin = pow(phasespace::mmin,2);
+  double wsqmax = pow(min(phasespace::mmax,mcut),2);
   if (wsqmin >= wsqmax)
     {
       f[0] = 0.;
@@ -91,8 +92,8 @@ integrand_t vjintegrand(const int &ndim, const double x[], const int &ncomp, dou
   ymax=log((tmpx+sqrt(pow(tmpx,2)-4.))/2.);*/
 
   double ylim = 0.5*log(pow(energy_.sroot_,2)/m2);
-  double ymn = min(max(-ylim, ymin),ylim);
-  double ymx = max(min(ylim, ymax),-ylim);
+  double ymn = min(max(-ylim, phasespace::ymin),ylim);
+  double ymx = max(min(ylim, phasespace::ymax),-ylim);
   if (ymn >= ymx)
     {
       f[0] = 0.;
@@ -107,10 +108,10 @@ integrand_t vjintegrand(const int &ndim, const double x[], const int &ncomp, dou
   //integrate between qtmin and qtmax
   //use qt to get the correct jacobian
   double qtcut = qtcut_.xqtcut_*m;
-  double qtmn = max(qtcut, qtmin);
+  double qtmn = max(qtcut, phasespace::qtmin);
   double cosh2y34=pow((exp(y)+exp(-y))*0.5,2);
   double kinqtlim = sqrt(max(0.,pow(pow(energy_.sroot_,2)+m*m,2)/(4*pow(energy_.sroot_,2)*cosh2y34)-m*m)); //introduced max to avoid neqative argument of sqrt when y=ymax
-  double qtmx = min(kinqtlim, qtmax);
+  double qtmx = min(kinqtlim, phasespace::qtmax);
   if (qtmn >= qtmx)
     {
       f[0] = 0.;
@@ -130,7 +131,7 @@ integrand_t vjintegrand(const int &ndim, const double x[], const int &ncomp, dou
   jac=jac/qt/2.;
 
   //  double qt=qtmn+(qtmx-qtmn)*x[2];
-  //  jac=jac*(qtmax-qtmn);
+  //  jac=jac*(phasespace::qtmax-qtmn);
 
   //evaluate the Vj (N)LO cross section
   if (opts.pcubature)
