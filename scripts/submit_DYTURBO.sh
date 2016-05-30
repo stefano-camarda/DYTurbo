@@ -65,16 +65,20 @@ prepare_script(){
         walltime=20:00
         queue=atlaslong
     fi
+    [[ $target =~ lxbatch ]] && queue=8nh && walltime=8:00
     #
     cp $batch_template tmp
     sed -i "s|JOBNAME|$job_name|g               " tmp
     sed -i "s|SEEDLIST|$seedlist|g              " tmp
     sed -i "s|OUTDIR|$result_dir|g              " tmp
-    sed -i "s|SETQUEUE|$queue|g              " tmp
-    sed -i "s|SETWALLTIME|$walltime|g              " tmp
+    sed -i "s|SETQUEUE|$queue|g                 " tmp
+    sed -i "s|SETWALLTIME|$walltime|g           " tmp
     sed -i "s|DYTURBOROOTDIR|$dyturbo_project|g " tmp
     sed -i "s|DYTURBOINPUTFILE|$in_file|g       " tmp
     sed -i "s|SETNPROCESSORS|$nprocessors|g     " tmp
+    [[ $target =~ lxbatch ]] && sed -i "s|^#BSUB -R.*$||g      "  tmp
+    [[ $target =~ lxbatch ]] && sed -i "s|^#BSUB -app.*$|#BSUB -M 2000000|g " tmp
+    [[ $target =~ lxbatch ]] && sed -i "s|/jobdir/|/pool/|g      "  tmp
     mv tmp $sh_file
     chmod +x $sh_file
 }
@@ -1068,6 +1072,7 @@ USAGE: ./scripts/submit_DYTURBO.sh --target [settings]
     --grid          Prepare grid submission directory (compilation on local)
     --grid-compile  Prepare grid submission directory (compilation on grid)
     --mogon         Prepare standard scripts for mogon (Mainz cluster).
+    --lxbatch       Prepare standard scripts for lxbatch (CERN LXPLUS batch system).
     --help          Print this help and die.
 
 
@@ -1134,6 +1139,9 @@ parse_inputs(){
                 ;;
             --mogon)
                 target=mogon
+                ;;
+            --lxbatch)
+                target=lxbatch
                 ;;
             # OPTIONS
             --proc)
