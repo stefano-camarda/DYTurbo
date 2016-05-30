@@ -72,6 +72,9 @@ public:
   double kmuren;
   double kmufac;
 
+  //Additional resummation scales
+  double C1,C3;
+  
   //  double a_param;
   
   //IR cut-off
@@ -191,12 +194,17 @@ public:
   bool timeprofile;
   bool verbose;
 
+  //resummed code in C++
   bool resumcpp;
 
+  //dyres or pegasus PDF evolution
   int evolmode;
 
   // fiducial switches
   cuts::DetFiducial fiducial;
+
+  //bin width normalisation
+  bool ptbinwidth, ybinwidth;
 };
 
 class binning

@@ -109,34 +109,35 @@ void setg()
     }
 }
 
-void fdist_(int& ih, double& x, double& xmu, double fx[11])
+void fdist_(int& ih, double& x, double& xmu, double fx[2*MAXNF+1])
 {
   double fPDF[13];
 
   //set to zero if x out of range
-  if (x > 1.)
-    for (int i = -5; i <=5; i++)
-      fx[5+i]=0.;
-  //!!!! should return here??? !!!!
-
+  if (x > 1. || x <= 0.)
+    {
+      for (int i = -MAXNF; i <= MAXNF; i++)
+	fx[MAXNF+i]=0.;
+      return;
+    }
   
   LHAPDF::xfx(x,xmu,fPDF);
   if (ih == 1) //proton
-    for (int i = -5; i <=5; i++)
-      fx[5+i]=fPDF[6+i]/x;
+    for (int i = -MAXNF; i <= MAXNF; i++)
+      fx[MAXNF+i]=fPDF[6+i]/x;
   else if (ih == -1) //antiproton
-    for (int i = -5; i <=5; i++)
-      fx[5+i]=fPDF[6-i]/x;
+    for (int i = -MAXNF; i <= MAXNF; i++)
+      fx[MAXNF+i]=fPDF[6-i]/x;
 
-  //fx[5-5]=0.;
-  //fx[5-4]=0.;
-  //fx[5-3]=0.;
-  //fx[5-2]=0.;
-  //fx[5-1]=0.;
-  //fx[5+0]=0.;
-  //fx[5+1]=0.;
-  //fx[5+2]=0.;
-  //fx[5+3]=0.;
-  //fx[5+4]=0.;
-  //fx[5+5]=0.;
+  //fx[MAXNF-5]=0.;
+  //fx[MAXNF-4]=0.;
+  //fx[MAXNF-3]=0.;
+  //fx[MAXNF-2]=0.;
+  //fx[MAXNF-1]=0.;
+  //fx[MAXNF+0]=0.;
+  //fx[MAXNF+1]=0.;
+  //fx[MAXNF+2]=0.;
+  //fx[MAXNF+3]=0.;
+  //fx[MAXNF+4]=0.;
+  //fx[MAXNF+5]=0.;
 }

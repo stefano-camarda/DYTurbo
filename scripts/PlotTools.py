@@ -348,37 +348,88 @@ class PlotTools:
         return h3
 
     def MakeUncBand(s,name,hlist,**kwargs):
-        relative = kwargs["rel"]  if "rel"  in kwargs else True
-        utype    = kwargs["band"] if "band" in kwargs else "error"
+        relative      = kwargs["rel"]         if "rel"         in kwargs else True
+        utype         = kwargs["band"]        if "band"        in kwargs else "error"
+        doCL96to68    = kwargs["doCL96to68"]  if "doCL96to68"  in kwargs else False
         h = s.EmptyClone(hlist[0],name)
         dim = h.GetDimension()
+        # pdf
+        CL96to68=1
+        if doCL96to68: CL96to68=1/2.705
+        N = len(hlist)-1
+        allind = range(N)
+        if "eig" in utype or "var" in utype :
+            hTit="{};{};{}".format(h.GetTitle(),h.GetXaxis().GetTitle(),"eigen")
+            hN   = h.GetXaxis().GetNbins()
+            hMin = h.GetXaxis().GetXmin()
+            hMax = h.GetXaxis().GetXmax()
+            if dim>1 : raise ValueError("Type {} from more than 1D not works".format(utype))
+            if "eig" in utype :
+                h2 = TH2F(name+"eig",hTit, hN,hMin,hMax, N/2,0.,N/2. )
+            elif "var" in utype :
+                h2 = TH2F(name+"var",hTit, hN,hMin,hMax, N,0.,N )
         # loop bins
         ist=0
+        # MSG.debug("HIST NAME {} ".format(hlist[0].GetName()))
         for xbin in range(0,h.GetNbinsX()+2):
             ybinlist = [0] if dim<2 else range(0,h.GetNbinsY()+2)
             for ybin in ybinlist:
                 zbinlist = [0] if dim<3 else range(0,h.GetNbinsZ()+2)
                 for zbin in zbinlist:
                     ibin = h.GetBin(xbin,ybin,zbin)
+                    # if (ibin<10) or (ibin>15) : continue
                     err =  hlist[0].GetBinError(ibin)
                     val =  hlist[0].GetBinContent(ibin)
                     unc = 1
-                    pos = neg = sym = err_other = 0
+                    # MSG.debug(" ibin {} val {} err {}".format(ibin, val, err))
+                    if relative and val!=0 : unc/=abs(val)
+                    pos = neg = sym = err_other = pdfsigma = 0
                     try :
+                        #
+                        val_other = hlist[1].GetBinContent(ibin)
                         err_other = hlist[1].GetBinError(ibin)
+                        # if err!=0 and val_other!=0 :
+                        #     err_other*=val*val/abs(val_other)
+                        # else : err_other=0
                         pos = hlist[1].GetBinContent(ibin)
                         neg = hlist[2].GetBinContent(ibin)
                         sym= (abs(pos - neg))/2.
                         pos = pos - val
                         neg = neg - val
-                        # pdf
-                        CL99to68=1/2.705
-                        N = len(hlist)-1
-                        allind = range(N)
-                        pdfVar = [ hlist[i+1].GetBinContent(ibin) for i in allind]
-                        pdfVarSq = [ (x-val)**2 for x in pdfVar]
-                        pdfDWSq = [ CL99to68*(pdfVarSq[i] + pdfVarSq[i+1])/4. for i in range(N/2)]
-                        pdfsigma = sqrt(sum(pdfDWSq))
+                        #
+                        if "pdf" in utype:
+                            pdfsigma=0
+                            for ivar in range(1,N/2+1):
+                                up= hlist[ivar*2-1].GetBinContent(ibin)
+                                do= hlist[ivar*2-0].GetBinContent(ibin)
+                                eigVar = (up-do)
+                                if "pos" in utype : eigVar = max([0,up-val,do-val])
+                                if "neg" in utype : eigVar = min([0,up-val,do-val])
+                                # MSG.debug(" eigvar {} = {}".format(ivar,eigVar))
+                                eigVar*=eigVar
+                                eigVar*=CL96to68
+                                # eigVar=sqrt(eigVar)
+                                if "eig" in utype : 
+                                    h2Bin=h2.GetBin(xbin,ivar)
+                                    h2.SetBinContent(h2Bin,unc*sqrt(eigVar))
+                                pdfsigma+=eigVar
+                                pass
+                            pdfsigma=sqrt(pdfsigma)
+                            pass
+                        #
+                        if "var" in utype :
+                            for ivar,h in enumerate(hlist[1:]):
+                                h2Bin=h2.GetBin(xbin,ivar+1)
+                                varval=0
+                                if "ratio" in utype and  val!=0:
+                                    varval=float(h.GetBinContent(ibin))
+                                    varval/=val
+                                h2.SetBinContent(h2Bin,varval)
+                        # pdfVar = [ hlist[i+1].GetBinContent(ibin) for i in allind]
+                        # pdfVarSq = [ (x-val)**2 for x in pdfVar]
+                        # pdfDWSq = [ CL96to68*(pdfVarSq[i] + pdfVarSq[i+1])/4. for i in range(N/2)]
+                        # pdfsigma = sqrt(sum(pdfDWSq))
+                        #
                         #print "    PDFERROR ", ibin, pdfsigma
                         #print "    ", len(pdfVar), pdfVar
                         #print "    ", len(pdfVarSq), pdfVarSq
@@ -388,29 +439,32 @@ class PlotTools:
                         #ist+=1
                     except IndexError:
                         pass
-                    if relative and val!=0 : unc/=abs(val)
                     if   utype=="stat"   : unc *= sqrt(abs(val))
                     elif utype=="error"  : unc *= err
                     elif utype=="errOth" : unc *= err_other
                     elif utype=="pos"    : unc *= pos
                     elif utype=="neg"    : unc *= neg
                     elif utype=="sym"    : unc *= sym
-                    elif utype=="pdf"    : unc *= pdfsigma
+                    elif "pdf" in utype  : unc *= pdfsigma
+                    elif "var" in utype  : unc *= 0
                     else : raise ValueError("Uknown error type {}".format(utype))
                     #print ibin,unc
+                    # MSG.debug(" unc {} type {} errorOther {} pos {} neg {} sym {} pdfsig {}".format(unc,utype,err_other,pos,neg,sym,pdfsigma))
                     h.SetBinContent(ibin,unc)
                     pass
                 pass
             pass
+        if "eig" in utype or "var" in utype: return h2
         return h
 
     def CombUncBand(s,name,hlist,**kwargs):
-        CorMatrix = kwargs["correl"] if "correl" in kwargs else [[0]]
+        CorMatrix = kwargs["correl"] if "correl" in kwargs else [[0.]]
         opts      = kwargs["opts"]   if "opts"   in kwargs else "rel"
         h = s.EmptyClone(hlist[0],name)
         dim = h.GetDimension()
         N = len(hlist)
         # loop bins
+        # MSG.debug("Corr {} is {} name1: {} nam2 {}".format(CorMatrix, CorMatrix[0][0], hlist[0].GetName(),hlist[1].GetName()))
         for xbin in range(0,h.GetNbinsX()+2):
             ybinlist = [0] if dim<2 else range(0,h.GetNbinsY()+2)
             for ybin in ybinlist:
@@ -418,7 +472,7 @@ class PlotTools:
                 for zbin in zbinlist:
                     ibin = h.GetBin(xbin,ybin,zbin)
                     #vals=list()
-                    vals = sorted([ x.GetBinContent(ibin) for x in hlist])
+                    vals = [ x.GetBinContent(ibin) for x in hlist]
                     unc = 0
                     if "rel" in opts :
                         # uncor
@@ -426,7 +480,10 @@ class PlotTools:
                         # cor
                         for i in range (0,N) :
                             for j in range(i+1,N) :
-                                unc+= -2.*CorMatrix[i][j-1]*abs(vals[i]*vals[j])
+                                corrUNC= -2.*CorMatrix[i][j-1]*abs(vals[i])*abs(vals[j])
+                                # MSG.debug("Corr unc: [{}][{}] = -2* {} * | {} * {} | =  {} ".format(i,j,CorMatrix[i][j-1],vals[i],vals[j],corrUNC))
+                                unc+=corrUNC
+                        # MSG.debug("v1**2 + v2**2 = {}**2 + {}**2 = {} sqrt= {} ".format(vals[0],vals[1],unc,sqrt(unc)))
                     else : raise ValueError("Uknown option {}".format(opts))
                     #print ibin, unc, vals
                     #hlist[0].Print()
@@ -1197,6 +1254,10 @@ class PlotTools:
             ratioArgs["minY"]=-10.
             ratioArgs["maxY"]= 10.
             s.SetFrameStyle1D(subHists, **ratioArgs) # scale = 1./(1-cdiv), minY=-10, maxY=10, logX=logx)
+        elif compareType=="rel" :
+            ratioArgs["minY"]=0.
+            ratioArgs["maxY"]=0.1
+            s.SetFrameStyle1D(subHists, **ratioArgs) # scale = 1./(1-cdiv), minY=-10, maxY=10, logX=logx)
         elif compareType=="chi" :
             ratioArgs["minY"]= -3.0
             ratioArgs["maxY"]= 3.0
@@ -1483,7 +1544,7 @@ class PlotTools:
         if len(coltext) == 8 :
             nonA = TColor.GetColor("#"+coltext[0:-2])
             alpha = int(coltext[-2:],16)/256. # hex to int and divide by max
-            print "chtml", nonA, alpha
+            # print "chtml", nonA, alpha
             return s.make_color_transparent(nonA,alpha)
         return TColor.GetColor("#"+coltext)
 
@@ -1512,8 +1573,8 @@ class PlotTools:
        if gROOT.GetColor(new_icol) != None : return new_icol;
        s.new_col .append(  TColor(new_icol, old_col.GetRed(),old_col.GetGreen(),old_col.GetBlue(),new_name,val) )
        #print "new transparent color ", new_icol
-       print "transparent color ", new_icol, gROOT.GetColor(new_icol)
-       print "new color ", s.new_col[-1].GetNumber(), gROOT.GetColor(new_icol).GetName()
+       # MSG.debug( "transparent color {} {}" .format(new_icol, gROOT.GetColor(new_icol)) )
+       # MSG.debug( "new color {} {}" .format(s.new_col[-1].GetNumber(), gROOT.GetColor(new_icol).GetName()) )
        return s.new_col[-1].GetNumber();
 
     def norm_subtract_bins(s, a_val, a_err, b_val, b_err) :
@@ -1608,8 +1669,8 @@ class PlotTools:
         # old: logy=False, logx=False , ymax="inf", ymin="-inf", xmax="inf", xmin="-inf", forcerange=False
 
         # parse options
-        normalise= kwargs["normalise"] if "normalise" in kwargs else False
-        setXlabel= kwargs["setXlabel"] if "setXlabel" in kwargs else False
+        normalise = kwargs["normalise"] if "normalise" in kwargs else False
+        setXlabel = kwargs["setXlabel"] if "setXlabel" in kwargs else False
         compareType = kwargs[ "compareType" ] if "compareType" in kwargs else "subtract"
         doSave = kwargs[ "doSave" ] if "doSave" in kwargs else True
         doStyle = kwargs[ "doStyle" ] if "doStyle" in kwargs else True
@@ -1636,7 +1697,9 @@ class PlotTools:
             s.hRatio = list()
             kwargsRatio = kwargs
             kwargsRatio = kwargs
-            if compareType == "ratio":
+            if compareType == None:
+                raise NotImplementedError("Skipping comparison")
+            elif compareType == "ratio":
                 s.hRatio = s.CreateRatioHists(hists[0],hists)
                 s.hRatio[0].GetYaxis().SetTitle( hists[0].GetTitle()+"/other")
             elif "ratio0" in compareType :
@@ -1729,6 +1792,8 @@ class PlotTools:
             # compile tex file
             os.system("cd {}; pdflatex -interaction=batchmode {}.tex  > /dev/null".format(s.imgDir, fname))
             os.system("cd {}; pdflatex -interaction=batchmode {}.tex  > /dev/null".format(s.imgDir, fname))
+            MSG.info( "preview created in file {}/{}.pdf".format(s.imgDir,fname))
+            pass
 
 
 

@@ -3,6 +3,7 @@
 #include "gaussrules.h"
 #include "mellinint.h"
 #include "integr.h"
+#include "phasespace.h"
 #include <iostream>
 
 int rapint::ydim;
@@ -155,37 +156,37 @@ void rapint::integrate(double ymin, double ymax, double m)
 	      double y=xc+xm*gr::xxx[opts.yrule-1][j];
 
 	      //calculate costheta moments as a function of y
-	      sety(y);
+	      phasespace::set_y(y);
 	      genv4p_();
 	      double cthmom0, cthmom1, cthmom2;
 	      cthmoments_(cthmom0,cthmom1,cthmom2);
 	      //cout << cthmom0 << "  " << cthmom1 << "  " << cthmom2 << endl;
-		  
+	      
 	      for (int i1 = 0; i1 < mellinint::mdim; i1++)
 		for (int i2 = 0; i2 < mellinint::mdim; i2++)
 		  {
-		    if (i2 >= i1)
-		      {
-			//functions to integrate (rapidity part is cached at initialisation)
-			complex <double> fpy=cfpm[i1][i2]*cfpy[index(i, j, i1, i2)];
-			complex <double> fmy=cfmm[i1][i2]*cfmy[index(i, j, i1, i2)];
-			//integrals
-			Ith0p[mellinint::index(i1,i2)]+=fpy*cthmom0;
-			Ith1p[mellinint::index(i1,i2)]+=fpy*cthmom1;
-			Ith2p[mellinint::index(i1,i2)]+=fpy*cthmom2;
-			Ith0m[mellinint::index(i1,i2)]+=fmy*cthmom0;
-			Ith1m[mellinint::index(i1,i2)]+=fmy*cthmom1;
-			Ith2m[mellinint::index(i1,i2)]+=fmy*cthmom2;
-		      }
-		    else
-		      {
-			Ith0p[mellinint::index(i1,i2)]=Ith0p[mellinint::index(i2,i1)];
-			Ith1p[mellinint::index(i1,i2)]=Ith1p[mellinint::index(i2,i1)];
-			Ith2p[mellinint::index(i1,i2)]=Ith2p[mellinint::index(i2,i1)];
-			Ith0m[mellinint::index(i1,i2)]=conj(Ith0m[mellinint::index(i2,i1)]);
-			Ith1m[mellinint::index(i1,i2)]=conj(Ith1m[mellinint::index(i2,i1)]);
-			Ith2m[mellinint::index(i1,i2)]=conj(Ith2m[mellinint::index(i2,i1)]);
-		      }
+		    //if (i2 >= i1) //Be careful!!! can symmetrise this only for lepton charge-symmetric cuts
+		    // {
+		    //functions to integrate (rapidity part is cached at initialisation)
+		    complex <double> fpy=cfpm[i1][i2]*cfpy[index(i, j, i1, i2)];
+		    complex <double> fmy=cfmm[i1][i2]*cfmy[index(i, j, i1, i2)];
+		    //integrals
+		    Ith0p[mellinint::index(i1,i2)]+=fpy*cthmom0;
+		    Ith1p[mellinint::index(i1,i2)]+=fpy*cthmom1;
+		    Ith2p[mellinint::index(i1,i2)]+=fpy*cthmom2;
+		    Ith0m[mellinint::index(i1,i2)]+=fmy*cthmom0;
+		    Ith1m[mellinint::index(i1,i2)]+=fmy*cthmom1;
+		    Ith2m[mellinint::index(i1,i2)]+=fmy*cthmom2;
+		    //  }
+		    //else
+		    //  {
+		    // 	 Ith0p[mellinint::index(i1,i2)]=Ith0p[mellinint::index(i2,i1)];
+		    //	 Ith1p[mellinint::index(i1,i2)]=Ith1p[mellinint::index(i2,i1)];
+		    //	 Ith2p[mellinint::index(i1,i2)]=Ith2p[mellinint::index(i2,i1)];
+		    //	 Ith0m[mellinint::index(i1,i2)]=conj(Ith0m[mellinint::index(i2,i1)]);
+		    //	 Ith1m[mellinint::index(i1,i2)]=conj(Ith1m[mellinint::index(i2,i1)]);
+		    //	 Ith2m[mellinint::index(i1,i2)]=conj(Ith2m[mellinint::index(i2,i1)]);
+		    //  }
 		  }
 	    }
 	}

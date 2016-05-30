@@ -19,6 +19,8 @@ void settings::readfromfile(const string fname){
     kmuren         = in.GetNumber ( "kmuren"            ); //91.1876e0
     kmufac         = in.GetNumber ( "kmufac"            ); //91.1876e0      # mur,        muf
     kmures         = in.GetNumber ( "kmures"            ); //91.1876e0      # mur,        muf
+    C1             = in.GetNumber ( "C1"            ); //91.1876e0      # mur,        muf
+    C3             = in.GetNumber ( "C3"            ); //91.1876e0      # mur,        muf
     //    a_param        = in.GetNumber ( "a_param"        ); //2.0e0          # a_param
     g_param        = in.GetNumber ( "g_param"        ); //1.0e0          # g_param
     order          = in.GetNumber ( "order"          ); //1              # order
@@ -117,6 +119,8 @@ void settings::readfromfile(const string fname){
     mellincores        = in.GetNumber ( "mellincores" );
     yintervals         = in.GetNumber ( "yintervals" );
     yrule              = in.GetNumber ( "yrule" );
+    ptbinwidth         = in.GetBool ( "ptbinwidth" );
+    ybinwidth          = in.GetBool ( "ybinwidth" );
 
     // additional conditions
     if (order != 1 && order != 2)
@@ -249,6 +253,8 @@ void settings::dumpAll(){
         dumpD ( "kmuren      ",  kmuren                     ) ;
         dumpD ( "kmufac      ",  kmufac                     ) ;
 	dumpD ( "kmures       ",  kmures   ) ;
+	dumpD ( "C1       ",  C1   ) ;
+	dumpD ( "C3       ",  C3   ) ;
         dumpD( "blim              ",  blim    ) ;
         dumpS("LHAPDFset          ", LHAPDFset           );
         dumpI("LHAPDFmember       ", LHAPDFmember        );
@@ -340,6 +346,8 @@ void settings::dumpAll(){
 	dumpD("mellincores        ", mellincores          );
         dumpI("yintervals         ", yintervals     );
         dumpI("yrule              ", yrule          );
+        dumpB("ptbinwidth         ", ptbinwidth     );
+        dumpB("ybinwidth          ", ybinwidth         );
     }
 
     if (print_masses){

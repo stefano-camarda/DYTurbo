@@ -18,7 +18,6 @@ DRYRUN=echo
 dyturbo_project=`pwd -P`
 batch_script_dir=$dyturbo_project/scripts/batch_scripts
 in_files_dir=$dyturbo_project/scripts/infiles
-result_dir=$dyturbo_project/results
 # templates
 batch_template=$dyturbo_project/scripts/run_DYTURBO_TMPL.sh
 dyturbo_in_tmpl=$dyturbo_project/scripts/DYTURBO_TMPL.in
@@ -48,6 +47,7 @@ seedlist=unset
 
 queue=atlasshort
 prepare_script(){
+    result_dir=$dyturbo_project/results_${process}_${pdfset}_${terms}
     mkdir -p $batch_script_dir
     mkdir -p $result_dir
     sample=${pdfset}_${variation}
@@ -60,7 +60,7 @@ prepare_script(){
     nprocessors=$cubacores
     [[ $cubacores == 0 ]] && nprocessors=1
     walltime=5:00
-    if [[ $program =~ dyres ]] || [[ $variation =~ all ]]
+    if [[ $program =~ dyres ]] || [[ $variation =~ all ]] || [[ $terms =~ [23]P ]]
     then
         walltime=20:00
         queue=atlaslong
@@ -92,6 +92,7 @@ prepare_in(){
     doREA="false"
     doVIR="false"
     doLOR="false"
+    doVV="false"
     if [[ $terms =~ ^ALL$ ]]
     then
         doRES="true"
@@ -106,6 +107,7 @@ prepare_in(){
     [[ $terms =~ REAL ]] && doREA="true" && termstring="real"
     [[ $terms =~ VIRT ]] && doVIR="true" && termstring="virt"
     [[ $terms =~ LO   ]] && doLOR="true" && termstring="lord"
+    [[ $terms =~ VV   ]] && doVV="true"
     # dimension of integration
     resumdim=4
     ctdim=8
@@ -116,6 +118,10 @@ prepare_in(){
     # pcubature
     pcubature=false
     [[ $terms =~ [2,3]P   ]] &&    pcubature=true
+    # fixed order
+    fixedorder=false
+    [[ $terms =~ FIX   ]] &&    fixedorder=true
+    [[ $terms =~ VV    ]] &&    fixedorder=true
     # ranges / list of ranges -- HARDCODED
     setloqtbin=$loqtbin
     sethiqtbin=$hiqtbin
@@ -267,8 +273,8 @@ prepare_in(){
             s|SETDOREA|$doREA|g              ;
             s|SETDOVIR|$doVIR|g              ;
             s|SETDOLOR|$doLOR|g              ;
+            s|SETDOVV|$doVV|g                ;
             s|SETDOVJ|false|g                ;
-            s|SETDOVV|false|g                ;
             s|SETCUBACORES|$cubacores|g      ;
             s|SETRESUMDIM|$resumdim|g        ;
             s|SETCTDIM|$ctdim|g              ;
@@ -278,6 +284,7 @@ prepare_in(){
             s|SETLEPPTCUT|$lepPtCut|g        ;
             s|SETLEPYCUT|$lepYCut|g          ;
             s|SETDETFIDUCIAL|$detfiducial|g  ;
+            s|SETFIXEDORDER|$fixedorder|g  ;
             s|SETIH1|$ih1|g                  ;
             s|SETIH2|$ih2|g                  ;
             s|SETQTRECNAIVE|$qtrec_naive|g   ;
@@ -882,9 +889,8 @@ DRYRUN=echo
 submit_parsed(){
     program=dyturbo
     queue=atlasshort
-    cubacores=0
     loqtbin=0
-    hiqtbin=100
+    hiqtbin=50
     loybin=-5
     hiybin=5
     fulllloqtbin=$loqtbin
@@ -892,13 +898,24 @@ submit_parsed(){
     fulllloybin=$loybin
     fulllhiybin=$hiybin
     random_seed=seed
-
+    fixhiqtbin=$hiqtbin
+    #
     if [[ $target =~ grid ]]
     then
         cubacores=0
         prepare_tarbal
     fi
-
+    #
+    if [[ $rerun =~ dyturbo_ ]]
+    then
+        job_name=$rerun
+        sh_file=$batch_script_dir/${rerun}.sh
+        sed  -i "s|#BSUB -J $rerun.*|#BSUB -J ${rerun}[$seedlist]|g;" $sh_file
+        echo rerun $job_name $seedlist
+        submit_job
+        return
+    fi
+    #
     for process in $proclist
     do
         for collider in $colliderlist
@@ -919,7 +936,7 @@ submit_parsed(){
                     if [[ $terms =~ [23][DP] ]]
                     then
                         NPDF=50
-                        if [[ $pdfset == CT10nnlo ]] || [[ $pdfset =~ CT14 ]]
+                        if [[ $pdfset == CT10nnlo ]] || [[ $pdfset =~ CT14 ]] || [[ $pdfset =~ MMHT2014nnlo68cl ]]
                         then
                             NPDF=50
                         else
@@ -934,12 +951,14 @@ submit_parsed(){
                         then
                             variationlist=array
                             seedlist=$NPDF
-                            [[ $target =~ mogon ]] && seedlist=100-$(( 100+$NPDF ))
+                            [[ $target =~ mogon|lxbatch ]] && seedlist=100-$(( 100+$NPDF ))
                         fi
                         # split per kinematic region
                         NsplitQT=10
                         NsplitY=5
-                        [[ $terms =~ [23]P ]] && NsplitQT=5 && NsplitY=5
+                        fulllhiqtbin=$fixhiqtbin
+                        [[ $terms =~ [23]P ]] && NsplitQT=10 && NsplitY=5
+                        [[ $terms =~ FIXCT[23][DP] ]] && NsplitQT=1 && NsplitY=5 && fulllhiqtbin=5
                     fi
                     for variation in $variationlist
                     do
@@ -957,7 +976,7 @@ submit_parsed(){
                                 qtregion=`echo o${order}qt${loqtbin}${hiqtbin}y${loybin}${hiybin}t${terms} | sed "s/\.//g;s/ //g"`
                                 # submit
                                 prepare_script
-                                [[ $target == mogon ]] &&  submit_job
+                                [[ $target =~ mogon|lxbatch ]] &&  submit_job
                                 [[ $target =~ grid ]]  && add_to_tarbal && submit_job2grid
                             done
                         done
@@ -1044,8 +1063,9 @@ clear_files(){
         #rm -f scripts/batch_scripts/*.sh
         #rm -f scripts/infiles/*.in
     else
-        rm -f scripts/batch_scripts/*.sh
-        rm -f scripts/infiles/*.in
+        #rm -f scripts/batch_scripts/*.sh
+        #rm -f scripts/infiles/*.in
+        echo "skiping"
     fi
     rm -f scripts/infiles/*.tar
     rm -f scripts/infiles/*.tar.gz
@@ -1078,21 +1098,24 @@ USAGE: ./scripts/submit_DYTURBO.sh --target [settings]
 
   Setting      [default]   possibilities     description
 
-    --proc     [z0,wp,wm]  {z0,wp,wm}             set the mass and scales
-    --pdfset   [CT10nnlo]  {LHAPDFname}           set LHAPDF set name
-    --pdfvar   [0]         {int or all or array}  set member number or run all
-    --collider [lhc7]      {tev1,tev2,lhc7,lhc8}  set hadron type and energy
-    --order    [2]         {1,2}                  1: NLL+NLO 2: NNLL+NNLO
-    --term     [RES3D]     {RES,CT}               Monte-Carlo integration with order as above
-                           {RES3D,CT3D}           Cubature 3D integration with order set above
-                           {RES2D,CT2D}           Cubature 2D integration with order set above
-                           {REAL,VIRT}            Real and virt for order=2 with MC
-                           {LO}                   Fixed term for order=1 with MC
-    --gpar     [1.0]       {float}                Set gpar value
-    --lepcutPt [20.0]      {float}                This will turn on make lepton cuts and set pt>ptcut
-    --lepcutY  [2.5]       {float}                This will turn on make lepton cuts and set absY>ycut
-    --seeds    [1000]      {int}                  Set range (for mogon) or Njobs (grid)
-    --evolmode [0]         {0,1,2,3}              Set evolmode
+    --proc      [z0,wp,wm]  {z0,wp,wm}             set the mass and scales
+    --pdfset    [CT10nnlo]  {LHAPDFname}           set LHAPDF set name
+    --pdfvar    [0]         {int or all or array}  set member number or run all
+    --collider  [lhc7]      {tev1,tev2,lhc7,lhc8}  set hadron type and energy
+    --order     [2]         {1,2}                  1: NLL+NLO 2: NNLL+NNLO
+    --term      [RES3D]     {RES,CT}               Monte-Carlo integration with order as above
+                            {RES3D,CT3D}           Cubature 3D integration with order set above
+                            {RES2D,CT2D}           Cubature 2D integration with order set above
+                            {REAL,VIRT}            Real and virt for order=2 with MC
+                            {LO}                   Fixed term for order=1 with MC
+    --gpar      [1.0]       {float}                Set gpar value
+    --lepcutPt  [20.0]      {float}                This will turn on make lepton cuts and set pt>ptcut
+    --lepcutY   [2.5]       {float}                This will turn on make lepton cuts and set absY>ycut
+    --seeds     [1000]      {int}                  Set range (for mogon) or Njobs (grid)
+    --evolmode  [0]         {0,1,2,3}              Set evolmode
+    --cubacores [0]         {int}                  Set number of paralel cores for cuba
+
+    --rerun    "jobname"
 
     many of then can be set with comma separation.
 
@@ -1117,6 +1140,7 @@ parse_inputs(){
     lepPtCut=20.
     lepYCut=2.5
     termlist=RES3D
+    cubacores=0
     evolmode=0
     gpar=1.0
     seedlist=1000
@@ -1188,6 +1212,16 @@ parse_inputs(){
                 ;;
             --evolmode)
                 evolmode=$2
+                shift
+                ;;
+            --rerun)
+                rerun=$2
+                seedlist=$3
+                shift
+                shift
+                ;;
+            --cores)
+                cubacores=$2
                 shift
                 ;;
             # submit jobs

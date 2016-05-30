@@ -1005,6 +1005,8 @@ class  makeInfo:
         s.term_cline = ""
         s.term_cfill = ""
         #
+        s.pdf_var = 0
+        #
         s.filebase   = ""
         # DEFINE
         if procD!=0 :
@@ -1022,8 +1024,8 @@ class  makeInfo:
             s.term_cline = pl.ColorHTML(termD[2])
             s.term_cfill = pl.ColorHTML(termD[2]+"88")
             pass
-        if termD!=0 :
-            s.filebase   = fileD
+        if termD!=0 and fileD!=0 :
+            s.filebase   = fileD[termD[0]]
             pass
         s.name = "_".join([
                 s.proc_name,
@@ -1036,7 +1038,8 @@ class makeUncInfo():
     def __init__(s,uncD):
         s.name = uncD[0]
         s.titl = uncD[1]
-        s.varN = [ str(x) for x in uncD[2] ]
+        # s.varN = [ str(x) for x in uncD[2] ]
+        s.varN = uncD[2]
         s.types = uncD[3].split(",")
         s.cfill = pl.ColorHTML(uncD[5]+"88")
         s.cline = pl.ColorHTML(uncD[5])
@@ -1068,79 +1071,148 @@ class  makeUncDescrInfo:
 class TheoUncStudy:
     def __init__(s):
         s.processesDesc = [
-                [ "wp" , "W^{+}#rightarrowl^{+}#nu" ],
-                [ "wm" , "W^{-}#rightarrowl^{-}#nu" ],
-                [ "z0" , "Z#rightarrowll"           ],
+                    [ "wp" , "W^{+}#rightarrowl^{+}#nu" ]  ,
+                  # [ "wm" , "W^{-}#rightarrowl^{-}#nu" ]  ,
+                  # [ "z0" , "Z#rightarrowll"           ]  ,
                 ]
         s.plotsDesc = [
-                [  "h_qt"         , "q_{T}[GeV];#sigma[pb]" , 100  ],
-                #[  "h_y"          , "y;#sigma[pb]"          , 5   ],
-                #[ "h_qtVy"       , "q_{T}[GeV];y"          , 1e8 ],
-                #[ "p_qtVy_A4"    , "q_{T}[GeV];y;A4"       , 1e8 ],
-                #[  "p_qtVy_A4_prfx" , "q_{T}[GeV];A4"         , 40  ],
-                #[  "p_qtVy_A4_prfy" , "y;A4"                  , 3   ],
-                #[  "p_qtVy_A4_outliers_px" , "q_{T}[GeV];A4"         , 40  ],
-                #[  "p_qtVy_A4_outliers_py" , "y;A4"                  , 3   ],
+                [  "h_qt"                    , "q_{T}[GeV];#sigma[pb]" , 100  ] ,
+                [  "h_y"                   , "y;#sigma[pb]"          , 5   ]  ,
+                # [ "h_qtVy"                 , "q_{T}[GeV];y"          , 1e8 ]  ,
+                # [ "p_qtVy_A4"              , "q_{T}[GeV];y;A4"       , 1e8 ]  ,
+                # [  "p_qtVy_A4_prfx"        , "q_{T}[GeV];A4"         , 40  ]  ,
+                # [  "p_qtVy_A4_prfy"        , "y;A4"                  , 3   ]  ,
+                # [  "p_qtVy_A4_outliers_px" , "q_{T}[GeV];A4"         , 40  ]  ,
+                # [  "p_qtVy_A4_outliers_py" , "y;A4"                  , 3   ]  ,
                 ]
+
         s.uncDescr =  [
-                ["stat"  , "stat."           , [0]         , "error"       , "#BEC4C9", "#88919A" ],
-                ["alphas", "#alpha_{S} var." , [54,53]     , "pos,neg,sym" , "#FFAB91", "#FF6737" ],
-                ["gpar"  , "g var."          , [52,51]     , "pos,neg,sym" , "#D1FF91", "#ABFE37" ],
-                #["pdf"   , "PDF"             , range(1,51) , "pos,neg,sym" , "#99CDFF", "#45A2FC" ],
+                [ "stat"   , "stat."           , [0]         , "error"       , "#BEC4C9" , "#88919A" ]  ,
+                # [ "alphas" , "#alpha_{S} var." , [54,53]     , "pos,neg,sym" , "#FFAB91" , "#FF6737" ]  ,
+                # [ "gpar"   , "g var."          , [52,51]     , "pos,neg,sym" , "#D1FF91" , "#ABFE37" ]  ,
+                [ "pdf"    , "PDF"             , range(1,51) , "pos,neg,sym" , "#99CDFF" , "#45A2FC" ]  ,
                 ]
+
         s.infoUnc = makeUncDescrInfo(s.uncDescr)
-        s.termDesc = [
-                [ "TOT"  , ""         , "#88919a" ] ,
-                [ "FIN"  , "(fin.)"   , "#d95f02" ] ,
-                [ "RES"  , "(res.)"   , "#7570b3" ] ,
-                [ "CT"   , "(ct.)"    , "#e7298a" ] ,
-                [ "REAL" , "(real.)"  , "#66a61e" ] ,
-                [ "VIRT" , "(virt.)"  , "#e6ab02" ] ,
-                ]
-        s.file_template = "results_merge/grid_151123/dyturbo_{}_lhc7_WZZPT-CT10_{}_v1447428851qt0100y05t{}_outliers.root"
-        s.MaxUnc=0.015
+        s.termDesc = {
+                "TOT"    : ["TOT"    , ""          , "#88919a" ] ,
+                "FIN"    : ["FIN"    , "(fin.) "   , "#d95f02" ] ,
+                "RES"    : ["RES"    , "(res.) "   , "#7570b3" ] ,
+                "RES2P"  : ["RES2P"  , "(res.2D) " , "#7570b3" ] ,
+                "CT"     : ["CT"     , "(ct.) "    , "#e7298a" ] ,
+                "CT2P"   : ["CT2P"   , "(ct.2D) "  , "#e7298a" ] ,
+                "REAL"   : ["REAL"   , "(real.) "  , "#66a61e" ] ,
+                "VIRT"   : ["VIRT"   , "(virt.) "  , "#e6ab02" ] ,
+                }
+        s.MaxUnc=0.15
+        s.doREALuseOutlier=False
+        #
+        # s.file_template = "results_merge/grid_151123/dyturbo_{}_lhc7_WZZPT-CT10_{}_v1447428851qt0100y05t{}_outliers.root"
+        s.file_template = {
+                "RESCT"         : "results_merge/CT10nnlo_RESCT2P_160512/dyturbo_{}_lhc7_CT10nnlo_{}_o2qt0100y-55t{}.root" ,
+                "VIRT_Maarten1" : "results_grid/group.phys-sm.dyturbo_{}_lhc7_CT10nnlo_{}_o2qt0100y-55t{}_seed_v1462837351_results_merge.root/group.phys-sm.8418804._001911.results_merge.root" ,
+                "REAL_Maarten1" : "results_grid/group.phys-sm.dyturbo_{}_lhc7_CT10nnlo_{}_o2qt0100y-55t{}_seed_v1462837351_results_merge.root/group.phys-sm.8418801._001202.results_merge.root" ,
+                "VIRT_Fabrice1" : "results_grid/user.fballi.dyturbo_wp_lhc7_CT10nnlo_all_o2qt0100y-55tVIRT_seed_v1462837351_results_merge.root/user.fballi.8374777._000212.results_merge.root" ,
+                "REAL_Fabrice1" : "results_grid/user.fballi.dyturbo_wp_lhc7_CT10nnlo_all_o2qt0100y-55tREAL_seed_v1462837351_results_merge.root/user.fballi.8374774._000121.results_merge.root" ,
+                "REALVIRT_MaartenM" : "results_merge/grid_maarten_160518/group.phys-sm.dyturbo_{}_lhc7_CT10nnlo_{}_o2qt0100y-55t{}_seed_outliers.root" ,
+                "REALVIRT_FabriceM" : "results_merge/grid_fabrice_160518/user.fballi.dyturbo_{}_lhc7_CT10nnlo_{}_o2qt0100y-55t{}_seed_outliers.root" ,
+
+                }
+        #
+        # pl.imgDir="share/img_Maarten1"
+        # s.file_template [ "REAL"   ] = s.file_template [ "REAL_Maarten1" ]
+        # s.file_template [ "VIRT"   ] = s.file_template [ "VIRT_Maarten1" ]
+        #
+        # pl.imgDir="share/img_Fabrice1"
+        # s.file_template [ "REAL"   ] = s.file_template [ "REAL_Fabrice1" ]
+        # s.file_template [ "VIRT"   ] = s.file_template [ "VIRT_Fabrice1" ]
+        #
+        # pl.imgDir="share/img_MaartenM"
+        # s.file_template [ "REAL"   ] = s.file_template [ "REALVIRT_MaartenM" ]
+        # s.file_template [ "VIRT"   ] = s.file_template [ "REALVIRT_MaartenM" ]
+        #
+        pl.imgDir="share/img_FabriceM"
+        s.file_template [ "REAL"   ] = s.file_template [ "REALVIRT_FabriceM" ]
+        s.file_template [ "VIRT"   ] = s.file_template [ "REALVIRT_FabriceM" ]
+        #
+        s.file_template [ "RES2P"  ] = s.file_template [ "RESCT" ]
+        s.file_template [ "CT2P"   ] = s.file_template [ "RESCT" ]
+        s.file_template [ "FIN"    ] = "unset"
+        s.file_template [ "TOT"    ] = "unset"
         pl.MakeNiceGradient()
         pass
 
-    def GetPlot(s,info,var,name=""):
+    def GetPlot(s,info,var,name="",varPerTerm=None):
         # if tot or fin load smartly :
         #
         h=0
         match={
-             #"TOT"  : ["RES","CT","REAL","VIRT"] ,
-             #"FIN"  : ["CT","REAL","VIRT"]       ,
-             "TOT"  : ["TOT"]  ,
-             "FIN"  : ["FIN"]  ,
-             "RES"  : ["RES"]  ,
-             "CT"   : ["CT"]   ,
+             "TOT"  : ["RES2P","CT2P","REAL","VIRT"] ,
+             "FIN"  : ["CT2P","REAL","VIRT"]       ,
+             # "TOT"  : ["TOT"]  ,
+             # "FIN"  : ["FIN"]  ,
+             # "RES"  : ["RES"]  ,
+             "RES2P"  : ["RES2P"]  ,
+             # "CT"   : ["CT"]   ,
+             "CT2P"   : ["CT2P"]   ,
              "REAL" : ["REAL"] ,
              "VIRT" : ["VIRT"] ,
             }
+        if varPerTerm!=None and "FIN" == varPerTerm  : varPerTerm="CT2P,REAL,VIRT"
         for term in match[info.term_name] :
+            varterm=var
+            if varPerTerm!=None :
+                varterm=0
+                if term in varPerTerm  :
+                    varterm=var
             tinfo=deepcopy(info)
             tinfo.term_name=term
-            hist = s.getplot(tinfo,var,term)
-            if not "TH1D" in hist.ClassName() or not "TH2D" in hist.ClassName() :
-                h = hist.Clone(name)
-                break;
+            hist = s.getplotPDF(tinfo,varterm,term)
+            # if not "TH1" in hist.ClassName() and not "TH2" in hist.ClassName() :
+            #     h = hist.Clone(name)
+            #     MSG.info(" Not TH1 nor TH2 : {} {} {}" .format(tinfo.name,varterm,term))
+            #     MSG.debug(" h print")
+            #     hist.Print()
+            #     break;
+            # first fill
             if h == 0 :
                 h = pl.EmptyClone(hist,name)
-            xsec =  s.getplot(tinfo,"qt_y_total","xsec")
-            c = xsec.Integral()  / hist.Integral() 
+            # xsec =  s.getplotPDF(tinfo,"qt_y_total","xsec")
+            # c = xsec.Integral()  / hist.Integral() 
+            c=1
             h.Add(hist,c)
         return h
 
-    def getplot(s,info,var,name=""):
-        if name == "" : name=s.infoUnc.getNameByVarN(var)
-        fname=info.filebase.format(info.proc_name,var,info.term_name)
+    def getplotPDF(s,info,pdfvar,name=""):
+        if name == "" : name=s.infoUnc.getNameByVarN(pdfvar)
+        # fname=info.filebase.format(info.proc_name,var,info.term_name)
         hname=info.plot_name
         title=name+";"+info.plot_titl
+        term=info.term_name
+        proc=info.proc_name
+        # pdfvar=info.pdf_var
         h = 0
+        # No PDF variation
+        pdfhname=hname
+        filevar=0
+        if "RES" in term or "CT" in term :
+            # take a pdf variation histogram from ressumed part
+            filevar="{:02d}".format(pdfvar)
+        elif pdfvar >= 0 :
+            # take a pdf variation histogram from finite part
+            if pdfvar != 0 : pdfhname="{}{}".format(hname,pdfvar)
+            filevar="all"
+        #
+        fname=s.file_template[term].format(proc,filevar,term)
+        if s.doREALuseOutlier and "REAL" in term : 
+            pdfhname+="_outliers"
         try :
-           h = pl.GetHistSetName(name,fname,hname)
+           h = pl.GetHistSetName(name,fname,pdfhname)
            pass
         except ValueError as detail:
-           #print detail
+           # print detail
+           MSG.info(" cannot find hist {} in file {} trying 2D".format(pdfhname,fname))
+           MSG.debug(" PRINTING FILE: "); f = TFile.Open(fname); f.ls()
            # try to remove last term of name and then make projection
            splitname=hname.split("_")
            hname = "_".join( splitname[:-1] )
@@ -1153,58 +1225,95 @@ class TheoUncStudy:
 
     def getallbands(s,info,central):
         bands=dict()
+        bands["central"] = central
         for u_name,uInfo in s.infoUnc.iterkeys() :
             # load all variations
             htmp = [ s.GetPlot(info,var,uInfo.name+str(i)) for i,var in enumerate(uInfo.varN)]
             htmp = [central] + htmp
-            for type in uInfo.types :
-                bname = "_".join([uInfo.name,type])
-                bands[bname]=pl.MakeUncBand(bname,htmp,band=type,rel=True)
+            for etype in uInfo.types :
+                bname = "_".join([uInfo.name,etype])
+                etypePDF=etype
+                if "pdf" in bname: etypePDF=bname
+                # MSG.debug(" name {} etype {} u_name {} fullband".format(info.name, etype,u_name))
+                bands[bname]=pl.MakeUncBand(bname,htmp,band=etypePDF,rel=True,doCL96to68=True)
+                # alltrms= [ "FIN" , "RES"  , "CT"   , "REAL" , "VIRT" ]
+                alltrms= [ "FIN" , "RES2P"  , "CT2P"   , "REAL" , "VIRT" ]
                 # add decomposition of statistical uncertainty (band per each term relative to total)
-                if info.term_name=="TOT" and type == "error" :
-                    alltrms= [ "FIN" , "RES"  , "CT"   , "REAL" , "VIRT" ]
+                if info.term_name=="TOT" and etype == "error" :
                     for trm in alltrms :
                         centr = htmp[0]
                         infocp = deepcopy(info)
                         infocp.term_name=trm
-                        term_hist = s.GetPlot(infocp,"0",trm)
+                        term_hist = s.GetPlot(infocp,0,trm)
                         bname="stat_"+trm
+                        # MSG.debug(" name {} etype {} u_name {} stat decomp {}".format(info.name, etype,u_name, trm))
                         bands[bname] = pl.MakeUncBand(bname,[centr,term_hist],band="errOth",rel=True)
-                #bands[bname].Print()
+                        pass
+                    pass
                 pass
+                # add decomposition of PDF uncertainty (band per each term relative to total)
+                if info.term_name=="TOT" and etype == "sym" and u_name == "pdf" :
+                    for trm in alltrms :
+                        centr = central
+                        hl_varPerTerm = [ s.GetPlot(info,var,uInfo.name+str(i),trm) for i,var in enumerate(uInfo.varN)]
+                        bname=u_name+trm+"_"+etype
+                        # MSG.debug(" name {} etype {} u_name {} pdf decomp {}".format(info.name, etype,u_name, trm))
+                        bands[bname] = pl.MakeUncBand(bname,[centr]+hl_varPerTerm,band=etype,rel=True,doCL96to68=True)
+                    pass
+                if  u_name == "pdf" :
+                    # add decomposition of PDF uncertainty (band per each eigenpair relative to total)
+                    # for i,h in enumerate(htmp) : MSG.debug ("PDF var {} bin val = {}".format(i,h.GetBinContent(4)))
+                    bname = u_name+"_Eig"+etype+info.term_name
+                    # MSG.debug(" name {} etype {} u_name {} eig decomp".format(info.name, etype,u_name))
+                    bands[bname] = pl.MakeUncBand(bname,htmp,band="eig_pdf_"+etype,rel=True,doCL96to68=True)
+                    # add decomposition of PDF uncertainty (ratio per each eigenset)
+                    if etype=="sym" :
+                        bname = "var_pdf_ratio"+info.term_name
+                        bands[bname] = pl.MakeUncBand(bname,htmp,band="var_ratio",rel=True,doCL96to68=True)
+                    pass
             pass
         # create stack
         stacks = [
-            ["alphas","gpar"],
-            ["stat", "alphas"],
-            ["stat","alphas+gpar"],
-            #["stat+alphas+gpar","pdf"],
+                 [ "stat"                    , "pdf"         ]  ,
+            #
+                 # [ "pdfREAL"                 , "pdfVIRT"     ]  ,
+                 # [ "pdfREAL+pdfVIRT"         , "pdfCT"       ]  ,
+                 # [ "pdfREAL+pdfVIRT+pdfCT"   , "pdfRES"      ]  ,
+                 # [ "pdfREAL+pdfVIRT"         , "pdfCT2P"     ]  ,
+                 # [ "pdfREAL+pdfVIRT+pdfCT2P" , "pdfRES2P"    ]  ,
+            #
+            #    [ "alphas"                  , "gpar"        ]  ,
+            #    [ "stat"                    , "alphas"      ]  ,
+            #    [ "stat"                    , "alphas+gpar" ]  ,
+            #    [ "stat+alphas+gpar"        , "pdf"         ]  ,
             ]
         bands["stat_sym"] = bands["stat_error"]
         if info.term_name == "TOT": bands["stat_TOT"] = bands["stat_error"]
-        type="sym"
+        etype="sym"
         for st1,st2 in stacks :
             res="+".join([st1,st2])
-            resName = "_".join([res , type])
-            st1name = "_".join([st1 , type])
-            st2name = "_".join([st2 , type])
+            resName = "_".join([res , etype])
+            st1name = "_".join([st1 , etype])
+            st2name = "_".join([st2 , etype])
             htmp = [bands[st1name], bands[st2name] ]
-            CorMatrix = [[0]] if "alphas" == st1 and "gpar" == st2 else [[0.20]]
+            CorMatrix = [[0]]
+            if "alphas" == st1 and "gpar" == st2 : CorMatrix=[[0.20]]
             bands[resName]=pl.CombUncBand(resName,htmp,correl=CorMatrix, opts="rel" )
             #bands[resName].Print()
         return bands
 
     def PlotCentralWithBand(s,ctrl,allbands,info):
-        minx=0
+        # minx=0
         maxx=info.plot_maxx
-        if info.term_name=="REAL"  :
-            minx=50
-            maxx=80
+        # if info.term_name=="REAL"  :
+        #     minx=50
+        #     maxx=80
         name = info.name+"_CentBand"
         central=ctrl.Clone("hh")
         central.SetLineWidth(2)
         central.SetLineColor(kAzure)
-        central_totband = pl.MakeBandGraph( "centralband", central, [allbands["stat+alphas+gpar_sym"]], "band,rel" )
+        # central_totband = pl.MakeBandGraph( "centralband", central, [allbands["stat+alphas+gpar_sym"]], "band,rel" )
+        central_totband = pl.MakeBandGraph( "centralband", central, [allbands["stat_error"]], "band,rel" )
         central_totband.SetTitle(" Full unc. band " + info.term_title)
         central_totband.SetFillColor(kAzure-9)
         for i,bin in enumerate(central):
@@ -1212,7 +1321,7 @@ class TheoUncStudy:
         # plot
         pl.NewCanvas(name)
         hlist=[central,central_totband]
-        pl.SetFrameStyle1D(hlist,minX=minx, maxX=maxx)
+        pl.SetFrameStyle1D(hlist, maxX=maxx)
         central_totband.Draw("SAMEE3")
         central.Draw("LSAME")
         pl.DrawLegend([central_totband],"fl",legx=0.65,legy=0.80,scale=1.1)
@@ -1221,27 +1330,29 @@ class TheoUncStudy:
         pass
 
     def PlotStackUncertainty(s,allbands,info):
-        minx=0
+        # minx=0
         maxx=info.plot_maxx
         uncmax= s.MaxUnc*2 
         forcrng=True
-        if info.term_name=="REAL"  :
-            minx=50
-            maxx=80
-            uncmax=1e8
-            forcrng=False
+        # if info.term_name=="REAL"  :
+            # minx=50
+            # maxx=80
+            # uncmax=1e8
+            # forcrng=False
         # systematic + statistic
         name = info.name+"_UncStack"
         stackList=[
-                [ "stat_sym"             , "stat"   ] ,
-                [ "stat+alphas_sym"      , "alphas" ] ,
-                [ "stat+alphas+gpar_sym" , "gpar"   ] ,
-                #[ "alphas+gpar_sym" , "gpar"   ] ,
-                #[ "alphas_sym" , "alphas"   ] ,
-                #[ "alphas+gpar_sym" , "alphas"   ] ,
-                #[ "gpar_sym" , "gpar"   ] ,
-                #[ "gpar_sym" , "gpar"   ] ,
-                #[ "stat+alphas+gpar_sym" , "gpar"   ] ,
+                  [ "pdf_sym"              , "pdf"    ]  ,
+                  [ "stat+pdf_sym"         , "stat"   ]  ,
+                # [ "stat_sym"             , "stat"   ]  ,
+                # [ "stat+alphas_sym"      , "alphas" ]  ,
+                # [ "stat+alphas+gpar_sym" , "gpar"   ]  ,
+                # [ "alphas+gpar_sym"      , "gpar"   ]  ,
+                # [ "alphas_sym"           , "alphas" ]  ,
+                # [ "alphas+gpar_sym"      , "alphas" ]  ,
+                # [ "gpar_sym"             , "gpar"   ]  ,
+                # [ "gpar_sym"             , "gpar"   ]  ,
+                # [ "stat+alphas+gpar_sym" , "gpar"   ]  ,
                 ]
         hlist=list()
         titl=""
@@ -1256,8 +1367,9 @@ class TheoUncStudy:
             titl += "#oplus"
             #hlist[-1].Print()
             hlist[-1].GetYaxis().SetTitle("rel. unc.")
+        # for h in hlist : MSG.debug(" No stack ??? name {} bin 5 {} ".format(h.GetName(), h.GetBinContent(5)))
         pl.NewCanvas(name)
-        pl.SetFrameStyle1D(hlist,minX=minx, maxX=maxx,maxY=uncmax,forceRange=forcrng)
+        pl.SetFrameStyle1D(hlist,maxX=maxx,maxY=uncmax,forceRange=forcrng)
         #pl.DrawHistCompare([central_totband,central])
         for h in reversed(hlist) :
             h.Draw("same,f")
@@ -1265,39 +1377,54 @@ class TheoUncStudy:
         pl.WriteText(info.proc_titl,0.8,0.8,tsize=0.06)
         pl.Save()
         #
-        # statistic per term
+        # statistic and PDF per term
         if info.term_name == "TOT" :
             uncList=[
-                    [ "TOT"    , "FIN"    , "RES"                                     ],
-                    [            "FIN"    ,            "CT"     , "REAL"   , "VIRT"   ],
-                    [                       "RES"    , "CT"     , "REAL"   , "VIRT"   ],
-                    [ "TOT"    , "FIN"    , "RES"    , "CT"     , "REAL"   , "VIRT"   ],
+                    # [ "TOT"    , "FIN"    , "RES"                                     ],
+                    # [            "FIN"    ,            "CT"     , "REAL"   , "VIRT"   ],
+                    # [                       "RES"    , "CT"     , "REAL"   , "VIRT"   ],
+                    # [ "TOT"    , "FIN"    , "RES"    , "CT"     , "REAL"   , "VIRT"   ],
+                    [ "TOT"    , "FIN"    , "RES2P"                                       ],
+                    [            "FIN"    ,              "CT2P"     , "REAL"   , "VIRT"   ],
+                    [                       "RES2P"    , "CT2P"     , "REAL"   , "VIRT"   ],
+                    [ "TOT"    , "FIN"    , "RES2P"    , "CT2P"     , "REAL"   , "VIRT"   ],
                     ]
-            for i,termList in enumerate(uncList) :
-                name = info.name+"_UncStatPerTerm"+str(i)
-                hlist=list()
-                for trm in termList:
-                    #uncD = s.infoUnc[uncName]
-                    bname = "stat_"+trm
-                    hlist.append(allbands[bname])
-                    trmD = [ x for x in s.termDesc if x[0]==trm][0]
-                    print trmD
-                    tmp_info = makeInfo(0,0,trmD,0)
-                    hlist[-1].SetFillColor(tmp_info.term_cfill)
-                    hlist[-1].SetLineColor(tmp_info.term_cline)
-                    hlist[-1].SetLineWidth(2)
-                    hlist[-1].SetTitle("stat "+tmp_info.term_title)
-                    #hlist[-1].Print()
-                    hlist[-1].GetYaxis().SetTitle("rel. unc. wrt. total")
+            UncStackDef=[
+                    [ "stat_", "_UncStatPerTerm" , "stat " ],
+                    [ "pdf"  , "_UncPDFPerTerm"  , "PDF " ],
+                    ]
+            for unc,uncname,unctit in UncStackDef :
+                for i,termList in enumerate(uncList) :
+                    name = info.name+uncname+str(i)
+                    hlist=list()
+                    for trm in termList:
+                        #uncD = s.infoUnc[uncName]
+                        bname = unc+trm
+                        if "pdf" in unc :
+                            bname = unc+trm+"_sym"
+                            if trm == "TOT" :
+                                bname = unc+"_sym"
+                        hlist.append(allbands[bname])
+                        # MSG.debug( "trm {}".format(trm) )
+                        trmD =s.termDesc[trm]
+                        # MSG.debug( "trmD {}".format(trmD) )
+                        tmp_info = makeInfo(0,0,trmD,0)
+                        hlist[-1].SetFillColor(tmp_info.term_cfill)
+                        hlist[-1].SetLineColor(tmp_info.term_cline)
+                        hlist[-1].SetLineWidth(2)
+                        hlist[-1].SetTitle(unctit+tmp_info.term_title)
+                        #hlist[-1].Print()
+                        hlist[-1].GetYaxis().SetTitle("rel. unc. wrt. total")
+                        pass
+                    pl.NewCanvas(name)
+                    pl.SetFrameStyle1D(hlist,maxX=info.plot_maxx,maxY=s.MaxUnc*2,forceRange=True)
+                    #pl.DrawHistCompare([central_totband,central])
+                    for h in hlist :
+                        h.Draw("same,f")
+                    pl.DrawLegend(hlist,"f",legx=0.2,scale=0.8)
+                    pl.WriteText(info.proc_titl,0.8,0.8,tsize=0.06)
+                    pl.Save()
                     pass
-                pl.NewCanvas(name)
-                pl.SetFrameStyle1D(hlist,maxX=info.plot_maxx,maxY=s.MaxUnc*2,forceRange=True)
-                #pl.DrawHistCompare([central_totband,central])
-                for h in hlist :
-                    h.Draw("same,f")
-                pl.DrawLegend(hlist,"f",legx=0.2,scale=0.8)
-                pl.WriteText(info.proc_titl,0.8,0.8,tsize=0.06)
-                pl.Save()
                 pass
             pass
         pass
@@ -1306,9 +1433,10 @@ class TheoUncStudy:
         tmp=pl.canvasSettings
         pl.canvasSettings = [0,0,1200,400]
         uncList=[
-                "gpar"   ,
-                "alphas" ,
+                # "gpar"   ,
+                # "alphas" ,
                 "stat"   ,
+                "pdf"   ,
                 ]
         for uncName in uncList :
             maxiy=s.MaxUnc
@@ -1327,6 +1455,8 @@ class TheoUncStudy:
                 hlist[-1].SetLineWidth(2)
                 hlist[-1].SetTitle(uncD.titl+" "+info.term_title)
                 hlist[-1].GetYaxis().SetTitle("rel. unc.")
+                if "pdf" in uncName and btype=="neg" :
+                    hlist[-1].Scale(-1)
             name = info.name+"_UncEnv_" + uncName
             pl.NewCanvas(name)
             pl.SetFrameStyle1D(hlist,maxX=info.plot_maxx,scale=2,minY=miniy,maxY=maxiy,forceRange=True)
@@ -1344,41 +1474,52 @@ class TheoUncStudy:
         #
         # decompose statistic per term
         if info.term_name == "TOT" :
-            uncList=[
+            trmlist=[
                     "TOT"  ,
                     "FIN"  ,
-                    "RES"  ,
-                    "CT"   ,
+                    # "RES"  ,
+                    "RES2P"  ,
+                    # "CT"   ,
+                    "CT2P"   ,
                     "REAL" ,
                     "VIRT" ,
                     ]
-            for trm in uncList :
-                hlist=list()
-                maxiy=s.MaxUnc
-                miniy=0
-                bname="stat_"+trm
-                hlist.append(allbands[bname])
-                trmD = [ x for x in s.termDesc if x[0]==trm][0]
-                tmp_info = makeInfo(0,0,trmD)
-                hlist[-1].SetFillColor(tmp_info.term_cfill)
-                hlist[-1].SetLineColor(tmp_info.term_cline)
-                hlist[-1].SetLineWidth(2)
-                hlist[-1].SetTitle("stat "+tmp_info.term_title)
-                hlist[-1].GetYaxis().SetTitle("rel. unc. wrt. total")
-                name = info.name+"_UncEnvStatTerm_" + trm
-                pl.NewCanvas(name)
-                pl.SetFrameStyle1D(hlist,maxX=info.plot_maxx,scale=2,minY=miniy,maxY=maxiy,forceRange=True)
-                pl.axis.GetYaxis().SetNdivisions(5)
-                gPad.SetLeftMargin  ( 0.120 )
-                gPad.SetTopMargin  ( 0.050 )
-                #pl.axis.GetListOfPrimitives().Print()
-                #pl.DrawHistCompare([central_totband,central])
-                for h in hlist :
-                    h.Draw("same")
-                pl.DrawLegend(hlist[0:1],"f",legx=0.15,legy=0.87)
-                pl.WriteText(info.proc_titl,0.8,0.8,tsize=0.09)
-                pl.Save()
-                pass
+            UncStackDef=[
+                    [ "stat_", "_UncEnvStatTerm_" , "stat " ],
+                    [ "pdf"  , "_UncEnvPDFTerm_"  , "PDF " ],
+                    ]
+            for unc,uncname,unctit in UncStackDef :
+                for trm in trmlist :
+                    hlist=list()
+                    maxiy=s.MaxUnc
+                    miniy=0
+                    bname=unc+trm
+                    if "pdf" in unc :
+                        bname = unc+trm+"_sym"
+                        if trm == "TOT" :
+                            bname = "pdf_sym"
+                    hlist.append(allbands[bname])
+                    trmD =s.termDesc[trm]
+                    tmp_info = makeInfo(0,0,trmD)
+                    hlist[-1].SetFillColor(tmp_info.term_cfill)
+                    hlist[-1].SetLineColor(tmp_info.term_cline)
+                    hlist[-1].SetLineWidth(2)
+                    hlist[-1].SetTitle(unctit+tmp_info.term_title)
+                    hlist[-1].GetYaxis().SetTitle("rel. unc. wrt. total")
+                    name = info.name+uncname+ trm
+                    pl.NewCanvas(name)
+                    pl.SetFrameStyle1D(hlist,maxX=info.plot_maxx,scale=2,minY=miniy,maxY=maxiy,forceRange=True)
+                    pl.axis.GetYaxis().SetNdivisions(5)
+                    gPad.SetLeftMargin  ( 0.120 )
+                    gPad.SetTopMargin  ( 0.050 )
+                    #pl.axis.GetListOfPrimitives().Print()
+                    #pl.DrawHistCompare([central_totband,central])
+                    for h in hlist :
+                        h.Draw("same")
+                    pl.DrawLegend(hlist[0:1],"f",legx=0.15,legy=0.87)
+                    pl.WriteText(info.proc_titl,0.8,0.8,tsize=0.09)
+                    pl.Save()
+                    pass
         pl.canvasSettings=tmp
         pass
 
@@ -1395,11 +1536,12 @@ class TheoUncStudy:
 
     def PlotUnc2D(s,central,allbands,info):
         blist = [ ]
-        tlist = [ "TOT" , "FIN" , "RES" , "CT" , "REAL", "VIRT" ]
+        # tlist = [ "TOT" , "FIN" , "RES" , "CT" , "REAL", "VIRT" ]
+        tlist = [ "TOT" , "FIN" , "RES2P" , "CT2P" , "REAL", "VIRT" ]
         if info.term_name == "TOT" : blist += [ "stat_"+x for x in tlist ]
         for i,bname in enumerate(blist) :
             name=info.name+"_Unc2D_"+bname
-            termtit = [x for x in s.termDesc if x[0]==tlist[i]][0][1]
+            termtit = s.termDesc[tlist[i]][1]
             pl.NewCanvas(name)
             pl.SetFrameStyle2D([allbands[bname]])
             allbands[bname].Draw("same,colz")
@@ -1410,25 +1552,109 @@ class TheoUncStudy:
             pl.Save()
         pass
 
+    def PlotPerEigenVariation(s,allbands, info):
+        uncD = s.infoUnc["pdf"]
+        termtit=info.term_title
+        for etype in uncD.types :
+            pdfeigvar = allbands["pdf_Eig"+etype+info.term_name]
+            pdfeigvar.GetZaxis().SetTitle("rel pdf. unc")
+            name=info.name+"_PDFEigenDecomp"+etype
+            pl.NewCanvas(name)
+            pl.SetFrameStyle2D([pdfeigvar])
+            pdfeigvar.Draw("same,colz")
+            pdfeigvar.GetZaxis().SetRangeUser(0,s.MaxUnc)
+            pdfeigvar.SetContour(99)
+            pl.WriteText("pdf " + etype + " unc "+ termtit + " rel. wrt. term",0.15,0.87,tsize=0.035,tcol=pl.ColorHTML("#c0c0c0"))
+            pl.WriteText(info.proc_titl,0.68,0.688,tsize=0.05,tcol=pl.ColorHTML("#c0c0c0"))
+            pl.Save()
+            pass
+        # Eigen Ratio
+        pdfeigvar = allbands["var_pdf_ratio"+info.term_name]
+        pdfeigvar.GetZaxis().SetTitle("ratio eigen/central ")
+        name=info.name+"_PDFEigenVarRatio"
+        pl.NewCanvas(name)
+        pl.SetFrameStyle2D([pdfeigvar])
+        pdfeigvar.Draw("same,colz")
+        pdfeigvar.GetZaxis().SetRangeUser(0.95,1.05)
+        pdfeigvar.SetContour(99)
+        pl.WriteText("eig/central ratio "+ termtit + " rel. wrt. term",0.15,0.87,tsize=0.035,tcol=pl.ColorHTML("#c0c0c0"))
+        pl.WriteText(info.proc_titl,0.68,0.688,tsize=0.05,tcol=pl.ColorHTML("#c0c0c0"))
+        pl.Save()
+        # Eigen Ratio 1D
+        # use Maarten merge
+        # central=allbands["central"]
+        uInfo=s.infoUnc["pdf"]
+        s.file_template [ "REAL"   ] = s.file_template [ "REALVIRT_MaartenM" ]
+        s.file_template [ "VIRT"   ] = s.file_template [ "REALVIRT_MaartenM" ]
+        central= s.GetPlot(info,0,"MaartenM"+uInfo.name)
+        hlist_MaartenM = [ s.GetPlot(info,var,"MaartenM"+uInfo.name+str(i)) for i,var in enumerate(uInfo.varN)]
+        ratios_MaartenM = pl.CreateRatio0Hists(central,hlist_MaartenM)
+        # use Fabrice merge
+        s.file_template [ "REAL"   ] = s.file_template [ "REALVIRT_FabriceM" ]
+        s.file_template [ "VIRT"   ] = s.file_template [ "REALVIRT_FabriceM" ]
+        central= s.GetPlot(info,0,"FabricenM"+uInfo.name)
+        hlist_FabriceM = [ s.GetPlot(info,var,"FabriceM"+uInfo.name+str(i)) for i,var in enumerate(uInfo.varN)]
+        ratios_FabriceM = pl.CreateRatio0Hists(central,hlist_FabriceM)
+        #
+        for Mar,Fab in zip(ratios_MaartenM,ratios_FabriceM) :
+            name=Mar.GetName().replace("MaartenM","_")
+            i = int(name.replace("_pdf","").replace("_fun",""))
+            #
+            col=pl.ColorHTML("#d95f02" )
+            Mar.SetTitle("Maarten 5 merge")
+            Mar.GetYaxis().SetTitle("pdfvar {} / central".format(i))
+            Mar.SetMarkerStyle(20)
+            Mar.SetLineColor(col)
+            Mar.SetMarkerColor(col)
+            Mar.SetLineStyle(0)
+            Mar.SetLineWidth(0)
+            [ Mar.SetBinError(ibin,val*1e-8) for ibin,val in enumerate(Mar)]
+            #
+            col=pl.ColorHTML("#66a61e" )
+            Fab.SetTitle("Fabrice 5 merge")
+            Fab.SetMarkerStyle(22)
+            Fab.SetLineColor(col)
+            Fab.SetMarkerColor(col)
+            Fab.SetLineStyle(0)
+            Fab.SetLineWidth(0)
+            [ Fab.SetBinError(ibin,val*1e-8) for ibin,val in enumerate(Fab)]
+            #
+            #
+            pl.CompareHistsInList(info.name+uInfo.name+name,
+                    [ Mar, Fab ],
+                    drawOpt="P",
+                    compareType=None, minY=0.95, maxY=1.05,doSave=False,doStyle=False
+                    )
+            pl.WriteText(info.proc_titl+info.term_title,0.5,0.85,tsize=0.06)
+            pl.Save()
+            pass
+        pass
+
 
     def DoStudy(s):
         for proc in s.processesDesc :
-            for term in s.termDesc :
+            termlist= [ "TOT", "FIN", "RES2P", "CT2P", "REAL", "VIRT" ]
+            # termlist= [ "TOT"]
+            # termlist= [ "REAL", "VIRT" ]
+            for iterm in termlist :
+                term = s.termDesc[iterm]
                 for plot in s.plotsDesc :
                     info = makeInfo(proc , plot , term , s.file_template)
                     # get central
-                    central = s.GetPlot(info,"0","central")
+                    central = s.GetPlot(info,0,"central")
                     dim = central.GetDimension()
                     # create uncertainty bands
                     allbands = s.getallbands(info,central)
+                    # dfsfd
                     if dim == 1 :
                         # create central plot with total unc band
-                        s.PlotCentralWithBand(central,allbands, info )
+                        # s.PlotCentralWithBand(central,allbands, info )
                         # create stack plot with correct uncertainty combination
-                        s.PlotStackUncertainty(allbands, info )
+                        # s.PlotStackUncertainty(allbands, info )
                         # create pos-neg envelope plot
-                        s.PlotPosNegEnvelopes(allbands, info )
-                        # @todo: PDF
+                        # s.PlotPosNegEnvelopes(allbands, info )
+                        # plot per variation
+                        s.PlotPerEigenVariation(allbands, info)
                         pass
                     elif dim == 2 :
                         # create central plot
@@ -1445,59 +1671,79 @@ class TheoUncStudy:
         pl.MakePreviewFromList(0,"unc_study")
         pass
 
+
+
     def DoPDFQuadStudy(s):
         fname1 = "results_merge/quad_151210/dyturbo_wm_lhc7_WZZPT-CT10_{}_qt0100y05t{}_seed_merge.root"
         fname2 = "results_merge/grid_151201/dyturbo_wm_lhc7_WZZPT-CT10_{}_v1447428851qt0100y05t{}_outliers.root"
         fname3 = "results_merge/allPDF_20151216/dyturbo_wm_lhc7_WZZPT-CT10_all_qt0100y05t{}_seed_1010.root"
+                  # results_merge/CT10nnlo_RESCT2P_160512/dyturbo_wp_lhc7_CT10nnlo_{:02d}_o2qt0100y-55tRES2P.root
+        fname1 = "results_merge/CT10nnlo_RESCT2P_160512/dyturbo_{}_lhc7_CT10nnlo_{:02d}_o2qt0100y-55t{}.root"
+        #
         hname1 = "qt_y_total"
         hname2 = "h_qtVy"
+        hname1="h_qt"
         # get
-        centrals = [
-            pl.GetHistSetTitNam("RES3D" , fname1.format(0, "RES3D") , hname1),
-            pl.GetHistSetTitNam("CT3D"  , fname1.format(0, "CT3D")  , hname1),
-            pl.GetHistSetTitNam("REAL"  , fname2.format(0, "REAL")  , hname2),
-            pl.GetHistSetTitNam("VIRT"  , fname2.format(0, "VIRT")  , hname2),
-            #pl.GetHistSetTitNam("REALall", fname3.format(   "REAL") , hname2),
-            #pl.GetHistSetTitNam("VIRTall", fname3.format(   "VIRT") , hname2),
-            ]
-        central = centrals[1].Clone("cent"); centTerms=centrals[1].GetName();
-        #central.Add(centrals[1]); centTerms+=centrals[1].GetName();
-        #central.Add(centrals[2]); centTerms+=centrals[2].GetName();
-        #central.Add(centrals[3]); centTerms+=centrals[3].GetName();
-        central.Print()
-        # do it for total
-        pdfvars=list()
-        for i in range(1,3) :
-            termvars = [
-                pl.GetHistSetTitNam("RES3D" +str(i), fname1.format(i, "RES3D" ) , hname1        ),
-                pl.GetHistSetTitNam("CT3D"  +str(i), fname1.format(i, "CT3D"  ) , hname1        ),
-                pl.GetHistSetTitNam("REAL"  +str(i), fname3.format(   "REAL"  ) , hname2+str(i) ),
-                pl.GetHistSetTitNam("VIRT"  +str(i), fname3.format(   "VIRT"  ) , hname2+str(i) ),
-            ]
-            pdfvar=termvars[1];
-            #pdfvar.Add(termvars[1])
-            #pdfvar.Add(termvars[2])
-            #pdfvar.Add(termvars[3])
-            pdfvars.append(pdfvar)
-            pdfvars[-1].Print()
-        pdfTerms=""
-        #pdfTerms+="RES3D"
-        pdfTerms+="CT3D"
-        #pdfTerms+="REAl"
-        #pdfTerms+="VIRT"
-        # prepare
-        band=pl.MakeUncBand("pdf",[central]+pdfvars,band="pdf",rel=True)
-        band.Print()
-        band.SetMaximum(1e-1)
-        zoom=""
-        zoom="_zoom2"
-        # plot
-        pl.NewCanvas("QuadPDF_"+hname1+"_pdf"+pdfTerms+"_rel"+centTerms+zoom)
-        pl.SetFrameStyle2D([band],maxX=10)
-        band.Draw("same,colz")
-        #central.Draw("same,colz")
-        pl.Save()
-        pl.MakePreviewFromFolder(pl.imgDir+"/QuadPDF_*.pdf")
+        for var in ["wp","wm"] :
+            for term in ["RES2P","CT2P"] :
+                centrals = [
+                    # pl.GetHistSetTitNam("RES3D" , fname1.format(0, "RES3D") , hname1),
+                    # pl.GetHistSetTitNam("CT3D"  , fname1.format(0, "CT3D")  , hname1),
+                    # pl.GetHistSetTitNam("REAL"  , fname2.format(0, "REAL")  , hname2),
+                    # pl.GetHistSetTitNam("VIRT"  , fname2.format(0, "VIRT")  , hname2),
+                    #pl.GetHistSetTitNam("REALall", fname3.format(   "REAL") , hname2),
+                    #pl.GetHistSetTitNam("VIRTall", fname3.format(   "VIRT") , hname2),
+                    pl.GetHistSetTitNam(term , fname1.format(var,0, term) , hname1),
+                    ]
+                central = centrals[0].Clone("cent"); centTerms=centrals[0].GetName();
+                #central.Add(centrals[1]); centTerms+=centrals[1].GetName();
+                #central.Add(centrals[2]); centTerms+=centrals[2].GetName();
+                #central.Add(centrals[3]); centTerms+=centrals[3].GetName();
+                central.Print()
+                # do it for total
+                pdfvars=list()
+                for i in range(1,3) :
+                    termvars = [
+                        # pl.GetHistSetTitNam("RES3D" +str(i), fname1.format(i, "RES3D" ) , hname1        ),
+                        # pl.GetHistSetTitNam("CT3D"  +str(i), fname1.format(i, "CT3D"  ) , hname1        ),
+                        # pl.GetHistSetTitNam("REAL"  +str(i), fname3.format(   "REAL"  ) , hname2+str(i) ),
+                        # pl.GetHistSetTitNam("VIRT"  +str(i), fname3.format(   "VIRT"  ) , hname2+str(i) ),
+                        pl.GetHistSetTitNam(term +str(i)  , fname1.format(var, i , term )  , hname1        ) ,
+                    ]
+                    pdfvar=termvars[0];
+                    # pdfvar.Add(termvars[0])
+                    # pdfvar.Add(termvars[1])
+                    #pdfvar.Add(termvars[2])
+                    #pdfvar.Add(termvars[3])
+                    pdfvars.append(pdfvar)
+                    pdfvars[-1].Print()
+                # calculte PDFVAR
+                pdfvars=list()
+                for ipdf in range (1,51):
+                    pdfvars.append(pl.GetHistSetTitNam(term+str(i),fname1.format(var, i , term  ) , hname1 ) )
+                    pass
+                pdfTerms=""
+                pdfTerms+=term
+                # pdfTerms+="CT3D"
+                #pdfTerms+="REAl"
+                #pdfTerms+="VIRT"
+                # prepare
+                band=pl.MakeUncBand("pdf",[central]+pdfvars,band="pdf",rel=True)
+                # band.Print()
+                # band.SetMaximum(1e-1)
+                zoom=""
+                # zoom="_zoom2"
+                # plot
+                # info=makeInfo(0,0,term,0)
+                # s.PlotCentralWithBand(central,band, info )
+                pl.NewCanvas("QuadPDF_"+var+hname1+"_pdf"+pdfTerms+"_rel"+centTerms+zoom)
+                pl.SetFrameStyle1D([central,band])
+                pl.DrawHistCompareSubPlot([central], [band], compareType="rel")
+                # band.Draw("same,colz")
+                # central.Draw("same")
+                # band.Draw("same")
+                pl.Save()
+        pl.MakePreviewFromList(0,"quadpdf")
         pass
 
 def makeStatPlot():
@@ -2135,35 +2381,74 @@ def gridtest_plots():
 #
 # More details. 
 if __name__ == '__main__' :
-    #print_results();
-    #print_table();
-    #check_cancelation()
-    #w_pt();
-    #w_pt_y();
-    #merge_all_hist()
-    #plot_pt("results/pt_table_CT10nnlo.txt")
-    #quick_calc()
-    #root_file_integral()
-    #wwidth_table()
-    #uncert_as_g()
-    #find_fluctuations()
-    #DY = TheoUncStudy()
-    #DY.DoStudy()
-    #DY.DoPDFQuadStudy()
-    #plot_profile()
-    #
-    #benchmark()
-    #
-    #makeStatPlot()
-    #
-    #cute()
-    #cute_ratioWZ()
-    #pl.MakePreviewFromList(0,"cute")
-    #
-    #plot_y()
-    #mom_outlier()
-    # plot_PDFprofiled()
-    gridtest_plots()
+    # simple arg parse
+    it = sys.argv.__iter__()
+    arg = it.next() # skip file name
+    while True:
+        try :
+            arg = it.next()
+            # print arg
+            if arg == "--print-results" :
+                print_results();
+                print_table();
+                check_cancelation()
+            elif arg == "--wpt" :
+                w_pt();
+                w_pt_y();
+            elif arg == "--merge-all-hist" :
+                merge_all_hist()
+            elif arg == "--plotpt" :
+                plot_pt("results/pt_table_CT10nnlo.txt")
+                quick_calc()
+                root_file_integral()
+            elif arg == "--wwidht-table" :
+                wwidth_table()
+            elif arg == "--uncert-as-g" :
+                uncert_as_g()
+            elif arg == "--find-fluctuations" :
+                find_fluctuations()
+            elif arg == "--theo-unc" :
+                DY = TheoUncStudy()
+                DY.DoStudy()
+            elif arg == "--theo-unc-quad" :
+                DY = TheoUncStudy()
+                DY.DoPDFQuadStudy()
+            elif arg == "--plot-profile" :
+                plot_profile()
+            elif arg == "--benchmark" :
+                benchmark()
+            elif arg == "--statplots" :
+                makeStatPlot()
+            elif arg == "--cute" :
+                cute()
+                cute_ratioWZ()
+                pl.MakePreviewFromList(0,"cute")
+            elif arg == "--plot-y" :
+                plot_y()
+            elif arg == "--momemts" :
+                mom_outlier()
+            elif arg == "--pdf" :
+                plot_PDFprofiled()
+            elif arg == "--grid-plots" :
+                gridtest_plots()
+            # elif arg == "--truth" :
+                # s.doTruth=True
+                # add sample and version
+                # sample=it.next()
+                # version=it.next()
+                # s.samples .append ([sample,version])
+                # print "Adding truth ",sample, version
+            elif arg == "--help" or arg == "-h":
+                s.help()
+            elif arg == "-b" :
+                # auto pass of batch mode for root, dont do anything
+                pass
+            else :
+                s.help()
+                raise NotImplementedError ( "Dont know what you mean by "+arg)
+        except StopIteration:
+            break
+        pass
     pass
 
 

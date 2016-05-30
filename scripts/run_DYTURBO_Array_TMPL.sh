@@ -16,7 +16,7 @@
 #BSUB -W SETWALLTIME
 #BSUB -app Reserve5G
 #BSUB -n SETNPROCESSORS
-#BSUB -R "rusage[atlasio=0],select[hname!='a0135']"
+#BSUB -R "rusage[atlasio=0] select[hname!='a0135' && hname!='a0356' && hname!='a0545']"
 
 shopt -s expand_aliases
 
@@ -41,7 +41,11 @@ export LHAPATH=$LHAPDF_DATA_PATH
 printenv
 if [[ JOBNAME_${LSB_JOBINDEX} =~ ^dyturbo_ ]]
 then
-    if [[ -n "`find OUTDIR -name "JOBNAME_${LSB_JOBINDEX}.root" `" ]]; then exit 0; fi;
+    if [[ -n "`find OUTDIR -name "JOBNAME_${LSB_JOBINDEX}.root" `" ]]
+    then
+        echo "Output file 'OUTDIR/JOBNAME_${LSB_JOBINDEX}.root' already exists. Bye."
+        exit 0
+    fi;
     cd /jobdir/${LSB_JOBID}-${LSB_JOBINDEX} || echo local run: staying in `pwd`
 else
     cd /jobdir/$LSB_JOBID || echo local run: staying in `pwd`
