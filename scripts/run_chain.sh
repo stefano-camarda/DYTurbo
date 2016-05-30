@@ -53,15 +53,16 @@
 # DONE -- 2D z0 CT10nnlo
 
 ## MMHT
-#./scripts/submit_DYTURBO.sh --mogon --proc z0 --term RES2D,CT2D --pdfset MMHT2014nnlo68cl --pdfvar array RUN
-#./scripts/merge.sh --proc z0 --term RES2D,CT2D --pdfset MMHT2014nnlo68cl --qtymerge qt05y-11 --outdir MMHT14_RESCT2D_160523
-# DONE z0 MMHT14 
+#DONE ./scripts/submit_DYTURBO.sh --mogon --proc z0 --term RES2D,CT2D --pdfset MMHT2014nnlo68cl --pdfvar array RUN
+#DONE ./scripts/merge.sh --proc z0 --term RES2D,CT2D --pdfset MMHT2014nnlo68cl --qtymerge qt05y-11 --outdir MMHT14_RESCT2D_160523
 
-#./scripts/submit_DYTURBO.sh --mogon --proc wp,wm --term RES2D,CT2D --pdfset MMHT2014nnlo68cl --pdfvar array RUN
-#./scripts/merge.sh --proc wp,wm --term RES2D,CT2D --pdfset MMHT2014nnlo68cl --qtymerge qt05y-11 --outdir MMHT14_RESCT2D_160523 RUN
+# DONE ./scripts/submit_DYTURBO.sh --mogon --proc wp,wm --term RES2D,CT2D --pdfset MMHT2014nnlo68cl --pdfvar array RUN
+# DONE./scripts/merge.sh --proc wp,wm --term RES2D,CT2D --pdfset MMHT2014nnlo68cl --qtymerge qt05y-11 --outdir MMHT14_RESCT2D_160523 RUN
 
 ## CT14NNLO
-#./scripts/submit_DYTURBO.sh --mogon --proc z0 --term RES2D,CT2D --pdfset CT14nnlo --pdfvar array RUN
+#DONE ./scripts/submit_DYTURBO.sh --mogon --proc wm,wp,z0 --term RES2D,CT2D --pdfset CT14nnlo --pdfvar array RUN
+#DONE ./scripts/merge.sh --proc wp,wm,z0 --term RES2D,CT2D --pdfset CT14nnlo --qtymerge qt05y-11 --outdir CT14_RESCT2D_160523 RUN
+
 #./scripts/merge.sh --proc z0 --term RES2D,CT2D --pdfset CT14nnlo --qtymerge qt05y-11 --outdir CT14nnlo_RESCT2D_160523 RUN
 #./scripts/submit_DYTURBO.sh --mogon --proc wp,wm --term RES2D,CT2D --pdfset CT14nnlo --pdfvar array RUN
 #./scripts/merge.sh --proc wp,wm,z0 --term RES2D,CT2D --pdfset CT14nnlo --qtymerge qt05y-11 --outdir CT14nnlo_RESCT2D_160523 #RUN
@@ -74,7 +75,7 @@
 #./scripts/merge.sh --proc wp,wm --term RES2P,CT2P --qtymerge qt010y-11 --outdir CT10nnlo_RESCT2P_160512
 
 #============================================
-# MERGE GRID
+# MERGE GRID DONE
 #============================================
 #./scripts/merge.sh --proc z0 --term REAL --indir  results_grid/group.perf-jets  --gridmerge v146.*_results_merge --outdir grid_fabrice_160524 RUN
 #./scripts/merge.sh --proc z0 --term VIRT --indir  results_grid/group.perf-jets  --gridmerge v146.*_results_merge --outdir grid_fabrice_160524  RUN
@@ -86,20 +87,47 @@
 
 # MMHT
 #./scripts/merge.sh --proc wp,wm,z0 --term REAL,VIRT --indir  results_grid/group.perf-jets --pdfset MMHT2014nnlo68cl  --gridmerge v146.*_results_merge --outdir grid_fabrice_160524 RUN
+
 #./scripts/merge.sh --proc wp --term VIRT --indir  results_grid/group.perf-jets --pdfset MMHT2014nnlo68cl  --gridmerge v146.*_results_merge --outdir grid_fabrice_160524 RUN
 #./scripts/merge.sh --proc wm --term REAL --indir  results_grid/group.perf-jets --pdfset MMHT2014nnlo68cl  --gridmerge v146.*_results_merge --outdir grid_fabrice_160524 RUN
 #./scripts/merge.sh --proc wp --term REAL --indir  results_grid/group.perf-jets --pdfset MMHT2014nnlo68cl  --gridmerge v146.*_results_merge --outdir grid_fabrice_160524 RUN
 
 
 #CT14
-#./scripts/merge.sh --proc wp,wm,z0 --term REAL,VIRT --indir  results_grid/group.perf-jets --pdfset CT14nnlo  --gridmerge v146.*_results_merge --outdir grid_fabrice_160524 RUN
+#./scripts/merge.sh --proc wp,wm,z0 --term REAL,VIRT --indir  results_grid/group.perf-jets --pdfset CT14nnlo  --gridmerge v146.*_results_merge --outdir grid_fabrice_160524
 
 
 
 
 # FIXED ORDER
 
-./scripts/submit_DYTURBO.sh --grid --proc wp,wm,z0 --pdfset CT10nnlo --pdfvar all --term VV --seeds 500
-./scripts/submit_DYTURBO.sh --grid --proc wp,wm,z0 --pdfset CT10nnlo --pdfvar array --term FIXCT2D 
+./scripts/submit_DYTURBO.sh --mogon --proc wp,wm,z0 --pdfset CT10nnlo --pdfvar array --term FIXCT2D
+./scripts/submit_DYTURBO.sh --mogon --proc wp,wm,z0 --pdfset CT14nnlo --pdfvar array --term FIXCT2D
+./scripts/submit_DYTURBO.sh --mogon --proc wp,wm,z0 --pdfset MMHT2014nnlo68cl --pdfvar array --term FIXCT2D
+
+#SKIP./scripts/submit_DYTURBO.sh --grid --proc wp,wm,z0 --pdfset CT10nnlo --pdfvar all --term VV --seeds 500
+# SKIP ./scripts/submit_DYTURBO.sh --mogon --proc wp,wm,z0 --pdfset CT10nnlo --pdfvar array --term FIXCT2D  RUN
+# SKIP ./scripts/submit_DYTURBO.sh --mogon --proc wp,wm,z0 --pdfset CT14nnlo --pdfvar array --term FIXCT2D  RUN
+# SKIP ./scripts/submit_DYTURBO.sh --mogon --proc wp,wm,z0 --pdfset MMHT2014nnlo68cl --pdfvar array --term FIXCT2D  RUN
+
+#  
+#  gitshashort=`git rev-parse --short HEAD`
+#  outGridName=GRID_FIXCT_CT10_$gitshashort
+#  
+#  
+#  ./scripts/submit_DYTURBO.sh --grid --proc wp,wm,z0 --pdfset CT10nnlo --pdfvar array --term FIXCT2D
+#  outGridName=GRID_FIXCT_CT10_$gitshashort
+#  rm -rf $outGridName
+#  mv GRID $outGridName && tar czvf ${outGridName}.tgz $outGridName
+#  
+#  ./scripts/submit_DYTURBO.sh --grid --proc wp,wm,z0 --pdfset CT14nnlo --pdfvar array --term FIXCT2D
+#  outGridName=GRID_FIXCT_CT14_$gitshashort
+#  rm -rf $outGridName
+#  mv GRID $outGridName && tar czvf ${outGridName}.tgz $outGridName
+#  
+#  ./scripts/submit_DYTURBO.sh --grid --proc wp,wm,z0 --pdfset MMHT2014nnlo68cl --pdfvar array --term FIXCT2D
+#  outGridName=GRID_FIXCT_MMHT14_$gitshashort
+#  rm -rf $outGridName
+#  mv GRID $outGridName && tar czvf ${outGridName}.tgz $outGridName
 
 # submit with niter=0 -- same seed

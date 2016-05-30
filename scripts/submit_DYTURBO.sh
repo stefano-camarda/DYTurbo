@@ -386,7 +386,7 @@ finalize_grid_submission(){
         mkdir -p GRID/LHAPDF
         # copy exec
         $CP bin/* GRID/bin/
-        $CP lib/* GRID/lib/
+        $CP lib/*.so* GRID/lib/
         $CP `lhapdf-config --libdir`/libLHAPDF.so GRID/lib/
         # copy pdfset
         lhapdfdir=`lhapdf-config --datadir`
@@ -958,7 +958,7 @@ submit_parsed(){
                         NsplitY=5
                         fulllhiqtbin=$fixhiqtbin
                         [[ $terms =~ [23]P ]] && NsplitQT=10 && NsplitY=5
-                        [[ $terms =~ FIXCT[23][DP] ]] && NsplitQT=1 && NsplitY=5 && fulllhiqtbin=5
+                        [[ $terms =~ FIXCT[23][DP] ]] && NsplitQT=1 && NsplitY=5 && fulllhiqtbin=1
                     fi
                     for variation in $variationlist
                     do
