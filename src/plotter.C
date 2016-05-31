@@ -5,6 +5,7 @@ plotter hists;
 #include "integr.h"
 #include "interface.h"
 #include "settings.h"
+#include "phasespace.h"
 
 #include <sys/mman.h>
 #include <sys/types.h>
@@ -281,8 +282,8 @@ void plotter::FillResult(TermType term, double int_val, double int_error, double
         case Total : h = qt_y_total ; break;
     }
     // get the middle of bin
-    double qt_val = ( qtmax + qtmin )/2.;
-    double y_val  = ( ymax  + ymin  )/2.;
+    double qt_val = ( phasespace::qtmax + phasespace::qtmin )/2.;
+    double y_val  = ( phasespace::ymax  + phasespace::ymin  )/2.;
     // set bin content
     int ibin = h->FindBin(qt_val, y_val);
     h->SetBinContent ( ibin , int_val   );
@@ -495,9 +496,9 @@ TH1 * plotter::clone_PDF(TH1*h,int npdf){
 void plotter::addToBin(TH1*h, double int_val, double int_error){
     // Get bin
     // get the middle of bin
-    double qt_val = ( qtmax + qtmin )/2.;
-    double y_val  = ( ymax  + ymin  )/2.;
-    double Q_val  = ( mmax  + mmin  )/2.;
+    double qt_val = ( phasespace::qtmax + phasespace::qtmin )/2.;
+    double y_val  = ( phasespace::ymax  + phasespace::ymin  )/2.;
+    double Q_val  = ( phasespace::mmax  + phasespace::mmin  )/2.;
     int ibin = 0;
     if      (!TString(h->GetName()).CompareTo( "h_qtVy"   )) ibin = h->FindBin( qt_val, y_val);
     else if (!TString(h->GetName()).CompareTo( "h_qtVyVQ" )) ibin = h->FindBin( qt_val, y_val, Q_val);
