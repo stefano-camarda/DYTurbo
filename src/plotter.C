@@ -93,22 +93,18 @@ void plotter::Init(){
     // 
     // get qt-y binning: differental xsection and moments
     // create new qt by rebin 5
-    std::vector<double> hist_qtR5_bins;
-    rebin_vec(bins.hist_qt_bins, hist_qtR5_bins ,5);
     //
     int diff_qt_n   = bins.hist_qt_bins .size() -1 ;
-    int diff_qtR5_n = hist_qtR5_bins    .size() -1 ;
     int diff_y_n    = bins.hist_y_bins  .size() -1 ;
     int diff_Q_n    = bins.hist_Q_bins  .size() -1 ;
     double * diff_qt_array   = &(bins.hist_qt_bins [0]);
-    double * diff_qtR5_array = &(hist_qtR5_bins    [0]);
     double * diff_y_array    = &(bins.hist_y_bins  [0]);
     double * diff_Q_array    = &(bins.hist_Q_bins  [0]);
     // differential xsection and ai profiles
     h_qt     = new TH1D ("h_qt"     , "VB qt"     , diff_qt_n , diff_qt_array );
     h_y      = new TH1D ("h_y"      , "VB y"      , diff_y_n  , diff_y_array  );
     h_qtVy   = new TH2D ("h_qtVy"   , "VB qtVy"   , diff_qt_n , diff_qt_array ,  diff_y_n   ,  diff_y_array  );
-    h_qtVyVQ = new TH3D ("h_qtVyVQ" , "VB qtVyVQ" , diff_qtR5_n , diff_qtR5_array ,  diff_y_n   ,  diff_y_array, diff_Q_n, diff_Q_array );
+    h_qtVyVQ = new TH3D ("h_qtVyVQ" , "VB qtVyVQ" , diff_qt_n , diff_qt_array ,  diff_y_n   ,  diff_y_array, diff_Q_n, diff_Q_array );
     h_Q      = new TH1D ("h_Q"      , "VB mass"   , 240      , 40     ,  160 );
     if (doAiMoments){ // ai moments could be turned off
         TString name,title;
@@ -116,7 +112,7 @@ void plotter::Init(){
             name.Form("p_qtVy_A%d",i);
             title.Form("A%d vs qt vs y;q_{T}[GeV];y;A_{%d}",i,i);
             pa_qtVy.A[i] = new TProfile2D( name.Data(), title.Data()
-                                         , diff_qtR5_n , diff_qtR5_array
+                                         , diff_qt_n , diff_qt_array
                                          , diff_y_n  , diff_y_array
                     );
             //name.Form("p_qt_A%d",i);
