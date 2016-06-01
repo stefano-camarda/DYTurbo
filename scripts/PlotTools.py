@@ -17,8 +17,8 @@
 # sys.argv.append('-b') # run in batch
 
 
-import os,time
-from ROOT import ROOT, TObject, TTree, TH2F, TH1D, TProfile, TProfile2D, TH1F, TH1I, TH1C, TGraph, TGraphAsymmErrors, TF1, TMath, TFile, TCanvas, TBox, TLegend, TColor, gPad, gStyle, gROOT, Double, TLatex, TMarker, TLine
+import os,errno,time
+from ROOT import ROOT, TObject, TTree, TH2F, TH1D, TH2D, TProfile, TProfile2D, TH1F, TH1I, TH1C, TGraph, TGraphAsymmErrors, TF1, TMath, TFile, TCanvas, TBox, TLegend, TColor, gPad, gStyle, gROOT, Double, TLatex, TMarker, TLine
 
 # very handy for debugging -- missing backtrace
 import logging as MSG
@@ -29,9 +29,23 @@ MSG.basicConfig(
         level=MSG.DEBUG
         )
 
+#import array, interpolation
+import numpy as np
+from scipy import interpolate
+
 def doMSG(lvl):
     return MSG.getLogger().isEnabledFor(lvl)
 
+def  mkdir_p(path):
+    try:
+        os.makedirs(path)
+    except OSError as exc:  # Python >2.5
+        if exc.errno == errno.EEXIST and os.path.isdir(path):
+            pass
+        else:
+            raise
+        pass
+    pass
 
 import colorsys
 
@@ -537,9 +551,9 @@ class PlotTools:
         h = f.Get(objname)
         if type(h) == TObject : 
             raise ValueError("No "+classname+" "+"'"+objname+"'"+" in file '"+"'"+filename+"'"+"'")
-        if classname == "histogram" :
+        if "hist" in classname :
             h.SetDirectory(0)
-            if "Profile" in h.ClassName() :
+            if "prof"  in classname and"Profile" in h.ClassName() :
                 name  = "prf_"+h.GetName()
                 #title = h.GetTitle()
                 #title += ";"
@@ -565,6 +579,17 @@ class PlotTools:
         name=h.GetName()+ax
         ytit  = h.GetZaxis().GetTitle()
         hp=0
+        lobin=None
+        hibin=None
+        # non full projection
+        ax_split= ax.split("_")
+        # 0: empy 1: projection definition, 2: lobin, 3:hibin
+        if len(ax_split) > 2 :
+            ax="_"+ax_split[1]
+            lobin=int(ax_split[2])
+            hibin=int(ax_split[3])
+            pass
+        # decide the projections:
         if   ax == "_px": # out of 2D
             n = h.GetNbinsX()
             #hp=h.ProjectionX(name,1,n,"e")
@@ -589,13 +614,15 @@ class PlotTools:
             #hp.GetYaxis().SetTitle(x_tit)
             #hp.GetZaxis().SetTitle(x_tit)
         elif ax == "_prfy":
-            n = h.GetNbinsY()
-            hp=h.ProfileY(name+"prof",1,n,"w").ProjectionX(name)
+            if hibin == None : hibin = h.GetNbinsY()
+            if lobin == None : lobin = 1
+            hp=h.ProfileY(name+"prof",lobin,hibin,"w")#.ProjectionX(name)
             #hp=h.ProjectionX(name,1,n,"w")
             hp.GetYaxis().SetTitle(ytit)
         elif ax == "_prfx":
-            n = h.GetNbinsX()
-            hp=h.ProfileX(name+"prof",1,n,"w").ProjectionX(name)
+            if hibin == None : hibin = h.GetNbinsX()
+            if lobin == None : lobin = 1
+            hp=h.ProfileX(name+"prof",lobin,hibin,"w")#.ProjectionX(name)
             #hp=h.ProjectionX(name,1,n,"w")
             hp.GetYaxis().SetTitle(ytit)
             # correct for nan in error
@@ -618,6 +645,34 @@ class PlotTools:
             #hp=h.ProfileX(name,1,n,"e")
             #for i in range(n-10,n+1):
                 #hp.SetBinContent(i,0)
+        elif ax == "_ent":
+            dim = h.GetDimension()
+            if dim == 1 :
+                hpp=h.ProjectionX("px")
+            elif dim == 2 :
+                hpp=h.ProjectionXY("pxy","w")
+            else :
+                raise ImplementationError("Projections for dim {}.".format(dim))
+            hp=s.EmptyClone(hpp,name)
+            hpp.Delete()
+            x_tit = h.GetXaxis().GetTitle()
+            y_tit = h.GetYaxis().GetTitle()
+            z_tit = h.GetZaxis().GetTitle()
+            tit = "{};{};{};{}".format(h.GetTitle(),x_tit,y_tit,z_tit)
+            hp.SetTitle(tit)
+            xbinlist = [0] if dim<1 else range(0,h.GetNbinsX()+2)
+            ybinlist = [0] if dim<2 else range(0,h.GetNbinsY()+2)
+            zbinlist = [0] if dim<3 else range(0,h.GetNbinsZ()+2)
+            for xbin in xbinlist:
+                for ybin in ybinlist:
+                    for zbin in zbinlist:
+                        ibin = h.GetBin(xbin,ybin,zbin)
+                        val=h.GetBinEntries(ibin)
+                        hp.SetBinContent(ibin,val)
+                        pass
+                    pass
+                pass
+            pass
         else : raise RuntimeError("Uknown type of projection `{}`".format(ax) )
         return hp
 
@@ -1099,6 +1154,55 @@ class PlotTools:
             #if "m" in opt: h.SetMarkerStyle(s.AutoCompareMarker(i))
             h.SetMarkerSize (1)
 
+    def CheckHistForNaN(s,h,doInterpolate=False):
+        dim = h.GetDimension()
+        isProf = "Profile" in h.ClassName()
+        for xbin in range(1, h.GetNbinsX()+1):
+            ybinlist = [0] if dim<2 else range(1,h.GetNbinsY()+1)
+            for ybin in ybinlist:
+                zbinlist = [0] if dim<3 else range(1,h.GetNbinsZ()+1)
+                for zbin in zbinlist:
+                    ibin=h.GetBin(xbin,ybin,zbin)
+                    val = h.GetBinContent(ibin)
+                    if val!=val :
+                        MSG.error("There is a nan in: ibin {} of {}".format(ibin,h.GetName()))
+                        newval=0
+                        entries=0
+                        if doInterpolate :
+                            if dim==1 :
+                                xp=[-1,+1]
+                                yp=[ h.GetBinContent(xbin+ix) for ix in xp]
+                                f = interpolate.interp(xp,yp)
+                                newval = f(xbin)[0]
+                                if isProf :
+                                    yp = [ h.GetBinEntries(xbin+ix) for ix in xp]
+                                    fe = interpolate.interp2d(xp,yp,zp)
+                                    entries= fe(xbin)
+                                    newval*=entries
+                                MSG.warning(" I interpolated to {}".format(newval))
+                            if dim==2 :
+                                xp=[-1,+1, -1,+1]
+                                yp=[-1,-1, +1,+1]
+                                zp=[ h.GetBinContent(xbin+xi,ybin+yi) for xi,yi in zip(xp,yp)]
+                                f = interpolate.interp2d(xp,yp,zp)
+                                newval=f(xbin,ybin)[0]
+                                if isProf :
+                                    zp = [ h.GetBinEntries(h.GetBin(xbin+xi,ybin+yi)) for xi,yi in zip(xp,yp)]
+                                    fe = interpolate.interp2d(xp,yp,zp)
+                                    entries= fe(xbin,ybin)
+                                    newval*=entries
+                                MSG.warning(" I interpolated 2D to {}".format(newval))
+                            pass #interp
+                        h.SetBinContent (ibin,newval)
+                        h.SetBinError   (ibin,newval)
+                        if isProf :
+                            h.SetBinEntries (ibin,entries)
+                        pass #nan
+                    pass #z
+                pass #y
+            pass #x
+        return h
+
     def CreateMovingAverageHist(s,H,nbins=2):
         # -- try smooth
         H_MA = H.Clone("average")
@@ -1175,9 +1279,19 @@ class PlotTools:
                     pass
                 C.append(c)
             pass
-        else : # histograms
+        else : # histograms and profiles
             dim=A.GetDimension()
+            if "Profile" in A.ClassName() :
+                if dim==1 :
+                    A = s.GetProjection(A,"_px")
+                if dim==2 :
+                    A = s.GetProjection(A,"_pxy")
             for b in Blist:
+                if "Profile" in b.ClassName() :
+                    if dim==1 :
+                        b = s.GetProjection(b,"_px")
+                    if dim==2 :
+                        b = s.GetProjection(b,"_pxy")
                 c = s.EmptyClone(b, b.GetName()+"_fun")
                 for xbin in range(1, c.GetNbinsX()+1):
                     ybinlist = [0] if dim<2 else range(1,A.GetNbinsY()+1)
@@ -1364,6 +1478,101 @@ class PlotTools:
                 plotopt+=",same"
             h.Draw(plotopt)
         gPad.Update();
+        pass
+
+    def ReRange(s,oldhist,minx=0,maxx=0, miny=0,maxy=0):
+        if minx==0 and  maxx==0 and  miny==0 and  maxy==0 : return oldhist
+        #
+        hist = 0
+        dim=oldhist.GetDimension()
+        isProf= "Profile" in oldhist.ClassName()
+        #
+        name=oldhist.GetName()+"_ran{}{}{}{}".format(minx,maxx,miny,maxy)
+        title=oldhist.GetTitle()
+        title+=";"+oldhist.GetXaxis().GetTitle()
+        title+=";"+oldhist.GetYaxis().GetTitle()
+        if isProf : title+=";"+oldhist.GetZaxis().GetTitle()
+        #
+        Nx=0
+        Ny=0
+        # count xbins
+        if minx!=0 or maxx!=0 :
+            xaxis=oldhist.GetXaxis()
+            for ibinx in range(1,xaxis.GetNbins()+1):
+                lo = xaxis.GetBinLowEdge(ibinx)
+                hi = xaxis.GetBinUpEdge(ibinx)
+                if minx<=lo and hi<=maxx: Nx+=1
+                pass
+        else : 
+            Nx = oldhist.GetNbinsX()
+            maxx = oldhist.GetXaxis().GetXmax()
+            minx = oldhist.GetYaxis().GetXmin()
+        # count ybins
+        if dim==2 and (miny!=0 or maxy!=0) :
+            yaxis=oldhist.GetYaxis()
+            for ibiny in range(1,yaxis.GetNbins()+1):
+                lo = yaxis.GetBinLowEdge(ibiny)
+                hi = yaxis.GetBinUpEdge(ibiny)
+                if miny<=lo and hi<=maxy: Ny+=1
+                pass
+        else :
+            Ny = oldhist.GetNbinsY()
+            maxy = oldhist.GetYaxis().GetXmax()
+            miny = oldhist.GetYaxis().GetXmin()
+        #
+        rangex = range(1,Nx+1)
+        rangey = [0]
+        # create new hist
+        if dim == 1 :
+            if   isProf: hist = TProfile ( name , title , Nx , minx , maxx )
+            else :       hist = TH1D     ( name , title , Nx , minx , maxx )
+        if dim == 2 :
+            if   isProf: hist = TProfile2D ( name , title , Nx , minx , maxx , Ny , miny , maxy )
+            else :       hist = TH2D       ( name , title , Nx , minx , maxx , Ny , miny , maxy )
+            rangey = range(1,Ny+1)
+        # set new values
+        for ibinx in rangex:
+            for ibiny in rangey:
+                ibin= hist.GetBin(ibinx,ibiny)
+                x_cent=hist.GetXaxis().GetBinCenter(ibinx)
+                y_cent=hist.GetYaxis().GetBinCenter(ibiny)
+                ibin_old = oldhist.FindBin       ( x_cent , y_cent   )
+                val      = oldhist.GetBinContent ( ibin_old )
+                err      = oldhist.GetBinError   ( ibin_old )
+                entr = 1
+                if isProf:
+                    entr=oldhist.GetBinEntries ( ibin_old )
+                    val*=entr
+                    pass
+                #
+                # MSG.debug(" oldhist %s val %f entr %f" % (name,val,entr))
+                hist.SetBinContent ( ibin , val )
+                hist.SetBinError   ( ibin , err )
+                if isProf:  hist.SetBinEntries ( ibin , entr )
+                # MSG.debug(" hist %s val %f " % (name, hist.GetBinContent(ibin), ))
+                pass
+            pass
+        # MSG.debug( " print above ".format(hist.Print("range")))
+        return hist
+
+    def ReBin(s,oldhist,xw=0,yw=0):
+        dim=oldhist.GetDimension()
+        RebX=1
+        RebY=1
+        xw_old = oldhist.GetXaxis().GetBinWidth(1)
+        yw_old = oldhist.GetYaxis().GetBinWidth(1)
+        # MSG.debug( " xw {} old {} yw {} old {} ".format(xw,xw_old,yw,yw_old))
+        # 
+        if dim==1:
+            if xw * xw_old!=0 : RebX=int( xw / xw_old  )
+            oldhist.Rebin(RebX)
+        if dim==2:
+            if xw * xw_old!=0 : RebX=int( xw / xw_old  )
+            if yw * yw_old!=0 : RebY=int( yw / yw_old  )
+            oldhist.Rebin2D(RebX,RebY)
+        oldhist.SetName(oldhist.GetName()+"_bin{}{}".format(RebX,RebY))
+        # MSG.debug( " print above ".format(oldhist.Print("range")))
+        return oldhist
 
     def WriteText(s, text, x=0.2,y=0.8, **kwargs):
         useNDC =  kwargs ["useNDC"] if "useNDC" in kwargs else True
