@@ -212,8 +212,6 @@ void plotter::FillRealDipole(double p3[4], double p4[4], double wgt, int nd){
         point.phi_lep = phi_lep   ;
         for (auto i=0; i<NMOM; i++){
             point.A[i]=a[i];
-            point.A[i]=a[i];
-            point.A[i]=a[i];
         }
     }
     point.fid   = decide_fiducial(p3,p4);
@@ -243,7 +241,7 @@ void plotter::FillRealEvent(plotter::TermType term){
             h_qtVyVQ -> Fill(point.qt,point.y,point.Q ,point.wgt);
             if(doAiMoments){
                 for (auto i=0; i<NMOM; i++){
-                    pa_qtVy .A[i]->Fill(qt,y , point.A[i], point.wgt);
+                    pa_qtVy .A[i]->Fill(point.qt,point.y , point.A[i], point.wgt);
                     //pa_qt   .A[i]->Fill(qt   , point.A[i], point.wgt);
                     //pa_y    .A[i]->Fill(y    , point.A[i], point.wgt);
                 }
