@@ -47,6 +47,11 @@ seedlist=unset
 
 queue=atlasshort
 prepare_script(){
+    if ! lhapdf-config --prefix > /dev/null
+    then
+        echo "Cannot reach lhapdf-config. Please setup the PATH to LHAPDF"
+        exit 3
+    fi
     result_dir=$dyturbo_project/results_${process}_${pdfset}_${terms}
     mkdir -p $batch_script_dir
     mkdir -p $result_dir
@@ -65,17 +70,22 @@ prepare_script(){
         walltime=20:00
         queue=atlaslong
     fi
-    [[ $target == lxbatch ]] && queue=8nh && walltime=8:00
+    [[ $target =~ lxbatch ]] && queue=8nh && walltime=8:00
     #
     cp $batch_template tmp
     sed -i "s|JOBNAME|$job_name|g               " tmp
     sed -i "s|SEEDLIST|$seedlist|g              " tmp
     sed -i "s|OUTDIR|$result_dir|g              " tmp
-    sed -i "s|SETQUEUE|$queue|g              " tmp
-    sed -i "s|SETWALLTIME|$walltime|g              " tmp
+    sed -i "s|SETQUEUE|$queue|g                 " tmp
+    sed -i "s|SETWALLTIME|$walltime|g           " tmp
     sed -i "s|DYTURBOROOTDIR|$dyturbo_project|g " tmp
     sed -i "s|DYTURBOINPUTFILE|$in_file|g       " tmp
     sed -i "s|SETNPROCESSORS|$nprocessors|g     " tmp
+    sed -i "s|SETLHAPDFLIB|`lhapdf-config --prefix`/lib|g           " tmp
+    sed -i "s|SETLHAPDFDATA|`lhapdf-config --prefix`/share/LHAPDF|g " tmp
+    [[ $target =~ lxbatch ]] && sed -i "s|^#BSUB -R.*$||g      "  tmp
+    [[ $target =~ lxbatch ]] && sed -i "s|^#BSUB -app.*$|#BSUB -M 2000000|g " tmp
+    [[ $target =~ lxbatch ]] && sed -i "s|/jobdir/|/pool/|g      "  tmp
     mv tmp $sh_file
     chmod +x $sh_file
 }
@@ -333,7 +343,8 @@ prepare_tarbal(){
         PATH=$PATH:lhapdf6/bin
         if ! lhapdf-config --prefix > /dev/null
         then
-            echo Please setup LHAPDF
+            echo "Cannot reach lhapdf-config. Please setup the PATH to LHAPDF"
+            exit 3
         fi
     fi
     #tarbalfile=$in_files_dir/${program}_${pdfset}_${gridv}.tar
@@ -929,10 +940,16 @@ submit_parsed(){
                     NsplitY=1
                     if [[ $terms =~ [23][DP] ]]
                     then
-                        NPDF=50
-                        if [[ $pdfset == CT10nnlo ]] || [[ $pdfset =~ CT14 ]] || [[ $pdfset =~ MMHT2014nnlo68cl ]]
+                        NPDF=unset
+                        if [[ $pdfset == CT10nnlo ]] || \
+                           [[ $pdfset == CT10nnlo68clProfiled ]] || \
+                           [[ $pdfset == MMHT2014nnlo68cl ]]  || \
+                           [[ $pdfset == MMHTProf68cl ]]
                         then
                             NPDF=50
+                        elif [[ $pdfset == CT14nnlo ]] || [[ $pdfset == CT14nnloProf68cl ]]
+                        then
+                            NPDF=56
                         else
                             echo "FixMe: I dont know how many PDF members $pdfset has."
                             exit 3
@@ -952,7 +969,7 @@ submit_parsed(){
                         NsplitY=5
                         fulllhiqtbin=$fixhiqtbin
                         [[ $terms =~ [23]P ]] && NsplitQT=10 && NsplitY=5
-                        [[ $terms =~ FIXCT[23][DP] ]] && NsplitQT=1 && NsplitY=5 && fulllhiqtbin=1
+                        [[ $terms =~ FIXCT[23][DP] ]] && NsplitQT=1 && NsplitY=1 && fulllhiqtbin=1
                     fi
                     for variation in $variationlist
                     do
@@ -1086,7 +1103,7 @@ USAGE: ./scripts/submit_DYTURBO.sh --target [settings]
     --grid          Prepare grid submission directory (compilation on local)
     --grid-compile  Prepare grid submission directory (compilation on grid)
     --mogon         Prepare standard scripts for mogon (Mainz cluster).
-    --lxbatch       Prepare standard scripts for lxbatch (CERN cluster).
+    --lxbatch       Prepare standard scripts for lxbatch (CERN LXPLUS batch system).
     --help          Print this help and die.
 
 
