@@ -384,6 +384,7 @@ finalize_grid_submission(){
         # copy exec
         $CP bin/* GRID/bin/
         $CP lib/*.so* GRID/lib/
+        $CP lib/*.la  GRID/lib/
         $CP `lhapdf-config --libdir`/libLHAPDF.so GRID/lib/
         # copy pdfset
         lhapdfdir=`lhapdf-config --datadir`
@@ -886,10 +887,6 @@ DRYRUN=echo
 submit_parsed(){
     program=dyturbo
     queue=atlasshort
-    loqtbin=0
-    hiqtbin=50
-    loybin=-5
-    hiybin=5
     fulllloqtbin=$loqtbin
     fulllhiqtbin=$hiqtbin
     fulllloybin=$loybin
@@ -1141,6 +1138,10 @@ parse_inputs(){
     evolmode=0
     gpar=1.0
     seedlist=1000
+    loqtbin=0
+    hiqtbin=50
+    loybin=-5
+    hiybin=5
     batch_template=$dyturbo_project/scripts/run_DYTURBO_Array_TMPL.sh
 
     while [[ $# > 0 ]]
@@ -1205,6 +1206,14 @@ parse_inputs(){
             --lepcutY)
                 makelepcuts=true
                 lepYCut=$2
+                shift
+                ;;
+            --qtlo)
+                loqtbin=$2
+                shift
+                ;;
+            --qthi)
+                hiqtbin=$2
                 shift
                 ;;
             --evolmode)

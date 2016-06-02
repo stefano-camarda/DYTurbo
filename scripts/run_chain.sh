@@ -74,6 +74,14 @@
 #./scripts/submit_DYTURBO.sh --mogon --proc wp,wm --term RES2P,CT2P --pdfset CT10nnlo --pdfvar array
 #./scripts/merge.sh --proc wp,wm --term RES2P,CT2P --qtymerge qt010y-11 --outdir CT10nnlo_RESCT2P_160512
 
+#TEST LO
+#./scripts/submit_DYTURBO.sh --mogon --proc z0 --pdfset CT10nnlo --pdfvar all --term LO --order 1 --seeds 100
+#./scripts/submit_DYTURBO.sh --mogon --proc z0 --pdfset CT10nnlo --pdfvar 0 --term REAL --seeds 100 --qtlo 30 --qthi 90
+
+
+# -- PROFILLED CT10
+./scripts/submit_DYTURBO.sh --mogon --proc z0 --term RES2D,CT2D  --pdfset CT10nnlo68clProfiled --pdfvar array #RUN
+
 #============================================
 # MERGE GRID DONE
 #============================================
@@ -101,9 +109,9 @@
 
 # FIXED ORDER
 
-./scripts/submit_DYTURBO.sh --mogon --proc wp,wm,z0 --pdfset CT10nnlo --pdfvar array --term FIXCT2D
-./scripts/submit_DYTURBO.sh --mogon --proc wp,wm,z0 --pdfset CT14nnlo --pdfvar array --term FIXCT2D
-./scripts/submit_DYTURBO.sh --mogon --proc wp,wm,z0 --pdfset MMHT2014nnlo68cl --pdfvar array --term FIXCT2D
+#./scripts/submit_DYTURBO.sh --mogon --proc wp,wm,z0 --pdfset CT10nnlo --pdfvar array --term FIXCT2D
+#./scripts/submit_DYTURBO.sh --mogon --proc wp,wm,z0 --pdfset CT14nnlo --pdfvar array --term FIXCT2D
+#./scripts/submit_DYTURBO.sh --mogon --proc wp,wm,z0 --pdfset MMHT2014nnlo68cl --pdfvar array --term FIXCT2D
 
 #SKIP./scripts/submit_DYTURBO.sh --grid --proc wp,wm,z0 --pdfset CT10nnlo --pdfvar all --term VV --seeds 500
 # SKIP ./scripts/submit_DYTURBO.sh --mogon --proc wp,wm,z0 --pdfset CT10nnlo --pdfvar array --term FIXCT2D  RUN
