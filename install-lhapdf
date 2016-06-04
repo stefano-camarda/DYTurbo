@@ -18,7 +18,7 @@ rm LHAPDF-${VERSION}.tar.gz
 cd LHAPDF-${VERSION}
 echo "Configuring..."
 export CPPFLAGS="-P"
-./configure --prefix=`cd .. && pwd` >& ../pdfinstall.log 
+./configure --prefix=`cd .. && pwd` --disable-python >& ../pdfinstall.log 
 
 if [[ $? != 0 ]]
 then
