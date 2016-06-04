@@ -479,6 +479,7 @@ parse_in(){
     seed=10100
     order=*
     qty=qt0100y-55
+    qty=qt050y-55
     mergerby=unset
     MISSING=unset
     DRYRUN=echo 
