@@ -13,6 +13,7 @@ plotter hists;
 #include <sys/types.h>
 #include <cmath>
 #include <algorithm>
+#include <numeric>
 
 
 #ifdef USEROOT
@@ -545,7 +546,7 @@ void plotter::calculate_kinematics(double p3[4], double p4[4])
   
   /**********************************************/
   //Old code for kinematic calculation
-
+  /*
     // calculate VB
     double p[4]; 
     p[0] = p3[0]+p4[0];
@@ -569,6 +570,7 @@ void plotter::calculate_kinematics(double p3[4], double p4[4])
     double cos2phi   = TMath::Cos(2*phi);
     double sinphi    = TMath::Sin(phi);
     double sin2phi   = TMath::Sin(2*phi);
+  */
   /**********************************************/
   
     // define ai moments
