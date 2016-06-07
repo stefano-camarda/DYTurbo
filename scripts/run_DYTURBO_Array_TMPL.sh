@@ -29,8 +29,8 @@ lsetup root # 5.34.25-x86_64-slc6-gcc48-opt
 # setup lhapdf
 #export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/etapfs03/atlashpc/cuth/resbos/lhapdf/LHAPDF-6.1.4/install/lib/
 #LD_LIBRARY_PATH=$LD_LIBRARY_PATH:DYTURBOROOTDIR/../RESBOS/lhapdf/lhapdf-5.6.0/install/lib/
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:DYTURBOROOTDIR/lhapdf6/lib/
-export LHAPDF_DATA_PATH=DYTURBOROOTDIR/lhapdf6/share/LHAPDF/
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:SETLHAPDFLIB
+export LHAPDF_DATA_PATH=SETLHAPDFDATA
 export LHAPATH=$LHAPDF_DATA_PATH
 #mkdir PDFsets/
 
