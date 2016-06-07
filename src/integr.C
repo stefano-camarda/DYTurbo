@@ -535,6 +535,7 @@ void cthmoments_(double &cthmom0, double &cthmom1, double &cthmom2)
       vector<double>::iterator itmn;
       vector<double>::iterator itmx;
 
+      //for qt == 0 there is no phi dependence and the integration is reduced by one dimension, to only dcosth
       if (phasespace::qt == 0.)
 	{
 	  costhbound(0., cthmin, cthmax);
