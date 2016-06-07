@@ -110,6 +110,8 @@ class plotter {
         void rebin_vec(std::vector<double> & in_vec, std::vector<double> & out_vec, int N );
         // calculation of kinematics and angular variables
         void calculate_kinematics(double p3[4], double p4[4]);
+	/**********************************/
+	//Clean up begin
         double calcQt(double p[4]);
         double calcY(double p[4]);
         double calcQ2(double p[4]);
@@ -117,6 +119,8 @@ class plotter {
         double Vminus(double p[4]);
         double calcCosThCS(double Q2,double qt,double p3[4],double p4[4]);
         double calcPhiCS(double p3[4],double p4[4],double &phi_lep);
+	//Clean up end
+	/**********************************/
         // Debug printing
         void print_dipole(XsecPoint pt);
         void print_dipoleVec(std::vector<XsecPoint> vec );
