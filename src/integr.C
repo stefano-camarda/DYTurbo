@@ -45,6 +45,7 @@ const double wq8[8]={0.3626837833783620,0.3626837833783620,0.3137066458778873,0.
 
 integrand_t thphiintegrand(const int &ndim, const double x[], const int &ncomp, double f[]);
 
+//instead of passing m, qt, y, and phi as variables, take them from the phasespace:: namelist
 void genV4p(double m, double qt, double y, double phi)
 {
   //Generate the boson 4-momentum
@@ -55,10 +56,10 @@ void genV4p(double m, double qt, double y, double phi)
   double mt2=m2+qt2;
 
   //vector boson momentum: pV[3]^2-pV[0]^2-pV[1]^2-pV[2]^2=m2
-  pV[0]=qt*cos(phi);
-  pV[1]=qt*sin(phi);
-  pV[2]=0.5*sqrt(mt2)*(expy-expmy);
-  pV[3]=0.5*sqrt(mt2)*(expy+expmy);
+  pV[0]=qt*cos(phi);                  //px
+  pV[1]=qt*sin(phi);                  //py
+  pV[2]=0.5*sqrt(mt2)*(expy-expmy);   //pz
+  pV[3]=0.5*sqrt(mt2)*(expy+expmy);   //E
 
   //Calculte the boost 4-vector from the lab frame to the rest frame
   gam=pV[3]/m;
@@ -88,15 +89,17 @@ void genV4p(double m, double qt, double y, double phi)
     }  
 
   //alternative k1t = 0 prescription
-    if (opts.qtrec_kt0)
-      {
-	kt1 = 0;
-	kt2 = 0;
-      }
+  if (opts.qtrec_kt0)
+    {
+      kt1 = 0;
+      kt2 = 0;
+    }
   
+  //zeta1 as in Eq.(26) of arXiv:1507.0693
   double zeta1=1./m2/2.*(m2+2.*(pV[0]*kt1+pV[1]*kt2)+sqrt(pow((m2+2.*(pV[0]*kt1+pV[1]*kt2)),2)-4.*mt2*(pow(kt1,2)+pow(kt2,2))));
   double qP1=(pV[3]-pV[2])*energy_.sroot_/2.;
   double qP2=(pV[3]+pV[2])*energy_.sroot_/2.;
+  //kap1 is the colliding parton a1 in the boson rest frame
   kap1[3]=energy_.sroot_/2.*(zeta1*m2/2./qP1+(pow(kt1,2)+pow(kt2,2))/zeta1*qP1/m2/pow(energy_.sroot_,2)*2.);
   kap1[0]=kt1;
   kap1[1]=kt2;
@@ -154,7 +157,7 @@ void genV4p(double m, double qt, double y, double phi)
   bt[2]=-beta[2];
   
   double bdotk1=kap1[0]*bt[0]+kap1[1]*bt[1]+kap1[2]*bt[2];
-  zax[3]=gam*(kap1[3]-bdotk1);
+  zax[3]=gam*(kap1[3]-bdotk1); //bug bug bug!!! zax has only 3 elements!!!
   zax[0]=kap1[0]+gam*bt[0]*(gam/(gam+1)*bdotk1-kap1[3]);
   zax[1]=kap1[1]+gam*bt[1]*(gam/(gam+1)*bdotk1-kap1[3]);
   zax[2]=kap1[2]+gam*bt[2]*(gam/(gam+1)*bdotk1-kap1[3]);
@@ -220,10 +223,10 @@ inline void genl4p(float costh, float phi_lep) //quite significant speed up with
   //c) When qt=0, because all reference frames are equivalent
   if (opts.cubaint || phasespace::qt == 0. || opts.qtrec_naive)
     {
-      p4cm[3]=phasespace::m/2.;
-      p4cm[0]=p4cm[3]*sin(acos(costh))*sin(phi_lep);
-      p4cm[1]=p4cm[3]*sin(acos(costh))*cos(phi_lep);
-      p4cm[2]=p4cm[3]*costh;
+      p4cm[3]=phasespace::m/2.;                       //E
+      p4cm[0]=p4cm[3]*sin(acos(costh))*sin(phi_lep);  //px
+      p4cm[1]=p4cm[3]*sin(acos(costh))*cos(phi_lep);  //py
+      p4cm[2]=p4cm[3]*costh;                          //pz
     }
   else
     {
@@ -271,10 +274,10 @@ inline void genl4p(float costh, float phi_lep) //quite significant speed up with
       rot2[1]=(zax[1]*zax[0]*(1-c)+zax[2]*s)*rot1[0] + (c+zax[1]*zax[1]*(1-c))       *rot1[1] + (zax[1]*zax[2]*(1-c)-zax[0]*s)*rot1[2];
       rot2[2]=(zax[2]*zax[0]*(1-c)-zax[1]*s)*rot1[0] + (zax[2]*zax[1]*(1-c)+zax[0]*s)*rot1[1] + (c+zax[2]*zax[2]*(1-c))       *rot1[2];
 
-      p4cm[3]=phasespace::m/2.;
-      p4cm[0]=p4cm[3]*rot2[0];
-      p4cm[1]=p4cm[3]*rot2[1];
-      p4cm[2]=p4cm[3]*rot2[2];
+      p4cm[3]=phasespace::m/2.;           //E
+      p4cm[0]=p4cm[3]*rot2[0];            //px
+      p4cm[1]=p4cm[3]*rot2[1];            //py
+      p4cm[2]=p4cm[3]*rot2[2];            //pz
   
       /*
       //check that the generated p4cm is at costh from zax
@@ -293,10 +296,10 @@ inline void genl4p(float costh, float phi_lep) //quite significant speed up with
   p4[2]=p4cm[2]+gam*beta[2]*(gam/(gam+1)*bdotp-p4cm[3]);
 
   //  momentum of the second lepton
-  p3[3]=pV[3]-p4[3];
-  p3[0]=pV[0]-p4[0];
-  p3[1]=pV[1]-p4[1];
-  p3[2]=pV[2]-p4[2];
+  p3[3]=pV[3]-p4[3];      //E
+  p3[0]=pV[0]-p4[0];      //px
+  p3[1]=pV[1]-p4[1];      //py
+  p3[2]=pV[2]-p4[2];      //pz
 }
 
 //CS FRAME PRESCRIPTION
