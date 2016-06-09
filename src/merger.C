@@ -341,8 +341,7 @@ class OutlierRemoval{
                 // filter classes
                 TClass *cl = TClass::GetClass(key->GetClassName());
                 if (!cl->InheritsFrom( "TH1"      )) continue; // profiles and histograms of all dimensions
-                TObject* o = key->ReadObj();
-                TString name = o->GetName();
+                TString name = key->GetName();
                 if (doTest && !name.Contains("p_qtVy_A4")) continue;
                 all_obj_names.push_back(dirname+name);
                 // make projections on TH2 and remove outlier on 1D separatelly
