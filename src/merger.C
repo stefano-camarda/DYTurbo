@@ -18,6 +18,8 @@
 
 #include <TFile.h>
 #include <TH1.h>
+#include <TGraph.h>
+#include <TGraph2D.h>
 #include <TProfile.h>
 #include <TProfile2D.h>
 #include <TList.h>
@@ -56,6 +58,7 @@ class OutlierRemoval{
             includeUnderOverFlow(true),
             doXsecNormalization(false),
             doRebin(false),
+            doNanIterp(false),
             doMedian(false),
             doOutlierRemoval(false),
             do2D(false),
@@ -158,11 +161,22 @@ class OutlierRemoval{
                     if (o!=0) {
                         if (verbose>2) o->Print();
                         // Check for NaN and adding object to list
-                        bool hasNaN= (o->Integral()!=o->Integral());
+                        bool hasNaN= false;
+                        if (doNanIterp){ // slower but precise
+                            for (auto ibin: loop_bins(o)){
+                                if (o->GetBinContent(ibin)!=o->GetBinContent(ibin)) {
+                                    double val = interpolate_NaN(o,ibin);
+                                    printf("Warning: hist %s in file %s  NaN in bin %d was interpolated to %f \n", 
+                                            it_fn.Data(), p_objname.Data(), ibin, val);
+                                }
+                            }
+                        } else { // simple fast test: integral
+                            hasNaN= (o->Integral()!=o->Integral());
+                        }
                         if (hasNaN) {
                             printf("Warning: hist %s in file %s contain NaN \n", it_fn.Data(), p_objname.Data());
                             delete o;
-                        } 
+                        }
                         else in_objs.push_back(o);
                     } else printf("Warning: hist %s not in file %s \n", it_fn.Data(), p_objname.Data());
 		    it_f->Close();
@@ -313,6 +327,7 @@ class OutlierRemoval{
         bool doXsecNormalization;
         bool do2D;
         bool doRebin;
+        bool doNanIterp;
         bool doMedian;
         bool doOutlierRemoval;
         bool doCuba;
@@ -626,6 +641,57 @@ class OutlierRemoval{
             h->Scale(fac);
         }
 
+        double interpolate_NaN(TH1* o, int ibin){
+            // TODO: NaN in uncertainty treatment
+            int dim = o->GetDimension();
+            bool isProf = isProfile(o);
+            double val=0;
+            double ent=0;
+            // create graph from neigbour bins
+            if (dim==1){
+                TGraph* gr = new TGraph();
+                gr->SetPoint(0, ibin-1, o->GetBinContent(ibin-1) );
+                gr->SetPoint(1, ibin+1, o->GetBinContent(ibin+1) );
+                val=gr->Eval(ibin);
+                delete gr;
+                if (isProf) {
+                    TProfile *p = (TProfile* )o;
+                    TGraph* gr = new TGraph();
+                    gr->SetPoint(0, ibin-1, p->GetBinEntries(ibin-1) );
+                    gr->SetPoint(1, ibin+1, p->GetBinEntries(ibin+1) );
+                    ent=gr->Eval(ibin);
+                    delete gr;
+                }
+            } else if(dim==2){
+                int xbin,ybin,zbin,jbin;
+                o->GetBinXYZ(ibin,xbin,ybin,zbin);
+                TGraph2D* gr = new TGraph2D();
+                jbin=o->GetBin(xbin-1,ybin-1); gr->SetPoint(0, xbin-1, ybin-1,  o->GetBinContent(jbin) );
+                jbin=o->GetBin(xbin-1,ybin+1); gr->SetPoint(1, xbin-1, ybin+1,  o->GetBinContent(jbin) );
+                jbin=o->GetBin(xbin+1,ybin-1); gr->SetPoint(2, xbin+1, ybin-1,  o->GetBinContent(jbin) );
+                jbin=o->GetBin(xbin+1,ybin+1); gr->SetPoint(3, xbin+1, ybin+1,  o->GetBinContent(jbin) );
+                val=gr->Interpolate(xbin,ybin);
+                delete gr;
+                if (isProf) {
+                    TProfile2D *p = (TProfile2D* ) o;
+                    TGraph2D* gr = new TGraph2D();
+                    jbin=p->GetBin(xbin-1,ybin-1); gr->SetPoint(0, xbin-1, ybin-1,  p->GetBinEntries(jbin) );
+                    jbin=p->GetBin(xbin-1,ybin+1); gr->SetPoint(1, xbin-1, ybin+1,  p->GetBinEntries(jbin) );
+                    jbin=p->GetBin(xbin+1,ybin-1); gr->SetPoint(2, xbin+1, ybin-1,  p->GetBinEntries(jbin) );
+                    jbin=p->GetBin(xbin+1,ybin+1); gr->SetPoint(3, xbin+1, ybin+1,  p->GetBinEntries(jbin) );
+                    ent=gr->Interpolate(xbin,ybin);
+                    delete gr;
+                }
+            }
+            // interpolate
+            // set
+            if (isProf){
+                if      (dim==1) set_profile_bin( (TProfile   *) o,ibin,val,0,ent,0);
+                else if (dim==2) set_profile_bin( (TProfile2D *) o,ibin,val,0,ent,0);
+            } else o->SetBinContent(ibin, val);
+            return val;
+        }
+
         void create_average_obj(TH1* &tmp_m, VecTH1 &in_objs, TString type){
             int dim  = tmp_m->GetDimension();
             bool doEntries = type.CompareTo("median_entries",TString::kIgnoreCase)==0;
@@ -673,7 +739,7 @@ class OutlierRemoval{
                         } else push_sorted(vals,value);
                     }
                 }
-                if ( verbose>6 ) printf ( "      vals size %d\n" , vals.size() );
+                if ( verbose>6 ) printf ( "      vals size %lu\n" , vals.size() );
                 double centr = 0;
                 double sigma = 0;
                 double wcentr = 0;
@@ -916,14 +982,15 @@ int main(int argc, char * argv[]){
     ;
     // Program options
     opts.add_options("")
-        ("h,help"      , "Print this help and die."                                  )
-        ("m,median"    , "Add median (by default only avarage)"                      )
-        ("o,outlier"   , "Add median and outlier removal (by default only avarage)"  )
-        ("x,x-section" , "Normalize histograms to Xsection."                         )
-        ("p,2D-proj"   , "Make 2d projections and outliers for 2D."                  )
-        ("r,rebin"     , "Add pt histograms with Z pt LHC 7TeV rebin."               )
-        ("c,cuba"      , "Add all histograms from cubature integration."             )
-        ("v,verbose"   , "Increase verbosity (more v the more chaty (max=vvvvvvv))." )
+        ("h,help"            , "Print this help and die."                                  )
+        ("m,median"          , "Add median (by default only avarage)"                      )
+        ("o,outlier"         , "Add median and outlier removal (by default only avarage)"  )
+        ("x,x-section"       , "Normalize histograms to Xsection."                         )
+        ("p,2D-proj"         , "Make 2d projections and outliers for 2D."                  )
+        ("r,rebin"           , "Add pt histograms with Z pt LHC 7TeV rebin."               )
+        ("c,cuba"            , "Add all histograms from cubature integration."             )
+        ("n,NaN-interpolate" , "Find NaNs and interpolate"                                 )
+        ("v,verbose"         , "Increase verbosity (more v the more chaty (max=vvvvvvv))." )
     ;
     // Parse
     try {
@@ -952,13 +1019,14 @@ int main(int argc, char * argv[]){
         }
         //
         printf("Testing parser: counts\n");
-        printf("help     : %d \n",opts.count("help"      ));
-        printf("median   : %d \n",opts.count("median"    ));
-        printf("outlier  : %d \n",opts.count("outlier"   ));
-        printf("x-section: %d \n",opts.count("x-section" ));
-        printf("2D-proj  : %d \n",opts.count("2D-proj"   ));
-        printf("cuba     : %d \n",opts.count("cuba"      ));
-        printf("verbose  : %d \n",opts.count("verbose"   ));
+        printf ( "help     : %d \n" , opts.count ( "help"            )  ) ;
+        printf ( "median   : %d \n" , opts.count ( "median"          )  ) ;
+        printf ( "outlier  : %d \n" , opts.count ( "outlier"         )  ) ;
+        printf ( "x-section: %d \n" , opts.count ( "x-section"       )  ) ;
+        printf ( "2D-proj  : %d \n" , opts.count ( "2D-proj"         )  ) ;
+        printf ( "cuba     : %d \n" , opts.count ( "cuba"            )  ) ;
+        printf ( "NaN      : %d \n" , opts.count ( "Nan-interpolate" )  ) ;
+        printf ( "verbose  : %d \n" , opts.count ( "verbose"         )  ) ;
     }
 
 
@@ -978,14 +1046,15 @@ int main(int argc, char * argv[]){
         printf("Please write at least one inputfile. \n\n");
         PRINT_HELP(2);
     }
-    if (opts.count("median"    )) merger.doMedian=true;
-    if (opts.count("outlier"   )) merger.doOutlierRemoval=true;
-    if (opts.count("x-section" )) merger.doXsecNormalization=true;
-    if (opts.count("2D-proj"   )) merger.do2D=true;
-    if (opts.count("rebin"     )) merger.doRebin=true;
-    if (opts.count("cuba"      )) {merger.doCuba=true; merger.doRebin=false;}
-    if (opts.count("verbose"   )) merger.verbose=10*opts.count("verbose");
-    if (opts.count("test"      )) merger.doTest=true;
+    if (opts.count("median"          )) merger.doMedian=true;
+    if (opts.count("outlier"         )) merger.doOutlierRemoval=true;
+    if (opts.count("x-section"       )) merger.doXsecNormalization=true;
+    if (opts.count("2D-proj"         )) merger.do2D=true;
+    if (opts.count("rebin"           )) merger.doRebin=true;
+    if (opts.count("cuba"            )) {merger.doCuba=true; merger.doRebin=false;}
+    if (opts.count("NaN-interpolate" )) {merger.doNanIterp=true;}
+    if (opts.count("verbose"         )) merger.verbose=10*opts.count("verbose");
+    if (opts.count("test"            )) merger.doTest=true;
     // run merger
     merger.Init();
     merger.Merge();
@@ -996,8 +1065,8 @@ int main(int argc, char * argv[]){
     TString command;
     //command.Form("gdb --batch --eval-command 'call exit(0)' --pid  %i", (int)pid);
     command.Form("kill %i", (int)pid);
-    system(command.Data());
-    return 0;
+    int ret = system(command.Data());
+    return ret;
 }
 
 
