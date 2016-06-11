@@ -1,5 +1,6 @@
 #ifndef AIMOMENTS_H
 #define AIMOMENTS_H
+#include "config.h"
 #ifdef USEROOT
 
 #include <vector>
