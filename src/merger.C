@@ -89,7 +89,7 @@ class OutlierRemoval{
                 // Get one object from all files
                 VecTH1 in_objs;
                 for (auto it_fn : infilenames){
-                if (verbose>1) printf("filename: %s\n",it_fn.Data());
+		    if (verbose>1) printf("filename: %s\n",it_fn.Data());
                     TFile * it_f =TFile::Open(it_fn.Data(),"READ");
                     /// @todo: test if they are all same binning
                     // Create uniq name to avoid "Potential memory leak" warnings.
@@ -145,14 +145,21 @@ class OutlierRemoval{
                             // Its not projection but rebining to ptz to measuremnt binning
                             TString basename = p_objname(0,len-6); // remove "_rebin" at the end of string
                             if (verbose>1) printf("basename: %s , proj %c \n",basename.Data(), proj);
-                            TH1* h1 = (TH1*) it_f->Get(basename.Data());
-                            if (is_empty(h1,objname,objname_out)) continue;
-                            if (doXsecNormalization) normalize(h1);
-                            o=h1->Rebin(22,objname_out,bins);
-                            // divide by bin width
-                            for (int ibin =1; ibin<=o->GetNbinsX(); ibin++ ){
-                                o->SetBinContent(ibin,o->GetBinContent(ibin)/o->GetBinWidth(ibin));
-                            }
+                            //TH1* h1 = (TH1*) it_f->Get(basename.Data());
+                            //if (is_empty(h1,objname,objname_out)) continue;
+                            //if (doXsecNormalization) normalize(h1);
+                            //o=h1->Rebin(22,objname_out,bins);
+                            //// divide by bin width
+                            //for (int ibin =1; ibin<=o->GetNbinsX(); ibin++ ){
+                            //    o->SetBinContent(ibin,o->GetBinContent(ibin)/o->GetBinWidth(ibin));
+                            //}
+			    TH1* h1 = (TH1*) it_f->Get(basename.Data());
+			    if (is_empty(h1,objname,objname_out)) continue;
+			    if (isProfile(h1))
+			      {
+				TProfile2D* p2 = (TProfile2D*)h1;
+				o=p2->RebinX(2,objname_out);
+			      }
                             delete h1;
                         }
                         if (is_empty(o,objname,objname_out)) continue;
@@ -356,9 +363,11 @@ class OutlierRemoval{
                 }
                 // rebin pt as used ptz measurement
                 if (doRebin) {
-                    if ( name.EqualTo("pt") || name.EqualTo("h_qt") ) {
-                        all_obj_names.push_back(dirname+name+"_rebin");
-                    }
+		  //                    if ( name.EqualTo("pt") || name.EqualTo("h_qt") ) {
+		  //                        all_obj_names.push_back(dirname+name+"_rebin");
+		  //                    }
+		    if (cl->InheritsFrom("TProfile2D"))
+		       all_obj_names.push_back(dirname+name+"_rebin");
                 }
                 if (doTest && all_obj_names.size()==2) break;
             }
