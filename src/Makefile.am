@@ -50,4 +50,4 @@ merger_SOURCES = merger.C
 merger_LDADD = $(ROOT_LDFLAGS)
 endif
 
-pkginclude_HEADERS = resintegr.h ctintegr.h finintegr.h integr.h phasespace.h interface.h settings.h cubacall.h plotter.h init.h switch.h options.f flred.f gauss.f quadrules.f cuts.h coupling.h pdf.h printsettings.h clock_real.h fcomplex.h banner.h cxxopts.hpp kinematic.h #solvew.h
+pkginclude_HEADERS = resintegr.h ctintegr.h finintegr.h integr.h phasespace.h interface.h settings.h cubacall.h plotter.h init.h switch.h options.f flred.f gauss.f quadrules.f cuts.h coupling.h pdf.h printsettings.h clock_real.h fcomplex.h banner.h cxxopts.hpp kinematic.h isnan.h #solvew.h

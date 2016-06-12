@@ -11,6 +11,7 @@
  * @author Stefano <Stefano.Camarda@cern.ch>
  * @date 2015-11-18
  */
+#include "isnan.h"
 
 #include <vector>
 #include <set>
@@ -159,7 +160,8 @@ class OutlierRemoval{
                     if (o!=0) {
                         if (verbose>2) o->Print();
                         // Check for NaN and adding object to list
-                        bool hasNaN= (o->Integral()!=o->Integral());
+			//bool hasNaN= (o->Integral()!=o->Integral());
+			bool hasNaN= isnan_ofast(o->Integral());
                         if (hasNaN) {
                             printf("Warning: hist %s in file %s contain NaN \n", it_fn.Data(), p_objname.Data());
                             delete o;
