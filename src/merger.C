@@ -88,6 +88,7 @@ class OutlierRemoval{
                 // Get one object from all files
                 VecTH1 in_objs;
                 for (auto it_fn : infilenames){
+                if (verbose>1) printf("filename: %s\n",it_fn.Data());
                     TFile * it_f =TFile::Open(it_fn.Data(),"READ");
                     /// @todo: test if they are all same binning
                     // Create uniq name to avoid "Potential memory leak" warnings.
