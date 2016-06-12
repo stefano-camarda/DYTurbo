@@ -232,7 +232,21 @@ void plotter::FillRealEvent(plotter::TermType term){
         // ( they are filled as one event with cumulated weight)
         for (auto ipoint=dipole_points.begin(); ipoint!=dipole_points.end() ; ) if (point.ibin == ipoint->ibin){
             // found same bin: remove from list and sum weight
-            point.wgt+=ipoint->wgt;
+	     point.wgt+=ipoint->wgt;
+	    /**************************************************/
+	    //Bug fix, the code was assuming the same A[i] for all dipoles contribution, but this is not true!!!
+	    //A[i] need to be recalculated
+	    double wgt1 = point.wgt;
+	    double wgt2 = ipoint->wgt;
+	    double sumwgt = wgt1 + wgt2;
+            if(doAiMoments)
+	      for (auto i=0; i<NMOM; i++)
+		if (sumwgt != 0.)
+		  point.A[i] = point.A[i]*wgt1/sumwgt + ipoint->A[i]*wgt2/sumwgt;
+		else
+		  point.A[i] = 0.;
+	    //point.wgt = sumwgt;
+	    /**************************************************/
             ipoint = dipole_points.erase(ipoint);
         } else ++ipoint; // bin index not same, skip it
         // fill histograms in ibin with sum of all weights
