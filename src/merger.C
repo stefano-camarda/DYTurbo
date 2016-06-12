@@ -344,6 +344,7 @@ class OutlierRemoval{
                 // filter classes
                 TClass *cl = TClass::GetClass(key->GetClassName());
                 if (!cl->InheritsFrom( "TH1"      )) continue; // profiles and histograms of all dimensions
+		if (cl->InheritsFrom( "TH3"      )) continue; // skip 3d
                 TString name = key->GetName();
                 if (doTest && !name.Contains("p_qtVy_A4")) continue;
                 all_obj_names.push_back(dirname+name);
