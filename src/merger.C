@@ -714,7 +714,7 @@ class OutlierRemoval{
                             if (doEntries){
                                 push_sorted(vals,entries);
                             } else {
-                                push_sorted(vals,value/entries); // make median from ratio
+			        push_sorted(vals,(entries == 0) ? 0 : value/entries); // make median from ratio
                                 push_sorted(entrs,entries);
                             }
                         } else push_sorted(vals,value);
@@ -734,7 +734,7 @@ class OutlierRemoval{
                     if (isProf&&!doEntries){
                         wcentr = median (entrs);
                         wsigma = delta (entrs, wcentr, 0.68) / sqrtN;
-                        if (verbose>5) printf("   calculated median profile nom %f +- %f denom %f +- %f prof %f \n", centr, sigma, wcentr, wsigma, centr/wcentr);
+                        if (verbose>5) printf("   calculated median profile nom %f +- %f denom %f +- %f prof %f \n", centr, sigma, wcentr, wsigma, centr*wcentr);
                     }
                 } else if (type.CompareTo("mean",TString::kIgnoreCase)==0){
                     centr = mean(vals);
@@ -749,8 +749,8 @@ class OutlierRemoval{
                         wsigma = TMath::Sqrt(wsigma);
                     }
                     if (wsigma!=0 && wcentr!=0){
-                        if (prof   !=0) set_profile_bin(prof   ,ibin,centr/wcentr,sigma,wcentr,wsigma);
-                        if (prof2D !=0) set_profile_bin(prof2D ,ibin,centr/wcentr,sigma,wcentr,wsigma);
+                        if (prof   !=0) set_profile_bin(prof   ,ibin,centr*wcentr,sigma*wcentr,wcentr,wsigma);
+                        if (prof2D !=0) set_profile_bin(prof2D ,ibin,centr*wcentr,sigma*wcentr,wcentr,wsigma);
                     }
                 } else {
                     tmp_m->SetBinContent( ibin, centr  );
@@ -834,7 +834,7 @@ class OutlierRemoval{
             /// Propagate error to ratio
             double p_sigma2 = 0;
             p_sigma2+= TMath::Power( sigma  / centr  ,2);
-            p_sigma2+= TMath::Power( wsigma / wcentr ,2);
+	    //p_sigma2+= TMath::Power( wsigma / wcentr ,2);
             p_sigma2*= p_centr2;
             /// Error definition inside TProfile:
             ///
