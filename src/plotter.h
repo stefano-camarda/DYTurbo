@@ -2,7 +2,10 @@
 #define plotter_h
 
 #include "config.h"
-//#include "AiMoments.h"
+//#define AIMOM 
+#ifdef AIMOM
+#include "AiMoments.h"
+#endif
 
 #ifdef USEROOT
 #include <TH1D.h>
@@ -98,7 +101,9 @@ class plotter {
         double N;
         std::vector<double> v_wgt;
         double verbose;
-        //AiMoments ai_maarten;
+#ifdef AIMOM
+        AiMoments ai_maarten;
+#endif
 
         // Function members
         //
