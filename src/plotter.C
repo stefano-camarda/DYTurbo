@@ -258,7 +258,7 @@ void plotter::FillRealEvent(plotter::TermType term){
             ipoint = dipole_points.erase(ipoint);
         } else ++ipoint; // bin index not same, skip it
         // fill histograms in ibin with sum of all weights
-        if (point.fid ){
+        if (point.fid && point.wgt!=0 ){
             h_qtVy   -> Fill(point.qt,point.y         ,point.wgt);
             h_qt     -> Fill(point.qt                 ,point.wgt);
             h_y      -> Fill(point.y                  ,point.wgt);

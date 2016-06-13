@@ -199,7 +199,7 @@ class OutlierRemoval{
                         // This part is same for histograms and profiles
                         create_average_obj(o_median,in_objs,"median");
                         if (verbose>3) {printf("  median average "); print_range(o_median);}
-                    } 
+                    }
                 }
                 if (o_profile==0){
                     // This is not for profile!
@@ -405,6 +405,7 @@ class OutlierRemoval{
                 printf( "Error, passed empty vector to double median(vector <double> xi)\n");
                 return 0;
             }
+            if (xi.size() == 1) return xi[0];
             double med = 0;
             sort(xi.begin(), xi.end());
             if (verbose >6){
@@ -695,8 +696,8 @@ class OutlierRemoval{
             tmp_m->Reset();
             double sqrtN=sqrt(in_objs.size());
             for ( auto ibin : loop_bins(tmp_m) ){
-                VecDbl vals;
-                VecDbl entrs;
+                VecDbl vals; // value in case of histogram, ratio in case of profile
+                VecDbl entrs; // denominator in case of profile
                 if ( verbose>6 ) printf ( " looping bins for average %d \n" , ibin);
                 for(auto ith : in_objs){
                     if (ith!=0){
@@ -713,7 +714,7 @@ class OutlierRemoval{
                             if (doEntries){
                                 push_sorted(vals,entries);
                             } else {
-                                push_sorted(vals,value);
+                                push_sorted(vals,value/entries); // make median from ratio
                                 push_sorted(entrs,entries);
                             }
                         } else push_sorted(vals,value);
@@ -747,8 +748,10 @@ class OutlierRemoval{
                         if (dim==2) wsigma = ((TProfile2D *) in_objs[0])->GetBinSumw2()->At(ibin);
                         wsigma = TMath::Sqrt(wsigma);
                     }
-                    if (prof   !=0) set_profile_bin(prof   ,ibin,centr,sigma,wcentr,wsigma);
-                    if (prof2D !=0) set_profile_bin(prof2D ,ibin,centr,sigma,wcentr,wsigma);
+                    if (wsigma!=0 && wcentr!=0){
+                        if (prof   !=0) set_profile_bin(prof   ,ibin,centr/wcentr,sigma,wcentr,wsigma);
+                        if (prof2D !=0) set_profile_bin(prof2D ,ibin,centr/wcentr,sigma,wcentr,wsigma);
+                    }
                 } else {
                     tmp_m->SetBinContent( ibin, centr  );
                     tmp_m->SetBinError  ( ibin, sigma );
