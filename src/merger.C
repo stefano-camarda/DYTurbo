@@ -781,14 +781,18 @@ class OutlierRemoval{
                     double val = 0;
                     if (isProf && dim==1){
                         TProfile * test = (TProfile*) ith;
-                        val = test->At (b);
-                        ent = test->GetBinEntries (b);
-                        d -= ent;
+                        //val = test->At (b);
+                        //ent = test->GetBinEntries (b);
+                        //d -= ent;
+                        val = test->GetBinContent(b);
+                        d -= val;
                     } else if (isProf && dim==2) {
                         TProfile2D * test = (TProfile2D *) ith;
-                        val = test->At (b);
-                        ent = test->GetBinEntries (b);
-                        d -= ent;
+                        //val = test->At (b);
+                        //ent = test->GetBinEntries (b);
+                        //d -= ent;
+                        val = test->GetBinContent(b);
+                        d -= val;
                     } else {
                         val = ith->GetBinContent(b);
                         d -= val;
