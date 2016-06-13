@@ -782,14 +782,14 @@ class OutlierRemoval{
                     if (isProf && dim==1){
                         TProfile * test = (TProfile*) ith;
                         //val = test->At (b);
-                        //ent = test->GetBinEntries (b);
+                        ent = test->GetBinEntries (b);
                         //d -= ent;
                         val = test->GetBinContent(b);
                         d -= val;
                     } else if (isProf && dim==2) {
                         TProfile2D * test = (TProfile2D *) ith;
                         //val = test->At (b);
-                        //ent = test->GetBinEntries (b);
+                        ent = test->GetBinEntries (b);
                         //d -= ent;
                         val = test->GetBinContent(b);
                         d -= val;
@@ -816,8 +816,8 @@ class OutlierRemoval{
                         double sigmaw = rms(v_sumw, sumw )/TMath::Sqrt(v_sumw.size());
                         double sigmawy = rms(v_sumwy, sumwy )/TMath::Sqrt(v_sumwy.size());
                         // set bin content and error
-                        if (prof   !=0) set_profile_bin(prof   ,b, sumwy,sigmawy, sumw, sigmaw);
-                        if (prof2D !=0) set_profile_bin(prof2D ,b, sumwy,sigmawy, sumw, sigmaw);
+                        if (prof   !=0) set_profile_bin(prof   ,b, sumwy*sumw,sigmawy*sumw, sumw, sigmaw);
+                        if (prof2D !=0) set_profile_bin(prof2D ,b, sumwy*sumw,sigmawy*sumw, sumw, sigmaw);
                     } else {
                         // calculate new average
                         double centr = mean(v_sumwy);
