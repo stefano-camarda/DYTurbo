@@ -813,15 +813,15 @@ class OutlierRemoval{
                         // calculate new average
                         double sumw = mean(v_sumw);
                         double sumwy = mean(v_sumwy);
-                        double sigmaw = rms(v_sumw, sumw )/TMath::Sqrt(v_sumw.size());
-                        double sigmawy = rms(v_sumwy, sumwy )/TMath::Sqrt(v_sumwy.size());
+                        double sigmaw = (v_sumw.size() > 0) ? rms(v_sumw, sumw )/TMath::Sqrt(v_sumw.size()) : 0;
+                        double sigmawy = (v_sumwy.size() > 0) ? rms(v_sumwy, sumwy )/TMath::Sqrt(v_sumwy.size()) : 0;
                         // set bin content and error
                         if (prof   !=0) set_profile_bin(prof   ,b, sumwy*sumw,sigmawy*sumw, sumw, sigmaw);
                         if (prof2D !=0) set_profile_bin(prof2D ,b, sumwy*sumw,sigmawy*sumw, sumw, sigmaw);
                     } else {
                         // calculate new average
                         double centr = mean(v_sumwy);
-                        double sigma = rms(v_sumwy, centr)/TMath::Sqrt(v_sumwy.size());
+                        double sigma = (v_sumwy.size() > 0) ? rms(v_sumwy, centr)/TMath::Sqrt(v_sumwy.size()) : 0;
                         // set bin content and error
                         out->SetBinContent( b, centr  );
                         out->SetBinError  ( b, sigma );
