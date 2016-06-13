@@ -967,7 +967,7 @@ c         print *,msqc1(jk), jjs(jk),kks(jk)
 c     for fixed order predictions the counterterm is always evaluated at qt=0
 c     store moments and amplitudes
       if (fixedorder) then
-         call setqt(0.0001D0)
+         call setqt(0d0)
          call genV4p()
          call cthmoments(cthmom0,cthmom1,cthmom2)
          cthmom0=cthmom0*twopi*twopi

@@ -6,11 +6,14 @@ plotter hists;
 #include "interface.h"
 #include "settings.h"
 #include "phasespace.h"
+#include "kinematic.h"
+//#include "solvew.h"
 
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <cmath>
 #include <algorithm>
+#include <numeric>
 
 
 #ifdef USEROOT
@@ -229,7 +232,21 @@ void plotter::FillRealEvent(plotter::TermType term){
         // ( they are filled as one event with cumulated weight)
         for (auto ipoint=dipole_points.begin(); ipoint!=dipole_points.end() ; ) if (point.ibin == ipoint->ibin){
             // found same bin: remove from list and sum weight
-            point.wgt+=ipoint->wgt;
+	     point.wgt+=ipoint->wgt;
+	    /**************************************************/
+	    //Bug fix, the code was assuming the same A[i] for all dipoles contribution, but this is not true!!!
+	    //A[i] need to be recalculated
+	    double wgt1 = point.wgt;
+	    double wgt2 = ipoint->wgt;
+	    double sumwgt = wgt1 + wgt2;
+            if(doAiMoments)
+	      for (auto i=0; i<NMOM; i++)
+		if (sumwgt != 0.)
+		  point.A[i] = point.A[i]*wgt1/sumwgt + ipoint->A[i]*wgt2/sumwgt;
+		else
+		  point.A[i] = 0.;
+	    //point.wgt = sumwgt;
+	    /**************************************************/
             ipoint = dipole_points.erase(ipoint);
         } else ++ipoint; // bin index not same, skip it
         // fill histograms in ibin with sum of all weights
@@ -511,7 +528,39 @@ void plotter::addToBin(TH1*h, double int_val, double int_error){
 
 // Kinematic and angular calculations
 //
-void plotter::calculate_kinematics(double p3[4], double p4[4]){
+void plotter::calculate_kinematics(double p3[4], double p4[4])
+{
+  /**********************************************/
+  //new fast code based on kinematic namespace
+  kinematic::set(p3,p4);
+  kinematic::calc_vb();
+  Q = kinematic::m;
+  qt = kinematic::qt;
+  y  = kinematic::y;
+  if (!doAiMoments) return; // turn off ai moments
+  kinematic::calc_angles();
+  costh = kinematic::costh;
+  phi = kinematic::phi_lep;
+
+  //tools for the definition of CS in W events
+  //  solvew::calc(p3,p4);
+  //  costh = solvew::costh;
+  //  y = solvew::y;
+
+  // angular terms for moments -> Use trigonometric formulas to reduce CPU time
+  double sintheta  = sqrt(1.-pow(costh,2));
+  double sin2theta = 2*costh*sintheta;
+
+  double cosphi    = cos(phi);
+  double cos2phi   = 2*pow(cosphi,2)-1.;
+  double sinphi    = sqrt(1.-pow(cosphi,2))*(phi>0 ? 1 : -1);
+  double sin2phi   = 2*cosphi*sinphi;
+  /**********************************************/
+
+  
+  /**********************************************/
+  //Old code for kinematic calculation
+  /*
     // calculate VB
     double p[4]; 
     p[0] = p3[0]+p4[0];
@@ -535,6 +584,9 @@ void plotter::calculate_kinematics(double p3[4], double p4[4]){
     double cos2phi   = TMath::Cos(2*phi);
     double sinphi    = TMath::Sin(phi);
     double sin2phi   = TMath::Sin(2*phi);
+  */
+  /**********************************************/
+  
     // define ai moments
     a[0] = c[0] * (0.5-1.5*costh*costh       ) +2./3.;
     a[1] = c[1] * (sin2theta*cosphi          )       ;
@@ -547,11 +599,13 @@ void plotter::calculate_kinematics(double p3[4], double p4[4]){
     //a[8] = a[0] - a[2];
 }
 
+/*********************************************/
+//Clean up begin
 double plotter::calcQt(double p[4]){
-    return  sqrt((float)   p[0]*p[0]+p[1]*p[1]);
+    return  sqrt(p[0]*p[0]+p[1]*p[1]);
 }
 double plotter::calcY(double p[4]){
-    return 0.5 *log(float( (p[3]+p[2]) / (p[3]-p[2]) ));
+    return 0.5 *log((p[3]+p[2]) / (p[3]-p[2]));
 }
 double plotter::calcQ2(double p[4]){
     return p[3]*p[3] -p[0]*p[0] -p[1]*p[1] -p[2]*p[2];
@@ -569,12 +623,12 @@ double plotter::calcCosThCS(double Q2,double qt,double p3[4],double p4[4]){
     double costh=0;
     costh = (Vplus(p3)*Vminus(p4) - Vplus(p4)*Vminus(p3));
     costh *= qz<0. ? -1 : 1;
-    costh /= sqrt(float(Q2*(Q2 + qt*qt)));
+    costh /= sqrt(Q2*(Q2 + qt*qt));
     return costh;
 }
 double plotter::calcPhiCS(double p3[4],double p4[4],double &phi_lep){
     // Collins-Sopper phi
-    const double pmass=0.938;
+  const double pmass=0.;//0.938;
     /// @todo: phi_CS without TLorentzVector...
     // Define TLorentz Vectors
     TLorentzVector lep1(p3);
@@ -597,8 +651,10 @@ double plotter::calcPhiCS(double p3[4],double p4[4],double &phi_lep){
     yAxis  = ( hatp1.Cross(hatp2) ).Unit();
     xAxis  = ( yAxis.Cross(CSAxis)).Unit();
     // calculate phi
-    return TMath::ATan2(float(lep1.Vect()*yAxis), float(lep1.Vect()*xAxis));
+    return TMath::ATan2(lep1.Vect()*yAxis, lep1.Vect()*xAxis);
 }
+//Clean up end
+/*********************************************/
 
 void plotter::print_dipole(XsecPoint pt){
     printf("   ibin %d pt %f y %f wgt %f\n", pt.ibin, pt.qt, pt.y, pt.wgt );

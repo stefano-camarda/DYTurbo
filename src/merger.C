@@ -11,6 +11,7 @@
  * @author Stefano <Stefano.Camarda@cern.ch>
  * @date 2015-11-18
  */
+#include "isnan.h"
 
 #include <vector>
 #include <set>
@@ -92,6 +93,7 @@ class OutlierRemoval{
                 // Get one object from all files
                 VecTH1 in_objs;
                 for (auto it_fn : infilenames){
+                if (verbose>1) printf("filename: %s\n",it_fn.Data());
                     TFile * it_f =TFile::Open(it_fn.Data(),"READ");
                     /// @todo: test if they are all same binning
                     // Create uniq name to avoid "Potential memory leak" warnings.
@@ -144,14 +146,14 @@ class OutlierRemoval{
                         bool hasNaN= false;
                         if (doNanIterp){ // slower but precise
                             for (auto ibin: loop_bins(o)){
-                                if (o->GetBinContent(ibin)!=o->GetBinContent(ibin)) {
+                                if (isnan_ofast(o->GetBinContent(ibin))) {
                                     double val = interpolate_NaN(o,ibin);
                                     printf("Warning: hist %s in file %s  NaN in bin %d was interpolated to %f \n", 
                                             it_fn.Data(), p_objname.Data(), ibin, val);
                                 }
                             }
                         } else { // simple fast test: integral
-                            hasNaN= (o->Integral()!=o->Integral());
+                            hasNaN = isnan_ofast(o->Integral());
                         }
                         if (hasNaN) {
                             printf("Warning: hist %s in file %s contain NaN \n", it_fn.Data(), p_objname.Data());
