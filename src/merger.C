@@ -18,6 +18,7 @@
 
 #include <TFile.h>
 #include <TH1.h>
+#include <TH3.h>
 #include <TGraph.h>
 #include <TGraph2D.h>
 #include <TProfile.h>
@@ -111,51 +112,30 @@ class OutlierRemoval{
                         // Extract basename: it should end with '_px' where 'x' might be one of: `zyuvn`
                         TString basename = p_objname(0,len-3); // remove "_px" at the end of the name
                         if (verbose>1) printf("basename: %s , proj %c , objname out: %s \n",basename.Data(), proj, objname_out);
-                        // Get 2D original, which will be used to create projections
-                        TH2* h2d = (TH2*) it_f->Get(basename.Data());
-                        if ( proj == 'x') {
+                        // Get original, which will be used to create projections
+                        TH1* hnd = (TH1*) it_f->Get(basename.Data());
+                        if (is_empty(hnd,objname,objname_out)) continue;
+                        if ( proj != 'n') {
                             // 2D -> X axis
-                            if (is_empty(h2d,objname,objname_out)) continue;
-                            o = h2d->ProjectionX("dummy"); // ,-1,0,"e");
+                            o = make_projection(hnd,proj); // h2d->ProjectionX("dummy"); // ,-1,0,"e");
                             o->SetName(objname_out);
                             if (doXsecNormalization) normalize(o);
-                            delete h2d;
-                        } else if (proj == 'y'){
-                            // 2D -> Y axis
-                            if (is_empty(h2d,objname,objname_out)) continue;
-                            o = h2d->ProjectionY("dummy"); // ,-1,0,"e");
-                            o->SetName(objname_out);
-                            if (doXsecNormalization) normalize(o);
-                            delete h2d;
-                        } else if (proj == 'u'){
-                            // 2D -> Y axis, but with "e" -- compute errors
-                            if (is_empty(h2d,objname,objname_out)) continue;
-                            o = h2d->ProjectionY("dummy",0,-1,"e");
-                            o->SetName(objname_out);
-                            if (doXsecNormalization) normalize(o);
-                            delete h2d;
-                        } else if (proj == 'v'){
-                            // 2D -> Y axis, but with "e" and withou underflow and overflow
-                            if (is_empty(h2d,objname,objname_out)) continue;
-                            o = make_projection(h2d);
-                            o->SetName(objname_out);
-                            if (doXsecNormalization) normalize(o);
-                            delete h2d;
-                        } else if (proj == 'n') {
-                            if(h2d!=0) delete h2d;
-                            // Its not projection but rebining to ptz to measuremnt binning
-                            TString basename = p_objname(0,len-6); // remove "_rebin" at the end of string
+                        } else { // if (proj == 'n') 
+                            //Rebin: this not projection but rebining to ptz to measuremnt binning
+                            // load correct
+                            basename = p_objname(0,len-6); // remove "_rebin" at the end of string
+                            if(!hnd) delete hnd;
+                            hnd = (TH1*) it_f->Get(basename.Data());
                             if (verbose>1) printf("basename: %s , proj %c \n",basename.Data(), proj);
-                            TH1* h1 = (TH1*) it_f->Get(basename.Data());
-                            if (is_empty(h1,objname,objname_out)) continue;
-                            if (doXsecNormalization) normalize(h1);
-                            o=h1->Rebin(22,objname_out,bins);
+                            // rebin
+                            if (doXsecNormalization) normalize(hnd);
+                            o=hnd->Rebin(22,objname_out,bins);
                             // divide by bin width
                             for (int ibin =1; ibin<=o->GetNbinsX(); ibin++ ){
                                 o->SetBinContent(ibin,o->GetBinContent(ibin)/o->GetBinWidth(ibin));
                             }
-                            delete h1;
                         }
+                        delete hnd;
                         if (is_empty(o,objname,objname_out)) continue;
                     } else if (doXsecNormalization && !isProfile(o)) normalize(o);
                     if (o!=0) {
@@ -357,7 +337,12 @@ class OutlierRemoval{
                 TClass *cl = TClass::GetClass(key->GetClassName());
                 if (!cl->InheritsFrom( "TH1"      )) continue; // profiles and histograms of all dimensions
                 TString name = key->GetName();
-                if (doTest && !name.Contains("p_qtVy_A4")) continue;
+                if (cl->InheritsFrom( "TH3"      )) {
+                    // if is pt,y,M make projection to y,M
+                    if (do2D && name.Contains("h_qtVyVQ")) all_obj_names.push_back(dirname+name+"_py");
+                    continue; // Dont merge TH3 is too slow
+                }
+                if (doTest && !name.Contains("p_qtVy_A4")) continue; // for fast merger testing
                 all_obj_names.push_back(dirname+name);
                 // make projections on TH2 and remove outlier on 1D separatelly
                 if (do2D && cl->InheritsFrom( "TH2"      )) {
@@ -372,7 +357,7 @@ class OutlierRemoval{
                         all_obj_names.push_back(dirname+name+"_rebin");
                     }
                 }
-                if (doTest && all_obj_names.size()==2) break;
+                if (doTest && all_obj_names.size()==2) break; // for fast merger testing
             }
             f->Close();
         }
@@ -395,13 +380,6 @@ class OutlierRemoval{
             }
             //if(verbose>6) printf("    ALL %d \n", (int) bins.size());
             return bins;
-        }
-
-
-        TH1D* make_projection(TH2*h2d){
-            int nxbins = h2d->GetNbinsX();
-            TH1D * o = h2d->ProjectionY("dummy",1,nxbins,"e");
-            return o;
         }
 
         bool is_empty(TObject *o, const char * objname, const char * objname_out){
@@ -950,6 +928,50 @@ class OutlierRemoval{
             tmp->Reset();
             if (verbose>2) print_range(tmp);
             return tmp;
+        }
+
+        TH1* make_projection(TH1* orig, char proj){
+            TH1* o = 0;
+            bool isProf = isProfile(orig);
+            int dim = orig->GetDimension();
+            //
+            if (proj == 'x'){
+                if (isProf) { // assuming 2D profile
+                    TProfile2D* pr2D=(TProfile2D*) orig;
+                    o = pr2D->ProfileX("dummy"); // ,-1,0,"e");
+                } else { // normal histogram (2D or 3D)
+                    if (dim==2){
+                        TH2 *h2 = (TH2 *) orig;
+                        o = h2->ProjectionX("dummy");
+                    } else if (dim==3) {
+                        TH3 *h3 = (TH3 *) orig;
+                        o = h3->Project3D("zx");
+                    }
+                }
+            } else if (proj == 'y'){
+                if (isProf) { // assuming 2D profile
+                    TProfile2D* pr2D=(TProfile2D*) orig;
+                    o = pr2D->ProfileY("dummy"); // ,-1,0,"e");
+                } else { // normal histogram (2D or 3D)
+                    if (dim==2){
+                        TH2 *h2 = (TH2 *) orig;
+                        o = h2->ProjectionY("dummy");
+                    } else if (dim==3) {
+                        TH3 *h3 = (TH3 *) orig;
+                        o = h3->Project3D("zy");
+                    }
+                }
+            } else if (proj == 'u'){ // only for testing
+                // 2D -> Y axis, but with "e" -- compute errors
+                TH2 *h2 = (TH2 *) orig;
+                o = h2->ProjectionY("dummy",0,-1,"e");
+            } else if (proj == 'v'){ // only for testing
+                // 2D -> Y axis, but with "e" and without underflow and overflow
+                TH2 *h2 = (TH2 *) orig;
+                int nxbins = h2->GetNbinsX();
+                o = h2->ProjectionY("dummy",1,nxbins,"e");
+            }
+            return o;
         }
 
         // Data memebers
