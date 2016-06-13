@@ -1,6 +1,7 @@
 
 #ifndef AIMOMENTS_CXX
 #define AIMOMENTS_CXX
+#include "config.h"
 #ifdef USEROOT
 
 #include "AiMoments.h"

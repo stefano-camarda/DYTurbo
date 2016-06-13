@@ -1,5 +1,6 @@
 #ifndef TLVUtils_cxx
 #define TLVUtils_cxx
+#include "config.h"
 #ifdef USEROOT
 
 #include "TLVUtils.h"

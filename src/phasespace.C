@@ -11,7 +11,7 @@ double phasespace::qtmax;
 double phasespace::ymin;
 double phasespace::ymax;
 
-//global variables for phase space
+//global variables for the generation of the phase space (add also phi)
 double phasespace::m;
 double phasespace::qt;
 double phasespace::y;
@@ -58,8 +58,8 @@ void phasespace::set_cth(double Costh) {costh = Costh;}
 void setqt_(double &qtt) {phasespace::qt = qtt;}
 void sety_(double &yy) {phasespace::y = yy;}
 
-//this is a boson variables binner: add mass here (not really needed, beacause the mass is always in the phase space boundaries)
-//and make a lepton variables binner
+//This is a boson variables binner: add mass here (not yet needed, beacause the mass is always in the phase space boundaries, will be needed when doing also mass bins)
+//the boson binner function is used only with the MCFM integrands, it is needed because the generation of the phase space is not done with respect to m, pt, y
 int binner_(double p3[4], double p4[4])
 {
   double qt = sqrt((float)pow(p3[0]+p4[0],2)+pow(p3[1]+p4[1],2));
@@ -74,3 +74,4 @@ int binner_(double p3[4], double p4[4])
   return true;
 }
 
+//Make also a lepton variables binner, which is needed for producing distributions as a function of lepton variables with quadrature integration
