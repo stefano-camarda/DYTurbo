@@ -117,7 +117,7 @@ bool AiMoments::Initialize() {
     sstr.str(""); tit.str(""); 
     sstr << "a" << ii << "TruthCS_vs_pt"; 
     tit << "; p_{T}^{W,Z} [GeV]; A_{" << ii << "}";
-    aimomTruthCS_vs_pt.push_back( new TProfile( sstr.str().c_str(), tit.str().c_str(), 50, 0., 100.) ); 
+    aimomTruthCS_vs_pt.push_back( new TProfile( sstr.str().c_str(), tit.str().c_str(), 100, 0., 50.) ); 
     aimomTruthCS_vs_pt.back()->Sumw2();
 
     sstr.str(""); tit.str(""); 
@@ -129,7 +129,7 @@ bool AiMoments::Initialize() {
     sstr.str(""); tit.str(""); 
     sstr << "a" << ii << "TruthCS_vs_pty"; 
     tit << "; y_{W,Z}; p_{T}^{W,Z} [GeV]; A_{" << ii << "}" ;
-    aimomTruthCS_vs_pty.push_back( new TProfile2D( sstr.str().c_str(), tit.str().c_str(), 50, 0., 5., 50, 0., 100.) ); 
+    aimomTruthCS_vs_pty.push_back( new TProfile2D( sstr.str().c_str(), tit.str().c_str(), 50, 0., 5., 100, 0., 50.) ); 
     aimomTruthCS_vs_pty.back()->Sumw2();
     aimomTruthCS_vs_pty.back()->SetOption("colZ");
 

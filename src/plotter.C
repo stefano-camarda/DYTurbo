@@ -38,7 +38,9 @@ plotter::plotter() :
     qt_y_total  (0),
     last_npdf   (-1),
     doAiMoments (true),
-    //ai_maarten ("ai_maarten"),
+#ifdef AIMOM
+    ai_maarten ("ai_maarten"),
+#endif
     verbose     (false)
 {
     return;
@@ -149,7 +151,9 @@ void plotter::Init(){
     v_wgt.clear();
     // Set default pdf for plotting
     SetPDF(0); //opts.LHAPDFmember);
-    //ai_maarten.Initialize();
+#ifdef AIMOM
+    ai_maarten.Initialize();
+#endif
     return;
 }
 
@@ -158,18 +162,20 @@ bool plotter::IsInitialized(){return (qt_y_total!=0);};
 void plotter::FillEvent(double p3[4], double p4[4], double wgt){
     // save after 10M events
     // if(int(h_qt->GetEntries()+1)%int(1e6)==0) Finalise(0);
-    // if (wgt == 0 ) return;
-    // TLorentzVector lep1(p3);
-    // TLorentzVector lep2(p4);
-    // if (verbose){
-    //     lep1.Print();
-    //     lep2.Print();
-    // }
-    // ai_maarten.Execute(
-    //         lep1.Pt(), lep1.Eta(), lep1.Phi(), 0., 13,
-    //         lep2.Pt(), lep2.Eta(), lep2.Phi(), 0., -13,
-    //         7e3, wgt
-    //         );
+    if (wgt == 0 ) return;
+#ifdef AIMOM
+    TLorentzVector lep1(p3);
+    TLorentzVector lep2(p4);
+    if (verbose){
+        lep1.Print();
+        lep2.Print();
+    }
+    ai_maarten.Execute(
+            lep1.Pt(), lep1.Eta(), lep1.Phi(), 0., 13,
+            lep2.Pt(), lep2.Eta(), lep2.Phi(), 0., -13,
+            7e3, wgt
+            );
+#endif
     calculate_kinematics(p3,p4);
     if (verbose){
         printf(" plotter:  histogram filling: \n");
@@ -196,6 +202,17 @@ void plotter::FillEvent(double p3[4], double p4[4], double wgt){
 }
 
 void plotter::FillRealDipole(double p3[4], double p4[4], double wgt, int nd){
+#ifdef AIMOM
+    // x check
+    TLorentzVector lep1(p3);
+    TLorentzVector lep2(p4);
+    ai_maarten.Execute(
+            lep1.Pt(), lep1.Eta(), lep1.Phi(), 0., 13,
+            lep2.Pt(), lep2.Eta(), lep2.Phi(), 0., -13,
+            7e3, wgt
+            );
+    //
+#endif
     if (nd!=0 && wgt == 0 ) return; // make sure you have at least first one for kinematics
     if (nd == 5 || nd==6 ) { // use 0 dipole kinematics -- its always
         qt = dipole_points[0] .qt;
@@ -214,7 +231,9 @@ void plotter::FillRealDipole(double p3[4], double p4[4], double wgt, int nd){
         point.phi     = phi   ;
         point.phi_lep = phi_lep   ;
         for (auto i=0; i<NMOM; i++){
-            point.A[i]=a[i];
+	    //Bug fix, the code was assuming the same A[i] for all dipoles contribution, but this is not true!!!
+	    //A[i] need to be recalculated
+            point.A[i]=a[i]*wgt; // need to combine contribution from all
         }
     }
     point.fid   = decide_fiducial(p3,p4);
@@ -232,25 +251,14 @@ void plotter::FillRealEvent(plotter::TermType term){
         // ( they are filled as one event with cumulated weight)
         for (auto ipoint=dipole_points.begin(); ipoint!=dipole_points.end() ; ) if (point.ibin == ipoint->ibin){
             // found same bin: remove from list and sum weight
-	     point.wgt+=ipoint->wgt;
-	    /**************************************************/
+            point.wgt+=ipoint->wgt;
 	    //Bug fix, the code was assuming the same A[i] for all dipoles contribution, but this is not true!!!
 	    //A[i] need to be recalculated
-	    double wgt1 = point.wgt;
-	    double wgt2 = ipoint->wgt;
-	    double sumwgt = wgt1 + wgt2;
-            if(doAiMoments)
-	      for (auto i=0; i<NMOM; i++)
-		if (sumwgt != 0.)
-		  point.A[i] = point.A[i]*wgt1/sumwgt + ipoint->A[i]*wgt2/sumwgt;
-		else
-		  point.A[i] = 0.;
-	    //point.wgt = sumwgt;
-	    /**************************************************/
+            if (doAiMoments) for (auto i=0; i<NMOM; i++) point.A[i]+=ipoint->A[i]; // summing Ai*wgt per each dipole
             ipoint = dipole_points.erase(ipoint);
         } else ++ipoint; // bin index not same, skip it
         // fill histograms in ibin with sum of all weights
-        if (point.fid ){
+        if (point.fid && point.wgt!=0 ){
             h_qtVy   -> Fill(point.qt,point.y         ,point.wgt);
             h_qt     -> Fill(point.qt                 ,point.wgt);
             h_y      -> Fill(point.y                  ,point.wgt);
@@ -258,6 +266,8 @@ void plotter::FillRealEvent(plotter::TermType term){
             h_qtVyVQ -> Fill(point.qt,point.y,point.Q ,point.wgt);
             if(doAiMoments){
                 for (auto i=0; i<NMOM; i++){
+                    //Bug fix, the code was assuming the same A[i] for all dipoles contribution, but this is not true!!!
+                    point.A[i]/=point.wgt; // sum of Ai*wgt / sum of wgt
                     pa_qtVy .A[i]->Fill(point.qt,point.y , point.A[i], point.wgt);
                     //pa_qt   .A[i]->Fill(qt   , point.A[i], point.wgt);
                     //pa_y    .A[i]->Fill(y    , point.A[i], point.wgt);
@@ -482,7 +492,9 @@ void plotter::Finalise(double xsection){
     // close
     outf->Write();
     outf->Close();
-    //ai_maarten.Finalize();
+#ifdef AIMOM
+    ai_maarten.Finalize();
+#endif
     return;
 }
 

@@ -74,6 +74,11 @@
 #./scripts/submit_DYTURBO.sh --mogon --proc wp,wm --term RES2P,CT2P --pdfset CT10nnlo --pdfvar array
 #./scripts/merge.sh --proc wp,wm --term RES2P,CT2P --qtymerge qt010y-11 --outdir CT10nnlo_RESCT2P_160512
 
+#TEST LO
+#./scripts/submit_DYTURBO.sh --mogon --proc z0 --pdfset CT10nnlo --pdfvar all --term LO --order 1 --seeds 100
+#./scripts/submit_DYTURBO.sh --mogon --proc z0 --pdfset CT10nnlo --pdfvar 0 --term REAL --seeds 100 --qtlo 30 --qthi 90
+
+
 
 ##  -- PROFILED PDFS
 
@@ -89,6 +94,9 @@
 #./scripts/submit_DYTURBO.sh --lxbatch --proc wp --term RES2D --pdfset MMHTProf68cl --pdfvar array RUN
 
 #./scripts/merge.sh --proc wp,wm,z0 --term RES2D,CT2D --pdfset MMHTProf68cl --qtymerge qt05y-11 --outdir MMHT14Prof_RESCT2D_160523 #RUN
+
+# PROFILLED CT10
+./scripts/submit_DYTURBO.sh --mogon --proc z0 --term RES2D,CT2D  --pdfset CT10nnlo68clProfiled --pdfvar array #RUN
 
 #============================================
 # MERGE GRID DONE
