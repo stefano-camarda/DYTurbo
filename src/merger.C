@@ -116,7 +116,7 @@ class OutlierRemoval{
                         if (verbose>1) printf("basename: %s , proj %c , objname out: %s \n",basename.Data(), proj, objname_out);
                         // Get original, which will be used to create projections
                         TH1* hnd = (TH1*) it_f->Get(basename.Data());
-                        if (is_empty(hnd,objname,objname_out)) continue;
+                        if ( proj != 'n' && is_empty(hnd,objname,objname_out)) continue;
                         if ( proj != 'n') {
                             // 2D -> X axis
                             o = make_projection(hnd,proj); // h2d->ProjectionX("dummy"); // ,-1,0,"e");
