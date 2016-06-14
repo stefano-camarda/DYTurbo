@@ -237,7 +237,7 @@ class OutlierRemoval{
                     // we are extra dividing by number of inputp objects to
                     // retrive correct xsection in denominator.
                     //
-                    for (auto ith : in_objs) o_profile->Add(ith,1./in_objs.size());
+  		    for (auto ith : in_objs) o_profile->Add(ith,1./in_objs.size());
                     // save profile and median
                     o_profile->SetName(name);
                     output_objects.push_back(o_profile);
@@ -967,7 +967,8 @@ class OutlierRemoval{
             if (proj == 'x'){
                 if (isProf) { // assuming 2D profile
                     TProfile2D* pr2D=(TProfile2D*) orig;
-                    o = pr2D->ProfileX("dummy"); // ,-1,0,"e");
+		    //o = pr2D->ProfileX("dummy"); // ,-1,0,"e");
+                    o = pr2D->ProfileX("dummy",0,0,"g");
                 } else { // normal histogram (2D or 3D)
                     if (dim==2){
                         TH2 *h2 = (TH2 *) orig;
@@ -980,7 +981,8 @@ class OutlierRemoval{
             } else if (proj == 'y'){
                 if (isProf) { // assuming 2D profile
                     TProfile2D* pr2D=(TProfile2D*) orig;
-                    o = pr2D->ProfileY("dummy"); // ,-1,0,"e");
+		    //o = pr2D->ProfileY("dummy"); // ,-1,0,"e");
+                    o = pr2D->ProfileX("dummy",0,0,"g");
                 } else { // normal histogram (2D or 3D)
                     if (dim==2){
                         TH2 *h2 = (TH2 *) orig;
