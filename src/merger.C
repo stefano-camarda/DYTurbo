@@ -716,11 +716,7 @@ class OutlierRemoval{
                             if (doEntries){
                                 push_sorted(vals,entries);
                             } else {
-<<<<<<< HEAD
 			        push_sorted(vals,(entries == 0) ? 0 : value/entries); // make median from ratio
-=======
-                                push_sorted(vals,value/entries); // make median from ratio
->>>>>>> merge-rebin
                                 push_sorted(entrs,entries);
                             }
                         } else push_sorted(vals,value);
@@ -755,13 +751,8 @@ class OutlierRemoval{
                         wsigma = TMath::Sqrt(wsigma);
                     }
                     if (wsigma!=0 && wcentr!=0){
-<<<<<<< HEAD
                         if (prof   !=0) set_profile_bin(prof   ,ibin,centr*wcentr,sigma*wcentr,wcentr,wsigma);
                         if (prof2D !=0) set_profile_bin(prof2D ,ibin,centr*wcentr,sigma*wcentr,wcentr,wsigma);
-=======
-                        if (prof   !=0) set_profile_bin(prof   ,ibin,centr/wcentr,sigma,wcentr,wsigma);
-                        if (prof2D !=0) set_profile_bin(prof2D ,ibin,centr/wcentr,sigma,wcentr,wsigma);
->>>>>>> merge-rebin
                     }
                 } else {
                     tmp_m->SetBinContent( ibin, centr  );
