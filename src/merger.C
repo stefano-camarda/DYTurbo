@@ -738,7 +738,7 @@ class OutlierRemoval{
                     sigma = rms(vals, centr)/sqrtN;
                     if ( verbose>6 ) printf ( "      centr %f sigma %f  \n" , centr, sigma );
                 }
-                if (isProf&&!doEntries&&wcentr!=0){
+                if (isProf&&!doEntries){
                     // if zero sigma take the value of first input object
                     if (wsigma==0){
                         if (dim==1) wsigma = ((TProfile   *) in_objs[0])->GetBinSumw2()->At(ibin);
@@ -754,8 +754,8 @@ class OutlierRemoval{
                     tmp_m->SetBinError  ( ibin, sigma );
                 }
             } // bins
-            if (prof   !=0)  prof   ->SetErrorOption("i");
-            if (prof2D !=0)  prof2D ->SetErrorOption("i");
+            if (prof   !=0)  {prof   ->SetErrorOption("i"); prof   ->SetEntries(1);}
+            if (prof2D !=0)  {prof2D ->SetErrorOption("i"); prof2D ->SetEntries(1);}
         }
 
         void remove_outliers_from_hist(TH1*hist, TH1*ref, VecTH1 in_objs){
@@ -841,8 +841,8 @@ class OutlierRemoval{
                     }
                 }
             } // all bins
-            if (prof   !=0)  prof   ->SetErrorOption("i");
-            if (prof2D !=0)  prof2D ->SetErrorOption("i");
+            if (prof   !=0)  {prof   ->SetErrorOption("i"); prof   ->SetEntries(1);}
+            if (prof2D !=0)  {prof2D ->SetErrorOption("i"); prof2D ->SetEntries(1);}
         }
 
         template<class T>
