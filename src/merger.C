@@ -97,7 +97,7 @@ class OutlierRemoval{
                     TFile * it_f =TFile::Open(it_fn.Data(),"READ");
                     /// @todo: test if they are all same binning
                     // Create uniq name to avoid "Potential memory leak" warnings.
-                    TString retrieved_name(p_objname); 
+                    TString retrieved_name(p_objname.Data()); 
                     retrieved_name+="__"; 
                     retrieved_name+=in_objs.size();
                     const char* objname_out = retrieved_name.Data();
@@ -116,31 +116,49 @@ class OutlierRemoval{
                         if (verbose>1) printf("basename: %s , proj %c , objname out: %s \n",basename.Data(), proj, objname_out);
                         // Get original, which will be used to create projections
                         TH1* hnd = (TH1*) it_f->Get(basename.Data());
-                        if (is_empty(hnd,objname,objname_out)) continue;
                         if ( proj != 'n') {
-                            // 2D -> X axis
+                            if (is_empty(hnd,objname,objname_out)) continue;
                             o = make_projection(hnd,proj); // h2d->ProjectionX("dummy"); // ,-1,0,"e");
                             o->SetName(objname_out);
                             if (doXsecNormalization) normalize(o);
                         } else { // if (proj == 'n') 
+                            if(!hnd) delete hnd; // remove previous assumption.
                             //Rebin: this not projection but rebining to ptz to measuremnt binning
                             // load correct
                             basename = p_objname(0,len-6); // remove "_rebin" at the end of string
-                            if(!hnd) delete hnd;
-                            hnd = (TH1*) it_f->Get(basename.Data());
-                            if (verbose>1) printf("basename: %s , proj %c \n",basename.Data(), proj);
-                            // rebin
-                            //if (doXsecNormalization) normalize(hnd);
-                            //o=hnd->Rebin(22,objname_out,bins);
-                            //// divide by bin width
-                            //for (int ibin =1; ibin<=o->GetNbinsX(); ibin++ ){
-                            //    o->SetBinContent(ibin,o->GetBinContent(ibin)/o->GetBinWidth(ibin));
-                            //}
-			    if (isProfile(hnd))
-			      {
-				TProfile2D* p2 = (TProfile2D*)hnd;
-				o=p2->RebinX(5,objname_out);
-			      }
+                            if (verbose>1) printf (" basename no rebin: %s\n",basename.Data());
+                            if (basename.EndsWith("_px")) { // still expects projection
+                                // make projection first and then rebin
+                                basename = p_objname(0,len-9); // remove "_px_rebin" at the end of string
+                                if(verbose>1) printf (" basename no rebin no px: %s\n",basename.Data());
+                                TH1* tmp_pr = (TH1*) it_f->Get(basename.Data());
+                                hnd = make_projection(tmp_pr,'x');
+                                if (verbose>1) printf("basename: %s , proj x %c \n",basename.Data(), proj);
+                                delete tmp_pr;
+                            } else {
+                                hnd = (TH1*) it_f->Get(basename.Data());
+                                if (verbose>1) printf("basename: %s , proj %c \n",basename.Data(), proj);
+                            }
+                            // rebin with ptz
+                            // if (doXsecNormalization) normalize(hnd);
+                            // o=hnd->Rebin(22,objname_out,bins);
+                            // // divide by bin width
+                            // for (int ibin =1; ibin<=o->GetNbinsX(); ibin++ ){
+                            //     o->SetBinContent(ibin,o->GetBinContent(ibin)/o->GetBinWidth(ibin));
+                            // }
+                            if (isProfile(hnd)) {
+                                int dim=hnd->GetDimension();
+                                if (dim==1) {
+                                    // profile 1D rebin
+                                    TProfile* p = (TProfile*)hnd;
+                                    o=p->Rebin(5,objname_out);
+                                } else {
+                                    // profile 2D rebin
+                                    TProfile2D* p2 = (TProfile2D*)hnd;
+                                    o=p2->RebinX(5,objname_out);
+                                }
+                            }
+                            o->SetName(objname_out);
                         }
                         delete hnd;
                         if (is_empty(o,objname,objname_out)) continue;
@@ -352,13 +370,16 @@ class OutlierRemoval{
                     //all_obj_names.push_back(dirname+name+"_pu");
                     //all_obj_names.push_back(dirname+name+"_pv");
                 }
-                // rebin pt as used ptz measurement
                 if (doRebin) {
-		  //if ( name.EqualTo("pt") || name.EqualTo("h_qt") ) {
-		  //    all_obj_names.push_back(dirname+name+"_rebin");
-		  //}
-		  if (cl->InheritsFrom("TProfile2D"))
-		    all_obj_names.push_back(dirname+name+"_rebin");
+                    // rebin pt as used ptz measurement
+                    //if ( name.EqualTo("pt") || name.EqualTo("h_qt") ) {
+                    //    all_obj_names.push_back(dirname+name+"_rebin");
+                    //}
+                    // rebin pt as for ai moments
+                    if ( name.BeginsWith("p_qtVy_") && cl->InheritsFrom("TProfile2D") ) {
+                        all_obj_names.push_back(dirname+name+"_rebin"); // 2D rebin
+                        all_obj_names.push_back(dirname+name+"_px_rebin"); // make projection and 1D rebin
+                    }
                 }
                 if (doTest && all_obj_names.size()==2) break; // for fast merger testing
             }
@@ -389,7 +410,7 @@ class OutlierRemoval{
             // Test if object is empty
             // FIXME: use exceptions
             if (o==0){
-                printf(" skipping object because there is none\n with name:  %s\n objname_out: %s\n", objname, objname_out);
+                printf(" skipping object because there is no object\n with name:  %s\n objname_out: %s\n", objname, objname_out);
                 return true;
             }
             return false;
@@ -1037,7 +1058,7 @@ int main(int argc, char * argv[]){
         ("o,outlier"         , "Add median and outlier removal (by default only avarage)"  )
         ("x,x-section"       , "Normalize histograms to Xsection."                         )
         ("p,2D-proj"         , "Make 2d projections and outliers for 2D."                  )
-        ("r,rebin"           , "Add pt histograms with Z pt LHC 7TeV rebin."               )
+        ("r,rebin"           , "Change binning of profiles (merge by 5)."                  ) //"Add pt histograms with Z pt LHC 7TeV rebin."               )
         ("c,cuba"            , "Add all histograms from cubature integration."             )
         ("n,NaN-interpolate" , "Find NaNs and interpolate"                                 )
         ("v,verbose"         , "Increase verbosity (more v the more chaty (max=vvvvvvv))." )
