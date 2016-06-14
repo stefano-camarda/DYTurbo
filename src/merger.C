@@ -130,12 +130,17 @@ class OutlierRemoval{
                             hnd = (TH1*) it_f->Get(basename.Data());
                             if (verbose>1) printf("basename: %s , proj %c \n",basename.Data(), proj);
                             // rebin
-                            if (doXsecNormalization) normalize(hnd);
-                            o=hnd->Rebin(22,objname_out,bins);
-                            // divide by bin width
-                            for (int ibin =1; ibin<=o->GetNbinsX(); ibin++ ){
-                                o->SetBinContent(ibin,o->GetBinContent(ibin)/o->GetBinWidth(ibin));
-                            }
+                            //if (doXsecNormalization) normalize(hnd);
+                            //o=hnd->Rebin(22,objname_out,bins);
+                            //// divide by bin width
+                            //for (int ibin =1; ibin<=o->GetNbinsX(); ibin++ ){
+                            //    o->SetBinContent(ibin,o->GetBinContent(ibin)/o->GetBinWidth(ibin));
+                            //}
+			    if (isProfile(hnd))
+			      {
+				TProfile2D* p2 = (TProfile2D*)hnd;
+				o=p2->RebinX(5,objname_out);
+			      }
                         }
                         delete hnd;
                         if (is_empty(o,objname,objname_out)) continue;
@@ -349,9 +354,11 @@ class OutlierRemoval{
                 }
                 // rebin pt as used ptz measurement
                 if (doRebin) {
-                    if ( name.EqualTo("pt") || name.EqualTo("h_qt") ) {
-                        all_obj_names.push_back(dirname+name+"_rebin");
-                    }
+		  //if ( name.EqualTo("pt") || name.EqualTo("h_qt") ) {
+		  //    all_obj_names.push_back(dirname+name+"_rebin");
+		  //}
+		  if (cl->InheritsFrom("TProfile2D"))
+		    all_obj_names.push_back(dirname+name+"_rebin");
                 }
                 if (doTest && all_obj_names.size()==2) break; // for fast merger testing
             }
