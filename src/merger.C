@@ -16,8 +16,6 @@
 #include <vector>
 #include <set>
 #include <algorithm>
-#include <iostream>
-using namespace std;
 
 #include <TFile.h>
 #include <TH1.h>
@@ -246,7 +244,6 @@ class OutlierRemoval{
                         if(doOutlierRemoval){
                             // Second Loop -- discard outliers
                             if (verbose>1) printf("    Second Loop \n");
-			    cout << o_median->ClassName() << endl;
                             remove_outliers_from_profile(o_average, o_median, in_objs);
                             if (o_average==0){  delete_objs(in_objs); continue;}; // if not implemented 
                             o_average->SetName((name+"_outlier").Data());
@@ -765,12 +762,8 @@ class OutlierRemoval{
         void remove_outliers_from_profile(TH1* out, TH1* med, VecTH1 in_objs,bool isProf = true){
             if (med==0) return;
             int dim = med->GetDimension();
-	    cout << out->GetName() << "  " << med->GetName() << "  " << dim << endl;
-	    cout << med->ClassName() << endl;
 	    TProfile*   prof   = (isProf&&dim==1) ? (TProfile   *)out : 0;
             TProfile2D* prof2D = (isProf&&dim==2) ? (TProfile2D *)out : 0;
-	    cout << "check2" << endl;
-	    cout << isProfile(med) << "  " << med << endl;
             for ( auto b : loop_bins(med) ){
                 VecDbl v_sumw;
                 VecDbl v_sumwy;
@@ -783,7 +776,6 @@ class OutlierRemoval{
                     if (isProf && dim==1){
 		        //be careful!!! centr->GetBinContent gives the numerator of TProfile::GetBinContent
 		        TProfile * centr = (TProfile*) med;
-			cout << centr->GetName() << endl;
 			d = (centr->GetBinEntries(b) != 0) ? centr->At(b)/centr->GetBinEntries(b) : 0;
 		        s = centr->GetBinError(b) * TMath::Sqrt(in_objs.size());
 		        TProfile * test = (TProfile*) ith;
@@ -795,8 +787,6 @@ class OutlierRemoval{
                     } else if (isProf && dim==2) {
 		        //be careful!!! centr->GetBinContent gives the numerator of TProfile::GetBinContent
 		        TProfile2D * centr = (TProfile2D*) med;
-			cout << centr->GetName() << endl;
-			cout << isProfile(med) << endl;
 			d = (centr->GetBinEntries(b) != 0) ? centr->At(b)/centr->GetBinEntries(b) : 0;
 		        s = centr->GetBinError(b) * TMath::Sqrt(in_objs.size());
                         TProfile2D * test = (TProfile2D *) ith;
@@ -805,7 +795,6 @@ class OutlierRemoval{
                         //d -= (ent != 0) ? val/ent : 0;
                         val = test->GetBinContent(b);
                         d -= val;
-			printf("    b %d in_obj %s d %f s %f bc %f be %f \n", b, ith->GetName(), centr->GetBinContent(b), s, test->GetBinContent(b), test->GetBinError(b));
                     } else {
                         val = ith->GetBinContent(b);
                         d -= val;
@@ -955,13 +944,7 @@ class OutlierRemoval{
 	    TH1* tmp;
             bool isProf = isProfile(h);
             int dim = h->GetDimension();
-	    cout << "cloning " << newname << "  " << isProf << "  " << dim << endl;
-	    //if (isProfile(h) && dim == 1)
-	    //  tmp = (TH1*) ((TProfile*)h)->Clone(newname.Data());
-	    //if (isProfile(h) && dim == 2)
-	    //  tmp = (TH1*) ((TProfile2D*)h)->Clone(newname.Data());
-	    //else
-	      tmp = (TH1*) h->Clone(newname.Data());
+	    tmp = (TH1*) h->Clone(newname.Data());
             //tmp->SetDirectory(0);
             tmp->Reset();
             if (verbose>2) print_range(tmp);
