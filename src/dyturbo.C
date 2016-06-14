@@ -15,6 +15,10 @@
 #include <fstream>
 #include <vector>
 
+// CXX option parser: https://raw.githubusercontent.com/jarro2783/cxxopts/master/src/cxxopts.hpp
+#include "cxxopts.hpp"
+namespace po=cxxopts; // inspired by po = boost::program_options
+
 using namespace std;
 
 void print_head();
