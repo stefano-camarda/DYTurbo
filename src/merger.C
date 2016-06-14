@@ -93,7 +93,7 @@ class OutlierRemoval{
                 // Get one object from all files
                 VecTH1 in_objs;
                 for (auto it_fn : infilenames){
-                if (verbose>1) printf("filename: %s\n",it_fn.Data());
+		    if (verbose>1) printf("filename: %s\n",it_fn.Data());
                     TFile * it_f =TFile::Open(it_fn.Data(),"READ");
                     /// @todo: test if they are all same binning
                     // Create uniq name to avoid "Potential memory leak" warnings.
@@ -116,7 +116,7 @@ class OutlierRemoval{
                         if (verbose>1) printf("basename: %s , proj %c , objname out: %s \n",basename.Data(), proj, objname_out);
                         // Get original, which will be used to create projections
                         TH1* hnd = (TH1*) it_f->Get(basename.Data());
-                        if (is_empty(hnd,objname,objname_out)) continue;
+                        if ( proj != 'n' && is_empty(hnd,objname,objname_out)) continue;
                         if ( proj != 'n') {
                             // 2D -> X axis
                             o = make_projection(hnd,proj); // h2d->ProjectionX("dummy"); // ,-1,0,"e");
@@ -337,6 +337,7 @@ class OutlierRemoval{
                 // filter classes
                 TClass *cl = TClass::GetClass(key->GetClassName());
                 if (!cl->InheritsFrom( "TH1"      )) continue; // profiles and histograms of all dimensions
+		if (cl->InheritsFrom( "TH3"      )) continue; // skip 3d
                 TString name = key->GetName();
                 if (cl->InheritsFrom( "TH3"      )) {
                     // if is pt,y,M make projection to y,M
@@ -354,11 +355,11 @@ class OutlierRemoval{
                 }
                 // rebin pt as used ptz measurement
                 if (doRebin) {
-		  //if ( name.EqualTo("pt") || name.EqualTo("h_qt") ) {
-		  //    all_obj_names.push_back(dirname+name+"_rebin");
-		  //}
-		  if (cl->InheritsFrom("TProfile2D"))
-		    all_obj_names.push_back(dirname+name+"_rebin");
+		  //                    if ( name.EqualTo("pt") || name.EqualTo("h_qt") ) {
+		  //                        all_obj_names.push_back(dirname+name+"_rebin");
+		  //                    }
+		    if (cl->InheritsFrom("TProfile2D"))
+		       all_obj_names.push_back(dirname+name+"_rebin");
                 }
                 if (doTest && all_obj_names.size()==2) break; // for fast merger testing
             }
@@ -715,7 +716,11 @@ class OutlierRemoval{
                             if (doEntries){
                                 push_sorted(vals,entries);
                             } else {
+<<<<<<< HEAD
 			        push_sorted(vals,(entries == 0) ? 0 : value/entries); // make median from ratio
+=======
+                                push_sorted(vals,value/entries); // make median from ratio
+>>>>>>> merge-rebin
                                 push_sorted(entrs,entries);
                             }
                         } else push_sorted(vals,value);
@@ -750,8 +755,13 @@ class OutlierRemoval{
                         wsigma = TMath::Sqrt(wsigma);
                     }
                     if (wsigma!=0 && wcentr!=0){
+<<<<<<< HEAD
                         if (prof   !=0) set_profile_bin(prof   ,ibin,centr*wcentr,sigma*wcentr,wcentr,wsigma);
                         if (prof2D !=0) set_profile_bin(prof2D ,ibin,centr*wcentr,sigma*wcentr,wcentr,wsigma);
+=======
+                        if (prof   !=0) set_profile_bin(prof   ,ibin,centr/wcentr,sigma,wcentr,wsigma);
+                        if (prof2D !=0) set_profile_bin(prof2D ,ibin,centr/wcentr,sigma,wcentr,wsigma);
+>>>>>>> merge-rebin
                     }
                 } else {
                     tmp_m->SetBinContent( ibin, centr  );
