@@ -16,6 +16,8 @@
 #include <vector>
 #include <set>
 #include <algorithm>
+#include <iostream>
+using namespace std;
 
 #include <TFile.h>
 #include <TH1.h>
@@ -243,13 +245,16 @@ class OutlierRemoval{
                         output_objects.push_back(o_median);
                         // new median of entries
                         o_median = clone_empty(in_objs[0], (name+"_entries_median").Data() );
+			cout << "1 " << o_median->ClassName() << endl;
                         create_average_obj(o_median,in_objs,"median_entries");
+			cout << " 2 " << o_median->ClassName() << endl;
                         o_median->SetName((name)+"_entries_median");
                         if (verbose>2) printf("saving histogram %s with integral %f\n",o_median->GetName(), o_median->Integral());
                         output_objects.push_back(o_median);
                         if(doOutlierRemoval){
                             // Second Loop -- discard outliers
                             if (verbose>1) printf("    Second Loop \n");
+			    cout << o_median->ClassName() << endl;
                             remove_outliers_from_profile(o_average, o_median, in_objs);
                             if (o_average==0){  delete_objs(in_objs); continue;}; // if not implemented 
                             o_average->SetName((name+"_outlier").Data());
@@ -734,7 +739,7 @@ class OutlierRemoval{
                     if (isProf&&!doEntries){
                         wcentr = median (entrs);
                         wsigma = delta (entrs, wcentr, 0.68) / sqrtN;
-                        if (verbose>5) printf("   calculated median profile nom %f +- %f denom %f +- %f prof %f \n", centr, sigma, wcentr, wsigma, centr*wcentr);
+                        if (verbose>5) printf("   calculated median profile nom %f +- %f denom %f +- %f prof %f \n", centr*wcentr, sigma*wcentr, wcentr, wsigma, centr);
                     }
                 } else if (type.CompareTo("mean",TString::kIgnoreCase)==0){
                     centr = mean(vals);
@@ -765,11 +770,15 @@ class OutlierRemoval{
             remove_outliers_from_profile(hist,ref,in_objs, false);
         }
 
-        void remove_outliers_from_profile(TH1*out, TH1*med, VecTH1 in_objs,bool isProf = true){
+        void remove_outliers_from_profile(TH1* out, TH1* med, VecTH1 in_objs,bool isProf = true){
             if (med==0) return;
             int dim = med->GetDimension();
-            TProfile*   prof   = (isProf&&dim==1) ? (TProfile   *)out : 0;
+	    cout << out->GetName() << "  " << med->GetName() << "  " << dim << endl;
+	    cout << med->ClassName() << endl;
+	    TProfile*   prof   = (isProf&&dim==1) ? (TProfile   *)out : 0;
             TProfile2D* prof2D = (isProf&&dim==2) ? (TProfile2D *)out : 0;
+	    cout << "check2" << endl;
+	    cout << isProfile(med) << "  " << med << endl;
             for ( auto b : loop_bins(med) ){
                 VecDbl v_sumw;
                 VecDbl v_sumwy;
@@ -780,19 +789,31 @@ class OutlierRemoval{
                     double ent = 0;
                     double val = 0;
                     if (isProf && dim==1){
-                        TProfile * test = (TProfile*) ith;
+		        //be careful!!! centr->GetBinContent gives the numerator of TProfile::GetBinContent
+		        TProfile * centr = (TProfile*) med;
+			cout << centr->GetName() << endl;
+			d = (centr->GetBinEntries(b) != 0) ? centr->At(b)/centr->GetBinEntries(b) : 0;
+		        s = centr->GetBinError(b) * TMath::Sqrt(in_objs.size());
+		        TProfile * test = (TProfile*) ith;
                         //val = test->At (b);
                         ent = test->GetBinEntries (b);
-                        //d -= ent;
+                        //d -= (ent != 0) ? val/ent : 0;
                         val = test->GetBinContent(b);
                         d -= val;
                     } else if (isProf && dim==2) {
+		        //be careful!!! centr->GetBinContent gives the numerator of TProfile::GetBinContent
+		        TProfile2D * centr = (TProfile2D*) med;
+			cout << centr->GetName() << endl;
+			cout << isProfile(med) << endl;
+			d = (centr->GetBinEntries(b) != 0) ? centr->At(b)/centr->GetBinEntries(b) : 0;
+		        s = centr->GetBinError(b) * TMath::Sqrt(in_objs.size());
                         TProfile2D * test = (TProfile2D *) ith;
                         //val = test->At (b);
                         ent = test->GetBinEntries (b);
-                        //d -= ent;
+                        //d -= (ent != 0) ? val/ent : 0;
                         val = test->GetBinContent(b);
                         d -= val;
+			printf("    b %d in_obj %s d %f s %f bc %f be %f \n", b, ith->GetName(), centr->GetBinContent(b), s, test->GetBinContent(b), test->GetBinError(b));
                     } else {
                         val = ith->GetBinContent(b);
                         d -= val;
@@ -834,12 +855,18 @@ class OutlierRemoval{
 
         template<class T>
         void set_profile_bin(T* prof,int ibin, double centr, double sigma, double  wcentr, double  wsigma, int  N=1){
-            double p_centr2 = TMath::Power(centr/wcentr,2);
+	  /*
+	    double p_centr2 = TMath::Power(centr/wcentr,2);
             /// Propagate error to ratio
             double p_sigma2 = 0;
             p_sigma2+= TMath::Power( sigma  / centr  ,2);
-	    //p_sigma2+= TMath::Power( wsigma / wcentr ,2);
+	    p_sigma2+= TMath::Power( wsigma / wcentr ,2);
             p_sigma2*= p_centr2;
+	  */
+
+            double p_centr2 = (wcentr != 0) ? TMath::Power(centr/wcentr,2) : 0;
+            double p_sigma2 = (wcentr != 0) ? TMath::Power(sigma ,2)/TMath::Power(wcentr ,2) : 0;
+	    
             /// Error definition inside TProfile:
             ///
             /// ERR = spread/sqrt(Neff)
@@ -932,7 +959,17 @@ class OutlierRemoval{
 
         TH1* clone_empty(TH1* h,TString newname){
             if (verbose>2) printf( " empty clone %s \n", newname.Data());
-            TH1* tmp = (TH1*) h->Clone(newname.Data());
+	    //TH1* tmp = (TH1*) h->Clone(newname.Data());
+	    TH1* tmp;
+            bool isProf = isProfile(h);
+            int dim = h->GetDimension();
+	    cout << "cloning " << newname << "  " << isProf << "  " << dim << endl;
+	    //if (isProfile(h) && dim == 1)
+	    //  tmp = (TH1*) ((TProfile*)h)->Clone(newname.Data());
+	    //if (isProfile(h) && dim == 2)
+	    //  tmp = (TH1*) ((TProfile2D*)h)->Clone(newname.Data());
+	    //else
+	      tmp = (TH1*) h->Clone(newname.Data());
             //tmp->SetDirectory(0);
             tmp->Reset();
             if (verbose>2) print_range(tmp);
