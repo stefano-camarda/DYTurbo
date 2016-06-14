@@ -243,14 +243,6 @@ class OutlierRemoval{
                         if (dim>1&&!do2D) {delete_objs(in_objs); continue;}
                         o_median->SetName((name+"_median").Data());
                         output_objects.push_back(o_median);
-                        // new median of entries
-                        o_median = clone_empty(in_objs[0], (name+"_entries_median").Data() );
-			cout << "1 " << o_median->ClassName() << endl;
-                        create_average_obj(o_median,in_objs,"median_entries");
-			cout << " 2 " << o_median->ClassName() << endl;
-                        o_median->SetName((name)+"_entries_median");
-                        if (verbose>2) printf("saving histogram %s with integral %f\n",o_median->GetName(), o_median->Integral());
-                        output_objects.push_back(o_median);
                         if(doOutlierRemoval){
                             // Second Loop -- discard outliers
                             if (verbose>1) printf("    Second Loop \n");
