@@ -52,9 +52,10 @@ class plotter {
         // boson kinematic histograms
         TH1D * h_qt;
         TH1D * h_y ;
+        TH1D * h_m;
         TH2D * h_qtVy;
-        TH1D * h_Q;
-        TH3D * h_qtVyVQ;
+        TH2D * h_yVm;
+        //TH3D * h_qtVyVQ;
         // angular histograms
         bool doAiMoments;
         struct AiProf2D { TProfile2D* A[NMOM]; };
@@ -66,14 +67,14 @@ class plotter {
         //TH1D * h_phi;
         //TH1D * h_phi_lep;
         // final results
-        TH2D* qt_y_resum ;
-        TH2D* qt_y_ct    ;
-        TH2D* qt_y_lo    ;
-        TH2D* qt_y_real  ;
-        TH2D* qt_y_virt  ;
-        TH2D* qt_y_vv    ;
-        TH2D* qt_y_vj    ;
-        TH2D* qt_y_total ;
+        //TH2D* qt_y_resum ;
+        //TH2D* qt_y_ct    ;
+        //TH2D* qt_y_lo    ;
+        //TH2D* qt_y_real  ;
+        //TH2D* qt_y_virt  ;
+        //TH2D* qt_y_vv    ;
+        //TH2D* qt_y_vj    ;
+        //TH2D* qt_y_total ;
         // dipole helper variables
         struct XsecPoint {
             int ibin;
@@ -87,9 +88,10 @@ class plotter {
         int last_npdf;
         std::vector<TH1D     *> h_qt_PDF      ;
         std::vector<TH1D     *> h_y_PDF       ;
+        std::vector<TH2D     *> h_yVm_PDF       ;
         std::vector<TH2D     *> h_qtVy_PDF    ;
-        std::vector<TH3D     *> h_qtVyVQ_PDF  ;
-        std::vector<TH1D     *> h_Q_PDF       ;
+        //std::vector<TH3D     *> h_qtVyVQ_PDF  ;
+        std::vector<TH1D     *> h_m_PDF       ;
         //std::vector<TH1D     *> h_costh_PDF   ;
         //std::vector<TH1D     *> h_phi_PDF     ;
         //std::vector<TH1D     *> h_phi_lep_PDF ;
