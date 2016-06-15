@@ -123,7 +123,7 @@ doVJ   = false
 
 # Cuba settings
 cubaverbosity    = 0   # Cuba info messsages, from 0 to 3
-cubacores        = 4   # parallelization ( 0 = turn off)
+cubacores        = 0   # parallelization ( 0 = turn off)
 niterRES         = 5   # only for 2d and 3d cuhre integration of resummed part
 niterCT          = 5   # only for 2d and 3d cuhre integration of counter term
 niterVJ          = 10       # only for 3d cuhre integration of V+J
