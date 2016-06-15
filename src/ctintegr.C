@@ -53,7 +53,7 @@ integrand_t ctintegrandMC(const int &ndim, const double x[], const int &ncomp, d
   double jac = 1.;
 
   // Generate the boson invariant mass between the integration boundaries
-  double mcut = phasespace::qtmax/qtcut_.xqtcut_;
+  double mcut = (opts.xqtcut != 0.) ? phasespace::qtmax/opts.xqtcut : phasespace::mmax;
   double wsqmin = pow(phasespace::mmin,2);
   double wsqmax = pow(min(phasespace::mmax,mcut),2);
   if (wsqmin >= wsqmax)
@@ -90,7 +90,7 @@ integrand_t ctintegrandMC(const int &ndim, const double x[], const int &ncomp, d
   //In the fixed order calculation, integrate from qtcut to infinity
   double expy, expmy;
   double qtmn, qtmx;
-  double qtcut = qtcut_.xqtcut_*m;
+  double qtcut = max(opts.qtcut,opts.xqtcut*m);
   if (opts.fixedorder)
     {
       if (phasespace::qtmin > 0)
@@ -329,7 +329,7 @@ integrand_t ctintegrand3d(const int &ndim, const double x[], const int &ncomp, d
   double jac = 1.;
 
   // Generate the boson invariant mass between the integration boundaries
-  double mcut = phasespace::qtmax/qtcut_.xqtcut_;
+  double mcut = (opts.xqtcut != 0.) ? phasespace::qtmax/opts.xqtcut : phasespace::mmax;
   double wsqmin = pow(phasespace::mmin,2);
   double wsqmax = pow(min(phasespace::mmax,mcut),2);
   if (wsqmin >= wsqmax)
@@ -362,7 +362,7 @@ integrand_t ctintegrand3d(const int &ndim, const double x[], const int &ncomp, d
   
   //integrate between qtmin and qtmax
   //use qt2 to get the correct jacobian!
-  double qtcut = qtcut_.xqtcut_*m;
+  double qtcut = max(opts.qtcut,opts.xqtcut*m);
   double qtmn = max(qtcut, phasespace::qtmin);
   double cosh2y34=pow((exp(y)+exp(-y))*0.5,2);
   double kinqtlim = sqrt(pow(pow(energy_.sroot_,2)+m*m,2)/(4*pow(energy_.sroot_,2)*cosh2y34)-m*m);
@@ -508,7 +508,7 @@ integrand_t ctintegrand2d(const int &ndim, const double x[], const int &ncomp, d
   double jac = 1.;
 
   // Generate the boson invariant mass between the integration boundaries
-  double mcut = phasespace::qtmax/qtcut_.xqtcut_;
+  double mcut = (opts.xqtcut != 0.) ? phasespace::qtmax/opts.xqtcut : phasespace::mmax;
   double wsqmin = pow(phasespace::mmin,2);
   double wsqmax = pow(min(phasespace::mmax,mcut),2);
   if (wsqmin >= wsqmax)
@@ -541,7 +541,7 @@ integrand_t ctintegrand2d(const int &ndim, const double x[], const int &ncomp, d
   
   //factorised integration between qtmin and qtmax
   //use qt2 to get the correct jacobian!
-  double qtcut = qtcut_.xqtcut_*m;
+  double qtcut = max(opts.qtcut,opts.xqtcut*m);
   double qtmn = max(qtcut, phasespace::qtmin);
   double cosh2y34=pow((exp(y)+exp(-y))*0.5,2);
   double kinqtlim = sqrt(pow(pow(energy_.sroot_,2)+m*m,2)/(4*pow(energy_.sroot_,2)*cosh2y34)-m*m);
