@@ -217,6 +217,10 @@ void plotter::FillRealDipole(double p3[4], double p4[4], double wgt, int nd){
 #endif
     if (nd!=0 && wgt == 0 ) return; // make sure you have at least first one for kinematics
     if (nd == 5 || nd==6 ) { // use 0 dipole kinematics -- its always
+      //@Jakub !!!Be careful about this piece of code!!!
+      //for dipoles 5 and 6, all the variables should be reset to those of dipole 0,
+      //not only pt and y, but also A[i], costh, phi
+      //Luckily, this function is never called for dipoles 5 and 6, so this is not a bug
         qt = dipole_points[0] .qt;
         y  = dipole_points[0] .y;
     } else { // calculate pt and y for 0..4
