@@ -48,6 +48,7 @@ public:
   settings() {};
   void parse_options(int argc, char * argv[]);
   void readfromfile(const string fname);
+  void check_consitency();
 
   // private:
   void dumpAll();
@@ -55,6 +56,13 @@ public:
   void dumpD(string var, double val );
   void dumpS(string var, string val );
   void dumpB(string var, bool   val );
+
+  // string helpers
+  void ToLower(string &val){std::transform(val.begin(), val.end(), val.begin(), ::tolower);}
+  void ToUpper(string &val){std::transform(val.begin(), val.end(), val.begin(), ::toupper);}
+  vector<string> Tokenize(string val, char Delim=',');
+  // is number: http://stackoverflow.com/a/4654718
+  bool IsNumber(const string &s) {return !s.empty() && std::find_if(s.begin(),s.end(), [](char c) { return !std::isdigit(c); }) == s.end();}
 
   //process settings
   double sroot;

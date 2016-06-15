@@ -21,7 +21,7 @@ void settings::parse_options(int argc, char* argv[]){
             " Fast Drell-Yan Monte Carlo and quadrature integrator. \n\n"
             " NOTE: Command line options are overiding the default and config file settings."
             );
-    // hidden arguments
+    // Hidden arguments
     args.add_options("Hidden")
         ("conf_file"     , "Name of output file. ", po::value<string>()->default_value("")  )
     ;
@@ -29,7 +29,13 @@ void settings::parse_options(int argc, char* argv[]){
     args.add_options("")
         ("h,help"            , "Print this help and die."  )
         ("v,verbose"         , "Be verbose"                )
-        ("proc"              , "Set process [z0/wp/wm]"    , po::value<string>() )
+        ("p,proc"            , "Set process [z0/wp/wm]"                              , po::value<string>() )
+        ("c,collider"        , "Set beam conditions [tev2/lhc7/lhc8/lhc13/lhc14]"    , po::value<string>() )
+        ("t,term"            , "Set term [REAL,VIRT,CT,..]"                          , po::value<string>() )
+        ("r,seed"            , "Set random seed [integer]"                           , po::value<int>()    )
+        ("s,pdfset"          , "Set PDF set [LHAPDF name]"                           , po::value<string>() )
+        ("m,pdfvar"          , "Set PDF member [integer/all]"                        , po::value<string>() )
+
     ;
     // Parse
     try {
@@ -45,10 +51,90 @@ void settings::parse_options(int argc, char* argv[]){
     if (args.count("help")) {
         throw QuitProgram(args.help().c_str());
     }
+
     // load config file (or default settings)
     readfromfile      ( args["conf_file"].as<string>() );
     bins.readfromfile ( args["conf_file"].as<string>() );
-    // command line options are overiding the default and  config file settings.
+
+    // NOTE: Command line options are overiding the default and config file settings.
+    // verbose
+    if (args.count("verbose")) verbose=true;
+    // rseed
+    if (args.count("seed")) rseed=args["seed"].as<int>();
+
+    // proc
+    if (args.count("proc")) {
+        // FIXME: is it only needed to set proc or also mass and value?
+        string val=args["proc"].as<string>(); 
+        ToLower(val);
+        if        (val.compare("z0")){ nproc=3;
+        } else if (val.compare("wp")){ nproc=1;
+        } else if (val.compare("wm")){ nproc=2;
+        } else {
+            throw cxxopts::OptionException("Unsupported value of proc: "+val);
+        }
+    }
+    
+    // PDF
+    if (args.count("pdfset")) LHAPDFset=args["pdfset"].as<string>();
+    if (args.count("pdfvar")) {
+        // set default values
+        PDFerrors=false;
+        LHAPDFmember=0;
+        string val=args["pdfvar"].as<string>();
+        ToLower(val);
+        if   (val.compare("all")) { PDFerrors=true;
+        } else if (IsNumber(val)) { LHAPDFmember=stod(val);
+        } else {
+            throw cxxopts::OptionException("Unsupported value of pdfvar: "+val);
+        }
+    }
+
+    // Collider
+    if (args.count("collider")) {
+        string val=args["collider"].as<string>();
+        ToLower(val);
+        if        (val.compare("tev1"  )){ sroot=1.80e3; ih1=1; ih2=-1;
+        } else if (val.compare("tev2"  )){ sroot=1.96e3; ih1=1; ih2=-1;
+        } else if (val.compare("lhc7"  )){ sroot=7.00e3; ih1=1; ih2=1;
+        } else if (val.compare("lhc8"  )){ sroot=8.00e3; ih1=1; ih2=1;
+        } else if (val.compare("lhc13" )){ sroot=13.0e3; ih1=1; ih2=1;
+        } else if (val.compare("lhc14" )){ sroot=14.0e3; ih1=1; ih2=1;
+        } else {
+            throw cxxopts::OptionException("Unsupported value of collider: "+val);
+        }
+    }
+
+    // term
+    if (args.count("term")) {
+        // first turn off all terms
+        doRES = doVV = doCT = doREAL = doVIRT = doLO = doVJ = false ;
+        string val=args["term"].as<string>();
+        ToUpper(val);
+        for (auto piece : Tokenize(val)) {
+            if (piece.compare("REAL")){ doREAL=true;
+            } else if ( piece.compare ( "VIRT"    ) ) { doVIRT=true;
+            } else if ( piece.compare ( "VV"      ) ) { doVV=true;   fixedorder=true;
+            } else if ( piece.compare ( "LO"      ) ) { doLO=true;
+            } else if ( piece.compare ( "VJ"      ) ) { doVJ=true;
+            } else if ( piece.compare ( "RES"     ) ) { doRES=true;  intDimRes=8;
+            } else if ( piece.compare ( "RES3D"   ) ) { doRES=true;  intDimRes=3;
+            } else if ( piece.compare ( "RES2D"   ) ) { doRES=true;  intDimRes=2;
+            } else if ( piece.compare ( "CT"      ) ) { doCT=true;   intDimCT=8;
+            } else if ( piece.compare ( "CT3D"    ) ) { doCT=true;   intDimCT=3;
+            } else if ( piece.compare ( "CT2D"    ) ) { doCT=true;   intDimCT=2;
+            } else if ( piece.compare ( "FIXCT"   ) ) { doCT=true;   intDimCT=8; fixedorder=true; 
+            } else if ( piece.compare ( "FIXCT3D" ) ) { doCT=true;   intDimCT=3; fixedorder=true; 
+            } else if ( piece.compare ( "FIXCT2D" ) ) { doCT=true;   intDimCT=2; fixedorder=true; 
+            } else {
+                throw cxxopts::OptionException("Unsupported value of term : "+piece);
+            }
+        }
+    }
+
+
+    // check consistency of settings
+    check_consitency();
 }
 
 void settings::readfromfile(const string fname){
@@ -163,6 +249,11 @@ void settings::readfromfile(const string fname){
     yrule              = in.GetNumber ( "yrule" );
     ptbinwidth         = in.GetBool ( "ptbinwidth" );
     ybinwidth          = in.GetBool ( "ybinwidth" );
+
+    return ;
+}
+
+void settings::check_consitency(){
 
     // additional conditions
     if (order != 1 && order != 2)
@@ -444,6 +535,22 @@ void settings::dumpS( string var,string val){
 void settings::dumpB( string var,bool val){
     printf( " %s = %s\n", var.c_str(), val ? "true" : "false" );
 }
+
+vector<string> settings::Tokenize(string val,char Delim){
+    vector<string> vec;
+    while (!val.empty()){
+        size_t pos = 0;
+        // find delim
+        pos = val.find(Delim);
+        // get substring
+        string tmp = val.substr(0,pos);
+        // add to vector
+        if (!tmp.empty()) vec.push_back(tmp);
+        val = val.substr(pos+1);
+    }
+    return vec;
+}
+
 
 void binning::readfromfile(const string fname){
     InputParser in(fname);
