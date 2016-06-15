@@ -15,10 +15,6 @@
 #include <fstream>
 #include <vector>
 
-// CXX option parser: https://raw.githubusercontent.com/jarro2783/cxxopts/master/src/cxxopts.hpp
-#include "cxxopts.hpp"
-namespace po=cxxopts; // inspired by po = boost::program_options
-
 using namespace std;
 
 void print_head();
@@ -40,18 +36,20 @@ void normalise_result(double &value, double &error);
 
 double TotXSec ;
 
-int main( int argc , const char * argv[])
+int main( int argc , char * argv[])
 {
 
   double begin_time, end_time;
 
   /***********************************/
   //Initialization
-  string conf_file;
-  if (argc>1) {
-      conf_file = argv[1];
+  try {
+      dyturboinit(argc,argv);
+  } catch (QuitProgram &e) {
+      // print help and die
+      printf("%s \n",e.what());
+      return 0;
   }
-  dyturboinit(conf_file);
   /***********************************/
 
   /*****************************************/

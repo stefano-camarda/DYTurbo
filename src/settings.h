@@ -39,10 +39,14 @@ class InputParser {
         string Swhite;
 };
 
+// Simple program quiting exception
+struct QuitProgram : public std::runtime_error { QuitProgram(const char * msg) : std::runtime_error (msg) {}; };
+
 class settings
 {
 public:
   settings() {};
+  void parse_options(int argc, char * argv[]);
   void readfromfile(const string fname);
 
   // private:

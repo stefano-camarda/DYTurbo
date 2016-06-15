@@ -26,13 +26,13 @@
 #include <cstring>
 
 //rewritten initialisation functions
-void dyturboinit(string conf_file)
+void dyturboinit(int argc, char * argv[])
 {
   banner();
   gaussinit_();             //initialisation of fortran gaussian quadrature nodes and weights
   coupling::SMparameters(); //initialisation of unused MCFM parameters
   
-  opts.readfromfile(conf_file.c_str());
+  opts.parse_options(argc,argv);
 
   dofill_.doFill_ = 0;
   
@@ -66,8 +66,6 @@ void dyturboinit(string conf_file)
   
   switching::init(); //switching function initialisation
   rescinit_();
-  //bins.init();
-  bins.readfromfile(conf_file.c_str());
   cubacores(opts.cubacores,1000000);   //< set number of cores (move this to cubainit)
   cubaexit((void (*)()) exitfun,NULL); //< merge at the end of the run
   // histogram output

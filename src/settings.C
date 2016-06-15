@@ -6,8 +6,50 @@
 #include "settings.h"
 #include "interface.h"
 
+// CXX option parser: https://raw.githubusercontent.com/jarro2783/cxxopts/master/src/cxxopts.hpp
+#include "cxxopts.hpp"
+namespace po=cxxopts; // inspired by po = boost::program_options
+//#define PRINT_HELP(RTN) do {printf("%s\n",args.help({""}).c_str()); throw Parsing ;} while (false)
+
+
 settings opts;
 binning bins;
+
+void settings::parse_options(int argc, char* argv[]){
+    // Declare the supported options.
+    po::Options args(argv[0], " [config.in] \n\n"
+            " Fast Drell-Yan Monte Carlo and quadrature integrator. \n\n"
+            " NOTE: Command line options are overiding the default and config file settings."
+            );
+    // hidden arguments
+    args.add_options("Hidden")
+        ("conf_file"     , "Name of output file. ", po::value<string>()->default_value("")  )
+    ;
+    // Program options
+    args.add_options("")
+        ("h,help"            , "Print this help and die."  )
+        ("v,verbose"         , "Be verbose"                )
+        ("proc"              , "Set process [z0/wp/wm]"    , po::value<string>() )
+    ;
+    // Parse
+    try {
+        args.parse_positional( std::vector<string>({"conf_file"}) );
+        args.parse(argc,argv);
+    }
+    catch (cxxopts::OptionException &e){
+        printf("%s\n", args.help().c_str());
+        printf("Bad arguments: %s \n",e.what());
+        throw e;
+    }
+    // Print help and die
+    if (args.count("help")) {
+        throw QuitProgram(args.help().c_str());
+    }
+    // load config file (or default settings)
+    readfromfile      ( args["conf_file"].as<string>() );
+    bins.readfromfile ( args["conf_file"].as<string>() );
+    // command line options are overiding the default and  config file settings.
+}
 
 void settings::readfromfile(const string fname){
     //read input settings from file
