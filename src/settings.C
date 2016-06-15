@@ -64,14 +64,14 @@ void settings::parse_options(int argc, char* argv[]){
 
     // proc
     if (args.count("proc")) {
-        // FIXME: is it only needed to set proc or also mass and value?
+        // FIXME: is it only needed to set proc or also mass and scale values?
         string val=args["proc"].as<string>(); 
         ToLower(val);
-        if        (val.compare("z0")){ nproc=3;
-        } else if (val.compare("wp")){ nproc=1;
-        } else if (val.compare("wm")){ nproc=2;
+        if        (val == "z0"){ nproc=3;
+        } else if (val == "wp"){ nproc=1;
+        } else if (val == "wm"){ nproc=2;
         } else {
-            throw cxxopts::OptionException("Unsupported value of proc: "+val);
+            throw QuitProgram("Unsupported value of proc: "+val);
         }
     }
     
@@ -83,10 +83,10 @@ void settings::parse_options(int argc, char* argv[]){
         LHAPDFmember=0;
         string val=args["pdfvar"].as<string>();
         ToLower(val);
-        if   (val.compare("all")) { PDFerrors=true;
+        if   (val=="all") { PDFerrors=true;
         } else if (IsNumber(val)) { LHAPDFmember=stod(val);
         } else {
-            throw cxxopts::OptionException("Unsupported value of pdfvar: "+val);
+            throw QuitProgram("Unsupported value of pdfvar: "+val);
         }
     }
 
@@ -94,14 +94,14 @@ void settings::parse_options(int argc, char* argv[]){
     if (args.count("collider")) {
         string val=args["collider"].as<string>();
         ToLower(val);
-        if        (val.compare("tev1"  )){ sroot=1.80e3; ih1=1; ih2=-1;
-        } else if (val.compare("tev2"  )){ sroot=1.96e3; ih1=1; ih2=-1;
-        } else if (val.compare("lhc7"  )){ sroot=7.00e3; ih1=1; ih2=1;
-        } else if (val.compare("lhc8"  )){ sroot=8.00e3; ih1=1; ih2=1;
-        } else if (val.compare("lhc13" )){ sroot=13.0e3; ih1=1; ih2=1;
-        } else if (val.compare("lhc14" )){ sroot=14.0e3; ih1=1; ih2=1;
+        if        (val == "tev1"  ){ sroot=1.80e3; ih1=1; ih2=-1;
+        } else if (val == "tev2"  ){ sroot=1.96e3; ih1=1; ih2=-1;
+        } else if (val == "lhc7"  ){ sroot=7.00e3; ih1=1; ih2=1;
+        } else if (val == "lhc8"  ){ sroot=8.00e3; ih1=1; ih2=1;
+        } else if (val == "lhc13" ){ sroot=13.0e3; ih1=1; ih2=1;
+        } else if (val == "lhc14" ){ sroot=14.0e3; ih1=1; ih2=1;
         } else {
-            throw cxxopts::OptionException("Unsupported value of collider: "+val);
+            throw QuitProgram("Unsupported value of collider: "+val);
         }
     }
 
@@ -112,22 +112,22 @@ void settings::parse_options(int argc, char* argv[]){
         string val=args["term"].as<string>();
         ToUpper(val);
         for (auto piece : Tokenize(val)) {
-            if (piece.compare("REAL")){ doREAL=true;
-            } else if ( piece.compare ( "VIRT"    ) ) { doVIRT=true;
-            } else if ( piece.compare ( "VV"      ) ) { doVV=true;   fixedorder=true;
-            } else if ( piece.compare ( "LO"      ) ) { doLO=true;
-            } else if ( piece.compare ( "VJ"      ) ) { doVJ=true;
-            } else if ( piece.compare ( "RES"     ) ) { doRES=true;  intDimRes=8;
-            } else if ( piece.compare ( "RES3D"   ) ) { doRES=true;  intDimRes=3;
-            } else if ( piece.compare ( "RES2D"   ) ) { doRES=true;  intDimRes=2;
-            } else if ( piece.compare ( "CT"      ) ) { doCT=true;   intDimCT=8;
-            } else if ( piece.compare ( "CT3D"    ) ) { doCT=true;   intDimCT=3;
-            } else if ( piece.compare ( "CT2D"    ) ) { doCT=true;   intDimCT=2;
-            } else if ( piece.compare ( "FIXCT"   ) ) { doCT=true;   intDimCT=8; fixedorder=true; 
-            } else if ( piece.compare ( "FIXCT3D" ) ) { doCT=true;   intDimCT=3; fixedorder=true; 
-            } else if ( piece.compare ( "FIXCT2D" ) ) { doCT=true;   intDimCT=2; fixedorder=true; 
+            if        ( piece == "REAL"     ) { doREAL=true;
+            } else if ( piece ==  "VIRT"    ) { doVIRT=true;
+            } else if ( piece ==  "VV"      ) { doVV=true;   fixedorder=true;
+            } else if ( piece ==  "LO"      ) { doLO=true;
+            } else if ( piece ==  "VJ"      ) { doVJ=true;
+            } else if ( piece ==  "RES"     ) { doRES=true;  intDimRes=8;
+            } else if ( piece ==  "RES3D"   ) { doRES=true;  intDimRes=3;
+            } else if ( piece ==  "RES2D"   ) { doRES=true;  intDimRes=2;
+            } else if ( piece ==  "CT"      ) { doCT=true;   intDimCT=8;
+            } else if ( piece ==  "CT3D"    ) { doCT=true;   intDimCT=3;
+            } else if ( piece ==  "CT2D"    ) { doCT=true;   intDimCT=2;
+            } else if ( piece ==  "FIXCT"   ) { doCT=true;   intDimCT=8; fixedorder=true; 
+            } else if ( piece ==  "FIXCT3D" ) { doCT=true;   intDimCT=3; fixedorder=true; 
+            } else if ( piece ==  "FIXCT2D" ) { doCT=true;   intDimCT=2; fixedorder=true; 
             } else {
-                throw cxxopts::OptionException("Unsupported value of term : "+piece);
+                throw QuitProgram("Unsupported value of term : "+piece);
             }
         }
     }

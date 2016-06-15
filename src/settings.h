@@ -40,7 +40,7 @@ class InputParser {
 };
 
 // Simple program quiting exception
-struct QuitProgram : public std::runtime_error { QuitProgram(const char * msg) : std::runtime_error (msg) {}; };
+struct QuitProgram : public std::runtime_error { QuitProgram(string msg) : std::runtime_error (msg) {}; };
 
 class settings
 {
