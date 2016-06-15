@@ -378,7 +378,7 @@ class OutlierRemoval{
                     // rebin pt as for ai moments
                     if ( name.BeginsWith("p_qtVy_") && cl->InheritsFrom("TProfile2D") ) {
                         all_obj_names.push_back(dirname+name+"_rebin"); // 2D rebin
-                        all_obj_names.push_back(dirname+name+"_px_rebin"); // make projection and 1D rebin
+			//all_obj_names.push_back(dirname+name+"_px_rebin"); // make projection and 1D rebin
                     }
                 }
                 if (doTest && all_obj_names.size()==2) break; // for fast merger testing
@@ -864,24 +864,61 @@ class OutlierRemoval{
 
         template<class T>
         void set_profile_bin(T* prof,int ibin, double centr, double sigma, double  wcentr, double  wsigma, int  N=1){
-	  /*
-	    double p_centr2 = TMath::Power(centr/wcentr,2);
-            /// Propagate error to ratio
-            double p_sigma2 = 0;
-            p_sigma2+= TMath::Power( sigma  / centr  ,2);
-	    p_sigma2+= TMath::Power( wsigma / wcentr ,2);
-            p_sigma2*= p_centr2;
-	  */
 
+	    //squared Bin Content
             double p_centr2 = (wcentr != 0) ? TMath::Power(centr/wcentr,2) : 0;
+	    //squared Bin Error
             double p_sigma2 = (wcentr != 0) ? TMath::Power(sigma ,2)/TMath::Power(wcentr ,2) : 0;
 	    
             /// Error definition inside TProfile:
-            ///
-            /// ERR = spread/sqrt(Neff)
-            /// spread = sqrt(abs(  sumwyy/sumw - p_centr2 ) )
-            /// Neff = sumw2 / sumww
-            ///
+	    /******************************************/
+            // Formulas for w_i = 1
+	    // Definitions:
+	    // suma = sum_i a_i    ---> (=centr)
+	    // suma2 = sum_i a_i^2
+	    // sumw = N            ---> (=wcentr)
+	    // sumw2 = N           ---> (=wsigma^2)
+	    // Calculated mean, variance, and standard error of the mean:
+	    // mean = sum_i a_i/N = suma/sumw
+	    // var2 = sum_i a_i^2/N  - (sum_i a_i/N)^2 = suma2/sumw - suma/sumw
+	    // sigma2 = var2/Neff = (sum_i a_i^2/N^2  - (sum_i a_i)^2/N^3) = (suma2/sumw - (suma/sumw)^2) / (sumw^2/sumw2) ---> (sigma^2/wcentr^2)
+	    // Calculate suma2 from inputs
+	    // ---> suma2 = sigma^2/wcentr^2*N^2 + centr^2/N
+	    /******************************************/
+
+	    /******************************************/
+            // General formulas
+	    // Definitions:
+	    // suma = sum_i a_i w_i    ---> (=centr)
+	    // suma2 = sum_i a_i^2 w_i
+	    // sumw = sum_i w_i        ---> (=wcentr)
+	    // sumw2 = sum_i w_i^2     ---> (=wsigma^2)
+	    // Calculated mean, variance, and standard error of the mean:
+	    // mean = sum_i a_i w_ i / sum_i w_i = suma/sumw
+	    // var2 = sum_i a_i^2 w_i / sum_i w_i  - (sum_i a_i w_i / sum_i w_i)^2 = suma2/sumw - (suma/sumw)^2
+	    // sigma2 = var2/Neff = (sum_i a_i^2 w_i / sum_i w_i  - (sum_i a_i / sum_i w_i)^2) / [(sum_i w_i)^2 / sum w_i^2 ] = (suma2/sumw - (suma/sumw)^2) / (sumw^2/sumw2) ---> (sigma^2/wcentr^2)
+	    // Calculate suma2 from inputs
+	    // ---> suma2 = ((sigma^2/wcentr^2)*(wcentr^2/wsigma^2) + (centr/wcentr)^2)*wcentr
+	    /******************************************/
+
+	    /******************************************/
+	    // Translation to ROOT variables
+	    // sumwy = suma                     ---> (=centr)
+	    // sumwyy = suma2                   ---> (=((sigma^2/wcentr^2)*(wcentr^2/wsigma^2) + centr/wcentr)*wcentr)
+	    // sumw = sumw                      ---> (=wcentr)
+	    // sumww = sumw2                    ---> (=wsigma^2)
+
+	    // Neff = (sum w_i)^2 / sum w_i^2 = sumw2/sumw^2   ---> (wcentr^2/wsigma^2)
+	    // pcentr = sum_i a_i * w_i/ sum w_i = suma/sumw   ---> (centr / wcentr)
+            // spread = sqrt(var2) = sqrt(abs(  sumwyy/sumw - p_centr2 ) )
+
+	    // GetBinContent in ROOT is:
+	    // BIN = sumwy/sumw
+	    
+	    // GetBinError in ROOT is:
+            // ERR = sqrt(var2)/sqrt(Neff) = sqrt(abs(sumwyy/sumw - (sumwy/sumw)^2)/sqrt(sumww/sumw^2)
+	    /******************************************/
+	    
             /// ERR**2 = abs(sumwyy/sumw - p_centr2 ) * sumww / sumw2
             /// ERR**2 * sumw2 / sumww = abs(sumwyy/sumw - p_centr2)
             ///
@@ -894,11 +931,31 @@ class OutlierRemoval{
             /// sumwyy = ( p_sigma2 + p_centr2) * sumw
             /// or
             /// sumwyy = ( p_sigma2 - p_centr2) * sumw
-            double new_sumw   = wcentr;
-            double new_sumww  = wcentr*wcentr;
-            double new_sumwy  = centr;
+	    // Check this sign definition, the condition should be (sumwyy/sumw - p_centr2) < 0 ???
             int sign= (wcentr<0 ? -1: 1 );
-            double new_sumwyy = (p_sigma2+sign*p_centr2)*TMath::Abs(wcentr);
+
+	    //old formulas
+            //double new_sumw   = wcentr;
+            //double new_sumww  = wcentr*wcentr;
+            //double new_sumwy  = centr;
+            //double new_sumwyy = (p_sigma2+sign*p_centr2)*TMath::Abs(wcentr);
+	    
+            double new_sumw   = wcentr;
+            double new_sumww  = wsigma*wsigma;
+            double new_sumwy  = centr;
+            double new_sumwyy = (wsigma != 0 && wcentr != 0) ? (pow(sigma/wcentr,2)*(pow(wcentr,2)/pow(wsigma,2)) + sign*pow(centr/wcentr,2))*fabs(wcentr) : 0.;
+
+	    // GetBinContent in ROOT is:
+	    // BIN = sumwy/sumw
+	    
+	    // GetBinError in ROOT is:
+            // ERR = sqrt(var2)/sqrt(Neff) = sqrt(abs(sumwyy/sumw - (sumwy/sumw)^2)/sqrt(sumww/sumw^2)
+	    
+	    prof-> SetBinEntries        ( ibin       , new_sumw );
+            prof-> GetBinSumw2()->SetAt ( new_sumww  , ibin   );
+            prof-> SetAt                ( new_sumwy  , ibin   );
+            prof-> GetSumw2()->SetAt    ( new_sumwyy , ibin   );
+
             /// cross check
             double Neff= new_sumww/(new_sumw*new_sumw);
             double spread = TMath::Abs(new_sumwyy/new_sumw - TMath::Power(new_sumwy/new_sumw,2));
@@ -909,11 +966,7 @@ class OutlierRemoval{
                     centr, sigma,
                     wcentr, wsigma, 
                     TMath::Sqrt(p_centr2), TMath::Sqrt(p_sigma2),ERR );
-            prof-> SetBinEntries        ( ibin       , new_sumw );
-            prof-> GetBinSumw2()->SetAt ( new_sumww  , ibin   );
-            prof-> SetAt                ( new_sumwy  , ibin   );
-            prof-> GetSumw2()->SetAt    ( new_sumwyy , ibin   );
-            return;
+	    return;
         }
 
         bool isProfile(TH1*h){
@@ -987,7 +1040,7 @@ class OutlierRemoval{
             if (proj == 'x'){
                 if (isProf) { // assuming 2D profile
                     TProfile2D* pr2D=(TProfile2D*) orig;
-                    o = pr2D->ProfileX("dummy",0,0,"g");
+                    o = pr2D->ProfileX("dummy",0,-1,"g");
                 } else { // normal histogram (2D or 3D)
                     if (dim==2){
                         TH2 *h2 = (TH2 *) orig;
@@ -1000,7 +1053,7 @@ class OutlierRemoval{
             } else if (proj == 'y'){
                 if (isProf) { // assuming 2D profile
                     TProfile2D* pr2D=(TProfile2D*) orig;
-                    o = pr2D->ProfileY("dummy",0,0,"g");
+                    o = pr2D->ProfileY("dummy",0,-1,"g");
                 } else { // normal histogram (2D or 3D)
                     if (dim==2){
                         TH2 *h2 = (TH2 *) orig;
