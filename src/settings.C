@@ -259,7 +259,6 @@ void settings::readfromfile(const string fname){
     opts_.approxpdf_    = in.GetNumber ( "opts_approxpdf" ); //0
     opts_.pdfintervals_ = in.GetNumber ( "opts_pdfintervals" ); //100
     evolmode           = in.GetNumber  ("evolmode");
-    opts_.fixedorder_  = fixedorder;
     bintaccuracy       = in.GetNumber ( "bintaccuracy" );
     mellinintervals    = in.GetNumber ( "mellinintervals" );
     mellinrule         = in.GetNumber ( "mellinrule" );
