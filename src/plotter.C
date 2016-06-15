@@ -101,10 +101,10 @@ void plotter::Init(){
     //
     int diff_qt_n   = bins.hist_qt_bins .size() -1 ;
     int diff_y_n    = bins.hist_y_bins  .size() -1 ;
-    int diff_Q_n    = bins.hist_Q_bins  .size() -1 ;
+    int diff_Q_n    = bins.hist_m_bins  .size() -1 ;
     double * diff_qt_array   = &(bins.hist_qt_bins [0]);
     double * diff_y_array    = &(bins.hist_y_bins  [0]);
-    double * diff_Q_array    = &(bins.hist_Q_bins  [0]);
+    double * diff_Q_array    = &(bins.hist_m_bins  [0]);
     // differential xsection and ai profiles
     h_qt     = new TH1D ("h_qt"     , "VB qt"     , diff_qt_n , diff_qt_array );
     h_y      = new TH1D ("h_y"      , "VB y"      , diff_y_n  , diff_y_array  );

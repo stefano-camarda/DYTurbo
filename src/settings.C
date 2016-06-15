@@ -8,8 +8,6 @@
 
 // CXX option parser: https://raw.githubusercontent.com/jarro2783/cxxopts/master/src/cxxopts.hpp
 #include "cxxopts.hpp"
-namespace po=cxxopts; // inspired by po = boost::program_options
-//#define PRINT_HELP(RTN) do {printf("%s\n",args.help({""}).c_str()); throw Parsing ;} while (false)
 
 
 settings opts;
@@ -27,14 +25,18 @@ void settings::parse_options(int argc, char* argv[]){
     ;
     // Program options
     args.add_options("")
-        ("h,help"            , "Print this help and die."  )
-        ("v,verbose"         , "Be verbose"                )
+        ("h,help"            , "Print this help and die."       )
+        ("v,verbose"         , "Be verbose"                     )
+        ("q,small-stat"      , "Set quick run with small stat." )
         ("p,proc"            , "Set process [z0/wp/wm]"                              , po::value<string>() )
         ("c,collider"        , "Set beam conditions [tev2/lhc7/lhc8/lhc13/lhc14]"    , po::value<string>() )
         ("t,term"            , "Set term [REAL,VIRT,CT,..]"                          , po::value<string>() )
         ("r,seed"            , "Set random seed [integer]"                           , po::value<int>()    )
         ("s,pdfset"          , "Set PDF set [LHAPDF name]"                           , po::value<string>() )
         ("m,pdfvar"          , "Set PDF member [integer/all]"                        , po::value<string>() )
+        ("qtbins"            , "Set equdistan binning for mass [N,lo,hi]"            , po::value<string>() )
+        ("ybins"             , "Set equdistan binning for qt [N,lo,hi]"              , po::value<string>() )
+        ("mbins"             , "Set equdistan binning for y [N,lo,hi]"               , po::value<string>() )
 
     ;
     // Parse
@@ -42,7 +44,7 @@ void settings::parse_options(int argc, char* argv[]){
         args.parse_positional( std::vector<string>({"conf_file"}) );
         args.parse(argc,argv);
     }
-    catch (cxxopts::OptionException &e){
+    catch (po::OptionException &e){
         printf("%s\n", args.help().c_str());
         printf("Bad arguments: %s \n",e.what());
         throw e;
@@ -61,6 +63,19 @@ void settings::parse_options(int argc, char* argv[]){
     if (args.count("verbose")) verbose=true;
     // rseed
     if (args.count("seed")) rseed=args["seed"].as<int>();
+    // small stat
+    if (args.count("small-stat")){
+        niterRES           = 1;
+        niterCT            = 1;
+        niterVJ            = 1;
+        vegasncallsRES     = 1e3;
+        vegasncallsVV      = 1e5;
+        vegasncallsCT      = 1e4;
+        vegasncallsLO      = 1e5;
+        vegasncallsREAL    = 1e5;
+        vegasncallsVIRT    = 1e5;
+        pcubaccuracy       = 0.5;
+    } 
 
     // proc
     if (args.count("proc")) {
@@ -120,10 +135,10 @@ void settings::parse_options(int argc, char* argv[]){
             } else if ( piece ==  "RES"     ) { doRES=true;  intDimRes=8;
             } else if ( piece ==  "RES3D"   ) { doRES=true;  intDimRes=3;
             } else if ( piece ==  "RES2D"   ) { doRES=true;  intDimRes=2;
-            } else if ( piece ==  "CT"      ) { doCT=true;   intDimCT=8;
+            } else if ( piece ==  "CT"      ) { doCT=true;   intDimCT=6; //< FIXME: ia 6D save ?
             } else if ( piece ==  "CT3D"    ) { doCT=true;   intDimCT=3;
             } else if ( piece ==  "CT2D"    ) { doCT=true;   intDimCT=2;
-            } else if ( piece ==  "FIXCT"   ) { doCT=true;   intDimCT=8; fixedorder=true; 
+            } else if ( piece ==  "FIXCT"   ) { doCT=true;   intDimCT=6; fixedorder=true; 
             } else if ( piece ==  "FIXCT3D" ) { doCT=true;   intDimCT=3; fixedorder=true; 
             } else if ( piece ==  "FIXCT2D" ) { doCT=true;   intDimCT=2; fixedorder=true; 
             } else {
@@ -131,6 +146,11 @@ void settings::parse_options(int argc, char* argv[]){
             }
         }
     }
+
+    //binning
+    parse_binning("qtbins" , bins.qtbins ,args);
+    parse_binning("ybins"  , bins.ybins  ,args);
+    parse_binning("mbins"  , bins.mbins  ,args);
 
 
     // check consistency of settings
@@ -177,10 +197,10 @@ void settings::readfromfile(const string fname){
     Zcc            = in.GetNumber ( "Zcc"        );
     Zss            = in.GetNumber ( "Zss"        );
     Zbb            = in.GetNumber ( "Zbb"        );
-    ylow           = in.GetNumber ( "ylow"            ); //2
-    yhigh          = in.GetNumber ( "yhigh"           ); //2.4
-    mlow           = in.GetNumber ( "mlow"            ); //66.
-    mhigh          = in.GetNumber ( "mhigh"           ); //116.
+    //ylow           = in.GetNumber ( "ylow"            ); //2
+    //yhigh          = in.GetNumber ( "yhigh"           ); //2.4
+    //mlow           = in.GetNumber ( "mlow"            ); //66.
+    //mhigh          = in.GetNumber ( "mhigh"           ); //116.
     dampk          = in.GetNumber ( "dampk"           );
     dampdelta      = in.GetNumber ( "dampdelta"           );
     dampmode       = in.GetNumber ( "dampmode"           );
@@ -356,6 +376,45 @@ void settings::check_consitency(){
 	resint3d = false;
 	resintvegas = true;
       }
+
+    // -- binning
+    // check bins size
+    if ( bins.qtbins .size() < 2) throw QuitProgram("Option `qtbins` needs at least 2 items ");
+    if ( bins.ybins  .size() < 2) throw QuitProgram("Option `ybins`  needs at least 2 items ");
+    if ( bins.mbins  .size() < 2) throw QuitProgram("Option `mbins`  needs at least 2 items ");
+    // check sorting
+    sort( bins.qtbins .begin () , bins.qtbins .end () ) ;
+    sort( bins.ybins  .begin () , bins.ybins  .end () ) ;
+    sort( bins.mbins  .begin () , bins.mbins  .end () ) ;
+    // plotmode
+    ToLower(bins.plotmode);
+    // set histogram bins
+    bins.hist_qt_bins = bins.qtbins ;
+    bins.hist_y_bins  = bins.ybins ;
+    bins.hist_m_bins  = bins.mbins ;
+    // integration boundaries
+    // FIXME: where is this used ?
+    ylow  = bins.ybins.front();
+    yhigh = bins.ybins.back();
+    mlow  = bins.mbins.front();
+    mhigh = bins.mbins.back();
+    // plot mode consitency with integration
+    if ( bins.plotmode=="fill" && 
+         ( resint2d || resint3d || ctint2d || ctint3d )
+       ) {
+        printf ("Warning: plotmode: Filling not work for quadrature integration. I am switching to integrate.\n");
+        bins.plotmode="integrate";
+    }
+    if (bins.plotmode=="fill"){ 
+        // integration boundaries are max and minimum
+        bins.qtbins = { bins.qtbins .front(), bins.qtbins .back() };
+        bins.ybins  = { bins.ybins  .front(), bins.ybins  .back() };
+        bins.mbins  = { bins.mbins  .front(), bins.mbins  .back() };
+    } else if (bins.plotmode=="integrate"){
+        // keep integration bins same as plotting (quadrature)
+    } else {
+        throw QuitProgram("Unsupported value of plotmode : "+bins.plotmode);
+    }
 
     return ;
 }
@@ -558,14 +617,47 @@ vector<string> settings::Tokenize(string val,char Delim){
     return vec;
 }
 
+bool settings::IsNumber(const string &s) {
+    double dummy;
+    try {
+        dummy = stod(s);
+        return true;
+    } catch (const std::exception &e){
+        return false;
+    }
+}
+
+void settings::parse_binning(string name, vector<double> &bins, po::Options &args){
+    if (args.count(name)) {
+        string e("Unsupported value of "+name+" : need 3 numbers seperated by comma: 'N,lo,hi' ");
+        string val=args[name.c_str()].as<string>();
+        ToLower(val);
+        vector<string> vec = Tokenize(val);
+        // check value
+        if (vec.size()!=3) throw QuitProgram(e+" not 3 numbers.");
+        for (auto s : vec) if (!IsNumber(s))  throw QuitProgram(e+" not numbers.");
+        // retrieve N,lo,hi
+        int N = stod(vec[0]);
+        double lo = stod(vec[1]);
+        double hi = stod(vec[2]);
+        if (lo>hi)  throw QuitProgram(e+" lo is more then hi.");
+        if (N<1)  throw QuitProgram(e+" N is not at least 1.");
+        // make binning
+        bins.clear();
+        for (double loedge=lo; loedge<=hi; loedge+=(hi-lo)/double(N)) bins.push_back(loedge);
+    }
+}
+
 
 void binning::readfromfile(const string fname){
     InputParser in(fname);
-    qtbins       .clear(); in.GetVectorDouble( "qtbins"      , qtbins       );
-    ybins        .clear(); in.GetVectorDouble( "ybins"       , ybins        );
-    hist_qt_bins .clear(); in.GetVectorDouble( "plot_qtbins" , hist_qt_bins );
-    hist_y_bins  .clear(); in.GetVectorDouble( "plot_ybins"  , hist_y_bins  );
-    hist_Q_bins  .clear(); in.GetVectorDouble( "plot_Qbins"  , hist_Q_bins  );
+    plotmode =  in.GetString( "plotmode");
+    qtbins       .clear(); in.GetVectorDouble( "qt_bins"      , qtbins       );
+    ybins        .clear(); in.GetVectorDouble( "y_bins"       , ybins        );
+    mbins        .clear(); in.GetVectorDouble( "m_bins"       , mbins        );
+    hist_qt_bins .clear();
+    hist_y_bins  .clear();
+    hist_m_bins  .clear();
     return;
 }
 

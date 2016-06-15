@@ -42,6 +42,12 @@ class InputParser {
 // Simple program quiting exception
 struct QuitProgram : public std::runtime_error { QuitProgram(string msg) : std::runtime_error (msg) {}; };
 
+// Forward declaration
+namespace cxxopts{
+    class Options;
+}
+namespace po=cxxopts; // inspired by po = boost::program_options
+
 class settings
 {
 public:
@@ -49,6 +55,7 @@ public:
   void parse_options(int argc, char * argv[]);
   void readfromfile(const string fname);
   void check_consitency();
+  void parse_binning(string name, vector<double> &vec, po::Options &args);
 
   // private:
   void dumpAll();
@@ -61,8 +68,8 @@ public:
   void ToLower(string &val){std::transform(val.begin(), val.end(), val.begin(), ::tolower);}
   void ToUpper(string &val){std::transform(val.begin(), val.end(), val.begin(), ::toupper);}
   vector<string> Tokenize(string val, char Delim=',');
-  // is number: http://stackoverflow.com/a/4654718
-  bool IsNumber(const string &s) {return !s.empty() && std::find_if(s.begin(),s.end(), [](char c) { return !std::isdigit(c); }) == s.end();}
+  // is number: http://stackoverflow.com/a/16575025
+  bool IsNumber(const string &s);
 
   //process settings
   double sroot;
@@ -225,11 +232,13 @@ class binning
   binning() {};
   void readfromfile(const string fname);
   // private:
+  string plotmode;
   vector <double> qtbins;
   vector <double> ybins;
+  vector <double> mbins;
   vector <double> hist_qt_bins;
   vector <double> hist_y_bins;
-  vector <double> hist_Q_bins;
+  vector <double> hist_m_bins;
 };
 
 

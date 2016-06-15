@@ -19,12 +19,14 @@ using namespace std;
 
 void print_head();
 void print_line();
+void print_mbin();
 void print_qtbin();
 void print_ybin();
 void print_result(double val, double err, double btime , double etime);
 
 ofstream outfile;
 void open_file();
+void save_mbin();
 void save_qtbin();
 void save_ybin();
 void save_result(vector <double> vals, double err);
@@ -106,134 +108,139 @@ int main( int argc , char * argv[])
   open_file();
   begin_time = clock_real();
   TotXSec = 0.;
-  for (vector<double>::iterator yit = bins.ybins.begin(); yit != bins.ybins.end()-1; yit++)
+  for (vector<double>::iterator mit = bins.mbins.begin(); mit != bins.mbins.end()-1; mit++)
   {
-      for (vector<double>::iterator qit = bins.qtbins.begin(); qit != bins.qtbins.end()-1; qit++)
+      for (vector<double>::iterator yit = bins.ybins.begin(); yit != bins.ybins.end()-1; yit++)
       {
+          for (vector<double>::iterator qit = bins.qtbins.begin(); qit != bins.qtbins.end()-1; qit++)
+          {
 
-      totval=toterror2=0;
-      totvals.clear();
-      for (int i = 0; i < opts.totpdf; i++)
-	totvals.push_back(0);
-      //Set integration boundaries
-      phasespace::setbounds(opts.mlow, opts.mhigh, *qit, *(qit+1), *yit, *(yit+1) );//  opts.ylow, opts.yhigh);
-      print_qtbin();
-      print_ybin();
-      save_qtbin();
-      save_ybin();
-      double  bb_time = clock_real();
+              totval=toterror2=0;
+              totvals.clear();
+              for (int i = 0; i < opts.totpdf; i++)
+                  totvals.push_back(0);
+              //Set integration boundaries
+              phasespace::setbounds(*mit, *(mit+1), *qit, *(qit+1), *yit, *(yit+1) );
+              print_mbin();
+              print_qtbin();
+              print_ybin();
+              save_mbin();
+              save_qtbin();
+              save_ybin();
+              double  bb_time = clock_real();
 
-      // resummation
-      if (opts.doRES) {
-          double b_time = clock_real();
-          if (opts.resint2d) {
-	    if (opts.resumcpp)
-	      //C++ resum
-	      rapint::cache(phasespace::ymin, phasespace::ymax);
-	      //end C++ resum
-	    else	    
-	      cacheyrapint_(phasespace::ymin, phasespace::ymax);
-	    resintegr2d(value, error);
-          }
-          if (opts.resint3d) resintegr3d(value, error);
-          if (opts.resintvegas) resintegrMC(value, error);
-          double e_time = clock_real();
-          normalise_result(value,error);
-          print_result(value,error,b_time,e_time);
-          hists.FillResult( plotter::Resum , value, error, e_time-b_time );
-          totval += value;
-          toterror2 += error*error;
-      }
-      // double virtual
-      if (opts.doVV) {
-          double b_time = clock_real();
-          doublevirtintegr(vals, error);
-          double e_time = clock_real();
-	  value = vals[0];
-          normalise_result(value,error);
-          print_result(value,error,b_time,e_time);
-	  hists.FillResult( plotter::VV , value, error, e_time-b_time );
-          totval += value;
-          toterror2 += error*error;
-	  vadd(totvals,vals);
-      }
-      // counter term
-      if (opts.doCT) {
-          double b_time = clock_real();
-	  if (opts.ctint2d) ctintegr2d(vals, error);
-	  if (opts.ctint3d) ctintegr3d(vals, error);
-	  if (opts.ctintvegas6d) ctintegrMC(vals, error);
-	  if (opts.ctintvegas8d) ctintegr(vals, error);
-          double e_time = clock_real();
-	  value = vals[0];
-          normalise_result(value,error);
-          print_result(value,error,b_time,e_time);
-          hists.FillResult( plotter::CT , value, error, e_time-b_time );
-          totval += value;
-          toterror2 += error*error;
-	  vadd(totvals,vals);
-      }
-      //analytical
-      if (opts.doVJ) {
-          double b_time = clock_real();
-          vjintegr3d(value, error);
-          double e_time = clock_real();
-	  vals.clear();
-	  vals.push_back(value);
-          normalise_result(value,error);
-          print_result(value,error,b_time,e_time);
-          hists.FillResult( plotter::VJ , value, error, e_time-b_time );
-          totval += value;
-          toterror2 += error*error;
-	  vadd(totvals,vals);
-      }
-      // leading order
-      if (opts.doLO) {
-          double b_time = clock_real();
-          lowintegr(vals, error);
-          double e_time = clock_real();
-	  value = vals[0];
-          normalise_result(value,error);
-          print_result(value,error,b_time,e_time);
-          hists.FillResult( plotter::LO , value, error, e_time-b_time );
-          totval += value;
-          toterror2 += error*error;
-	  vadd(totvals,vals);
-      }
-      // real part
-      if (opts.doREAL) {
-          double b_time = clock_real();
-          realintegr(vals, error);
-          double e_time = clock_real();
-	  value = vals[0];
-          normalise_result(value,error);
-          print_result(value,error,b_time,e_time);
-          hists.FillResult( plotter::Real , value, error, e_time-b_time );
-          totval += value;
-          toterror2 += error*error;
-	  vadd(totvals,vals);
-      }
-      // virt part
-      if (opts.doVIRT) {
-          double b_time = clock_real();
-          virtintegr(vals, error);
-	  double e_time = clock_real();
-	  value = vals[0];
-          normalise_result(value,error);
-          print_result(value,error,b_time,e_time);
-          hists.FillResult( plotter::Virt , value, error, e_time-b_time );
-          totval += value;
-          toterror2 += error*error;
-	  vadd(totvals,vals);
-      }
-      // total
-      double ee_time = clock_real();
-      print_result (totval, sqrt(toterror2), bb_time, ee_time);
-      save_result(totvals,sqrt(toterror2));
-      hists.FillResult( plotter::Total ,  totval, sqrt(toterror2), ee_time-bb_time );
-      cout << endl;
-      }
-    }
+              // resummation
+              if (opts.doRES) {
+                  double b_time = clock_real();
+                  if (opts.resint2d) {
+                      if (opts.resumcpp)
+                          //C++ resum
+                          rapint::cache(phasespace::ymin, phasespace::ymax);
+                      //end C++ resum
+                      else	    
+                          cacheyrapint_(phasespace::ymin, phasespace::ymax);
+                      resintegr2d(value, error);
+                  }
+                  if (opts.resint3d) resintegr3d(value, error);
+                  if (opts.resintvegas) resintegrMC(value, error);
+                  double e_time = clock_real();
+                  normalise_result(value,error);
+                  print_result(value,error,b_time,e_time);
+                  hists.FillResult( plotter::Resum , value, error, e_time-b_time );
+                  totval += value;
+                  toterror2 += error*error;
+              }
+              // double virtual
+              if (opts.doVV) {
+                  double b_time = clock_real();
+                  doublevirtintegr(vals, error);
+                  double e_time = clock_real();
+                  value = vals[0];
+                  normalise_result(value,error);
+                  print_result(value,error,b_time,e_time);
+                  hists.FillResult( plotter::VV , value, error, e_time-b_time );
+                  totval += value;
+                  toterror2 += error*error;
+                  vadd(totvals,vals);
+              }
+              // counter term
+              if (opts.doCT) {
+                  double b_time = clock_real();
+                  if (opts.ctint2d) ctintegr2d(vals, error);
+                  if (opts.ctint3d) ctintegr3d(vals, error);
+                  if (opts.ctintvegas6d) ctintegrMC(vals, error);
+                  if (opts.ctintvegas8d) ctintegr(vals, error);
+                  double e_time = clock_real();
+                  value = vals[0];
+                  normalise_result(value,error);
+                  print_result(value,error,b_time,e_time);
+                  hists.FillResult( plotter::CT , value, error, e_time-b_time );
+                  totval += value;
+                  toterror2 += error*error;
+                  vadd(totvals,vals);
+              }
+              //analytical
+              if (opts.doVJ) {
+                  double b_time = clock_real();
+                  vjintegr3d(value, error);
+                  double e_time = clock_real();
+                  vals.clear();
+                  vals.push_back(value);
+                  normalise_result(value,error);
+                  print_result(value,error,b_time,e_time);
+                  hists.FillResult( plotter::VJ , value, error, e_time-b_time );
+                  totval += value;
+                  toterror2 += error*error;
+                  vadd(totvals,vals);
+              }
+              // leading order
+              if (opts.doLO) {
+                  double b_time = clock_real();
+                  lowintegr(vals, error);
+                  double e_time = clock_real();
+                  value = vals[0];
+                  normalise_result(value,error);
+                  print_result(value,error,b_time,e_time);
+                  hists.FillResult( plotter::LO , value, error, e_time-b_time );
+                  totval += value;
+                  toterror2 += error*error;
+                  vadd(totvals,vals);
+              }
+              // real part
+              if (opts.doREAL) {
+                  double b_time = clock_real();
+                  realintegr(vals, error);
+                  double e_time = clock_real();
+                  value = vals[0];
+                  normalise_result(value,error);
+                  print_result(value,error,b_time,e_time);
+                  hists.FillResult( plotter::Real , value, error, e_time-b_time );
+                  totval += value;
+                  toterror2 += error*error;
+                  vadd(totvals,vals);
+              }
+              // virt part
+              if (opts.doVIRT) {
+                  double b_time = clock_real();
+                  virtintegr(vals, error);
+                  double e_time = clock_real();
+                  value = vals[0];
+                  normalise_result(value,error);
+                  print_result(value,error,b_time,e_time);
+                  hists.FillResult( plotter::Virt , value, error, e_time-b_time );
+                  totval += value;
+                  toterror2 += error*error;
+                  vadd(totvals,vals);
+              }
+              // total
+              double ee_time = clock_real();
+              print_result (totval, sqrt(toterror2), bb_time, ee_time);
+              save_result(totvals,sqrt(toterror2));
+              hists.FillResult( plotter::Total ,  totval, sqrt(toterror2), ee_time-bb_time );
+              cout << endl;
+          } // qt
+      } // y
+  } // m
   print_line();
   close_file();
   end_time = clock_real();
@@ -262,6 +269,7 @@ void normalise_result(double &value, double &error){
 void print_head(){
     print_line();
     cout << "| ";
+    cout << setw(13) << "m bin"  << " | ";
     cout << setw(13) << "qt bin" << " | ";
     cout << setw(13) << "y bin"  << " | ";
     if (opts.doRES ) cout << setw(38) << "resummed "      << " | ";
@@ -290,11 +298,15 @@ void print_line(){
 
 void print_qtbin(){
     //      2 + 5 + 3 + 5 + 3 = 18
-   cout << "| " << setw(5) << phasespace::qtmin << " - " << setw(5) << phasespace::qtmax << " | " <<  flush; 
+   cout << setw(5) << phasespace::qtmin << " - " << setw(5) << phasespace::qtmax << " | " <<  flush; 
 }
 void print_ybin(){
     //      2 + 5 + 3 + 5 + 3 = 18
    cout << setw(5) << phasespace::ymin << " - " << setw(5) << phasespace::ymax << " | " <<  flush; 
+}
+void print_mbin(){
+    //      2 + 5 + 3 + 5 + 3 = 18
+   cout << "| " << setw(5) << phasespace::mmin << " - " << setw(5) << phasespace::mmax << " | " <<  flush; 
 }
 
 
@@ -334,6 +346,10 @@ void save_qtbin()
 void save_ybin()
 {
   outfile << phasespace::ymin << " " << phasespace::ymax << " " << flush; 
+}
+void save_mbin()
+{
+  outfile << phasespace::mmin << " " << phasespace::mmax << " " << flush; 
 }
 void save_result(vector <double> vals, double err)
 {
