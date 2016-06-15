@@ -1,10 +1,11 @@
       logical function includedipole(nd,ptrans)
       implicit none
+      include 'options.f'
       include 'constants.f'
       include 'npart.f'
       include 'ptilde.f'
       double precision ptrans(mxpart,4),pjet(mxpart,4),rcut,pt34
-      double precision qt2,xqtcut,Q2
+      double precision qt2,Q2
       integer i,j,nd,nqcdjets,nqcdstart,notag,isub
       logical cuts,failedcuts,makecuts
 
@@ -12,7 +13,6 @@
       common/rcut/rcut
       common/makecuts/makecuts
       common/notag/notag
-      common/qtcut/xqtcut
       
       logical binner
       external binner
@@ -30,7 +30,7 @@ CC    Compute qt2,Q2
 
 c      print *,nd, q2, qt2
 
-      if(dsqrt(qt2/Q2).lt.xqtcut) then
+      if(sqrt(qt2/Q2).lt.xqtcut.or.sqrt(qt2).lt.qtcut) then
          includedipole=.false.
          return
       endif

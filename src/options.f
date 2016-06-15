@@ -11,3 +11,7 @@
 
       double precision kmuren,kmufac,kmures
       common/scaleopts/kmuren,kmufac,kmures
+
+      double precision qtcut,xqtcut
+      common/qtsub/qtcut,xqtcut
+      

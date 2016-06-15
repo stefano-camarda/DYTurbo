@@ -100,8 +100,9 @@ extern "C" {
   } nnlo_;
 
   extern struct {
+    double qtcut_;
     double xqtcut_;
-  } qtcut_;
+  } qtsub_;
 
   extern struct {
     int doFill_;

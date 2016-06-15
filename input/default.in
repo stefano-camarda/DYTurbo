@@ -94,9 +94,9 @@ dampdelta = 0.5
 dampmode = 1
 
 
-# qtcut
-xqtcut = 0.008
-qtcut = 0.
+# qt-subtraction cut-off. Both conditions are applied, at least one between qtcut and xqtcut must be > 0
+xqtcut = 0.008  # cutoff on qt/m
+qtcut = 0.      # cutoff on qt
 
 # integration settings
 rseed        = 123456         # random seed for MC integration
