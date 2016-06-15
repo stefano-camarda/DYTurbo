@@ -306,7 +306,13 @@ void settings::check_consitency(){
 	cout << "Asked for PDFerrors, enforce LHAPDFmember  = 0" << endl;
 	LHAPDFmember = 0;
       }
-      
+
+    if (qtcut <= 0 && xqtcut <= 0)
+      {
+	cout << "At least one between qtcut and xqtcut must be > 0" << endl;
+	exit (-1);
+      }
+
     // resummation term integration dimension
     if (intDimRes<4 && intDimRes>1){
         resint2d = (intDimRes == 2);
