@@ -538,15 +538,22 @@ void settings::dumpB( string var,bool val){
 
 vector<string> settings::Tokenize(string val,char Delim){
     vector<string> vec;
+    size_t pos = 0;
+    string tmp;
     while (!val.empty()){
-        size_t pos = 0;
         // find delim
-        pos = val.find(Delim);
-        // get substring
-        string tmp = val.substr(0,pos);
+        pos = val.find_first_of(Delim);
+        if (pos==string::npos){
+            // last item
+            tmp = val;
+            val.clear();
+        } else {
+            // get substring
+            tmp = val.substr(0,pos);
+            val = val.substr(pos+1);
+        }
         // add to vector
         if (!tmp.empty()) vec.push_back(tmp);
-        val = val.substr(pos+1);
     }
     return vec;
 }
@@ -633,16 +640,24 @@ void InputParser::GetVectorDouble(string name, vector<double> &vec){
     if (strBegin==string::npos || strEnd==string::npos) throw invalid_argument("Missing open/close character.");
     // parse what is between them
     val = val.substr(strBegin+1,strEnd-strBegin-1);
+    size_t pos = 0;
+    string tmp;
     while (!val.empty()){
-        size_t pos = 0;
         // find delim
         pos = val.find(CdeliAr);
+        if (pos==string::npos){
+            // last item
+            tmp = val;
+            val.clear();
+        } else {
+            // get substring
+            tmp = val.substr(0,pos);
+            val = val.substr(pos+1);
+        }
         // get substring
-        string tmp = val.substr(0,pos);
         trim(tmp);
         // expecting number otherwise exception
         if (!tmp.empty()) vec.push_back(stod(tmp));
-        val = val.substr(pos+1);
     }
     return;
 }
