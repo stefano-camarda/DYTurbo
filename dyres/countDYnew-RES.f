@@ -37,7 +37,7 @@ C
       double precision msqc(-nf:nf,-nf:nf),xmsq(0:maxd)
       double precision flux,BrnRat,xreal,xreal2
       double precision xx1,xx2,q(mxpart,4)
-      double precision m3,m4,m5,qtcut,xqtcut,switch,qt,m
+      double precision m3,m4,m5,switch,qt,m
 CC
       logical cuts
       double precision x1,x2,dot,ptrans(mxpart,4)
@@ -67,9 +67,9 @@ CC
 
       include 'xmio_inc.f'
       common/xx0/xx0
-      common/qtcut/xqtcut
       common/nnlo/order 
 
+      double precision qtc
 CC
 CC    Variables passed from virtint or lowint
 CC
@@ -139,12 +139,12 @@ CC   Generate qt2 up to qtmax
 
       xth=vector(3)
 
-CC  Now compute qtcut from xqtcut
+CC  Now compute effective qtc from qtcut and xqtcut
 
-       qtcut=xqtcut*dsqrt(q2)
+       qtc=max(qtcut,xqtcut*dsqrt(q2))
 
        if(xth.lt.0.02d0) goto 999
-       qt2=qtcut**2*dexp(1d0/xth-1)
+       qt2=qtc**2*dexp(1d0/xth-1)
 
 CC   Set qtmax (kinematical limit)
        if(qt2.gt.((sqrts**2+q2)**2/(4d0*sqrts**2)-q2)) goto 999

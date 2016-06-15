@@ -24,7 +24,7 @@ double dyreal(double m, double y, double qt, double phicm, double phiZ, double c
   double s = sqrts*sqrts;
   double mmin = opts.mlow;
   double mmax = opts.mhigh;
-  double xqtcut = qtcut_.xqtcut_;
+  double xqtcut = qtsub_.xqtcut_;
 
   //  std::cout << std::setprecision(15);
   double begin_time, end_time;
@@ -134,7 +134,7 @@ double dyvirt(double m, double y, double qt, double phicm, double phiZ, double c
   double s = sqrts*sqrts;
   double mmin = opts.mlow;
   double mmax = opts.mhigh;
-  double xqtcut = qtcut_.xqtcut_;
+  double xqtcut = qtsub_.xqtcut_;
 
   //  std::cout << std::setprecision(15);
   double begin_time, end_time;
@@ -239,7 +239,7 @@ double dylow(double m, double y, double qt, double phicm, double phiZ, double co
   double s = sqrts*sqrts;
   double mmin = opts.mlow;
   double mmax = opts.mhigh;
-  double xqtcut = qtcut_.xqtcut_;
+  double xqtcut = qtsub_.xqtcut_;
 
   //  std::cout << std::setprecision(15);
   double begin_time, end_time;
@@ -340,7 +340,7 @@ double dyct(double m, double y, double qt, double phicm, double phiZ, double cos
   double s = sqrts*sqrts;
   double mmin = opts.mlow; //66.;
   double mmax = opts.mhigh; //116.;
-  double xqtcut = qtcut_.xqtcut_; //0.008;
+  double xqtcut = qtsub_.xqtcut_; //0.008;
 
   //  std::cout << std::setprecision(15);
   double begin_time, end_time;

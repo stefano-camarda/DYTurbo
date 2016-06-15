@@ -57,7 +57,7 @@ integrand_t vjintegrand(const int &ndim, const double x[], const int &ncomp, dou
   double jac = 1.;
 
   // Generate the boson invariant mass between the integration boundaries
-  double mcut = phasespace::qtmax/qtcut_.xqtcut_;
+  double mcut = (opts.xqtcut != 0.) ? phasespace::qtmax/opts.xqtcut : phasespace::mmax;
   double wsqmin = pow(phasespace::mmin,2);
   double wsqmax = pow(min(phasespace::mmax,mcut),2);
   if (wsqmin >= wsqmax)
@@ -107,7 +107,7 @@ integrand_t vjintegrand(const int &ndim, const double x[], const int &ncomp, dou
   
   //integrate between qtmin and qtmax
   //use qt to get the correct jacobian
-  double qtcut = qtcut_.xqtcut_*m;
+  double qtcut = max(opts.qtcut,opts.xqtcut*m);
   double qtmn = max(qtcut, phasespace::qtmin);
   double cosh2y34=pow((exp(y)+exp(-y))*0.5,2);
   double kinqtlim = sqrt(max(0.,pow(pow(energy_.sroot_,2)+m*m,2)/(4*pow(energy_.sroot_,2)*cosh2y34)-m*m)); //introduced max to avoid neqative argument of sqrt when y=ymax
