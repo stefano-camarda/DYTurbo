@@ -244,8 +244,8 @@ prepare_script(){
     sh_file=$batch_script_dir/$job_name.sh
     echo $job_name $seedlist
     #
-    mbins=100,50,1000
-    [[ $process =~ z0 ]] && mbins=100,66,116
+    mbins=32,40,200
+    [[ $process =~ z0 ]] && mbins=10,66,116
     # arguments
     arguments="input.in --proc $process --mbins $mbins --pdfset $pdfset --pdfvar $variation --order $order --term $terms"
     [[ $target =~ lxbatch|mogon|localrun ]] && arguments=$arguments" --seed $LSB_JOBINDEX "
