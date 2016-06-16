@@ -40,7 +40,7 @@ class plotter {
         void SetPDF(int npdf); ///< Set histograms for pdf memeber npdf.
         void Merge();
         void Dump();
-        void Finalise(double xsection=0);
+        void Finalise(int worker=-1);
 
 
     protected :

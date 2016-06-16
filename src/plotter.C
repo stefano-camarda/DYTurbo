@@ -449,34 +449,36 @@ void plotter::Dump(){
 }
 
 
-void plotter::Finalise(double xsection){
+void plotter::Finalise(int worker){
     if (verbose){
         printf(" plotter:  histogram finalize\n");
         Dump();
     }
-    ///@note: Sending the process id number instead of xsection. This is for
-    ///       saving separate file name per each worker.
-    double intpart; ///< this will work as file index
-    bool isworker = ( std::modf(xsection,&intpart) == 0);
-    // now we change the N to serve as normalizing factor: integral of all bins
-    // would be normalized to total xsection
-    if(!isworker && xsection!=0.) N = h_qt->Integral()/xsection;
-    if (N!=0){
-        h_qt   ->Scale(1./N);
-        h_y    ->Scale(1./N);
-        h_qtVy ->Scale(1./N);
-    }
-    // correct qt to binwidth
-    if(false) for (int ibin=0; ibin<=h_qt->GetNbinsX()+1; ibin++ ){
-        double width = h_qt->GetBinWidth   (ibin);
-        double val   = h_qt->GetBinContent (ibin);
-        double err   = h_qt->GetBinError   (ibin);
-        h_qt->SetBinContent (ibin, val/width);
-        h_qt->SetBinError   (ibin, err/width);
-    }
+    bool isworker=false;
+    if(worker>=0) isworker=true;
+    /////@note: Sending the process id number instead of xsection. This is for
+    /////       saving separate file name per each worker.
+    //double intpart; ///< this will work as file index
+    //bool isworker = ( std::modf(xsection,&intpart) == 0);
+    //// now we change the N to serve as normalizing factor: integral of all bins
+    //// would be normalized to total xsection
+    //if(!isworker && xsection!=0.) N = h_qt->Integral()/xsection;
+    //if (N!=0){
+        //h_qt   ->Scale(1./N);
+        //h_y    ->Scale(1./N);
+        //h_qtVy ->Scale(1./N);
+    //}
+    //// correct qt to binwidth
+    //if(false) for (int ibin=0; ibin<=h_qt->GetNbinsX()+1; ibin++ ){
+        //double width = h_qt->GetBinWidth   (ibin);
+        //double val   = h_qt->GetBinContent (ibin);
+        //double err   = h_qt->GetBinError   (ibin);
+        //h_qt->SetBinContent (ibin, val/width);
+        //h_qt->SetBinError   (ibin, err/width);
+    //}
     // get name from options
     TString outfname = "results";
-    if (isworker) outfname+=int(intpart);
+    if (isworker) outfname+=worker;
     outfname+= ".root";
     // save file
     TFile *outf = TFile::Open(outfname.Data(), "recreate");

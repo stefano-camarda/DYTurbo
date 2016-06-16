@@ -247,7 +247,7 @@ int main( int argc , char * argv[])
   cout << endl;
   cout << setw(10) << "time "  << setw(15) << float(end_time - begin_time) << endl;
 
-  hists.Finalise(TotXSec);
+  hists.Finalise();
 
   return 0;
 }
