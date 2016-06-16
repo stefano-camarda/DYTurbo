@@ -62,8 +62,8 @@ int main( int argc , char * argv[])
   if (opts.doRES || opts.doCT){
       if (opts_.approxpdf_ == 1) {
           srand(opts.rseed);
-          double wsqmin = pow(opts.mlow,2);
-          double wsqmax = pow(opts.mhigh,2);
+          double wsqmin = pow(phasespace::mmin ,2);
+          double wsqmax = pow(phasespace::mmax ,2);
           double x1=((double)rand()/(double)RAND_MAX);
           double m2,wt;
           breitw_(x1,wsqmin,wsqmax,opts.rmass,opts.rwidth,m2,wt);
@@ -146,7 +146,7 @@ int main( int argc , char * argv[])
                   double e_time = clock_real();
                   normalise_result(value,error);
                   print_result(value,error,b_time,e_time);
-                  hists.FillResult( plotter::Resum , value, error, e_time-b_time );
+                  //hists.FillResult( plotter::Resum , value, error, e_time-b_time );
                   totval += value;
                   toterror2 += error*error;
               }
@@ -158,7 +158,7 @@ int main( int argc , char * argv[])
                   value = vals[0];
                   normalise_result(value,error);
                   print_result(value,error,b_time,e_time);
-                  hists.FillResult( plotter::VV , value, error, e_time-b_time );
+                  //hists.FillResult( plotter::VV , value, error, e_time-b_time );
                   totval += value;
                   toterror2 += error*error;
                   vadd(totvals,vals);
@@ -174,7 +174,7 @@ int main( int argc , char * argv[])
                   value = vals[0];
                   normalise_result(value,error);
                   print_result(value,error,b_time,e_time);
-                  hists.FillResult( plotter::CT , value, error, e_time-b_time );
+                  //hists.FillResult( plotter::CT , value, error, e_time-b_time );
                   totval += value;
                   toterror2 += error*error;
                   vadd(totvals,vals);
@@ -188,7 +188,7 @@ int main( int argc , char * argv[])
                   vals.push_back(value);
                   normalise_result(value,error);
                   print_result(value,error,b_time,e_time);
-                  hists.FillResult( plotter::VJ , value, error, e_time-b_time );
+                  //hists.FillResult( plotter::VJ , value, error, e_time-b_time );
                   totval += value;
                   toterror2 += error*error;
                   vadd(totvals,vals);
@@ -201,7 +201,7 @@ int main( int argc , char * argv[])
                   value = vals[0];
                   normalise_result(value,error);
                   print_result(value,error,b_time,e_time);
-                  hists.FillResult( plotter::LO , value, error, e_time-b_time );
+                  //hists.FillResult( plotter::LO , value, error, e_time-b_time );
                   totval += value;
                   toterror2 += error*error;
                   vadd(totvals,vals);
@@ -214,7 +214,7 @@ int main( int argc , char * argv[])
                   value = vals[0];
                   normalise_result(value,error);
                   print_result(value,error,b_time,e_time);
-                  hists.FillResult( plotter::Real , value, error, e_time-b_time );
+                  //hists.FillResult( plotter::Real , value, error, e_time-b_time );
                   totval += value;
                   toterror2 += error*error;
                   vadd(totvals,vals);
@@ -227,7 +227,7 @@ int main( int argc , char * argv[])
                   value = vals[0];
                   normalise_result(value,error);
                   print_result(value,error,b_time,e_time);
-                  hists.FillResult( plotter::Virt , value, error, e_time-b_time );
+                  //hists.FillResult( plotter::Virt , value, error, e_time-b_time );
                   totval += value;
                   toterror2 += error*error;
                   vadd(totvals,vals);
@@ -325,6 +325,8 @@ void print_result(double val, double err, double btime , double etime){
 void open_file()
 {
   outfile.open("results.txt");
+  outfile << "m1" << " ";
+  outfile << "m2" << " ";
   outfile << "qt1" << " ";
   outfile << "qt2" << " ";
   outfile << "y1"  << " ";

@@ -22,12 +22,16 @@ plotter hists;
 #include <TString.h>
 #include <TLorentzVector.h>
 
+#define DEL_SAFE(x)  if (x!=0) { delete x; x=NULL;}
+
+
 plotter::plotter() :
-    N           (0),
-    h_qt        (0),
-    h_y         (0),
-    h_m         (0),
-    h_qtVy      (0),
+    isFillMode (true),
+    N          (0),
+    h_qt       (0),
+    h_y        (0),
+    h_m        (0),
+    h_qtVy     (0),
     h_yVm      (0),
     //h_qtVyVQ    (0),
     //qt_y_resum  (0),
@@ -45,26 +49,30 @@ plotter::plotter() :
 #endif
     verbose     (false)
 {
+    if (bins.plotmode == "integrate"){
+        doAiMoments=false;
+        isFillMode=false; // this is here bc string comparison is too compilcated
+    }
     return;
 }
 
 plotter::~plotter(){
     for (int i=0; i< h_qtVy_PDF.size(); i++){
         SetPDF(i);
-        if(!h_qt     ) delete h_qt     ;
-        if(!h_y      ) delete h_y      ;
-        if(!h_m      ) delete h_m      ;
-        if(!h_qtVy   ) delete h_qtVy   ;
-        if(!h_yVm    ) delete h_yVm    ;
+        DEL_SAFE( h_qt     );
+        DEL_SAFE( h_y      );
+        DEL_SAFE( h_m      );
+        DEL_SAFE( h_qtVy   );
+        DEL_SAFE( h_yVm    );
         if(doAiMoments) {
             for (auto i=0; i<NMOM; i++){
-                delete pa_qtVy .A[i]; pa_qtVy .A[i]=NULL;
-                //delete pa_qt   .A[i]; pa_qt   .A[i]=NULL;
-                //delete pa_y    .A[i]; pa_y    .A[i]=NULL;
+                DEL_SAFE ( pa_qtVy .A[i] );
+                //DEL_SAFE( pa_qt   .A[i]);
+                //DEL_SAFE( pa_y    .A[i])
             }
-            //if(!h_costh   ) delete h_costh   ;
-            //if(!h_phi     ) delete h_phi     ;
-            //if(!h_phi_lep ) delete h_phi_lep ;
+            //DEL_SAFE(h_costh   );
+            //DEL_SAFE(h_phi     );
+            //DEL_SAFE(h_phi_lep );
         }
     }
     //if(!qt_y_resum ) delete qt_y_resum ;
@@ -164,7 +172,7 @@ bool plotter::IsInitialized(){return (h_qt!=0);};
 void plotter::FillEvent(double p3[4], double p4[4], double wgt){
     // save after 10M events
     // if(int(h_qt->GetEntries()+1)%int(1e6)==0) Finalise(0);
-    if (wgt == 0 ) return;
+    if (wgt == 0 || !isFillMode ) return;
 #ifdef AIMOM
     TLorentzVector lep1(p3);
     TLorentzVector lep2(p4);
@@ -204,6 +212,7 @@ void plotter::FillEvent(double p3[4], double p4[4], double wgt){
 }
 
 void plotter::FillRealDipole(double p3[4], double p4[4], double wgt, int nd){
+    if ( (nd!=0 && wgt == 0) || !isFillMode ) return; // make sure you have at least first one for kinematics
 #ifdef AIMOM
     // x check
     TLorentzVector lep1(p3);
@@ -215,7 +224,6 @@ void plotter::FillRealDipole(double p3[4], double p4[4], double wgt, int nd){
             );
     //
 #endif
-    if (nd!=0 && wgt == 0 ) return; // make sure you have at least first one for kinematics
     if (nd == 5 || nd==6 ) { // use 0 dipole kinematics -- its always
         qt = dipole_points[0] .qt;
         y  = dipole_points[0] .y;
@@ -245,7 +253,7 @@ void plotter::FillRealDipole(double p3[4], double p4[4], double wgt, int nd){
 
 void plotter::FillRealEvent(plotter::TermType term){
     // process all calculated contributions
-    while (!dipole_points.empty()){
+    while (!dipole_points.empty() && isFillMode ){
         // until you erase all points
         point = dipole_points.back(); // take the last one
         dipole_points.pop_back();
@@ -284,15 +292,17 @@ void plotter::FillRealEvent(plotter::TermType term){
 }
 
 
-void plotter::FillQuadrature(double int_val, double int_error){
-    addToBin( h_m    , int_val , int_error);
-    addToBin( h_qt   , int_val , int_error);
-    addToBin( h_y    , int_val , int_error);
-    addToBin( h_qtVy , int_val , int_error);
-    addToBin( h_yVm  , int_val , int_error);
-}
+//void plotter::FillQuadrature(double int_val, double int_error){
+//}
 
 void plotter::FillResult(TermType term, double int_val, double int_error, double time){
+    if (!isFillMode){ // bins.plotmode=="integrate"
+        addToBin( h_m    , int_val , int_error);
+        addToBin( h_qt   , int_val , int_error);
+        addToBin( h_y    , int_val , int_error);
+        addToBin( h_qtVy , int_val , int_error);
+        addToBin( h_yVm  , int_val , int_error);
+    }
     //TH2D * h = 0 ;
     // switch (term) {
     //     case Resum : h = qt_y_resum ; break;
@@ -314,7 +324,7 @@ void plotter::FillResult(TermType term, double int_val, double int_error, double
     return;
 }
 
-void plotter::CumulateResult(TermType term, double wgt){
+//void plotter::CumulateResult(TermType term, double wgt){
     // TH2D * h = 0 ;
     // switch (term) {
     //     case Resum : h = qt_y_resum ; break;
@@ -329,7 +339,7 @@ void plotter::CumulateResult(TermType term, double wgt){
     // // get the middle of bin
     // h->Fill ( qt, y, wgt);
     // return;
-}
+//}
 
 void plotter::SetPDF(int npdf){
     // if you not doing scanning just testing member
@@ -809,9 +819,9 @@ bool plotter::IsInitialized(){return false;}
 void plotter::FillEvent(double p3[4], double p4[4], double wgt){return;}
 void plotter::FillRealDipole(double p3[4], double p4[4], double wgt,int nd){return;}
 void plotter::FillRealEvent(TermType term ){return;}
-void plotter::FillQuadrature(double int_val, double int_error){return;}
+//void plotter::FillQuadrature(double int_val, double int_error){return;}
 void plotter::FillResult(TermType term, double int_val, double int_error, double time){return;}
-void plotter::CumulateResult(TermType term, double wgt){return;}
+//void plotter::CumulateResult(TermType term, double wgt){return;}
 void plotter::SetPDF(int npdf){return;}
 void plotter::Merge(){return;}
 void plotter::Dump(){return;}

@@ -5,6 +5,7 @@
 
 #include "settings.h"
 #include "interface.h"
+#include "phasespace.h"
 
 // CXX option parser: https://raw.githubusercontent.com/jarro2783/cxxopts/master/src/cxxopts.hpp
 #include "cxxopts.hpp"
@@ -30,6 +31,7 @@ void settings::parse_options(int argc, char* argv[]){
         ("q,small-stat"      , "Set quick run with small stat." )
         ("p,proc"            , "Set process [z0/wp/wm]"                              , po::value<string>() )
         ("c,collider"        , "Set beam conditions [tev2/lhc7/lhc8/lhc13/lhc14]"    , po::value<string>() )
+        ("o,order"           , "Set order [1:NLL+NLO, 2:NNLL+NNLO]"                  , po::value<int>() )
         ("t,term"            , "Set term [REAL,VIRT,CT,..]"                          , po::value<string>() )
         ("r,seed"            , "Set random seed [integer]"                           , po::value<int>()    )
         ("s,pdfset"          , "Set PDF set [LHAPDF name]"                           , po::value<string>() )
@@ -60,9 +62,14 @@ void settings::parse_options(int argc, char* argv[]){
 
     // NOTE: Command line options are overiding the default and config file settings.
     // verbose
-    if (args.count("verbose")) verbose=true;
+    if (args.count("verbose")) {
+        verbose=true;
+        cubaverbosity=3;
+    }
     // rseed
     if (args.count("seed")) rseed=args["seed"].as<int>();
+    // order
+    if (args.count("order")) order=args["order"].as<int>();
     // small stat
     if (args.count("small-stat")){
         niterRES           = 1;
@@ -75,11 +82,10 @@ void settings::parse_options(int argc, char* argv[]){
         vegasncallsREAL    = 1e5;
         vegasncallsVIRT    = 1e5;
         pcubaccuracy       = 0.5;
-    } 
+    }
 
     // proc
     if (args.count("proc")) {
-        // FIXME: is it only needed to set proc or also mass and scale values?
         string val=args["proc"].as<string>(); 
         ToLower(val);
         if        (val == "z0"){ nproc=3;
@@ -89,7 +95,7 @@ void settings::parse_options(int argc, char* argv[]){
             throw QuitProgram("Unsupported value of proc: "+val);
         }
     }
-    
+
     // PDF
     if (args.count("pdfset")) LHAPDFset=args["pdfset"].as<string>();
     if (args.count("pdfvar")) {
@@ -127,20 +133,20 @@ void settings::parse_options(int argc, char* argv[]){
         string val=args["term"].as<string>();
         ToUpper(val);
         for (auto piece : Tokenize(val)) {
-            if        ( piece == "REAL"     ) { doREAL=true;
-            } else if ( piece ==  "VIRT"    ) { doVIRT=true;
-            } else if ( piece ==  "VV"      ) { doVV=true;   fixedorder=true;
-            } else if ( piece ==  "LO"      ) { doLO=true;
-            } else if ( piece ==  "VJ"      ) { doVJ=true;
-            } else if ( piece ==  "RES"     ) { doRES=true;  intDimRes=8;
-            } else if ( piece ==  "RES3D"   ) { doRES=true;  intDimRes=3;
-            } else if ( piece ==  "RES2D"   ) { doRES=true;  intDimRes=2;
-            } else if ( piece ==  "CT"      ) { doCT=true;   intDimCT=6; //< FIXME: ia 6D save ?
-            } else if ( piece ==  "CT3D"    ) { doCT=true;   intDimCT=3;
-            } else if ( piece ==  "CT2D"    ) { doCT=true;   intDimCT=2;
-            } else if ( piece ==  "FIXCT"   ) { doCT=true;   intDimCT=6; fixedorder=true; 
-            } else if ( piece ==  "FIXCT3D" ) { doCT=true;   intDimCT=3; fixedorder=true; 
-            } else if ( piece ==  "FIXCT2D" ) { doCT=true;   intDimCT=2; fixedorder=true; 
+            if        ( piece == "REAL"    ) { doREAL=true;
+            } else if ( piece == "VIRT"    ) { doVIRT=true;
+            } else if ( piece == "VV"      ) { doVV=true;   fixedorder=true;
+            } else if ( piece == "LO"      ) { doLO=true;
+            } else if ( piece == "VJ"      ) { doVJ=true;
+            } else if ( piece == "RES"     ) { doRES=true;  intDimRes=8;
+            } else if ( piece == "RES3D"   ) { doRES=true;  intDimRes=3;
+            } else if ( piece == "RES2D"   ) { doRES=true;  intDimRes=2;
+            } else if ( piece == "CT"      ) { doCT=true;   intDimCT=6; //< FIXME: ia 6D save ?
+            } else if ( piece == "CT3D"    ) { doCT=true;   intDimCT=3;
+            } else if ( piece == "CT2D"    ) { doCT=true;   intDimCT=2;
+            } else if ( piece == "FIXCT"   ) { doCT=true;   intDimCT=6; fixedorder=true; 
+            } else if ( piece == "FIXCT3D" ) { doCT=true;   intDimCT=3; fixedorder=true; 
+            } else if ( piece == "FIXCT2D" ) { doCT=true;   intDimCT=2; fixedorder=true; 
             } else {
                 throw QuitProgram("Unsupported value of term : "+piece);
             }
@@ -399,11 +405,14 @@ void settings::check_consitency(){
     bins.hist_y_bins  = bins.ybins ;
     bins.hist_m_bins  = bins.mbins ;
     // integration boundaries
-    // FIXME: where is this used ?
-    ylow  = bins.ybins.front();
-    yhigh = bins.ybins.back();
-    mlow  = bins.mbins.front();
-    mhigh = bins.mbins.back();
+    phasespace::setbounds(
+            bins. mbins  .front() ,
+            bins. mbins  .back()  ,
+            bins. qtbins .front() ,
+            bins. qtbins .back()  ,
+            bins. ybins  .front() ,
+            bins. ybins  .back()
+            );
     // plot mode consitency with integration
     if ( bins.plotmode=="fill" && 
          ( resint2d || resint3d || ctint2d || ctint3d )
@@ -417,6 +426,7 @@ void settings::check_consitency(){
         bins.ybins  = { bins.ybins  .front(), bins.ybins  .back() };
         bins.mbins  = { bins.mbins  .front(), bins.mbins  .back() };
     } else if (bins.plotmode=="integrate"){
+        // NOTE: this is here only to checkout plotmode mistype
         // keep integration bins same as plotting (quadrature)
     } else {
         throw QuitProgram("Unsupported value of plotmode : "+bins.plotmode);
@@ -475,10 +485,10 @@ void settings::dumpAll(){
 	dumpD( "Zss",        Zss);
 	dumpD( "Zcc",        Zcc);
 	dumpD( "Zbb",        Zbb);
-        dumpD("ylow               ", ylow                );
-        dumpD("yhigh              ", yhigh               );
-        dumpD("mlow               ", mlow                );
-        dumpD("mhigh              ", mhigh               );
+        //dumpD("ylow               ", ylow                );
+        //dumpD("yhigh              ", yhigh               );
+        //dumpD("mlow               ", mlow                );
+        //dumpD("mhigh              ", mhigh               );
         dumpD("dampk",             dampk       );
         dumpD("dampdelta",     dampdelta      );
         dumpI("dampmode",       dampmode     );

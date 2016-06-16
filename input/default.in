@@ -56,10 +56,6 @@ Zbb = 1.0
 useGamma = true
 
 
-#  # W
-#  mlow = 10.;
-#  mhigh = 1000.;
-
 # Resummation parameters
 resumcpp  = true  # use C++ code for resummation
 qtcutoff = 0.02   # resummation cutoff

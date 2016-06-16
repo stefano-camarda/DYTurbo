@@ -119,10 +119,10 @@ public:
   bool useGamma;
 
   //integration boundaries
-  double ylow;
-  double yhigh;
-  double mlow;
-  double mhigh;
+  //double ylow;
+  //double yhigh;
+  //double mlow;
+  //double mhigh;
 
   //Resummation damping
   double dampk, dampdelta;

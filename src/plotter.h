@@ -34,9 +34,9 @@ class plotter {
         void FillEvent(double p3[4], double p4[4], double wgt); ///<Normal filling of histograms.
         void FillRealDipole(double p3[4], double p4[4], double wgt,int nd); ///<Collect dipole kinematics and weights. Fill ai profiles.
         void FillRealEvent(TermType term = None); ///< for real filling without correlations. Need to FillRealDipole before.
-        void FillQuadrature(double int_val, double int_error); ///< Adding integration to proper bin
+        //void FillQuadrature(double int_val, double int_error); ///< Adding integration to proper bin
         void FillResult(TermType term, double int_val, double int_error, double time); ///< Fill the result of integration.
-        void CumulateResult(TermType term, double wgt); ///< Fill the result of integration.
+        //void CumulateResult(TermType term, double wgt); ///< Fill the result of integration.
         void SetPDF(int npdf); ///< Set histograms for pdf memeber npdf.
         void Merge();
         void Dump();
@@ -47,6 +47,7 @@ class plotter {
 #ifdef USEROOT
         // Data members
         //
+        bool isFillMode;
         // Histogramming
         /// @todo: use one object instead, be more variable
         // boson kinematic histograms
