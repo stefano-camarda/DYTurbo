@@ -8,18 +8,7 @@
 ## @author cuto <Jakub.Cuth@cern.ch>
 ## @date 2015-10-27
 
-jobname=$1
-ln -sf infiles/${jobname}.in input.in
-random_seed=$2
-
-# random seed (or PDF variations)
-if [[ $jobname =~ _array_ ]]
-then
-    sed -i "s|= seed|= 123|g           " input.in
-    sed -i "s|= array|= $random_seed|g " input.in
-else
-    sed -i "s|= seed|= 1$random_seed|g " input.in
-fi
+arguments=$*
 
 # setup ENV
 export ATLAS_LOCAL_ROOT_BASE=/cvmfs/atlas.cern.ch/repo/ATLASLocalRootBase
@@ -58,7 +47,8 @@ cat input.in
 echo
 rm -f results*.root
 
-/usr/bin/time -v ./bin/dyturbo input.in
+/usr/bin/time -v ./bin/dyturbo input.in $arguments
+
 hadd -f results_merge.root results*.root
 
 

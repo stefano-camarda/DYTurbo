@@ -1,0 +1,103 @@
+# Process settings
+sroot        = 7e3            # center-of-mass energy
+ih1          = 1              # hadron 1
+ih2          = 1              # hadron 2
+nproc        = 3              # process: 1) W+; 2)W-; 3)Z(/gamma*)
+g_param      = 1.0            # non perturbative g parameter
+order        = 2              # order: 1) NLO(+NLL), 2) NNLO(+NNLL)
+fixedorder   = true          # resummation or fixed order switch
+
+#PDF settings
+LHAPDFset    = CT10nnlo       # PDF set from LHAPDF
+LHAPDFmember = 0              # PDF member
+PDFerrors    = false	      # calculate PDF errors
+
+#QCD scale settings
+dynamicscale    = false       # if true, the renormalisation and factorisation scales are proportional to m_ll, if false they are proportional to m_V (V=W,Z)
+kmuren          = 1.          # scale factor for the renormalisation scale
+kmufac          = 1.          # scale factor for the factorisation scale
+
+# EW parameters (Gmu scheme)
+Gf = 1.1663787e-5        # G-Fermi
+zmass = 91.1876          # Mass of the Z boson
+wmass = 80.385           # Mass of the W boson
+zwidth = 2.4950          # Width of the Z boson
+wwidth = 2.091           # Width of the W boson
+zerowidth = false        # zero-width approximation (not really implemented)
+
+# To use an effective weak-mixing angle, set xw to a non-zero value, otherwise it is calculated according to the Gmu scheme
+xw = 0.   # effective weak-mixing angle
+
+# To use an effective value of alpha_EM(MZ), set aemmz to a non-zero value, otherwise it is calculated according to the Gmu scheme
+aemmz = 0.  #effective value of alpha_EM(MZ)
+
+# CKM matrix
+Vud = 0.97427
+Vus = 0.2253
+Vub = 0.00351
+Vcd = 0.2252
+Vcs = 0.97344
+Vcb = 0.0412
+
+# Z/gamma* coupling to quarks
+Zuu = 1.0
+Zdd = 1.0
+Zss = 1.0
+Zcc = 1.0
+Zbb = 1.0
+
+# include virtual photon in Z/gamma* production
+useGamma = true
+
+# qt-subtraction cut-off. Both conditions are applied, at least one between qtcut and xqtcut must be > 0
+xqtcut = 0.  # cutoff on qt/m
+qtcut = 0.4  # cutoff on qt
+
+# integration settings
+rseed        = 123456         # random seed for MC integration
+
+# type of integration for counter term
+intDimCT = 8 # can be 2, 3, 6, or 8
+
+# term switches
+doRES  = true
+doVV   = true
+doCT   = true
+doREAL = true
+doVIRT = true
+doLO   = true
+doVJ   = false
+
+# Cuba settings
+cubaverbosity    = 0   # Cuba info messsages, from 0 to 3
+cubacores        = 0   # parallelization ( 0 = turn off)
+vegasncallsVV    = 100000   # only for double virtual 6d vegas integration
+vegasncallsCT    = 100000   # only for 6d and 8d vegas integration of the counter term
+vegasncallsLO    = 100000000 # only for lo 7d vegas integration
+vegasncallsREAL  = 10000000 # only for real 10d vegas integration
+vegasncallsVIRT  = 1000000  # only for virt 8d vegas integration
+
+# cubature settings
+pcubature = true
+pcubaccuracy = 1e-4
+
+# total or with lepton cuts
+makelepcuts = false
+
+# debug settings
+timeprofile = false  # debug and time profile resummation integration
+verbose     = false  # debug and time profile costh phi_lep integration
+
+# binning
+
+# normalise cross sections by bin width
+ptbinwidth = false
+ybinwidth = false
+
+# default setting 
+plotmode= fill # fill/integrate
+
+# bins
+qt_bins = [ 0.0 2.5 5.0 7.5 10.0 12.5 15.0 17.5 20.0 22.5 25.0 27.5 30.0 32.5 35.0 37.5 40.0 42.5 45.0 47.5 50.0 52.5 55.0 57.5 60.0 62.5 65.0 67.5 70.0 72.5 75.0 77.5 80.0 82.5 85.0 87.5 90.0 92.5 95.0 97.5 100.0 3500 ]
+y_bins = [ 0.0 0.2 0.4 0.6 0.8 1.0 1.2 1.4 1.6 1.8 2.0 2.2 2.4 2.6 2.8 3.0 3.2 3.4 3.6 3.8 4.0 4.2 4.4 4.6 4.8 5.0 ]
+m_bins = [ 40. 3500. ]
