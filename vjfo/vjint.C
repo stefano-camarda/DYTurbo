@@ -245,17 +245,19 @@ double vjint::calc(double m, double pt, double y)
   double q2 = m*m;
   tm_.tm_ = sqrt(q2+pt*pt);
       
-  //.....kinematical limits on qt
+  //kinematical limits on qt (at y = 0)
   double z = q2/dypara_.s_;
   double xr = pow(1-z,2)-4*z*pow(pt/m,2);
   if (xr < 0)
     return 0.;
 
-  //.....kinematical limits on y
+  //kinematical limits on y including qt
   double tmpx = (q2+dypara_.s_)/dypara_.ss_/tm_.tm_;
-  double ymax = log((tmpx+sqrt(pow(tmpx,2)-4))/2);
+  double ymax = log((tmpx+sqrt(max(0.,pow(tmpx,2)-4.)))/2.);
 
-  if (fabs(y) >= ymax)
+  double ay = fabs(y);
+  if (fabs(y) > ymax ||
+      fabs(*(short*)& ay - *(short*)& ymax) < 2 ) //check also equality
     return 0.;
   
   //...compute as at order=nloop
@@ -268,7 +270,7 @@ double vjint::calc(double m, double pt, double y)
   double integral[1];
   double error[1];
   const int eval = 0;
-  const double epsrel = min(1e-6,opts.pcubaccuracy);
+  const double epsrel = min(1e-4,opts.pcubaccuracy);
   const double epsabs = 0.;
   //     boundaries of integration      
   double xmin[1] = {0.};
