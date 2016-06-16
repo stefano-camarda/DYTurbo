@@ -64,6 +64,9 @@ class OutlierRemoval{
             doMedian(false),
             doOutlierRemoval(false),
             do2D(false),
+            do3D(false),
+            doProj(false),
+            doKeep(false),
             doTest(false),
             doCuba(false),
             verbose(1) {};
@@ -215,35 +218,40 @@ class OutlierRemoval{
                     o_profile = clone_empty(in_objs[0],(name+"_total").Data());
                 }
                 if (doMedian||doOutlierRemoval){
-                    o_median = (dim==1||do2D) ? clone_empty(in_objs[0],(name+"_median").Data()) : 0;
+                    o_median = clone_empty(in_objs[0],(name+"_median").Data()) ;
                     // First Loop :  Get average and median
                     if (verbose>1) printf("    First Loop \n");
-                    if (dim==1||do2D) {
-                        // This part is same for histograms and profiles
-                        create_average_obj(o_median,in_objs,"median");
-                        if (verbose>3) {printf("  median average "); print_range(o_median);}
-                    }
+                    // This part is same for histograms and profiles
+                    create_average_obj(o_median,in_objs,"median");
+                    if (verbose>3) {printf("  median average "); print_range(o_median);}
                 }
                 if (o_profile==0){
                     // This is not for profile!
                     // NOTE: don't calculate average for profiles, profiles should be summed up
                     create_average_obj(o_average,in_objs,"mean");
-                    // save average and median
-                    o_average->SetName(name);
-                    output_objects.push_back(o_average);
+                    // save average
+                    if ( !doOutlierRemoval && !doMedian || doKeep ){
+                        o_average->SetName(name);
+                        output_objects.push_back(o_average);
+                    }
                     if(doMedian||doOutlierRemoval) {
-                        //
-                        if (dim==1||do2D) {
+                        // save median
+                        if ( !doOutlierRemoval ){
+                            o_median->SetName(name);
+                            output_objects.push_back(o_median);
+                        } else if (doKeep) {
                             o_median->SetName((name+"_median").Data());
                             output_objects.push_back(o_median);
-                            if (verbose>2) printf("saving histogram %s with integral %f\n", o_median->GetName(), o_median->Integral());
                         }
+                        if (verbose>2) printf("saving histogram %s with integral %f\n", o_median->GetName(), o_median->Integral());
                         if(doOutlierRemoval){
                             // Second loop -- outlier removal for histogram
                             o_average = clone_empty(in_objs[0],(name+"_average").Data());
                             // FIXME: Remove outliers with PDF correlated way
                             remove_outliers_from_hist(o_average,o_median,in_objs);
-                            o_average->SetName((name+"_outliers").Data());
+                            // save outlier
+                            if(doKeep) o_average->SetName((name+"_outliers").Data());
+                            else  o_average->SetName(name);
                             output_objects.push_back(o_average);
                         }
                     }
@@ -256,20 +264,29 @@ class OutlierRemoval{
                     // retrive correct xsection in denominator.
                     //
   		    for (auto ith : in_objs) o_profile->Add(ith,1./in_objs.size());
-                    // save profile and median
-                    o_profile->SetName(name);
-                    output_objects.push_back(o_profile);
+                    // save  average profile
+                    if ( !doOutlierRemoval && !doMedian || doKeep ){
+                        o_profile->SetName(name);
+                        output_objects.push_back(o_profile);
+                    }
                     if (verbose>2) printf("saving histogram %s with integral %f\n",o_profile->GetName(), o_profile->Integral());
                     if(doMedian||doOutlierRemoval){
-                        if (dim>1&&!do2D) {delete_objs(in_objs); continue;}
-                        o_median->SetName((name+"_median").Data());
-                        output_objects.push_back(o_median);
+                        // save median profile
+                        if ( !doOutlierRemoval ){
+                            o_median->SetName(name);
+                            output_objects.push_back(o_median);
+                        } else if (doKeep) {
+                            o_median->SetName((name+"_median").Data());
+                            output_objects.push_back(o_median);
+                        }
                         if(doOutlierRemoval){
                             // Second Loop -- discard outliers
                             if (verbose>1) printf("    Second Loop \n");
                             remove_outliers_from_profile(o_average, o_median, in_objs);
                             if (o_average==0){  delete_objs(in_objs); continue;}; // if not implemented 
-                            o_average->SetName((name+"_outlier").Data());
+                            // save outlier profile
+                            if (doKeep) o_average->SetName((name+"_outlier").Data());
+                            else  o_average->SetName((name).Data());
                             output_objects.push_back(o_average);
                             if (verbose>2) {printf("  outliers removed \n"); print_range(o_average); print_range(o_profile);}
                         }
@@ -325,6 +342,9 @@ class OutlierRemoval{
         bool includeUnderOverFlow;
         bool doXsecNormalization;
         bool do2D;
+        bool do3D;
+        bool doProj;
+        bool doKeep;
         bool doRebin;
         bool doNanIterp;
         bool doMedian;
@@ -354,21 +374,26 @@ class OutlierRemoval{
             {
                 // filter classes
                 TClass *cl = TClass::GetClass(key->GetClassName());
-                if (!cl->InheritsFrom( "TH1"      )) continue; // profiles and histograms of all dimensions
+                if (!cl->InheritsFrom( "TH1"      )) continue; // only profiles and histograms of all dimensions
                 TString name = key->GetName();
-                if (cl->InheritsFrom( "TH3"      )) {
-                    // if is pt,y,M make projection to y,M
-                    if (do2D && name.Contains("h_qtVyVQ")) all_obj_names.push_back(dirname+name+"_py");
-                    continue; // Dont merge TH3 is too slow
-                }
-                if (doTest && !name.Contains("p_qtVy_A4")) continue; // for fast merger testing
-                all_obj_names.push_back(dirname+name);
-                // make projections on TH2 and remove outlier on 1D separatelly
-                if (do2D && cl->InheritsFrom( "TH2"      )) {
+                if (doTest ) {
+                    if (!name.Contains("p_qtVy_A4")) continue; // for fast merger testing
                     all_obj_names.push_back(dirname+name+"_px");
                     all_obj_names.push_back(dirname+name+"_py");
-                    //all_obj_names.push_back(dirname+name+"_pu");
-                    //all_obj_names.push_back(dirname+name+"_pv");
+                }
+                // make projections on TH2 and remove outlier on 1D separatelly
+                if (cl->InheritsFrom( "TH2" )) {
+                    if (doProj){
+                        all_obj_names.push_back(dirname+name+"_px");
+                        all_obj_names.push_back(dirname+name+"_py");
+                    }
+                    if (!do2D) continue; // Dont merge TH2 is too slow
+                }
+                // make projections on TH3 and remove outlier on 1D separatelly
+                if (cl->InheritsFrom( "TH3" )) {
+                    // if is pt,y,M make projection to y,M
+                    if (doProj && name.Contains("h_qtVyVQ")) all_obj_names.push_back(dirname+name+"_py");
+                    if (!do3D) continue; // Dont merge TH3 is too slow
                 }
                 if (doRebin) {
                     // rebin pt as used ptz measurement
@@ -381,6 +406,8 @@ class OutlierRemoval{
 			//all_obj_names.push_back(dirname+name+"_px_rebin"); // make projection and 1D rebin
                     }
                 }
+                // add original object
+                all_obj_names.push_back(dirname+name);
                 if (doTest && all_obj_names.size()==2) break; // for fast merger testing
             }
             f->Close();
@@ -580,12 +607,12 @@ class OutlierRemoval{
                         ybins.size()-1, &ybins[0]
                         );
             // FIXME: I am not sure if this is necessary
-            //} else if (dim==3){
-                //obj = (TH1*) new TH3D (name.Data(), title.Data(),
-                        //xbins.size()-1, &xbins[0],
-                        //ybins.size()-1, &ybins[0],
-                        //zbins.size()-1, &zbins[0]
-                        //);
+            } else if (dim==3){
+                obj = (TH1*) new TH3D (name.Data(), title.Data(),
+                        xbins.size()-1, &xbins[0],
+                        ybins.size()-1, &ybins[0],
+                        zbins.size()-1, &zbins[0]
+                        );
             }
             return obj;
         }
@@ -685,6 +712,8 @@ class OutlierRemoval{
                     ent=gr->Interpolate(xbin,ybin);
                     delete gr;
                 }
+            } else {
+                //throw runtime_error("Not implemented interpolation of dimension "+string(dim));
             }
             // interpolate
             // set
@@ -1102,15 +1131,18 @@ int main(int argc, char * argv[]){
     opts.add_options("Hidden")
         ("outfile"     , "Name of output file. ", po::value<SString>() )
         ("infilenames" , "List of input files. ", po::value<VecSStr>() )
-        ("t,test"      , "Test parser and die."                        )
+        ("e,test"        , "Test parser and die."                        )
+        //("x,x-section"     , "Normalize histograms to Xsection."                         )
     ;
     // Program options
     opts.add_options("")
         ("h,help"            , "Print this help and die."                                  )
-        ("m,median"          , "Add median (by default only avarage)"                      )
-        ("o,outlier"         , "Add median and outlier removal (by default only avarage)"  )
-        ("x,x-section"       , "Normalize histograms to Xsection."                         )
-        ("p,2D-proj"         , "Make 2d projections and outliers for 2D."                  )
+        ("m,median"          , "Do median (by default avarage)"           )
+        ("o,outlier"         , "Do outlier removal (by default avarage)"  )
+        ("k,keep"            , "Add median and outlier removal to output if turned on (needs -o or -m)"  )
+        ("d,2D-merge"        , "Do merging of 2D objects (can slow down)."                 )
+        ("t,3D-merge"        , "Do merging of 3D objects (very slow down !!!)"             )
+        ("p,proj"            , "Make 1D projections and outliers for 2D and 3D."           )
         ("r,rebin"           , "Change binning of profiles (merge by 5)."                  ) //"Add pt histograms with Z pt LHC 7TeV rebin."               )
         ("c,cuba"            , "Add all histograms from cubature integration."             )
         ("n,NaN-interpolate" , "Find NaNs and interpolate"                                 )
@@ -1143,14 +1175,17 @@ int main(int argc, char * argv[]){
         }
         //
         printf("Testing parser: counts\n");
-        printf ( "help     : %d \n" , opts.count ( "help"            )  ) ;
-        printf ( "median   : %d \n" , opts.count ( "median"          )  ) ;
-        printf ( "outlier  : %d \n" , opts.count ( "outlier"         )  ) ;
-        printf ( "x-section: %d \n" , opts.count ( "x-section"       )  ) ;
-        printf ( "2D-proj  : %d \n" , opts.count ( "2D-proj"         )  ) ;
-        printf ( "cuba     : %d \n" , opts.count ( "cuba"            )  ) ;
-        printf ( "NaN      : %d \n" , opts.count ( "Nan-interpolate" )  ) ;
-        printf ( "verbose  : %d \n" , opts.count ( "verbose"         )  ) ;
+        printf ( "help      : %d \n" , opts.count ( "help"            )  ) ;
+        printf ( "median    : %d \n" , opts.count ( "median"          )  ) ;
+        printf ( "outlier   : %d \n" , opts.count ( "outlier"         )  ) ;
+        //printf ( "x-section : %d \n" , opts.count ( "x-section"       )  ) ;
+        printf ( "2D-merge  : %d \n" , opts.count ( "2D-merge"        )  ) ;
+        printf ( "3D-merge  : %d \n" , opts.count ( "3D-merge"        )  ) ;
+        printf ( "proj      : %d \n" , opts.count ( "proj"            )  ) ;
+        printf ( "keep      : %d \n" , opts.count ( "keep"            )  ) ;
+        printf ( "cuba      : %d \n" , opts.count ( "cuba"            )  ) ;
+        printf ( "NaN       : %d \n" , opts.count ( "Nan-interpolate" )  ) ;
+        printf ( "verbose   : %d \n" , opts.count ( "verbose"         )  ) ;
     }
 
 
@@ -1172,8 +1207,11 @@ int main(int argc, char * argv[]){
     }
     if (opts.count("median"          )) merger.doMedian=true;
     if (opts.count("outlier"         )) merger.doOutlierRemoval=true;
-    if (opts.count("x-section"       )) merger.doXsecNormalization=true;
-    if (opts.count("2D-proj"         )) merger.do2D=true;
+    //if (opts.count("x-section"       )) merger.doXsecNormalization=true;
+    if (opts.count("2D-merge"        )) merger.do2D=true;
+    if (opts.count("3D-merge"        )) merger.do3D=true;
+    if (opts.count("proj"            )) merger.doProj=true;
+    if (opts.count("keep"            )) merger.doKeep=true;
     if (opts.count("rebin"           )) merger.doRebin=true;
     if (opts.count("cuba"            )) {merger.doCuba=true; merger.doRebin=false;}
     if (opts.count("NaN-interpolate" )) {merger.doNanIterp=true;}
