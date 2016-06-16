@@ -1,5 +1,6 @@
-#include "plotter.h"
+#define DEL_SAFE(x)  if (x!=0) { delete x; x=NULL;}
 
+#include "plotter.h"
 plotter hists;
 
 #include "integr.h"
@@ -22,7 +23,6 @@ plotter hists;
 #include <TString.h>
 #include <TLorentzVector.h>
 
-#define DEL_SAFE(x)  if (x!=0) { delete x; x=NULL;}
 
 
 plotter::plotter() :
@@ -49,14 +49,11 @@ plotter::plotter() :
 #endif
     verbose     (false)
 {
-    if (bins.plotmode == "integrate"){
-        doAiMoments=false;
-        isFillMode=false; // this is here bc string comparison is too compilcated
-    }
     return;
 }
 
 plotter::~plotter(){
+    if(!IsInitialized()) return;
     for (int i=0; i< h_qtVy_PDF.size(); i++){
         SetPDF(i);
         DEL_SAFE( h_qt     );
@@ -89,6 +86,10 @@ plotter::~plotter(){
 
 void plotter::Init(){
     if (verbose) printf(" plotter:  histogram initialization\n");
+    if (bins.plotmode == "integrate"){
+        doAiMoments=false;
+        isFillMode=false; // this is here bc string comparison is too compilcated
+    }
     // Use sumw2 by default
     TH1::SetDefaultSumw2(true);
     // get qt-y binning: integral results
