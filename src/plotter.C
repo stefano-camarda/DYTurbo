@@ -54,24 +54,24 @@ plotter::plotter() :
 
 plotter::~plotter(){
     if(!IsInitialized()) return;
-    for (int i=0; i< h_qtVy_PDF.size(); i++){
-        SetPDF(i);
-        DEL_SAFE( h_qt     );
-        DEL_SAFE( h_y      );
-        DEL_SAFE( h_m      );
-        DEL_SAFE( h_qtVy   );
-        DEL_SAFE( h_yVm    );
-        if(doAiMoments) {
-            for (auto i=0; i<NMOM; i++){
-                DEL_SAFE ( pa_qtVy .A[i] );
-                //DEL_SAFE( pa_qt   .A[i]);
-                //DEL_SAFE( pa_y    .A[i])
-            }
-            //DEL_SAFE(h_costh   );
-            //DEL_SAFE(h_phi     );
-            //DEL_SAFE(h_phi_lep );
-        }
-    }
+    // for (int i=0; i< h_qtVy_PDF.size(); i++){
+    //     SetPDF(i);
+    //     DEL_SAFE( h_qt     );
+    //     DEL_SAFE( h_y      );
+    //     DEL_SAFE( h_m      );
+    //     DEL_SAFE( h_qtVy   );
+    //     DEL_SAFE( h_yVm    );
+    //     if(doAiMoments) {
+    //         for (auto i=0; i<NMOM; i++){
+    //             DEL_SAFE ( pa_qtVy .A[i] );
+    //             //DEL_SAFE( pa_qt   .A[i]);
+    //             //DEL_SAFE( pa_y    .A[i])
+    //         }
+    //         //DEL_SAFE(h_costh   );
+    //         //DEL_SAFE(h_phi     );
+    //         //DEL_SAFE(h_phi_lep );
+    //     }
+    // }
     //if(!qt_y_resum ) delete qt_y_resum ;
     //if(!qt_y_ct    ) delete qt_y_ct    ;
     //if(!qt_y_lo    ) delete qt_y_lo    ;
