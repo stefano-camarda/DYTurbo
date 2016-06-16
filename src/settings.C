@@ -141,10 +141,10 @@ void settings::parse_options(int argc, char* argv[]){
             } else if ( piece == "RES"     ) { doRES=true;  intDimRes=8;
             } else if ( piece == "RES3D"   ) { doRES=true;  intDimRes=3;
             } else if ( piece == "RES2D"   ) { doRES=true;  intDimRes=2;
-            } else if ( piece == "CT"      ) { doCT=true;   intDimCT=6; //< FIXME: ia 6D save ?
+            } else if ( piece ==  "CT"     ) { doCT=true;   intDimCT=8; //< NOTE: is 6D save ? --> No, 8D is actually faster, 6D has some quadratures inside
             } else if ( piece == "CT3D"    ) { doCT=true;   intDimCT=3;
             } else if ( piece == "CT2D"    ) { doCT=true;   intDimCT=2;
-            } else if ( piece == "FIXCT"   ) { doCT=true;   intDimCT=6; fixedorder=true; 
+            } else if ( piece == "FIXCT"   ) { doCT=true;   intDimCT=8; fixedorder=true; 
             } else if ( piece == "FIXCT3D" ) { doCT=true;   intDimCT=3; fixedorder=true; 
             } else if ( piece == "FIXCT2D" ) { doCT=true;   intDimCT=2; fixedorder=true; 
             } else {
@@ -265,7 +265,6 @@ void settings::readfromfile(const string fname){
     opts_.approxpdf_    = in.GetNumber ( "opts_approxpdf" ); //0
     opts_.pdfintervals_ = in.GetNumber ( "opts_pdfintervals" ); //100
     evolmode           = in.GetNumber  ("evolmode");
-    opts_.fixedorder_  = fixedorder;
     bintaccuracy       = in.GetNumber ( "bintaccuracy" );
     mellinintervals    = in.GetNumber ( "mellinintervals" );
     mellinrule         = in.GetNumber ( "mellinrule" );
@@ -415,7 +414,7 @@ void settings::check_consitency(){
             );
     // plot mode consitency with integration
     if ( bins.plotmode=="fill" && 
-         ( resint2d || resint3d || ctint2d || ctint3d )
+	 ( (doRES && (resint2d || resint3d)) || (doCT && (ctint2d || ctint3d)) || doVJ )
        ) {
         printf ("Warning: plotmode: Filling not work for quadrature integration. I am switching to integrate.\n");
         bins.plotmode="integrate";
