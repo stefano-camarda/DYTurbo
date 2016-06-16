@@ -379,76 +379,84 @@ merge_parsed(){
     mkdir -p $outdir
     echo "merging"
     rm -f mergeout
-    for proc in $proclist
+    for pdfset in $pdflist
     do
-        for term in $termlist
+        for proc in $proclist
         do
-            newindir=$indir
-            if [[ $indir == results ]]
-            then
-                echo -n splitting result files by term $term , pdf $pdfset and proc $proc ....
-                newindir=results_${proc}_${pdfset}_${term}
-                mkdir -p $newindir
-                mv $indir/dyturbo_${proc}_*_${pdfset}_*t${term}_*.* $newindir 2> /dev/null 
-                echo "all files moved"
-            fi
-            #
-            if [[ $MISSING == qty ]]
-            then
-                echo "find missing $MISSING"
-                oldqt=0
-                for iqt in `seq 10 10 100`
-                do
-                    oldy=-5
-                    for iy in `seq -3 2 5`
-                    do
-                        qty=qt${oldqt}${iqt}y${oldy}${iy}
-                        for seednum in `seq 100 150`
-                        do
-                            ls $newindir/dyturbo_${proc}_${collider}_${pdfset}_array_${order}${qty}t${term}_seed_${seednum}.root > /dev/null
-                        done 
-                        oldy=$iy
-                    done
-                    oldqt=$iqt
-                done
-                continue
-            fi
-            #
-            outname="dyturbo_${proc}_${collider}_${pdfset}_*_${order}${qty}t${term}_seed_${seednum}*root"
-            searchfile=$outname
-            if [[ $seed =~ v146 ]]
-            then
-                newindir="$newindir*$outname"
-                searchfile="*results_merge.root* -type d"
-            fi
-            #
-            for fres in `find $newindir -name $searchfile | sort `
+            for term in $termlist
             do
-                currentseed=`echo $fres |  sed -n "s|.*_seed_1\([0-9]*\).*|\1|p"`
-                infiles=`echo $fres | sed "s|$mergefrom|*|g"`
-                outfilebase=`basename $fres | sed "s|$mergefrom|$mergeto|g"`
-                [[ $fres =~ array ]] &&  outfilebase=`basename $fres | sed "s|array|$currentseed|g;s|$mergefrom|$mergeto|g;s|_seed_.*.root|.root|g"`
+                newindir=$indir
+                if [[ $indir == results ]]
+                then
+                    echo -n splitting result files by term $term , pdf $pdfset and proc $proc ....
+                    newindir=results_${proc}_${pdfset}_${term}
+                    mkdir -p $newindir
+                    mv $indir/dyturbo_${proc}_*_${pdfset}_*t${term}_*.* $newindir 2> /dev/null 
+                    echo "all files moved"
+                fi
+                #
+                if [[ $MISSING == qty ]]
+                then
+                    echo "find missing $MISSING"
+                    oldqt=0
+                    for iqt in `seq 10 10 100`
+                    do
+                        oldy=-5
+                        for iy in `seq -3 2 5`
+                        do
+                            qty=qt${oldqt}${iqt}y${oldy}${iy}
+                            for seednum in `seq 100 150`
+                            do
+                                ls $newindir/dyturbo_${proc}_${collider}_${pdfset}_array_${order}${qty}t${term}_seed_${seednum}.root > /dev/null
+                            done 
+                            oldy=$iy
+                        done
+                        oldqt=$iqt
+                    done
+                    continue
+                fi
+                #
+                outname="dyturbo_${proc}_${collider}_${pdfset}_*_${order}${qty}t${term}_seed_${seednum}*root"
+                searchfile=$outname
                 if [[ $seed =~ v146 ]]
                 then
-                    # GRIDMERGE
-                    infiles=$infiles/'*.root'
+                    newindir="$newindir*$outname"
+                    searchfile="*results_merge.root* -type d"
                 fi
-                # merge
-                echo -n $outdir/$outfilebase $fres infiles: `ls $infiles | wc -l` ...
-                #ls -1 $infiles
-                $DRYRUN $MERGER $outdir/${outfilebase} $infiles  >> mergeout 2>&1 
-                #sleep 1
-                if [[ $DRYRUN =~ echo ]] || [ -f $outdir/${outfilebase} ]
-                then
-                    echo Done
-                else
-                    cat  mergeout
-                    echo "there was an error with: $MERGER $outdir/${outfilebase} $infiles"
-                    return 3
-                fi
-            done
-        done
-    done
+                #
+                for fres in `find $newindir -name $searchfile | sort `
+                do
+                    currentseed=`echo $fres |  sed -n "s|.*_seed_1\([0-9]*\).*|\1|p"`
+                    infiles=`echo $fres | sed "s|$mergefrom|*|g"`
+                    outfilebase=`basename $fres | sed "s|$mergefrom|$mergeto|g"`
+                    [[ $fres =~ array ]] &&  outfilebase=`basename $fres | sed "s|array|$currentseed|g;s|$mergefrom|$mergeto|g;s|_seed_.*.root|.root|g"`
+                    if [[ $seed =~ v146 ]]
+                    then
+                        # GRIDMERGE
+                        infiles=$infiles/'*.root'
+                    fi
+                    # merge
+                    echo -n $outdir/$outfilebase $fres infiles: `ls $infiles | wc -l` ...
+                    #ls -1 $infiles
+                    if [[ -f $outdir/$outfilebase ]]
+                    then
+                        echo Skipping
+                    else
+                        $DRYRUN $MERGER $outdir/${outfilebase} $infiles  >> mergeout 2>&1 
+                        #sleep 1
+                        if [[ $DRYRUN =~ echo ]] || [ -f $outdir/${outfilebase} ]
+                        then
+                            echo Done
+                        else
+                            cat  mergeout
+                            echo "there was an error with: $MERGER $outdir/${outfilebase} $infiles"
+                            return 3
+                        fi
+                    fi
+                done
+            done # term
+        done # proc
+    done # pdf
     [[ $DRYRUN =~ echo ]] && echo This was just test run, please add RUN at the end of commad to confirm merging
 }
 
@@ -474,7 +482,7 @@ parse_in(){
     proclist=wp
     termlist=VIRT
     indir=results
-    pdfset=CT10nnlo
+    pdflist=CT10nnlo
     collider=lhc7
     seed=10100
     order=*
@@ -502,7 +510,7 @@ parse_in(){
                 shift
                 ;;
             --pdfset)
-                pdfset=$2
+                pdflist="`echo $2|sed 's|,| |g'`"
                 shift
                 ;;
             --indir)
