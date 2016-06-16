@@ -16,21 +16,42 @@ help(){
 
 main(){
     parse_input $*
-    #parse_input --lxbatch --proc z0 --pdfset CT10nnlo,CT10nnlo68clProfiled --pdfvar all --seeds 2
     clear_files
-
+    #
     submit_jobs_wmass
-    if [[ $target =~ lxplus|mogon|localrun  ]] 
+    #
+    if [[ $target =~ lxplus|mogon|localrun  ]]
     then
         ask_submit
         $DRYRUN submit_jobs_wmass
-    elif [[ $target =~ grid  ]] 
+    elif [[ $target =~ grid  ]]
     then
-        echo "Check GRID directory"
-    else 
+        echo
+        echo " Your GRID username: $cernuser"
+        echo " Your GRID group: $cerngroup"
+        echo " Your GRID voms: $gridofficial"
+        ask_submit
+        # check panda voms proxy
+        if ! voms-proxy-info || ! which prun
+        then
+            echo "Please setup panda and voms : "
+            echo "setupATLAS "
+            echo "lsetup rucio panda "
+            echo "voms-proxy-init -voms atlas -valid 96:00"
+            exit 7
+        fi
+        if [[ $DRYRUN =~ echo ]] 
+        then
+            echo "To submit to grid just type:"
+        fi
+        for gridpdf in $pdflist
+        do
+            $DRYRUN cd $dyturbo_project/GRID_$gridpdf
+            $DRYRUN ./subm.sh
+        done
+    else
         echo "UKNOWN TARGET: $target"
     fi
-
 }
 
 parse_input(){
@@ -47,11 +68,15 @@ parse_input(){
     #pdfvarlist="0 1 2 3"
     pdfvarlist=0
     #
-    infile=infile/wmass.in
+    infile=input/wmass.in
     #
     #seedlist=100,201 # run 100 and 201
     #seedlist=100-201 # run form 100 to 201
-    seedlist=800    # run from 1 to 800
+    #seedlist=800    # run from 1 to 800
+    seedlist=unset
+    #
+    voms=unset
+    cernuser=unset
 
     while [[ $# > 0 ]]
     do
@@ -83,6 +108,10 @@ parse_input(){
                 termlist="`echo $2|sed 's|,| |g'`"
                 shift
                 ;;
+            --mbins)
+                mbins=$2
+                shift
+                ;;
             --pdfset)
                 pdflist="`echo $2|sed 's|,| |g'`"
                 shift
@@ -97,6 +126,14 @@ parse_input(){
                 ;;
             --seeds)
                 seedlist=$2
+                shift
+                ;;
+            --griduser)
+                cernuser=$2
+                shift
+                ;;
+            --voms)
+                voms=$2
                 shift
                 ;;
             #  HELP and OTHER
@@ -118,7 +155,20 @@ submit_jobs_wmass(){
     program=dyturbo
     random_seed=seed
     # check seed
-    [[ $target =~ grid ]] || [[ $seedlist =~ - ]]  || seedlist=1-$seedlist
+    if [[ $seedlist == unset ]]
+    then
+        echo " Seed argument is mandatory please set '--seeds [integer/range/list]'"
+        exit 5
+    fi
+    if [[ $target =~ grid ]]
+    then
+        [[ $cernuser == unset ]] \
+            && echo " GRID usernaname is mandatory please set '--griduser NAME'" \
+            && echo " You can also specify your voms by '--voms VOMS'" \
+            &&   exit 6
+    else # not grid
+        [[ $seedlist =~ -|, ]]  || seedlist=1-$seedlist
+    fi
     # check order term
     [[ $order == 1 ]] && [[ $termlist =~ REAL|VIRT ]] && echo "WRONG ORDER $order TO TERM $termlist" && return 3
     [[ $order == 2 ]] && [[ $termlist =~ LO        ]] && echo "WRONG ORDER $order TO TERM $termlist" && return 3 
@@ -194,13 +244,13 @@ prepare_script(){
     sh_file=$batch_script_dir/$job_name.sh
     echo $job_name $seedlist
     #
-    mlo=50 && mhi=1000
-    [[ $process =~ z0 ]] && mlo=66 && mhi=116
+    mbins=100,50,1000
+    [[ $process =~ z0 ]] && mbins=100,66,116
     # arguments
-    arguments="--proc $process --mtbins 100,$mlo,$mhi --pdfset $pdfset --pdfvar $variation --order $order --term $terms"
-    [[ $target =~ lxbatch|mogon|localrun ]] && arguments=$arguments" --seed $LSB_JOBINDEX infile.in"
+    arguments="input.in --proc $process --mbins $mbins --pdfset $pdfset --pdfvar $variation --order $order --term $terms"
+    [[ $target =~ lxbatch|mogon|localrun ]] && arguments=$arguments" --seed $LSB_JOBINDEX "
     # make sure we make some noise on grid
-    [[ $target =~ mogon ]] && arguments=$arguments" --verbose"
+    [[ $target =~ mogon ]] && arguments=$arguments" --verbose "
     # job queue
     nprocessors=1
     walltime=5:00
@@ -218,7 +268,7 @@ prepare_script(){
     sed -i "s|SETQUEUE|$queue|g                 " tmp
     sed -i "s|SETWALLTIME|$walltime|g           " tmp
     sed -i "s|DYTURBOROOTDIR|$dyturbo_project|g " tmp
-    sed -i "s|DYTURBOINPUTFILE|$infile|g       " tmp
+    sed -i "s|DYTURBOINPUTFILE|$dyturbo_project/$infile|g       " tmp
     sed -i "s|SETNPROCESSORS|$nprocessors|g     " tmp
     sed -i "s|SETPROGARGUMETS|$arguments|g     " tmp
     sed -i "s|SETLHAPDFLIB|`lhapdf-config --prefix`/lib|g           " tmp
@@ -247,10 +297,10 @@ submit_job(){
 }
 
 clear_files(){
-    echo "Clearing setup files"
+    echo -n "Clearing setup files .. "
     if [[ $(bjobs -o name 2> /dev/null | grep dyturbo) ]] 
     then
-        echo There are jobs running, skip clearing
+        echo -n "There are jobs running, skip clearing .. "
         #rm -f scripts/batch_scripts/*.sh
         #rm -f scripts/infiles/*.in
     else
@@ -307,12 +357,21 @@ prepare_tarbal(){
             exit 3
         fi
     fi
-
+    # official mode
+    gridofficial=" " # space at the end
+    cerngroup=user
+    if [[ $voms != unset ]]
+    then
+        gridofficial=" --official --voms $voms"
+        cerngroup=group
+    fi
     # prepare PRUN command
     cat  scripts/run_prun.sh              >  scripts/grid_submit.cmd
     echo ""                               >> scripts/grid_submit.cmd
     echo "gridv=$gridv"                   >> scripts/grid_submit.cmd
-    echo "CERNUSER=$USER"                 >> scripts/grid_submit.cmd
+    echo "CERNUSER=$cernuser"             >> scripts/grid_submit.cmd
+    echo "CERNGROUP=$cerngroup"           >> scripts/grid_submit.cmd
+    echo "OFFICIAL=$gridofficial"         >> scripts/grid_submit.cmd
     echo "DYTURBOVERSION=$DYTURBOVERSION" >> scripts/grid_submit.cmd
     echo "ROOTVERSION=$ROOTVERSION"       >> scripts/grid_submit.cmd
     echo "CMTVERSION=$CMTVERSION"         >> scripts/grid_submit.cmd
@@ -321,9 +380,6 @@ prepare_tarbal(){
     echo "# Setup rucio and panda "       >> scripts/grid_submit.cmd
     echo "# lsetup rucio panda"           >> scripts/grid_submit.cmd
     echo "# voms-proxy-init -voms atlas -valid 96:00" >> scripts/grid_submit.cmd
-    # clear submistion dir
-    rm -rf $griddir/*
-    mkdir -p $griddir/inputs
 }
 
 finalize_grid_submission(){
@@ -333,36 +389,36 @@ finalize_grid_submission(){
     if [[ $target =~ compile ]]
     then
         # put source code
-        $CP dyturbo-${DYTURBOVERSION}.tar.gz GRID/
+        $CP dyturbo-${DYTURBOVERSION}.tar.gz $griddir/
     else
         # prepare folders
-        mkdir -p GRID/bin
-        mkdir -p GRID/lib
-        mkdir -p GRID/LHAPDF
+        mkdir -p $griddir/bin
+        mkdir -p $griddir/lib
+        mkdir -p $griddir/LHAPDF
         # copy exec
-        $CP bin/* GRID/bin/
-        $CP lib/*.so* GRID/lib/
-        $CP lib/*.la  GRID/lib/
-        $CP `lhapdf-config --libdir`/libLHAPDF.so GRID/lib/
+        $CP bin/* $griddir/bin/
+        $CP lib/*.so* $griddir/lib/
+        $CP lib/*.la  $griddir/lib/
+        $CP `lhapdf-config --libdir`/libLHAPDF.so $griddir/lib/
         # copy pdfset
         lhapdfdir=`lhapdf-config --datadir`
-        $CP $lhapdfdir/$pdfset GRID/LHAPDF
-        $CP $lhapdfdir/lhapdf.conf GRID/LHAPDF
-        $CP $lhapdfdir/pdfsets.index GRID/LHAPDF
+        $CP $lhapdfdir/$pdfset $griddir/LHAPDF
+        $CP $lhapdfdir/lhapdf.conf $griddir/LHAPDF
+        $CP $lhapdfdir/pdfsets.index $griddir/LHAPDF
     fi
     # submision scripts
-    cat scripts/grid_submit.cmd > GRID/subm.sh
-    chmod +x GRID/subm.sh
+    cat scripts/grid_submit.cmd > $griddir/subm.sh
+    chmod +x $griddir/subm.sh
     # on-site scripts
-    sed "s|SETTARGET|$target|g" scripts/compile_grid.sh > GRID/compile_grid.sh
-    sed "s|SETTARGET|$target|g" scripts/run_grid.sh     > GRID/run_grid.sh
+    sed "s|SETTARGET|$target|g" scripts/compile_grid.sh > $griddir/compile_grid.sh
+    sed "s|SETTARGET|$target|g" scripts/run_grid.sh     > $griddir/run_grid.sh
     # add inputfile
-    $CP input/default.in GRID/
-    $CP $infile GRID/input.in
+    $CP input/default.in $griddir/
+    $CP $infile $griddir/input.in
     #
-    ls -hla --color=auto GRID
-    echo
-    echo "Go to GRID folder 'cd GRID' edit subm.sh (change user name, role) and run it './subm.sh' "
+    #ls -hla --color=auto $griddir
+    #echo
+    #echo "Go to GRID folder 'cd GRID' edit subm.sh (change user name, role) and run it './subm.sh' "
 }
 
 DRYRUN=echo 

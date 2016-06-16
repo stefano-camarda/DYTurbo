@@ -47,7 +47,7 @@ cat input.in
 echo
 rm -f results*.root
 
-/usr/bin/time -v ./bin/dyturbo input.in $arguments
+./bin/dyturbo $arguments
 
 hadd -f results_merge.root results*.root
 
