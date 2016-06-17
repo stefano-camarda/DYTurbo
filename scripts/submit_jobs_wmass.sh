@@ -186,6 +186,12 @@ parse_input(){
 submit_jobs_wmass(){
     program=dyturbo
     random_seed=seed
+    # check infile
+    if ! ls $infile > /dev/null
+    then
+        echo " Input file not found pleae set correct with '--infile name'  "
+        exit 5
+    fi
     # check seed
     if [[ $seedlist == unset ]]
     then
