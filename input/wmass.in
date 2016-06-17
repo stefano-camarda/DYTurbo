@@ -3,7 +3,6 @@ sroot        = 7e3            # center-of-mass energy
 ih1          = 1              # hadron 1
 ih2          = 1              # hadron 2
 nproc        = 3              # process: 1) W+; 2)W-; 3)Z(/gamma*)
-g_param      = 1.0            # non perturbative g parameter
 order        = 2              # order: 1) NLO(+NLL), 2) NNLO(+NNLL)
 fixedorder   = true          # resummation or fixed order switch
 
@@ -71,11 +70,11 @@ doVJ   = false
 # Cuba settings
 cubaverbosity    = 0   # Cuba info messsages, from 0 to 3
 cubacores        = 0   # parallelization ( 0 = turn off)
-vegasncallsVV    = 100000   # only for double virtual 6d vegas integration
-vegasncallsCT    = 100000   # only for 6d and 8d vegas integration of the counter term
-vegasncallsLO    = 100000000 # only for lo 7d vegas integration
-vegasncallsREAL  = 10000000 # only for real 10d vegas integration
-vegasncallsVIRT  = 1000000  # only for virt 8d vegas integration
+vegasncallsVV    = 1e7   # only for double virtual 6d vegas integration
+vegasncallsCT    = 1e8   # only for 6d and 8d vegas integration of the counter term
+vegasncallsLO    = 1e8   # only for lo 7d vegas integration
+vegasncallsREAL  = 1e9   # only for real 10d vegas integration
+vegasncallsVIRT  = 1e8   # only for virt 8d vegas integration
 
 # cubature settings
 pcubature = true
@@ -100,4 +99,4 @@ plotmode= fill # fill/integrate
 # bins
 qt_bins = [ 0.0 2.5 5.0 7.5 10.0 12.5 15.0 17.5 20.0 22.5 25.0 27.5 30.0 32.5 35.0 37.5 40.0 42.5 45.0 47.5 50.0 52.5 55.0 57.5 60.0 62.5 65.0 67.5 70.0 72.5 75.0 77.5 80.0 82.5 85.0 87.5 90.0 92.5 95.0 97.5 100.0 3500 ]
 y_bins = [ 0.0 0.2 0.4 0.6 0.8 1.0 1.2 1.4 1.6 1.8 2.0 2.2 2.4 2.6 2.8 3.0 3.2 3.4 3.6 3.8 4.0 4.2 4.4 4.6 4.8 5.0 ]
-m_bins = [ 40. 3500. ]
+m_bins = [ 40. 200. ]
