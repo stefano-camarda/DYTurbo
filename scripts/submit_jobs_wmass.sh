@@ -11,7 +11,38 @@
 #set -x
 
 help(){
-    echo " Help is on TODO list :), But you can read parse_input function to check possibilities"
+    #echo " Help is on TODO list :), But you can read parse_input function to check possibilities"
+
+    echo "
+USAGE: ./scripts/submit_jobs_wmass.sh TARGET OPTIONS --seeds N [--griduser USER --gridvoms VOMS]
+
+TARGETS : (Need to specify one of those)
+    --local         Prepare for run locally.
+    --grid          Prepare grid submission directory (compilation on local)
+    --mogon         Prepare standard scripts for mogon (Mainz cluster).
+    --lxbatch       Prepare standard scripts for lxbatch (CERN LXPLUS batch system).
+    --help          Print this help and die.
+
+OPTIONS :
+               [default]    {available}            Description
+
+    --infile   [wmass.in]   {input file path}      Common input file with all settings.
+    --proc     [z0]         {z0,wp,wm}             Set the process and mass integration (can be comma separated list)
+    --pdfset   [CT10nnlo]   {LHAPDFname}           Set LHAPDF set name (can be comma separated list)
+    --pdfvar   [0]          {int or all or array}  Set member number or run all
+    --order    [1]          {1,2}                  1: NLL+NLO 2: NNLL+NNLO
+    --term     [LO]         {RES,CT}               Monte-Carlo integration with order as above
+                            {RES3D,CT3D}           Cubature 3D integration with order set above
+                            {RES2D,CT2D}           Cubature 2D integration with order set above
+                            {REAL,VIRT,LO}         Real, virt and V+J LO  with MC
+                            {VV,FIXCT,FIXCT2D}     Fixed terms
+    --seeds                 {int or range or list} MANDATORY: Set range (for batch) or Njobs (grid)
+    --griduser              {GRID username}        MANDATORY IF GRID
+    --gridvoms              {voms settings}        If you want to run with group privileges.
+
+    "
+
+
 }
 
 main(){
@@ -58,10 +89,11 @@ parse_input(){
     target=unset
     proclist=z0
     #
-    #order=1
+    order=1
     #termlist="LO VV FIXCT"
-    order=2
-    termlist="REAL VIRT FIXCT VV"
+    termlist=LO
+    #order=2
+    #termlist="REAL VIRT FIXCT VV"
     #
     pdflist="CT10nnlo CT10nnlo68clProfiled"
     #pdfvarlist=all
