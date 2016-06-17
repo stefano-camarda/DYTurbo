@@ -7,7 +7,7 @@
 using namespace std;
 
 extern void SMparameters();
-extern void dyturboinit(string conf_file);
+extern void dyturboinit(int argc, char * argv[]);
 
 extern map <int,string> plabel;
 

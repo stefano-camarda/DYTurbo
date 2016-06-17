@@ -2,6 +2,7 @@
 #include "settings.h"
 #include "coupling.h"
 #include "resconst.h"
+#include "phasespace.h"
 
 #include <cstring>
 #include <iostream>
@@ -55,8 +56,8 @@ void mcfm::init()
 
   //Limits on invariant mass of vector boson decay products
   //(irrelevant if zerowidth=true)
-  limits_.wsqmin_=pow(opts.mlow,2);
-  limits_.wsqmax_=pow(opts.mhigh,2);
+  limits_.wsqmin_=pow(phasespace::mmin,2);
+  limits_.wsqmax_=pow(phasespace::mmax,2);
 
   //Check if the limits are compatible with sroot
   if (limits_.wsqmax_> pow(energy_.sroot_,2))

@@ -38,7 +38,7 @@ C
       double precision s(mxpart,mxpart)
       double precision msqc(-nf:nf,-nf:nf),xmsq
       double precision flux,BrnRat
-      double precision qtcut,xqtcut,switch,qt,m
+      double precision switch,qt,m
       double precision switching
       external switching
 CC
@@ -76,7 +76,6 @@ c      double precision x1,x2
       external P2qqV,P2qqbV,P2qg,P2qqS
 
       common/xx0/xx0
-      common/qtcut/xqtcut
       common/nnlo/order 
 
       include 'sudakov_inc.f'
@@ -105,7 +104,7 @@ c      double precision x1,x2
       double precision alfaa,alfab,alfac,alfam
       double precision betaa,betab,betac,betam
       include 'gauss.f'
-      include 'quadrules.f'
+      include 'quadrules.f'    ! quadrules.f already includes 'options.f'
 
 c     cached variables for fast integration
       integer ii,jj

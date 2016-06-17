@@ -90,13 +90,27 @@
 #./scripts/merge.sh --proc wp,wm --term RES2D,CT2D --pdfset MMHTProf68cl --qtymerge qt05y-11 --outdir MMHT14Prof_RESCT2D_160523
 
 # rerun
-./scripts/submit_DYTURBO.sh --lxbatch --proc z0 --term CT2D  --pdfset MMHTProf68cl --pdfvar array RUN
+#./scripts/submit_DYTURBO.sh --lxbatch --proc z0 --term CT2D  --pdfset MMHTProf68cl --pdfvar array RUN
 #./scripts/submit_DYTURBO.sh --lxbatch --proc wp --term RES2D --pdfset MMHTProf68cl --pdfvar array RUN
 
 #./scripts/merge.sh --proc wp,wm,z0 --term RES2D,CT2D --pdfset MMHTProf68cl --qtymerge qt05y-11 --outdir MMHT14Prof_RESCT2D_160523 #RUN
 
 # PROFILLED CT10
-./scripts/submit_DYTURBO.sh --mogon --proc z0 --term RES2D,CT2D  --pdfset CT10nnlo68clProfiled --pdfvar array #RUN
+#./scripts/submit_DYTURBO.sh --mogon --proc wp,wm,z0 --term RES2D,CT2D  --pdfset CT10nnlo68clProfiled --pdfvar array RUN
+#./scripts/submit_DYTURBO.sh --mogon --proc wp --term RES2D,CT2D  --pdfset CT10nnlo68clProfiled --pdfvar array RUN
+#./scripts/submit_DYTURBO.sh --mogon --proc wm --term RES2D       --pdfset CT10nnlo68clProfiled --pdfvar array RUN
+
+#./scripts/merge.sh --proc wp,wm,z0 --term RES2D,CT2D --pdfset CT10nnlo68clProfiled --qtymerge qt05y-11 --outdir CT10Prof_RESCT2D_160523
+#./scripts/merge.sh --proc z0 --term RES2D,CT2D --pdfset CT10nnlo68clProfiled --qtymerge qt05y-11 --outdir CT10Prof_RESCT2D_160523 RUN
+#./scripts/merge.sh --proc wm --term CT2D --pdfset CT10nnlo68clProfiled --qtymerge qt05y-11 --outdir CT10Prof_RESCT2D_160523 RUN
+#./scripts/merge.sh --proc wp --term RES2D,CT2D --pdfset CT10nnlo68clProfiled --qtymerge qt05y-11 --outdir CT10Prof_RESCT2D_160523 RUN
+#./scripts/merge.sh --proc wm --term RES2D --pdfset CT10nnlo68clProfiled --qtymerge qt05y-11 --outdir CT10Prof_RESCT2D_160523 RUN
+
+
+
+# PROFILLED CT14
+#./scripts/submit_DYTURBO.sh --mogon --proc wp,wm,z0 --term RES2D,CT2D  --pdfset CT14nnloProf68cl --pdfvar array #RUN
+./scripts/merge.sh --proc wp,wm,z0 --term RES2D,CT2D --pdfset CT14nnloProf68cl --qtymerge qt05y-11 --outdir CT14Prof_RESCT2D_160523 RUN
 
 #============================================
 # MERGE GRID DONE
@@ -126,6 +140,21 @@
 #rucio ls group.perf-jets.dyturbo_*_lhc7_MMHTProf68cl_all_o2qt050y-55t*_seed_v1463677142_00_results_merge.root
 #./scripts/merge.sh --proc wp,wm,z0 --term REAL,VIRT --indir  results_grid/group.perf-jets --pdfset MMHTProf68cl  --gridmerge v146.*_results_merge --outdir grid_fabrice_160524 RUN
 
+## REDOWNLOAD REAL
+
+#rucio download group.phys-sm.dyturbo_*_lhc7_*_all_o2qt050y-55tREAL_seed_v1463677145_results_merge.root
+
+#./scripts/merge.sh --proc wp,wm,z0 --term REAL --indir results_grid/group.phys-sm --pdfset CT10nnlo,CT10nnlo68clProfiled,MMHT2014nnlo68cl,MMHTProf68cl,CT14nnlo,CT14nnloProf68cl --gridmerge v146.*_results_merge --outdir grid_fabrice_160603
+
+# ATLAS2
+#./scripts/merge.sh --proc wp,wm,z0 --term REAL --indir results_grid/group.phys-sm --pdfset CT10nnlo             --gridmerge v146.*_results_merge --outdir grid_fabrice_160604 RUN
+#./scripts/merge.sh --proc wp,wm,z0 --term REAL --indir results_grid/group.phys-sm --pdfset CT10nnlo68clProfiled --gridmerge v146.*_results_merge --outdir grid_fabrice_160604 RUN
+# ATLAS3
+#./scripts/merge.sh --proc wp,wm,z0 --term REAL --indir results_grid/group.phys-sm --pdfset MMHT2014nnlo68cl     --gridmerge v146.*_results_merge --outdir grid_fabrice_160604 RUN
+#./scripts/merge.sh --proc wp,wm,z0 --term REAL --indir results_grid/group.phys-sm --pdfset MMHTProf68cl         --gridmerge v146.*_results_merge --outdir grid_fabrice_160604 RUN
+# ATLAS4
+#./scripts/merge.sh --proc wp,wm,z0 --term REAL --indir results_grid/group.phys-sm --pdfset CT14nnlo             --gridmerge v146.*_results_merge --outdir grid_fabrice_160604 RUN
+#./scripts/merge.sh --proc wp,wm,z0 --term REAL --indir results_grid/group.phys-sm --pdfset CT14nnloProf68cl     --gridmerge v146.*_results_merge --outdir grid_fabrice_160604 RUN
 
 
 #============================================

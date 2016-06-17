@@ -58,7 +58,7 @@ void resintegr2d(double &res, double &err)
   
   res = integral[0];
   err = error[0];
-  hists.FillQuadrature(res,err);
+  //hists.FillQuadrature(res,err);
   return;
 }
 
@@ -93,7 +93,7 @@ void resintegr3d(double &res, double &err)
 
   res = integral[0];
   err = error[0];
-  hists.FillQuadrature(res,err);
+  //hists.FillQuadrature(res,err);
   return;
 }
 
@@ -183,7 +183,7 @@ void vjintegr3d(double &res, double &err)
 
   res = integral[0];
   err = error[0];
-  hists.FillQuadrature(res,err);
+  //hists.FillQuadrature(res,err);
   return;
 }
 
@@ -344,7 +344,7 @@ void doublevirtintegr(vector <double> &res, double &err)
   for (int i = 0; i < opts.totpdf; i++)
     res.push_back(integral[i]);
   err = error[0];
-  hists.FillQuadrature(res[0],err);
+  //hists.FillQuadrature(res[0],err);
 
   return;
 }
@@ -462,7 +462,7 @@ void ctintegr3d(vector <double> &res, double &err)
     res.push_back(integral[i]);
   err = error[0];
 
-  hists.FillQuadrature(res[0],err);
+  //hists.FillQuadrature(res[0],err);
   return;
 }
 
@@ -517,7 +517,7 @@ void ctintegr2d(vector <double> &res, double &err)
     res.push_back(integral[i]);
   err = error[0];
 
-  hists.FillQuadrature(res[0],err);
+  //hists.FillQuadrature(res[0],err);
   return;
 }
 

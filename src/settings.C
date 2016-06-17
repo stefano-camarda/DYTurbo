@@ -5,9 +5,163 @@
 
 #include "settings.h"
 #include "interface.h"
+#include "phasespace.h"
+
+// CXX option parser: https://raw.githubusercontent.com/jarro2783/cxxopts/master/src/cxxopts.hpp
+#include "cxxopts.hpp"
+
 
 settings opts;
 binning bins;
+
+void settings::parse_options(int argc, char* argv[]){
+    // Declare the supported options.
+    po::Options args(argv[0], " [config.in] \n\n"
+            " Fast Drell-Yan Monte Carlo and quadrature integrator. \n\n"
+            " NOTE: Command line options are overiding the default and config file settings."
+            );
+    // Hidden arguments
+    args.add_options("Hidden")
+        ("conf_file"     , "Name of output file. ", po::value<string>()->default_value("")  )
+    ;
+    // Program options
+    args.add_options("")
+        ("h,help"            , "Print this help and die."       )
+        ("v,verbose"         , "Be verbose"                     )
+        ("q,small-stat"      , "Set quick run with small stat." )
+        ("p,proc"            , "Set process [z0/wp/wm]"                              , po::value<string>() )
+        ("c,collider"        , "Set beam conditions [tev2/lhc7/lhc8/lhc13/lhc14]"    , po::value<string>() )
+        ("o,order"           , "Set order [1:NLL+NLO, 2:NNLL+NNLO]"                  , po::value<int>() )
+        ("t,term"            , "Set term [REAL,VIRT,CT,..]"                          , po::value<string>() )
+        ("r,seed"            , "Set random seed [integer]"                           , po::value<int>()    )
+        ("s,pdfset"          , "Set PDF set [LHAPDF name]"                           , po::value<string>() )
+        ("m,pdfvar"          , "Set PDF member [integer/all]"                        , po::value<string>() )
+        ("qtbins"            , "Set equdistan binning for mass [N,lo,hi]"            , po::value<string>() )
+        ("ybins"             , "Set equdistan binning for qt [N,lo,hi]"              , po::value<string>() )
+        ("mbins"             , "Set equdistan binning for y [N,lo,hi]"               , po::value<string>() )
+
+    ;
+    // Parse
+    try {
+        args.parse_positional( std::vector<string>({"conf_file"}) );
+        args.parse(argc,argv);
+    }
+    catch (po::OptionException &e){
+        printf("%s\n", args.help().c_str());
+        printf("Bad arguments: %s \n",e.what());
+        throw e;
+    }
+    // Print help and die
+    if (args.count("help")) {
+        throw QuitProgram(args.help().c_str());
+    }
+
+    // load config file (or default settings)
+    readfromfile      ( args["conf_file"].as<string>() );
+    bins.readfromfile ( args["conf_file"].as<string>() );
+
+    // NOTE: Command line options are overiding the default and config file settings.
+    // verbose
+    if (args.count("verbose")) {
+        verbose=true;
+        cubaverbosity=3;
+    }
+    // rseed
+    if (args.count("seed")) rseed=args["seed"].as<int>();
+    // order
+    if (args.count("order")) order=args["order"].as<int>();
+    // small stat
+    if (args.count("small-stat")){
+        niterRES           = 1;
+        niterCT            = 1;
+        niterVJ            = 1;
+        vegasncallsRES     = 1e3;
+        vegasncallsVV      = 1e5;
+        vegasncallsCT      = 1e4;
+        vegasncallsLO      = 1e5;
+        vegasncallsREAL    = 1e5;
+        vegasncallsVIRT    = 1e5;
+        pcubaccuracy       = 0.5;
+    }
+
+    // proc
+    if (args.count("proc")) {
+        string val=args["proc"].as<string>(); 
+        ToLower(val);
+        if        (val == "z0"){ nproc=3;
+        } else if (val == "wp"){ nproc=1;
+        } else if (val == "wm"){ nproc=2;
+        } else {
+            throw QuitProgram("Unsupported value of proc: "+val);
+        }
+    }
+
+    // PDF
+    if (args.count("pdfset")) LHAPDFset=args["pdfset"].as<string>();
+    if (args.count("pdfvar")) {
+        // set default values
+        PDFerrors=false;
+        LHAPDFmember=0;
+        string val=args["pdfvar"].as<string>();
+        ToLower(val);
+        if   (val=="all") { PDFerrors=true;
+        } else if (IsNumber(val)) { LHAPDFmember=stod(val);
+        } else {
+            throw QuitProgram("Unsupported value of pdfvar: "+val);
+        }
+    }
+
+    // Collider
+    if (args.count("collider")) {
+        string val=args["collider"].as<string>();
+        ToLower(val);
+        if        (val == "tev1"  ){ sroot=1.80e3; ih1=1; ih2=-1;
+        } else if (val == "tev2"  ){ sroot=1.96e3; ih1=1; ih2=-1;
+        } else if (val == "lhc7"  ){ sroot=7.00e3; ih1=1; ih2=1;
+        } else if (val == "lhc8"  ){ sroot=8.00e3; ih1=1; ih2=1;
+        } else if (val == "lhc13" ){ sroot=13.0e3; ih1=1; ih2=1;
+        } else if (val == "lhc14" ){ sroot=14.0e3; ih1=1; ih2=1;
+        } else {
+            throw QuitProgram("Unsupported value of collider: "+val);
+        }
+    }
+
+    // term
+    if (args.count("term")) {
+        // first turn off all terms
+        doRES = doVV = doCT = doREAL = doVIRT = doLO = doVJ = false ;
+        string val=args["term"].as<string>();
+        ToUpper(val);
+        for (auto piece : Tokenize(val)) {
+            if        ( piece == "REAL"    ) { doREAL=true;
+            } else if ( piece == "VIRT"    ) { doVIRT=true;
+            } else if ( piece == "VV"      ) { doVV=true;   fixedorder=true;
+            } else if ( piece == "LO"      ) { doLO=true;
+            } else if ( piece == "VJ"      ) { doVJ=true;
+            } else if ( piece == "RES"     ) { doRES=true;  intDimRes=8;
+            } else if ( piece == "RES3D"   ) { doRES=true;  intDimRes=3;
+            } else if ( piece == "RES2D"   ) { doRES=true;  intDimRes=2;
+            } else if ( piece ==  "CT"     ) { doCT=true;   intDimCT=8; //< NOTE: is 6D save ? --> No, 8D is actually faster, 6D has some quadratures inside
+            } else if ( piece == "CT3D"    ) { doCT=true;   intDimCT=3;
+            } else if ( piece == "CT2D"    ) { doCT=true;   intDimCT=2;
+            } else if ( piece == "FIXCT"   ) { doCT=true;   intDimCT=8; fixedorder=true; 
+            } else if ( piece == "FIXCT3D" ) { doCT=true;   intDimCT=3; fixedorder=true; 
+            } else if ( piece == "FIXCT2D" ) { doCT=true;   intDimCT=2; fixedorder=true; 
+            } else {
+                throw QuitProgram("Unsupported value of term : "+piece);
+            }
+        }
+    }
+
+    //binning
+    parse_binning("qtbins" , bins.qtbins ,args);
+    parse_binning("ybins"  , bins.ybins  ,args);
+    parse_binning("mbins"  , bins.mbins  ,args);
+
+
+    // check consistency of settings
+    check_consitency();
+}
 
 void settings::readfromfile(const string fname){
     //read input settings from file
@@ -49,10 +203,10 @@ void settings::readfromfile(const string fname){
     Zcc            = in.GetNumber ( "Zcc"        );
     Zss            = in.GetNumber ( "Zss"        );
     Zbb            = in.GetNumber ( "Zbb"        );
-    ylow           = in.GetNumber ( "ylow"            ); //2
-    yhigh          = in.GetNumber ( "yhigh"           ); //2.4
-    mlow           = in.GetNumber ( "mlow"            ); //66.
-    mhigh          = in.GetNumber ( "mhigh"           ); //116.
+    //ylow           = in.GetNumber ( "ylow"            ); //2
+    //yhigh          = in.GetNumber ( "yhigh"           ); //2.4
+    //mlow           = in.GetNumber ( "mlow"            ); //66.
+    //mhigh          = in.GetNumber ( "mhigh"           ); //116.
     dampk          = in.GetNumber ( "dampk"           );
     dampdelta      = in.GetNumber ( "dampdelta"           );
     dampmode       = in.GetNumber ( "dampmode"           );
@@ -111,7 +265,6 @@ void settings::readfromfile(const string fname){
     opts_.approxpdf_    = in.GetNumber ( "opts_approxpdf" ); //0
     opts_.pdfintervals_ = in.GetNumber ( "opts_pdfintervals" ); //100
     evolmode           = in.GetNumber  ("evolmode");
-    opts_.fixedorder_  = fixedorder;
     bintaccuracy       = in.GetNumber ( "bintaccuracy" );
     mellinintervals    = in.GetNumber ( "mellinintervals" );
     mellinrule         = in.GetNumber ( "mellinrule" );
@@ -121,6 +274,11 @@ void settings::readfromfile(const string fname){
     yrule              = in.GetNumber ( "yrule" );
     ptbinwidth         = in.GetBool ( "ptbinwidth" );
     ybinwidth          = in.GetBool ( "ybinwidth" );
+
+    return ;
+}
+
+void settings::check_consitency(){
 
     // additional conditions
     if (order != 1 && order != 2)
@@ -173,7 +331,13 @@ void settings::readfromfile(const string fname){
 	cout << "Asked for PDFerrors, enforce LHAPDFmember  = 0" << endl;
 	LHAPDFmember = 0;
       }
-      
+
+    if (qtcut <= 0 && xqtcut <= 0)
+      {
+	cout << "At least one between qtcut and xqtcut must be > 0" << endl;
+	exit (-1);
+      }
+
     // resummation term integration dimension
     if (intDimRes<4 && intDimRes>1){
         resint2d = (intDimRes == 2);
@@ -223,6 +387,49 @@ void settings::readfromfile(const string fname){
 	resint3d = false;
 	resintvegas = true;
       }
+
+    // -- binning
+    // check bins size
+    if ( bins.qtbins .size() < 2) throw QuitProgram("Option `qtbins` needs at least 2 items ");
+    if ( bins.ybins  .size() < 2) throw QuitProgram("Option `ybins`  needs at least 2 items ");
+    if ( bins.mbins  .size() < 2) throw QuitProgram("Option `mbins`  needs at least 2 items ");
+    // check sorting
+    sort( bins.qtbins .begin () , bins.qtbins .end () ) ;
+    sort( bins.ybins  .begin () , bins.ybins  .end () ) ;
+    sort( bins.mbins  .begin () , bins.mbins  .end () ) ;
+    // plotmode
+    ToLower(bins.plotmode);
+    // set histogram bins
+    bins.hist_qt_bins = bins.qtbins ;
+    bins.hist_y_bins  = bins.ybins ;
+    bins.hist_m_bins  = bins.mbins ;
+    // integration boundaries
+    phasespace::setbounds(
+            bins. mbins  .front() ,
+            bins. mbins  .back()  ,
+            bins. qtbins .front() ,
+            bins. qtbins .back()  ,
+            bins. ybins  .front() ,
+            bins. ybins  .back()
+            );
+    // plot mode consitency with integration
+    if ( bins.plotmode=="fill" && 
+	 ( (doRES && (resint2d || resint3d)) || (doCT && (ctint2d || ctint3d)) || doVJ )
+       ) {
+        printf ("Warning: plotmode: Filling not work for quadrature integration. I am switching to integrate.\n");
+        bins.plotmode="integrate";
+    }
+    if (bins.plotmode=="fill"){ 
+        // integration boundaries are max and minimum
+        bins.qtbins = { bins.qtbins .front(), bins.qtbins .back() };
+        bins.ybins  = { bins.ybins  .front(), bins.ybins  .back() };
+        bins.mbins  = { bins.mbins  .front(), bins.mbins  .back() };
+    } else if (bins.plotmode=="integrate"){
+        // NOTE: this is here only to checkout plotmode mistype
+        // keep integration bins same as plotting (quadrature)
+    } else {
+        throw QuitProgram("Unsupported value of plotmode : "+bins.plotmode);
+    }
 
     return ;
 }
@@ -277,10 +484,10 @@ void settings::dumpAll(){
 	dumpD( "Zss",        Zss);
 	dumpD( "Zcc",        Zcc);
 	dumpD( "Zbb",        Zbb);
-        dumpD("ylow               ", ylow                );
-        dumpD("yhigh              ", yhigh               );
-        dumpD("mlow               ", mlow                );
-        dumpD("mhigh              ", mhigh               );
+        //dumpD("ylow               ", ylow                );
+        //dumpD("yhigh              ", yhigh               );
+        //dumpD("mlow               ", mlow                );
+        //dumpD("mhigh              ", mhigh               );
         dumpD("dampk",             dampk       );
         dumpD("dampdelta",     dampdelta      );
         dumpI("dampmode",       dampmode     );
@@ -403,13 +610,71 @@ void settings::dumpB( string var,bool val){
     printf( " %s = %s\n", var.c_str(), val ? "true" : "false" );
 }
 
+vector<string> settings::Tokenize(string val,char Delim){
+    vector<string> vec;
+    size_t pos = 0;
+    string tmp;
+    while (!val.empty()){
+        // find delim
+        pos = val.find_first_of(Delim);
+        if (pos==string::npos){
+            // last item
+            tmp = val;
+            val.clear();
+        } else {
+            // get substring
+            tmp = val.substr(0,pos);
+            val = val.substr(pos+1);
+        }
+        // add to vector
+        if (!tmp.empty()) vec.push_back(tmp);
+    }
+    return vec;
+}
+
+bool settings::IsNumber(const string &s) {
+    double dummy;
+    try {
+        dummy = stod(s);
+        return true;
+    } catch (const std::exception &e){
+        return false;
+    }
+}
+
+void settings::parse_binning(string name, vector<double> &bins, po::Options &args){
+    if (args.count(name)) {
+        string e("Unsupported value of "+name+" : need 3 numbers seperated by comma: 'N,lo,hi' ");
+        string val=args[name.c_str()].as<string>();
+        ToLower(val);
+        vector<string> vec = Tokenize(val);
+        // check value
+        if (vec.size()!=3) throw QuitProgram(e+" not 3 numbers.");
+        for (auto s : vec) if (!IsNumber(s))  throw QuitProgram(e+" not numbers.");
+        // retrieve N,lo,hi
+        int N = stod(vec[0]);
+        double lo = stod(vec[1]);
+        double hi = stod(vec[2]);
+        if (lo>hi)  throw QuitProgram(e+" lo is more then hi.");
+        if (N<1)  throw QuitProgram(e+" N is not at least 1.");
+        // make binning
+        bins.clear();
+	//loop with double has problems for equality test (try --ybins 25,0,5)
+	//for (double loedge=lo; loedge<=hi; loedge+=(hi-lo)/double(N)) bins.push_back(loedge);
+	for (int i=0; i <= N; i++) bins.push_back(lo+i*(hi-lo)/double(N));
+    }
+}
+
+
 void binning::readfromfile(const string fname){
     InputParser in(fname);
-    qtbins       .clear(); in.GetVectorDouble( "qtbins"      , qtbins       );
-    ybins        .clear(); in.GetVectorDouble( "ybins"       , ybins        );
-    hist_qt_bins .clear(); in.GetVectorDouble( "plot_qtbins" , hist_qt_bins );
-    hist_y_bins  .clear(); in.GetVectorDouble( "plot_ybins"  , hist_y_bins  );
-    hist_Q_bins  .clear(); in.GetVectorDouble( "plot_Qbins"  , hist_Q_bins  );
+    plotmode =  in.GetString( "plotmode");
+    qtbins       .clear(); in.GetVectorDouble( "qt_bins"      , qtbins       );
+    ybins        .clear(); in.GetVectorDouble( "y_bins"       , ybins        );
+    mbins        .clear(); in.GetVectorDouble( "m_bins"       , mbins        );
+    hist_qt_bins .clear();
+    hist_y_bins  .clear();
+    hist_m_bins  .clear();
     return;
 }
 
@@ -484,16 +749,24 @@ void InputParser::GetVectorDouble(string name, vector<double> &vec){
     if (strBegin==string::npos || strEnd==string::npos) throw invalid_argument("Missing open/close character.");
     // parse what is between them
     val = val.substr(strBegin+1,strEnd-strBegin-1);
+    size_t pos = 0;
+    string tmp;
     while (!val.empty()){
-        size_t pos = 0;
         // find delim
         pos = val.find(CdeliAr);
+        if (pos==string::npos){
+            // last item
+            tmp = val;
+            val.clear();
+        } else {
+            // get substring
+            tmp = val.substr(0,pos);
+            val = val.substr(pos+1);
+        }
         // get substring
-        string tmp = val.substr(0,pos);
         trim(tmp);
         // expecting number otherwise exception
         if (!tmp.empty()) vec.push_back(stod(tmp));
-        val = val.substr(pos+1);
     }
     return;
 }

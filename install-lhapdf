@@ -55,6 +55,7 @@ do
     rm share/LHAPDF/${pdf}.tar.gz >& /dev/null
 done
 
+cd share/LHAPDF
 for pdf in $pdflist
 do
     pdf=`echo $pdf | cut -d. -f1`

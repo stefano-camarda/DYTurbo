@@ -38,8 +38,8 @@ mline.C
 pdffit.grid
 scripts/batch_scripts
 scripts/infiles
-results
-results_merge
+results*
+GRID*
 run_dir
 run_dir2
 share

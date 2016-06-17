@@ -34,27 +34,29 @@ class plotter {
         void FillEvent(double p3[4], double p4[4], double wgt); ///<Normal filling of histograms.
         void FillRealDipole(double p3[4], double p4[4], double wgt,int nd); ///<Collect dipole kinematics and weights. Fill ai profiles.
         void FillRealEvent(TermType term = None); ///< for real filling without correlations. Need to FillRealDipole before.
-        void FillQuadrature(double int_val, double int_error); ///< Adding integration to proper bin
+        //void FillQuadrature(double int_val, double int_error); ///< Adding integration to proper bin
         void FillResult(TermType term, double int_val, double int_error, double time); ///< Fill the result of integration.
-        void CumulateResult(TermType term, double wgt); ///< Fill the result of integration.
+        //void CumulateResult(TermType term, double wgt); ///< Fill the result of integration.
         void SetPDF(int npdf); ///< Set histograms for pdf memeber npdf.
         void Merge();
         void Dump();
-        void Finalise(double xsection=0);
+        void Finalise(int worker=-1);
 
 
     protected :
 #ifdef USEROOT
         // Data members
         //
+        bool isFillMode;
         // Histogramming
         /// @todo: use one object instead, be more variable
         // boson kinematic histograms
         TH1D * h_qt;
         TH1D * h_y ;
+        TH1D * h_m;
         TH2D * h_qtVy;
-        TH1D * h_Q;
-        TH3D * h_qtVyVQ;
+        TH2D * h_yVm;
+        //TH3D * h_qtVyVQ;
         // angular histograms
         bool doAiMoments;
         struct AiProf2D { TProfile2D* A[NMOM]; };
@@ -66,14 +68,14 @@ class plotter {
         //TH1D * h_phi;
         //TH1D * h_phi_lep;
         // final results
-        TH2D* qt_y_resum ;
-        TH2D* qt_y_ct    ;
-        TH2D* qt_y_lo    ;
-        TH2D* qt_y_real  ;
-        TH2D* qt_y_virt  ;
-        TH2D* qt_y_vv    ;
-        TH2D* qt_y_vj    ;
-        TH2D* qt_y_total ;
+        //TH2D* qt_y_resum ;
+        //TH2D* qt_y_ct    ;
+        //TH2D* qt_y_lo    ;
+        //TH2D* qt_y_real  ;
+        //TH2D* qt_y_virt  ;
+        //TH2D* qt_y_vv    ;
+        //TH2D* qt_y_vj    ;
+        //TH2D* qt_y_total ;
         // dipole helper variables
         struct XsecPoint {
             int ibin;
@@ -87,9 +89,10 @@ class plotter {
         int last_npdf;
         std::vector<TH1D     *> h_qt_PDF      ;
         std::vector<TH1D     *> h_y_PDF       ;
+        std::vector<TH2D     *> h_yVm_PDF       ;
         std::vector<TH2D     *> h_qtVy_PDF    ;
-        std::vector<TH3D     *> h_qtVyVQ_PDF  ;
-        std::vector<TH1D     *> h_Q_PDF       ;
+        //std::vector<TH3D     *> h_qtVyVQ_PDF  ;
+        std::vector<TH1D     *> h_m_PDF       ;
         //std::vector<TH1D     *> h_costh_PDF   ;
         //std::vector<TH1D     *> h_phi_PDF     ;
         //std::vector<TH1D     *> h_phi_lep_PDF ;
