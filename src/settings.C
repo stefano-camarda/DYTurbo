@@ -659,7 +659,9 @@ void settings::parse_binning(string name, vector<double> &bins, po::Options &arg
         if (N<1)  throw QuitProgram(e+" N is not at least 1.");
         // make binning
         bins.clear();
-        for (double loedge=lo; loedge<=hi; loedge+=(hi-lo)/double(N)) bins.push_back(loedge);
+	//loop with double has problems for equality test (try --ybins 25,0,5)
+	//for (double loedge=lo; loedge<=hi; loedge+=(hi-lo)/double(N)) bins.push_back(loedge);
+	for (int i=0; i <= N; i++) bins.push_back(lo+i*(hi-lo)/double(N));
     }
 }
 
