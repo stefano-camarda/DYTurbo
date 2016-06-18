@@ -85,7 +85,7 @@ makelepcuts = false
 
 # debug settings
 timeprofile = false  # debug and time profile resummation integration
-verbose     = false  # debug and time profile costh phi_lep integration
+verbose     = true  # debug and time profile costh phi_lep integration
 
 # binning
 
