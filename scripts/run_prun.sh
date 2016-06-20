@@ -30,6 +30,7 @@ PRUN(){
  --outputs results_merge.root \
  --tmpDir /tmp/${CERNUSER} \
  --nGBPerJob=MAX \
+ --destSE=ANALY_CERN_SLC6 \
  --rootVer=$ROOTVERSION --cmtConfig=$CMTVERSION 
 
     else
@@ -43,6 +44,7 @@ prun \
 --noCompile \
 --tmpDir /tmp/${CERNUSER} \
 --nGBPerJob=MAX \
+--destSE=ANALY_CERN_SLC6 \
 --rootVer=$ROOTVERSION --cmtConfig=$CMTVERSION $OFFICIAL
 
     fi
