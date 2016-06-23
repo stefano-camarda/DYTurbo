@@ -31,7 +31,7 @@ integrand_t ctintegrand(const int &ndim, const double x[], const int &ncomp, dou
   rct[8] = rct[1];
 
   dofill_.doFill_ = int(iter==last_iter);
-  f[0] = countint_(rct,weight);
+  f[0] = countint_(rct,weight,f);
 
   return 0;
 }

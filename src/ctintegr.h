@@ -11,7 +11,7 @@ int ctintegrand2d_cubature_v(unsigned ndim, long unsigned npts, const double x[]
 int ctintegrand2d_cubature(unsigned ndim, const double x[], void *data, unsigned ncomp, double f[]);
 
 extern "C" {
-  double countint_(double r[22], double &wgt);
+  double countint_(double r[22], double &wgt, double f[]);
   double ctint_(double &costh, double &mm, double &qtt, double &yy, int &mode, double f[]);
 }
 

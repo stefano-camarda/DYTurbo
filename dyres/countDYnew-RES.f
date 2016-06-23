@@ -5,7 +5,7 @@ C     Version that allows to separate also qg channel
 
 C     Scale dependence included up to NNLO
 
-      double precision function countint(vector,wgt)
+      double precision function countint(vector,wgt,f)
       implicit none
       include 'options.f'
       include 'constants.f'
@@ -26,6 +26,7 @@ C
       include 'rescoeff.f'
       include 'dynamicscale.f'
 C
+      double precision f(*)
       integer ih1,ih2,j,k,l,nd,nmax,nmin,nvec,order
       integer nproc
       common/nproc/nproc
@@ -105,6 +106,8 @@ C
       double precision switching
       external switching
 
+      integer npdf,maxpdf
+      
       if (first) then
          first=.false.
          rscalestart=scale
@@ -113,6 +116,9 @@ C
 c      ntotshot=ntotshot+1
       pswt=0d0
       countint=0d0 
+      do npdf=0,totpdf-1
+         f(npdf+1)=0d0
+      enddo
 
       do nd=0,1
       xmsq(nd)=0d0
@@ -263,6 +269,11 @@ c      print*
       
 !      call genCT2(q2,qt2,y34,vector,p,pswt,*999)
 
+c     Load central PDF and QCD coupling (not needed)
+      if (pdferr) then
+         call dysetpdf(0)
+      endif
+      
 CC Compute Born matrix element
       if(nproc.eq.3)then
       call qqb_z(p,msqc)
@@ -290,8 +301,16 @@ c     cut function for binning in qt, m, y
 
 
 
-
 CC  
+c     skip PDF loop in the preconditioning phase
+      maxpdf=0
+      if (doFill.ne.0) maxpdf = totpdf-1
+      
+c     start PDF loop
+      do npdf=0,maxpdf
+         call dysetpdf(npdf)
+c         asopi=ason2pi*2
+         call hists_setpdf(npdf)
 
 c--- calculate PDF's  
 
@@ -685,6 +704,7 @@ c---Add to total
         xint=xmsq(1)
         val=xmsq(1)*wgt
         
+        f(npdf+1)=xmsq(1)
 
 cc---if we're binning, add to histo too
 c        if (bin) then
@@ -700,7 +720,8 @@ C     Fill only if it's last iteration
       if (doFill.ne.0) then
           call hists_fill(p(3,:),p(4,:),xint*wgt)
       endif
-      countint=xint
+      enddo                     ! end PDF loop
+      countint=f(1)
      
       xreal=xreal+xint*wgt/dfloat(itmx)
       xreal2=xreal2+(xint*wgt)**2/dfloat(itmx)
