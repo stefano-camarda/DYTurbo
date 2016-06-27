@@ -9,7 +9,6 @@ plotter hists;
 #include "phasespace.h"
 #include "kinematic.h"
 //#include "solvew.h"
-#include "isnan.h"
 
 #include <sys/mman.h>
 #include <sys/types.h>
