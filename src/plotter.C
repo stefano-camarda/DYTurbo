@@ -832,7 +832,7 @@ void plotter::FillResult(TermType term, double int_val, double int_error, double
 void plotter::SetPDF(int npdf){return;}
 void plotter::Merge(){return;}
 void plotter::Dump(){return;}
-void plotter::Finalise(double xsection){return;}
+void plotter::Finalise(int worker){return;}
 
 
 void hists_setpdf_(int * npdf){ return; }
