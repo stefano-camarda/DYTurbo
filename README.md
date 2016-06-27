@@ -32,7 +32,6 @@ git clone https://gitlab.cern.ch/DYdevel/DYTURBO.git
 
  2. setup/compile
 ```
-mkdir m4
 autoreconf -i
 (optional PATH=<lhapdfdir>:$PATH if you want to use your version of lhapdf previously installed in <lhapdfdir>)
 ./configure
@@ -50,7 +49,6 @@ make && make install
      (if not found already)
 
  - additional configuration options:
-    - `--enable-O3`             Use compiler optimization flags -O3.
     - `--enable-Ofast`          Use unsafe compiler optimization flags -Ofast.
     - `--enable-root`           Use root for histograming. (default=no)
 
