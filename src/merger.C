@@ -170,19 +170,20 @@ class OutlierRemoval{
                         if (verbose>2) o->Print();
                         // Check for NaN and adding object to list
                         bool hasNaN= false;
-                        if (doNanIterp){ // slower but precise
-                            for (auto ibin: loop_bins(o)){
-                                if (isnan_ofast(o->GetBinContent(ibin))) {
+                        for (auto ibin: loop_bins(o)){ // slower but precise ( FIX: ROOT 6 TProfile->Integral is always 0)
+                            if (isnan_ofast(o->GetBinContent(ibin))) { // has nan in bin
+                                if (doNanIterp){ // fix by interpolation
                                     double val = interpolate_NaN(o,ibin);
                                     printf("Warning: hist %s in file %s  NaN in bin %d was interpolated to %f \n", 
                                             it_fn.Data(), p_objname.Data(), ibin, val);
+                                } else { // just skip this
+                                    hasNaN = true;
+                                    break;
                                 }
                             }
-                        } else { // simple fast test: integral
-                            hasNaN = isnan_ofast(o->Integral());
                         }
                         if (hasNaN) {
-                            printf("Warning: hist %s in file %s contain NaN \n", it_fn.Data(), p_objname.Data());
+                            printf("Warning: hist %s in file %s contain NaN, skipping it. \n", it_fn.Data(), p_objname.Data());
                             delete o;
                         }
                         else in_objs.push_back(o);
