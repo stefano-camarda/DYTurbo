@@ -9,6 +9,7 @@ plotter hists;
 #include "phasespace.h"
 #include "kinematic.h"
 //#include "solvew.h"
+#include "isnan.h"
 
 #include <sys/mman.h>
 #include <sys/types.h>
@@ -580,12 +581,12 @@ void plotter::calculate_kinematics(double p3[4], double p4[4])
   //  y = solvew::y;
 
   // angular terms for moments -> Use trigonometric formulas to reduce CPU time
-  double sintheta  = sqrt(1.-pow(costh,2));
+  double sintheta  = sqrt(max(0.,1.-pow(costh,2)));
   double sin2theta = 2*costh*sintheta;
 
   double cosphi    = cos(phi);
   double cos2phi   = 2*pow(cosphi,2)-1.;
-  double sinphi    = sqrt(1.-pow(cosphi,2))*(phi>0 ? 1 : -1);
+  double sinphi    = sqrt(max(0.,1.-pow(cosphi,2)))*(phi>0 ? 1 : -1);
   double sin2phi   = 2*cosphi*sinphi;
   /**********************************************/
 
