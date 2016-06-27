@@ -226,6 +226,7 @@ void settings::readfromfile(const string fname){
     doVJ               = in.GetBool   ( "doVJ"            ); //false
     cubaverbosity      = in.GetNumber ( "cubaverbosity"   ); //0       # Cuba        info     messsages, from    0           to              3
     cubacores          = in.GetNumber ( "cubacores"       ); //0
+    cubanbatch         = in.GetNumber ( "cubanbatch"      );
     niterRES           = in.GetNumber ( "niterRES"        ); //0       # only        for      2d         and     3d          cuhre           integration
     niterCT            = in.GetNumber ( "niterCT"         ); //0       # only        for      3d          cuhre           integration
     niterVJ            = in.GetNumber ( "niterVJ"         ); //0       # only        for      3d          cuhre           integration
@@ -514,6 +515,7 @@ void settings::dumpAll(){
         dumpB("doVJ               ", doVJ                );
         dumpI("cubaverbosity      ", cubaverbosity       );
         dumpI("cubacores          ", cubacores           );
+        dumpI("cubanbatch         ", cubanbatch          );
         dumpI("niterRES           ", niterRES            );
         dumpI("niterCT            ", niterCT             );
         dumpD("vegasncallsRES     ", vegasncallsRES      );

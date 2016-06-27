@@ -70,6 +70,7 @@ doVJ   = false
 # Cuba settings
 cubaverbosity    = 0   # Cuba info messsages, from 0 to 3
 cubacores        = 0   # parallelization ( 0 = turn off)
+cubanbatch       = 100000   # the batch size for sampling in Cuba vegas integration
 vegasncallsVV    = 1e7   # only for double virtual 6d vegas integration
 vegasncallsCT    = 1e8   # only for 6d and 8d vegas integration of the counter term
 vegasncallsLO    = 1e8   # only for lo 7d vegas integration

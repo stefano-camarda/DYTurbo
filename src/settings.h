@@ -158,6 +158,7 @@ public:
   //Cuba settings
   int cubaverbosity;
   int cubacores;
+  int cubanbatch;
   int niterRES;
   int niterCT;
   int niterVJ;
