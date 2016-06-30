@@ -39,6 +39,7 @@ OPTIONS :
     --seeds                 {int or range or list} MANDATORY: Set range (for batch) or Njobs (grid)
     --griduser              {GRID username}        MANDATORY IF GRID
     --gridvoms              {voms settings}        If you want to run with group privileges.
+    --mtbins   [1]          {1,2}                  1: NLL+NLO 2: NNLL+NNLO
 
     "
 
@@ -109,6 +110,8 @@ parse_input(){
     #
     voms=unset
     cernuser=unset
+    #
+    mbins=unset
 
     while [[ $# > 0 ]]
     do
@@ -198,6 +201,12 @@ submit_jobs_wmass(){
         echo " Seed argument is mandatory please set '--seeds [integer/range/list]'"
         exit 5
     fi
+    # check mass
+    if [[ $mbins == unset ]]
+    then
+        echo " mbins argument is mandatory please set '--mbins N,min,max'"
+        exit 5
+    fi
     if [[ $target =~ grid ]]
     then
         [[ $cernuser == unset ]] \
@@ -282,8 +291,8 @@ prepare_script(){
     sh_file=$batch_script_dir/$job_name.sh
     echo $job_name $seedlist
     #
-    mbins=32,40,200
-    [[ $process =~ z0 ]] && mbins=10,66,116
+    #mbins=32,40,200
+    #[[ $process =~ z0 ]] && mbins=10,66,116
     # arguments
     arguments="input.in --proc $process --mbins $mbins --pdfset $pdfset --pdfvar $variation --order $order --term $terms"
     [[ $target =~ lxbatch|mogon|localrun ]] && arguments=$arguments" --seed $LSB_JOBINDEX "
