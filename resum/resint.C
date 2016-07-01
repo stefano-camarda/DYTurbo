@@ -105,6 +105,7 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
   if (abs(y) > ylim)
     return 0;
   
+  //move the scale setting to an independent namelist, so it can be called by all the calculations
   //Set factorization and renormalization scales (set dynamic scale here)
   if (opts.dynamicscale)
     {
