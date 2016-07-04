@@ -834,8 +834,8 @@ class OutlierRemoval{
             bool isPDFvar = (std::count(added_pdfobj.begin(), added_pdfobj.end(),name)!=0) ;
             if (!isPDFvar){
                 // it is new central histogram, reset acceptance vector
-                int max_bin_index = loopbins.back();
-                do_accept_file.resize(max_bin_index,std::vector<bool>(in_objs.size(),false));
+                int max_bin_index = *std::max_element(loopbins.begin(),loopbins.end());
+                do_accept_file.resize(max_bin_index+1,std::vector<bool>(in_objs.size(),false));
             }
             for ( auto b : loopbins ){
                 VecDbl v_sumw;
@@ -875,8 +875,9 @@ class OutlierRemoval{
                     }
                     double chi2 = 0;
                     if (s != 0) chi2 = d*d/(s*s);
-                    if (!isPDFvar && TMath::Prob(chi2,1) > pl(7) )
+                    if (!isPDFvar && TMath::Prob(chi2,1) > pl(7) ){
                         do_accept_file[b][i_obj]=true;
+                    }
                     if ( do_accept_file[b][i_obj] ){
                         if (isProf) push_sorted( v_sumw  , ent );
                         push_sorted( v_sumwy , val );
