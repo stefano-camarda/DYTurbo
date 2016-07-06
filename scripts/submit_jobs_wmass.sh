@@ -331,7 +331,7 @@ submit_job(){
     if [[ $target == localrun ]]
     then
         # pickup random number
-        export LSB_JOBINDEX=133
+        export LSB_JOBINDEX=1
         $DRYRUN $sh_file
     else
         if [ -a $result_dir/$job_name.root ]

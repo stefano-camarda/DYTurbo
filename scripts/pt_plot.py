@@ -19,11 +19,15 @@ sys.argv.append('-b') # run in batch
 #from PlotTools import *
 from ROOT  import TGraphErrors, TFile, TGraphAsymmErrors
 import ROOT as RT
+RT.SetMemoryPolicy(RT.kMemoryHeuristics)
+
 #import asciitable
 from array import array
 
 from PlotTools import *
 pl=PlotTools()
+
+from leakFinder import * 
 
 
 def plot_pt(fname):
@@ -990,14 +994,18 @@ def uncert_as_g():
 
 class  makeInfo:
     def __init__(s,procD=0,plotN=0,termD=0,fileD=0):
-        dummy=TheoUncStudy()
+        global dummy
         # NULL
         s.proc_name = ""
         s.proc_titl = ""
         #
         s.plot_name = ""
         s.plot_titl = ""
+        s.plot_Proj = False
+        s.plot_minx = ""
         s.plot_maxx = ""
+        s.plot_xwidth = ""
+        s.plot_ywidth = ""
         #
         s.term_name  = ""
         s.term_title = ""
@@ -1047,6 +1055,7 @@ class  makeInfo:
                 s.term_name,
                 s.plot_name
                 ])
+        if s.plot_Proj : s.name+=s.plot_Proj
         pass
 
 class makeUncInfo():
@@ -1082,32 +1091,34 @@ class  makeUncDescrInfo:
     def iterkeys(s):
         return s.Get.iteritems()
 
-
 class TheoUncStudy:
     def __init__(s):
         s.processesDesc = [
-                # [ "wp" , "W^{+}#rightarrowl^{+}#nu" ]  ,
-                # [ "wm" , "W^{-}#rightarrowl^{-}#nu" ]  ,
+                [ "wp" , "W^{+}#rightarrowl^{+}#nu" ]  ,
+                [ "wm" , "W^{-}#rightarrowl^{-}#nu" ]  ,
                 [ "z0" , "Z#rightarrowll"           ]  ,
                 ]
+
         s.plotsDesc = {
                 #name       : [ title                   , minX , maxX , binWidthX , binWidthY ] ,
-                "h_qt"      : [ "q_{T}[GeV];#sigma[pb]" , 0    , 50   , 0.5       , 0         ] ,
+                "h_qt"      : [ "q_{T}[GeV];#sigma[pb]" , 0    ,  0   , 0         , 0         ] ,
                 "h_y"       : [ "y;#sigma[pb]"          , 0    , 0    , 0         , 0         ] ,
-                "h_qtVy"    : [ "q_{T}[GeV];y"          , 0    , 50   , 2.5       , 0         ] ,
+                "h_qtVy"    : [ "q_{T}[GeV];y"          , 0    ,  0   , 0         , 0         ] ,
                 "h_Q"       : [ "Mass[GeV]"             , 0    , 0    , 0         , 0         ] ,
+                "h_m"       : [ "Mass[GeV]"             , 0    , 0    , 0         , 0         ] ,
+                "h_yVm"     : [ "y;Q[GeV]"              , 0    , 0    , 0         , 0         ] ,
                 "h_qtVyVQ"  : [ "q_{T}[GeV];y;Q[GeV]"   , 0    , 0    , 0         , 0         ] ,
-                "p_qtVy_A0" : [ "q_{T}[GeV];y;A_{0}"    , 0    , 50   , 0         , 0         ] ,
-                "p_qtVy_A1" : [ "q_{T}[GeV];y;A_{1}"    , 0    , 50   , 0         , 0         ] ,
-                "p_qtVy_A2" : [ "q_{T}[GeV];y;A_{2}"    , 0    , 50   , 0         , 0         ] ,
-                "p_qtVy_A3" : [ "q_{T}[GeV];y;A_{3}"    , 0    , 50   , 0         , 0         ] ,
-                "p_qtVy_A4" : [ "q_{T}[GeV];y;A_{4}"    , 0    , 50   , 0         , 0         ] ,
-                "p_qtVy_A5" : [ "q_{T}[GeV];y;A_{5}"    , 0    , 50   , 0         , 0         ] ,
-                "p_qtVy_A6" : [ "q_{T}[GeV];y;A_{6}"    , 0    , 50   , 0         , 0         ] ,
-                "p_qtVy_A7" : [ "q_{T}[GeV];y;A_{7}"    , 0    , 50   , 0         , 0         ] ,
+                "p_qtVy_A0" : [ "q_{T}[GeV];y;A_{0}"    , 0    ,  0   , 0         , 0         ] ,
+                "p_qtVy_A1" : [ "q_{T}[GeV];y;A_{1}"    , 0    ,  0   , 0         , 0         ] ,
+                "p_qtVy_A2" : [ "q_{T}[GeV];y;A_{2}"    , 0    ,  0   , 0         , 0         ] ,
+                "p_qtVy_A3" : [ "q_{T}[GeV];y;A_{3}"    , 0    ,  0   , 0         , 0         ] ,
+                "p_qtVy_A4" : [ "q_{T}[GeV];y;A_{4}"    , 0    ,  0   , 0         , 0         ] ,
+                "p_qtVy_A5" : [ "q_{T}[GeV];y;A_{5}"    , 0    ,  0   , 0         , 0         ] ,
+                "p_qtVy_A6" : [ "q_{T}[GeV];y;A_{6}"    , 0    ,  0   , 0         , 0         ] ,
+                "p_qtVy_A7" : [ "q_{T}[GeV];y;A_{7}"    , 0    ,  0   , 0         , 0         ] ,
 
-                "p_qt_A0" : [ "q_{T}[GeV];A_{0}"    , 0    , 0    , 0       , 0         ] ,
-                "p_qt_A4" : [ "q_{T}[GeV];A_{4}"    , 0    , 0    , 0       , 0         ] ,
+                "p_qt_A0"   : [ "q_{T}[GeV];A_{0}"      , 0    , 0    , 0         , 0         ] ,
+                "p_qt_A4"   : [ "q_{T}[GeV];A_{4}"      , 0    , 0    , 0         , 0         ] ,
 
                 # "p_qtVy_A4"              : [ "q_{T}[GeV];y;A4"       , 1e8 ]  ,
                 # "p_qtVy_A4_prfx"         : [ "q_{T}[GeV];A4"         , 40  ]  ,
@@ -1125,20 +1136,26 @@ class TheoUncStudy:
 
         s.infoUnc = makeUncDescrInfo(s.uncDescr)
         s.termDesc = {
-                "TOT"    : ["TOT"    , ""          , "#88919a" ] ,
-                "FIN"    : ["FIN"    , "(fin.) "   , "#d95f02" ] ,
-                "RES"    : ["RES"    , "(res.) "   , "#7570b3" ] ,
-                "RES2D"  : ["RES2D"  , "(res.2D) " , "#7570b3" ] ,
-                "RES2P"  : ["RES2P"  , "(res.2D) " , "#7570b3" ] ,
-                "CT"     : ["CT"     , "(ct.) "    , "#e7298a" ] ,
-                "CT2D"   : ["CT2D"   , "(ct.2D) "  , "#e7298a" ] ,
-                "CT2P"   : ["CT2P"   , "(ct.2D) "  , "#e7298a" ] ,
-                "REAL"   : ["REAL"   , "(real.) "  , "#66a61e" ] ,
-                "VIRT"   : ["VIRT"   , "(virt.) "  , "#e6ab02" ] ,
+                "TOT"    : ["TOT"     , ""             , "#88919a" ] ,
+                "TOTFIX" : ["TOTFIX"  , "(fixed)"      , "#5A8FC1" ] ,
+                "FIN"    : ["FIN"     , "(fin.) "      , "#d95f02" ] ,
+                "RV"     : ["RV"      , "(realvirt.) " , "#d95f02" ] ,
+                "LO"     : ["LO"      , "(v+j LO) "    , "#d95f02" ] ,
+                "RES"    : ["RES"     , "(res.) "      , "#7570b3" ] ,
+                "RES2D"  : ["RES2D"   , "(res.2D) "    , "#7570b3" ] ,
+                "RES2P"  : ["RES2P"   , "(res.2D) "    , "#7570b3" ] ,
+                "FIXCT"  : ["FIXCT"   , "(fix ct.) "   , "#e7298a" ] ,
+                "CT"     : ["CT"      , "(ct.) "       , "#e7298a" ] ,
+                "CT2D"   : ["CT2D"    , "(ct.2D) "     , "#e7298a" ] ,
+                "CT2P"   : ["CT2P"    , "(ct.2D) "     , "#e7298a" ] ,
+                "REAL"   : ["REAL"    , "(real.) "     , "#66a61e" ] ,
+                "VIRT"   : ["VIRT"    , "(virt.) "     , "#e6ab02" ] ,
+                "VV"     : ["VV"      , "(dbl virt.) " , "#7570b3" ] ,
                 }
         s.MaxUnc=0.15
         s.doREALuseOutlier=False
         s.doRebin=False
+        s.doAimomVirtOnly=False
         #
         # s.file_template = "results_merge/grid_151123/dyturbo_{}_lhc7_WZZPT-CT10_{}_v1447428851qt0100y05t{}_outliers.root"
         s.file_template = {
@@ -1146,6 +1163,10 @@ class TheoUncStudy:
                 "RESCT_2D_MMHT2014nnlo68cl" : "results_merge/MMHT14_RESCT2D_160523/dyturbo_{}_lhc7_MMHT2014nnlo68cl_{}_o2qt0100y-55t{}.root" ,
                 "RESCT_2D_CT10nnlo"         : "results_merge/CT10nnlo_RESCT2D_160523/dyturbo_{}_lhc7_CT10nnlo_{}_o2qt0100y-55t{}.root"       ,
                 "RESCT_2D_CT14nnlo"         : "results_merge/CT14_RESCT2D_160523/dyturbo_{}_lhc7_CT14nnlo_{}_o2qt0100y-55t{}.root"       ,
+                #
+                "RESCT_2D_MMHTProf68cl"         : "results_merge/MMHT14Prof_RESCT2D_160523/dyturbo_{}_lhc7_MMHTProf68cl_{}_o2qt050y-55t{}.root"       ,
+                "RESCT_2D_CT10nnlo68clProfiled" : "results_merge/CT10Prof_RESCT2D_160523/dyturbo_{}_lhc7_CT10nnlo68clProfiled_{}_o2qt050y-55t{}.root"       ,
+                "RESCT_2D_CT14nnloProf68cl"     : "results_merge/CT14Prof_RESCT2D_160523/dyturbo_{}_lhc7_CT14nnloProf68cl_{}_o2qt050y-55t{}.root"       ,
 
                 "VIRT_Maarten1" : "results_grid/group.phys-sm.dyturbo_{}_lhc7_CT10nnlo_{}_o2qt0100y-55t{}_seed_v1462837351_results_merge.root/group.phys-sm.8418804._001911.results_merge.root" ,
                 "REAL_Maarten1" : "results_grid/group.phys-sm.dyturbo_{}_lhc7_CT10nnlo_{}_o2qt0100y-55t{}_seed_v1462837351_results_merge.root/group.phys-sm.8418801._001202.results_merge.root" ,
@@ -1163,7 +1184,27 @@ class TheoUncStudy:
                 "REALVIRT_FabriceM500_CT10nnlo"         : "results_merge/grid_fabrice_160524/group.perf-jets.dyturbo_{}_lhc7_CT10nnlo_{}_o2qt0100y-55t{}_seed_outliers.root"         ,
                 "REALVIRT_FabriceM500_MMHT2014nnlo68cl" : "results_merge/grid_fabrice_160524/group.perf-jets.dyturbo_{}_lhc7_MMHT2014nnlo68cl_{}_o2qt0100y-55t{}_seed_outliers.root" ,
                 "REALVIRT_FabriceM500_CT14nnlo"         : "results_merge/grid_fabrice_160524/group.perf-jets.dyturbo_{}_lhc7_CT14nnlo_{}_o2qt0100y-55t{}_seed_outliers.root"         ,
+                #
+                "REALVIRT_FabriceM500_MMHTProf68cl"         : "results_merge/grid_fabrice_160524/group.perf-jets.dyturbo_{}_lhc7_MMHTProf68cl_{}_o2qt050y-55t{}_seed_outliers.root"         ,
+                "REALVIRT_FabriceM500_CT10nnlo68clProfiled" : "results_merge/grid_fabrice_160524/group.perf-jets.dyturbo_{}_lhc7_CT10nnlo68clProfiled_{}_o2qt050y-55t{}_seed_outliers.root"         ,
+                "REALVIRT_FabriceM500_CT14nnloProf68cl"     : "results_merge/grid_fabrice_160524/group.perf-jets.dyturbo_{}_lhc7_CT14nnloProf68cl_{}_o2qt050y-55t{}_seed_outliers.root"         ,
+
+                "VIRT_Fabrice100_" : "results_merge/grid_fabrice_160524/group.perf-jets.dyturbo_{0}_lhc7_{1}_{0}_o2qt050y-55t{0}_seed_outliers.root"         ,
+                "REAL_Maarten700_" : "results_merge/grid_fabrice_160604/group.phys-sm.dyturbo_{0}_lhc7_{1}_{0}_o2qt050y-55t{0}_seed_outliers.root"         ,
+
+                "LO"    : "results_merge/lxbatch_VV_160530/run_wz7_nnlo_dyturbo_{}_lhc7_CT10nnlo_{}_o2qt050y-55t{}_seed.in.root",
+                "VV"    : "results_merge/lxbatch_VV_160530/dyturbo_{}_lhc7_CT10nnlo_{}_o2qt050y-55t{}_seed.in.root",
+                "FIXCT2D" : "results_merge/lxbatch_FIXCT_160530/dyturbo_{0}_lhc7_CT10nnlo_array_o2qt01y-55t{2}_seed_1{1}.root",
+
+
+                "v01_CT10nnlo" : "results_merge/v01/dyturbo_{0}_lhc7_CT10nnlo_all_o2t{2}_seed_v1466990784_results_merge.root",
+                "v01_CT10nnlo68cl_AWZ16" : "results_merge/eos/{0}-{2}-CT10nnlo68cl_AWZ16_pdfvar.root" ,
                 }
+        full_pdf_list = [ "CT10nnlo", "CT14nnlo", "MMHT2014nnlo68cl",
+                "CT10nnlo68clProfiled", "CT14nnloProf68cl", "MMHTProf68cl" ]
+        for pdf in full_pdf_list :
+            s.file_template["VIRT_Fabrice100_"+pdf] = s.file_template["VIRT_Fabrice100_"].format("{}",pdf)
+            s.file_template["REAL_Maarten700_"+pdf] = s.file_template["REAL_Maarten700_"].format("{}",pdf)
         #
         # pl.imgDir="share/img_Maarten1"
         # s.file_template [ "REAL"   ] = s.file_template [ "REAL_Maarten1" ]
@@ -1185,31 +1226,57 @@ class TheoUncStudy:
 
     def setfilepath(s) :
         pl.imgDir="share/img_wmassProd"
-        s.file_template [ "REAL"   ] = s.file_template [ "REALVIRT_FabriceM500_"+s.PDFSET ]
-        s.file_template [ "VIRT"   ] = s.file_template [ "REALVIRT_FabriceM500_"+s.PDFSET ]
-        # s.file_template [ "REAL"   ] = s.file_template [ "REAL_Fabrice1" ]
-        # s.file_template [ "VIRT"   ] = s.file_template [ "VIRT_Fabrice1" ]
-        # s.file_template [ "REAL"   ] = s.file_template [ "REAL_F1" ]
-        # s.file_template [ "VIRT"   ] = s.file_template [ "VIRT_F1" ]
-        #
-        s.file_template [ "RES2P"  ] = s.file_template [ "RESCT_2D_"+s.PDFSET ]
-        s.file_template [ "CT2P"   ] = s.file_template [ "RESCT_2D_"+s.PDFSET ]
-        s.file_template [ "RES2D"  ] = s.file_template [ "RESCT_2D_"+s.PDFSET ]
-        s.file_template [ "CT2D"   ] = s.file_template [ "RESCT_2D_"+s.PDFSET ]
-        #
-        s.file_template [ "FIN"    ] = "unset"
-        s.file_template [ "TOT"    ] = "unset"
+        for trm in ["TOT" ,
+                "FIXCT",
+                "FIXCT2D",
+                "CT",
+                "CT2D",
+                "CT3D",
+                "CT2P",
+                "RES" ,
+                "RES2D" ,
+                "RES2P" ,
+                "RES3D" ,
+                "VV" ,
+                "FO" ,
+                "REAL" ,
+                "VIRT"
+                ] :
+            s.file_template[trm] = "unset"
+            pass
+        # s.file_template [ "REAL"   ] = s.file_template [ "REAL_Maarten700_"+s.PDFSET ]
+        # s.file_template [ "VIRT"   ] = s.file_template [ "REALVIRT_FabriceM500_"+s.PDFSET ]
+        # # s.file_template [ "REAL"   ] = s.file_template [ "REAL_Fabrice1" ]
+        # # s.file_template [ "VIRT"   ] = s.file_template [ "VIRT_Fabrice1" ]
+        # # s.file_template [ "REAL"   ] = s.file_template [ "REAL_F1" ]
+        # # s.file_template [ "VIRT"   ] = s.file_template [ "VIRT_F1" ]
+        # #
+        # s.file_template [ "RES2P"  ] = s.file_template [ "RESCT_2D_"+s.PDFSET ]
+        # s.file_template [ "CT2P"   ] = s.file_template [ "RESCT_2D_"+s.PDFSET ]
+        # s.file_template [ "RES2D"  ] = s.file_template [ "RESCT_2D_"+s.PDFSET ]
+        # s.file_template [ "CT2D"   ] = s.file_template [ "RESCT_2D_"+s.PDFSET ]
+        # #
+        # s.file_template [ "FIN"    ] = "unset"
+        # s.file_template [ "TOT"    ] = "unset"
+        # s.file_template [ "TOTFIX" ] = "unset"
+        # s.file_template [ "RV"     ] = "results_merge/Z0_RV_big_5.root" #"Z_CT10_RV_10.root" # s.file_template [ "REALVIRT_FabriceM500_"+s.PDFSET ]
+
+        for trm in ["TOT" , "FIXCT" , "VV" , "REAL" , "VIRT"] :
+            s.file_template [ trm   ] = s.file_template [ "v01_"+s.PDFSET ]
         pass
 
     def GetPlot(s,info,var,name="",varPerTerm=None):
         # if tot or fin load smartly :
         #
+        # MSG.debug("starting : %s : info %s " %(name,info.name))
         h=0
         match={
                 "TOT2P"  : ["RES2P","CT2P","REAL","VIRT"] ,
                 "TOT2D"  : ["RES2D","CT2D","REAL","VIRT"] ,
                 "FIN2P"  : ["CT2P","REAL","VIRT"]       ,
                 "FIN2D"  : ["CT2D","REAL","VIRT"]       ,
+                "TOTFIX" : [ "VV", "FIXCT", "REAL","VIRT"]  ,
+                "TOTFIX2D" : [ "VV", "FIXCT2D", "REAL","VIRT"]  ,
                 "TOTSA"  : ["TOT"]  ,
                 "FINSA"  : ["FIN"]  ,
                 "RES"   : ["RES"]  ,
@@ -1220,21 +1287,26 @@ class TheoUncStudy:
                 "CT2P"  : ["CT2P"]   ,
                 "REAL"  : ["REAL"] ,
                 "VIRT"  : ["VIRT"] ,
+                "RV"  : ["RV"] ,
+                "LO"    : ["LO"]   ,
+                "VV"    : ["VV"]   ,
+                "FIXCT"    : ["FIXCT"]   ,
                 }
         # setting for different process (w was done with p-cubatures)
-        match["TOT"] = match["TOT2D"]
-        match["FIN"] = match["FIN2D"]
-        if "w" in info.proc_name and "CT10nnlo" in s.PDFSET : 
-            match["TOT"] = match["TOT2P"]
-            match["FIN"] = match["FIN2P"]
-            pass
+        #  match["TOT"] = match["TOT2D"]
+        #  match["FIN"] = match["FIN2D"]
+        #  if "w" in info.proc_name and "CT10nnlo" == s.PDFSET : 
+        #      match["TOT"] = match["TOT2P"]
+        #      match["FIN"] = match["FIN2P"]
+        #      pass
+        match["TOT"] = match["TOTSA"]
         # setting for per term pdf variation
         if varPerTerm!=None and "FIN" == varPerTerm  : varPerTerm="CT,CT2P,CT2D,REAL,VIRT"
         for term in match[info.term_name] :
             if "p_" in info.plot_name :
                 # No profiles for ressumed part
                 if "RES" in term : continue
-                # if "REAL" in term : continue # VIRT only
+                if s.doAimomVirtOnly and "REAL" in term : continue # VIRT only
                 # if "VIRT" in term : continue # REAL only
                 if "CT" in term : continue
             if "h_Q" in info.plot_name or "h_qtVyVQ" in info.plot_name :
@@ -1263,32 +1335,33 @@ class TheoUncStudy:
             c=1
             # MSG.debug(" Object type: %s" % hist.ClassName() )
             if "p_" in info.plot_name and var == 0:
-                tinfo.setname()
-                bins= [ h.GetBin(xbin,25) for xbin in range(00,25) ]
-                xsec =  s.getplotPDF(tinfo,"qt_y_total","xsec")
-                MSG.debug("Prof: name %s" % tinfo.name)
-                MSG.debug("Xsection: %d " % xsec.Integral())
-                ent = pl.GetProjection(hist,"_ent")
-                MSG.debug("Integral of denom: %d " % ent.Integral())
-                for ibin in bins:
-                    denom = hist.GetBinEntries(ibin)
-                    mean = hist.GetBinContent(ibin)
-                    nom = mean * denom
-                    # MSG.debug("    Bin %d (qt:%f y:%f): mean %f  nom %f denom %f " % (ibin, qt,y, mean, nom,denom) )
-                    MSG.debug("    Bin %d: mean %f  nom %f denom %f " % (ibin, mean, nom,denom) )
-                xsec.Delete()
-                ent.Delete()
-                # add
+                # tinfo.setname()
+                # bins= [ h.GetBin(xbin,25) for xbin in range(00,25) ]
+                # xsec =  s.getplotPDF(tinfo,"qt_y_total","xsec")
+                # MSG.debug("Prof: name %s term %s" % (tinfo.name, tinfo.term_name) )
+                # MSG.debug("Xsection: %d " % xsec.Integral())
+                # ent = pl.GetProjection(hist,"_ent")
+                # MSG.debug("Integral of denom: %d " % ent.Integral())
+                # for ibin in bins:
+                #     denom = hist.GetBinEntries(ibin)
+                #     mean = hist.GetBinContent(ibin)
+                #     nom = mean * denom
+                #     # MSG.debug("    Bin %d (qt:%f y:%f): mean %f  nom %f denom %f " % (ibin, qt,y, mean, nom,denom) )
+                #     MSG.debug("    Bin %d: mean %f  nom %f denom %f " % (ibin, mean, nom,denom) )
+                # xsec.Delete()
+                # ent.Delete()
+                # # add
                 h.Add(hist,c)
-                ent = pl.GetProjection(h,"_ent")
-                MSG.debug("Integral of denom (total): %d " % ent.Integral())
-                for ibin in bins:
-                    denom = h.GetBinEntries(ibin)
-                    mean = h.GetBinContent(ibin)
-                    nom = mean * denom
-                    MSG.debug("    Bin %d: mean %f  nom %f denom %f " % (ibin, mean, nom,denom) )
-                ent.Delete()
+                # ent = pl.GetProjection(h,"_ent")
+                # MSG.debug("Integral of denom (total): %d " % ent.Integral())
+                # for ibin in bins:
+                #     denom = h.GetBinEntries(ibin)
+                #     mean = h.GetBinContent(ibin)
+                #     nom = mean * denom
+                #     MSG.debug("    Bin %d: mean %f  nom %f denom %f " % (ibin, mean, nom,denom) )
+                # ent.Delete()
             else :
+                # MSG.debug("Hist: name %s term %s" % (tinfo.name, tinfo.term) )
                 h.Add(hist,c)
             hist.Delete()
             pass
@@ -1303,14 +1376,14 @@ class TheoUncStudy:
             h2d=h
             h = pl.GetProjection(h2d,info.plot_Proj)
             h2d.Delete
-        if "Profile" in h.ClassName() :
-            hp=h
-            dim=hp.GetDimension()
-            if dim==1 :
-                h = pl.GetProjection(hp,"_px")
-            elif dim==2 :
-                h = pl.GetProjection(hp,"_pxy")
-            hp.Delete()
+        # if "Profile" in h.ClassName() :
+        #     hp=h
+        #     dim=hp.GetDimension()
+        #     if dim==1 :
+        #         h = pl.GetProjection(hp,"_px")
+        #     elif dim==2 :
+        #         h = pl.GetProjection(hp,"_pxy")
+        #     hp.Delete()
         # MSG.debug("return "+str(h))
         return h
 
@@ -1347,13 +1420,15 @@ class TheoUncStudy:
         if s.doRebin and not "qt_y_" in str(pdfvar) :
             # MSG.debug( " plot: mix {} max {} xw {} yw {}".format( info.plot_minx   , info.plot_maxx   , info.plot_xwidth , info.plot_ywidth ))
             # MSG.debug("Before ReRange "+str(h.Print()))
+            oldh=h
             h = pl.ReRange ( h , info.plot_minx   , info.plot_maxx   )
             # MSG.debug("After ReRange "+str(h.Print()))
             h = pl.ReBin   ( h , info.plot_xwidth , info.plot_ywidth )
             # MSG.debug("After ReBin "+str(h.Print()))
+            if h!=oldh : oldh.Delete()
         # set axis
         h.SetTitle(title)
-        # MSG.debug("return "+str(h))
+        # MSG.debug("return "+str(h)); h.Print("base")
         return h
 
     def getallbands(s,info,central):
@@ -1367,13 +1442,14 @@ class TheoUncStudy:
                 bname = "_".join([uInfo.name,etype])
                 etypePDF=etype
                 if "pdf" in bname: etypePDF=bname
-                # MSG.debug(" name {} etype {} u_name {} fullband".format(info.name, etype,u_name))
+                MSG.debug(" name {} etype {} u_name {} fullband".format(info.name, etype,u_name))
                 bands[bname]=pl.MakeUncBand(bname,htmp,band=etypePDF,rel=True,doCL96to68=True)
                 # alltrms= [ "FIN" , "RES"  , "CT"   , "REAL" , "VIRT" ]
                 alltrms= [ "FIN" , "RES2D"  , "CT2D"   , "REAL" , "VIRT" ]
                 if "w" in info.proc_name and "CT10nnlo" in s.PDFSET : 
                     alltrms[1]="RES2P"
                     alltrms[2]="CT2P"
+                alltrms=[ "VV", "FIXCT", "REAL", "VIRT"]
                 # add decomposition of statistical uncertainty (band per each term relative to total)
                 if info.term_name=="TOT" and etype == "error" :
                     for trm in alltrms :
@@ -1395,6 +1471,7 @@ class TheoUncStudy:
                         bname=u_name+trm+"_"+etype
                         # MSG.debug(" name {} etype {} u_name {} pdf decomp {}".format(info.name, etype,u_name, trm))
                         bands[bname] = pl.MakeUncBand(bname,[centr]+hl_varPerTerm,band=etype,rel=True,doCL96to68=True)
+                        for h in hl_varPerTerm: h.Delete()
                     pass
                 if  u_name == "pdf" :
                     # add decomposition of PDF uncertainty (band per each eigenpair relative to total)
@@ -1449,20 +1526,25 @@ class TheoUncStudy:
         central.SetLineWidth(2)
         central.SetLineColor(kAzure)
         # central_totband = pl.MakeBandGraph( "centralband", central, [allbands["stat+alphas+gpar_sym"]], "band,rel" )
-        central_totband = pl.MakeBandGraph( "centralband", central, [allbands["stat_error"]], "band,rel" )
-        central_totband.SetTitle(" Full unc. band " + info.term_title)
+        # central_totband = pl.MakeBandGraph( "centralband", central, [allbands["stat_error"]], "band,rel" )
+        central_totband = pl.MakeBandGraph( "centralband", central, [allbands["pdf_sym"]], "band,rel" )
+        # central_totband.SetTitle(" Full unc. band " + info.term_title)
+        central_totband.SetTitle(" PDF unc. band " + info.term_title)
         central_totband.SetFillColor(kAzure-9)
         for i,bin in enumerate(central):
             central.SetBinError(i,0);
+        MSG.debug(" Types: cent %s band %s " % (central.ClassName(), central_totband.ClassName()) ); central_totband.Print("range")
         # plot
         pl.NewCanvas(name)
         hlist=[central,central_totband]
-        pl.SetFrameStyle1D(hlist, maxX=maxx)
-        central_totband.Draw("SAMEE3")
-        central.Draw("LSAME")
+        pl.SetFrameStyle1D(hlist) #, maxX=maxx)
+        central_totband.Draw("SAME,E3")
+        central.Draw("HIST,SAME")
         pl.DrawLegend([central_totband],"fl",legx=0.65,legy=0.80,scale=1.1)
         pl.WriteText(info.proc_titl,0.68,0.85,tsize=0.05)
         pl.Save()
+        central.Delete()
+        central_totband.Delete()
         pass
 
     def PlotStackUncertainty(s,allbands,info):
@@ -1473,13 +1555,13 @@ class TheoUncStudy:
         # if info.term_name=="REAL"  :
             # minx=50
             # maxx=80
-            # uncmax=1e8
+            # uncax=1e8
             # forcrng=False
         # systematic + statistic
         name = info.name+"_UncStack"
         stackList=[
                   [ "pdf_sym"              , "pdf"    ]  ,
-                  [ "stat+pdf_sym"         , "stat"   ]  ,
+                  # [ "stat+pdf_sym"         , "stat"   ]  ,
                 # [ "stat_sym"             , "stat"   ]  ,
                 # [ "stat+alphas_sym"      , "alphas" ]  ,
                 # [ "stat+alphas+gpar_sym" , "gpar"   ]  ,
@@ -1505,7 +1587,7 @@ class TheoUncStudy:
             hlist[-1].GetYaxis().SetTitle("rel. unc.")
         # for h in hlist : MSG.dn}ebug(" No stack ??? name {} bin 5 {} ".format(h.GetName(), h.GetBinContent(5)))
         pl.NewCanvas(name)
-        pl.SetFrameStyle1D(hlist,maxX=maxx,maxY=uncmax,forceRange=forcrng)
+        pl.SetFrameStyle1D(hlist,maxY=uncmax,forceRange=forcrng)
         #pl.DrawHistCompare([central_totband,central])
         for h in reversed(hlist) :
             h.Draw("same,f")
@@ -1516,28 +1598,29 @@ class TheoUncStudy:
         # statistic and PDF per term
         if info.term_name == "TOT" :
             uncList=[
-                    [ "TOT"    , "FIN"    , "RES"                                     ],
-                    [            "FIN"    ,            "CT"     , "REAL"   , "VIRT"   ],
-                    [                       "RES"    , "CT"     , "REAL"   , "VIRT"   ],
-                    [ "TOT"    , "FIN"    , "RES"    , "CT"     , "REAL"   , "VIRT"   ],
+                    [ "TOT"    , "VIRT"    , "REAL"     , "VV"   , "FIXCT"   ],
+                    # [ "TOT"    , "FIN"    , "RES"                                     ],
+                    # [            "FIN"    ,            "CT"     , "REAL"   , "VIRT"   ],
+                    # [                       "RES"    , "CT"     , "REAL"   , "VIRT"   ],
+                    # [ "TOT"    , "FIN"    , "RES"    , "CT"     , "REAL"   , "VIRT"   ],
                     ]
-            if "w" in info.proc_name and "CT10nnlo" in s.PDFSET : 
-                uncList=[
-                        [ "TOT"    , "FIN"    , "RES2P"                                       ],
-                        [            "FIN"    ,              "CT2P"     , "REAL"   , "VIRT"   ],
-                        [                       "RES2P"    , "CT2P"     , "REAL"   , "VIRT"   ],
-                        [ "TOT"    , "FIN"    , "RES2P"    , "CT2P"     , "REAL"   , "VIRT"   ],
-                        ]
-            else :
-                uncList=[
-                        [ "TOT"    , "FIN"    , "RES2D"                                       ],
-                        [            "FIN"    ,              "CT2D"     , "REAL"   , "VIRT"   ],
-                        [                       "RES2D"    , "CT2D"     , "REAL"   , "VIRT"   ],
-                        [ "TOT"    , "FIN"    , "RES2D"    , "CT2D"     , "REAL"   , "VIRT"   ],
-                        ]
+            # if "w" in info.proc_name and "CT10nnlo" in s.PDFSET : 
+            #     uncList=[
+            #             [ "TOT"    , "FIN"    , "RES2P"                                       ],
+            #             [            "FIN"    ,              "CT2P"     , "REAL"   , "VIRT"   ],
+            #             [                       "RES2P"    , "CT2P"     , "REAL"   , "VIRT"   ],
+            #             [ "TOT"    , "FIN"    , "RES2P"    , "CT2P"     , "REAL"   , "VIRT"   ],
+            #             ]
+            # else :
+            #     uncList=[
+            #             [ "TOT"    , "FIN"    , "RES2D"                                       ],
+            #             [            "FIN"    ,              "CT2D"     , "REAL"   , "VIRT"   ],
+            #             [                       "RES2D"    , "CT2D"     , "REAL"   , "VIRT"   ],
+            #             [ "TOT"    , "FIN"    , "RES2D"    , "CT2D"     , "REAL"   , "VIRT"   ],
+            #             ]
             UncStackDef=[
                     [ "stat_", "_UncStatPerTerm" , "stat " ],
-                    [ "pdf"  , "_UncPDFPerTerm"  , "PDF " ],
+                    # [ "pdf"  , "_UncPDFPerTerm"  , "PDF " ],
                     ]
             for unc,uncname,unctit in UncStackDef :
                 for i,termList in enumerate(uncList) :
@@ -1563,7 +1646,7 @@ class TheoUncStudy:
                         hlist[-1].GetYaxis().SetTitle("rel. unc. wrt. total")
                         pass
                     pl.NewCanvas(name)
-                    pl.SetFrameStyle1D(hlist,maxX=info.plot_maxx,maxY=s.MaxUnc*2,forceRange=True)
+                    pl.SetFrameStyle1D(hlist,maxY=s.MaxUnc*2,forceRange=True)
                     #pl.DrawHistCompare([central_totband,central])
                     for h in hlist :
                         h.Draw("same,f")
@@ -1581,7 +1664,7 @@ class TheoUncStudy:
         uncList=[
                 # "gpar"   ,
                 # "alphas" ,
-                "stat"   ,
+                # "stat"   ,
                 "pdf"   ,
                 ]
         for uncName in uncList :
@@ -1605,7 +1688,7 @@ class TheoUncStudy:
                     hlist[-1].Scale(-1)
             name = info.name+"_UncEnv_" + uncName
             pl.NewCanvas(name)
-            pl.SetFrameStyle1D(hlist,maxX=info.plot_maxx,scale=2,minY=miniy,maxY=maxiy,forceRange=True)
+            pl.SetFrameStyle1D(hlist,scale=2,minY=miniy,maxY=maxiy,forceRange=True)
             pl.axis.GetYaxis().SetNdivisions(5)
             gPad.SetLeftMargin  ( 0.120 )
             gPad.SetTopMargin  ( 0.050 )
@@ -1666,7 +1749,7 @@ class TheoUncStudy:
                     hlist[-1].GetYaxis().SetTitle("rel. unc. wrt. total")
                     name = info.name+uncname+ trm
                     pl.NewCanvas(name)
-                    pl.SetFrameStyle1D(hlist,maxX=info.plot_maxx,scale=2,minY=miniy,maxY=maxiy,forceRange=True)
+                    pl.SetFrameStyle1D(hlist,scale=2,minY=miniy,maxY=maxiy,forceRange=True)
                     pl.axis.GetYaxis().SetNdivisions(5)
                     gPad.SetLeftMargin  ( 0.120 )
                     gPad.SetTopMargin  ( 0.050 )
@@ -1780,7 +1863,7 @@ class TheoUncStudy:
             #
             #
             pl.CompareHistsInList(info.name+uInfo.name+name,
-                    [ Mar, Fab ],
+                    [ MRTar, Fab ],
                     drawOpt="P",
                     compareType=None, minY=0.95, maxY=1.05,doSave=False,doStyle=False
                     )
@@ -1791,21 +1874,28 @@ class TheoUncStudy:
 
 
     def DoStudy(s):
+        s.PDFSET="CT10nnlo68cl_AWZ16"
+        s.setfilepath()
         s.doRebin=True
-        for proc in s.processesDesc :
+        # s.doAimomVirtOnly=True
+        for proc in s.processesDesc[0:3] :
             # termlist= [ "TOT", "FIN", "RES2P", "CT2P", "REAL", "VIRT" ]
-            termlist= [ "TOT"]
-            # termlist= [ "TOT", "REAL"]
+            termlist= [ "TOT" ] # "REAL", "VIRT"]
+            # termlist= [ "RV" ] #, "REAL", "VIRT"]
+            # termlist= [ "LO" ] #, "REAL"]
             # termlist= [  "RES2D", "CT2D" ]
             for iterm in termlist :
                 term = s.termDesc[iterm]
                 for pName in [
                         "h_qt",
                         "h_y",
-                        "h_qtVy",
-                        "p_qtVy_A0",
-                        "p_qtVy_A0_prfx",
-                        "p_qtVy_A0_prfy",
+                        # "h_qtVy",
+                        # "p_qtVy_A0",
+                        # "p_qtVy_A0_prfx",
+                        # "p_qtVy_A0_prfy",
+                        # "p_qt_A0",
+                        # "p_qtVy_A4_prfx",
+                        # "p_qtVy_A4_prfy",
                         ] :
                     info = makeInfo(proc , pName, term , s.file_template)
                     # get central
@@ -1820,9 +1910,9 @@ class TheoUncStudy:
                         # create stack plot with correct uncertainty combination
                         s.PlotStackUncertainty(allbands, info )
                         # create pos-neg envelope plot
-                        s.PlotPosNegEnvelopes(allbands, info )
+                        # s.PlotPosNegEnvelopes(allbands, info )
                         # plot per variation
-                        s.PlotPerEigenVariation(allbands, info)
+                        # s.PlotPerEigenVariation(allbands, info)
                         pass
                     elif dim == 2 :
                         # create central plot
@@ -1841,25 +1931,26 @@ class TheoUncStudy:
 
     def DoVariations(s) :
         s.doRebin=True
-        s.PDFSET="CT10nnlo"
-        # s.PDFSET="MMHT2014nnlo68cl"
-        # s.PDFSET="CT14nnlo"
-        s.setfilepath()
+        # s.doAimomVirtOnly=True
+        # DeltaObjects(False)
+        #
         hDesc={
                 "" : [
-                    # "h_qt",
-                    # "h_y",
-                    # "h_qtVy",
+                    "h_qt",
+                    "h_y",
+                    "h_m",
+                    "h_qtVy",
+                    "h_yVm",
                     # "h_Q",
                     # "h_qtVyVQ",
                     "p_qtVy_A0",
-                    # "p_qtVy_A1",
-                    # "p_qtVy_A2",
-                    # "p_qtVy_A3",
-                    # "p_qtVy_A4",
-                    # "p_qtVy_A5",
-                    # "p_qtVy_A6",
-                    # "p_qtVy_A7",
+                    "p_qtVy_A1",
+                    "p_qtVy_A2",
+                    "p_qtVy_A3",
+                    "p_qtVy_A4",
+                    "p_qtVy_A5",
+                    "p_qtVy_A6",
+                    "p_qtVy_A7",
                     # "p_qt_A0",
                     # "p_qt_A4",
                     ],
@@ -1873,15 +1964,20 @@ class TheoUncStudy:
                     "h_qtVy",
                     ],
                 "aimom" : [ 
+                    "h_qt",
+                    "h_y",
+                    "h_m",
+                    "h_qtVy",
+                    "h_yVm",
                     # "h_qtVy",
                     "p_qtVy_A0",
-                    # "p_qtVy_A1",
-                    # "p_qtVy_A2",
-                    # "p_qtVy_A3",
-                    # "p_qtVy_A4",
-                    # "p_qtVy_A5",
-                    # "p_qtVy_A6",
-                    # "p_qtVy_A7",
+                    "p_qtVy_A1",
+                    "p_qtVy_A2",
+                    "p_qtVy_A3",
+                    "p_qtVy_A4",
+                    "p_qtVy_A5",
+                    "p_qtVy_A6",
+                    "p_qtVy_A7",
                     #
                     # "p_qt_A0",
                     # "p_qt_A4",
@@ -1889,52 +1985,80 @@ class TheoUncStudy:
                 }
         uInfo=s.infoUnc["pdf"]
         term = s.termDesc["TOT"]
-        for hists in [
+        # term = s.termDesc["TOTFIX"]
+        # term = s.termDesc["RV"]
+        hSet=[
                 # "qty",
                 # "mass",
-                # "aimom",
-                "",
-                ] :
-            for proc in s.processesDesc[0:2] :
-                for ivar in [0]+uInfo.varN:
-                    outdir="share/{1}_{0}/".format(proc[0],s.PDFSET,ivar,hists)
-                    outfile=outdir+"dyturbo_{0}_{1}_var_{2}_{3}.root".format(proc[0],s.PDFSET,ivar,hists)
-                    MSG.info( "Preparing variation plots {3}: {1} {0} {2} ".format(proc[0],s.PDFSET,ivar,hists))
-                    allhists = list()
-                    for pName in hDesc[hists] :
-                        projs=[""] # defaul no-projection
-                        if "p_qtVy" in pName  : projs=["",
-                                "_prfx",
-                                # "_prfx_25_50",
-                                "_prfy",
-                                ]
-                        info = makeInfo(proc , [pName]+s.plotsDesc[pName] , term , s.file_template)
-                        # get central and variations
-                        central=dict()
-                        for pr in projs :
-                            name=info.name+pr
-                            MSG.debug("  plot: "+name)
-                            if pr == "" :
-                                central[pr] = s.GetPlot(info,ivar,info.name)
-                            else :
-                                central[pr] = pl.GetProjection(central[""],pr)
-                            # add central shape
-                            allhists.append(central[pr])
-                            pass # all proj
-                        pass # all hists
+                "aimom",
+                # "",
+                ]
+        if "FIX" in term[0] : hSet=[ "qty" ]
+        for pdfset in [
+                "CT10nnlo",
+                # "CT10nnlo68clProfiled",
+
+                # "MMHT2014nnlo68cl",
+                # "MMHTProf68cl",
+
+                # "CT14nnlo",
+                # "CT14nnloProf68cl",
+                ]:
+            s.PDFSET=pdfset
+            s.setfilepath()
+            for hists in hSet :
+                # MSG.debug(" HEAPY : \n %s" % HeapDelta()); 
+                for proc in s.processesDesc :
+                    outdir="eos/{1}/".format(proc[0],s.PDFSET)
+                    if "FIX" in term[0] : 
+                        outdir="share/variation/{1}_{0}/".format("FIX"+proc[0],s.PDFSET)
                     mkdir_p(outdir)
-                    f = TFile.Open(outfile,"RECREATE")
-                    for h in allhists:
-                        # MSG.debug("writing name: {}".format( h.GetName()));h.Print("range")
-                        h.Write()
-                        pass
-                    f.Write()
-                    f.Close()
-                    MSG.info(" File written: "+outfile)
-                    for h in allhists: h.Delete()
-                    break
-                pass # all variations
-            pass
+                    for ivar in [0]+uInfo.varN:
+                        outfile=outdir+"dyturbo_{0}_{1}_var_{2}_{3}.root".format(proc[0],s.PDFSET,ivar,hists)
+                        MSG.info( "Preparing variation plots {3}: {1} {0} {2} ".format(proc[0],s.PDFSET,ivar,hists))
+                        allhists = list()
+                        for pName in hDesc[hists] :
+                            projs=[""] # defaul no-projection
+                            if "p_qtVy" in pName  : projs=["",
+                                    "_prfx",
+                                    # "_prfx_25_50",
+                                    "_prfy",
+                                    ]
+                            info = makeInfo(proc , pName, term , s.file_template)
+                            # get central and variations
+                            central=dict()
+                            for pr in projs :
+                                name=info.name+pr
+                                # MSG.debug("  plot: "+name)
+                                if pr == "" :
+                                    central[pr] = s.GetPlot(info,ivar,info.name)
+                                else :
+                                    central[pr] = pl.GetProjection(central[""],pr)
+                                # add central shape
+                                allhists.append(central[pr])
+                                pass # all proj
+                            del info
+                            pass # all hists
+                        # MSG.debug(" HEAPY : \n %s" % HeapDelta()); 
+                        # DeltaObjects()
+                        f = TFile.Open(outfile,"RECREATE")
+                        for h in allhists:
+                            # MSG.debug("writing name: {}".format( h.GetName()));h.Print("range")
+                            h.Write()
+                            pass
+                        f.Write()
+                        f.Close()
+                        f.Delete()
+                        MSG.info(" File written: "+outfile)
+                        for h in allhists: h.Delete()
+                        del allhists
+                        # gROOT.Reset()
+                        # DeltaObjects()
+                        # MSG.debug(" HEAPY : \n %s" % HeapDelta()); 
+                        # break # only first nominal
+                    pass # all variations
+                pass
+        DeltaObjects()
         pass
 
     def DoRatio(s):
@@ -1945,8 +2069,8 @@ class TheoUncStudy:
         s.setfilepath()
         hDesc={
                 "all" : [
-                    # "h_qt",
-                    # "h_y",
+                    "h_qt",
+                    "h_y",
                     # "h_qtVy",
                     # "h_Q",
                     # "h_qtVyVQ",
@@ -1954,7 +2078,7 @@ class TheoUncStudy:
                     # "p_qtVy_A1",
                     # "p_qtVy_A2",
                     # "p_qtVy_A3",
-                    # "p_qtVy_A4",
+                    "p_qtVy_A4",
                     # "p_qtVy_A5",
                     # "p_qtVy_A6",
                     # "p_qtVy_A7",
@@ -1968,7 +2092,7 @@ class TheoUncStudy:
                 "qty" : [ 
                     "h_qt",
                     "h_y",
-                    "h_qtVy",
+                    # "h_qtVy",
                     ],
                 "aimom" : [ 
                     # "h_qtVy",
@@ -1976,7 +2100,7 @@ class TheoUncStudy:
                     # "p_qtVy_A1",
                     # "p_qtVy_A2",
                     # "p_qtVy_A3",
-                    # "p_qtVy_A4",
+                    "p_qtVy_A4",
                     # "p_qtVy_A5",
                     # "p_qtVy_A6",
                     # "p_qtVy_A7",
@@ -1988,18 +2112,18 @@ class TheoUncStudy:
         uInfo=s.infoUnc["pdf"]
         term = s.termDesc["TOT"]
         for hists in [
-                # "qty",
+                "qty",
                 # "mass",
                 "aimom",
                 ] :
-            for proc in s.processesDesc[0:2] :
+            for proc in s.processesDesc[0:3] :
                 outfile="share/ratio/dyturbo_{}_{}_PDF_ratios_{}.root".format(proc[0],s.PDFSET,hists)
                 allratio=list()
                 for pName in hDesc[hists] :
                     projs=[""] # defaul no-projection
-                    if hists == "aimom" and "qtVy" in pName  : projs=["","_prfx_25_50","_prfy"]
+                    if hists == "aimom" and "qtVy" in pName  : projs=["","_prfx","_prfy"]
                     MSG.info( "ratios: {}".format(pName))
-                    info = makeInfo(proc , [pName]+s.plotsDesc[pName] , term , s.file_template)
+                    info = makeInfo(proc , pName, term , s.file_template)
                     # get central and variations
                     central=dict()
                     allvari=dict()
@@ -2106,6 +2230,9 @@ class TheoUncStudy:
                 pl.Save()
         pl.MakePreviewFromList(0,"quadpdf")
         pass
+
+dummy=TheoUncStudy()
+##### END OF THEOUNCSTUDY
 
 def makeStatPlot():
     name="res_stat_quad"
@@ -2745,6 +2872,112 @@ OPTS:
 """
     pass
 
+def Ai_LHC_7vs8():
+    pl = PlotTools()
+    fnam  ={
+            "vjlo8" : "results_merge/Stefano_dyturbo_160214_Zpol/dyturbo_z0_lhc8_oNLLtVJLO_outlier.root",
+            "real8" : "results_merge/Stefano_dyturbo_160214_Zpol/dyturbo_z0_lhc8_oNNLLtREAL_outlier.root",
+            "virt8" : "results_merge/Stefano_dyturbo_160214_Zpol/dyturbo_z0_lhc8_oNNLLtVIRT_outlier.root",
+            # "vjlo7" : "results_merge/dyturbo_z0_lhc7_CT10nnlo_all_o1qt050y-55tLO_seed_133.root",
+            # "real7" : "results_merge/grid_fabrice_160524/group.perf-jets.dyturbo_z0_lhc7_CT10nnlo_all_o2qt0100y-55tREAL_seed_outliers.root",
+            # "realbm7" : "results_merge/benchmark_v1_160125/dyturbo_z0_lhc7_CT10nnlo_0_bm1qt0100ym55tREAL_seed_outliers.root",
+            "realQuick7" : "results_merge/dyturbo_z0_lhc7_CT10nnlo_0_o2qt3090y-55tREAL_seed_133.root",
+            "realQuickErr7" : "results_merge/dyturbo_z0_lhc7_CT10nnlo_all_o2qt6070y-55tREAL_seed_133.root",
+            # "virt7" : "results_merge/grid_fabrice_160524/group.perf-jets.dyturbo_z0_lhc7_CT10nnlo_all_o2qt0100y-55tVIRT_seed_outliers.root",
+            "realvirt7" : "share/variation/CT10nnlo_{0}/dyturbo_{0}_CT10nnlo_var_0_.root",
+            "real7" : "",
+            "virt7" : "",
+            "vjlo7" : "results_merge/lxbatch_VV_160530/run_wz7_nnlo_dyturbo_{}_lhc7_CT10nnlo_all_o2qt050y-55tLO_seed.in.root",
+            }
+    termlist=["real" ,"virt","rv"  ,"vjlo"]
+    termlist=["realvirt"] #, "real", "virt" ]
+    # enlist=["8", "7"]
+    # enlist=[ "8", "7"] #, "bm7", "Quick7", "QuickErr7"]
+    enlist=[   "7","8" ] # "QuickErr7" ]
+    # get 2D create projection
+    # pName="p_qtVy_A4"
+    hists=dict()
+    for proc in [ "z0"]:
+        fnam["realvirt7"+proc] = "share/variation/CT10nnlo68clProfiled_{0}/dyturbo_{0}_CT10nnlo68clProfiled_var_0_.root".format(proc)
+        fnam["virt7"+proc] = "results_merge/grid_fabrice_160524/group.perf-jets.dyturbo_{}_lhc7_CT10nnlo_all_o2qt0100y-55tVIRT_seed_outliers.root".format(proc)
+        fnam["real7"+proc] = "results_merge/grid_fabrice_160604/group.phys-sm.dyturbo_{}_lhc7_CT10nnlo_all_o2qt050y-55tREAL_seed_outliers.root".format(proc)
+        fnam["realvirt8"+proc] = "results_merge/Stefano_dyturbo_160214_Zpol/dyturbo_z0_lhc8_oNNLLtRV_outlier.root"
+        for Ai in range(0,8):
+            hname="p_qtVy_A"+str(Ai)
+            pbase=proc+"_TOT_"
+            pName=pbase+hname
+            for proj in ["_prfx" ]:# ,"_prfy" ]:# ,""] :
+                for tname in termlist:
+                    for lhc in enlist :
+                        name=tname+lhc+proc
+                        if "rv" == tname : 
+                            hists[name] = hists["real"+lhc].Clone(name)
+                            hists[name] .Add(hists["virt"+lhc])
+                            hists[name] .SetTitle(name)
+                            hists[name+"ent"] = hists["real"+lhc+"ent"].Clone(name)
+                            hists[name+"ent"] .Add(hists["virt"+lhc+"ent"])
+                            hists[name+"ent"] .SetTitle(name)
+                        else :
+                            if "realvirt7" in name :
+                                rerange=pl.GetHistSetTitNam(name,fnam[name],pName)
+                            else :
+                                rerange=pl.GetHistSetTitNam(name,fnam[name],hname)
+                            # prof2D=pl.ReRange(rerange,0,100,0,5)
+                            # rerange.Delete()
+                            prof2D=rerange
+                            if proj == "" :
+                                hists[name] = prof2D
+                            else :
+                                # MSG.debug(" prof 2D: "); prof2D.Print("range")
+                                pl.CheckHistForNaN(prof2D)
+                                pl.ReBin(prof2D,2.5)
+                                hists[name] = pl.GetProjection(prof2D,proj)
+                                prof2D.Delete()
+                            hists[name+"ent"] = pl.GetProjection(hists[name],"_ent")
+                            if "realvirt7" in name :
+                                h2d=pl.GetHistSetTitNam(name+"qt",fnam[name],pbase+"h_qtVy")
+                            else:
+                                h2d=pl.GetHistSetTitNam(name+"qt",fnam[name],"h_qtVy")
+                            pl.ReBin(h2d,2.5)
+                            hists[name+"qt"] = pl.GetProjection(h2d,"_px")
+                    # pl.CompareHistsInList(pName+tname+proj+"_ent",
+                            # [ hists[tname+x+proc+"ent"] for x in enlist ]+
+                            # [ hists[tname+x+proc+"qt"] for x in enlist ]
+                            # ,
+                            # drawOpt="hist", compareType="ratio", minX=30, maxX=90
+                            # )
+                    pl.CompareHistsInList(pName+tname+proj,
+                            [ hists[tname+x+proc] for x in enlist ],
+                            drawOpt="hist", compareType="ratio", # minX=60, maxX=70
+                            )
+                    pass #tnam
+                pass #proj
+            pass #ai
+        pass #proc
+    pl.MakePreviewFromList(0,"Ai_LHC_7vs8")
+    pass
+
+
+def Ai_bug() :
+    pl=PlotTools()
+    plotDef=[
+            [ "fixed"         , "GRID_fixed_ai/results_merge.root" , "p_qtVy_A4"        , "_prfx" ,  1 ]  ,
+            [ "buggy"         , "GRID_buggy_ai/results_merge.root" , "p_qtVy_A4"        , "_prfx" ,  1 ]  ,
+            # [ "buggyMaarten" , "GRID_buggy_ai/ai_maarten.root"    , "a4TruthCS_vs_pty" , "_prfy" ,  1 ]  ,
+            [ "fixedMaarten" , "GRID_fixed_ai/ai_maarten.root"    , "a4TruthCS_vs_pty" , "_prfy" ,  1 ]  ,
+            ]
+    hlist=list()
+    for tit,fnam,hnam,proj,rebin in plotDef:
+        h2=pl.GetHistSetTitNam(tit,fnam,hnam)
+        hpr=pl.GetProjection(h2,proj)
+        h=pl.GetProjection(hpr,"_px")
+        h.Print("base")
+        hlist.append(h)
+        del h2
+        del hpr
+        pass
+    pl.CompareHistsInList("aibug",hlist,drawOpt="hist",compareType="ratio0")
+    pass
 
 
 ## Documentation for main
@@ -2752,6 +2985,7 @@ OPTS:
 # More details. 
 if __name__ == '__main__' :
     # simple arg parse
+    # MSG.debug(" HEAPY : \n %s" % HeapDelta()); 
     it = sys.argv.__iter__()
     arg = it.next() # skip file name
     while True:
@@ -2807,6 +3041,10 @@ if __name__ == '__main__' :
                 plot_PDFprofiled()
             elif arg == "--grid-plots" :
                 gridtest_plots()
+            elif arg == "--ai-lhc7-vs-8" :
+                Ai_LHC_7vs8()
+            elif arg == "--ai-bug" :
+                Ai_bug()
             # elif arg == "--truth" :
                 # s.doTruth=True
                 # add sample and version

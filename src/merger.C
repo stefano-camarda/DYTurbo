@@ -36,6 +36,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+#define MAXPDFVAR 100
+
 // CXX option parser: https://raw.githubusercontent.com/jarro2783/cxxopts/master/src/cxxopts.hpp
 #include "cxxopts.hpp"
 namespace po=cxxopts; // inspired by po = boost::program_options
@@ -71,11 +73,6 @@ class OutlierRemoval{
             doCuba(false),
             verbose(1) {};
         ~OutlierRemoval(){
-            if (verbose >6) {
-                printf ( " Destructor:\n");
-                gDirectory->ls("-m");
-                gObjectTable->Print();
-            }
         };
 
         // Public methods
@@ -92,11 +89,9 @@ class OutlierRemoval{
                 const char* objname = p_objname.Data();
                 size_t len = p_objname.Length();
                 char proj = p_objname(len-1); //< projection string
-                if (verbose>1) printf("objname: %s\n",objname);
                 // Get one object from all files
                 VecTH1 in_objs;
                 for (auto it_fn : infilenames){
-		    if (verbose>1) printf("filename: %s\n",it_fn.Data());
                     TFile * it_f =TFile::Open(it_fn.Data(),"READ");
                     /// @todo: test if they are all same binning
                     // Create uniq name to avoid "Potential memory leak" warnings.
@@ -104,7 +99,6 @@ class OutlierRemoval{
                     retrieved_name+="__"; 
                     retrieved_name+=in_objs.size();
                     const char* objname_out = retrieved_name.Data();
-                    if (verbose>3) printf(" objname out: %s\n",objname_out);
                     // Retrieve object
                     TH1 * o = (TH1*) it_f->Get(objname);
                     if (o!=0) {
@@ -116,7 +110,6 @@ class OutlierRemoval{
                     if (o==0 && len>3 ){
                         // Extract basename: it should end with '_px' where 'x' might be one of: `zyuvn`
                         TString basename = p_objname(0,len-3); // remove "_px" at the end of the name
-                        if (verbose>1) printf("basename: %s , proj %c , objname out: %s \n",basename.Data(), proj, objname_out);
                         // Get original, which will be used to create projections
                         TH1* hnd = (TH1*) it_f->Get(basename.Data());
                         if ( proj != 'n') {
@@ -129,18 +122,14 @@ class OutlierRemoval{
                             //Rebin: this not projection but rebining to ptz to measuremnt binning
                             // load correct
                             basename = p_objname(0,len-6); // remove "_rebin" at the end of string
-                            if (verbose>1) printf (" basename no rebin: %s\n",basename.Data());
                             if (basename.EndsWith("_px")) { // still expects projection
                                 // make projection first and then rebin
                                 basename = p_objname(0,len-9); // remove "_px_rebin" at the end of string
-                                if(verbose>1) printf (" basename no rebin no px: %s\n",basename.Data());
                                 TH1* tmp_pr = (TH1*) it_f->Get(basename.Data());
                                 hnd = make_projection(tmp_pr,'x');
-                                if (verbose>1) printf("basename: %s , proj x %c \n",basename.Data(), proj);
                                 delete tmp_pr;
                             } else {
                                 hnd = (TH1*) it_f->Get(basename.Data());
-                                if (verbose>1) printf("basename: %s , proj %c \n",basename.Data(), proj);
                             }
                             // rebin with ptz
                             // if (doXsecNormalization) normalize(hnd);
@@ -167,7 +156,6 @@ class OutlierRemoval{
                         if (is_empty(o,objname,objname_out)) continue;
                     } else if (doXsecNormalization && !isProfile(o)) normalize(o);
                     if (o!=0) {
-                        if (verbose>2) o->Print();
                         // Check for NaN and adding object to list
                         bool hasNaN= false;
                         for (auto ibin: loop_bins(o)){ // slower but precise ( FIX: ROOT 6 TProfile->Integral is always 0)
@@ -215,16 +203,13 @@ class OutlierRemoval{
                 TH1* o_median = 0;
                 TH1* o_profile =0;
                 if (isProfile(o_average)){
-                    if (verbose>2) printf(" do profile \n");
                     o_profile = clone_empty(in_objs[0],(name+"_total").Data());
                 }
                 if (doMedian||doOutlierRemoval){
                     o_median = clone_empty(in_objs[0],(name+"_median").Data()) ;
                     // First Loop :  Get average and median
-                    if (verbose>1) printf("    First Loop \n");
                     // This part is same for histograms and profiles
                     create_average_obj(o_median,in_objs,"median");
-                    if (verbose>3) {printf("  median average "); print_range(o_median);}
                 }
                 if (o_profile==0){
                     // This is not for profile!
@@ -244,7 +229,6 @@ class OutlierRemoval{
                             o_median->SetName((name+"_median").Data());
                             output_objects.push_back(o_median);
                         }
-                        if (verbose>2) printf("saving histogram %s with integral %f\n", o_median->GetName(), o_median->Integral());
                         if(doOutlierRemoval){
                             // Second loop -- outlier removal for histogram
                             o_average = clone_empty(in_objs[0],(name+"_average").Data());
@@ -270,7 +254,6 @@ class OutlierRemoval{
                         o_profile->SetName(name);
                         output_objects.push_back(o_profile);
                     }
-                    if (verbose>2) printf("saving histogram %s with integral %f\n",o_profile->GetName(), o_profile->Integral());
                     if(doMedian||doOutlierRemoval){
                         // save median profile
                         if ( !doOutlierRemoval ){
@@ -282,14 +265,12 @@ class OutlierRemoval{
                         }
                         if(doOutlierRemoval){
                             // Second Loop -- discard outliers
-                            if (verbose>1) printf("    Second Loop \n");
                             remove_outliers_from_profile(o_average, o_median, in_objs);
                             if (o_average==0){  delete_objs(in_objs); continue;}; // if not implemented 
                             // save outlier profile
                             if (doKeep) o_average->SetName((name+"_outlier").Data());
                             else  o_average->SetName((name).Data());
                             output_objects.push_back(o_average);
-                            if (verbose>2) {printf("  outliers removed \n"); print_range(o_average); print_range(o_profile);}
                         }
                     }
                     // release input histograms
@@ -298,16 +279,12 @@ class OutlierRemoval{
                 // just for sure
                 delete_objs(in_objs);
             }
-            if (verbose>1) printf("End of merge, closing files \n");
-	    //            close_all_infiles();
+	    //            close_all_infiles();  // FIXME: @Stefano: why did you comment this out? Should I open files only once?
         };
 
         void Write(){
-            if (verbose>1) printf("Write \n");
             TFile * fout = new TFile(outfilename.Data(), "RECREATE");
             for (auto ith : output_objects){
-                if (verbose>4) printf("  writing pointer %p \n", ith);
-                if (verbose>3) ith->Print("range");
                 ith->Write();
             }
             if(verbose>0){
@@ -315,28 +292,24 @@ class OutlierRemoval{
                 fflush(stdout);
             }
             fout->Close();
-            if(verbose>0) printf(" file closed.\n");
+            if(verbose>0){
+                printf(" file closed.\n");
+                fflush(stdout);
+            }
         };
 
         void SetOutputFile(TString _outf){
             outfilename=_outf;
-            if(verbose>1)printf ("merger Target file: %s\n", _outf.Data()); // hadd like comments
         }
 
         void AddInputFile(TString _inf){
             infilenames.push_back(_inf); 
-            if(verbose>2) printf ("merger Source file %d: %s\n", (int) infilenames.size(), _inf.Data()); // hadd like comments
         }
 
         void Init(){
   	    TH1::AddDirectory(kFALSE);
 	    LOBIN= includeUnderOverFlow ? 0 : 1; // start from 0
             HIBIN= includeUnderOverFlow ? 1 : 0; // add 1 to end
-            if (verbose >6) {
-                printf ( " Init:\n");
-                gDirectory->ls("-m");
-                gObjectTable->Print();
-            }
         }
 
         // Public data members
@@ -377,23 +350,29 @@ class OutlierRemoval{
                 TClass *cl = TClass::GetClass(key->GetClassName());
                 if (!cl->InheritsFrom( "TH1"      )) continue; // only profiles and histograms of all dimensions
                 TString name = key->GetName();
+                // NOTE: Need to reorder list of histograms so I can save RAM
+                // in PDF correlated OR Starting from nominal, and put all
+                // variations afterwards.
+                VecTStr PDFlabels=find_all_pdf(name,f);
+                if (PDFlabels.size()==0) continue; // This means you reached PDF member of histogram.
+                                                   // It was already added in central and we skip it.
                 if (doTest ) {
                     if (!name.Contains("p_qtVy_A4")) continue; // for fast merger testing
-                    all_obj_names.push_back(dirname+name+"_px");
-                    all_obj_names.push_back(dirname+name+"_py");
+                    //all_obj_names.push_back(dirname+name+"_px");
+                    //all_obj_names.push_back(dirname+name+"_py");
                 }
                 // make projections on TH2 and remove outlier on 1D separatelly
                 if (cl->InheritsFrom( "TH2" )) {
                     if (doProj){
-                        all_obj_names.push_back(dirname+name+"_px");
-                        all_obj_names.push_back(dirname+name+"_py");
+                        add_to_obj_names(dirname+name,PDFlabels,"_px");
+                        add_to_obj_names(dirname+name,PDFlabels,"_py");
                     }
                     if (!do2D) continue; // Dont merge TH2 is too slow
                 }
                 // make projections on TH3 and remove outlier on 1D separatelly
                 if (cl->InheritsFrom( "TH3" )) {
                     // if is pt,y,M make projection to y,M
-                    if (doProj && name.Contains("h_qtVyVQ")) all_obj_names.push_back(dirname+name+"_py");
+                    if (doProj && name.Contains("h_qtVyVQ")) add_to_obj_names(dirname+name,PDFlabels,"_py"); // 3D->2D
                     if (!do3D) continue; // Dont merge TH3 is too slow
                 }
                 if (doRebin) {
@@ -403,15 +382,53 @@ class OutlierRemoval{
                     //}
                     // rebin pt as for ai moments
                     if ( name.BeginsWith("p_qtVy_") && cl->InheritsFrom("TProfile2D") ) {
-                        all_obj_names.push_back(dirname+name+"_rebin"); // 2D rebin
+                        add_to_obj_names(dirname+name,PDFlabels,"_rebin"); // 2D rebin
 			//all_obj_names.push_back(dirname+name+"_px_rebin"); // make projection and 1D rebin
                     }
                 }
                 // add original object
-                all_obj_names.push_back(dirname+name);
+                add_to_obj_names(dirname+name,PDFlabels);
                 if (doTest && all_obj_names.size()==2) break; // for fast merger testing
             }
             f->Close();
+        }
+
+        VecTStr find_all_pdf(const TString & base, TFile *f){
+            VecTStr pdfvars;
+            // test: is this PDF variation ?
+            // if yes return empty vector
+            if (std::count(added_pdfobj.begin(), added_pdfobj.end(),base)!=0) return pdfvars;
+            // add empty string for central
+            pdfvars.push_back("");
+            // find all possible variations
+            for (int ipdf=1; ipdf<=MAXPDFVAR; ipdf++) { // NOTE: hardcoded maximum number of pdf variations to test
+                TString fullname = base;
+                fullname+=ipdf;
+                TString suffix= "";
+                suffix+=ipdf;
+                if (f->FindKey(fullname)!=0){
+                    pdfvars.push_back(suffix);
+                    added_pdfobj.push_back(fullname); // add name so we know we already have this
+                }
+                else
+                    break;
+                if (ipdf==MAXPDFVAR) printf("Warning: Maximum number of PDF variations reached, please increase MAXPDFVAR.\n");
+            }
+            return pdfvars;
+        }
+
+        void add_to_obj_names(const TString base, const VecTStr & PDFlabels, const TString suffix="" ){
+            for (const TString & ipdf : PDFlabels) {
+                TString fullname=base+ipdf+suffix;
+                int Nrep = std::count(all_obj_names.begin(), all_obj_names.end(), fullname);
+                if (Nrep==0){
+                    all_obj_names.push_back(fullname);
+                    // add also projections to list of pdf variations
+                    if (ipdf.Length()!=0 && suffix.Length()!=0) added_pdfobj.push_back(fullname);
+                } else {
+                    printf( "This should not happen! Trying to add obj %s which is already there %d times.\n",fullname.Data(),Nrep);
+                }
+            }
         }
 
         VecInt loop_bins(TH1*h){
@@ -420,17 +437,14 @@ class OutlierRemoval{
             int nbinsx= (dim<1) ? LOBIN : h->GetNbinsX()+HIBIN;
             int nbinsy= (dim<2) ? LOBIN : h->GetNbinsY()+HIBIN;
             int nbinsz= (dim<3) ? LOBIN : h->GetNbinsZ()+HIBIN;
-            //if(verbose>6) printf("    LOOP BINS LO %d HI %d nx %d ny %d nz %d \n", LOBIN, HIBIN, nbinsx, nbinsy, nbinsz);
             for (int izbin=LOBIN;izbin<=nbinsz;izbin++){
                 for (int iybin=LOBIN;iybin<=nbinsy;iybin++){
                     for (int ixbin=LOBIN;ixbin<=nbinsx;ixbin++){
                         int ibin=h->GetBin(ixbin,iybin,izbin);
-                        //if(verbose>6) printf("    bin %d x %d y %d z %d \n",  ibin, ixbin, iybin, izbin);
                         bins.push_back(ibin);
                     }
                 }
             }
-            //if(verbose>6) printf("    ALL %d \n", (int) bins.size());
             return bins;
         }
 
@@ -458,11 +472,6 @@ class OutlierRemoval{
             if (xi.size() == 1) return xi[0];
             double med = 0;
             sort(xi.begin(), xi.end());
-            if (verbose >6){
-                printf ("    sorted ");
-                for (auto x : xi) printf ("%f  ",x);
-                printf ("\n");
-            }
             if (xi.size() % 2) //odd
                 med = *(xi.begin() + ((xi.size() + 1) / 2) - 1);
             else { //even 
@@ -750,7 +759,6 @@ class OutlierRemoval{
             for ( auto ibin : loop_bins(tmp_m) ){
                 VecDbl vals; // value in case of histogram, ratio in case of profile
                 VecDbl entrs; // denominator in case of profile
-                if ( verbose>6 ) printf ( " looping bins for average %d \n" , ibin);
                 for(auto ith : in_objs){
                     if (ith!=0){
                         double entries = 0;
@@ -772,7 +780,6 @@ class OutlierRemoval{
                         } else push_sorted(vals,value);
                     }
                 }
-                if ( verbose>6 ) printf ( "      vals size %lu\n" , vals.size() );
                 double centr = 0;
                 double sigma = 0;
                 double wcentr = 0;
@@ -786,12 +793,10 @@ class OutlierRemoval{
                     if (isProf&&!doEntries){
                         wcentr = median (entrs);
                         wsigma = delta (entrs, wcentr, 0.68) / sqrtN;
-                        if (verbose>5) printf("   calculated median profile nom %f +- %f denom %f +- %f prof %f \n", centr*wcentr, sigma*wcentr, wcentr, wsigma, centr);
                     }
                 } else if (type.CompareTo("mean",TString::kIgnoreCase)==0){
                     centr = mean(vals);
                     sigma = rms(vals, centr)/sqrtN;
-                    if ( verbose>6 ) printf ( "      centr %f sigma %f  \n" , centr, sigma );
                 }
                 if (isProf&&!doEntries){
                     // if zero sigma take the value of first input object
@@ -822,10 +827,21 @@ class OutlierRemoval{
             int dim = med->GetDimension();
 	    TProfile*   prof   = (isProf&&dim==1) ? (TProfile   *)out : 0;
             TProfile2D* prof2D = (isProf&&dim==2) ? (TProfile2D *)out : 0;
-            for ( auto b : loop_bins(med) ){
+            VecInt loopbins = loop_bins(med);
+            // PDF correlated OR
+            TString name = out->GetName();
+            name.ReplaceAll("_average","");
+            bool isPDFvar = (std::count(added_pdfobj.begin(), added_pdfobj.end(),name)!=0) ;
+            if (!isPDFvar){
+                // it is new central histogram, reset acceptance vector
+                int max_bin_index = *std::max_element(loopbins.begin(),loopbins.end());
+                do_accept_file.resize(max_bin_index+1,std::vector<bool>(in_objs.size(),false));
+            }
+            for ( auto b : loopbins ){
                 VecDbl v_sumw;
                 VecDbl v_sumwy;
                 // loop over all objects and skip outliers
+                size_t i_obj=0;
                 for (auto ith : in_objs){
                     double d = med->GetBinContent(b);
                     double s = med->GetBinError(b) * TMath::Sqrt(in_objs.size());
@@ -859,12 +875,14 @@ class OutlierRemoval{
                     }
                     double chi2 = 0;
                     if (s != 0) chi2 = d*d/(s*s);
-                    if (verbose>1) printf("    b %d in_obj %s d %f s %f chi2 %f \n", b, ith->GetName(), d, s, chi2);
-                    if ( TMath::Prob(chi2,1) > pl(7) ){
-                        if (verbose>1) printf("   taken up to pl %g chi2 prob %g \n", pl(7), TMath::Prob(chi2,1));
+                    if (!isPDFvar && TMath::Prob(chi2,1) > pl(7) ){
+                        do_accept_file[b][i_obj]=true;
+                    }
+                    if ( do_accept_file[b][i_obj] ){
                         if (isProf) push_sorted( v_sumw  , ent );
                         push_sorted( v_sumwy , val );
                     }
+                    i_obj++;
                 } // objects
                 // set new values from average after outlier removal
                 if (!v_sumwy.empty()){
@@ -991,11 +1009,6 @@ class OutlierRemoval{
             double spread = TMath::Abs(new_sumwyy/new_sumw - TMath::Power(new_sumwy/new_sumw,2));
             double ERR = spread/Neff;
             ERR = sqrt(ERR);
-            if (verbose>5) printf("   filling median profile bin %d cent %f+-%f wcent %f+-%f prof: %f+-%f+-%f \n",
-                    ibin,
-                    centr, sigma,
-                    wcentr, wsigma, 
-                    TMath::Sqrt(p_centr2), TMath::Sqrt(p_sigma2),ERR );
 	    return;
         }
 
@@ -1050,15 +1063,11 @@ class OutlierRemoval{
 
 
         TH1* clone_empty(TH1* h,TString newname){
-            if (verbose>2) printf( " empty clone %s \n", newname.Data());
-	    //TH1* tmp = (TH1*) h->Clone(newname.Data());
 	    TH1* tmp;
             bool isProf = isProfile(h);
             int dim = h->GetDimension();
 	    tmp = (TH1*) h->Clone(newname.Data());
-            //tmp->SetDirectory(0);
             tmp->Reset();
-            if (verbose>2) print_range(tmp);
             return tmp;
         }
 
@@ -1111,7 +1120,9 @@ class OutlierRemoval{
         VecTStr  infilenames;
         VecTFile all_files;
         VecTStr  all_obj_names;
+        VecTStr  added_pdfobj;
         VecTH1   output_objects;
+        std::vector<std::vector<bool> >  do_accept_file;
         // bin loop
         int LOBIN;
         int HIBIN;
@@ -1216,7 +1227,7 @@ int main(int argc, char * argv[]){
     if (opts.count("rebin"           )) merger.doRebin=true;
     if (opts.count("cuba"            )) {merger.doCuba=true; merger.doRebin=false;}
     if (opts.count("NaN-interpolate" )) {merger.doNanIterp=true;}
-    if (opts.count("verbose"         )) merger.verbose=10*opts.count("verbose");
+    if (opts.count("verbose"         )) merger.verbose+=opts.count("verbose");
     if (opts.count("test"            )) merger.doTest=true;
     // run merger
     merger.Init();

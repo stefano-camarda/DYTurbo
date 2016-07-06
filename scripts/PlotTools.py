@@ -33,6 +33,25 @@ MSG.basicConfig(
 import numpy as np
 from scipy import interpolate
 
+from guppy import hpy
+HEAP=hpy()
+before=HEAP.heap()
+after=HEAP.heap()
+
+def HeapDelta():
+    global before,after
+    after=HEAP.heap()
+    leftover = after-before
+    before=after
+    return leftover
+
+
+
+
+
+
+
+
 def doMSG(lvl):
     return MSG.getLogger().isEnabledFor(lvl)
 
@@ -367,6 +386,14 @@ class PlotTools:
         doCL96to68    = kwargs["doCL96to68"]  if "doCL96to68"  in kwargs else False
         h = s.EmptyClone(hlist[0],name)
         dim = h.GetDimension()
+        if "Profile" in h.ClassName() :
+            prof=h
+            if dim==1:
+                h=s.GetProjection(prof,"_px")
+            if dim==2:
+                h=s.GetProjection(prof,"_pxy")
+            prof.Delete()
+            pass
         # pdf
         CL96to68=1
         if doCL96to68: CL96to68=1/2.705
@@ -463,7 +490,9 @@ class PlotTools:
                     elif "var" in utype  : unc *= 0
                     else : raise ValueError("Uknown error type {}".format(utype))
                     #print ibin,unc
-                    # MSG.debug(" unc {} type {} errorOther {} pos {} neg {} sym {} pdfsig {}".format(unc,utype,err_other,pos,neg,sym,pdfsigma))
+                    MSG.debug(" unc {} type {} : val {} err {} errorOther {} pos {} neg {} sym {} pdfsig {}".format(unc,utype,val,err,err_other,pos,neg,sym,pdfsigma))
+                    # NaN test
+                    if unc != unc : unc=0
                     h.SetBinContent(ibin,unc)
                     pass
                 pass
@@ -511,6 +540,10 @@ class PlotTools:
     def MakeBandGraph(s,name,cent,hlist,opt="diff"):
         #band = TGraphAsymmErrors()
         band = s.EmptyClone(cent,name)
+        if "Profile" in band.ClassName() :
+            pr = band
+            band=s.GetProjection(pr,"_px")
+            pr.Delete()
         for i in range(1,cent.GetNbinsX()+1) :
             x  = cent.GetBinCenter (i)
             y  = cent.GetBinContent(i)
@@ -536,7 +569,7 @@ class PlotTools:
                 if "rel" in opt and y!=0 :
                     ey*=abs(y)
                 eyl=eyh=ey
-                #print i,eyl,eyh,ey,y,hlist[0].GetBinContent(i)
+                MSG.debug( " ibin %d eyl %f eyh %f ey %f y %f binContent %f " % (i,eyl,eyh,ey,y,hlist[0].GetBinContent(i)) )
                 pass
             else : raise ValueError("Uknown option {}".format(opt))
             #band.SetPointError(i-1,exl,exh,eyl,eyh)
@@ -566,6 +599,7 @@ class PlotTools:
                 #hh = TH1D(name, title, nbins, xmin, xmax)
                 hh = h.ProjectionX(name)
                 hh.SetDirectory(0)
+                # hh.SetOwnership(False)
                 #for ibin in range(0,h.GetNbinsX()+2):
                     #v = h.GetBinContent ( ibin )
                     #e = h.GetBinError   ( ibin )
@@ -614,16 +648,20 @@ class PlotTools:
             #hp.GetYaxis().SetTitle(x_tit)
             #hp.GetZaxis().SetTitle(x_tit)
         elif ax == "_prfy":
+            xtit=h.GetYaxis().GetTitle()
             if hibin == None : hibin = h.GetNbinsY()
             if lobin == None : lobin = 1
-            hp=h.ProfileY(name+"prof",lobin,hibin,"w")#.ProjectionX(name)
+            hp=h.ProfileY(name,lobin,hibin,"w")#.ProjectionX(name)
             #hp=h.ProjectionX(name,1,n,"w")
+            hp.GetXaxis().SetTitle(xtit)
             hp.GetYaxis().SetTitle(ytit)
         elif ax == "_prfx":
+            xtit=h.GetXaxis().GetTitle()
             if hibin == None : hibin = h.GetNbinsX()
             if lobin == None : lobin = 1
-            hp=h.ProfileX(name+"prof",lobin,hibin,"w")#.ProjectionX(name)
+            hp=h.ProfileX(name,lobin,hibin,"w")#.ProjectionX(name)
             #hp=h.ProjectionX(name,1,n,"w")
+            hp.GetXaxis().SetTitle(xtit)
             hp.GetYaxis().SetTitle(ytit)
             # correct for nan in error
             #  for xbin in range(1,hp.GetNbinsX()+1):
@@ -658,7 +696,10 @@ class PlotTools:
             x_tit = h.GetXaxis().GetTitle()
             y_tit = h.GetYaxis().GetTitle()
             z_tit = h.GetZaxis().GetTitle()
-            tit = "{};{};{};{}".format(h.GetTitle(),x_tit,y_tit,z_tit)
+            tit="{};{};denom {};{}"
+            if dim==2:
+                tit="{};{};{};denom {}"
+            tit = tit.format(h.GetTitle(),x_tit,y_tit,z_tit)
             hp.SetTitle(tit)
             xbinlist = [0] if dim<1 else range(0,h.GetNbinsX()+2)
             ybinlist = [0] if dim<2 else range(0,h.GetNbinsY()+2)
@@ -1347,8 +1388,8 @@ class PlotTools:
             pass
         elif compareType == "ratio" :
             #ratioArgs["logY"]=False
-            ratioArgs["minY"]= -25
-            ratioArgs["maxY"]= 25
+            ratioArgs["minY"]= -55
+            ratioArgs["maxY"]= 55
             s.SetFrameStyle1D(subHists, **ratioArgs) # scale = 1./(1-cdiv), logY=True, minY=0.04, maxY=25, logX=logx)
         elif compareType=="ratio0" :
             #ratioArgs["logY"]=False
@@ -1501,7 +1542,7 @@ class PlotTools:
             for ibinx in range(1,xaxis.GetNbins()+1):
                 lo = xaxis.GetBinLowEdge(ibinx)
                 hi = xaxis.GetBinUpEdge(ibinx)
-                if minx<=lo and hi<=maxx: Nx+=1
+                if minx<=lo and hi<=maxx and lo!=hi: Nx+=1
                 pass
         else : 
             Nx = oldhist.GetNbinsX()
@@ -1552,7 +1593,11 @@ class PlotTools:
                 # MSG.debug(" hist %s val %f " % (name, hist.GetBinContent(ibin), ))
                 pass
             pass
-        # MSG.debug( " print above ".format(hist.Print("range")))
+        # MSG.debug( " print orig ");
+        # oldhist.Print("base")
+        # for xbin in rangex:
+            # print "x %d lo %f hi %f" %(xbin, oldhist.GetXaxis().GetBinLowEdge(xbin), oldhist.GetXaxis().GetBinUpEdge(xbin)  )
+        # MSG.debug( " print output "); hist.Print("base")
         return hist
 
     def ReBin(s,oldhist,xw=0,yw=0):
@@ -1902,16 +1947,17 @@ class PlotTools:
         if len(hists)<1 :
             compareType=None
 
+        dim=hists[0].GetDimension()
+
         try :
             s.hRatio = list()
             kwargsRatio = kwargs
-            kwargsRatio = kwargs
             if compareType == None:
                 raise NotImplementedError("Skipping comparison")
-            elif compareType == "ratio":
-                s.hRatio = s.CreateRatioHists(hists[0],hists)
-                s.hRatio[0].GetYaxis().SetTitle( hists[0].GetTitle()+"/other")
-            elif "ratio0" in compareType :
+            # elif compareType == "ratio":
+                # s.hRatio = s.CreateRatioHists(hists[0],hists)
+                # s.hRatio[0].GetYaxis().SetTitle( hists[0].GetTitle()+"/other")
+            elif compareType == "ratio" or "ratio0" in compareType :
                 s.hRatio = s.CreateRatio0Hists(hists[0],hists)
                 s.hRatio[0].GetYaxis().SetTitle( "ratio" ) # "other/"+hists[0].GetTitle())
             elif compareType == "subtract":
@@ -1923,9 +1969,21 @@ class PlotTools:
                 kwargsRatio["drawOpt"]= "p,same"
             else :
                 raise NotImplementedError("Uknown compare type: "+str(compareType))
-            s.DrawHistCompareSubPlot(hists, s.hRatio, **kwargs)  # ratiology, logx, ymax, ymin, xmax, xmin, forcerange
-            s.c1.cd(1)
-            s.DrawLegend(hists,"pl",**kwargs)
+            if dim==1 :
+                s.DrawHistCompareSubPlot(hists, s.hRatio, **kwargs)  # ratiology, logx, ymax, ymin, xmax, xmin, forcerange
+                s.c1.cd(1)
+                s.DrawLegend(hists,"pl",**kwargs)
+            elif dim==2 :
+                ztit=s.hRatio[1].GetYaxis().GetTitle()
+                ytit=hists[1].GetYaxis().GetTitle()
+                s.hRatio[1].GetYaxis().SetTitle(ytit)
+                s.hRatio[1].GetZaxis().SetTitle(ztit)
+                s.hRatio[1].SetMaximum(25)
+                s.hRatio[1].SetMinimum(-25)
+                s.SetFrameStyle2D(s.hRatio[1:2], **kwargs)
+                s.DrawHistCompare(s.hRatio[1:2])
+            else :
+                raise NotImplementedError("Uknown compare type: "+str(compareType))
         except NotImplementedError :
             s.SetFrameStyle1D(hists,**kwargs)
             s.DrawHistCompare(hists)
