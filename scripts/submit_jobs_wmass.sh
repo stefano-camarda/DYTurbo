@@ -295,7 +295,7 @@ prepare_script(){
     #[[ $process =~ z0 ]] && mbins=10,66,116
     # arguments
     arguments="input.in --proc $process --mbins $mbins --pdfset $pdfset --pdfvar $variation --order $order --term $terms"
-    [[ $target =~ lxbatch|mogon|localrun ]] && arguments=$arguments" --seed $LSB_JOBINDEX "
+    [[ $target =~ lxbatch|mogon|localrun ]] && arguments=$arguments" --seed \$LSB_JOBINDEX "
     # make sure we make some noise on grid
     [[ $target =~ mogon ]] && arguments=$arguments" --verbose "
     # job queue
