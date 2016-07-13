@@ -84,6 +84,7 @@ class OutlierRemoval{
             // is RAM extensive for larger root files.
             if (doXsecNormalization) read_Xsection();
             if(verbose>0) {printf(" Merging .... "); fflush(stdout);}
+            //printf("all names: \n"); for (TString name: all_obj_names) printf ("%s\n" , name.Data());
             for (auto p_objname : all_obj_names){
                 // setup names
                 const char* objname = p_objname.Data();
@@ -177,7 +178,7 @@ class OutlierRemoval{
                         else in_objs.push_back(o);
                     } else printf("Warning: hist %s not in file %s \n", it_fn.Data(), p_objname.Data());
 		    it_f->Close();
-                    if (doTest && in_objs.size()>100) break;
+                    if (doTest && in_objs.size()>150) break;
                 } //end loop all files
                 // DIFFERENT MERGING TYPES
                 TString name = p_objname; // this is name of output object (identical to first input object)
@@ -357,9 +358,7 @@ class OutlierRemoval{
                 if (PDFlabels.size()==0) continue; // This means you reached PDF member of histogram.
                                                    // It was already added in central and we skip it.
                 if (doTest ) {
-                    if (!name.Contains("p_qtVy_A4")) continue; // for fast merger testing
-                    //all_obj_names.push_back(dirname+name+"_px");
-                    //all_obj_names.push_back(dirname+name+"_py");
+                    if ( !name.Contains("p_qtVy_A4") && !name.Contains("h_qt")) continue; // for fast merger testing
                 }
                 // make projections on TH2 and remove outlier on 1D separatelly
                 if (cl->InheritsFrom( "TH2" )) {
@@ -388,7 +387,6 @@ class OutlierRemoval{
                 }
                 // add original object
                 add_to_obj_names(dirname+name,PDFlabels);
-                if (doTest && all_obj_names.size()==2) break; // for fast merger testing
             }
             f->Close();
         }
@@ -407,11 +405,11 @@ class OutlierRemoval{
                 TString suffix= "";
                 suffix+=ipdf;
                 if (f->FindKey(fullname)!=0){
-                    pdfvars.push_back(suffix);
+                    if(ipdf<=4||!doTest) pdfvars.push_back(suffix); // fill only first for Test
                     added_pdfobj.push_back(fullname); // add name so we know we already have this
                 }
                 else
-                    break;
+                    break; // it was last pdf, break
                 if (ipdf==MAXPDFVAR) printf("Warning: Maximum number of PDF variations reached, please increase MAXPDFVAR.\n");
             }
             return pdfvars;
@@ -822,6 +820,18 @@ class OutlierRemoval{
             remove_outliers_from_profile(hist,ref,in_objs, false);
         }
 
+        void print_accept(){
+            for (size_t ibin=0; ibin<do_accept_file.size(); ibin++) {
+                int bad=0;
+                printf ("ibin %d :",ibin);
+                for (bool val : do_accept_file[ibin] ){
+                    printf ("%s", val?"T":"F");
+                    if (!val) bad++;
+                } 
+                printf (" throw away: %d\n",bad);
+            }
+        }
+
         void remove_outliers_from_profile(TH1* out, TH1* med, VecTH1 in_objs,bool isProf = true){
             if (med==0) return;
             int dim = med->GetDimension();
@@ -834,8 +844,13 @@ class OutlierRemoval{
             bool isPDFvar = (std::count(added_pdfobj.begin(), added_pdfobj.end(),name)!=0) ;
             if (!isPDFvar){
                 // it is new central histogram, reset acceptance vector
+                //printf("Clearing acceptance for %s\n",name.Data());
                 int max_bin_index = *std::max_element(loopbins.begin(),loopbins.end());
-                do_accept_file.resize(max_bin_index+1,std::vector<bool>(in_objs.size(),false));
+                do_accept_file.assign(max_bin_index+1,std::vector<bool>(in_objs.size(),false));
+                //print_accept();
+            } else {
+                //printf("Reusing acceptance for:  %s\n'", name.Data() );
+                //print_accept();
             }
             for ( auto b : loopbins ){
                 VecDbl v_sumw;
@@ -1143,7 +1158,7 @@ int main(int argc, char * argv[]){
     opts.add_options("Hidden")
         ("outfile"     , "Name of output file. ", po::value<SString>() )
         ("infilenames" , "List of input files. ", po::value<VecSStr>() )
-        ("e,test"        , "Test parser and die."                        )
+        ("T,test"        , "Test parser and die."                        )
         //("x,x-section"     , "Normalize histograms to Xsection."                         )
     ;
     // Program options
