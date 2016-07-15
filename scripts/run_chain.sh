@@ -194,8 +194,30 @@
 #  rm -rf $outGridName
 #  mv GRID $outGridName && tar czvf ${outGridName}.tgz $outGridName
 
+# submit v02 
+# add version and change kinematics
+# only nominal
+
+SUBM="./scripts/submit_jobs_wmass.sh --grid --griduser jcuth --voms phys-sm"
+# central
+$SUBM --pdfset CT10nnlo         --version v02 --pdfvar 0 --infile input/wmass.in  --seeds 1000 --proc wp,wm --mbins 96,20,500 --order 2 --term CT,VV,REAL,VIRT
+#$SUBM --pdfset CT14nnlo         --version v02 --pdfvar 0 --infile input/wmass.in  --seeds 1000 --proc wp,wm --mbins 96,20,500 --order 2 --term CT,VV,REAL,VIRT
+#$SUBM --pdfset MMHT2014nnlo68cl --version v02 --pdfvar 0 --infile input/wmass.in  --seeds 1000 --proc wp,wm --mbins 96,20,500 --order 2 --term CT,VV,REAL,VIRT
+#$SUBM --pdfset CT10nnlo         --version v02 --pdfvar 0 --infile input/wmass.in  --seeds 1000 --proc z0    --mbins 10,66,116 --order 2 --term CT,VV,REAL,VIRT
+#$SUBM --pdfset CT14nnlo         --version v02 --pdfvar 0 --infile input/wmass.in  --seeds 1000 --proc z0    --mbins 10,66,116 --order 2 --term CT,VV,REAL,VIRT
+#$SUBM --pdfset MMHT2014nnlo68cl --version v02 --pdfvar 0 --infile input/wmass.in  --seeds 1000 --proc z0    --mbins 10,66,116 --order 2 --term CT,VV,REAL,VIRT
+# PDFvar
+#$SUBM --pdfset CT10nnlo         --version v02 --pdfvar all --infile input/wmass_lowstat.in  --seeds 1000 --proc wp,wm --mbins 96,20,500 --order 2 --term CT,VV,REAL,VIRT
+#$SUBM --pdfset CT14nnlo         --version v02 --pdfvar all --infile input/wmass_lowstat.in  --seeds 1000 --proc wp,wm --mbins 96,20,500 --order 2 --term CT,VV,REAL,VIRT
+#$SUBM --pdfset MMHT2014nnlo68cl --version v02 --pdfvar all --infile input/wmass_lowstat.in  --seeds 1000 --proc wp,wm --mbins 96,20,500 --order 2 --term CT,VV,REAL,VIRT
+#$SUBM --pdfset CT10nnlo         --version v02 --pdfvar all --infile input/wmass_lowstat.in  --seeds 1000 --proc z0    --mbins 10,66,116 --order 2 --term CT,VV,REAL,VIRT
+#$SUBM --pdfset CT14nnlo         --version v02 --pdfvar all --infile input/wmass_lowstat.in  --seeds 1000 --proc z0    --mbins 10,66,116 --order 2 --term CT,VV,REAL,VIRT
+#$SUBM --pdfset MMHT2014nnlo68cl --version v02 --pdfvar all --infile input/wmass_lowstat.in  --seeds 1000 --proc z0    --mbins 10,66,116 --order 2 --term CT,VV,REAL,VIRT
+
+
 # submit with niter=0 -- same seed
 
+<<<<<<< HEAD
 
 
 #============================================
@@ -305,3 +327,7 @@ do
     echo
     echo
 done | tee merge-`hostname`.log
+
+#job=dyturbo_z0_lhc7_CT14nnlo_all_o2tREAL_seed_v1466990840_results_merge.root
+#/usr/bin/time -v ./bin/dyturbo-merger -d  results_merge/v01/average_$job results_grid/group.phys-sm.$job/*root*
+#/usr/bin/time -v ./bin/dyturbo-merger -do results_merge/v01/$job         results_grid/group.phys-sm.$job/*root*
