@@ -71,6 +71,7 @@ class OutlierRemoval{
             doKeep(false),
             doTest(false),
             doCuba(false),
+            Nsigma(7),
             verbose(1) {};
         ~OutlierRemoval(){
         };
@@ -326,6 +327,7 @@ class OutlierRemoval{
         bool doOutlierRemoval;
         bool doCuba;
         bool doTest;
+        int Nsigma;
         int verbose;
 
     private :
@@ -846,7 +848,8 @@ class OutlierRemoval{
                 // it is new central histogram, reset acceptance vector
                 //printf("Clearing acceptance for %s\n",name.Data());
                 int max_bin_index = *std::max_element(loopbins.begin(),loopbins.end());
-                do_accept_file.assign(max_bin_index+1,std::vector<bool>(in_objs.size(),false));
+                do_accept_file    .assign(max_bin_index+1,std::vector<bool>(in_objs.size(),false));
+                //do_accept_file_ent.assign(max_bin_index+1,std::vector<bool>(in_objs.size(),false));
                 //print_accept();
             } else {
                 //printf("Reusing acceptance for:  %s\n'", name.Data() );
@@ -860,43 +863,68 @@ class OutlierRemoval{
                 for (auto ith : in_objs){
                     double d = med->GetBinContent(b);
                     double s = med->GetBinError(b) * TMath::Sqrt(in_objs.size());
+                    double d_ent = 0;
+                    double s_ent = 0;
                     double ent = 0;
                     double val = 0;
                     if (isProf && dim==1){
 		        //be careful!!! centr->GetBinContent gives the numerator of TProfile::GetBinContent
 		        TProfile * centr = (TProfile*) med;
-			d = (centr->GetBinEntries(b) != 0) ? centr->At(b)/centr->GetBinEntries(b) : 0;
-		        s = centr->GetBinError(b) * TMath::Sqrt(in_objs.size());
+                        // denominator
+			d_ent = centr->GetBinEntries(b);
+		        s_ent = TMath::Sqrt(centr->GetBinSumw2()->At(b)); // check formula in set_profile_bin sumww
+                        // nominator
+			d = (centr->GetAt(b)!=0) ? centr->GetAt(b) : 0;
+			s = centr->GetBinError(b); // returns uncertainty of ratio
+                        double wsigma =  TMath::Sqrt(centr->GetBinSumw2()->At(b)*in_objs.size()); // check formula in set_profile_bin sumww
+                        s = (s_ent!=0) ? TMath::Sqrt(s*s*(s_ent*s_ent)*in_objs.size() ) : 0; // check formula in set_profile_bin p_sigma2
 		        TProfile * test = (TProfile*) ith;
-                        //val = test->At (b);
-                        ent = test->GetBinEntries (b);
-                        //d -= (ent != 0) ? val/ent : 0;
-                        val = test->GetBinContent(b);
+                        ent = test->GetBinEntries (b); // denominator
+                        val = test->GetAt(b); // nominator
+                        //
                         d -= val;
+                        d_ent -= ent;
                     } else if (isProf && dim==2) {
 		        //be careful!!! centr->GetBinContent gives the numerator of TProfile::GetBinContent
 		        TProfile2D * centr = (TProfile2D*) med;
-			d = (centr->GetBinEntries(b) != 0) ? centr->At(b)/centr->GetBinEntries(b) : 0;
-		        s = centr->GetBinError(b) * TMath::Sqrt(in_objs.size());
+                        // denominator
+			d_ent = (centr->GetBinEntries(b) != 0) ? centr->GetBinEntries(b) : 0;
+		        s_ent = TMath::Sqrt(centr->GetBinSumw2()->At(b)*in_objs.size()); // check formula in set_profile_bin sumww
+                        // nominator
+			d = (centr->GetAt(b)!=0) ? centr->GetAt(b) : 0;
+			s = centr->GetBinError(b);
+                        s = (s_ent!=0) ? TMath::Sqrt(s*s/(s_ent*s_ent)*in_objs.size() ) : 0; // check formula in set_profile_bin p_sigma2
                         TProfile2D * test = (TProfile2D *) ith;
-                        //val = test->At (b);
-                        ent = test->GetBinEntries (b);
-                        //d -= (ent != 0) ? val/ent : 0;
-                        val = test->GetBinContent(b);
+                        ent = test->GetBinEntries (b); // denominator
+                        val = test->GetAt(b); // nominator
                         d -= val;
+                        d_ent -= ent;
                     } else {
                         val = ith->GetBinContent(b);
                         d -= val;
                     }
                     double chi2 = 0;
-                    if (s != 0) chi2 = d*d/(s*s);
-                    if (!isPDFvar && TMath::Prob(chi2,1) > pl(7) ){
+                    // nominator
+                    chi2 = s!=0 ? d*d/(s*s) : 0;
+                    if (!isPDFvar && TMath::Prob(chi2,1) > pl(Nsigma) ){
                         do_accept_file[b][i_obj]=true;
                     }
                     if ( do_accept_file[b][i_obj] ){
-                        if (isProf) push_sorted( v_sumw  , ent );
-                        push_sorted( v_sumwy , val );
+                        push_sorted( v_sumwy , val ); // push nominator
+                        if (isProf) push_sorted( v_sumw  , ent ); // push denominator
                     }
+                    // denominator
+                    // if (isProf){
+                    //     chi2 = (s_ent!=0) ? d_ent*d_ent/(s_ent*s_ent) : 0;
+                    //     if (!isPDFvar && TMath::Prob(chi2,1) > pl(Nsigma) ){
+                    //         do_accept_file_ent[b][i_obj]=true;
+                    //     } else {
+                    //         printf( "bin: %d file: %d delta %f sigma %f chi2 %f prob %g CL %g \n", b, i_obj, d_ent,s_ent,chi2,TMath::Prob(chi2,1), pl(Nsigma));
+                    //     }
+                    //     if ( do_accept_file_ent[b][i_obj] ){
+                    //         push_sorted( v_sumw  , ent ); // push denominator
+                    //     }
+                    // }
                     i_obj++;
                 } // objects
                 // set new values from average after outlier removal
@@ -1138,6 +1166,7 @@ class OutlierRemoval{
         VecTStr  added_pdfobj;
         VecTH1   output_objects;
         std::vector<std::vector<bool> >  do_accept_file;
+        std::vector<std::vector<bool> >  do_accept_file_ent;
         // bin loop
         int LOBIN;
         int HIBIN;
@@ -1174,6 +1203,7 @@ int main(int argc, char * argv[]){
         ("c,cuba"            , "Add all histograms from cubature integration."             )
         ("n,NaN-interpolate" , "Find NaNs and interpolate"                                 )
         ("v,verbose"         , "Increase verbosity (more v the more chaty (max=vvvvvvv))." )
+        ("S,nsigma"          , "Number of sigma's to remove outlier."                      )
     ;
     // Parse
     try {
@@ -1213,6 +1243,7 @@ int main(int argc, char * argv[]){
         printf ( "cuba      : %d \n" , opts.count ( "cuba"            )  ) ;
         printf ( "NaN       : %d \n" , opts.count ( "Nan-interpolate" )  ) ;
         printf ( "verbose   : %d \n" , opts.count ( "verbose"         )  ) ;
+        printf ( "sigma     : %d \n" , opts.count ( "nsigma"          ) ==0 ? 0 : opts["nsigma"].as<int>()  ) ;
     }
 
 
@@ -1244,6 +1275,7 @@ int main(int argc, char * argv[]){
     if (opts.count("NaN-interpolate" )) {merger.doNanIterp=true;}
     if (opts.count("verbose"         )) merger.verbose+=opts.count("verbose");
     if (opts.count("test"            )) merger.doTest=true;
+    if (opts.count("nsigma"          )) merger.Nsigma=opts["nsigma"].as<int>();
     // run merger
     merger.Init();
     merger.Merge();
