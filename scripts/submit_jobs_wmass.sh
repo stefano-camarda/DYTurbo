@@ -112,6 +112,7 @@ parse_input(){
     cernuser=unset
     #
     mbins=unset
+    version=unset
 
     while [[ $# > 0 ]]
     do
@@ -169,6 +170,10 @@ parse_input(){
                 ;;
             --voms)
                 voms=$2
+                shift
+                ;;
+            --version)
+                version=$2
                 shift
                 ;;
             #  HELP and OTHER
@@ -366,7 +371,7 @@ submit_job2grid(){
 
 prepare_tarbal(){
     griddir=GRID_$pdfset
-    gridv=v`date +%s`
+    [[ $version == unset ]] && gridv=v`date +%s` || gridv=$version
     DYTURBOVERSION=`grep PACKAGE_VERSION config.h | cut -d\" -f2`
     # check you have cvmfs rootconfig
     rootprefix=`root-config --prefix`
