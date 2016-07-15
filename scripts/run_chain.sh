@@ -110,7 +110,7 @@
 
 # PROFILLED CT14
 #./scripts/submit_DYTURBO.sh --mogon --proc wp,wm,z0 --term RES2D,CT2D  --pdfset CT14nnloProf68cl --pdfvar array #RUN
-./scripts/merge.sh --proc wp,wm,z0 --term RES2D,CT2D --pdfset CT14nnloProf68cl --qtymerge qt05y-11 --outdir CT14Prof_RESCT2D_160523 RUN
+#./scripts/merge.sh --proc wp,wm,z0 --term RES2D,CT2D --pdfset CT14nnloProf68cl --qtymerge qt05y-11 --outdir CT14Prof_RESCT2D_160523 RUN
 
 #============================================
 # MERGE GRID DONE
@@ -195,3 +195,113 @@
 #  mv GRID $outGridName && tar czvf ${outGridName}.tgz $outGridName
 
 # submit with niter=0 -- same seed
+
+
+
+#============================================
+## NEW RUN v01
+#============================================
+
+done_samples_019="
+dyturbo_z0_lhc7_CT10nnlo_all_o2tFIXCT_seed_v1466990784_results_merge.root
+dyturbo_z0_lhc7_CT10nnlo_all_o2tREAL_seed_v1466990784_results_merge.root
+dyturbo_z0_lhc7_CT10nnlo_all_o2tVIRT_seed_v1466990784_results_merge.root
+dyturbo_z0_lhc7_CT10nnlo_all_o2tVV_seed_v1466990784_results_merge.root
+
+dyturbo_wp_lhc7_CT10nnlo_all_o2tFIXCT_seed_v1466990784_results_merge.root
+dyturbo_wp_lhc7_CT10nnlo_all_o2tVV_seed_v1466990784_results_merge.root
+
+dyturbo_wm_lhc7_CT10nnlo_all_o2tFIXCT_seed_v1466990784_results_merge.root
+dyturbo_wm_lhc7_CT10nnlo_all_o2tVV_seed_v1466990784_results_merge.root
+"
+samples_019="
+dyturbo_wp_lhc7_CT10nnlo_all_o2tREAL_seed_v1466990784_results_merge.root
+dyturbo_wp_lhc7_CT10nnlo_all_o2tVIRT_seed_v1466990784_results_merge.root
+dyturbo_wm_lhc7_CT10nnlo_all_o2tREAL_seed_v1466990784_results_merge.root
+dyturbo_wm_lhc7_CT10nnlo_all_o2tVIRT_seed_v1466990784_results_merge.root
+"
+
+done_samples_006="
+dyturbo_wp_lhc7_CT14nnlo_all_o2tREAL_seed_v1466990840_results_merge.root
+dyturbo_wm_lhc7_CT14nnlo_all_o2tREAL_seed_v1466990840_results_merge.root
+dyturbo_z0_lhc7_CT14nnlo_all_o2tREAL_seed_v1466990840_results_merge.root
+
+dyturbo_wp_lhc7_CT14nnlo_all_o2tFIXCT_seed_v1466990840_results_merge.root
+dyturbo_wp_lhc7_CT14nnlo_all_o2tVV_seed_v1466990840_results_merge.root
+dyturbo_wp_lhc7_CT14nnlo_all_o2tVIRT_seed_v1466990840_results_merge.root
+
+dyturbo_wm_lhc7_CT14nnlo_all_o2tFIXCT_seed_v1466990840_results_merge.root
+dyturbo_wm_lhc7_CT14nnlo_all_o2tVV_seed_v1466990840_results_merge.root
+dyturbo_wm_lhc7_CT14nnlo_all_o2tVIRT_seed_v1466990840_results_merge.root
+
+dyturbo_z0_lhc7_CT14nnlo_all_o2tFIXCT_seed_v1466990840_results_merge.root
+dyturbo_z0_lhc7_CT14nnlo_all_o2tVV_seed_v1466990840_results_merge.root
+dyturbo_z0_lhc7_CT14nnlo_all_o2tVIRT_seed_v1466990840_results_merge.root
+"
+
+done_samples_078="
+dyturbo_wm_lhc7_MMHT2014nnlo68cl_all_o2tFIXCT_seed_v1466990932_results_merge.root
+dyturbo_wm_lhc7_MMHT2014nnlo68cl_all_o2tVV_seed_v1466990932_results_merge.root
+dyturbo_wm_lhc7_MMHT2014nnlo68cl_all_o2tVIRT_seed_v1466990932_results_merge.root
+
+dyturbo_wp_lhc7_MMHT2014nnlo68cl_all_o2tFIXCT_seed_v1466990932_results_merge.root
+dyturbo_wp_lhc7_MMHT2014nnlo68cl_all_o2tVV_seed_v1466990932_results_merge.root
+dyturbo_wp_lhc7_MMHT2014nnlo68cl_all_o2tVIRT_seed_v1466990932_results_merge.root
+
+dyturbo_z0_lhc7_MMHT2014nnlo68cl_all_o2tFIXCT_seed_v1466990932_results_merge.root
+dyturbo_z0_lhc7_MMHT2014nnlo68cl_all_o2tVV_seed_v1466990932_results_merge.root
+dyturbo_z0_lhc7_MMHT2014nnlo68cl_all_o2tREAL_seed_v1466990932_results_merge.root
+dyturbo_z0_lhc7_MMHT2014nnlo68cl_all_o2tVIRT_seed_v1466990932_results_merge.root
+"
+
+samples_078="
+dyturbo_wm_lhc7_MMHT2014nnlo68cl_all_o2tREAL_seed_v1466990932_results_merge.root
+dyturbo_wp_lhc7_MMHT2014nnlo68cl_all_o2tREAL_seed_v1466990932_results_merge.root
+"
+
+real="
+dyturbo_wp_lhc7_CT10nnlo_all_o2tREAL_seed_v1466990784_results_merge.root
+dyturbo_wm_lhc7_CT10nnlo_all_o2tREAL_seed_v1466990784_results_merge.root
+dyturbo_z0_lhc7_CT10nnlo_all_o2tREAL_seed_v1466990784_results_merge.root
+
+dyturbo_wp_lhc7_CT14nnlo_all_o2tREAL_seed_v1466990840_results_merge.root
+dyturbo_wm_lhc7_CT14nnlo_all_o2tREAL_seed_v1466990840_results_merge.root
+dyturbo_z0_lhc7_CT14nnlo_all_o2tREAL_seed_v1466990840_results_merge.root
+
+dyturbo_wp_lhc7_MMHT2014nnlo68cl_all_o2tREAL_seed_v1466990932_results_merge.root
+dyturbo_wm_lhc7_MMHT2014nnlo68cl_all_o2tREAL_seed_v1466990932_results_merge.root
+dyturbo_z0_lhc7_MMHT2014nnlo68cl_all_o2tREAL_seed_v1466990932_results_merge.root
+"
+
+test_real="dyturbo_wp_lhc7_CT10nnlo_all_o2tREAL_seed_v1466990784_results_merge.root
+dyturbo_wm_lhc7_CT10nnlo_all_o2tREAL_seed_v1466990784_results_merge.root
+"
+
+test_real14="
+dyturbo_z0_lhc7_CT14nnlo_all_o2tREAL_seed_v1466990840_results_merge.root
+"
+
+#samples=$samples_019
+#samples=$done_samples_006
+#samples=$samples_078
+#samples=$test_real
+samples=$test_real14
+
+for job in $samples
+do
+
+    outlier=
+    [[ $job =~ REAL ]] && outlier=o
+    echo $job
+    #rucio ls group.phys-sm.$job
+    #echo
+    #rucio download --dir results_grid group.phys-sm.$job
+    echo
+    ls results_grid/group.phys-sm.$job/*.root* | wc -l
+    #ls results_merge/v01/${job} 
+    #/usr/bin/time -v ./bin/dyturbo-merger -d results_merge/v01/average_${job} results_grid/group.phys-sm.$job/group.phys-sm.*.root 2>&1
+    /usr/bin/time -v ./bin/dyturbo-merger -Td$outlier results_merge/v01/${job} results_grid/group.phys-sm.$job/group.phys-sm.*.root 2>&1
+    #/usr/bin/time -v ./../DYTURBO_CLIdev/bin/dyturbo-merger -d$outlier results_merge/v01/old_${job} results_grid/group.phys-sm.$job/group.phys-sm.*.root 2>&1
+    echo
+    echo
+done | tee merge-`hostname`.log
