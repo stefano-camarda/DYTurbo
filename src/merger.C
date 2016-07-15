@@ -825,7 +825,7 @@ class OutlierRemoval{
         void print_accept(){
             for (size_t ibin=0; ibin<do_accept_file.size(); ibin++) {
                 int bad=0;
-                printf ("ibin %d :",ibin);
+                printf ("ibin %zu :",ibin);
                 for (bool val : do_accept_file[ibin] ){
                     printf ("%s", val?"T":"F");
                     if (!val) bad++;
