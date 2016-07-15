@@ -423,7 +423,7 @@ prepare_tarbal(){
     echo "gridv=$gridv"                   >> scripts/grid_submit.cmd
     echo "CERNUSER=$cernuser"             >> scripts/grid_submit.cmd
     echo "CERNGROUP=$cerngroup"           >> scripts/grid_submit.cmd
-    echo "OFFICIAL=$gridofficial"         >> scripts/grid_submit.cmd
+    echo "OFFICIAL=\"$gridofficial\""     >> scripts/grid_submit.cmd
     echo "DYTURBOVERSION=$DYTURBOVERSION" >> scripts/grid_submit.cmd
     echo "ROOTVERSION=$ROOTVERSION"       >> scripts/grid_submit.cmd
     echo "CMTVERSION=$CMTVERSION"         >> scripts/grid_submit.cmd
