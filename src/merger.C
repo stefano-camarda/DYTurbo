@@ -870,61 +870,78 @@ class OutlierRemoval{
                     if (isProf && dim==1){
 		        //be careful!!! centr->GetBinContent gives the numerator of TProfile::GetBinContent
 		        TProfile * centr = (TProfile*) med;
-                        // denominator
-			d_ent = centr->GetBinEntries(b);
-		        s_ent = TMath::Sqrt(centr->GetBinSumw2()->At(b)); // check formula in set_profile_bin sumww
-                        // nominator
-			d = (centr->GetAt(b)!=0) ? centr->GetAt(b) : 0;
-			s = centr->GetBinError(b); // returns uncertainty of ratio
-                        double wsigma =  TMath::Sqrt(centr->GetBinSumw2()->At(b)*in_objs.size()); // check formula in set_profile_bin sumww
-                        s = (s_ent!=0) ? TMath::Sqrt(s*s*(s_ent*s_ent)*in_objs.size() ) : 0; // check formula in set_profile_bin p_sigma2
-		        TProfile * test = (TProfile*) ith;
-                        ent = test->GetBinEntries (b); // denominator
-                        val = test->GetAt(b); // nominator
+		        TProfile * ithp = (TProfile*) ith;
+                        // // denominator
+			// d_ent = (centr->GetBinEntries(b) != 0) ? centr->At(b)/centr->GetBinEntries(b) : 0;
+		        // s_ent = TMath::Sqrt(centr->GetBinSumw2()->At(b)*in_objs.size()); // check formula in set_profile_bin sumww
+                        // // nominator
+			// d = (centr->GetAt(b)!=0) ? centr->GetAt(b) : 0;
+			// s = centr->GetBinError(b); // returns uncertainty of ratio
+                        // s = (s_ent!=0) ? TMath::Sqrt(s*s/(s_ent*s_ent)*in_objs.size() ) : 0; // check formula in set_profile_bin p_sigma2
+                        // ent = test->GetBinEntries (b); // denominator
+                        // val = test->GetAt(b); // nominator
                         //
-                        d -= val;
-                        d_ent -= ent;
+                        //d -= val;
+                        //d_ent -= ent;
+                        // ratio
+                        val = ithp->GetAt(b);
+                        ent = ithp->GetBinEntries(b);
+                        d   = (centr ->GetBinEntries(b) != 0) ? centr ->GetBinContent(b) : 0;
+                        d  -= ent!=0 ? val/ent : 0;
+                        s   = centr->GetBinError(b) * TMath::Sqrt(in_objs.size());
                     } else if (isProf && dim==2) {
 		        //be careful!!! centr->GetBinContent gives the numerator of TProfile::GetBinContent
 		        TProfile2D * centr = (TProfile2D*) med;
-                        // denominator
-			d_ent = (centr->GetBinEntries(b) != 0) ? centr->GetBinEntries(b) : 0;
-		        s_ent = TMath::Sqrt(centr->GetBinSumw2()->At(b)*in_objs.size()); // check formula in set_profile_bin sumww
-                        // nominator
-			d = (centr->GetAt(b)!=0) ? centr->GetAt(b) : 0;
-			s = centr->GetBinError(b);
-                        s = (s_ent!=0) ? TMath::Sqrt(s*s/(s_ent*s_ent)*in_objs.size() ) : 0; // check formula in set_profile_bin p_sigma2
-                        TProfile2D * test = (TProfile2D *) ith;
-                        ent = test->GetBinEntries (b); // denominator
-                        val = test->GetAt(b); // nominator
-                        d -= val;
-                        d_ent -= ent;
+                        TProfile2D * ithp = (TProfile2D *) ith;
+                        // // denominator
+			// d_ent = (centr->GetBinEntries(b) != 0) ? centr->At(b)/centr->GetBinEntries(b) : 0;
+		        // s_ent = TMath::Sqrt(centr->GetBinSumw2()->At(b)*in_objs.size()); // check formula in set_profile_bin sumww
+                        // // nominator
+			// d = (centr->GetAt(b)!=0) ? centr->GetAt(b) : 0;
+			// s = centr->GetBinError(b);
+                        // s = (s_ent!=0) ? TMath::Sqrt(s*s/(s_ent*s_ent)*in_objs.size() ) : 0; // check formula in set_profile_bin p_sigma2
+                        // ent = test->GetBinEntries (b); // denominator
+                        // val = test->GetAt(b); // nominator
+                        // d -= val;
+                        // d_ent -= ent;
+                        // ratio
+                        val = ithp->GetAt(b);
+                        ent = ithp->GetBinEntries(b);
+                        d   = (centr ->GetBinEntries(b) != 0) ? centr ->GetBinContent(b) : 0;
+                        d  -= ent!=0 ? val/ent : 0;
+                        s   = centr->GetBinError(b) * TMath::Sqrt(in_objs.size());
                     } else {
                         val = ith->GetBinContent(b);
                         d -= val;
                     }
                     double chi2 = 0;
-                    // nominator
+                    // // nominator
+                    // chi2 = s!=0 ? d*d/(s*s) : 0;
+                    // if (!isPDFvar && TMath::Prob(chi2,1) > pl(Nsigma) ){
+                    //     do_accept_file[b][i_obj]=true;
+                    // }
+                    // if ( do_accept_file[b][i_obj] ){
+                    //     push_sorted( v_sumwy , val ); // push nominator
+                    // }
+                    // // denominator
+                    // if (isProf){
+                    //     chi2 = (s_ent!=0) ? d_ent*d_ent/(s_ent*s_ent) : 0;
+                    //     if (!isPDFvar && TMath::Prob(chi2,1) > pl(Nsigma) ){
+                    //         do_accept_file_ent[b][i_obj]=true;
+                    //     }
+                    //     if ( do_accept_file_ent[b][i_obj] ){
+                    //         push_sorted( v_sumw  , ent ); // push denominator
+                    //     }
+                    // }
+                    // ratio
                     chi2 = s!=0 ? d*d/(s*s) : 0;
                     if (!isPDFvar && TMath::Prob(chi2,1) > pl(Nsigma) ){
                         do_accept_file[b][i_obj]=true;
                     }
                     if ( do_accept_file[b][i_obj] ){
                         push_sorted( v_sumwy , val ); // push nominator
-                        if (isProf) push_sorted( v_sumw  , ent ); // push denominator
+                        if (isProf) push_sorted( v_sumw , ent ); // push denominator
                     }
-                    // denominator
-                    // if (isProf){
-                    //     chi2 = (s_ent!=0) ? d_ent*d_ent/(s_ent*s_ent) : 0;
-                    //     if (!isPDFvar && TMath::Prob(chi2,1) > pl(Nsigma) ){
-                    //         do_accept_file_ent[b][i_obj]=true;
-                    //     } else {
-                    //         printf( "bin: %d file: %d delta %f sigma %f chi2 %f prob %g CL %g \n", b, i_obj, d_ent,s_ent,chi2,TMath::Prob(chi2,1), pl(Nsigma));
-                    //     }
-                    //     if ( do_accept_file_ent[b][i_obj] ){
-                    //         push_sorted( v_sumw  , ent ); // push denominator
-                    //     }
-                    // }
                     i_obj++;
                 } // objects
                 // set new values from average after outlier removal
