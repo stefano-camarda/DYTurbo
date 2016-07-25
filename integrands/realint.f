@@ -191,7 +191,7 @@ c     start PDF loop
          call dysetpdf(npdf)
          call hists_setpdf(npdf)
 c     intitialise xmsq to 0 for the real and all dipoles
-         do nd=0,ndmax
+         do nd=0,6
             xmsq(nd)=0d0
          enddo
 
