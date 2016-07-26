@@ -31,8 +31,10 @@ void settings::parse_options(int argc, char* argv[]){
         ("q,small-stat"      , "Set quick run with small stat." )
         ("p,proc"            , "Set process [z0/wp/wm]"                              , po::value<string>() )
         ("c,collider"        , "Set beam conditions [tev2/lhc7/lhc8/lhc13/lhc14]"    , po::value<string>() )
-        ("o,order"           , "Set order [1:NLL+NLO, 2:NNLL+NNLO]"                  , po::value<int>() )
-        ("t,term"            , "Set term [REAL,VIRT,CT,..]"                          , po::value<string>() )
+        ("o,order"           , "Set order [0:LO, 1:NLL+NLO, 2:NNLL+NNLO]"            , po::value<int>() )
+        ("f,fixedorder"      , "Set fixed order"                )
+        ("e,resummation"     , "Set resummation"                )
+        ("t,term"            , "Set term [BORN,CT,VJ,VJREAL,VJVIRT]"                 , po::value<string>() )
         ("r,seed"            , "Set random seed [integer]"                           , po::value<int>()    )
         ("s,pdfset"          , "Set PDF set [LHAPDF name]"                           , po::value<string>() )
         ("m,pdfvar"          , "Set PDF member [integer/all]"                        , po::value<string>() )
@@ -70,18 +72,23 @@ void settings::parse_options(int argc, char* argv[]){
     if (args.count("seed")) rseed=args["seed"].as<int>();
     // order
     if (args.count("order")) order=args["order"].as<int>();
+    // fixed order
+    if (args.count("fixedorder"))
+      fixedorder          = true;
+    if (args.count("resummation"))
+      fixedorder          = false;
+    
     // small stat
     if (args.count("small-stat")){
-        niterRES           = 1;
+        niterBORN          = 1;
         niterCT            = 1;
         niterVJ            = 1;
-        vegasncallsRES     = 1e3;
-        vegasncallsVV      = 1e5;
+        vegasncallsBORN    = (fixedorder ? 1e5 : 1e3);
         vegasncallsCT      = 1e4;
-        vegasncallsLO      = 1e5;
-        vegasncallsREAL    = 1e5;
-        vegasncallsVIRT    = 1e5;
-        pcubaccuracy       = 0.5;
+        vegasncallsVJLO    = 1e5;
+        vegasncallsVJREAL  = 1e5;
+        vegasncallsVJVIRT  = 1e5;
+        pcubaccuracy       = 0.1;
     }
 
     // proc
@@ -129,24 +136,15 @@ void settings::parse_options(int argc, char* argv[]){
     // term
     if (args.count("term")) {
         // first turn off all terms
-        doRES = doVV = doCT = doREAL = doVIRT = doLO = doVJ = false ;
+        doBORN = doCT = doVJ = doVJREAL = doVJVIRT = false ;
         string val=args["term"].as<string>();
         ToUpper(val);
         for (auto piece : Tokenize(val)) {
-            if        ( piece == "REAL"    ) { doREAL=true;
-            } else if ( piece == "VIRT"    ) { doVIRT=true;
-            } else if ( piece == "VV"      ) { doVV=true;   fixedorder=true;
-            } else if ( piece == "LO"      ) { doLO=true;
-            } else if ( piece == "VJ"      ) { doVJ=true;
-            } else if ( piece == "RES"     ) { doRES=true;  intDimRes=8;
-            } else if ( piece == "RES3D"   ) { doRES=true;  intDimRes=3;
-            } else if ( piece == "RES2D"   ) { doRES=true;  intDimRes=2;
-            } else if ( piece ==  "CT"     ) { doCT=true;   intDimCT=8; //< NOTE: is 6D save ? --> No, 8D is actually faster, 6D has some quadratures inside
-            } else if ( piece == "CT3D"    ) { doCT=true;   intDimCT=3;
-            } else if ( piece == "CT2D"    ) { doCT=true;   intDimCT=2;
-            } else if ( piece == "FIXCT"   ) { doCT=true;   intDimCT=8; fixedorder=true; 
-            } else if ( piece == "FIXCT3D" ) { doCT=true;   intDimCT=3; fixedorder=true; 
-            } else if ( piece == "FIXCT2D" ) { doCT=true;   intDimCT=2; fixedorder=true; 
+            if        ( piece == "BORN"    )   { doBORN=true;
+            } else if ( piece == "CT"     )    { doCT=true;
+            } else if ( piece == "VJ"      )   { doVJ=true;
+            } else if ( piece == "VJVIRT"    ) { doVJVIRT=true;
+	    } else if ( piece == "VJREAL"    ) { doVJREAL=true;
             } else {
                 throw QuitProgram("Unsupported value of term : "+piece);
             }
@@ -203,39 +201,33 @@ void settings::readfromfile(const string fname){
     Zcc            = in.GetNumber ( "Zcc"        );
     Zss            = in.GetNumber ( "Zss"        );
     Zbb            = in.GetNumber ( "Zbb"        );
-    //ylow           = in.GetNumber ( "ylow"            ); //2
-    //yhigh          = in.GetNumber ( "yhigh"           ); //2.4
-    //mlow           = in.GetNumber ( "mlow"            ); //66.
-    //mhigh          = in.GetNumber ( "mhigh"           ); //116.
-    dampk          = in.GetNumber ( "dampk"           );
-    dampdelta      = in.GetNumber ( "dampdelta"           );
-    dampmode       = in.GetNumber ( "dampmode"           );
-    qtcutoff       = in.GetNumber ( "qtcutoff"           );
-    xqtcut         = in.GetNumber ( "xqtcut"           );
-    qtcut          = in.GetNumber ( "qtcut"           );
-    intDimRes      = in.GetNumber ( "intDimRes"       ); //3
-    intDimCT           = in.GetNumber ( "intDimCT"       ); //3
-    //    intDimVJ           = in.GetNumber ( "intDimVJ"        );
-    fixedorder         = in.GetBool   ( "fixedorder"      ); //false
-    doRES              = in.GetBool   ( "doRES"           ); //false
-    doVV               = in.GetBool   ( "doVV"            ); //false
-    doCT               = in.GetBool   ( "doCT"            ); //false
-    doREAL             = in.GetBool   ( "doREAL"          ); //false
-    doVIRT             = in.GetBool   ( "doVIRT"          ); //false
-    doLO               = in.GetBool   ( "doLO"            ); //false
-    doVJ               = in.GetBool   ( "doVJ"            ); //false
-    cubaverbosity      = in.GetNumber ( "cubaverbosity"   ); //0       # Cuba        info     messsages, from    0           to              3
-    cubacores          = in.GetNumber ( "cubacores"       ); //0
+    dampk          = in.GetNumber ( "dampk"          );
+    dampdelta      = in.GetNumber ( "dampdelta"      );
+    dampmode       = in.GetNumber ( "dampmode"       );
+    qtcutoff       = in.GetNumber ( "qtcutoff"       );
+    xqtcut         = in.GetNumber ( "xqtcut"         );
+    qtcut          = in.GetNumber ( "qtcut"          );
+    intDimRes      = in.GetNumber ( "intDimRes"      );
+    intDimBorn     = in.GetNumber ( "intDimBorn"     );
+    intDimCT       = in.GetNumber ( "intDimCT"       );
+    intDimVJ           = in.GetNumber ( "intDimVJ"        );
+    fixedorder         = in.GetBool   ( "fixedorder"      );
+    doBORN             = in.GetBool   ( "doBORN"          );
+    doCT               = in.GetBool   ( "doCT"            );
+    doVJ               = in.GetBool   ( "doVJ"            );
+    doVJREAL           = in.GetBool   ( "doVJREAL"        );
+    doVJVIRT           = in.GetBool   ( "doVJVIRT"        );
+    cubaverbosity      = in.GetNumber ( "cubaverbosity"   );
+    cubacores          = in.GetNumber ( "cubacores"       );
     cubanbatch         = in.GetNumber ( "cubanbatch"      );
-    niterRES           = in.GetNumber ( "niterRES"        ); //0       # only        for      2d         and     3d          cuhre           integration
-    niterCT            = in.GetNumber ( "niterCT"         ); //0       # only        for      3d          cuhre           integration
-    niterVJ            = in.GetNumber ( "niterVJ"         ); //0       # only        for      3d          cuhre           integration
-    vegasncallsRES     = in.GetNumber ( "vegasncallsRES"  ); //10000
-    vegasncallsVV      = in.GetNumber ( "vegasncallsVV"   ); //10000
-    vegasncallsCT      = in.GetNumber ( "vegasncallsCT"   ); //10000
-    vegasncallsLO      = in.GetNumber ( "vegasncallsLO"   ); //10000
-    vegasncallsREAL    = in.GetNumber ( "vegasncallsREAL" ); //10000
-    vegasncallsVIRT    = in.GetNumber ( "vegasncallsVIRT" ); //10000
+    niterBORN          = in.GetNumber ( "niterBORN"       );
+    niterCT            = in.GetNumber ( "niterCT"         );
+    niterVJ            = in.GetNumber ( "niterVJ"         );
+    vegasncallsBORN    = in.GetNumber ( "vegasncallsBORN" );
+    vegasncallsCT      = in.GetNumber ( "vegasncallsCT"   );
+    vegasncallsVJLO    = in.GetNumber ( "vegasncallsVJLO"   );
+    vegasncallsVJREAL  = in.GetNumber ( "vegasncallsVJREAL" );
+    vegasncallsVJVIRT  = in.GetNumber ( "vegasncallsVJVIRT" );
     pcubature          = in.GetBool   ( "pcubature" );
     pcubaccuracy       = in.GetNumber ( "pcubaccuracy" );
     makelepcuts        = in.GetBool   ( "makelepcuts"     ); //true
@@ -282,31 +274,22 @@ void settings::readfromfile(const string fname){
 void settings::check_consitency(){
 
     // additional conditions
-    if (order != 1 && order != 2)
-      throw invalid_argument("Invalid order, please select 1 (NLO) or 2 (NNLO)");
+    if (order != 0 && order != 1 && order != 2)
+      throw invalid_argument("Invalid order, please select 0 (LO) 1 (NLO) or 2 (NNLO)");
     if (nproc != 1 && nproc != 2 && nproc != 3)
       throw invalid_argument("Wrong process, please select nproc = 1 (W+), 2 (W-), or 3(Z)");
 
-    // finite order (NLO vs NNLO)
-    /*
-    if (opts.doLO     && opts.order != 1) throw invalid_argument( "You are trying to run LO term calculation, but order is not 1. Check your input file.") ;
-    if (opts.doREAL   && opts.order != 2) throw invalid_argument( "You are trying to run REAL term calculation, but order is not 2. Check your input file.") ;
-    if (opts.doVIRT   && opts.order != 2) throw invalid_argument( "You are trying to run VIRT term calculation, but order is not 2. Check your input file.") ;
-    */
-
-    if (order != 1)
-      opts.doLO = false;
+    if (order == 0)
+      {
+	doCT = false;
+	doVJ = false;
+      }
     if (order != 2)
       {
-	opts.doREAL = false;
-	opts.doVIRT = false;
+	doVJREAL = false;
+	doVJVIRT = false;
       }
-    //Asked for fixed order predictions, switching off resummation term
-    if (fixedorder == true)
-      doRES = false;
-    //Asked for resummed predictions, switching off double virtual term
-    if (fixedorder == false)
-      doVV = false;
+
     //In fixed order mode, a_param must be one
     if (fixedorder == true)
       {
@@ -350,6 +333,21 @@ void settings::check_consitency(){
         resintvegas = true;
     }
 
+    // born term integration dimension
+    if (intDimBorn<4 && intDimBorn>1){
+        bornint2d = (intDimBorn == 2);
+        bornint3d = (intDimBorn == 3);
+        bornintvegas = false;
+    } else {
+        bornint2d = false;
+        bornint3d = false;
+        bornintvegas = true;
+    }
+
+    //quadratures not yet implemented in orders NLO and NNLO
+    if (order > 0)
+      bornintvegas = true;
+
     // counter term integration dimension
     if (intDimCT<4 && intDimCT>1){
         ctint2d = (intDimCT == 2);
@@ -363,23 +361,26 @@ void settings::check_consitency(){
 	ctintvegas8d = (intDimCT > 6);
     }
 
-    /*
     // V+J integration dimension
-    if (intDimVJ < 4 && intDimVJ > 2){
+    if (intDimVJ < 4 && intDimVJ > 2)
+      {
         vjint3d = (intDimVJ == 3);
-        vjintvegas7d = false;
-    } else {
-        vjint3d = false;
-        vjintvegas7d = true;
+        vjintvegas = false;
+	doVJREAL = false;
+	doVJVIRT = false;
       }
-   if (makelepcuts)
+    else
+      {
+        vjint3d = false;
+        vjintvegas = true;
+      }
+
+    if (makelepcuts)
       {
 	cout << "Required cuts on the final state leptons, enforce vegas integration for V+J fixed order cross section" << endl;
 	vjint3d = false;
-	vjintvegas7d = true;
+	vjintvegas = true;
       }
-    */
-
 
     if (opts_.approxpdf_ == 1)
       {
@@ -415,7 +416,7 @@ void settings::check_consitency(){
             );
     // plot mode consitency with integration
     if ( bins.plotmode=="fill" && 
-	 ( (doRES && (resint2d || resint3d)) || (doCT && (ctint2d || ctint3d)) || doVJ )
+	 ( (doBORN && !fixedorder && (resint2d || resint3d)) || (doCT && (ctint2d || ctint3d)) || (doVJ && vjint3d))
        ) {
         printf ("Warning: plotmode: Filling not work for quadrature integration. I am switching to integrate.\n");
         bins.plotmode="integrate";
@@ -500,30 +501,35 @@ void settings::dumpAll(){
         dumpB("resint2d           ", resint2d            );
         dumpB("resint3d           ", resint3d            );
         dumpB("resintvegas        ", resintvegas         );
+        dumpI("intDimBorn         ", intDimBorn          );
+        dumpB("bornint2d          ", bornint2d           );
+        dumpB("bornint3d          ", bornint3d           );
+        dumpB("bornintvegas       ", bornintvegas        );
         dumpI("intDimCT           ", intDimCT            );
         dumpB("ctint2d            ", ctint2d             );
         dumpB("ctint3d            ", ctint3d             );
-        dumpB("ctintvegas6d         ", ctintvegas6d          );
-	dumpB("ctintvegas8d         ", ctintvegas8d          );
+        dumpB("ctintvegas6d       ", ctintvegas6d        );
+	dumpB("ctintvegas8d       ", ctintvegas8d        );
+        dumpI("intDimVJ           ", intDimVJ          );
+        dumpB("vjint3d            ", vjint3d           );
+        dumpB("vjintvegas         ", vjintvegas        );
         dumpB("fixedorder         ", fixedorder          );
-	dumpB("doRES              ", doRES               );
-	dumpB("doVV               ", doVV                );
+	dumpB("doBORN             ", doBORN              );
         dumpB("doCT               ", doCT                );
-        dumpB("doREAL             ", doREAL              );
-        dumpB("doVIRT             ", doVIRT              );
-        dumpB("doLO               ", doLO                );
         dumpB("doVJ               ", doVJ                );
+        dumpB("doVJREAL           ", doVJREAL            );
+        dumpB("doVJVIRT           ", doVJVIRT            );
         dumpI("cubaverbosity      ", cubaverbosity       );
         dumpI("cubacores          ", cubacores           );
         dumpI("cubanbatch         ", cubanbatch          );
-        dumpI("niterRES           ", niterRES            );
+        dumpI("niterBORN          ", niterBORN           );
         dumpI("niterCT            ", niterCT             );
-        dumpD("vegasncallsRES     ", vegasncallsRES      );
-	dumpD("vegasncallsVV      ", vegasncallsVV       );
+	dumpI("niterVJ            ", niterVJ             );
+        dumpD("vegasncallsBORN    ", vegasncallsBORN     );
         dumpD("vegasncallsCT      ", vegasncallsCT       );
-        dumpD("vegasncallsLO      ", vegasncallsLO       );
-        dumpD("vegasncallsREAL    ", vegasncallsREAL     );
-        dumpD("vegasncallsVIRT    ", vegasncallsVIRT     );
+        dumpD("vegasncallsVJLO    ", vegasncallsVJLO     );
+        dumpD("vegasncallsVJREAL  ", vegasncallsVJREAL   );
+        dumpD("vegasncallsVJVIRT  ", vegasncallsVJVIRT   );
 	dumpB("pcubature          ", pcubature     );
 	dumpD("pcubaccuracy       ", pcubaccuracy     );
         dumpB("makelepcuts        ", makelepcuts         );

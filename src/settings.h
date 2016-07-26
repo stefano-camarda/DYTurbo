@@ -137,20 +137,28 @@ public:
   //integration settings
   int rseed;
 
-  //dimension of integration
+  //dimension of integration for the resummed part
   int intDimRes;
   bool resint2d, resint3d, resintvegas;
 
+  //dimension of integration for the born configuration
+  int intDimBorn;
+  bool bornint2d, bornint3d, bornintvegas;
+  
   //type of integration for the counterterm
   int intDimCT;
   bool ctint2d, ctint3d, ctintvegas6d, ctintvegas8d;
 
   //  //type of integration for the V+j at LO
-  //  int intDimVJ;
-  //  bool vjint3d, vjintvegas7d;
+  int intDimVJ;
+  bool vjint3d, vjintvegas;
   
   //term switches
-  bool doRES, doVV, doCT, doREAL, doVIRT, doLO, doVJ;
+  bool doBORN;
+  bool doCT;
+  bool doVJ;
+  
+  bool doVJREAL, doVJVIRT;
 
   //resummation or fixed order switch
   bool fixedorder;
@@ -159,15 +167,14 @@ public:
   int cubaverbosity;
   int cubacores;
   int cubanbatch;
-  int niterRES;
+  int niterBORN;
   int niterCT;
   int niterVJ;
-  int vegasncallsRES  ;
-  int vegasncallsVV   ;
+  int vegasncallsBORN  ;
   int vegasncallsCT   ;
-  int vegasncallsLO   ;
-  int vegasncallsREAL ;
-  int vegasncallsVIRT ;
+  int vegasncallsVJLO   ;
+  int vegasncallsVJREAL ;
+  int vegasncallsVJVIRT ;
 
   //cubature settings
   bool pcubature;
