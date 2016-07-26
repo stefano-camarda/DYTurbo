@@ -5,6 +5,7 @@ AM_CPPFLAGS = -fpermissive \
 	-I$(srcdir)/../mcfm \
 	-I$(srcdir)/../resum \
 	-I$(srcdir)/../vjfo \
+	-I$(srcdir)/../eba \
 	-I$(srcdir)/../cubature \
 	-Wl,Bstatic \
 	$(CUBA_CPPFLAGS) $(LHAPDF_CPPFLAGS) \
@@ -25,6 +26,8 @@ libdyturbo_la_LIBADD = libdyturbobase.la \
 	../resum/libresum.la \
 	../counterterm/libcounterterm.la \
 	../vjfo/libvjfo.la \
+	../v2j/libv2j.la \
+	../eba/libeba.la \
 	../dynnlo/libdynnlo.la \
 	../dyres/libdyres.la \
 	../mcfm/libmcfm.la \
