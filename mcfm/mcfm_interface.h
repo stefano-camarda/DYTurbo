@@ -12,6 +12,8 @@ extern "C"
   void branch_(double& brwen, double& brzee, double& brtau, double& brtop);
   void ckmfill_(int& nwz);
   void scaleset_(double& q2);
+  void qqb_z_(double p[4][12], double msqc[11][11]);
+  void qqb_w_(double p[4][12], double msqc[11][11]);
 
   //Catani-Seymour subtraction cut-offs for initial-initial, initial-final, final-initial, and final-final dipoles
   extern struct {
