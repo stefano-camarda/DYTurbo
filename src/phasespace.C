@@ -70,6 +70,10 @@ int binner_(double p3[4], double p4[4])
   if (y < phasespace::ymin || y > phasespace::ymax)
     return false;
 
+  double m = sqrt(pow(p3[3]+p4[3],2) - pow(p3[2]+p4[2],2) - qt*qt);
+  if (m < phasespace::mmin || m > phasespace::mmax)
+    return false;
+  
   //cout << "qt " << qt << " y " << y << endl;
   return true;
 }
