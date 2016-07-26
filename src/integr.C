@@ -207,7 +207,8 @@ void genv4p_()
   genV4p(phasespace::m, phasespace::qt, phasespace::y, 0.);
 }
 
-inline void genl4p(float costh, float phi_lep) //quite significant speed up with float numbers for the sine cosine functions
+//void genl4p(float costh, float phi_lep) //quite significant speed up with float numbers for the sine cosine functions
+void genl4p(double costh, double phi_lep) //quite significant speed up with float numbers for the sine cosine functions
 {
   //phi_lep = M_PI/2.;
 
@@ -626,10 +627,23 @@ integrand_t thphiintegrand(const int &ndim, const double x[], const int &ncomp, 
   return 0;
 }
 
+void getp3(double p[4])
+{
+  p[0] = p3[0];
+  p[1] = p3[1];
+  p[2] = p3[2];
+  p[3] = p3[3];
+}
+void getp4(double p[4])
+{
+  p[0] = p4[0];
+  p[1] = p4[1];
+  p[2] = p4[2];
+  p[3] = p4[3];
+}
+
 void tell_to_grid_we_are_alive(){
   if(opts.verbose && ICALL % 100000==0) 
       printf (" Hi Grid, we are sitll alive! Look, our event is %d\n",ICALL);
   ICALL++;
 }
-
-
