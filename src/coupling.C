@@ -136,7 +136,8 @@ void coupling::init()
   //calculate the couplings as given in Kunszt and Gunion
   //Modified to notation of DKS (ie divided by 2*sw*cw)
   //xw=sin^2 theta_w
-  zcouple_.sin2w_=2.*sqrt(xw*(1.-xw));
+  
+  zcouple_.sin2w_=2.*sqrt(xw*(1.-xw)); //!!!Important, this xw must be the on-shell xw = 1 - mW^2/mZ^2
   for (int j=0; j < MAXNF; j++)
     {
       zcouple_.l_[j]=(ewcharge_.tau_[j+MAXNF+1]-2.*ewcharge_.Q_[j+MAXNF+1]*xw)/zcouple_.sin2w_;
@@ -146,7 +147,7 @@ void coupling::init()
   zcouple_.le_=(-1.-2.*(-1.)*xw)/zcouple_.sin2w_;
   zcouple_.re_=(-2.*(-1.)*xw)/zcouple_.sin2w_;
 
-  //are ln and rn ever used?
+  //are ln and rn ever used? --> No, they are the Z -> nunu couplings
   zcouple_.ln_=(+1.-2.*(+0.)*xw)/zcouple_.sin2w_;
   zcouple_.rn_=0.;
 
