@@ -9,6 +9,8 @@
 #include <cuba.h>
 #include <iostream>
 
+/***************************************************************/
+//resummation
 void resintegr2d(double &res, double &err)
 {
   const int ndim = 2;     //dimensions of the integral
@@ -25,8 +27,8 @@ void resintegr2d(double &res, double &err)
   double error[1];
   double prob[1];
   const int flags = 0+opts.cubaverbosity;
-  const int mineval = 65+2*65*opts.niterRES;
-  const int maxeval = 65+2*65*opts.niterRES;
+  const int mineval = 65+2*65*opts.niterBORN;
+  const int maxeval = 65+2*65*opts.niterBORN;
   const int key = 13;
   int nregions;
 
@@ -58,7 +60,6 @@ void resintegr2d(double &res, double &err)
   
   res = integral[0];
   err = error[0];
-  //hists.FillQuadrature(res,err);
   return;
 }
 
@@ -78,8 +79,8 @@ void resintegr3d(double &res, double &err)
   double error[1];
   double prob[1];
   const int flags = 0+opts.cubaverbosity;
-  const int mineval = 127+2*127*opts.niterRES;
-  const int maxeval = 127+2*127*opts.niterRES;
+  const int mineval = 127+2*127*opts.niterBORN;
+  const int maxeval = 127+2*127*opts.niterBORN;
   const int key = 13;
   int nregions;
   Cuhre(ndim, ncomp,
@@ -93,7 +94,6 @@ void resintegr3d(double &res, double &err)
 
   res = integral[0];
   err = error[0];
-  //hists.FillQuadrature(res,err);
   return;
 }
 
@@ -115,10 +115,10 @@ void resintegrMC(double &res, double &err)
   double prob[1];
   const int flags = 4+opts.cubaverbosity;
   const int seed = opts.rseed;
-  const int mineval = opts.vegasncallsRES;
-  const int maxeval = opts.vegasncallsRES;
-  const int nstart = max(10, int(opts.vegasncallsRES/10));
-  const int nincrease = max(10, int(opts.vegasncallsRES/10));
+  const int mineval = opts.vegasncallsBORN;
+  const int maxeval = opts.vegasncallsBORN;
+  const int nstart = max(10, int(opts.vegasncallsBORN/10));
+  const int nincrease = max(10, int(opts.vegasncallsBORN/10));
   const int nbatch = opts.cubanbatch;
   const int gridno = 0;
   Vegas(ndim, ncomp, (integrand_t)resintegrandMC, userdata, nvec,
@@ -133,8 +133,11 @@ void resintegrMC(double &res, double &err)
   err = error[0];
   return;
 }
+/***************************************************************/
 
-//Cuba integration of analytical Z+j
+/***************************************************************/
+// fixed order
+//Cuba integration of analytical V+j
 void vjintegr3d(double &res, double &err)
 {
   const int ndim = 3;     //dimensions of the integral
@@ -183,13 +186,11 @@ void vjintegr3d(double &res, double &err)
 
   res = integral[0];
   err = error[0];
-  //hists.FillQuadrature(res,err);
   return;
 }
 
-
-//Cuba integration of Z+j LO
-void lowintegr(vector <double> &res, double &err)
+//Cuba integration of V+j LO
+void vjlointegr(vector <double> &res, double &err)
 {
   const int ndim = 7;   //dimensions of the integral
   const int ncomp = opts.totpdf;  //components of the integrand
@@ -206,10 +207,10 @@ void lowintegr(vector <double> &res, double &err)
   double prob[ncomp];
   const int flags = 8+4+opts.cubaverbosity;
   const int seed = opts.rseed;
-  const int mineval   = opts.vegasncallsLO;
-  const int maxeval   = opts.vegasncallsLO;
-  const int nstart    = max(10, int(opts.vegasncallsLO/10));
-  const int nincrease = max(10, int(opts.vegasncallsLO/10));
+  const int mineval   = opts.vegasncallsVJLO;
+  const int maxeval   = opts.vegasncallsVJLO;
+  const int nstart    = max(10, int(opts.vegasncallsVJLO/10));
+  const int nincrease = max(10, int(opts.vegasncallsVJLO/10));
   const int nbatch    = opts.cubanbatch;
   const int gridno = 0;
   Vegas(ndim, ncomp, (integrand_t)lowintegrand, userdata, nvec,
@@ -228,8 +229,8 @@ void lowintegr(vector <double> &res, double &err)
   return;
 }
 
-//Cuba integration of the real part
-void realintegr(vector <double> &res, double &err)
+//Cuba integration of the V+J NLO real part
+void vjrealintegr(vector <double> &res, double &err)
 {
   const int ndim = 10;   //dimensions of the integral
   const int ncomp = opts.totpdf;  //components of the integrand
@@ -246,10 +247,10 @@ void realintegr(vector <double> &res, double &err)
   double prob[ncomp];
   const int flags = 8+4+opts.cubaverbosity;
   const int seed = opts.rseed;
-  const int mineval = opts.vegasncallsREAL;
-  const int maxeval = opts.vegasncallsREAL;
-  const int nstart = max(10, int(opts.vegasncallsREAL/10));
-  const int nincrease = max(10, int(opts.vegasncallsREAL/10));
+  const int mineval = opts.vegasncallsVJREAL;
+  const int maxeval = opts.vegasncallsVJREAL;
+  const int nstart = max(10, int(opts.vegasncallsVJREAL/10));
+  const int nincrease = max(10, int(opts.vegasncallsVJREAL/10));
   const int nbatch = opts.cubanbatch;
   const int gridno = 0;
   Vegas(ndim, ncomp, (integrand_t)realintegrand, userdata, nvec,
@@ -268,8 +269,8 @@ void realintegr(vector <double> &res, double &err)
   return;
 }
 
-//Cuba integration of the virtual part
-void virtintegr(vector <double> &res, double &err)
+//Cuba integration of the V+J NLO virtual part
+void vjvirtintegr(vector <double> &res, double &err)
 {
   const int ndim = 8;   //dimensions of the integral
   const int ncomp = opts.totpdf;  //components of the integrand
@@ -286,10 +287,10 @@ void virtintegr(vector <double> &res, double &err)
   double prob[ncomp];
   const int flags = 8+4+opts.cubaverbosity;
   const int seed = opts.rseed;
-  const int mineval = opts.vegasncallsVIRT;
-  const int maxeval = opts.vegasncallsVIRT;
-  const int nstart = max(10, int(opts.vegasncallsVIRT/10));
-  const int nincrease = max(10, int(opts.vegasncallsVIRT/10));
+  const int mineval = opts.vegasncallsVJVIRT;
+  const int maxeval = opts.vegasncallsVJVIRT;
+  const int nstart = max(10, int(opts.vegasncallsVJVIRT/10));
+  const int nincrease = max(10, int(opts.vegasncallsVJVIRT/10));
   const int nbatch = opts.cubanbatch;
   const int gridno = 0;
   Vegas(ndim, ncomp, (integrand_t)virtintegrand, userdata, nvec,
@@ -308,8 +309,8 @@ void virtintegr(vector <double> &res, double &err)
   return;
 }
 
-//Cuba integration of double virtual
-void doublevirtintegr(vector <double> &res, double &err)
+//Cuba integration of double virtual born configuration
+void bornintegrMC(vector <double> &res, double &err)
 {
   const int ndim = 6;   //dimensions of the integral
   const int ncomp = opts.totpdf;  //components of the integrand
@@ -326,10 +327,10 @@ void doublevirtintegr(vector <double> &res, double &err)
   double prob[ncomp];
   const int flags = 8+4+opts.cubaverbosity;
   const int seed = opts.rseed;
-  const int mineval   = opts.vegasncallsVV;
-  const int maxeval   = opts.vegasncallsVV;
-  const int nstart    = max(10, int(opts.vegasncallsVV/10));
-  const int nincrease = max(10, int(opts.vegasncallsVV/10));
+  const int mineval   = opts.vegasncallsBORN;
+  const int maxeval   = opts.vegasncallsBORN;
+  const int nstart    = max(10, int(opts.vegasncallsBORN/10));
+  const int nincrease = max(10, int(opts.vegasncallsBORN/10));
   const int nbatch    = opts.cubanbatch;
   const int gridno = 0;
   Vegas(ndim, ncomp, (integrand_t)doublevirtintegrand, userdata, nvec,
@@ -349,6 +350,144 @@ void doublevirtintegr(vector <double> &res, double &err)
   return;
 }
 
+//Cuba integration of LO
+void bornintegr3d(vector <double> &res, double &err)
+{
+  const int ndim = 3;     //dimensions of the integral
+  const int ncomp = 1;    //components of the integrand
+  void *userdata;
+  const int nvec = 1;
+  const double epsrel = 0.;
+  const double epsabs = 0.;
+  const char *statefile = "";
+  void *spin=NULL;
+  int neval;
+  int fail;
+  double integral[1];
+  double error[1];
+  double prob[1];
+  const int flags = 0+opts.cubaverbosity;
+  const int mineval = 127+2*127*opts.niterBORN;
+  const int maxeval = 127+2*127*opts.niterBORN;
+  const int key = 13;
+  int nregions;
+  Cuhre(ndim, ncomp,
+	(integrand_t)lointegrand, userdata, nvec,
+	epsrel, epsabs,
+	flags,
+	mineval, maxeval,
+	key, statefile, NULL,
+	&nregions, &neval, &fail,
+	integral, error, prob);
+
+  res.clear();
+  for (int i = 0; i < opts.totpdf; i++)
+    res.push_back(integral[i]);
+  err = error[0];
+
+  return;
+}
+
+//Cuba integration of LO
+void bornintegr2d(vector <double> &res, double &err)
+{
+  const int ndim = 2;     //dimensions of the integral
+  const int ncomp = 1;  //components of the integrand
+  void *userdata = NULL;
+  const int nvec = 1;
+  const double epsrel = 0.;
+  const double epsabs = 0.;
+  const char *statefile = "";
+  void *spin=NULL;
+  int neval;
+  int fail;
+  double integral[1];
+  double error[1];
+  double prob[1];
+  const int flags = 0+opts.cubaverbosity;
+  const int mineval = 65+2*65*opts.niterBORN;
+  const int maxeval = 65+2*65*opts.niterBORN;
+  const int key = 13;
+  int nregions;
+
+  if (!opts.pcubature)
+    Cuhre(ndim, ncomp,
+	  (integrand_t) lointegrand2d, userdata, nvec,
+	  epsrel, epsabs,
+	  flags,
+	  mineval, maxeval,
+	  key, statefile, NULL,
+	  &nregions, &neval, &fail,
+	  integral, error, prob);
+  else
+    {
+      const int eval = 0;
+      const double epsrel = opts.pcubaccuracy;
+      const double epsabs = 0.;
+      double xmin[2] = {0, 0};
+      double xmax[2] = {1, 1};
+      if (opts.cubacores == 0)
+	pcubature(ncomp, lointegrand2d_cubature, userdata, 
+		  ndim, xmin, xmax, 
+		  eval, epsabs, epsrel, ERROR_INDIVIDUAL, integral, error);
+      else
+	pcubature_v(ncomp, lointegrand2d_cubature_v, userdata, 
+		    ndim, xmin, xmax, 
+		    eval, epsabs, epsrel, ERROR_INDIVIDUAL, integral, error);
+    }
+
+  res.clear();
+  for (int i = 0; i < opts.totpdf; i++)
+    res.push_back(integral[i]);
+  err = error[0];
+
+  return;
+}
+
+//Cuba integration of V + 2 jets
+void v2jintegr(vector <double> &res, double &err)
+{
+  const int ndim = 10;   //dimensions of the integral
+  const int ncomp = opts.totpdf;  //components of the integrand
+  void *userdata;
+  const int nvec = 1;
+  const double epsrel = 0.;
+  const double epsabs = 0.;
+  const char *statefile = "";
+  void *spin=NULL;
+  int neval;
+  int fail;
+  double integral[ncomp];
+  double error[ncomp];
+  double prob[ncomp];
+  const int flags = 8+4+opts.cubaverbosity;
+  const int seed = opts.rseed;
+  const int mineval = opts.vegasncallsVJREAL;
+  const int maxeval = opts.vegasncallsVJREAL;
+  const int nstart = max(10, int(opts.vegasncallsVJREAL/10));
+  const int nincrease = max(10, int(opts.vegasncallsVJREAL/10));
+  const int nbatch = opts.cubanbatch;
+  const int gridno = 0;
+  Vegas(ndim, ncomp, (integrand_t)v2jintegrand, userdata, nvec,
+	epsrel, epsabs,
+	flags, seed,
+	mineval, maxeval,
+	nstart, nincrease, nbatch,
+	gridno, statefile, spin,
+	&neval, &fail,
+	integral, error, prob);
+  res.clear();
+  for (int i = 0; i < opts.totpdf; i++)
+    res.push_back(integral[i]);
+  err = error[0];
+
+  return;
+}
+/***************************************************************/
+
+
+/***************************************************************/
+// Counter term
 //Cuba integration of the counterterm
 void ctintegr(vector <double> &res, double &err)
 {
@@ -520,6 +659,7 @@ void ctintegr2d(vector <double> &res, double &err)
   //hists.FillQuadrature(res[0],err);
   return;
 }
+/***************************************************************/
 
 void exitfun(void * input, const int &core){
     if (opts.cubacores!=0) hists.Finalise(core);
