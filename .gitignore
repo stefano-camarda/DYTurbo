@@ -15,7 +15,8 @@ origdyres/dyrestest
 tags
 src/dyturbo
 src/dytests
-src/merger
+src/dyturbo-merger
+test/points
 Makefile.in
 Makefile
 autom4te.cache/
@@ -51,5 +52,8 @@ lib/
 libtool
 ltmain.sh
 src/.libs/
+test/.libs/
 dyturbo-config
 .deps/
+*.C
+*.in
