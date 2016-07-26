@@ -85,7 +85,7 @@ void printsettings()
   cout << setw(30) << "PDF set:"                     << setw(20) << opts.LHAPDFset << endl;
   cout << setw(30) << "PDF member:"                  << setw(20) << opts.LHAPDFmember << endl;
   cout << setw(30) << "PDF errors:"                  << setw(20) << (opts.PDFerrors ? "true" : "false") << endl;
-  if (opts.doRES)
+  if (opts.doBORN && !opts.fixedorder)
     {
       if (opts_.approxpdf_ == 1)
 	cout << setw(30) << "Mellin moments of PDFs:"     << setw(20) << "Polynomial interpolation" << endl;
@@ -101,15 +101,15 @@ void printsettings()
   cout << endl;
   cout << setw(25) << "Random seed:"      << setw(30) << opts.rseed << endl;
   cout << setw(25) << "Parallel cores:"   << setw(30) << opts.cubacores << endl;
-  if (opts.doRES)
+  if (opts.doBORN && !opts.fixedorder)
     {
       if (opts.resintvegas)
-	cout << setw(25) << "Resummed:"      << setw(30) << "vegas" << setw(12) << "ncalls =" << setw(12) << opts.vegasncallsRES << endl;
+	cout << setw(25) << "Resummed:"      << setw(30) << "vegas" << setw(12) << "ncalls =" << setw(12) << opts.vegasncallsBORN << endl;
       else if (opts.resint3d)
-	cout << setw(25) << "Resummed:"      << setw(30) << "cuhre in m,y,pt" << setw(12) << "iter =" << setw(12) << opts.niterRES << endl;
+	cout << setw(25) << "Resummed:"      << setw(30) << "cuhre in m,y,pt" << setw(12) << "iter =" << setw(12) << opts.niterBORN << endl;
       else if (opts.resint2d)
 	{
-	  cout << setw(25) << "Resummed:"    << setw(30) << "cuhre in dm,dpt" << setw(12) << "iter =" << setw(12) << opts.niterRES << endl;
+	  cout << setw(25) << "Resummed:"    << setw(30) << "cuhre in dm,dpt" << setw(12) << "iter =" << setw(12) << opts.niterBORN << endl;
 	  cout << setw(25) << "Resummed:"    << setw(30) << "gaussian in dy"  << setw(12) << "nodes ="<< setw(12) << opts.yrule << setw(15) << "intervals ="<< setw(5) << opts.yintervals << endl;
 	}
       if (opts_.approxpdf_ == 0)
@@ -119,8 +119,8 @@ void printsettings()
 	}
     }
 
-  if (opts.doVV)
-    cout << setw(25) << "Double virtual:"      << setw(30) << "vegas" << setw(12) << "ncalls =" << setw(12) << opts.vegasncallsVV << endl;
+  if (opts.doBORN && opts.fixedorder)
+    cout << setw(25) << "Double virtual:"      << setw(30) << "vegas" << setw(12) << "ncalls =" << setw(12) << opts.vegasncallsBORN << endl;
   
   if (opts.doCT)
     if (opts.ctintvegas6d)
@@ -135,16 +135,16 @@ void printsettings()
 	cout << setw(25) << "Counter term:"      << setw(30) << "gaussian in dpt" << setw(12) << "nodes ="<< setw(12) << 20 << setw(15) << "intervals ="<< setw(5) << 1 << endl;
       }
 
-  if (opts.doLO)
-    cout << setw(25) << "Z+j LO:"      << setw(30) << "vegas" << setw(12) << "ncalls =" << setw(12) << opts.vegasncallsLO << endl;
+  if (opts.doVJ && opts.order == 1 && opts.vjintvegas)
+    cout << setw(25) << "Z+j LO:"      << setw(30) << "vegas" << setw(12) << "ncalls =" << setw(12) << opts.vegasncallsVJLO << endl;
 
-  if (opts.doVIRT)
-    cout << setw(25) << "Z+j NLO virt:"      << setw(30) << "vegas" << setw(12) << "ncalls =" << setw(12) << opts.vegasncallsVIRT << endl;
+  if (opts.doVJVIRT)
+    cout << setw(25) << "Z+j NLO virt:"      << setw(30) << "vegas" << setw(12) << "ncalls =" << setw(12) << opts.vegasncallsVJVIRT << endl;
 
-  if (opts.doREAL)
-    cout << setw(25) << "Z+j NLO real:"      << setw(30) << "vegas" << setw(12) << "ncalls =" << setw(12) << opts.vegasncallsREAL << endl;
+  if (opts.doVJREAL)
+    cout << setw(25) << "Z+j NLO real:"      << setw(30) << "vegas" << setw(12) << "ncalls =" << setw(12) << opts.vegasncallsVJREAL << endl;
 
-  if (opts.doRES && (opts.resint3d || opts.resint2d)
+  if (opts.doBORN && !opts.fixedorder && (opts.resint3d || opts.resint2d)
       || opts.doCT && (opts.ctint3d || opts.ctint3d))
     if (opts.cubaint)
       cout << setw(25) << "Angular variables:"      << setw(30) << "Suave in dcosth,dphi" << setw(12) << "ncalls =" << setw(12) << opts.suavepoints << endl;
@@ -185,7 +185,7 @@ void printsettings()
       }
     else
       cout << setw(25) << "fiducial cuts:"      << setw(20) << opts.fiducial << endl;
-  if (!opts.fixedorder && (opts.doRES || opts.doCT))
+  if (!opts.fixedorder && ((opts.doBORN && !opts.fixedorder) || opts.doCT))
     {
       cout << endl;
       cout << "======================== Resummation damping ====================" << endl;
