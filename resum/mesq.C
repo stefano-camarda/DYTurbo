@@ -14,6 +14,7 @@ using namespace parton;
 const double eequ =2./3.;
 const double eeqd = -1./3.;
 const double gevfb = 3.8937966e11;
+//const double gevfb = (197.3269788*197.3269788)*1e7; //=(h/2pi * c)^2 in GeV^2*fb = 3.89379365623356498e11;
 
 double mesq::fac;
 //Z couplings
