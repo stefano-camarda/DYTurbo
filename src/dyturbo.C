@@ -59,7 +59,7 @@ int main( int argc , char * argv[])
   //Need to throw a random point according to a breit wigner, which is used to determine xtauf in the PDF fit
   double costh, m, qt, y;
   int mode = 0;
-  if (opts.doRES || opts.doCT){
+  if (opts.doBORN || opts.doCT){
       if (opts_.approxpdf_ == 1) {
           srand(opts.rseed);
           double wsqmin = pow(phasespace::mmin ,2);
@@ -95,13 +95,9 @@ int main( int argc , char * argv[])
   vector <double> totvals;
 
   cout << endl << "Start integration of";
-  if (opts.doRES  ) cout << " resummation";
-  if (opts.doVV   ) cout << " double virtual";
+  if (opts.doBORN ) cout << (!opts.fixedorder ? " resummed" : " born configuration");
   if (opts.doCT   ) cout << " counterterm";
   if (opts.doVJ   ) cout << " V+j finite order";
-  if (opts.doLO   ) cout << " V+j LO";
-  if (opts.doREAL ) cout << " V+j NLO real";
-  if (opts.doVIRT ) cout << " V+J NLO virt";
   cout << endl;
 
   print_head();
@@ -109,12 +105,11 @@ int main( int argc , char * argv[])
   begin_time = clock_real();
   TotXSec = 0.;
   for (vector<double>::iterator mit = bins.mbins.begin(); mit != bins.mbins.end()-1; mit++)
-  {
+    {
       for (vector<double>::iterator yit = bins.ybins.begin(); yit != bins.ybins.end()-1; yit++)
-      {
+	{
           for (vector<double>::iterator qit = bins.qtbins.begin(); qit != bins.qtbins.end()-1; qit++)
-          {
-
+	    {
               totval=toterror2=0;
               totvals.clear();
               for (int i = 0; i < opts.totpdf; i++)
@@ -127,44 +122,48 @@ int main( int argc , char * argv[])
               save_mbin();
               save_qtbin();
               save_ybin();
-              double  bb_time = clock_real();
-
-              // resummation
-              if (opts.doRES) {
+              double bb_time = clock_real();
+	      
+              // resummed or born configuration
+              if (opts.doBORN)
+		{
                   double b_time = clock_real();
-                  if (opts.resint2d) {
-                      if (opts.resumcpp)
-                          //C++ resum
-                          rapint::cache(phasespace::ymin, phasespace::ymax);
-                      //end C++ resum
-                      else	    
-                          cacheyrapint_(phasespace::ymin, phasespace::ymax);
-                      resintegr2d(value, error);
-                  }
-                  if (opts.resint3d) resintegr3d(value, error);
-                  if (opts.resintvegas) resintegrMC(value, error);
-                  double e_time = clock_real();
-                  normalise_result(value,error);
-                  print_result(value,error,b_time,e_time);
-                  //hists.FillResult( plotter::Resum , value, error, e_time-b_time );
-                  totval += value;
-                  toterror2 += error*error;
-              }
-              // double virtual
-              if (opts.doVV) {
-                  double b_time = clock_real();
-                  doublevirtintegr(vals, error);
-                  double e_time = clock_real();
-                  value = vals[0];
-                  normalise_result(value,error);
-                  print_result(value,error,b_time,e_time);
-                  //hists.FillResult( plotter::VV , value, error, e_time-b_time );
-                  totval += value;
-                  toterror2 += error*error;
-                  vadd(totvals,vals);
-              }
+		  if (opts.fixedorder)
+		    //born configuration
+		    {
+		      if (opts.bornint2d) bornintegr2d(vals, error);
+		      if (opts.bornint3d) bornintegr3d(vals, error);
+		      if (opts.bornintvegas) bornintegrMC(vals, error);
+		      value = vals[0];
+		      vadd(totvals,vals);
+		    }
+		  else
+		    //resummed
+		    {
+		      if (opts.resint2d)
+			{
+			  if (opts.resumcpp)
+			    //C++ resum
+			    rapint::cache(phasespace::ymin, phasespace::ymax);
+			  //end C++ resum
+			  else	    
+			    cacheyrapint_(phasespace::ymin, phasespace::ymax);
+			  resintegr2d(value, error);
+			}
+		      if (opts.resint3d) resintegr3d(value, error);
+		      if (opts.resintvegas) resintegrMC(value, error);
+		    }
+		  double e_time = clock_real();
+		  normalise_result(value,error);
+		  print_result(value,error,b_time,e_time);
+		  //hists.FillResult(plotter::BORN , value, error, e_time-b_time );
+		  totval += value;
+		  toterror2 += error*error;
+		}
+	      
               // counter term
-              if (opts.doCT) {
+              if (opts.doCT)
+		{
                   double b_time = clock_real();
                   if (opts.ctint2d) ctintegr2d(vals, error);
                   if (opts.ctint3d) ctintegr3d(vals, error);
@@ -178,38 +177,34 @@ int main( int argc , char * argv[])
                   totval += value;
                   toterror2 += error*error;
                   vadd(totvals,vals);
-              }
-              //analytical
-              if (opts.doVJ) {
+		}
+	      
+              //V+J finite order 
+              if (opts.doVJ && !opts.doVJREAL && !opts.doVJVIRT)
+		{
                   double b_time = clock_real();
-                  vjintegr3d(value, error);
-                  double e_time = clock_real();
+		  if (opts.vjint3d) vjintegr3d(value, error); //analytical
+		  if (opts.vjintvegas && opts.order == 1)
+		    {
+		      vjlointegr(vals, error);
+		      value = vals[0];
+		    }
+		  double e_time = clock_real();
                   vals.clear();
                   vals.push_back(value);
                   normalise_result(value,error);
                   print_result(value,error,b_time,e_time);
-                  //hists.FillResult( plotter::VJ , value, error, e_time-b_time );
+                  //hists.FillResult(plotter::VJ , value, error, e_time-b_time );
                   totval += value;
                   toterror2 += error*error;
                   vadd(totvals,vals);
-              }
-              // leading order
-              if (opts.doLO) {
+		}
+              // V+J real part
+              if (opts.doVJREAL)
+		{
                   double b_time = clock_real();
-                  lowintegr(vals, error);
-                  double e_time = clock_real();
-                  value = vals[0];
-                  normalise_result(value,error);
-                  print_result(value,error,b_time,e_time);
-                  //hists.FillResult( plotter::LO , value, error, e_time-b_time );
-                  totval += value;
-                  toterror2 += error*error;
-                  vadd(totvals,vals);
-              }
-              // real part
-              if (opts.doREAL) {
-                  double b_time = clock_real();
-                  realintegr(vals, error);
+                  vjrealintegr(vals, error);
+		  //v2jintegr(vals, error);
                   double e_time = clock_real();
                   value = vals[0];
                   normalise_result(value,error);
@@ -218,11 +213,12 @@ int main( int argc , char * argv[])
                   totval += value;
                   toterror2 += error*error;
                   vadd(totvals,vals);
-              }
-              // virt part
-              if (opts.doVIRT) {
+		}
+              // V+J virt part
+              if (opts.doVJVIRT)
+		{
                   double b_time = clock_real();
-                  virtintegr(vals, error);
+                  vjvirtintegr(vals, error);
                   double e_time = clock_real();
                   value = vals[0];
                   normalise_result(value,error);
@@ -272,26 +268,22 @@ void print_head(){
     cout << setw(13) << "m bin"  << " | ";
     cout << setw(13) << "qt bin" << " | ";
     cout << setw(13) << "y bin"  << " | ";
-    if (opts.doRES ) cout << setw(38) << "resummed "      << " | ";
-    if (opts.doVV  ) cout << setw(38) << "double virtual "<< " | ";
-    if (opts.doCT  ) cout << setw(38) << "counter term "  << " | ";
-    if (opts.doVJ  ) cout << setw(38) << "V+j fixed ord "           << " | ";
-    if (opts.doLO  ) cout << setw(38) << "V+j LO "        << " | ";
-    if (opts.doREAL) cout << setw(38) << "V+j NLO real "     << " | ";
-    if (opts.doVIRT) cout << setw(38) << "V+j NLO virt "  << " | ";
-    if (true       ) cout << setw(38) << "TOTAL "         << " | ";
+    if (opts.doBORN )  cout << setw(38) << (!opts.fixedorder ? "resummed" : "born configuration") << " | ";
+    if (opts.doCT  )   cout << setw(38) << "counter term "  << " | ";
+    if (opts.doVJ && !opts.doVJREAL && !opts.doVJVIRT)   cout << setw(38) << "V+j fixed ord " << " | ";
+    if (opts.doVJREAL) cout << setw(38) << "V+j NLO real "  << " | ";
+    if (opts.doVJVIRT) cout << setw(38) << "V+j NLO virt "  << " | ";
+    if (true       )   cout << setw(38) << "TOTAL "         << " | ";
     cout << endl;
     print_line();
 }
 void print_line(){
     int N = 18+18;
-    if (opts.doRES ) N += 41;
-    if (opts.doVV )  N += 41;
+    if (opts.doBORN ) N += 41;
     if (opts.doCT  ) N += 41;
-    if (opts.doVJ  ) N += 41;
-    if (opts.doLO  ) N += 41;
-    if (opts.doREAL) N += 41;
-    if (opts.doVIRT) N += 41;
+    if (opts.doVJ && !opts.doVJREAL && !opts.doVJVIRT) N += 41;
+    if (opts.doVJREAL) N += 41;
+    if (opts.doVJVIRT) N += 41;
     if (true       ) N += 41;
     cout<<string(N,'-').c_str() <<endl;
 }
