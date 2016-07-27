@@ -151,10 +151,11 @@ cubaint   = false   # integration with Cuba Suave
 trapezint = false  # trapezoidal rule for the phi_lep integration and semi-analytical for costh
 quadint   = true  # quadrature rule for the phi_lep integration and semi-analytical for costh
 
-suavepoints = 1000000 # number of points for suave integration, newpoints is set to suavepoints/10;
-nphitrape   = 1000    # number of steps for trapezoidal rule of phi_lep integration
-quadnphi    = 20      # number of segments for quadrature rule of phi_lep integration
-ncstart     = 100     # starting sampling for the costh semi-analytical integration (common settings for the trapezoidal and quadrature rules)
+suavepoints  = 1000000 # number of points for suave integration, newpoints is set to suavepoints/10;
+nphitrape    = 1000    # number of steps for trapezoidal rule of phi_lep integration
+phirule      = 4       # quadrature rule of phi_lep integration
+phiintervals = 20      # number of segments for quadrature rule of phi_lep integration
+ncstart      = 100     # starting sampling for the costh semi-analytical integration (common settings for the trapezoidal and quadrature rules)
 
 # qt-recoil prescriptions
 qtrec_naive = false

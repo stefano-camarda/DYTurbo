@@ -194,8 +194,10 @@ public:
   int nphitrape;
   int ncstart;
 
+  //quadrature rule in phi_lep
   bool quadint;
-  int quadnphi;
+  int phiintervals;
+  int phirule;
 
   //settings for Bessel integration
   double bintaccuracy;

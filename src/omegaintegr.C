@@ -8,6 +8,7 @@
 #include "settings.h"
 #include "interface.h"
 #include "phasespace.h"
+#include "gaussrules.h"
 #include "cuba.h"
 
 #include <ctime>
@@ -531,7 +532,7 @@ void omegaintegr::cthmoments(double &cthmom0, double &cthmom1, double &cthmom2)
       double phi = 0.;
       double phi1 = 0.;
       double phi2 = 2. * M_PI;
-      double hphi=(phi2-phi1)/opts.quadnphi;
+      double hphi=(phi2-phi1)/opts.phiintervals;
       cthmom0 = 0.;
       cthmom1 = 0.;
       cthmom2 = 0.;
@@ -555,7 +556,7 @@ void omegaintegr::cthmoments(double &cthmom0, double &cthmom1, double &cthmom2)
 	}
       else
 	{
-	  for(int i=0; i< opts.quadnphi; i++)
+	  for(int i=0; i < opts.phiintervals; i++)
 	    {
 	      double phimin = i*hphi+phi1;
 	      double phimax = (i+1)*hphi+phi1;
@@ -563,18 +564,18 @@ void omegaintegr::cthmoments(double &cthmom0, double &cthmom1, double &cthmom2)
 	      double phic=0.5*(phimin+phimax);
 	      double phim=0.5*(phimax-phimin);
 	      
-	      for(int i=0; i<4; i++)
+	      for(int i=0; i < opts.phirule; i++)
 		{
-		  double phi_lep = phic+phim*xq4[i];
+		  double phi_lep = phic+phim*gr::xxx[opts.phirule-1][i];
 		  cthmin.clear();
 		  cthmax.clear();
 		  costhbound(phi_lep, cthmin, cthmax);
 		  itmn = cthmin.begin(); itmx = cthmax.begin();
 		  for (; itmn != cthmin.end(); itmn++, itmx++)
 		    {
-		      cthmom0 += (*itmx - *itmn)*wq4[i]*phim;
-		      cthmom1 += (pow(*itmx,2) - pow(*itmn,2)) / 2.*wq4[i]*phim;
-		      cthmom2 += (pow(*itmx,3) - pow(*itmn,3)) / 3.*wq4[i]*phim;
+		      cthmom0 += (*itmx - *itmn)*gr::www[opts.phirule-1][i]*phim;
+		      cthmom1 += (pow(*itmx,2) - pow(*itmn,2)) / 2.*gr::www[opts.phirule-1][i]*phim;
+		      cthmom2 += (pow(*itmx,3) - pow(*itmn,3)) / 3.*gr::www[opts.phirule-1][i]*phim;
 		    }
 		}
 	    }

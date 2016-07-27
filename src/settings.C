@@ -244,7 +244,8 @@ void settings::readfromfile(const string fname){
     quadint            = in.GetBool   ( "quadint"         ); //false   # quadrature  rule     for        the     phi_lep     integration     and         semi-analytical for         costh
     suavepoints        = in.GetNumber ( "suavepoints"     ); //1000000 # number      of       points     for     suave       integration,    newpoints   is              set         to    suavepoints/10;
     nphitrape          = in.GetNumber ( "nphitrape"       ); //1000    # number      of       steps      for     trapezoidal rule            of          phi_lep         integration
-    quadnphi           = in.GetNumber ( "quadnphi"        ); //20      # number      of       segments   for     quadrature  rule            of          phi_lep         integration
+    phiintervals       = in.GetNumber ( "phiintervals"    );
+    phirule            = in.GetNumber ( "phirule"         );
     ncstart            = in.GetNumber ( "ncstart"         ); //1000    # starting    sampling for        the     costh       semi-analytical integration (common         settings    for   the             trapezoidal and quadrature rules)
     qtrec_naive        = in.GetBool   ( "qtrec_naive"     ); //false
     qtrec_cs           = in.GetBool   ( "qtrec_cs"        ); //false
@@ -543,7 +544,8 @@ void settings::dumpAll(){
         dumpB("quadint            ", quadint             );
         dumpI("suavepoints        ", suavepoints         );
         dumpI("nphitrape          ", nphitrape           );
-        dumpI("quadnphi           ", quadnphi            );
+        dumpI("phiintervals       ", phiintervals        );
+	dumpI("phirule            ", phirule             );
         dumpI("ncstart            ", ncstart             );
         dumpB("qtrec_naive        ", qtrec_naive         );
         dumpB("qtrec_cs           ", qtrec_cs            );

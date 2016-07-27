@@ -151,7 +151,7 @@ void printsettings()
     else if (opts.quadint)
       {
 	cout << setw(25) << "Angular variable costh:"      << setw(30) << "semi-analytical" << setw(12) << "ncstart =" << setw(12) << opts.ncstart << endl;
-	cout << setw(25) << "Angular variables phi:"       << setw(30) << "gaussian"        << setw(12) << "intervals =" << setw(12) << opts.quadnphi << endl;
+	cout << setw(25) << "Angular variables phi:"       << setw(30) << "gaussian"        << setw(12) << "intervals =" << setw(12) << opts.phiintervals << endl;
       }
     else if (opts.trapezint)
       {
