@@ -11,10 +11,15 @@ double phasespace::qtmax;
 double phasespace::ymin;
 double phasespace::ymax;
 
-//global variables for the generation of the phase space (add also phi)
+double phasespace::cthmin;
+double phasespace::cthmax;
+
+//global variables for the generation of the phase space
 double phasespace::m;
 double phasespace::qt;
 double phasespace::y;
+double phasespace::phiV;
+
 double phasespace::costh;
 
 using namespace std;
@@ -36,22 +41,31 @@ void phasespace::setbounds(double m1, double m2, double qt1, double qt2, double 
     }
 }
 
-void phasespace::set_mqtycth(double M, double Qt, double Y, double Costh)
+void phasespace::setcthbounds(double cth1, double cth2)
 {
-  m = M;
-  qt = Qt;
-  y = Y;
-  costh = Costh;
+  cthmin = cth1;
+  cthmax = cth2;
+    
+  //Check ordering
+  if (cthmin > cthmax)
+    {
+      cout << "Error on costh integration boundaries" << endl;
+      exit(-1);
+    }
 }
-void phasespace::set_mqty(double M, double Qt, double Y)
+
+void phasespace::set_mqtyphi(double M, double Qt, double Y, double PhiV)
 {
   m = M;
   qt = Qt;
   y = Y;
+  phiV = PhiV;
 }
 void phasespace::set_m(double M) {m = M;}
 void phasespace::set_qt(double Qt) {qt = Qt;}
 void phasespace::set_y(double Y) {y = Y;}
+void phasespace::set_phiV(double PhiV) {phiV = PhiV;}
+
 void phasespace::set_cth(double Costh) {costh = Costh;}
 
 //fortran functions

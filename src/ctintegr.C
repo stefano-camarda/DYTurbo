@@ -402,15 +402,12 @@ integrand_t ctintegrand3d(const int &ndim, const double x[], const int &ncomp, d
   
   //set global variables to costh, m, qt, y
   if (opts.fixedorder) //In the fixed order calculation evaluate kinematic cuts with qt=0
-    phasespace::set_mqtycth(m, 0., y, 0.);
+    phasespace::set_mqtyphi(m, 0., y, 0.);
   else
-    phasespace::set_mqtycth(m, qt, y, 0.);
+    phasespace::set_mqtyphi(m, qt, y, 0.);
 
   //generate boson 4-momentum, with m, qt, y and phi=0
-  if (opts.fixedorder) //In the fixed order calculation evaluate kinematic cuts with qt=0
-    genV4p(m, 0., y, 0.);
-  else
-    genV4p(m, qt, y, 0.);
+  omegaintegr::genV4p();
 
   //  SWITCHING FUNCTIONS is inside countdy
   //  double swtch=1.;
@@ -569,20 +566,17 @@ integrand_t ctintegrand2d(const int &ndim, const double x[], const int &ncomp, d
 
   //set global variables to costh, m, qt, y
   if (opts.fixedorder) //In the fixed order calculation evaluate kinematic cuts with qt=0
-    phasespace::set_mqtycth(m, 0., y, 0.);
+    phasespace::set_mqtyphi(m, 0., y, 0.);
   else
-    phasespace::set_mqtycth(m, (qtmn+qtmx)/2., y, 0.);
+    phasespace::set_mqtyphi(m, (qtmn+qtmx)/2., y, 0.);
 
   clock_t qtbt, qtet;
   qtbt = clock();
   ctqtint_(m,y,qtmn,qtmx);
   qtet = clock();
   
-  //generate boson 4-momentum, with m, qt, y and phi=0
-  if (opts.fixedorder) //In the fixed order calculation evaluate kinematic cuts with qt=0
-    genV4p(m, 0., y, 0.);
-  else
-    genV4p(m, (qtmn+qtmx)/2., y, 0.);
+  //generate boson 4-momentum, with m, qt, y and phi=0 (not actually needed)
+  omegaintegr::genV4p();
 
   //In this point of phase space (m, qt, y) the costh integration is performed by 
   //calculating the 0, 1 and 2 moments of costh

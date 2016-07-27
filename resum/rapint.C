@@ -157,9 +157,9 @@ void rapint::integrate(double ymin, double ymax, double m)
 
 	      //calculate costheta moments as a function of y
 	      phasespace::set_y(y);
-	      genv4p_();
+	      omegaintegr::genV4p();
 	      double cthmom0, cthmom1, cthmom2;
-	      cthmoments_(cthmom0,cthmom1,cthmom2);
+	      omegaintegr::cthmoments(cthmom0,cthmom1,cthmom2);
 	      //cout << cthmom0 << "  " << cthmom1 << "  " << cthmom2 << endl;
 	      
 	      for (int i1 = 0; i1 < mellinint::mdim; i1++)

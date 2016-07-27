@@ -19,15 +19,22 @@ namespace phasespace
   extern double ymax;
   extern void setbounds(double m1, double m2, double qt1, double qt2, double y1, double y2);
 
+  extern double cthmin;
+  extern double cthmax;
+  extern void setcthbounds(double cth1, double cth2);
+  
   //point in phase space
-  extern double costh, m, qt, y;
-#pragma omp threadprivate(costh, m, qt, y)
+  extern double m, qt, y, phiV;
+#pragma omp threadprivate(m, qt, y, phiV)
+  extern double costh;
+#pragma omp threadprivate(costh)
 
-  extern void set_mqtycth(double M, double Qt, double Y, double Costh);
-  extern void set_mqty(double M, double Qt, double Y);
+  extern void set_mqtyphi(double M, double Qt, double Y, double PhiV = 0.);
   extern void set_m(double M);
   extern void set_qt(double Qt);
   extern void set_y(double Y);
+  extern void set_phiV(double PhiV);
+  
   extern void set_cth(double Costh);
 }
 

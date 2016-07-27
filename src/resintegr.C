@@ -169,10 +169,12 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
   jac=jac*qt*log(base);*/
   
   //set global variables to m, qt
-  phasespace::set_mqty(m, qt, 0);
+  phasespace::set_m(m);
+  phasespace::set_qt(qt);
+  phasespace::set_phiV(0);
 
-  //generate boson 4-momentum, with m, qt, y and phi=0
-  genV4p(m, qt, 0, 0.);
+  //generate boson 4-momentum, with m, qt, y and phi=0 (not needed, it is regenerated in rapint)
+  //omegaintegr::genV4p();
 
   //Perform quadrature rule integration in rapidity and nested costh integration
   int nocuts = !opts.makelepcuts;
@@ -208,8 +210,14 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
     }
   yet = clock();
   
-  phasespace::set_mqty(m, qt, 0);
-  genV4p(m, qt, 0, 0.);
+  //Are the following three lines needed?
+  //phasespace::set_m(m);
+  //phasespace::set_qt(qt);
+  //phasespace::set_phiV(0);
+
+  //Are the following two lines needed?
+  //phasespace::set_mqtyphi(m, qt, 0);
+  //omegaintegr::genV4p();
 
   //  SWITCHING FUNCTIONS
   //  double swtch=1.;
@@ -382,10 +390,10 @@ integrand_t resintegrand3d(const int &ndim, const double x[], const int &ncomp, 
 
   
   //set global variables to m, qt, y
-  phasespace::set_mqty(m, qt, y);
+  phasespace::set_mqtyphi(m, qt, y);
 
   //generate boson 4-momentum, with m, qt, y and phi=0
-  genV4p(m, qt, y, 0.);
+  omegaintegr::genV4p();
 
   //  SWITCHING FUNCTIONS
   //  double swtch=1.;

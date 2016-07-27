@@ -17,22 +17,19 @@
 #include <vector>
 
 //Vector boson 4-momentum and boost
-double pV[4];
-double gam;
-double beta[3];
-#pragma omp threadprivate(pV,gam,beta)
+double omegaintegr::pV[4];
+double omegaintegr::gam;
+double omegaintegr::beta[3];
 
 //leptons 4-momenta
-double p4[4];
-double p3[4];
-#pragma omp threadprivate(p4,p3)
+double omegaintegr::p4[4];
+double omegaintegr::p3[4];
 
-//CS framework
-double kap1[4];
-double xax[3];
-double yax[3];
-double zax[3];
-#pragma omp threadprivate(kap1,xax,yax,zax)
+//rest frame axes
+double omegaintegr::kap1[4];
+double omegaintegr::xax[3];
+double omegaintegr::yax[3];
+double omegaintegr::zax[3];
 
 //quadrature rules
 const double xq4[4]={-0.3399810435848563,0.3399810435848563,-0.8611363115940526,0.8611363115940526};
@@ -41,32 +38,42 @@ const double wq4[4]={0.6521451548625461,0.6521451548625461,0.3478548451374538,0.
 const double xq8[8]={-0.1834346424956498,0.1834346424956498,-0.5255324099163290,0.5255324099163290,-0.7966664774136267,0.7966664774136267,-0.9602898564975363,0.9602898564975363};
 const double wq8[8]={0.3626837833783620,0.3626837833783620,0.3137066458778873,0.3137066458778873,0.2223810344533745,0.2223810344533745,0.1012285362903763,0.1012285362903763};
 
-integrand_t thphiintegrand(const int &ndim, const double x[], const int &ncomp, double f[]);
+//fortran interface
+void genv4p_()
+{
+  omegaintegr::genV4p();
+}
+
+void cthmoments_(double &cthmom0, double &cthmom1, double &cthmom2)
+{
+  omegaintegr::cthmoments(cthmom0, cthmom1, cthmom2);
+}
+
 
 //instead of passing m, qt, y, and phi as variables, take them from the phasespace:: namelist
-void genV4p(double m, double qt, double y, double phi)
+void omegaintegr::genV4p() //double m, double qt, double y, double phi)
 {
   //Generate the boson 4-momentum
-  double m2=m*m;
-  double expy=exp(y);
-  double expmy=exp(-y);
-  double qt2=pow(qt,2);
+  double m2=phasespace::m*phasespace::m;
+  double exppy=exp(phasespace::y);
+  double expmy=1./exppy;
+  double qt2=pow(phasespace::qt,2);
   double mt2=m2+qt2;
 
   //vector boson momentum: pV[3]^2-pV[0]^2-pV[1]^2-pV[2]^2=m2
-  pV[0]=qt*cos(phi);                  //px
-  pV[1]=qt*sin(phi);                  //py
-  pV[2]=0.5*sqrt(mt2)*(expy-expmy);   //pz
-  pV[3]=0.5*sqrt(mt2)*(expy+expmy);   //E
+  pV[0]=phasespace::qt*cos(phasespace::phiV);                  //px
+  pV[1]=phasespace::qt*sin(phasespace::phiV);                  //py
+  pV[2]=0.5*sqrt(mt2)*(exppy-expmy);   //pz
+  pV[3]=0.5*sqrt(mt2)*(exppy+expmy);   //E
 
   //Calculte the boost 4-vector from the lab frame to the rest frame
-  gam=pV[3]/m;
+  gam=pV[3]/phasespace::m;
   beta[0]=-pV[0]/pV[3];
   beta[1]=-pV[1]/pV[3];
   beta[2]=-pV[2]/pV[3];
 
   //if qt=0, as in fixed order predictions, don't bother calculating axes of the rest frame (all rest frames are equivalent at qt=0)
-  if (qt == 0.)
+  if (phasespace::qt == 0.)
     return;
   
   //recoil prescriptions are defined by the values of kt1 and kt2
@@ -113,10 +120,10 @@ void genV4p(double m, double qt, double y, double phi)
       bt[2]=-beta[2];
 
       double p1[4];
-      p1[3] = 0.5*m*expy;
+      p1[3] = 0.5*m*exppy;
       p1[0] = 0;
       p1[1] = 0;
-      p1[2] = 0.5*m*expy;
+      p1[2] = 0.5*m*exppy;
 
       double p2[4];
       p2[3] = 0.5*m*expmy;
@@ -199,14 +206,8 @@ void genV4p(double m, double qt, double y, double phi)
   */
 }
 
-//fortran function
-void genv4p_()
-{
-  genV4p(phasespace::m, phasespace::qt, phasespace::y, 0.);
-}
-
-//void genl4p(float costh, float phi_lep) //quite significant speed up with float numbers for the sine cosine functions
-void genl4p(double costh, double phi_lep) //quite significant speed up with float numbers for the sine cosine functions
+void omegaintegr::genl4p(double costh, double phi_lep)
+//void omegaintegr::genl4p(float costh, float phi_lep) //quite significant speed up with float numbers for the sine cosine functions
 {
   //phi_lep = M_PI/2.;
 
@@ -222,10 +223,13 @@ void genl4p(double costh, double phi_lep) //quite significant speed up with floa
   //c) When qt=0, because all reference frames are equivalent
   if (opts.cubaint || phasespace::qt == 0. || opts.qtrec_naive)
     {
-      p4cm[3]=phasespace::m/2.;                       //E
-      p4cm[0]=p4cm[3]*sin(acos(costh))*sin(phi_lep);  //px
-      p4cm[1]=p4cm[3]*sin(acos(costh))*cos(phi_lep);  //py
-      p4cm[2]=p4cm[3]*costh;                          //pz
+      double sintheta = sqrt(max(0.,1.-pow(costh,2)));
+      double cosphi = cos(phi_lep);
+      double sinphi = sqrt(max(0.,1.-pow(cosphi,2)));
+      p4cm[3]=phasespace::m/2.;         //E
+      p4cm[0]=p4cm[3]*sintheta*sinphi;  //px
+      p4cm[1]=p4cm[3]*sintheta*cosphi;  //py
+      p4cm[2]=p4cm[3]*costh;            //pz
     }
   else
     {
@@ -260,7 +264,8 @@ void genl4p(double costh, double phi_lep) //quite significant speed up with floa
       //Start from the z axis, and rotate by angle theta with respect to y axis
       double rot1[3];
       double c = costh;
-      double s = sin(acos(costh));
+      //double s = sin(acos(costh));
+      double s = sqrt(max(0.,1.-pow(c,2)));
       rot1[0]=(c+yax[0]*yax[0]*(1-c))       *zax[0] + (yax[0]*yax[1]*(1-c)-yax[2]*s)*zax[1] + (yax[0]*yax[2]*(1-c)+yax[1]*s)*zax[2];
       rot1[1]=(yax[1]*yax[0]*(1-c)+yax[2]*s)*zax[0] + (c+yax[1]*yax[1]*(1-c))       *zax[1] + (yax[1]*yax[2]*(1-c)-yax[0]*s)*zax[2];
       rot1[2]=(yax[2]*yax[0]*(1-c)-yax[1]*s)*zax[0] + (yax[2]*yax[1]*(1-c)+yax[0]*s)*zax[1] + (c+yax[2]*yax[2]*(1-c))       *zax[2];
@@ -268,7 +273,8 @@ void genl4p(double costh, double phi_lep) //quite significant speed up with floa
       //rotate by angle phi_lep with respect to z axis
       double rot2[3];
       c = cos(M_PI/2.-phi_lep);
-      s = sin(M_PI/2.-phi_lep);
+      //s = sin(M_PI/2.-phi_lep);
+      s = sqrt(max(0.,1.-pow(c,2)));
       rot2[0]=(c+zax[0]*zax[0]*(1-c))       *rot1[0] + (zax[0]*zax[1]*(1-c)-zax[2]*s)*rot1[1] + (zax[0]*zax[2]*(1-c)+zax[1]*s)*rot1[2];
       rot2[1]=(zax[1]*zax[0]*(1-c)+zax[2]*s)*rot1[0] + (c+zax[1]*zax[1]*(1-c))       *rot1[1] + (zax[1]*zax[2]*(1-c)-zax[0]*s)*rot1[2];
       rot2[2]=(zax[2]*zax[0]*(1-c)-zax[1]*s)*rot1[0] + (zax[2]*zax[1]*(1-c)+zax[0]*s)*rot1[1] + (c+zax[2]*zax[2]*(1-c))       *rot1[2];
@@ -302,13 +308,13 @@ void genl4p(double costh, double phi_lep) //quite significant speed up with floa
 }
 
 //CS FRAME PRESCRIPTION
-double costhCS()
+double omegaintegr::costhCS()
 {
   return (1.-4.*(kap1[3]*p4[3]-kap1[2]*p4[2]-kap1[1]*p4[1]-kap1[0]*p4[0])/(phasespace::m*phasespace::m));
 }
 
 //Algorithm to determine all the subintervals of costh between -1 and +1 in which the lepton cuts are satisfied
-void costhbound(double phi_lep, vector<double> &min, vector<double> &max)
+void omegaintegr::costhbound(double phi_lep, vector<double> &min, vector<double> &max)
 {
   if (!opts.makelepcuts)
     {
@@ -398,7 +404,7 @@ void costhbound(double phi_lep, vector<double> &min, vector<double> &max)
 }
 
 //Perform integration of costheta moments
-void cthmoments_(double &cthmom0, double &cthmom1, double &cthmom2)
+void omegaintegr::cthmoments(double &cthmom0, double &cthmom1, double &cthmom2)
 {
   clock_t begin_time, end_time;
   if (!opts.makelepcuts)
@@ -588,7 +594,7 @@ void cthmoments_(double &cthmom0, double &cthmom1, double &cthmom2)
 }
 
 
-integrand_t thphiintegrand(const int &ndim, const double x[], const int &ncomp, double f[])
+integrand_t omegaintegr::thphiintegrand(const int &ndim, const double x[], const int &ncomp, double f[])
 {
   double costh=-1.+2.*x[0];
   double jac=2.;
@@ -625,14 +631,14 @@ integrand_t thphiintegrand(const int &ndim, const double x[], const int &ncomp, 
   return 0;
 }
 
-void getp3(double p[4])
+void omegaintegr::getp3(double p[4])
 {
   p[0] = p3[0];
   p[1] = p3[1];
   p[2] = p3[2];
   p[3] = p3[3];
 }
-void getp4(double p[4])
+void omegaintegr::getp4(double p[4])
 {
   p[0] = p4[0];
   p[1] = p4[1];
