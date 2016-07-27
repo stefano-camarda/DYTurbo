@@ -1,9 +1,7 @@
 #include "config.h"
-#include <iostream>
-#include <iomanip>
 
 #include "init.h"
-#include "integr.h"
+#include "omegaintegr.h"
 #include "settings.h"
 #include "interface.h"
 #include "resintegr.h"
@@ -14,6 +12,8 @@
 #include "resint.h"
 #include "rapint.h"
 
+#include <iostream>
+#include <iomanip>
 
 using namespace std;
 

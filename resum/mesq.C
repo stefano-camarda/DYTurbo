@@ -2,7 +2,7 @@
 #include "settings.h"
 #include "interface.h"
 #include "coupling.h"
-#include "integr.h"
+#include "omegaintegr.h"
 #include "rapint.h"
 #include "parton.h"
 #include <iostream>

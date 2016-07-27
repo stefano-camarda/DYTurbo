@@ -2,7 +2,7 @@
 #include "settings.h"
 #include "gaussrules.h"
 #include "mellinint.h"
-#include "integr.h"
+#include "omegaintegr.h"
 #include "phasespace.h"
 #include <iostream>
 

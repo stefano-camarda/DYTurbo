@@ -6,7 +6,7 @@
 //remove integration boundaries
 // ---------------------------------
 
-#include "integr.h"
+#include "omegaintegr.h"
 #include "settings.h"
 #include "interface.h"
 #include "phasespace.h"

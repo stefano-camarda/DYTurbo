@@ -1,5 +1,5 @@
-#ifndef integr_h
-#define integr_h
+#ifndef omegaintegr_h
+#define omegaintegr_h
 
 extern "C" {
   void cthmoments_(double &cthmom0, double &cthmom1, double &cthmom2);

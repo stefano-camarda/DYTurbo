@@ -1,5 +1,5 @@
 #include "resintegr.h"
-#include "integr.h"
+#include "omegaintegr.h"
 #include "phasespace.h"
 #include "settings.h"
 #include "interface.h"

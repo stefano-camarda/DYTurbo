@@ -1,6 +1,6 @@
 #include "interface.h"
 #include "ctintegr.h"
-#include "integr.h"
+#include "omegaintegr.h"
 #include "phasespace.h"
 #include "settings.h"
 #include "switch.h"

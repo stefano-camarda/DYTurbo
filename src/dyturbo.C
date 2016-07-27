@@ -1,7 +1,6 @@
 #include "init.h"
 #include "settings.h"
 #include "interface.h"
-//#include "integr.h"
 #include "phasespace.h"
 #include "resintegr.h"
 #include "ctintegr.h"

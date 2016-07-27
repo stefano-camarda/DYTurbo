@@ -3,7 +3,7 @@
 #include "plotter.h"
 plotter hists;
 
-#include "integr.h"
+#include "omegaintegr.h"
 #include "interface.h"
 #include "settings.h"
 #include "phasespace.h"
