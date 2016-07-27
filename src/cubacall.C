@@ -666,3 +666,9 @@ void ctintegr2d(vector <double> &res, double &err)
 void exitfun(void * input, const int &core){
     if (opts.cubacores!=0) hists.Finalise(core);
 }
+
+void tell_to_grid_we_are_alive(){
+  if(opts.verbose && ICALL % 100000==0) 
+      printf (" Hi Grid, we are sitll alive! Look, our event is %d\n",ICALL);
+  ICALL++;
+}

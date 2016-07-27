@@ -4,6 +4,7 @@
 #include "phasespace.h"
 #include "settings.h"
 #include "switch.h"
+#include "cubacall.h"
 
 #include <iostream>
 #include <iomanip>

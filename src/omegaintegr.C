@@ -2,8 +2,6 @@
 //make this collection of functions a self-consistent library
 //by removing dependences on settings.h and interface.h,
 //introducing a namespace, and adding a init function for initialisation of settings
-//rename it to omegaintegr
-//remove integration boundaries
 // ---------------------------------
 
 #include "omegaintegr.h"
@@ -640,10 +638,4 @@ void getp4(double p[4])
   p[1] = p4[1];
   p[2] = p4[2];
   p[3] = p4[3];
-}
-
-void tell_to_grid_we_are_alive(){
-  if(opts.verbose && ICALL % 100000==0) 
-      printf (" Hi Grid, we are sitll alive! Look, our event is %d\n",ICALL);
-  ICALL++;
 }

@@ -5,6 +5,7 @@
 #include "settings.h"
 #include "vjint.h"
 #include "loint.h"
+#include "cubacall.h"
 
 #include <iostream>
 #include <iomanip>

@@ -7,6 +7,7 @@
 #include "resint.h"
 #include "rapint.h"
 //#include "plotter.h"
+#include "cubacall.h"
 
 #include <math.h>
 #include <iomanip>
