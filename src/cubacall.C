@@ -11,7 +11,7 @@
 
 /***************************************************************/
 //resummation
-void resintegr2d(double &res, double &err)
+void resintegr2d(vector <double> &res, double &err)
 {
   const int ndim = 2;     //dimensions of the integral
   const int ncomp = 1;  //components of the integrand
@@ -57,13 +57,15 @@ void resintegr2d(double &res, double &err)
 		    ndim, xmin, xmax, 
 		    eval, epsabs, epsrel, ERROR_INDIVIDUAL, integral, error);
     }
-  
-  res = integral[0];
+  res.clear();
+  res.push_back(integral[0]);
+  for (int i = 1; i < opts.totpdf; i++)
+    res.push_back(0);
   err = error[0];
   return;
 }
 
-void resintegr3d(double &res, double &err)
+void resintegr3d(vector <double> &res, double &err)
 {
   const int ndim = 3;     //dimensions of the integral
   const int ncomp = 1;  //components of the integrand
@@ -91,14 +93,16 @@ void resintegr3d(double &res, double &err)
 	key, statefile, NULL,
 	&nregions, &neval, &fail,
   	integral, error, prob);
-
-  res = integral[0];
+  res.clear();
+  res.push_back(integral[0]);
+  for (int i = 1; i < opts.totpdf; i++)
+    res.push_back(0);
   err = error[0];
   return;
 }
 
 //original integration, can use this to sample phase space and fill histograms
-void resintegrMC(double &res, double &err)
+void resintegrMC(vector <double> &res, double &err)
 {
   const int ndim = 6;   //dimensions of the integral
   const int ncomp = 1;  //components of the integrand
@@ -129,7 +133,10 @@ void resintegrMC(double &res, double &err)
 	gridno, statefile, NULL,
 	&neval, &fail,
 	integral, error, prob);
-  res = integral[0];
+  res.clear();
+  res.push_back(integral[0]);
+  for (int i = 1; i < opts.totpdf; i++)
+    res.push_back(0);
   err = error[0];
   return;
 }
@@ -138,7 +145,7 @@ void resintegrMC(double &res, double &err)
 /***************************************************************/
 // fixed order
 //Cuba integration of analytical V+j
-void vjintegr3d(double &res, double &err)
+void vjintegr3d(vector <double> &res, double &err)
 {
   const int ndim = 3;     //dimensions of the integral
   const int ncomp = 1;    //components of the integrand
@@ -183,8 +190,10 @@ void vjintegr3d(double &res, double &err)
 		    ndim, xmin, xmax, 
 		    eval, epsabs, epsrel, ERROR_INDIVIDUAL, integral, error);
     }
-
-  res = integral[0];
+  res.clear();
+  res.push_back(integral[0]);
+  for (int i = 1; i < opts.totpdf; i++)
+    res.push_back(0);
   err = error[0];
   return;
 }
@@ -225,7 +234,6 @@ void vjlointegr(vector <double> &res, double &err)
   for (int i = 0; i < opts.totpdf; i++)
     res.push_back(integral[i]);
   err = error[0];
-
   return;
 }
 
@@ -265,7 +273,6 @@ void vjrealintegr(vector <double> &res, double &err)
   for (int i = 0; i < opts.totpdf; i++)
     res.push_back(integral[i]);
   err = error[0];
-
   return;
 }
 
@@ -305,7 +312,6 @@ void vjvirtintegr(vector <double> &res, double &err)
   for (int i = 0; i < opts.totpdf; i++)
     res.push_back(integral[i]);
   err = error[0];
-
   return;
 }
 
@@ -345,8 +351,6 @@ void bornintegrMC(vector <double> &res, double &err)
   for (int i = 0; i < opts.totpdf; i++)
     res.push_back(integral[i]);
   err = error[0];
-  //hists.FillQuadrature(res[0],err);
-
   return;
 }
 
@@ -379,12 +383,11 @@ void bornintegr3d(vector <double> &res, double &err)
 	key, statefile, NULL,
 	&nregions, &neval, &fail,
 	integral, error, prob);
-
   res.clear();
-  for (int i = 0; i < opts.totpdf; i++)
-    res.push_back(integral[i]);
+  res.push_back(integral[0]);
+  for (int i = 1; i < opts.totpdf; i++)
+    res.push_back(0);
   err = error[0];
-
   return;
 }
 
@@ -435,12 +438,11 @@ void bornintegr2d(vector <double> &res, double &err)
 		    ndim, xmin, xmax, 
 		    eval, epsabs, epsrel, ERROR_INDIVIDUAL, integral, error);
     }
-
   res.clear();
-  for (int i = 0; i < opts.totpdf; i++)
-    res.push_back(integral[i]);
+  res.push_back(integral[0]);
+  for (int i = 1; i < opts.totpdf; i++)
+    res.push_back(0);
   err = error[0];
-
   return;
 }
 

@@ -134,8 +134,6 @@ int main( int argc , char * argv[])
 		      if (opts.bornint2d) bornintegr2d(vals, error);
 		      if (opts.bornint3d) bornintegr3d(vals, error);
 		      if (opts.bornintvegas) bornintegrMC(vals, error);
-		      value = vals[0];
-		      vadd(totvals,vals);
 		    }
 		  else
 		    //resummed
@@ -148,17 +146,19 @@ int main( int argc , char * argv[])
 			  //end C++ resum
 			  else	    
 			    cacheyrapint_(phasespace::ymin, phasespace::ymax);
-			  resintegr2d(value, error);
+			  resintegr2d(vals, error);
 			}
-		      if (opts.resint3d) resintegr3d(value, error);
-		      if (opts.resintvegas) resintegrMC(value, error);
+		      if (opts.resint3d) resintegr3d(vals, error);
+		      if (opts.resintvegas) resintegrMC(vals, error);
 		    }
 		  double e_time = clock_real();
+		  value = vals[0];
 		  normalise_result(value,error);
 		  print_result(value,error,b_time,e_time);
 		  //hists.FillResult(plotter::BORN , value, error, e_time-b_time );
 		  totval += value;
 		  toterror2 += error*error;
+		  vadd(totvals,vals);
 		}
 	      
               // counter term
@@ -183,15 +183,10 @@ int main( int argc , char * argv[])
               if (opts.doVJ && !opts.doVJREAL && !opts.doVJVIRT)
 		{
                   double b_time = clock_real();
-		  if (opts.vjint3d) vjintegr3d(value, error); //analytical
-		  if (opts.vjintvegas && opts.order == 1)
-		    {
-		      vjlointegr(vals, error);
-		      value = vals[0];
-		    }
+		  if (opts.vjint3d)                       vjintegr3d(vals, error); //analytical
+		  if (opts.vjintvegas && opts.order == 1) vjlointegr(vals, error); //vegas
 		  double e_time = clock_real();
-                  vals.clear();
-                  vals.push_back(value);
+		  value = vals[0];
                   normalise_result(value,error);
                   print_result(value,error,b_time,e_time);
                   //hists.FillResult(plotter::VJ , value, error, e_time-b_time );

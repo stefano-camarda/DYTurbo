@@ -5,9 +5,9 @@
 using namespace std;
 
 //resummation
-void resintegr2d(double &res, double &err); //missing PDF variations
-void resintegr3d(double &res, double &err); //missing PDF variations
-void resintegrMC(double &res, double &err); //missing PDF variations
+void resintegr2d(vector <double> &res, double &err); //missing PDF variations
+void resintegr3d(vector <double> &res, double &err); //missing PDF variations
+void resintegrMC(vector <double> &res, double &err); //missing PDF variations
 
 //fixed order born configuration
 void bornintegr2d(vector <double> &res, double &err);  //missing PDF variations
@@ -15,7 +15,7 @@ void bornintegr3d(vector <double> &res, double &err);  //missing PDF variations
 void bornintegrMC(vector <double> &res, double &err);
 
 //fixed order V+j
-void vjintegr3d(double &res, double &err); //missing PDF variations
+void vjintegr3d(vector <double> &res, double &err); //missing PDF variations
 void vjlointegr(vector <double> &res, double &err);
 void vjrealintegr(vector <double> &res, double &err);
 void vjvirtintegr(vector <double> &res, double &err);
