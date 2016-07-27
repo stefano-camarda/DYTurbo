@@ -13,8 +13,15 @@ using namespace parton;
 //constants
 const double eequ =2./3.;
 const double eeqd = -1./3.;
-const double gevfb = 3.8937966e11;
-//const double gevfb = (197.3269788*197.3269788)*1e7; //=(h/2pi * c)^2 in GeV^2*fb = 3.89379365623356498e11;
+//const double gevfb = 3.8937966e11;
+
+//evaluate (h/2pi)^2
+//values from CODATA 2014 (arXiv:1507.07956)
+double cc = 299792458; // speed of light [m*s^-1]
+double e = 1.6021766208e-19; //elementary charge [C]
+double h = 6.626070040e-34; //planck constant [j*s^-1]
+const double gevfb = pow(cc*h/e/2./M_PI,2) * 1e-18 * 1e43; //[GeV^-2 * fb]
+//const double gevfb = 3.893793656596451e+11;
 
 double mesq::fac;
 //Z couplings
