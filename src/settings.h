@@ -180,6 +180,9 @@ public:
   bool pcubature;
   double pcubaccuracy;
 
+  //costh boundaries
+  double costhmin, costhmax;
+  
   //lepton fiducial cuts
   bool makelepcuts;
   double lptcut, lycut;

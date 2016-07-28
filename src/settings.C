@@ -230,6 +230,8 @@ void settings::readfromfile(const string fname){
     vegasncallsVJVIRT  = in.GetNumber ( "vegasncallsVJVIRT" );
     pcubature          = in.GetBool   ( "pcubature" );
     pcubaccuracy       = in.GetNumber ( "pcubaccuracy" );
+    costhmin           = in.GetNumber ( "costhmin"     );
+    costhmax           = in.GetNumber ( "costhmax"     );
     makelepcuts        = in.GetBool   ( "makelepcuts"     ); //true
     lptcut             = in.GetNumber ( "lptcut"          );
     lycut              = in.GetNumber ( "lycut"          );
@@ -533,6 +535,8 @@ void settings::dumpAll(){
         dumpD("vegasncallsVJVIRT  ", vegasncallsVJVIRT   );
 	dumpB("pcubature          ", pcubature     );
 	dumpD("pcubaccuracy       ", pcubaccuracy     );
+	dumpD("costhmin           ", costhmin     );
+	dumpD("costhmax           ", costhmax     );
         dumpB("makelepcuts        ", makelepcuts         );
 	dumpD("lptcut        ", lptcut         );
 	dumpD("lycut        ", lycut         );

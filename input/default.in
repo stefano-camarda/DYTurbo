@@ -134,6 +134,10 @@ vegasncallsVJVIRT = 1000000  # only for virt 8d vegas integration
 pcubature = false
 pcubaccuracy = 1e-3
 
+# costh CS boundaries
+costhmin = -1
+costhmax = +1
+
 # total or with lepton cuts
 makelepcuts = false
 lptcut = 20
