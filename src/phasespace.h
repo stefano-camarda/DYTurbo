@@ -29,6 +29,8 @@ namespace phasespace
   extern double costh;
 #pragma omp threadprivate(costh)
 
+  extern double m2, qt2, mt2;
+  
   extern void set_mqtyphi(double M, double Qt, double Y, double PhiV = 0.);
   extern void set_m(double M);
   extern void set_qt(double Qt);
@@ -36,6 +38,9 @@ namespace phasespace
   extern void set_phiV(double PhiV);
   
   extern void set_cth(double Costh);
+
+  //generation of phase space variables from unitary (hyper)cubes
+  extern void gen_mqty(const double x[3], double& jac);
 }
 
 #endif
