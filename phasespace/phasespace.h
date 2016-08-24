@@ -1,0 +1,97 @@
+#ifndef phasespace_h
+#define phasespace_h
+
+#include <cmath>
+
+//fortran interface
+extern "C" {
+  void sety_(double &yy);
+  void setqt_(double &qtt);
+  int binner_(double p3[4], double p4[4]);
+
+  //tools
+  void dyboost_(double& gamma, double beta[3], double pin[4], double pout[4]);
+  void boostv_(double& m,double p[4],double& gamma,double beta[3]);
+  void genp_(double& costh, double& phi, double& m, double p[4]);
+  void qtweight_(double& x,double& qtmin,double& qtmax,double& qt,double& jac);
+  void qt2weight_(double& x,double& qt2min,double& qt2max,double& qt2,double& jac);
+  void qtweight_flat_(double& x,double& qtmin,double& qtmax,double& qt,double& jac);
+  void mweight_breitw_(double& x,double& mmin2,double& mmax2,double& rmass,double& rwidth,double& m2,double& jac);
+  void mweight_flat_(double& x,double& mmin,double& mmax,double& m,double& jac);
+}
+
+namespace phasespace
+{
+  //boson integration boundaries
+  extern double mmin;
+  extern double mmax;
+  extern double qtmin;
+  extern double qtmax;
+  extern double ymin;
+  extern double ymax;
+  extern void setbounds(double m1, double m2, double qt1, double qt2, double y1, double y2);
+
+  extern double cthmin;
+  extern double cthmax;
+  extern void setcthbounds(double cth1, double cth2);
+  
+  //point in phase space
+  extern double m, qt, y, phiV;
+#pragma omp threadprivate(m, qt, y, phiV)
+  extern double costh, phi_lep;
+#pragma omp threadprivate(costh,phi_lep)
+  extern double x1, x2;
+#pragma omp threadprivate(x1,x2)
+  
+  //auxiliary useful quantities
+  extern double m2, qt2;
+  extern double mt, mt2;
+  extern double exppy, expmy;
+#pragma omp threadprivate(m2, qt2, mt, mt2, exppy, expmy)
+    
+  extern void set_mqtyphi(double M, double Qt, double Y, double PhiV = 0.);
+  extern void set_m(double M);
+  extern void set_qt(double Qt);
+  extern void set_y(double Y);
+  extern void set_phiV(double PhiV);
+  
+  extern void set_cth(double Costh);
+
+  inline void calcexpy() {exppy = exp(phasespace::y); expmy=1./exppy;};
+  inline void calcmt() {mt2 = m2+qt2; mt = sqrt(mt2);};
+  
+  //generation of phase space variables from unitary (hyper)cubes
+  extern void gen_mqty(const double x[3], double& jac);
+  extern void gen_costhphi(const double x[2], double& jac);
+  extern void gen_x2(const double x, double& jac);
+
+  //generation of particles
+  //Vector boson 4-momentum and boost
+  extern double pV[4];
+  extern double gam;
+  extern double beta[3];
+#pragma omp threadprivate(pV,gam,beta)
+
+  extern void genV4p();
+  
+  //leptons 4-momenta
+  extern double p4[4];
+  extern double p3[4];
+#pragma omp threadprivate(p4,p3)
+
+  //  extern void genl4p(float costh, float phi_lep);
+  extern void genl4p();
+  //  extern void getp3(double p[4]);
+  //  extern void getp4(double p[4]);
+
+  extern double p1[4];
+  extern double p2[4];
+#pragma omp threadprivate(p1,p2)
+  extern void genp12();
+
+  extern double p5[4];
+#pragma omp threadprivate(p5)
+  extern void genp5();
+}
+
+#endif
