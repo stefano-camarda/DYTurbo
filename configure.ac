@@ -192,6 +192,7 @@ AC_CONFIG_FILES([Makefile
 		 vjfo/Makefile
 		 v2j/Makefile
 		 eba/Makefile
+		 phasespace/Makefile
 		 integrands/Makefile
 		 dyres/Makefile
 		 dynnlo/Makefile
