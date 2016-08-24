@@ -1,7 +1,7 @@
 AUTOMAKE_OPTIONS = foreign
 
 AM_FFLAGS = -I$(srcdir)/../dyres -I$(srcdir)/../src
-AM_CPPFLAGS = -I$(srcdir)/../src -I$(srcdir)/../resum
+AM_CPPFLAGS = -I$(srcdir)/../src -I$(srcdir)/../resum -I$(srcdir)/../phasespace
 
 noinst_LTLIBRARIES = libmcfm.la
 
