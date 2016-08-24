@@ -4,11 +4,13 @@
 //#include <gsl/gsl_math.h>
 #include <ctime>
 
+#include "finitemapping.h"
+
 #include "settings.h"
 #include "interface.h"
 #include "finintegr.h"
 #include "ctintegr.h"
-#include "finitemapping.h"
+#include "phasespace.h"
 
 
 using namespace std;
@@ -22,8 +24,8 @@ double dyreal(double m, double y, double qt, double phicm, double phiZ, double c
   double minmass = sqrt(taumin_.taumin_)*energy_.sroot_;
   double sqrts = energy_.sroot_;;
   double s = sqrts*sqrts;
-  double mmin = opts.mlow;
-  double mmax = opts.mhigh;
+  double mmin = phasespace::mmin;
+  double mmax = phasespace::mmax;
   double xqtcut = qtsub_.xqtcut_;
 
   //  std::cout << std::setprecision(15);
@@ -132,8 +134,8 @@ double dyvirt(double m, double y, double qt, double phicm, double phiZ, double c
   double minmass = sqrt(taumin_.taumin_)*energy_.sroot_;
   double sqrts = energy_.sroot_;;
   double s = sqrts*sqrts;
-  double mmin = opts.mlow;
-  double mmax = opts.mhigh;
+  double mmin = phasespace::mmin;
+  double mmax = phasespace::mmax;
   double xqtcut = qtsub_.xqtcut_;
 
   //  std::cout << std::setprecision(15);
@@ -237,8 +239,8 @@ double dylow(double m, double y, double qt, double phicm, double phiZ, double co
   double minmass = sqrt(taumin_.taumin_)*energy_.sroot_;
   double sqrts = energy_.sroot_;;
   double s = sqrts*sqrts;
-  double mmin = opts.mlow;
-  double mmax = opts.mhigh;
+  double mmin = phasespace::mmin;
+  double mmax = phasespace::mmax;
   double xqtcut = qtsub_.xqtcut_;
 
   //  std::cout << std::setprecision(15);
@@ -338,8 +340,8 @@ double dyct(double m, double y, double qt, double phicm, double phiZ, double cos
   double minmass = sqrt(taumin_.taumin_)*energy_.sroot_; //40.;
   double sqrts = energy_.sroot_; //7000.;
   double s = sqrts*sqrts;
-  double mmin = opts.mlow; //66.;
-  double mmax = opts.mhigh; //116.;
+  double mmin = phasespace::mmin; //66.;
+  double mmax = phasespace::mmax; //116.;
   double xqtcut = qtsub_.xqtcut_; //0.008;
 
   //  std::cout << std::setprecision(15);
@@ -379,7 +381,8 @@ double dyct(double m, double y, double qt, double phicm, double phiZ, double cos
   rct[7] = beta;
   rct[8] = alpha;
   begin_time = clock_real();
-  value = countint_(rct,wgt);
+  double f[opts.totpdf];
+  value = countint_(rct,wgt,f);
   end_time = clock_real();
   cout << "Counterterm: " << value << "  " << "time " << end_time - begin_time << "s" << endl;
   //******************************************
@@ -401,8 +404,8 @@ void dyres(double costh,double m,double qt,double y)
   double wgt = 1;
   
   //convert invariant mass to 0-1 for Breit-Wigner weighting
-  double mmin2 = pow(opts.mlow,2);
-  double mmax2 = pow(opts.mhigh,2);
+  double mmin2 = pow(phasespace::mmin,2);
+  double mmax2 = pow(phasespace::mmax,2);
   double almin, almax, tanal, al, x1;
   almin=atan((mmin2-rmass*rmass)/rmass/rwidth);
   almax=atan((mmax2-rmass*rmass)/rmass/rwidth);

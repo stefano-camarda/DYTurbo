@@ -2,6 +2,7 @@
 
 #include "init.h"
 #include "omegaintegr.h"
+#include "phasespace.h"
 #include "settings.h"
 #include "interface.h"
 #include "resintegr.h"
@@ -22,17 +23,19 @@ using namespace std;
 void test_resum_speed(double costh,double m,double qt,double y,int mode);
 void test_ct_speed(double costh,double m,double qt,double y,int mode);
 
-int main( int argc , const char * argv[])
+int main( int argc , char * argv[])
 {
   double begin_time, end_time;
 
   /***********************************/
   //Initialization
-  string conf_file;
-  if (argc>1) {
-      conf_file = argv[1];
+  try {
+      dyturboinit(argc,argv);
+  } catch (QuitProgram &e) {
+      // print help and die
+      printf("%s \n",e.what());
+      return 0;
   }
-  dyturboinit(conf_file.c_str());
   /***********************************/
 
   /***********************************/
@@ -52,8 +55,8 @@ int main( int argc , const char * argv[])
   if (opts_.approxpdf_ == 1)
     {
       srand(opts.rseed);
-      double wsqmin = pow(opts.mlow,2);
-      double wsqmax = pow(opts.mhigh,2);
+      double wsqmin = pow(phasespace::mmin,2);
+      double wsqmax = pow(phasespace::mmax,2);
       double x1=((double)rand()/(double)RAND_MAX);
       double m2,wt;
       breitw_(x1,wsqmin,wsqmax,opts.rmass,opts.rwidth,m2,wt);
@@ -92,10 +95,10 @@ int main( int argc , const char * argv[])
 
   //costhline();
   //ptline();
-  yline();
+  //yline();
   //mline();
   //mlinebw();
-  //xline();
+  xline();
   //ptavar();
   //ptgvar();
 
