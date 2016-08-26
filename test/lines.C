@@ -124,10 +124,10 @@ void xline()
 {
   //xline after unweighting
   int nocuts = (int)true;
-  double x1 = 1e-4;
-  double x2 = 1;
-  int nx = 4;
-  phasespace::setbounds(phasespace::mmin, phasespace::mmax, 0, 100, phasespace::ymin, phasespace::ymax);
+  double x1 = 0.;
+  double x2 = 1.;
+  int nx = 2000;
+  phasespace::setbounds(phasespace::mmin, phasespace::mmax, phasespace::qtmin, phasespace::qtmax, phasespace::ymin, phasespace::ymax);
 
   ofstream xf("xline.C");
   xf << "{" << endl;

@@ -1,7 +1,7 @@
 AUTOMAKE_OPTIONS = foreign
 
 if HAVE_TEST
-AM_CPPFLAGS = -fpermissive -I$(srcdir)/../include -I$(srcdir)/../dequad -I$(srcdir)/../resum -I$(srcdir)/../src  -I$(srcdir)/../mcfm \
+AM_CPPFLAGS = -fpermissive -I$(srcdir)/../include -I$(srcdir)/../dequad -I$(srcdir)/../resum -I$(srcdir)/../src -I$(srcdir)/../mcfm -I$(srcdir)/../phasespace \
 	-Wl,Bstatic \
 	$(CUBA_CPPFLAGS) $(LHAPDF_CPPFLAGS) \
 	-DSHAREDIR=\"${datadir}/${PACKAGE}\"
@@ -16,18 +16,18 @@ points_LDADD = ../src/libdyturbo.la \
 	-lgfortran \
 	$(CUBA_LDFLAGS) $(LHAPDF_LDFLAGS) -lgsl -lgslcblas $(ROOT_LDFLAGS)
 
-if HAVE_ROOT
-AM_CPPFLAGS += $(ROOT_CFLAGS)
-
-bin_PROGRAMS += dytests
-
-dytests_SOURCES = dytests.C
-dytests_LDADD = ../src/libdyturbo.la \
-	../cernlib/libcern.la ../dequad/libdequad.la \
-	-lgfortran \
-	$(CUBA_LDFLAGS) $(LHAPDF_LDFLAGS) -lgsl -lgslcblas $(ROOT_LDFLAGS)
-
-endif
+#if HAVE_ROOT
+#AM_CPPFLAGS += $(ROOT_CFLAGS)
+#
+#bin_PROGRAMS += dytests
+#
+#dytests_SOURCES = dytests.C
+#dytests_LDADD = ../src/libdyturbo.la \
+#	../cernlib/libcern.la ../dequad/libdequad.la \
+#	-lgfortran \
+#	$(CUBA_LDFLAGS) $(LHAPDF_LDFLAGS) -lgsl -lgslcblas $(ROOT_LDFLAGS)
+#
+#endif
 
 
 endif
