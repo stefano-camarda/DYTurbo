@@ -6,61 +6,71 @@
 #include "mesq.h"
 #include "pdf.h"
 #include "phasespace.h"
+#include "omegaintegr.h"
+#include "cubature.h"
+#include "isnan.h"
+#include "gaussrules.h"
 
 #include <math.h>
 #include <algorithm>
 #include <iostream>
 #include <iomanip>
 
+const double scutoff = 1e-6;
+
 using namespace std;
 
-double vjloint::jac;
+double vjloint::muf;
+double vjloint::mur;
 
 void vjloint::init()
 {
+  muf = opts.rmass*opts.kmufac;
+  mur = opts.rmass*opts.kmures;
 }
 
-double vjloint::vlint(const double x[6])
+double vjloint::calc(const double x[5])
 {
-  genps(x);
   //generate phase space as m, qt, y, costh, phi_lep, x2
   //Jacobian of the change of variables from the unitary hypercube x[6] to the m, qt, y, costh, phi_lep, x2 boundaries
-  jac = 1.;
+  double jac = 1.;
 
+  //phase space factors (should be (1/2/pi)^3 for each free particle)
+  double wtvj=1./8./M_PI; //pq -> V+j phase space
+  double wtv=1./8./M_PI/2./2./M_PI; //V-> ll phase space
+  double wt=wtvj*wtv/2./M_PI;
+  jac = jac * wt;
+  
   double r3[3] = {x[0], x[1], x[2]};
   phasespace::gen_mqty(r3, jac);
   if (jac == 0.)
     return 0.;
+  jac = jac *2.*phasespace::qt;
 
-  //Set factorization scale
-  double muf;
+  //Set factorization and renormalization scales
   if (opts.dynamicscale)
-    muf = phasespace::m*opts.kmufac;
-  else
-    muf = opts.rmass*opts.kmufac;
+    {
+      muf = phasespace::m*opts.kmufac;
+      mur = phasespace::m*opts.kmures;
+      double mur2 = mur*mur;
+      scaleset_(mur2);
+    }
+
+  //calculate exp(y) and exp(-y), since they are used in genV4p() and genx2()
+  phasespace::calcexpy();
   
   //Generate the boson 4-momentum
   phasespace::set_phiV(0.);
   phasespace::genV4p();
 
-  //perform dOmega integration (start loop on phi_lep, costh)
-  double r2[2] = {x[3], x[4]};
-  phasespace::gen_costhphi(r2, jac);
-
-  //Generate leptons 4-momenta
-  //p4 is the lepton and p3 is the antilepton
-  phasespace::genl4p();
-
-  //Apply cuts on leptons
-  if (!cuts::lep(phasespace::p3,phasespace::p4))
-    return 0.;
-  //jac = jac*binner_(p3,p4);
-
-  //perform dx2 integration (start loop on x2)
+  //move dx2 integration here
   //Calculate Bjorken x1 and x2 (integration is performed in dx2)
-  phasespace::gen_x2(x[5], jac);
+  phasespace::gen_x2(x[3], jac);
   if (jac == 0.)
-    return 0.;
+    {
+      //cout << "x2 with jac = 0 " << phasespace::x2 << endl;
+      return 0.;
+    }
 
   //Generate incoming partons
   phasespace::genp12();
@@ -68,23 +78,183 @@ double vjloint::vlint(const double x[6])
   //Generate jet from momentum conservation
   phasespace::genp5();
 
-  jac = jac *2.*phasespace::qt;
-
-  //phase space factors (should be (1/2/pi)^3 for each free particle)
-  double wtvj=1./8./M_PI; //pq -> V+j phase space
-  double wtv=1./8./M_PI/2./2./M_PI; //V-> ll phase space
-  double wt=wtvj*wtv/2./M_PI;
-
-  jac = jac * wt;
-
   //reject event if any s(i,j) is too small
   double s15=2.*(phasespace::p1[3]*phasespace::p5[3]-phasespace::p1[0]*phasespace::p5[0]-phasespace::p1[1]*phasespace::p5[1]-phasespace::p1[2]*phasespace::p5[2]);
   double s25=2.*(phasespace::p2[3]*phasespace::p5[3]-phasespace::p2[0]*phasespace::p5[0]-phasespace::p2[1]*phasespace::p5[1]-phasespace::p2[2]*phasespace::p5[2]);
-  if (-s15 < cutoff_.cutoff_ || -s25 < cutoff_.cutoff_)
-    return 0.;
-  
+  //if (-s15 < cutoff_.cutoff_ || -s25 < cutoff_.cutoff_)
+  if (-s15 < scutoff || -s25 < scutoff)
+    {
+      //      cout << "failed s cut off " << s15 << "  " << s25 << endl;
+      return 0.;
+    }
+
+
+  /*
+  /////////////////////
+  //perform dOmega integration (start loop on phi_lep, costh)
+  double r2[2] = {x[3], x[4]};
+  phasespace::gen_costhphi(r2, jac);
+  phasespace::genl4p();
   //calculate V+j matrix elements
   double p[4][12];
+  fillp(p);
+  
+  double msq[11][11];
+  if(opts.nproc == 3)
+    qqb_z_g_(p,msq);
+  else
+    qqb_w_g_(p,msq);
+  /////////////////////
+  */
+
+  /////////////////////
+  phasespace::gen_phi(x[4], jac);
+  //start loop on costh
+  double msq_cth[11][11];
+  for (int j = 0; j < 2*MAXNF+1; j++)
+    for (int k = 0; k < 2*MAXNF+1; k++)
+      msq_cth[j][k] = 0.;
+  omegaintegr::genV4p();
+  vector <double> cthmin;
+  vector <double> cthmax;
+  omegaintegr::costhbound(phasespace::phi_lep, cthmin, cthmax);
+  vector<double>::iterator itmn;
+  vector<double>::iterator itmx;
+  itmn = cthmin.begin(); itmx = cthmax.begin();
+  for (; itmn != cthmin.end(); itmn++, itmx++)
+    {
+      //cout << *itmn << "  " << *itmx << "  " << cthmin.size() << endl;
+      double cthc=0.5*(*itmn+*itmx);
+      double cthm=0.5*(*itmx-*itmn);
+      
+      int cthrule = 2;
+      for(int i=0; i < cthrule; i++)
+	{
+	  double xcth = cthc+cthm*gr::xxx[cthrule-1][i];
+	  
+	  //Generate leptons 4-momenta: p3 is the lepton and p4 is the antilepton
+	  phasespace::set_cth(xcth);
+	  phasespace::genl4p();
+
+	  //calculate V+j matrix elements
+	  double p[4][12];
+	  fillp(p);
+
+	  double msq[11][11];
+	  if(opts.nproc == 3)
+	    qqb_z_g_(p,msq);
+	  else
+	    qqb_w_g_(p,msq);
+	  
+	  for (int j = 0; j < 2*MAXNF+1; j++)
+	    for (int k = 0; k < 2*MAXNF+1; k++)
+	      if (msq[k][j] != 0.)
+		msq_cth[k][j] += msq[k][j] *gr::www[cthrule-1][i]*cthm;
+	  
+	} //end dcosth loop
+    } //end loop on costh boundaries
+  double msq[11][11];
+  for (int j = 0; j < 2*MAXNF+1; j++)
+    for (int k = 0; k < 2*MAXNF+1; k++)
+      msq[j][k] = msq_cth[j][k];
+  /////////////////////
+  
+
+  // Load central PDF and QCD coupling
+  //if (pdferr) then
+  int npdf = 0;
+  dysetpdf_(npdf);
+  //double gsqcentral=gsq;
+  //     skip PDF loop in the preconditioning phase
+  int maxpdf=0;
+  //if (doFill.ne.0) maxpdf = totpdf-1
+      
+  //     start PDF loop
+  //  for (int np=0; np <= maxpdf; np++)
+  //    {
+  //      dysetpdf_(np);
+  //      hists_setpdf_(np);
+  //     intitialise xmsq to 0
+  double xmsq=0.;
+  //cout << muf << "  " << x1 << "  " << x2 << endl;
+  // calculate PDFs
+  double fx1[2*MAXNF+1],fx2[2*MAXNF+1];
+  muf = opts.rmass*opts.kmufac;
+  fdist_(opts.ih1,phasespace::x1,muf,fx1);
+  fdist_(opts.ih2,phasespace::x2,muf,fx2);
+
+  if (opts.nproc == 3)
+    {
+      xmsq+=fx1[0 ]*fx2[5 ]*msq[5 ][0 ]; 
+      xmsq+=fx1[0 ]*fx2[10]*msq[10][0 ];
+      xmsq+=fx1[1 ]*fx2[5 ]*msq[5 ][1 ]; 
+      xmsq+=fx1[1 ]*fx2[9 ]*msq[9 ][1 ]; 
+      xmsq+=fx1[2 ]*fx2[5 ]*msq[5 ][2 ]; 
+      xmsq+=fx1[2 ]*fx2[8 ]*msq[8 ][2 ]; 
+      xmsq+=fx1[3 ]*fx2[5 ]*msq[5 ][3 ]; 
+      xmsq+=fx1[3 ]*fx2[7 ]*msq[7 ][3 ]; 
+      xmsq+=fx1[4 ]*fx2[5 ]*msq[5 ][4 ]; 
+      xmsq+=fx1[4 ]*fx2[6 ]*msq[6 ][4 ]; 
+      xmsq+=fx1[5 ]*fx2[0 ]*msq[0 ][5 ]; 
+      xmsq+=fx1[5 ]*fx2[1 ]*msq[1 ][5 ]; 
+      xmsq+=fx1[5 ]*fx2[2 ]*msq[2 ][5 ]; 
+      xmsq+=fx1[5 ]*fx2[3 ]*msq[3 ][5 ]; 
+      xmsq+=fx1[5 ]*fx2[4 ]*msq[4 ][5 ]; 
+      xmsq+=fx1[5 ]*fx2[6 ]*msq[6 ][5 ]; 
+      xmsq+=fx1[5 ]*fx2[7 ]*msq[7 ][5 ]; 
+      xmsq+=fx1[5 ]*fx2[8 ]*msq[8 ][5 ]; 
+      xmsq+=fx1[5 ]*fx2[9 ]*msq[9 ][5 ]; 
+      xmsq+=fx1[5 ]*fx2[10]*msq[10][5 ];
+      xmsq+=fx1[6 ]*fx2[4 ]*msq[4 ][6 ]; 
+      xmsq+=fx1[6 ]*fx2[5 ]*msq[5 ][6 ]; 
+      xmsq+=fx1[7 ]*fx2[3 ]*msq[3 ][7 ]; 
+      xmsq+=fx1[7 ]*fx2[5 ]*msq[5 ][7 ]; 
+      xmsq+=fx1[8 ]*fx2[2 ]*msq[2 ][8 ]; 
+      xmsq+=fx1[8 ]*fx2[5 ]*msq[5 ][8 ]; 
+      xmsq+=fx1[9 ]*fx2[1 ]*msq[1 ][9 ]; 
+      xmsq+=fx1[9 ]*fx2[5 ]*msq[5 ][9 ]; 
+      xmsq+=fx1[10]*fx2[0 ]*msq[0 ][10];
+      xmsq+=fx1[10]*fx2[5 ]*msq[5 ][10];
+    }
+  else
+    for (int j = 0; j < 2*MAXNF+1; j++)
+      for (int k = 0; k < 2*MAXNF+1; k++)
+	{
+	  //if (isnan_ofast(msq[k][j]))
+	  //cout << j << "  " << k << "  " << fx1[j] << "  " << fx2[k] << "  " << msq[k][j] << endl;
+	  if (msq[k][j] == 0.) continue;
+	  //     gsq/gsqcentral correct for a possibly different value of alphas in the PDF (at O(alphas))
+	  xmsq=xmsq+fx1[j]*fx2[k]*msq[k][j]; //*(gsq/gsqcentral)
+	  // cout << j << "  " << k << "  " << fx1[j] << "  " << fx2[k] << "  " << msq[k][j] << endl;
+	}
+  double shad = pow(opts.sroot,2);
+  xmsq=xmsq*gevfb/(2.*phasespace::x1*phasespace::x2*shad);
+  //double fbGeV2 = 0.389379e12;
+  //xmsq=xmsq*fbGeV2/(2.*phasespace::x1*phasespace::x2*shad);
+  
+  //f[np+1]=xmsq;;
+
+  //if (doFill.ne.0) then
+  // {
+  //   val=xmsq*wgt
+  //   hists_fill_(p3,p4,val);
+  // }
+
+  //} end PDFs loop
+
+  //cout << phasespace::x2 << "  " << xmsq << "  " << jac << endl;
+  
+  if (isnan_ofast(xmsq))
+    {
+      //      cout << "xmsq in vjloint is nan" << endl;
+      return 0.;
+    }
+  
+  return xmsq*jac;
+}
+
+void vjloint::fillp(double p[4][12])
+{
   p[0][0] = phasespace::p1[0];
   p[1][0] = phasespace::p1[1];
   p[2][0] = phasespace::p1[2];
@@ -109,6 +279,33 @@ double vjloint::vlint(const double x[6])
   p[1][4] = phasespace::p5[1];
   p[2][4] = phasespace::p5[2];
   p[3][4] = phasespace::p5[3];
+}
+
+int vjloint::x2int(unsigned ndim, const double x[], void *data, unsigned ncomp, double f[])
+{
+  f[0] = 0.;
+  //Calculate Bjorken x1 and x2 (integration is performed in dx2)
+  double jac = 1.;
+  phasespace::gen_x2(x[0], jac);
+  if (jac == 0.)
+    return 0.;
+
+  //Generate incoming partons
+  phasespace::genp12();
+
+  //Generate jet from momentum conservation
+  phasespace::genp5();
+
+  //reject event if any s(i,j) is too small
+  double s15=2.*(phasespace::p1[3]*phasespace::p5[3]-phasespace::p1[0]*phasespace::p5[0]-phasespace::p1[1]*phasespace::p5[1]-phasespace::p1[2]*phasespace::p5[2]);
+  double s25=2.*(phasespace::p2[3]*phasespace::p5[3]-phasespace::p2[0]*phasespace::p5[0]-phasespace::p2[1]*phasespace::p5[1]-phasespace::p2[2]*phasespace::p5[2]);
+  //  if (-s15 < cutoff_.cutoff_ || -s25 < cutoff_.cutoff_)
+  if (-s15 < scutoff || -s25 < scutoff)
+    return 0.;
+  
+  //calculate V+j matrix elements
+  double p[4][12];
+  fillp(p);
 
   double msq[11][11];
   if(opts.nproc == 3)
@@ -185,9 +382,9 @@ double vjloint::vlint(const double x[6])
 	  //cout << j << "  " << k << "  " << fx1[j] << "  " << fx2[k] << "  " << msq[k][j] << endl;
 	}
   double shad = pow(opts.sroot,2);
-  //xmsq=xmsq*gevfb/(2.*x1*x2*shad);
-  double fbGeV2 = 0.389379e12;
-  xmsq=xmsq*fbGeV2/(2.*phasespace::x1*phasespace::x2*shad);
+  xmsq=xmsq*gevfb/(2.*phasespace::x1*phasespace::x2*shad);
+  //double fbGeV2 = 0.389379e12;
+  //xmsq=xmsq*fbGeV2/(2.*phasespace::x1*phasespace::x2*shad);
   
   //f[np+1]=xmsq;;
 
@@ -199,7 +396,7 @@ double vjloint::vlint(const double x[6])
 
   //} end PDFs loop
 
-  //end vcth loop
+  //end x2 loop
   //end dOmega loop
 
   if (xmsq != xmsq)
@@ -207,11 +404,45 @@ double vjloint::vlint(const double x[6])
       cout << "xmsq in vjloint is nan" << endl;
       return 0.;
     }
-  
-  return xmsq*jac;
+
+  //cout << setprecision(16);
+  //  cout << phasespace::x2 << "  " << xmsq << "  " << jac << endl;
+  f[0] = xmsq*jac;
+  return 0.;
 }
 
-//generate phase space
-void vjloint::genps(const double x[6])
-{
-}
+
+  /*
+  //perform dcosth integration (start loop on costh)
+  if (false)
+    {
+      //pcubature integration of dx2
+      clock_t begin_time, end_time;
+      begin_time = clock();
+      const int ndimx = 1;     //dimensions of the integral
+      const int ncomp = 1;  //components of the integrand
+      void *userdata = NULL;
+      double integral[1];
+      double error[1];
+      const int eval = 0;
+      const double epsrel = 1e-2;//min(1e-4,opts.pcubaccuracy);
+      const double epsabs = 0.;
+      //     boundaries of integration      
+      double xmin[1] = {0.};
+      double xmax[1] = {1.};
+      
+      pcubature(ncomp, x2int, userdata, 
+		ndimx, xmin, xmax, 
+		eval, epsabs, epsrel, ERROR_INDIVIDUAL, integral, error);
+      double x2res = integral[0];
+      double err = error[0];
+      end_time = clock();
+//      cout << setprecision(16);
+//      cout << setw (3) << "m" << setw(10) << phasespace::m << setw(4) << "qt" << setw(10) <<  phasespace::qt << setw(4) << "y" << setw(10) <<  phasespace::y
+//	   << setw (6) << "costh" << setw(10) << phasespace::costh << setw(4) << "phi" << setw(10) <<  phasespace::phi_lep << setw(3)
+//	   << setw(8) << "result" << setw(12) << x2res
+//	   << setw(10) << "tot time" << setw(10) << float( end_time - begin_time ) /  CLOCKS_PER_SEC
+//	   << endl;
+      return x2res*jac;
+    }
+  */
