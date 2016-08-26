@@ -4,6 +4,6 @@ AM_CPPFLAGS = -fpermissive -Wl,Bstatic -I$(srcdir)/../mcfm -I$(srcdir)/../src #-
 noinst_LTLIBRARIES = libphasespace.la
 libphasespace_la_SOURCES = psset.C psgen.C psbin.C
 
-libphasespace_la_SOURCES += dyboost.f boostV.f qtweight.f mweight.f genp.f
+libphasespace_la_SOURCES += dyboost.f boostV.f qtweight.f mweight.f genp.f dyspinoru.f
 
 pkginclude_HEADERS = phasespace.h
