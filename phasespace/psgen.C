@@ -38,7 +38,7 @@ void phasespace::gen_mqty(const double x[3], double& jac)
   //generate phase space as m, qt, y
   //jac gets multiplied by the Jacobian of the change of variables from the unitary cube x[3] to the m, pt, y boundaries
 
-  // Generate the boson invariant mass between the integration boundaries
+  //Generate the boson invariant mass between the integration boundaries
   double mcut = (opts.xqtcut != 0.) ? phasespace::qtmax/opts.xqtcut : phasespace::mmax;
   double wsqmin = pow(phasespace::mmin,2);
   double wsqmax = pow(min(phasespace::mmax,mcut),2);
@@ -61,18 +61,15 @@ void phasespace::gen_mqty(const double x[3], double& jac)
       jac = 0.;
       return;
     }
-
   double xqt = x[1];
   qtweight_(xqt,qtmn,qtmx,qt,jac);
-  //qtweight_flat_(xqt,qtmn,qtmx,qt,jac)
+  //qtweight_flat_(xqt,qtmn,qtmx,qt,jac);
   qt2 = qt*qt;
   
-  //Limit y boundaries to the kinematic limit in y
+  //integrate between ymin and ymax
   calcmt();
   double tmpx=(m2+pow(opts.sroot,2))/opts.sroot/mt;
-  double ylim=log((tmpx+sqrt(pow(tmpx,2)-4.))/2.);
-
-  //  double ylim = 0.5*log(pow(opts.sroot,2)/m2);
+  double ylim=log((tmpx+sqrt(pow(tmpx,2)-4.))/2.); //Limit y boundaries to the kinematic limit in y
   double ymn = min(max(-ylim, phasespace::ymin),ylim);
   double ymx = max(min(ylim, phasespace::ymax),-ylim);
   if (ymn >= ymx)
@@ -80,12 +77,66 @@ void phasespace::gen_mqty(const double x[3], double& jac)
       jac = 0.;
       return;
     }
-
-  //integrate between ymin and ymax
   y=ymn+(ymx-ymn)*x[2];
   jac=jac*(ymx-ymn);
+}
 
+void phasespace::gen_myqt(const double x[3], double& jac)
+{
+  //With respect to the previous routine, this revert the order in which y and qt are generated
+
+  // Generate the boson invariant mass between the integration boundaries
+  double mcut = (opts.xqtcut != 0.) ? phasespace::qtmax/opts.xqtcut : phasespace::mmax;
+  double wsqmin = pow(phasespace::mmin,2);
+  double wsqmax = pow(min(phasespace::mmax,mcut),2);
+  if (wsqmin >= wsqmax)
+    {
+      jac = 0.;
+      return;
+    }
+  double xm=x[0];
+  mweight_breitw_(xm,wsqmin,wsqmax,opts.rmass,opts.rwidth,m2,jac);
+  m = sqrt(m2);
+
+  //integrate between ymin and ymax
+  double ylim = 0.5*log(pow(opts.sroot,2)/m2); //Limit y boundaries to the kinematic limit in y
+  double ymn = min(max(-ylim, phasespace::ymin),ylim);
+  double ymx = max(min(ylim, phasespace::ymax),-ylim);
+  if (ymn >= ymx)
+    {
+      jac = 0.;
+      return;
+    }
+  y=ymn+(ymx-ymn)*x[1];
+  jac=jac*(ymx-ymn);
+
+//  //fodyqt limits
+//  //.....kinematical limits on qt
+//  double z=q2/pow(energy_.sroot_,2);
+//  double xr=pow((1-z),2)-4*z*pow(qt/q,2);
+//  if (xr < 0)
+//    {
+//      f[0] = 0.;
+//      return 0;
+//    }
+//  
+
+  //integrate between qtmin and qtmax
   calcexpy();
+  double qtcut = max(opts.qtcut,opts.xqtcut*m);
+  double qtmn = max(qtcut, phasespace::qtmin);
+  double cosh2y=pow((exppy+expmy)*0.5,2);
+  double kinqtlim = sqrt(max(0.,pow(pow(opts.sroot,2)+m2,2)/(4*pow(opts.sroot,2)*cosh2y)-m2)); //introduced max to avoid neqative argument of sqrt when y=ymax
+  double qtmx = min(kinqtlim, phasespace::qtmax);
+  if (qtmn >= qtmx)
+    {
+      jac = 0.;
+      return;
+    }
+  double xqt = x[2];
+  qtweight_(xqt,qtmn,qtmx,qt,jac);
+  //qtweight_flat_(xqt,qtmn,qtmx,qt,jac);
+  qt2 = qt*qt;
 }
 
 void phasespace::gen_costhphi(const double x[2], double& jac)
@@ -98,7 +149,24 @@ void phasespace::gen_costhphi(const double x[2], double& jac)
   jac=jac*2.;
   
   //lepton azimuthal angle in the boson rest frame
-  phi_lep = 2.*M_PI*x[1];
+  phi_lep = -M_PI+2.*M_PI*x[1]; // --> important to generate phi in [-pi,pi] to use fast trigonometric relations as sin(phi) = sqrt(1 - cos2(phi)) * sign(phi)
+  //phi_lep = 2.*M_PI*x[1];
+  jac=jac*2.*M_PI;
+}
+
+void phasespace::gen_costh(const double x, double& jac)
+{
+  //generate phase space as costh
+  //cosine of the polar angle of the lepton in the boson rest frame
+  costh=-1.+2.*x;
+  jac=jac*2.;
+}
+
+void phasespace::gen_phi(const double x, double& jac)
+{
+  //generate phase space as phi
+  //lepton azimuthal angle in the boson rest frame
+  phi_lep = -M_PI+2.*M_PI*x; // --> important to generate phi in [-pi,pi] to use fast trigonometric relations as sin(phi) = sqrt(1 - cos2(phi)) * sign(phi)
   jac=jac*2.*M_PI;
 }
 
@@ -114,9 +182,9 @@ void phasespace::gen_x2(const double x, double& jac)
   if (x2min > 1. || x2min < 0.)
     {
       cout << "error in x2min " << x2min
-	   << "  " << "m " << m
-	   << "pt " << qt
-	   << "y " << y << endl;
+	   << " m " << m
+	   << " pt " << qt
+	   << " y " << y << endl;
       jac=0.;
       return;
     }
@@ -169,20 +237,22 @@ void phasespace::genl4p()
 {
   //simple phase space generation in the naive dilepton rest frame
   //with axes x = (1,0,0); y = (0,1,0); z=(0,0,1)
-  //p4 is the lepton and p3 is the antilepton
+  //p3 is the lepton and p4 is the antilepton
 
   //Generate the 4-momentum of the first lepton in the boson rest frame, using costh and phi_lep
-  double p4cm[4];
-  genp_(costh, phi_lep, m, p4cm);
+  double p3cm[4];
+  genp_(costh, phi_lep, m, p3cm);
 
   //Boost to go in the lab frame
-  dyboost_(gam, beta, p4cm, p4);
+  dyboost_(gam, beta, p3cm, p3);
   
   //momentum of the second lepton
-  p3[3]=pV[3]-p4[3];      //E
-  p3[0]=pV[0]-p4[0];      //px
-  p3[1]=pV[1]-p4[1];      //py
-  p3[2]=pV[2]-p4[2];      //pz
+  p4[0]=pV[0]-p3[0];      //px
+  p4[1]=pV[1]-p3[1];      //py
+  p4[2]=pV[2]-p3[2];      //pz
+  //p4[3]=pV[3]-p3[3];      //E
+  //ensure energy is calculated with enough precision
+  p4[3]=sqrt(p4[0]*p4[0]+p4[1]*p4[1]+p4[2]*p4[2]);
 }
 
 void phasespace::genp12()
@@ -201,9 +271,11 @@ void phasespace::genp12()
 
 void phasespace::genp5()
 {
-  //Generate jet four momentum
-  p5[0]=-p1[0]-p2[0]-p3[0]-p4[0];
-  p5[1]=-p1[1]-p2[1]-p3[1]-p4[1];
-  p5[2]=-p1[2]-p2[2]-p3[2]-p4[2];
-  p5[3]=-p1[3]-p2[3]-p3[3]-p4[3];
+  //Generate jet 4-momentum from momentum conservation
+  p5[0]=-p1[0]-p2[0]-pV[0];
+  p5[1]=-p1[1]-p2[1]-pV[1];
+  p5[2]=-p1[2]-p2[2]-pV[2];
+  //p5[3]=-p1[3]-p2[3]-pV[3];
+  //ensure energy is calculates with enough precision
+  p5[3]=sqrt(p5[0]*p5[0]+p5[1]*p5[1]+p5[2]*p5[2]);
 }
