@@ -201,7 +201,7 @@ double vjint::vint(double m, double pt, double y)
   internal_.qt_ = pt;
   yv_.yv_ = y;
   yv_.expyp_ = exp(y);
-  yv_.expym_ = exp(-y);
+  yv_.expym_ = exp(-y);//1./yv_.expyp_;
 
   if (opts.zerowidth)
     internal_.q_ = opts.rmass;
