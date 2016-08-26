@@ -6,7 +6,10 @@ namespace gr
   extern double xxx[64][64];
   extern double www[64][64];
 
+  extern const double xxx2[2],www2[2];
+  extern const double xxx3[3],www3[3];
   extern const double xxx4[4],www4[4];
+  extern const double xxx5[5],www5[5];
   extern const double xxx8[8],www8[8];
   extern const double xxx10[10],www10[10];
   extern const double xxx20[20],www20[20];
