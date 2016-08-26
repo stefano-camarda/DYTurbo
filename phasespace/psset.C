@@ -68,6 +68,7 @@ void phasespace::set_y(double Y) {y = Y;}
 void phasespace::set_phiV(double PhiV) {phiV = PhiV;}
 
 void phasespace::set_cth(double Costh) {costh = Costh;}
+void phasespace::set_philep(double Phi_lep) {phi_lep = Phi_lep;}
 
 //fortran functions
 void setqt_(double &qtt) {phasespace::qt = qtt;}
