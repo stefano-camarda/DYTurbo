@@ -56,13 +56,17 @@ namespace phasespace
   extern void set_phiV(double PhiV);
   
   extern void set_cth(double Costh);
+  extern void set_philep(double Phi_lep);
 
   inline void calcexpy() {exppy = exp(phasespace::y); expmy=1./exppy;};
   inline void calcmt() {mt2 = m2+qt2; mt = sqrt(mt2);};
   
   //generation of phase space variables from unitary (hyper)cubes
   extern void gen_mqty(const double x[3], double& jac);
+  extern void gen_myqt(const double x[3], double& jac);
   extern void gen_costhphi(const double x[2], double& jac);
+  extern void gen_costh(const double x, double& jac);
+  extern void gen_phi(const double x, double& jac);
   extern void gen_x2(const double x, double& jac);
 
   //generation of particles
