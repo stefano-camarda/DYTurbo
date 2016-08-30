@@ -15,6 +15,7 @@
 #include "anomalous.h"
 #include "resint.h"
 #include "vjint.h"
+#include "vjloint.h"
 #include "switch.h"
 #include "plotter.h"
 #include "printsettings.h"
@@ -65,6 +66,7 @@ void dyturboinit(int argc, char * argv[])
 
   //V+j fixed order initialisation
   vjint::init();
+  vjloint::init();
   
   switching::init(); //switching function initialisation
   rescinit_();
