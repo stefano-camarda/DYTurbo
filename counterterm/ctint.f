@@ -175,7 +175,7 @@ c         if(qt.ge.m*3/4d0)  switch=dexp(-(m*3/4d0-qt)**2/(m/2d0)**2) ! GAUSS SW
 !     if(qt.ge.95.6)         switch=0d0                                    ! COS SWITCH
          switch = switching(qt, m)
 
-         if(switch.le.0.01d0) return
+c         if(switch.le.0.01d0) return ! do not apply this cut to avoid discontinuities. Instead the phase space is limited to qt and m switching limits
 
 c     used in besselkfast for Itilde
          xmio=dsqrt(qt2/(q2/a_param**2))
@@ -1003,7 +1003,7 @@ c         call initsigmacth(m,cthmom0,cthmom1,cthmom2)
 
             switch = switching(qt, m)
 
-            if(switch.le.0.01d0) cycle
+c            if(switch.le.0.01d0) cycle ! do not apply this cut to avoid discontinuities. Instead the phase space is limited to qt and m switching limits
 
 c     xmio is used in besselkfast for Itilde
             xmio=dsqrt(qt2/(q2/a_param**2))
