@@ -245,7 +245,7 @@ double vjint::calc(double m, double pt, double y)
   double q2 = m*m;
   tm_.tm_ = sqrt(q2+pt*pt);
       
-  //kinematical limits on qt (at y = 0)
+  //kinematical limits on qt (at y = 0) --> possibly not needed, since the phace space is generated within kinematical limits
   double z = q2/dypara_.s_;
   double xr = pow(1-z,2)-4*z*pow(pt/m,2);
   if (xr < 0)
@@ -257,7 +257,7 @@ double vjint::calc(double m, double pt, double y)
 
   double ay = fabs(y);
   if (fabs(y) > ymax ||
-      fabs(*(short*)& ay - *(short*)& ymax) < 2 ) //check also equality
+      fabs(*(long*)& ay - *(long*)& ymax) < 2 ) //check also equality
     return 0.;
   
   //...compute as at order=nloop
@@ -340,6 +340,5 @@ double vjint::calc(double m, double pt, double y)
   //final result
   double res = rdelta+rsing;
   //cout << m << "  " << pt << "  " << y << "  " << res << "  " << err << endl;
-  //      print *,q,qt,yv,rdelta,rsing
   return res;
 }
