@@ -337,19 +337,19 @@ void settings::check_consitency(){
     }
 
     // born term integration dimension
-    if (intDimBorn<4 && intDimBorn>1){
+    if (intDimBorn<5 && intDimBorn>1){
         bornint2d = (intDimBorn == 2);
-        bornint3d = (intDimBorn == 3);
-        bornintvegas = false;
+        bornintvegas4d = (intDimBorn == 4);
+        bornintvegas6d = false;
     } else {
         bornint2d = false;
-        bornint3d = false;
-        bornintvegas = true;
+        bornintvegas4d = false;
+        bornintvegas6d = true;
     }
 
     //quadratures not yet implemented in orders NLO and NNLO
     if (order > 0)
-      bornintvegas = true;
+      bornintvegas6d = true;
 
     // counter term integration dimension
     if (intDimCT<4 && intDimCT>1){
@@ -365,24 +365,26 @@ void settings::check_consitency(){
     }
 
     // V+J integration dimension
-    if (intDimVJ < 4 && intDimVJ > 2)
+    if (intDimVJ < 7 && intDimVJ > 2)
       {
         vjint3d = (intDimVJ == 3);
-        vjintvegas = false;
+        vjint5d = (intDimVJ == 5);
+        vjintvegas7d = false;
 	doVJREAL = false;
 	doVJVIRT = false;
       }
     else
       {
         vjint3d = false;
-        vjintvegas = true;
+	vjint5d = false;
+        vjintvegas7d = true;
       }
 
-    if (makelepcuts)
+    if (makelepcuts && vjint3d)
       {
 	cout << "Required cuts on the final state leptons, enforce vegas integration for V+J fixed order cross section" << endl;
 	vjint3d = false;
-	vjintvegas = true;
+	vjintvegas7d = true;
       }
 
     if (opts_.approxpdf_ == 1)
@@ -419,7 +421,7 @@ void settings::check_consitency(){
             );
     // plot mode consitency with integration
     if ( bins.plotmode=="fill" && 
-	 ( (doBORN && !fixedorder && (resint2d || resint3d)) || (doCT && (ctint2d || ctint3d)) || (doVJ && vjint3d))
+	 ( (doBORN && !fixedorder && (resint2d || resint3d)) || (doCT && (ctint2d || ctint3d)) || (doVJ && (vjint3d || vjint5d)))
        ) {
         printf ("Warning: plotmode: Filling not work for quadrature integration. I am switching to integrate.\n");
         bins.plotmode="integrate";
@@ -506,8 +508,8 @@ void settings::dumpAll(){
         dumpB("resintvegas        ", resintvegas         );
         dumpI("intDimBorn         ", intDimBorn          );
         dumpB("bornint2d          ", bornint2d           );
-        dumpB("bornint3d          ", bornint3d           );
-        dumpB("bornintvegas       ", bornintvegas        );
+        dumpB("bornintvegas4d     ", bornintvegas4d      );
+        dumpB("bornintvegas6d     ", bornintvegas6d      );
         dumpI("intDimCT           ", intDimCT            );
         dumpB("ctint2d            ", ctint2d             );
         dumpB("ctint3d            ", ctint3d             );
@@ -515,7 +517,8 @@ void settings::dumpAll(){
 	dumpB("ctintvegas8d       ", ctintvegas8d        );
         dumpI("intDimVJ           ", intDimVJ          );
         dumpB("vjint3d            ", vjint3d           );
-        dumpB("vjintvegas         ", vjintvegas        );
+        dumpB("vjint5d            ", vjint5d        );
+	dumpB("vjintvegas7d       ", vjintvegas7d        );
         dumpB("fixedorder         ", fixedorder          );
 	dumpB("doBORN             ", doBORN              );
         dumpB("doCT               ", doCT                );

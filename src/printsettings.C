@@ -135,7 +135,7 @@ void printsettings()
 	cout << setw(25) << "Counter term:"      << setw(30) << "gaussian in dpt" << setw(12) << "nodes ="<< setw(12) << 20 << setw(15) << "intervals ="<< setw(5) << 1 << endl;
       }
 
-  if (opts.doVJ && opts.order == 1 && opts.vjintvegas)
+  if (opts.doVJ && opts.order == 1 && opts.vjintvegas7d)
     cout << setw(25) << "Z+j LO:"      << setw(30) << "vegas" << setw(12) << "ncalls =" << setw(12) << opts.vegasncallsVJLO << endl;
 
   if (opts.doVJVIRT)

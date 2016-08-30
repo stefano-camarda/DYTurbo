@@ -143,7 +143,7 @@ public:
 
   //dimension of integration for the born configuration
   int intDimBorn;
-  bool bornint2d, bornint3d, bornintvegas;
+  bool bornint2d, bornintvegas4d, bornintvegas6d;
   
   //type of integration for the counterterm
   int intDimCT;
@@ -151,7 +151,7 @@ public:
 
   //  //type of integration for the V+j at LO
   int intDimVJ;
-  bool vjint3d, vjintvegas;
+  bool vjint3d, vjint5d, vjintvegas7d;
   
   //term switches
   bool doBORN;
