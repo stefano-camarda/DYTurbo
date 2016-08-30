@@ -15,11 +15,13 @@ void resintegrMC(vector <double> &res, double &err); //missing PDF variations
 
 //fixed order born configuration
 void bornintegr2d(vector <double> &res, double &err);  //missing PDF variations
-void bornintegr3d(vector <double> &res, double &err);  //missing PDF variations
-void bornintegrMC(vector <double> &res, double &err);
+void bornintegrMC4d(vector <double> &res, double &err);  //missing PDF variations
+void bornintegrMC6d(vector <double> &res, double &err);
 
 //fixed order V+j
 void vjintegr3d(vector <double> &res, double &err); //missing PDF variations
+void vjlointegr5d(vector <double> &res, double &err); //missing PDF variations
+void vjlointegr7d(vector <double> &res, double &err); //missing PDF variations
 void vjlointegr(vector <double> &res, double &err);
 void vjrealintegr(vector <double> &res, double &err);
 void vjvirtintegr(vector <double> &res, double &err);
