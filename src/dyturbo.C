@@ -131,8 +131,8 @@ int main( int argc , char * argv[])
 		    //born configuration
 		    {
 		      if (opts.bornint2d) bornintegr2d(vals, error);
-		      if (opts.bornint3d) bornintegr3d(vals, error);
-		      if (opts.bornintvegas) bornintegrMC(vals, error);
+		      if (opts.bornintvegas4d) bornintegrMC4d(vals, error);
+		      if (opts.bornintvegas6d) bornintegrMC6d(vals, error);
 		    }
 		  else
 		    //resummed
@@ -182,8 +182,10 @@ int main( int argc , char * argv[])
               if (opts.doVJ && !opts.doVJREAL && !opts.doVJVIRT)
 		{
                   double b_time = clock_real();
-		  if (opts.vjint3d)                       vjintegr3d(vals, error); //analytical
-		  if (opts.vjintvegas && opts.order == 1) vjlointegr(vals, error); //vegas
+		  if (opts.vjint3d)                         vjintegr3d(vals, error); //analytical integration of Gonsalves-Bozzi
+		  if (opts.vjint5d && opts.order == 1)      vjlointegr5d(vals, error); //cubature integration of reimplemented MCFM
+		  if (opts.vjintvegas7d && opts.order == 1) vjlointegr7d(vals, error); //vegas integration of reimplemented MCFM
+		  //if (opts.vjintvegas7d && opts.order == 1) vjlointegr(vals, error); //vegas integration of original MCFM
 		  double e_time = clock_real();
 		  value = vals[0];
                   normalise_result(value,error);
