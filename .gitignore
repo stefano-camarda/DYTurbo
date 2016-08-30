@@ -55,5 +55,5 @@ src/.libs/
 test/.libs/
 dyturbo-config
 .deps/
-*.C
 *.in
+*line.C
