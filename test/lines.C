@@ -126,7 +126,7 @@ void xline()
   int nocuts = (int)true;
   double x1 = 0.;
   double x2 = 1.;
-  int nx = 2000;
+  int nx = 1000;
   phasespace::setbounds(phasespace::mmin, phasespace::mmax, phasespace::qtmin, phasespace::qtmax, phasespace::ymin, phasespace::ymax);
 
   ofstream xf("xline.C");
@@ -141,19 +141,22 @@ void xline()
       //      rapintegrals_(ymin,ymax,m,nocuts);
       const int ncomp = 1;
       //const int ndim = 4; //3; //2;
-      const int ndim = 6;
+      const int ndim = 3;
       double x[ndim];
       double f[ncomp];
       x[0] = 0.5;
       x[1] = 0.5;
-      x[2] = 0.5;
-      x[3] = 0.5;
-      x[4] = xx;
-      x[5] = 0.5;
+      x[2] = xx;
+      //x[3] = 0.5;
+      //x[4] = xx;
+      //x[5] = 0.5;
       //resintegrand2d(ndim, x, ncomp, f);
-      vjlointegrand(ndim, x, ncomp, f);
+      //vjlointegrand(ndim, x, ncomp, f);
       //      resintegrand3d(ndim, x, ncomp, f);
       //ctintegrand3d(ndim, x, ncomp, f);
+      //ctintegrand2d(ndim, x, ncomp, f);
+      vjintegrand(ndim, x, ncomp, f);
+      //lointegrand2d(ndim, x, ncomp, f);
       //void* userdata; int nvec; int core; double weight; int iter; resintegrand4d(ndim, x, ncomp, f, userdata, nvec, core, weight, iter);
       xf << "gx->SetPoint(gx->GetN(), " << i*hx+x1 << ", " << f[0] << ");" << endl;
     }
