@@ -101,13 +101,13 @@ rseed        = 123456         # random seed for MC integration
 intDimRes = 4 # can be 2 or 3 for quadrature, or 4 for vegas
 
 # type of integration for the born configuration
-intDimBorn = 4 # can be 2 or 3 for quadrature, or 4 for vegas
+intDimBorn = 2 # can be 2 for quadrature, 4 or 6 for vegas
 
 # type of integration for counter term
 intDimCT = 8 # can be 2 or 3 for quadrature, or 6, or 8 for vegas
 
 # type of integration for V+J finite order
-intDimVJ = 10 # can be 3 for quadrature, or any number > 3 for vegas
+intDimVJ = 5 # can be 3 for quadrature, 5 for quadrature with cuts, or 7 for vegas
 
 # term switches
 doBORN = true
