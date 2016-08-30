@@ -5,6 +5,7 @@ namespace switching {
   void init();
   double swtch(double qt, double m);
   double qtlimit(double m);
+  double mlimit(double qt);
   extern double k;
   extern double delta;
   extern int mode;

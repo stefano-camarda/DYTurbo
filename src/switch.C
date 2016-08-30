@@ -74,6 +74,25 @@ double switching::qtlimit(double m)
   return limit;
 }
 
+double switching::mlimit(double qt)
+{
+  double limit=opts.sroot/2.;
+
+  if (opts.fixedorder)
+    return limit;
+  
+  if (mode == 1)
+    limit = qt/(k+delta*sqrt(log(1./cutoff)));
+
+  if (mode == 2)
+    limit = sqrt(pow(qt,2)/(pow(k,2)+log(1./cutoff)*pow(delta,2)));
+  
+  if (mode == 3)
+    limit = qt/(k+delta);
+
+  return limit;
+}
+
 double switching_(double &qt, double &m)
 {
   switching::swtch(qt, m);
