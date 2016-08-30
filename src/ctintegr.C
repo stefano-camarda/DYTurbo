@@ -5,6 +5,7 @@
 #include "settings.h"
 #include "switch.h"
 #include "cubacall.h"
+#include "isnan.h"
 
 #include <iostream>
 #include <iomanip>
@@ -38,8 +39,8 @@ integrand_t ctintegrand(const int &ndim, const double x[], const int &ncomp, dou
 }
 
 integrand_t ctintegrandMC(const int &ndim, const double x[], const int &ncomp, double f[],
-                        void* userdata, const int &nvec, const int &core,
-                        double &weight, const int &iter)
+			  void* userdata, const int &nvec, const int &core,
+			  double &weight, const int &iter)
 {
   tell_to_grid_we_are_alive();
   clock_t begin_time, end_time;
@@ -52,6 +53,53 @@ integrand_t ctintegrandMC(const int &ndim, const double x[], const int &ncomp, d
     
   //Jacobian of the change of variables from the unitary hypercube x[6] to the m, y, qt, phi, costh, philep boundaries
   double jac = 1.;
+  
+  //////////////////////////////////////////////////////////////
+  /*
+  bool status = true;
+
+  double r2[2] = {x[0], x[1]};
+  status = phasespace::gen_my(r2, jac, true, true);
+  if (!status)
+    {
+      f[0] = 0.;
+      return 0;
+    }
+
+  double qt;
+  //In the fixed order calculation, integrate from qtcut to infinity
+  if (opts.fixedorder)
+    {
+      phasespace::gen_qt_ctfo(x[2], jac);
+      qt = phasespace::qt;
+      phasespace::set_qt(0.); //In the fixed order calculation evaluate kinematic cuts with qt=0
+    }
+  else
+    {
+      //Generate the boson transverse momentum between the integration boundaries
+      phasespace::calcexpy();
+      double cosh2y=pow((phasespace::exppy+phasespace::expmy)*0.5,2);
+      double kinqtlim = 1e10; //There should not be any kinematic limit on qt, since the counterterm is evaluated with born level kinematic
+      //double kinqtlim = sqrt(max(0.,pow(pow(opts.sroot,2)+phasespace::m2,2)/(4*pow(opts.sroot,2)*cosh2y)-phasespace::m2)); //introduced max to avoid neqative argument of sqrt when y=ymax
+      //double kinqtlim = sqrt(max(0.,pow(pow(opts.sroot,2)+phasespace::m2,2)/(4*pow(opts.sroot,2))-phasespace::m2)); //introduced max to avoid negative argument of sqrt when y=ymax
+      double switchqtlim = switching::qtlimit(phasespace::m);
+      double qtlim = min(kinqtlim, switchqtlim);
+      status = phasespace::gen_qt(x[2], jac, qtlim, true);
+      if (!status)
+	{
+	  f[0] = 0.;
+	  return 0;
+	}
+      qt = phasespace::qt;
+    }
+  jac = jac *2.*phasespace::qt;
+
+  phasespace::set_phiV(0.);
+  
+  double m = phasespace::m;
+  double y = phasespace::y;
+  */
+  //////////////////////////////////////////////////////////////
 
   // Generate the boson invariant mass between the integration boundaries
   double mcut = (opts.xqtcut != 0.) ? phasespace::qtmax/opts.xqtcut : phasespace::mmax;
@@ -67,9 +115,6 @@ integrand_t ctintegrandMC(const int &ndim, const double x[], const int &ncomp, d
   breitw_(x1,wsqmin,wsqmax,opts.rmass,opts.rwidth,m2,wt);
   double m=sqrt(m2);
   jac=jac*wt;
-
-  //     Dynamic scale
-  //      if(dynamicscale) call scaleset(m2)
 
   //Limit y boundaries to the kinematic limit in y
   double ylim = 0.5*log(pow(energy_.sroot_,2)/m2);
@@ -130,20 +175,23 @@ integrand_t ctintegrandMC(const int &ndim, const double x[], const int &ncomp, d
   jac=jac*qt2/pow(x2,2);
   
   double qt=sqrt(qt2);
+  //////////////////////////////////////////////////////////////
 
   // incoming quarks (are they actually used?)
-  double xx1=sqrt(m2/pow(energy_.sroot_,2))*expy;
-  double xx2=sqrt(m2/pow(energy_.sroot_,2))*expmy;
+  /*
+  double xx1=m/opts.sroot*expy;
+  double xx2=m/opts.sroot*expmy;
   double p1[4];
   p1[0]=0.;
   p1[1]=0.;
-  p1[2]=xx1*0.5*energy_.sroot_;
-  p1[3]=xx1*0.5*energy_.sroot_;
+  p1[2]=xx1*0.5*opts.sroot;
+  p1[3]=xx1*0.5*opts.sroot;
   double p2[4];
   p2[0]=0.;
   p2[1]=0.;
-  p2[2]=-xx2*0.5*energy_.sroot_;
-  p2[3]=xx2*0.5*energy_.sroot_;
+  p2[2]=-xx2*0.5*opts.sroot;
+  p2[3]=xx2*0.5*opts.sroot;
+  */
 
   // First lepton direction: Cos of the polar angle
   double costh=-1.+2.*x[3];
@@ -278,7 +326,7 @@ integrand_t ctintegrandMC(const int &ndim, const double x[], const int &ncomp, d
   f[0] = ctint_(costh_CS,m,qt,y,mode,f);
   
   //avoid nans
-  if (f[0] != f[0])
+  if (isnan_ofast(f[0]))
     {
       f[0]=0.;
       if (opts.PDFerrors)
@@ -322,89 +370,60 @@ integrand_t ctintegrand3d(const int &ndim, const double x[], const int &ncomp, d
 
   begin_time = clock();
 
+  if (opts.fixedorder && phasespace::qtmin > 0)
+    {
+      f[0]=0.;
+      return 0;
+    }
+  
   if (opts.PDFerrors)
     for (int i = 1; i < opts.totpdf; i++)
       f[i] = 0.;
 
   //Jacobian of the change of variables from the unitary hypercube x[3] to the m, y, qt boundaries
   double jac = 1.;
+  bool status = true;
 
-  // Generate the boson invariant mass between the integration boundaries
-  double mcut = (opts.xqtcut != 0.) ? phasespace::qtmax/opts.xqtcut : phasespace::mmax;
-  double wsqmin = pow(phasespace::mmin,2);
-  double wsqmax = pow(min(phasespace::mmax,mcut),2);
-  if (wsqmin >= wsqmax)
+  double r2[2] = {x[0], x[1]};
+  status = phasespace::gen_my(r2, jac, true, true);
+  if (!status)
     {
-      f[0]=0.;
-      return 0;
-    }
-  double x1=x[0];
-  double m2,wt;
-  breitw_(x1,wsqmin,wsqmax,opts.rmass,opts.rwidth,m2,wt);
-  double m=sqrt(m2);
-  jac=jac*wt;
-
-  //Dynamic scale (not implemented yet)
-  //if(dynamicscale) call scaleset(m2)
-
-  //Limit y boundaries to the kinematic limit in y
-  double ylim = 0.5*log(pow(energy_.sroot_,2)/m2);
-  double ymn = min(max(-ylim, phasespace::ymin),ylim);
-  double ymx = max(min(ylim, phasespace::ymax),-ylim);
-  if (ymn >= ymx)
-    {
-      f[0]=0.;
+      f[0] = 0.;
       return 0;
     }
 
-  //integrate between ymin and ymax
-  double y=ymn+(ymx-ymn)*x[1];
-  jac=jac*(ymx-ymn);
-  
-  //integrate between qtmin and qtmax
-  //use qt2 to get the correct jacobian!
-  double qtcut = max(opts.qtcut,opts.xqtcut*m);
-  double qtmn = max(qtcut, phasespace::qtmin);
-  double cosh2y34=pow((exp(y)+exp(-y))*0.5,2);
-  double kinqtlim = sqrt(pow(pow(energy_.sroot_,2)+m*m,2)/(4*pow(energy_.sroot_,2)*cosh2y34)-m*m);
-  double switchqtlim = switching::qtlimit(m);
-  double qtlim = min(kinqtlim, switchqtlim);
-  double qtmx = min(qtlim, phasespace::qtmax);
-  if (qtmn >= qtmx)
-    {
-      f[0]=0.;
-      return 0;
-    }
-
+  double qt;
   //In the fixed order calculation, integrate from qtcut to infinity
   if (opts.fixedorder)
     {
-      if (phasespace::qtmin > 0)
+      phasespace::gen_qt_ctfo(x[2], jac);
+      qt = phasespace::qt;
+      phasespace::set_qt(0.); //In the fixed order calculation evaluate kinematic cuts with qt=0
+    }
+  else
+    {
+      //Generate the boson transverse momentum between the integration boundaries
+      phasespace::calcexpy();
+      double cosh2y=pow((phasespace::exppy+phasespace::expmy)*0.5,2);
+      double kinqtlim = 1e10; //There should not be any kinematic limit on qt, since the counterterm is evaluated with born level kinematic
+      //double kinqtlim = sqrt(max(0.,pow(pow(opts.sroot,2)+phasespace::m2,2)/(4*pow(opts.sroot,2)*cosh2y)-phasespace::m2)); //introduced max to avoid neqative argument of sqrt when y=ymax
+      //double kinqtlim = sqrt(max(0.,pow(pow(opts.sroot,2)+phasespace::m2,2)/(4*pow(opts.sroot,2))-phasespace::m2)); //introduced max to avoid negative argument of sqrt when y=ymax
+      double switchqtlim = switching::qtlimit(phasespace::m);
+      double qtlim = min(kinqtlim, switchqtlim);
+      status = phasespace::gen_qt(x[2], jac, qtlim, true);
+      if (!status)
 	{
-	  f[0]=0.;
+	  f[0] = 0.;
 	  return 0;
 	}
-      qtmn = qtcut;
-      qtmx = 1e10;
+      qt = phasespace::qt;
     }
-  double qtmn2 = pow(qtmn,2);
-  double qtmx2 = pow(qtmx,2);
+  jac = jac *2.*phasespace::qt;
+
+  phasespace::set_phiV(0.);
   
-  double tiny = 1E-5;
-  double a = 1./(1+log(qtmx2/tiny));
-  double b = 1./(1+log(qtmn2/tiny));
-  double x2 = a + (b-a) * x[2];
-  jac = jac * (b-a);
-  double qt2=tiny*exp(1./x2 - 1);
-  jac=jac*qt2/pow(x2,2);
-  
-  double qt=sqrt(qt2);
-  
-  //set global variables to costh, m, qt, y
-  if (opts.fixedorder) //In the fixed order calculation evaluate kinematic cuts with qt=0
-    phasespace::set_mqtyphi(m, 0., y, 0.);
-  else
-    phasespace::set_mqtyphi(m, qt, y, 0.);
+  double m = phasespace::m;
+  double y = phasespace::y;
 
   //generate boson 4-momentum, with m, qt, y and phi=0
   omegaintegr::genV4p();
@@ -413,7 +432,7 @@ integrand_t ctintegrand3d(const int &ndim, const double x[], const int &ncomp, d
   //  double swtch=1.;
   //  if (qt >= m*3/4.)  swtch=exp(-pow((m*3/4.-qt),2)/pow((m/2.),2)); // GAUSS SWITCH
   //  if (swtch <= 0.01) swtch = 0;
-  double swtch = switching::swtch(qt, m);
+  // double swtch = switching::swtch(qt, m);
 
   //In this point of phase space (m, qt, y) the costh integration is performed by 
   //calculating the 0, 1 and 2 moments of costh
@@ -434,9 +453,9 @@ integrand_t ctintegrand3d(const int &ndim, const double x[], const int &ncomp, d
 
   //evaluate the fixed order expansion of the resummed cross section
   f[0]=ctint_(costh,m,qt,y,mode,f);
-
+  
   //avoid nans
-  if (f[0] != f[0])
+  if (isnan_ofast(f[0]))
     {
       f[0]=0.;
       if (opts.PDFerrors)
@@ -452,7 +471,7 @@ integrand_t ctintegrand3d(const int &ndim, const double x[], const int &ncomp, d
 
   end_time = clock();
   if (opts.timeprofile)
-    cout << setw (3) << "m" << setw(10) << m << setw(4) << "qt" << setw(10) <<  qt
+    cout << setw (3) << "m" << setw(10) << m << setw(4) << "qt" << setw(10) << qt << setw(4) << "y" << setw(10) <<  y
 	 << setw(8) << "result" << setw(10) << f[0]
 	 << setw(10) << "tot time" << setw(10) << float( end_time - begin_time ) /  CLOCKS_PER_SEC
 	 << endl;
@@ -498,77 +517,59 @@ integrand_t ctintegrand2d(const int &ndim, const double x[], const int &ncomp, d
 
   begin_time = clock();
 
+  if (opts.fixedorder && phasespace::qtmin > 0)
+    {
+      f[0]=0.;
+      return 0;
+    }
+  
   if (opts.PDFerrors)
     for (int i = 1; i < opts.totpdf; i++)
       f[i] = 0.;
 
   //Jacobian of the change of variables from the unitary hypercube x[3] to the m, y, qt boundaries
   double jac = 1.;
+  bool status = true;
 
-  // Generate the boson invariant mass between the integration boundaries
-  double mcut = (opts.xqtcut != 0.) ? phasespace::qtmax/opts.xqtcut : phasespace::mmax;
-  double wsqmin = pow(phasespace::mmin,2);
-  double wsqmax = pow(min(phasespace::mmax,mcut),2);
-  if (wsqmin >= wsqmax)
+  double r2[2] = {x[0], x[1]};
+  status = phasespace::gen_my(r2, jac, true, true);
+  if (!status)
     {
-      f[0]=0.;
-      return 0;
-    }
-  double x1=x[0];
-  double m2,wt;
-  breitw_(x1,wsqmin,wsqmax,opts.rmass,opts.rwidth,m2,wt);
-  double m=sqrt(m2);
-  jac=jac*wt;
-
-  //Dynamic scale (not implemented yet)
-  //if(dynamicscale) call scaleset(m2)
-
-  //Limit y boundaries to the kinematic limit in y
-  double ylim = 0.5*log(pow(energy_.sroot_,2)/m2);
-  double ymn = min(max(-ylim, phasespace::ymin),ylim);
-  double ymx = max(min(ylim, phasespace::ymax),-ylim);
-  if (ymn >= ymx)
-    {
-      f[0]=0.;
+      f[0] = 0.;
       return 0;
     }
 
-  //integrate between ymin and ymax
-  double y=ymn+(ymx-ymn)*x[1];
-  jac=jac*(ymx-ymn);
-  
-  //factorised integration between qtmin and qtmax
-  //use qt2 to get the correct jacobian!
-  double qtcut = max(opts.qtcut,opts.xqtcut*m);
-  double qtmn = max(qtcut, phasespace::qtmin);
-  double cosh2y34=pow((exp(y)+exp(-y))*0.5,2);
-  double kinqtlim = sqrt(pow(pow(energy_.sroot_,2)+m*m,2)/(4*pow(energy_.sroot_,2)*cosh2y34)-m*m);
-  double switchqtlim = switching::qtlimit(m);
-  double qtlim = min(kinqtlim, switchqtlim);
-  double qtmx = min(qtlim, phasespace::qtmax);
-  if (qtmn >= qtmx)
-    {
-      f[0]=0.;
-      return 0;
-    }
-
+  double qtcut = max(opts.qtcut,opts.xqtcut*phasespace::m);
+  double qtmn, qtmx;
   //In the fixed order calculation, integrate from qtcut to infinity
   if (opts.fixedorder)
     {
-      if (phasespace::qtmin > 0)
-	{
-	  f[0]=0.;
-	  return 0;
-	}
       qtmn = qtcut;
       qtmx = 1e10;
+      phasespace::set_qt(0.); //In the fixed order calculation evaluate kinematic cuts with qt=0
     }
-
-  //set global variables to costh, m, qt, y
-  if (opts.fixedorder) //In the fixed order calculation evaluate kinematic cuts with qt=0
-    phasespace::set_mqtyphi(m, 0., y, 0.);
   else
-    phasespace::set_mqtyphi(m, (qtmn+qtmx)/2., y, 0.);
+    {
+      //Generate the boson transverse momentum between the integration boundaries
+      qtmn = max(qtcut, phasespace::qtmin);
+      phasespace::calcexpy();
+      double cosh2y=pow((phasespace::exppy+phasespace::expmy)*0.5,2);
+      double kinqtlim = 1e10; //There should not be any kinematic limit on qt, since the counterterm is evaluated with born level kinematic
+      //double kinqtlim = sqrt(max(0.,pow(pow(opts.sroot,2)+phasespace::m2,2)/(4*pow(opts.sroot,2)*cosh2y)-phasespace::m2)); //introduced max to avoid neqative argument of sqrt when y=ymax
+      //double kinqtlim = sqrt(max(0.,pow(pow(opts.sroot,2)+phasespace::m2,2)/(4*pow(opts.sroot,2))-phasespace::m2)); //introduced max to avoid negative argument of sqrt when y=ymax
+      double switchqtlim = switching::qtlimit(phasespace::m);
+      double qtlim = min(kinqtlim, switchqtlim);
+      qtmx = min(qtlim, phasespace::qtmax);
+      if (qtmn >= qtmx)
+	{
+	  f[0] = 0.;
+	  return 0;
+	}
+      phasespace::set_qt((qtmn+qtmx)/2.); //Is this actually needed?
+    }
+  phasespace::set_phiV(0.);
+  double m = phasespace::m;
+  double y = phasespace::y;
 
   clock_t qtbt, qtet;
   qtbt = clock();
@@ -593,8 +594,9 @@ integrand_t ctintegrand2d(const int &ndim, const double x[], const int &ncomp, d
   clock_t cet = clock();
 
   //avoid nans
-  if (f[0] != f[0])
+  if (isnan_ofast(f[0]))
     {
+      cout << "nan in ctintegr 2d " << endl;
       f[0]=0.;
       if (opts.PDFerrors)
 	for (int i = 1; i < opts.totpdf; i++)
