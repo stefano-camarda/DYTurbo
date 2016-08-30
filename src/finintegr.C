@@ -5,7 +5,9 @@
 #include "settings.h"
 #include "vjint.h"
 #include "loint.h"
+#include "vjloint.h"
 #include "cubacall.h"
+#include "isnan.h"
 
 #include <iostream>
 #include <iomanip>
@@ -50,101 +52,47 @@ integrand_t vjintegrand(const int &ndim, const double x[], const int &ncomp, dou
 //dOmega integration is already performed in the integrand
 //works only without cuts on the leptons
 {
-  //  cout << x[0] << "  " << x[1] << "  " << x[2] << endl;
   clock_t begin_time, end_time;
 
   begin_time = clock();
 
   //Jacobian of the change of variables from the unitary square x[2] to the m, qt boundaries
   double jac = 1.;
-
-  // Generate the boson invariant mass between the integration boundaries
-  double mcut = (opts.xqtcut != 0.) ? phasespace::qtmax/opts.xqtcut : phasespace::mmax;
-  double wsqmin = pow(phasespace::mmin,2);
-  double wsqmax = pow(min(phasespace::mmax,mcut),2);
-  if (wsqmin >= wsqmax)
-    {
-      f[0] = 0.;
-      return 0;
-    }
-  double x1=x[0];
-  double m2,wt;
-  breitw_(x1,wsqmin,wsqmax,opts.rmass,opts.rwidth,m2,wt);
-  double m=sqrt(m2);
-  jac=jac*wt;
-
-  //Dynamic scale (not implemented yet)
-  //if(dynamicscale) call scaleset(m2)
-
-  //Limit y boundaries to the kinematic limit in y
-
-  //fodyqt limits
-  /*  //.....kinematical limits on qt
-  double z=q2/pow(energy_.sroot_,2);
-  double xr=pow((1-z),2)-4*z*pow(qt/q,2);
-  if (xr < 0)
+  bool status = true;
+  
+  double r3[3] = {x[0], x[1], x[2]};
+  status = phasespace::gen_mqty(r3, jac, true);
+  //status = phasespace::gen_myqt(r3, jac, true);
+  if (!status)
     {
       f[0] = 0.;
       return 0;
     }
   
-  //.....kinematical limits on y
-  double tm=sqrt(m2+pow(qt,2));
-  double tmpx=(q2+pow(energy_.sroot_,2))/energy_.sroot_/tm;
-  ymax=log((tmpx+sqrt(pow(tmpx,2)-4.))/2.);*/
-
-  double ylim = 0.5*log(pow(energy_.sroot_,2)/m2);
-  double ymn = min(max(-ylim, phasespace::ymin),ylim);
-  double ymx = max(min(ylim, phasespace::ymax),-ylim);
-  if (ymn >= ymx)
-    {
-      f[0] = 0.;
-      return 0;
-    }
-
-  //integrate between ymin and ymax
-  double y=ymn+(ymx-ymn)*x[1];
-  jac=jac*(ymx-ymn);
-
+  double m = phasespace::m;
+  double qt = phasespace::qt;
+  double y = phasespace::y;
   
-  //integrate between qtmin and qtmax
-  //use qt to get the correct jacobian
-  double qtcut = max(opts.qtcut,opts.xqtcut*m);
-  double qtmn = max(qtcut, phasespace::qtmin);
-  double cosh2y34=pow((exp(y)+exp(-y))*0.5,2);
-  double kinqtlim = sqrt(max(0.,pow(pow(energy_.sroot_,2)+m*m,2)/(4*pow(energy_.sroot_,2)*cosh2y34)-m*m)); //introduced max to avoid neqative argument of sqrt when y=ymax
-  double qtmx = min(kinqtlim, phasespace::qtmax);
-  if (qtmn >= qtmx)
-    {
-      f[0] = 0.;
-      return 0;
-    }
-  double qtmn2 = pow(qtmn,2);
-  double qtmx2 = pow(qtmx,2);
-
-  double tiny = 1E-5;
-  double a = 1./(1+log(qtmx2/tiny));
-  double b = 1./(1+log(qtmn2/tiny));
-  double x2 = a + (b-a) * x[2];
-  jac = jac * (b-a);
-  double qt2=tiny*exp(1./x2 - 1);
-  jac=jac*qt2/pow(x2,2);
-  double qt=sqrt(qt2);
-  jac=jac/qt/2.;
-
-  //  double qt=qtmn+(qtmx-qtmn)*x[2];
-  //  jac=jac*(phasespace::qtmax-qtmn);
-
   //evaluate the Vj (N)LO cross section
   if (opts.pcubature)
-    f[0] = vjint::vint(m,qt,y);
+    f[0] = vjint::vint(m,qt,y); //C++ interface
   else
-    f[0] = vjfo_(m,qt,y);
+    f[0] = vjfo_(m,qt,y); //fortran interface
 
-  if (f[0] != f[0])
-    f[0] = 0.;  //avoid nans
+  
+  if (isnan_ofast(f[0]))
+    {
+      cout << m << " " << qt << " " << y << " nan in vjint:vint() " << endl;
+      f[0] = 0.;  //avoid nans
+    }
 	   
-  f[0] = f[0]*jac;
+  if (isnan_ofast(jac))
+    {
+      cout << m << " " << qt << " " << y << ": nan in gen_myqt() " << endl;
+      f[0] = 0.;  //avoid nans
+    }
+  else
+    f[0] = f[0]*jac;
 
   end_time = clock();
   if (opts.timeprofile)
@@ -384,7 +332,7 @@ integrand_t v2jintegrand(const int &ndim, const double x[], const int &ncomp, do
   return 0;
 }
 
-integrand_t lointegrand(const int &ndim, const double x[], const int &ncomp, double f[],
+integrand_t lointegrandMC(const int &ndim, const double x[], const int &ncomp, double f[],
 			 void* userdata, const int &nvec, const int &core,
 			 double &weight, const int &iter)
 {
@@ -400,39 +348,44 @@ integrand_t lointegrand(const int &ndim, const double x[], const int &ncomp, dou
   
   //Jacobian of the change of variables from the unitary hypercube x[3] to the m, y boundaries
   double jac = 1.;
+  bool status = true;
 
-  // Generate the boson invariant mass between the integration boundaries
-  double wsqmin = pow(phasespace::mmin,2);
-  double wsqmax = pow(phasespace::mmax,2);
-  double x1=x[0];
-  double m2,wt;
-  breitw_(x1,wsqmin,wsqmax,opts.rmass,opts.rwidth,m2,wt);
-  double m=sqrt(m2);
-  jac=jac*wt;
-
-  //Limit y boundaries to the kinematic limit in y
-  double ylim = 0.5*log(pow(energy_.sroot_,2)/m2);
-  double ymn = min(max(-ylim, phasespace::ymin),ylim);
-  double ymx = max(min(ylim, phasespace::ymax),-ylim);
-  if (ymn >= ymx)
+  //generate phase space
+  double r1[2] = {x[0], x[1]};
+  status = phasespace::gen_my(r1, jac);
+  if (!status)
     {
-      f[0]=0.;
+      f[0] = 0.;
       return 0;
     }
-
-  //integrate between ymin and ymax
-  double y=ymn+(ymx-ymn)*x[1];
-  jac=jac*(ymx-ymn);
-
-  //costh
-  double costh = x[2]*2.-1.;
-  jac=jac*2.;
+  phasespace::set_qt(0.);
+  phasespace::set_phiV(0.);
   
-  dofill_.doFill_ = int(iter==last_iter);
-  f[0] = loint::lint(costh,m,y,0)*jac;
+  double r2[2] = {x[2], x[3]};
+  phasespace::gen_costhphi(r2, jac);
 
-  //phi integration is not needed because an overall 2*pi factor is already in the integrand
-  //f[0] = f[0] * 2.*M_PI;
+  //generate boson and leptons
+  phasespace::calcexpy();
+  phasespace::calcmt();
+  phasespace::genV4p();
+  phasespace::genl4p();
+
+  //apply cuts
+  if (!cuts::lep(phasespace::p3,phasespace::p4))
+    {
+      f[0] = 0.;
+      return 0;
+    }
+  
+  //calculate integrand
+  f[0] = loint::lint(phasespace::costh,phasespace::m,phasespace::y,0)*jac;
+
+  //fill histograms
+  if (iter==last_iter)
+    {
+      double wt = weight*f[0];
+      hists_fill_(phasespace::p3,phasespace::p4,&wt);
+    }
   
   tell_to_grid_we_are_alive();
   return 0;
@@ -479,36 +432,75 @@ integrand_t lointegrand2d(const int &ndim, const double x[], const int &ncomp, d
 
   //Jacobian of the change of variables from the unitary hypercube x[3] to the m, y boundaries
   double jac = 1.;
+  bool status = true;
 
-  // Generate the boson invariant mass between the integration boundaries
-  double wsqmin = pow(phasespace::mmin,2);
-  double wsqmax = pow(phasespace::mmax,2);
-  double x1=x[0];
-  double m2,wt;
-  breitw_(x1,wsqmin,wsqmax,opts.rmass,opts.rwidth,m2,wt);
-  double m=sqrt(m2);
-  jac=jac*wt;
-
-  //Limit y boundaries to the kinematic limit in y
-  double ylim = 0.5*log(pow(energy_.sroot_,2)/m2);
-  double ymn = min(max(-ylim, phasespace::ymin),ylim);
-  double ymx = max(min(ylim, phasespace::ymax),-ylim);
-  if (ymn >= ymx)
+  double r1[2] = {x[0], x[1]};
+  status = phasespace::gen_my(r1, jac);
+  if (!status)
     {
-      f[0]=0.;
+      f[0] = 0.;
       return 0;
     }
+  phasespace::set_qt(0.);
 
-  //integrate between ymin and ymax
-  double y=ymn+(ymx-ymn)*x[1];
-  jac=jac*(ymx-ymn);
+  double m = phasespace::m;
+  double y = phasespace::y;
 
-  //dofill_.doFill_ = int(iter==last_iter);
-  f[0] = loint::lint(0.,m,y,1)*jac;
+  f[0] = loint::lint(0.,phasespace::m,phasespace::y,1)*jac;
 
-  //phi integration is not needed because an overall 2*pi factor is already in the integrand
-  //f[0] = f[0] * 2.*M_PI;
+  //perform phi integration
+  f[0] = f[0] * 2.*M_PI;
   
+  tell_to_grid_we_are_alive();
+  return 0;
+}
+
+integrand_t vjlointegrandMC(const int &ndim, const double x[], const int &ncomp, double f[],
+			    void* userdata, const int &nvec, const int &core,
+			    double &weight, const int &iter)
+{
+  f[0] = vjloint::calcvegas(x);
+
+  if (isnan_ofast(f[0]))
+    f[0] = 0.;  //avoid nans
+
+  if (iter==last_iter)
+    {
+      double wt = weight*f[0];
+      hists_fill_(phasespace::p3,phasespace::p4,&wt);
+    }
+  
+  tell_to_grid_we_are_alive();
+  return 0;
+}
+
+
+integrand_t vjlointegrand(const int &ndim, const double x[], const int &ncomp, double f[])
+{
+  clock_t begin_time, end_time;
+
+  begin_time = clock();
+
+  f[0] = vjloint::calc(x);
+
+  if (isnan_ofast(f[0]))
+    f[0] = 0.;  //avoid nans
+  
+  end_time = clock();
+  if (opts.timeprofile)
+    cout << setw (3) << "m" << setw(10) << phasespace::m << setw(4) << "qt" << setw(10) <<  phasespace::qt << setw(4) << "y" << setw(10) <<  phasespace::y
+	 << setw (6) << "costh" << setw(10) << phasespace::costh << setw(4) << "phi" << setw(10) <<  phasespace::phi_lep << setw(3) << "x2" << setw(10) <<  phasespace::x2
+	 << setw(8) << "result" << setw(12) << f[0]
+	 << setw(10) << "tot time" << setw(10) << float( end_time - begin_time ) /  CLOCKS_PER_SEC
+	 << endl;
+  
+  tell_to_grid_we_are_alive();
+  return 0;
+}
+
+int vjlointegrand_cubature(unsigned ndim, const double x[], void *data, unsigned ncomp, double f[])
+{
+  vjlointegrand(ndim, x, ncomp, f);
   tell_to_grid_we_are_alive();
   return 0;
 }
