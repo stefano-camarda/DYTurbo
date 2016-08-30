@@ -62,8 +62,14 @@ namespace phasespace
   inline void calcmt() {mt2 = m2+qt2; mt = sqrt(mt2);};
   
   //generation of phase space variables from unitary (hyper)cubes
-  extern void gen_mqty(const double x[3], double& jac);
-  extern void gen_myqt(const double x[3], double& jac);
+  extern bool gen_m(double x, double& jac, double mlim, bool qtcut = false, bool qtswitching = false);
+  extern bool gen_y(double x, double& jac, double ylim);
+  extern bool gen_qt(double x, double& jac, double qtlim, bool qtcut = false);
+  extern bool gen_qt_ctfo(double x, double& jac);
+  
+  extern bool gen_mqty(const double x[3], double& jac, bool qtcut = false);
+  extern bool gen_myqt(const double x[3], double& jac, bool qtcut = false);
+  extern bool gen_my(const double x[2], double& jac, bool qtcut = false, bool qtswitching = false);
   extern void gen_costhphi(const double x[2], double& jac);
   extern void gen_costh(const double x, double& jac);
   extern void gen_phi(const double x, double& jac);

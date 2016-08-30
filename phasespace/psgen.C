@@ -1,5 +1,6 @@
 #include "phasespace.h"
 #include "settings.h"
+#include "switch.h"
 
 #include <iostream>
 #include <math.h>
@@ -31,85 +32,137 @@ double phasespace::p5[4];
 //exponent for the change of variable in x2
 const double esp=8.;
 
-void phasespace::gen_mqty(const double x[3], double& jac)
+bool phasespace::gen_m(double x, double& jac, double mlim, bool qtcut, bool qtswitching)
 {
-  //This routine employs the qtcut, should do also a version without qtcut
-  
-  //generate phase space as m, qt, y
-  //jac gets multiplied by the Jacobian of the change of variables from the unitary cube x[3] to the m, pt, y boundaries
-
-  //Generate the boson invariant mass between the integration boundaries
-  double mcut = (opts.xqtcut != 0.) ? phasespace::qtmax/opts.xqtcut : phasespace::mmax;
-  double wsqmin = pow(phasespace::mmin,2);
-  double wsqmax = pow(min(phasespace::mmax,mcut),2);
+  //Generate the boson invariant mass between the integration boundaries,
+  //jac gets multiplied by the Jacobian of the change of variable from the unitary interval to the m boundaries
+  double qtcutlim = (qtcut && opts.xqtcut != 0.) ? phasespace::qtmax/opts.xqtcut : phasespace::mmax;
+  double switchlim = (qtswitching) ? switching::mlimit(phasespace::qtmin) : phasespace::mmin;
+  double wsqmin = pow(max(phasespace::mmin,switchlim),2);
+  double wsqmax = pow(min(mlim,min(phasespace::mmax,qtcutlim)),2);
   if (wsqmin >= wsqmax)
-    {
-      jac = 0.;
-      return;
-    }
-  double xm=x[0];
-  mweight_breitw_(xm,wsqmin,wsqmax,opts.rmass,opts.rwidth,m2,jac);
+    return false;
+  mweight_breitw_(x,wsqmin,wsqmax,opts.rmass,opts.rwidth,m2,jac);
   m = sqrt(m2);
+  return true;
+}
 
-  //integrate between qtmin and qtmax
-  double qtcut = max(opts.qtcut,opts.xqtcut*m);
-  double qtmn = max(qtcut, phasespace::qtmin);
-  double kinqtlim = sqrt(max(0.,pow(pow(opts.sroot,2)+m2,2)/(4*pow(opts.sroot,2))-m2)); //introduced max to avoid negative argument of sqrt when y=ymax
-  double qtmx = min(kinqtlim, phasespace::qtmax);
+bool phasespace::gen_y(double x, double& jac, double ylim)
+{
+  //Generate the boson rapidity between the integration boundaries,
+  //jac gets multiplied by the Jacobian of the change of variable from the unitary interval to the y boundaries
+  double ymn = min(max(-ylim, phasespace::ymin),ylim);
+  double ymx = max(min(ylim, phasespace::ymax),-ylim);
+  if (ymn >= ymx)
+    return false;
+  y = ymn+(ymx-ymn)*x;
+  jac = jac*(ymx-ymn);
+  return true;
+}
+
+bool phasespace::gen_qt(double x, double& jac, double qtlim, bool qtcut)
+{
+  //Generate the boson rapidity between the integration boundaries,
+  //jac gets multiplied by the Jacobian of the change of variable from the unitary interval to the qt boundaries
+  double qtmn = qtcut ?
+    max(max(opts.qtcut,opts.xqtcut*m), phasespace::qtmin)
+    : phasespace::qtmin;
+  double qtmx = min(qtlim, phasespace::qtmax);
   if (qtmn >= qtmx)
-    {
-      jac = 0.;
-      return;
-    }
-  double xqt = x[1];
-  qtweight_(xqt,qtmn,qtmx,qt,jac);
+    return false;
+  qtweight_(x,qtmn,qtmx,qt,jac);
   //qtweight_flat_(xqt,qtmn,qtmx,qt,jac);
   qt2 = qt*qt;
+  return true;
+}
+
+bool phasespace::gen_qt_ctfo(double x, double& jac)
+{
+  //Generate the boson rapidity between the integration boundaries,
+  //jac gets multiplied by the Jacobian of the change of variable from the unitary interval to the qt boundaries
+  double qtmn = max(opts.qtcut,opts.xqtcut*m);
+  double qtmx = 1e10;
+  qtweight_(x,qtmn,qtmx,qt,jac);
+  //qtweight_flat_(xqt,qtmn,qtmx,qt,jac);
+  qt2 = qt*qt;
+  return true;
+}
+
+bool phasespace::gen_mqty(const double x[3], double& jac, bool qtcut) //add switching boolean here
+{
+  //generate phase space as m, qt, y
+  //jac gets multiplied by the Jacobian of the change of variables from the unitary cube x[3] to the m, qt, y boundaries
+  bool status = true;
+
+  //Generate the boson invariant mass between the integration boundaries
+  //kinematic limit from the relation x(1,2) < 1 ==> exp(fabs(y)) < sqrt(s)/m
+  double ymn;
+  if (ymin*ymax <= 0.)
+    ymn = 0.;
+  else
+    ymn = min(fabs(ymin),fabs(ymax));
+  double mlim = opts.sroot/exp(ymn);
+  status = gen_m(x[0], jac, mlim, qtcut);
+  if (!status)
+    return false;
+
+  //Generate the boson transverse momentum between the integration boundaries
+  //double qtlim = sqrt(max(0.,pow(pow(opts.sroot,2)-m2,2))/(4*pow(opts.sroot,2))); //introduced max to avoid negative argument of sqrt when  y=ymax
+  //Account for ymin-ymax
+  double exppylim = exp(ymn);
+  double expmylim = 1./exppylim;
+  double cosh2y=pow((exppylim+expmylim)*0.5,2);
+
+  //kinematic limit from the relation E < sqrt(s) ==> (mt + qt)*cosh(y) < sqrt(s)
+  //double qtlim = sqrt(max(0.,pow(pow(opts.sroot,2)-m2*cosh2y,2)/(4*pow(opts.sroot,2)*cosh2y))); //introduced max to avoid negative argument of sqrt when y=ymax --> wrong formula calculated by me
+  double qtlim = sqrt(max(0.,pow(pow(opts.sroot,2)+m2,2)/(4*pow(opts.sroot,2)*cosh2y)-m2)); //introduced max to avoid neqative argument of sqrt when y=ymax --> apparently correct formula, cannot check
   
-  //integrate between ymin and ymax
+  status = gen_qt(x[1], jac, qtlim, qtcut);
+  if (!status)
+    return false;
+  
+  //Generate the boson rapidity between the integration boundaries
   calcmt();
   double tmpx=(m2+pow(opts.sroot,2))/opts.sroot/mt;
   double ylim=log((tmpx+sqrt(pow(tmpx,2)-4.))/2.); //Limit y boundaries to the kinematic limit in y
-  double ymn = min(max(-ylim, phasespace::ymin),ylim);
-  double ymx = max(min(ylim, phasespace::ymax),-ylim);
-  if (ymn >= ymx)
-    {
-      jac = 0.;
-      return;
-    }
-  y=ymn+(ymx-ymn)*x[2];
-  jac=jac*(ymx-ymn);
+  status = gen_y(x[2], jac, ylim);
+  if (!status)
+    return false;
+
+  return status;
 }
 
-void phasespace::gen_myqt(const double x[3], double& jac)
+bool phasespace::gen_myqt(const double x[3], double& jac, bool qtcut)
 {
-  //With respect to the previous routine, this revert the order in which y and qt are generated
+  //With respect to the previous routine, the order in which y and qt are generated is reversed
+  //generate phase space as m, y, qt
+  //jac gets multiplied by the Jacobian of the change of variables from the unitary cube x[3] to the m, y, qt boundaries
+  bool status = true;
 
-  // Generate the boson invariant mass between the integration boundaries
-  double mcut = (opts.xqtcut != 0.) ? phasespace::qtmax/opts.xqtcut : phasespace::mmax;
-  double wsqmin = pow(phasespace::mmin,2);
-  double wsqmax = pow(min(phasespace::mmax,mcut),2);
-  if (wsqmin >= wsqmax)
-    {
-      jac = 0.;
-      return;
-    }
-  double xm=x[0];
-  mweight_breitw_(xm,wsqmin,wsqmax,opts.rmass,opts.rwidth,m2,jac);
-  m = sqrt(m2);
+  //Generate the boson invariant mass between the integration boundaries
+  //kinematic limit from the relation x(1,2) < 1 ==> exp(fabs(y)) < sqrt(s)/m
+  double ymn;
+  if (ymin*ymax <= 0.)
+    ymn = 0.;
+  else
+    ymn = min(fabs(ymin),fabs(ymax));
+  double mlim = opts.sroot/exp(ymn);
+  status = gen_m(x[0], jac, mlim, qtcut);
+  if (!status)
+    return false;
 
-  //integrate between ymin and ymax
-  double ylim = 0.5*log(pow(opts.sroot,2)/m2); //Limit y boundaries to the kinematic limit in y
-  double ymn = min(max(-ylim, phasespace::ymin),ylim);
-  double ymx = max(min(ylim, phasespace::ymax),-ylim);
-  if (ymn >= ymx)
-    {
-      jac = 0.;
-      return;
-    }
-  y=ymn+(ymx-ymn)*x[1];
-  jac=jac*(ymx-ymn);
-
+  //Generate the boson rapidity between the integration boundaries
+  //double ylim = 0.5*log(pow(opts.sroot,2)/m2); //Limit y boundaries to the kinematic limit in y
+  double qtmn = qtcut ?
+    max(max(opts.qtcut,opts.xqtcut*m), phasespace::qtmin)
+    : phasespace::qtmin;
+  double mtmin = sqrt(m2+pow(qtmn,2));
+  double tmpx=(m2+pow(opts.sroot,2))/opts.sroot/mtmin;
+  double ylim=log((tmpx+sqrt(pow(tmpx,2)-4.))/2.); //Limit y boundaries to the kinematic limit in y, accounting for phasespace::qtmin
+  status = gen_y(x[1], jac, ylim);
+  if (!status)
+    return false;
+  
 //  //fodyqt limits
 //  //.....kinematical limits on qt
 //  double z=q2/pow(energy_.sroot_,2);
@@ -121,37 +174,60 @@ void phasespace::gen_myqt(const double x[3], double& jac)
 //    }
 //  
 
-  //integrate between qtmin and qtmax
+  //Generate the boson transverse momentum between the integration boundaries
   calcexpy();
-  double qtcut = max(opts.qtcut,opts.xqtcut*m);
-  double qtmn = max(qtcut, phasespace::qtmin);
   double cosh2y=pow((exppy+expmy)*0.5,2);
-  double kinqtlim = sqrt(max(0.,pow(pow(opts.sroot,2)+m2,2)/(4*pow(opts.sroot,2)*cosh2y)-m2)); //introduced max to avoid neqative argument of sqrt when y=ymax
-  double qtmx = min(kinqtlim, phasespace::qtmax);
-  if (qtmn >= qtmx)
-    {
-      jac = 0.;
-      return;
-    }
-  double xqt = x[2];
-  qtweight_(xqt,qtmn,qtmx,qt,jac);
-  //qtweight_flat_(xqt,qtmn,qtmx,qt,jac);
-  qt2 = qt*qt;
+  double qtlim = sqrt(max(0.,pow(pow(opts.sroot,2)+m2,2)/(4*pow(opts.sroot,2)*cosh2y)-m2)); //introduced max to avoid neqative argument of sqrt when y=ymax
+  status = gen_qt(x[2], jac, qtlim, qtcut);
+  if (!status)
+    return false;
+
+  return status;
 }
+
+bool phasespace::gen_my(const double x[2], double& jac, bool qtcut, bool qtswitching)
+{
+  //generate phase space as m, y
+  //jac gets multiplied by the Jacobian of the change of variables from the unitary square x[2] to the m, y boundaries
+  //Current version works for born kinematics, i.e. qt=0 (which is, probably, the correct implementation for born, resummed and counterterm)
+  bool status = true;
+
+  //Generate the boson invariant mass between the integration boundaries
+  //kinematic limit from the relation x(1,2) < 1 ==> exp(fabs(y)) < sqrt(s)/m
+  double ymn;
+  if (ymin*ymax <= 0.)
+    ymn = 0.;
+  else
+    ymn = min(fabs(ymin),fabs(ymax));
+  double mlim = opts.sroot/exp(ymn);
+  status = gen_m(x[0], jac, mlim, qtcut, qtswitching);
+  if (!status)
+    return false;
+
+  //Generate the boson rapidity between the integration boundaries
+  //Here there is a delicate point, should consider the value of qt != 0 when setting the kinematical limit for y?
+  //For counterterm and resummed piece, the cross section is calculated at born level with pt=0, and the qt is generated independently
+  //However, this will determine some inconsistencies at large rapidities, because of nonzero cross sections above the kinematical limit for y
+  
+  //double mtmin = sqrt(m2+pow(phasespace::qtmin,2));
+  //double tmpx=(m2+pow(opts.sroot,2))/opts.sroot/mtmin;
+  //double ylim=log((tmpx+sqrt(pow(tmpx,2)-4.))/2.); //Limit y boundaries to the kinematic limit in y
+
+  double ylim = 0.5*log(pow(opts.sroot,2)/m2); //Limit y boundaries to the kinematic limit in y
+
+  status = gen_y(x[1], jac, ylim);
+  if (!status)
+    return false;
+
+  return status;
+}  
 
 void phasespace::gen_costhphi(const double x[2], double& jac)
 {
   //generate phase space as costh, phi
   //jac gets multiplied by the Jacobian of the change of variables from the unitary square x[2] to the costh, phi_lep boundaries
-
-  //cos of the polar angle of the lepton in the boson rest frame
-  costh=-1.+2.*x[0];
-  jac=jac*2.;
-  
-  //lepton azimuthal angle in the boson rest frame
-  phi_lep = -M_PI+2.*M_PI*x[1]; // --> important to generate phi in [-pi,pi] to use fast trigonometric relations as sin(phi) = sqrt(1 - cos2(phi)) * sign(phi)
-  //phi_lep = 2.*M_PI*x[1];
-  jac=jac*2.*M_PI;
+  gen_costh(x[0], jac);
+  gen_phi(x[1], jac);  
 }
 
 void phasespace::gen_costh(const double x, double& jac)
@@ -181,10 +257,7 @@ void phasespace::gen_x2(const double x, double& jac)
     
   if (x2min > 1. || x2min < 0.)
     {
-      cout << "error in x2min " << x2min
-	   << " m " << m
-	   << " pt " << qt
-	   << " y " << y << endl;
+      cout << "error in x2min " << x2min << " m " << m << " pt " << qt  << " y " << y << endl;
       jac=0.;
       return;
     }
