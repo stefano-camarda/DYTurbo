@@ -12,8 +12,10 @@ extern "C" {
   //tools
   void dyboost_(double& gamma, double beta[3], double pin[4], double pout[4]);
   void boostv_(double& m,double p[4],double& gamma,double beta[3]);
+  void rotate_(double vin[3], double& c, double& s, double ax[3], double vout[3]);
   void genp_(double& costh, double& phi, double& m, double p[4]);
   void qtweight_(double& x,double& qtmin,double& qtmax,double& qt,double& jac);
+  void qtweight_res_(double& x,double& qtmin,double& qtmax,double& qt,double& jac);
   void qt2weight_(double& x,double& qt2min,double& qt2max,double& qt2,double& jac);
   void qtweight_flat_(double& x,double& qtmin,double& qtmax,double& qt,double& jac);
   void mweight_breitw_(double& x,double& mmin2,double& mmax2,double& rmass,double& rwidth,double& m2,double& jac);
@@ -67,8 +69,9 @@ namespace phasespace
   extern bool gen_qt(double x, double& jac, double qtlim, bool qtcut = false);
   extern bool gen_qt_ctfo(double x, double& jac);
   
-  extern bool gen_mqty(const double x[3], double& jac, bool qtcut = false);
-  extern bool gen_myqt(const double x[3], double& jac, bool qtcut = false);
+  extern bool gen_mqty(const double x[3], double& jac, bool qtcut = false, bool qtswitching = false);
+  extern bool gen_myqt(const double x[3], double& jac, bool qtcut = false, bool qtswitching = false);
+  extern bool gen_mqt(const double x[2], double& jac, bool qtcut = false, bool qtswitching = false);
   extern bool gen_my(const double x[2], double& jac, bool qtcut = false, bool qtswitching = false);
   extern void gen_costhphi(const double x[2], double& jac);
   extern void gen_costh(const double x, double& jac);
@@ -88,11 +91,24 @@ namespace phasespace
   extern double p4[4];
   extern double p3[4];
 #pragma omp threadprivate(p4,p3)
-
-  //  extern void genl4p(float costh, float phi_lep);
+  /*
+  inline void getp3(double p[4])
+  {
+    p[0] = p3[0];
+    p[1] = p3[1];
+    p[2] = p3[2];
+    p[3] = p3[3];
+  }
+  inline void getp4(double p[4])
+  {
+    p[0] = p4[0];
+    p[1] = p4[1];
+    p[2] = p4[2];
+    p[3] = p4[3];
+  }
+  */
+  
   extern void genl4p();
-  //  extern void getp3(double p[4]);
-  //  extern void getp4(double p[4]);
 
   extern double p1[4];
   extern double p2[4];
@@ -102,6 +118,16 @@ namespace phasespace
   extern double p5[4];
 #pragma omp threadprivate(p5)
   extern void genp5();
+
+  inline void rotate(double vin[3], double c, double s, double ax[3], double vout[])
+  {
+    //Rotate the 3-vector "vin" around the axis "ax"
+    //by and angle phi with "c" = cos(phi) and "s" = sin(phi)
+    //"vout" is the result
+    vout[0]=(c+ax[0]*ax[0]*(1-c))      *vin[0] + (ax[0]*ax[1]*(1-c)-ax[2]*s)*vin[1] + (ax[0]*ax[2]*(1-c)+ax[1]*s)*vin[2];
+    vout[1]=(ax[1]*ax[0]*(1-c)+ax[2]*s)*vin[0] + (c+ax[1]*ax[1]*(1-c))      *vin[1] + (ax[1]*ax[2]*(1-c)-ax[0]*s)*vin[2];
+    vout[2]=(ax[2]*ax[0]*(1-c)-ax[1]*s)*vin[0] + (ax[2]*ax[1]*(1-c)+ax[0]*s)*vin[1] + (c+ax[2]*ax[2]*(1-c))      *vin[2];
+  }
 }
 
 #endif
