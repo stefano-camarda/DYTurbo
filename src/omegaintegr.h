@@ -11,27 +11,32 @@ using namespace std;
 extern "C" {
   void cthmoments_(double &cthmom0, double &cthmom1, double &cthmom2);
   void genv4p_();
+  void genrfaxes_();
 }
 
 namespace omegaintegr
 {
+  /*
   //Vector boson 4-momentum and boost
   extern double pV[4];
   extern double gam;
   extern double beta[3];
 #pragma omp threadprivate(pV,gam,beta)
+  */
 
   extern void genV4p();
-  
+  extern void genRFaxes();
+  extern void genzaxisCS();
+
+  /*
   //leptons 4-momenta
   extern double p4[4];
   extern double p3[4];
 #pragma omp threadprivate(p4,p3)
+  */
 
   //  extern void genl4p(float costh, float phi_lep);
   extern void genl4p(double costh, double phi_lep);
-  extern void getp3(double p[4]);
-  extern void getp4(double p[4]);
   
   //CS framework
   extern double kap1[4];

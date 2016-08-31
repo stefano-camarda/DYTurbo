@@ -18,6 +18,7 @@
 #include <iomanip>
 #include <vector>
 
+/*
 //Vector boson 4-momentum and boost
 double omegaintegr::pV[4];
 double omegaintegr::gam;
@@ -26,6 +27,7 @@ double omegaintegr::beta[3];
 //leptons 4-momenta
 double omegaintegr::p4[4];
 double omegaintegr::p3[4];
+*/
 
 //rest frame axes
 double omegaintegr::kap1[4];
@@ -44,50 +46,57 @@ void cthmoments_(double &cthmom0, double &cthmom1, double &cthmom2)
   omegaintegr::cthmoments(cthmom0, cthmom1, cthmom2);
 }
 
+void genrfaxes_()
+{
+  omegaintegr::genRFaxes();
+}
+
 
 //the m, qt, y, and phi variables are taken from the phasespace:: namelist
 void omegaintegr::genV4p()
 {
   //Generate the boson 4-momentum
-  double m2=phasespace::m*phasespace::m;
-  double exppy=exp(phasespace::y);
-  double expmy=1./exppy;
-  double qt2=pow(phasespace::qt,2);
-  double mt2=m2+qt2;
+  phasespace::calcmt();
+  phasespace::calcexpy();
+  phasespace::genV4p();
 
-  //vector boson momentum: pV[3]^2-pV[0]^2-pV[1]^2-pV[2]^2=m2
-  double cosphiV = cos(phasespace::phiV);
-  double sinphiV = sqrt(max(0.,1.-pow(cosphiV,2)))*(phasespace::phiV>0 ? 1 : -1);
-  pV[0]=phasespace::qt*cosphiV;        //px
-  pV[1]=phasespace::qt*sinphiV;        //py
-  pV[2]=0.5*sqrt(mt2)*(exppy-expmy);   //pz
-  pV[3]=0.5*sqrt(mt2)*(exppy+expmy);   //E
+  //Generate axes of the rest frame
+  genRFaxes();
+  return;
+}
 
-  //Calculate the boost 4-vector from the boson rest frame to the laboratory frame (-pV)
-  gam=pV[3]/phasespace::m;
-  beta[0]=-pV[0]/pV[3];
-  beta[1]=-pV[1]/pV[3];
-  beta[2]=-pV[2]/pV[3];
 
-  //if qt=0, as in fixed order predictions, don't bother calculating axes of the rest frame (all rest frames are equivalent at qt=0)
-  if (phasespace::qt == 0.)
+void omegaintegr::genRFaxes()
+{
+  //In some cases the generation of the first lepton 4-momentum is trivial,
+  //i.e. it is done with respect to the reference system x = (1,0,0); y = (0,1,0); z=(0,0,1)
+  //Do not need to calculate axes in these cases:
+  //a) When qt=0, as in fixed order predictions, because all rest frames are equivalent
+  //b) In the naive prescription, the rest frame axes are the native x,y,z axes of the laboratory frame
+  //c) With the cuba integration option, the phase space is generated uniformly
+  //and costh is calculated using Catani's formulas arXiv:1507.0693 (25-32)
+  if (phasespace::qt == 0. || opts.qtrec_naive || opts.cubaint)
     return;
-  
+
+  double m2 = pow(phasespace::m,2);
+  double qt2 = pow(phasespace::qt,2);
+  double mt2 = m2+qt2;
+
   //recoil prescriptions are defined by the values of kt1 and kt2
   double kt1, kt2;
 
   //CS frame prescription
   if (opts.qtrec_cs)
     {
-      kt1 = pV[0]/2.;
-      kt2 = pV[1]/2.;
+      kt1 = phasespace::pV[0]/2.;
+      kt2 = phasespace::pV[1]/2.;
     }
 
   //naive prescription (also called MY prescription in DYRES)
   if (opts.qtrec_naive)
     {
-      kt1=(1.+pV[2]/(sqrt(m2)+pV[3]))*pV[0]/2; //this prescription should be still symmetric, because for kt_1(y)=kt_2(-y) and kt_2(y)=kt_1(-y)  
-      kt2=(1.+pV[2]/(sqrt(m2)+pV[3]))*pV[1]/2;
+      kt1=(1.+phasespace::pV[2]/(sqrt(m2)+phasespace::pV[3]))*phasespace::pV[0]/2; //this prescription should be still symmetric, because for kt_1(y)=kt_2(-y) and kt_2(y)=kt_1(-y)  
+      kt2=(1.+phasespace::pV[2]/(sqrt(m2)+phasespace::pV[3]))*phasespace::pV[1]/2;
     }  
 
   //alternative k1t = 0 prescription
@@ -98,72 +107,30 @@ void omegaintegr::genV4p()
     }
   
   //zeta1 as in Eq.(26) of arXiv:1507.06937
-  double zeta1=1./m2/2.*(m2+2.*(pV[0]*kt1+pV[1]*kt2)+sqrt(pow((m2+2.*(pV[0]*kt1+pV[1]*kt2)),2)-4.*mt2*(pow(kt1,2)+pow(kt2,2))));
-  double qP1=(pV[3]-pV[2])*energy_.sroot_/2.;
-  double qP2=(pV[3]+pV[2])*energy_.sroot_/2.; //qP2 is not used
+  double ktdotpV = phasespace::pV[0]*kt1+phasespace::pV[1]*kt2;
+  double zeta1 = 1./m2/2.*(m2+2.*(ktdotpV)+sqrt(pow((m2+2.*(ktdotpV)),2)-4.*mt2*(pow(kt1,2)+pow(kt2,2))));
+  double qP1 = (phasespace::pV[3]-phasespace::pV[2])*opts.sroot/2.;
+  //double qP2 = (phasespace::pV[3]+phasespace::pV[2])*opts.sroot/2.; //qP2 is not used
+  
   //kap1 is the colliding parton a1 after the lorentz transformation from the boson rest frame to the laboratory frame
-  kap1[3]=energy_.sroot_/2.*(zeta1*m2/2./qP1+(pow(kt1,2)+pow(kt2,2))/zeta1*qP1/m2/pow(energy_.sroot_,2)*2.);
-  kap1[0]=kt1;
-  kap1[1]=kt2;
-  kap1[2]=energy_.sroot_/2.*(zeta1*m2/2./qP1-(pow(kt1,2)+pow(kt2,2))/zeta1*qP1/m2/pow(energy_.sroot_,2)*2.);
+  kap1[3] = opts.sroot/2.*(zeta1*m2/2./qP1+(pow(kt1,2)+pow(kt2,2))/zeta1*qP1/m2/pow(opts.sroot,2)*2.);
+  kap1[0] = kt1;
+  kap1[1] = kt2;
+  kap1[2] = opts.sroot/2.*(zeta1*m2/2./qP1-(pow(kt1,2)+pow(kt2,2))/zeta1*qP1/m2/pow(opts.sroot,2)*2.);
   //  kap1[2] *= phasespace::y < 0 ? -1 : 1;
 
-  /*
-  if (opts.qtrec_cs)   //CS frame prescription
-    {
-      //take incoming partons, and boost them in the boson rest frame
-      double bt[3];
-      bt[0]=-beta[0];
-      bt[1]=-beta[1];
-      bt[2]=-beta[2];
-
-      double p1[4];
-      p1[3] = 0.5*m*exppy;
-      p1[0] = 0;
-      p1[1] = 0;
-      p1[2] = 0.5*m*exppy;
-
-      double p2[4];
-      p2[3] = 0.5*m*expmy;
-      p2[0] = 0;
-      p2[1] = 0;
-      p2[2] = -0.5*m*expmy;
-
-      double p1cm[4];
-      double bdotp1=p1[0]*bt[0]+p1[1]*bt[1]+p1[2]*bt[2];
-      p1cm[3]=gam*(p1[3]-bdotp1);
-      p1cm[0]=p1[0]+gam*bt[0]*(gam/(gam+1)*bdotp1-p1[3]);
-      p1cm[1]=p1[1]+gam*bt[1]*(gam/(gam+1)*bdotp1-p1[3]);
-      p1cm[2]=p1[2]+gam*bt[2]*(gam/(gam+1)*bdotp1-p1[3]);
-
-      double p2cm[4];
-      double bdotp2=p2[0]*bt[0]+p2[1]*bt[1]+p2[2]*bt[2];
-      p2cm[3]=gam*(p2[3]-bdotp2);
-      p2cm[0]=p2[0]+gam*bt[0]*(gam/(gam+1)*bdotp2-p2[3]);
-      p2cm[1]=p2[1]+gam*bt[1]*(gam/(gam+1)*bdotp2-p2[3]);
-      p2cm[2]=p2[2]+gam*bt[2]*(gam/(gam+1)*bdotp2-p2[3]);
-
-      //define the polar axis in CS frame, which is the axis bisecting the angle between p1 and p2 incoming partons
-      double p1cmabs = sqrt(pow(p1cm[0],2)+pow(p1cm[1],2)+pow(p1cm[2],2));
-      double p2cmabs = sqrt(pow(p2cm[0],2)+pow(p2cm[1],2)+pow(p2cm[2],2));
-      zax[0] = p1cm[0]/p1cmabs - p2cm[0]/p2cmabs;
-      zax[1] = p1cm[1]/p1cmabs - p2cm[1]/p2cmabs;
-      zax[2] = p1cm[2]/p1cmabs - p2cm[2]/p2cmabs;
-    }
-  */
-  
   //Determine the x,y,z axes of the boson rest frame for any general kt1 prescription
   //Calculate z axis by boosting back kap1 from the laboratory frame to the boson rest frame
   double bt[3];
-  bt[0]=-beta[0];
-  bt[1]=-beta[1];
-  bt[2]=-beta[2];
+  bt[0]=-phasespace::beta[0];
+  bt[1]=-phasespace::beta[1];
+  bt[2]=-phasespace::beta[2];
   
   double bdotk1=kap1[0]*bt[0]+kap1[1]*bt[1]+kap1[2]*bt[2];
   //zax[3]=gam*(kap1[3]-bdotk1); //bug bug bug!!! zax has only 3 elements!!!
-  zax[0]=kap1[0]+gam*bt[0]*(gam/(gam+1)*bdotk1-kap1[3]);
-  zax[1]=kap1[1]+gam*bt[1]*(gam/(gam+1)*bdotk1-kap1[3]);
-  zax[2]=kap1[2]+gam*bt[2]*(gam/(gam+1)*bdotk1-kap1[3]);
+  zax[0]=kap1[0]+phasespace::gam*bt[0]*(phasespace::gam/(phasespace::gam+1)*bdotk1-kap1[3]);
+  zax[1]=kap1[1]+phasespace::gam*bt[1]*(phasespace::gam/(phasespace::gam+1)*bdotk1-kap1[3]);
+  zax[2]=kap1[2]+phasespace::gam*bt[2]*(phasespace::gam/(phasespace::gam+1)*bdotk1-kap1[3]);
 
   //normalise z axis to unity
   double zaxabs = sqrt(pow(zax[0],2)+pow(zax[1],2)+pow(zax[2],2));
@@ -172,9 +139,9 @@ void omegaintegr::genV4p()
   zax[2] = zax[2] / zaxabs;
 
   //define y axis ortogonal to z and V direction
-  yax[0] = zax[1]*pV[2] - zax[2]*pV[1];
-  yax[1] = zax[2]*pV[0] - zax[0]*pV[2];
-  yax[2] = zax[0]*pV[1] - zax[1]*pV[0];
+  yax[0] = zax[1]*phasespace::pV[2] - zax[2]*phasespace::pV[1];
+  yax[1] = zax[2]*phasespace::pV[0] - zax[0]*phasespace::pV[2];
+  yax[2] = zax[0]*phasespace::pV[1] - zax[1]*phasespace::pV[0];
   
   //normalise y axis to unity
   double yaxabs = sqrt(pow(yax[0],2)+pow(yax[1],2)+pow(yax[2],2));
@@ -200,18 +167,64 @@ void omegaintegr::genV4p()
   cout << yax[0] << " " << yax[1] << "  " << yax[2] << endl;
   cout << zax[0] << " " << zax[1] << "  " << zax[2] << endl;
   cout << "boson momentum " << endl;
-  cout << pV[0] << " " << pV[1] << "  " << pV[2] << endl;
+  cout << phasespace::pV[0] << " " << phasespace::pV[1] << "  " << phasespace::pV[2] << endl;
   */
+}
+
+//This function is not used, kept for cross checks
+void omegaintegr::genzaxisCS()
+{
+  //CS frame prescription
+  //take incoming partons, and boost them in the boson rest frame
+  double bt[3];
+  bt[0]=-phasespace::beta[0];
+  bt[1]=-phasespace::beta[1];
+  bt[2]=-phasespace::beta[2];
+
+  double p1[3];
+  p1[0] = 0;
+  p1[1] = 0;
+  p1[2] = 1;
+
+  double p2[3];
+  p2[0] = 0;
+  p2[1] = 0;
+  p2[2] = -1;
+
+  double p1cm[3];
+  double bdotp1=p1[0]*bt[0]+p1[1]*bt[1]+p1[2]*bt[2];
+  p1cm[0]=p1[0]+phasespace::gam*bt[0]*(phasespace::gam/(phasespace::gam+1)*bdotp1-p1[3]);
+  p1cm[1]=p1[1]+phasespace::gam*bt[1]*(phasespace::gam/(phasespace::gam+1)*bdotp1-p1[3]);
+  p1cm[2]=p1[2]+phasespace::gam*bt[2]*(phasespace::gam/(phasespace::gam+1)*bdotp1-p1[3]);
+  double p1cmabs = sqrt(pow(p1cm[0],2)+pow(p1cm[1],2)+pow(p1cm[2],2));
+
+  double p2cm[3];
+  double bdotp2=p2[0]*bt[0]+p2[1]*bt[1]+p2[2]*bt[2];
+  p2cm[0]=p2[0]+phasespace::gam*bt[0]*(phasespace::gam/(phasespace::gam+1)*bdotp2-p2[3]);
+  p2cm[1]=p2[1]+phasespace::gam*bt[1]*(phasespace::gam/(phasespace::gam+1)*bdotp2-p2[3]);
+  p2cm[2]=p2[2]+phasespace::gam*bt[2]*(phasespace::gam/(phasespace::gam+1)*bdotp2-p2[3]);
+  double p2cmabs = sqrt(pow(p2cm[0],2)+pow(p2cm[1],2)+pow(p2cm[2],2));
+
+  //define the polar axis in CS frame, which is the axis bisecting the angle between p1 and p2 incoming partons
+  zax[0] = p1cm[0]/p1cmabs - p2cm[0]/p2cmabs;
+  zax[1] = p1cm[1]/p1cmabs - p2cm[1]/p2cmabs;
+  zax[2] = p1cm[2]/p1cmabs - p2cm[2]/p2cmabs;
+
+  //normalise z axis to unity
+  double zaxabs = sqrt(pow(zax[0],2)+pow(zax[1],2)+pow(zax[2],2));
+  zax[0] = zax[0] / zaxabs;
+  zax[1] = zax[1] / zaxabs;
+  zax[2] = zax[2] / zaxabs;
 }
 
 void omegaintegr::genl4p(double costh, double phi_lep)
 //void omegaintegr::genl4p(float costh, float phi_lep) //quite significant speed up with float numbers for the sine cosine functions
 {
-  //phi_lep = M_PI/2.;
-
+  //Generate the 4-momenta of the leptons in the boson rest frame, using costh and phi_lep
   //p4 is the lepton and p3 is the antilepton
-  //Generate the 4-momentum of the first lepton in the boson rest frame, using costh and phi_lep
-  double p4cm[4];
+  
+  phasespace::set_cth(costh);
+  phasespace::set_philep(phi_lep);
 
   //In some cases the generation of the first lepton 4-momentum is trivial,
   //i.e. it is done with respect to the reference system x = (1,0,0); y = (0,1,0); z=(0,0,1)
@@ -221,106 +234,96 @@ void omegaintegr::genl4p(double costh, double phi_lep)
   //are the native x,y,z axes of the laboratory frame
   //c) When qt=0, because all reference frames are equivalent
   if (opts.cubaint || phasespace::qt == 0. || opts.qtrec_naive)
-    {
-      double sintheta = sqrt(max(0.,1.-pow(costh,2)));
-      double cosphi = cos(phi_lep);
-      double sinphi = sqrt(max(0.,1.-pow(cosphi,2)))*(phi_lep>0 ? 1 : -1);
-      p4cm[3]=phasespace::m/2.;         //E
-      p4cm[0]=p4cm[3]*sintheta*sinphi;  //px
-      p4cm[1]=p4cm[3]*sintheta*cosphi;  //py
-      p4cm[2]=p4cm[3]*costh;            //pz
-    }
+    phasespace::genl4p();
   else
     {
-      //with all other general prescriptions, calculate the lepton 4-momenta p3 and p4
+      //With all other general prescriptions, calculate the lepton 4-momenta p3 and p4
       //from the x,y,z axes of the rest frame as coordinate system
       
-      /****************************/
-      /*
-	cout << endl;
-	//check:
-	//generate a lepton p4 according to the naive prescription and
-	//check that costh of Catani's formula is equal to
-	//the angle between the polar axis of the rest frame and the lepton p4
-	p4cm[3]=phasespace::m/2.;
-	p4cm[0]=p4cm[3]*sin(acos(costh))*sin(phi_lep);
-	p4cm[1]=p4cm[3]*sin(acos(costh))*cos(phi_lep);
-	p4cm[2]=p4cm[3]*costh;
-	double bdotp=p4cm[0]*beta[0]+p4cm[1]*beta[1]+p4cm[2]*beta[2];
-	p4[3]=gam*(p4cm[3]-bdotp);
-	p4[0]=p4cm[0]+gam*beta[0]*(gam/(gam+1)*bdotp-p4cm[3]);
-	p4[1]=p4cm[1]+gam*beta[1]*(gam/(gam+1)*bdotp-p4cm[3]);
-	p4[2]=p4cm[2]+gam*beta[2]*(gam/(gam+1)*bdotp-p4cm[3]);
-	double costhcs = (zax[0]*p4cm[0]+zax[1]*p4cm[1]+zax[2]*p4cm[2])
-	/ sqrt(pow(zax[0],2)+pow(zax[1],2)+pow(zax[2],2))
-	/ sqrt(pow(p4cm[0],2)+pow(p4cm[1],2)+pow(p4cm[2],2));
-	cout << "rapidity " << phasespace::y << " costh  " <<  costh 
-	<< " costhcs calculated " << costhcs << " costhcs catani " << (1.-4.*(kap1[3]*p4[3]-kap1[2]*p4[2]-kap1[1]*p4[1]-kap1[0]*p4[0])/(phasespace::m*phasespace::m)) << endl;
-      */
-      /****************************/
-
-
       //Start from the z axis, and rotate by angle theta with respect to y axis
       double rot1[3];
-      double c = costh;
-      //double s = sin(acos(costh));
+      double c = phasespace::costh;
       double s = sqrt(max(0.,1.-pow(c,2)));
-      rot1[0]=(c+yax[0]*yax[0]*(1-c))       *zax[0] + (yax[0]*yax[1]*(1-c)-yax[2]*s)*zax[1] + (yax[0]*yax[2]*(1-c)+yax[1]*s)*zax[2];
-      rot1[1]=(yax[1]*yax[0]*(1-c)+yax[2]*s)*zax[0] + (c+yax[1]*yax[1]*(1-c))       *zax[1] + (yax[1]*yax[2]*(1-c)-yax[0]*s)*zax[2];
-      rot1[2]=(yax[2]*yax[0]*(1-c)-yax[1]*s)*zax[0] + (yax[2]*yax[1]*(1-c)+yax[0]*s)*zax[1] + (c+yax[2]*yax[2]*(1-c))       *zax[2];
+      //rot1[0]=(c+yax[0]*yax[0]*(1-c))       *zax[0] + (yax[0]*yax[1]*(1-c)-yax[2]*s)*zax[1] + (yax[0]*yax[2]*(1-c)+yax[1]*s)*zax[2];
+      //rot1[1]=(yax[1]*yax[0]*(1-c)+yax[2]*s)*zax[0] + (c+yax[1]*yax[1]*(1-c))       *zax[1] + (yax[1]*yax[2]*(1-c)-yax[0]*s)*zax[2];
+      //rot1[2]=(yax[2]*yax[0]*(1-c)-yax[1]*s)*zax[0] + (yax[2]*yax[1]*(1-c)+yax[0]*s)*zax[1] + (c+yax[2]*yax[2]*(1-c))       *zax[2];
+      phasespace::rotate(zax, c, s, yax, rot1);
 
       //rotate by angle phi_lep with respect to z axis
       double rot2[3];
       //c = cos(M_PI/2.-phi_lep); //why I was previously using this pi/2 rotation?
       //s = sin(M_PI/2.-phi_lep);
-      c = cos(phi_lep-M_PI);      //Use the same M_PI rotation convention as in kinematic
-      s = sqrt(max(0.,1.-pow(c,2)))*((phi_lep-M_PI)>0 ? 1 : -1);
-      rot2[0]=(c+zax[0]*zax[0]*(1-c))       *rot1[0] + (zax[0]*zax[1]*(1-c)-zax[2]*s)*rot1[1] + (zax[0]*zax[2]*(1-c)+zax[1]*s)*rot1[2];
-      rot2[1]=(zax[1]*zax[0]*(1-c)+zax[2]*s)*rot1[0] + (c+zax[1]*zax[1]*(1-c))       *rot1[1] + (zax[1]*zax[2]*(1-c)-zax[0]*s)*rot1[2];
-      rot2[2]=(zax[2]*zax[0]*(1-c)-zax[1]*s)*rot1[0] + (zax[2]*zax[1]*(1-c)+zax[0]*s)*rot1[1] + (c+zax[2]*zax[2]*(1-c))       *rot1[2];
+      c = cos(phasespace::phi_lep-M_PI);      //Use the same M_PI rotation convention as in kinematic
+      s = sqrt(max(0.,1.-pow(c,2)))*((phasespace::phi_lep-M_PI)>0 ? 1 : -1);
+      //c = cos(phi_lep-M_PI);
+      //s = sin(phi_lep-M_PI);
+      //rot2[0]=(c+zax[0]*zax[0]*(1-c))       *rot1[0] + (zax[0]*zax[1]*(1-c)-zax[2]*s)*rot1[1] + (zax[0]*zax[2]*(1-c)+zax[1]*s)*rot1[2];
+      //rot2[1]=(zax[1]*zax[0]*(1-c)+zax[2]*s)*rot1[0] + (c+zax[1]*zax[1]*(1-c))       *rot1[1] + (zax[1]*zax[2]*(1-c)-zax[0]*s)*rot1[2];
+      //rot2[2]=(zax[2]*zax[0]*(1-c)-zax[1]*s)*rot1[0] + (zax[2]*zax[1]*(1-c)+zax[0]*s)*rot1[1] + (c+zax[2]*zax[2]*(1-c))       *rot1[2];
+      phasespace::rotate(rot1, c, s, zax, rot2);
 
+      double p4cm[4];
       p4cm[3]=phasespace::m/2.;           //E
       p4cm[0]=p4cm[3]*rot2[0];            //px
       p4cm[1]=p4cm[3]*rot2[1];            //py
       p4cm[2]=p4cm[3]*rot2[2];            //pz
   
-      /*
+      /****************************
       //check that the generated p4cm is at costh from zax
       cout << "p4 generated in boson rest frame " << p4cm[0] << " " << p4cm[1] << " " << p4cm[2] << endl;
       cout << "angle between p4cm and polar axis (should be costh)" << (zax[0]*p4cm[0]+zax[1]*p4cm[1]+zax[2]*p4cm[2])
-      / sqrt(pow(zax[0],2)+pow(zax[1],2)+pow(zax[2],2))
-      / sqrt(pow(p4cm[0],2)+pow(p4cm[1],2)+pow(p4cm[2],2)) << "  " << costh << endl;
-      */
+	/ sqrt(pow(zax[0],2)+pow(zax[1],2)+pow(zax[2],2))
+	/ sqrt(pow(p4cm[0],2)+pow(p4cm[1],2)+pow(p4cm[2],2)) << "  " << costh << endl;
+      ****************************/
+
+      //Boost to go in the lab frame
+      //dyboost_(phasespace::gam, phasespace::beta, p3cm, p3);
+      dyboost_(phasespace::gam, phasespace::beta, p4cm, phasespace::p4);
+
+      //  momentum of the second lepton
+      phasespace::p3[3]=phasespace::pV[3]-phasespace::p4[3];      //E
+      phasespace::p3[0]=phasespace::pV[0]-phasespace::p4[0];      //px
+      phasespace::p3[1]=phasespace::pV[1]-phasespace::p4[1];      //py
+      phasespace::p3[2]=phasespace::pV[2]-phasespace::p4[2];      //pz
+
+      /****************************
+      //check:
+      //generate a lepton p4 according to the naive prescription and
+      //check that costh of Catani's formula is equal to
+      //the angle between the polar axis of the rest frame and the lepton p4
+      p4cm[3]=phasespace::m/2.;
+      p4cm[0]=p4cm[3]*sin(acos(costh))*sin(phi_lep);
+      p4cm[1]=p4cm[3]*sin(acos(costh))*cos(phi_lep);
+      p4cm[2]=p4cm[3]*costh;
+      double bdotp=p4cm[0]*beta[0]+p4cm[1]*beta[1]+p4cm[2]*beta[2];
+      p4[3]=gam*(p4cm[3]-bdotp);
+      p4[0]=p4cm[0]+gam*beta[0]*(gam/(gam+1)*bdotp-p4cm[3]);
+      p4[1]=p4cm[1]+gam*beta[1]*(gam/(gam+1)*bdotp-p4cm[3]);
+      p4[2]=p4cm[2]+gam*beta[2]*(gam/(gam+1)*bdotp-p4cm[3]);
+      double costhcs = (zax[0]*p4cm[0]+zax[1]*p4cm[1]+zax[2]*p4cm[2])
+	/ sqrt(pow(zax[0],2)+pow(zax[1],2)+pow(zax[2],2))
+	/ sqrt(pow(p4cm[0],2)+pow(p4cm[1],2)+pow(p4cm[2],2));
+      cout << endl;
+      cout << "rapidity " << phasespace::y << " costh  " <<  costh 
+	   << " costhcs calculated " << costhcs << " costhcs catani " << (1.-4.*(kap1[3]*p4[3]-kap1[2]*p4[2]-kap1[1]*p4[1]-kap1[0]*p4[0])/(phasespace::m*phasespace::m)) << endl;
+      ****************************/
     }
-
-  // Boost to go in the lab frame
-  double bdotp=p4cm[0]*beta[0]+p4cm[1]*beta[1]+p4cm[2]*beta[2];
-  p4[3]=gam*(p4cm[3]-bdotp);
-  p4[0]=p4cm[0]+gam*beta[0]*(gam/(gam+1)*bdotp-p4cm[3]);
-  p4[1]=p4cm[1]+gam*beta[1]*(gam/(gam+1)*bdotp-p4cm[3]);
-  p4[2]=p4cm[2]+gam*beta[2]*(gam/(gam+1)*bdotp-p4cm[3]);
-  
-  //  momentum of the second lepton
-  p3[3]=pV[3]-p4[3];      //E
-  p3[0]=pV[0]-p4[0];      //px
-  p3[1]=pV[1]-p4[1];      //py
-  p3[2]=pV[2]-p4[2];      //pz
-
-  //kine check
-  /*
+  /****************************
+  //check with kinematic calculation, valid for CS frame
   kinematic::set(p4, p3);
   kinematic::calc_vb();
   kinematic::calc_angles();
   cout << " generated  " << costh << "  " << phi_lep << endl;
   cout << " calculated " << kinematic::costh << "  " << kinematic::phi_lep << endl;
   cout << endl;
-  */
+  ****************************/
 }
 
-//CS FRAME PRESCRIPTION
+//costh for any general kt prescription
 double omegaintegr::costhCS()
 {
-  return (1.-4.*(kap1[3]*p4[3]-kap1[2]*p4[2]-kap1[1]*p4[1]-kap1[0]*p4[0])/(phasespace::m*phasespace::m));
+  //change this to p3
+  return (1.-4.*(kap1[3]*phasespace::p4[3]-kap1[2]*phasespace::p4[2]-kap1[1]*phasespace::p4[1]-kap1[0]*phasespace::p4[0])/(phasespace::m*phasespace::m));
 }
 
 //Algorithm to determine all the subintervals of costh between -1 and +1 in which the lepton cuts are satisfied
@@ -337,7 +340,7 @@ void omegaintegr::costhbound(double phi_lep, vector<double> &min, vector<double>
   double c1 = phasespace::cthmin;
   double c2 = phasespace::cthmax;
   genl4p(c1, phi_lep);
-  if (cuts::lep(p3, p4))
+  if (cuts::lep(phasespace::p3, phasespace::p4))
     {
       min.push_back(c1);
       status = true;
@@ -358,7 +361,7 @@ void omegaintegr::costhbound(double phi_lep, vector<double> &min, vector<double>
 		{
 		  double costh = i*hc+c1;
 		  genl4p(costh, phi_lep);
-		  if (!cuts::lep(p3, p4))
+		  if (!cuts::lep(phasespace::p3, phasespace::p4))
 		    {
 		      tempmax = costh; //tempmax = costh_CS;
 		      c2 = i*hc+c1;
@@ -391,7 +394,7 @@ void omegaintegr::costhbound(double phi_lep, vector<double> &min, vector<double>
 		{
 		  double costh = i*hc+c1;
 		  genl4p(costh, phi_lep);
-		  if (cuts::lep(p3, p4))
+		  if (cuts::lep(phasespace::p3, phasespace::p4))
 		    {
 		      tempmin = costh; //tempmin = costh_CS;
 		      c2 = i*hc+c1;
@@ -621,7 +624,7 @@ integrand_t omegaintegr::thphiintegrand(const int &ndim, const double x[], const
   */
 
   genl4p(costh, phi_lep);
-  if (cuts::lep(p3, p4))
+  if (cuts::lep(phasespace::p3, phasespace::p4))
     {
       //evaluate couplings using cos(theta) in CS framework
       double costh_CS = costhCS();
@@ -639,19 +642,4 @@ integrand_t omegaintegr::thphiintegrand(const int &ndim, const double x[], const
       f[2] = 0.;
     }
   return 0;
-}
-
-void omegaintegr::getp3(double p[4])
-{
-  p[0] = p3[0];
-  p[1] = p3[1];
-  p[2] = p3[2];
-  p[3] = p3[3];
-}
-void omegaintegr::getp4(double p[4])
-{
-  p[0] = p4[0];
-  p[1] = p4[1];
-  p[2] = p4[2];
-  p[3] = p4[3];
 }
