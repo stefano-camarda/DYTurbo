@@ -57,13 +57,13 @@ void phasespace::setcthbounds(double cth1, double cth2)
 
 void phasespace::set_mqtyphi(double M, double Qt, double Y, double PhiV)
 {
-  m = M;
-  qt = Qt;
+  m = M; m2 = m*m;
+  qt = Qt; qt2 = qt*qt;
   y = Y;
   phiV = PhiV;
 }
-void phasespace::set_m(double M) {m = M;}
-void phasespace::set_qt(double Qt) {qt = Qt;}
+void phasespace::set_m(double M) {m = M; m2 = m*m;}
+void phasespace::set_qt(double Qt) {qt = Qt; qt2 = qt*qt;}
 void phasespace::set_y(double Y) {y = Y;}
 void phasespace::set_phiV(double PhiV) {phiV = PhiV;}
 
