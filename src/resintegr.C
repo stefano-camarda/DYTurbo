@@ -220,7 +220,7 @@ integrand_t resintegrand3d(const int &ndim, const double x[], const int &ncomp, 
 
   //Dynamic scale
   if (opts.dynamicscale)
-    scaleset_(m2);
+    scaleset_(phasespace::m2);
 
   //evaluate the resummed cross section
   if (opts.resumcpp)
