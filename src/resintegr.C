@@ -58,22 +58,17 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
 
   //Jacobian of the change of variables from the unitary hypercube x[3] to the m, y, qt boundaries
   double jac = 1.;
+  bool status = true;
 
-  // Generate the boson invariant mass between the integration boundaries
-  double wsqmin = pow(phasespace::mmin,2);
-  double wsqmax = pow(phasespace::mmax,2);
-  double x1=x[0];
-  double m2,wt;
-  breitw_(x1,wsqmin,wsqmax,opts.rmass,opts.rwidth,m2,wt);
-  double m=sqrt(m2);
-  jac=jac*wt;
-
-  //Dynamic scale
-  if (opts.dynamicscale)
-    scaleset_(m2);
-
+  double r2[2] = {x[0], x[1]};
+  status = phasespace::gen_mqt(r2, jac, false, true);
+  if (!status)
+    {
+      f[0] = 0.;
+      return 0;
+    }
   //Limit the y boundaries to the kinematic limit in y
-  double ylim = 0.5*log(pow(energy_.sroot_,2)/m2);
+  double ylim = 0.5*log(pow(opts.sroot,2)/phasespace::m2);
   double ymn = min(max(-ylim, phasespace::ymin),ylim);
   double ymx = max(min(ylim, phasespace::ymax),-ylim);
   if (ymn >= ymx)
@@ -82,101 +77,13 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
       return 0;
     }
 
-  //integrate between qtmin and qtmax
-  /*
-  double qtmn = max(opts.qtcutoff, phasespace::qtmin);
-  double qt=qtmn+(phasespace::qtmax-qtmn)*x[1];
-  jac=jac*(phasespace::qtmax-qtmn);
-  */
-    
-  //integrate between qtmin and qtmax
-  //limit qtmax to the qT kinematical limit, or to the switching function boundary
-  double qtmn = max(opts.qtcutoff, phasespace::qtmin);
-  double miny;
-  if (ymn * ymx <= 0)
-    miny = 0;
-  else miny = min(fabs(ymn),fabs(ymx));
-  double cosh2y34=pow((exp(miny)+exp(-miny))*0.5,2);
-  double kinqtlim = sqrt(pow(pow(energy_.sroot_,2)+m*m,2)/(4*pow(energy_.sroot_,2)*cosh2y34)-m*m);
-  double switchqtlim = switching::qtlimit(m);
-  double qtlim = min(kinqtlim, switchqtlim);
-  double qtmx = min(qtlim, phasespace::qtmax);
-  if (qtmn >= qtmx)
-    {
-      f[0]=0.;
-      return 0;
-    }
-  //double qt=qtmn+(qtmx-qtmn)*x[1];
-  //jac=jac*(qtmx-qtmn);
-  /*double qtmn2 = pow(qtmn,2);
-  double qtmx2 = pow(qtmx,2);
-  double tiny = 1E-5;
-  double a = 1./(1+log(qtmx2/tiny));
-  double b = 1./(1+log(qtmn2/tiny));
-  double x2 = a + (b-a) * x[1];
-  jac = jac * (b-a);
-  double qt2=tiny*exp(1./x2 - 1);
-  jac=jac*qt2/pow(x2,2);
-  double qt=sqrt(qt2);
-  jac=jac*0.5/qt;*/
-
-  /*double tiny = 1E-5;
-  double a = 1./(1+log(qtmx/tiny));
-  double b = 1./(1+log(qtmn/tiny));
-  double x2 = a + (b-a) * x[1];
-  jac = jac * (b-a);
-  double qt=tiny*exp(1./x2 - 1);
-  jac=jac*qt/pow(x2,2);*/
-
-  /*  double exp = 1./3.;
-  double a = pow(qtmn,exp);
-  double b = pow(qtmx,exp);
-  double x2=a+(b-a)*x[1];
-  jac=jac*(b-a);
-  double qt = pow(x2,1./exp);
-  jac=jac*pow(x2,1./exp-1)/exp;*/
-
-  /*double a = log(qtmn);
-  double b = log(qtmx);
-  double x2=a+(b-a)*x[1];
-  jac=jac*(b-a);
-  double qt = exp(x2);
-  jac=jac*qt;*/
-
-  double esp = 1./2.;
-  double tiny = 1E-3;
-  double a = pow(log(qtmn/tiny),esp);
-  double b = pow(log(qtmx/tiny),esp);
-  double x2=a+(b-a)*x[1];
-  jac=jac*(b-a);
-  double qt = tiny*exp(pow(x2,1./esp));
-  jac=jac*qt*pow(x2,1./esp-1)/esp;
-
-  /*double tiny = 1E-3;
-  double a = log(log(qtmn/tiny));
-  double b = log(log(qtmx/tiny));
-  double x2=a+(b-a)*x[1];
-  jac=jac*(b-a);
-  double qt = tiny*exp(exp(x2));
-  jac=jac*qt*exp(x2);*/
-  
-  /*double base = 100000.;
-  double a = log(qtmn)/log(base);
-  double b = log(qtmx)/log(base);
-  double x2=a+(b-a)*x[1];
-  jac=jac*(b-a);
-  double qt = exp(x2*log(base));
-  jac=jac*qt*log(base);*/
-  
-  //set global variables to m, qt
-  phasespace::set_m(m);
-  phasespace::set_qt(qt);
   phasespace::set_phiV(0);
 
-  //generate boson 4-momentum, with m, qt, y and phi=0 (not needed, it is regenerated in rapint)
-  //omegaintegr::genV4p();
+  //Dynamic scale --> is this still needed? probably it is for the fortran version of the code
+  if (opts.dynamicscale)
+    scaleset_(phasespace::m2);
 
-  //Perform quadrature rule integration in rapidity and nested costh integration
+  //Perform quadrature rule integration in rapidity and semi-analitical costh, phi_lep integration
   int nocuts = !opts.makelepcuts;
 
   clock_t ybt, yet;
@@ -190,11 +97,11 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
 	{
 	  //C++ resum
 	  rapint::allocate();
-	  rapint::integrate(phasespace::ymin,phasespace::ymax,m);
+	  rapint::integrate(phasespace::ymin,phasespace::ymax,phasespace::m);
 	  //end C++ resum
 	}
       else
-	rapintegrals_(phasespace::ymin,phasespace::ymax,m,nocuts);
+	rapintegrals_(phasespace::ymin,phasespace::ymax,phasespace::m,nocuts);
     }
   else
     {
@@ -202,11 +109,11 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
 	{
 	  //C++ rewritten resum
 	  rapint::allocate();
-	  rapint::integrate(ymn,ymx,m);
+	  rapint::integrate(ymn,ymx,phasespace::m);
 	  //end C++ resum
 	}
       else
-	rapintegrals_(ymn,ymx,m,nocuts);
+	rapintegrals_(ymn,ymx,phasespace::m,nocuts);
     }
   yet = clock();
   
@@ -217,16 +124,16 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
 
   //Are the following two lines needed?
   //phasespace::set_mqtyphi(m, qt, 0);
-  //omegaintegr::genV4p();
+  //omegaintegr::genV4p(); // --> not needed, it is regenerated in rapint
 
   //  SWITCHING FUNCTIONS
   //  double swtch=1.;
   //  if (qt >= m*3/4.)  swtch=exp(-pow((m*3/4.-qt),2)/pow((m/2.),2)); // GAUSS SWITCH
   //  if (swtch <= 0.01) swtch = 0;
 
-  double swtch = switching::swtch(qt, m);
+  double swtch = switching::swtch(phasespace::qt, phasespace::m);
   
-  //Call to the resummation part
+  //Call the resummed cross section
   double costh = 0;
   double y = 0.5*(ymx+ymn); //needed to get the correct IFIT index of the approximate PDF
   int mode = 2;
@@ -243,18 +150,18 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
   */
 
   if (opts.resumcpp)
-    f[0]=resint::rint(costh,m,qt,y,mode)/(8./3.);
+    f[0]=resint::rint(costh,phasespace::m,phasespace::qt,y,mode)/(8./3.);
   else
-    f[0]=resumm_(costh,m,qt,y,mode)/(8./3.);
+    f[0]=resumm_(costh,phasespace::m,phasespace::qt,y,mode)/(8./3.);
   clock_t ret = clock();
 
   if (f[0] != f[0])
     f[0]=0.;  //avoid nans
-	   
+
   f[0] = f[0]*jac*swtch;
   end_time = clock();
   if (opts.timeprofile)
-    cout << setw (3) << "m" << setw(10) << m << setw(4) << "qt" << setw(10) <<  qt
+    cout << setw (3) << "m" << setw(10) << phasespace::m << setw(4) << "qt" << setw(10) <<  phasespace::qt
 	 << setw(8) << "result" << setw(10) << f[0]
 	 << setw(10) << "tot time" << setw(10) << float( end_time - begin_time ) /  CLOCKS_PER_SEC
 	 << setw(10) << "rapint"  << setw(10) << float( yet - ybt ) /  CLOCKS_PER_SEC
@@ -275,131 +182,25 @@ integrand_t resintegrand3d(const int &ndim, const double x[], const int &ncomp, 
 
   //Jacobian of the change of variables from the unitary hypercube x[3] to the m, y, qt boundaries
   double jac = 1.;
+  bool status = true;
 
-  // Generate the boson invariant mass between the integration boundaries
-  double wsqmin = pow(phasespace::mmin,2);
-  double wsqmax = pow(phasespace::mmax,2);
-  double x1=x[0];
-  double m2,wt;
-  breitw_(x1,wsqmin,wsqmax,opts.rmass,opts.rwidth,m2,wt);
-  double m=sqrt(m2);
-  jac=jac*wt;
-
-  /*
-  //split the mass in 3 pieces,
-  //and unweight the breit wigner only from -5 width to +5 width
-  //no sense, I have to split the mass before entering the integration
-  //and set breit wigner unweighting or not
-  double bwmn = opts.rmass -5*opts.rwidth;
-  double bwmx = opts.rmass +5*opts.rwidth;
-  double bwmnsq = pow(bwmn,2);
-  double bwmxsq = pow(bwmx,2);
-  double m,m2,wt;
-  double xl = 0.25;
-  double xu = 0.75;
-  if (x[0] < xl)
+  double r[3] = {x[0], x[1], x[2]};
+  status = phasespace::gen_myqt(r, jac, false, true);
+  if (!status)
     {
-      double x1=x[0]/(xl-0.);
-      m=phasespace::mmin+(bwmn-phasespace::mmin)*x[0];
-      jac=jac*(bwmn-phasespace::mmin)/(xl-0.);
-    }
-  else if (x[0] > xu)
-    {
-      double x1=(x[0]-xu)/(1.-xu);
-      m=bwmx+(phasespace::mmax-bwmx)*x1;
-      jac=jac*(phasespace::mmax-bwmx)/(1.-xu);
-    }
-  else
-    {
-      double xbw=(x[0]-xl)/(xu-xl);
-      breitw_(xbw,bwmnsq,bwmxsq,opts.rmass,opts.rwidth,m2,wt);
-      m=sqrt(m2);
-      wt=wt/(xu-xl);
-      jac=jac*wt;
-    }
-  */
-
-  //  double m=phasespace::mmin+(phasespace::mmax-phasespace::mmin)*x[0];
-  //  jac=jac*(phasespace::mmax-phasespace::mmin);
-
-  //Dynamic scale
-  if (opts.dynamicscale)
-    scaleset_(m2);
-
-  //Limit y boundaries to the kinematic limit in y
-  double ylim = 0.5*log(pow(energy_.sroot_,2)/m2);
-  double ymn = min(max(-ylim, phasespace::ymin),ylim);
-  double ymx = max(min(ylim, phasespace::ymax),-ylim);
-  if (ymn >= ymx)
-    {
-      f[0]=0.;
+      f[0] = 0.;
       return 0;
     }
-
-  //integrate between ymin and ymax
-  double y=ymn+(ymx-ymn)*x[1];
-  jac=jac*(ymx-ymn);
-
-  /*
-  //Integrate the full phase space
-  double y=-ylim+2.*ylim*x[1];
-  jac=jac*2.*ylim;
-  */
-
-
-  //integrate up to the qT kinematical limit
-  /*
-  double dexpy=exp(y);
-  double dexpmy=exp(-y);
-  double cosh2y=pow(((dexpy+dexpmy)*0.5),2);
-  double qtmax=sqrt(pow((pow(energy_.sroot_,2)+m2),2)/(4.*pow(energy_.sroot_,2)*cosh2y) - m2);
-  double qtmin=0.1;
-  double qt=qtmin+qtmax*x[2];
-  jac=jac*(qtmax);
-  */
-
-  //integrate between qtmin and qtmax
-  /*
-  double qtmn = max(opts.qtcutoff, phasespace::qtmin);
-  double qt=qtmn+(phasespace::qtmax-qtmn)*x[2];
-  jac=jac*(phasespace::qtmax-qtmn);
-  */
-
-  //integrate between qtmin and qtmax
-  double qtmn = max(opts.qtcutoff, phasespace::qtmin);
-  double cosh2y34=pow((exp(y)+exp(-y))*0.5,2);
-  double kinqtlim = sqrt(pow(pow(energy_.sroot_,2)+m*m,2)/(4*pow(energy_.sroot_,2)*cosh2y34)-m*m);
-  double switchqtlim = switching::qtlimit(m);
-  double qtlim = min(kinqtlim, switchqtlim);
-  double qtmx = min(qtlim, phasespace::qtmax);
-  if (qtmn >= qtmx)
-    {
-      f[0]=0.;
-      return 0;
-    }
-  //  double qt=qtmn+(qtmx-qtmn)*x[2];
-  //  jac=jac*(qtmx-qtmn);
-  double esp = 1./2.;
-  double tiny = 1E-3;
-  double a = pow(log(qtmn/tiny),esp);
-  double b = pow(log(qtmx/tiny),esp);
-  double x2=a+(b-a)*x[2];
-  jac=jac*(b-a);
-  double qt = tiny*exp(pow(x2,1./esp));
-  jac=jac*qt*pow(x2,1./esp-1)/esp;
-
-  
-  //set global variables to m, qt, y
-  phasespace::set_mqtyphi(m, qt, y);
+  phasespace::set_phiV(0.);
 
   //generate boson 4-momentum, with m, qt, y and phi=0
   omegaintegr::genV4p();
-
+  
   //  SWITCHING FUNCTIONS
   //  double swtch=1.;
   //  if (qt >= m*3/4.)  swtch=exp(-pow((m*3/4.-qt),2)/pow((m/2.),2)); // GAUSS SWITCH
   //  if (swtch <= 0.01) swtch = 0;
-  double swtch = switching::swtch(qt, m);
+  double swtch = switching::swtch(phasespace::qt, phasespace::m);
 
   //In this point of phase space (m, qt, y) the costh integration is performed by 
   //calculating the 0, 1 and 2 moments of costh
@@ -416,12 +217,16 @@ integrand_t resintegrand3d(const int &ndim, const double x[], const int &ncomp, 
     return 0;
   }
   */
-  
+
+  //Dynamic scale
+  if (opts.dynamicscale)
+    scaleset_(m2);
+
   //evaluate the resummed cross section
   if (opts.resumcpp)
-    f[0]=resint::rint(costh,m,qt,y,mode)/(8./3.);
+    f[0]=resint::rint(costh,phasespace::m,phasespace::qt,phasespace::y,mode)/(8./3.);
   else
-    f[0]=resumm_(costh,m,qt,y,mode)/(8./3.);
+    f[0]=resumm_(costh,phasespace::m,phasespace::qt,phasespace::y,mode)/(8./3.);
 
   if (f[0] != f[0])
     f[0]=0.;  //avoid nans
@@ -432,9 +237,9 @@ integrand_t resintegrand3d(const int &ndim, const double x[], const int &ncomp, 
   end_time = clock();
 
   if (opts.timeprofile)
-    cout << setw (3) << "m" << setw(10) << m
-	 << setw(4) << "qt" << setw(10) <<  qt
-      	 << setw(4) << "y" << setw(10) <<  y
+    cout << setw (3) << "m" << setw(10) << phasespace::m
+	 << setw(4) << "qt" << setw(10) <<  phasespace::qt
+      	 << setw(4) << "y" << setw(10) <<  phasespace::y
 	 << setw(8) << "result" << setw(10) << f[0]
 	 << setw(10) << "tot time" << setw(10) << float( end_time - begin_time ) /  CLOCKS_PER_SEC
 	 << endl;
