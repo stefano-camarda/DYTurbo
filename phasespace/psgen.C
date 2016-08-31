@@ -66,11 +66,14 @@ bool phasespace::gen_qt(double x, double& jac, double qtlim, bool qtcut)
   //jac gets multiplied by the Jacobian of the change of variable from the unitary interval to the qt boundaries
   double qtmn = qtcut ?
     max(max(opts.qtcut,opts.xqtcut*m), phasespace::qtmin)
-    : phasespace::qtmin;
+    : max(opts.qtcutoff,phasespace::qtmin);
   double qtmx = min(qtlim, phasespace::qtmax);
   if (qtmn >= qtmx)
     return false;
-  qtweight_(x,qtmn,qtmx,qt,jac);
+  if (qtcut) //phase space generation for counterterm and V+j fixed order
+    qtweight_(x,qtmn,qtmx,qt,jac);
+  else       //phase space generation for resummed cross section
+    qtweight_res_(x,qtmn,qtmx,qt,jac);
   //qtweight_flat_(xqt,qtmn,qtmx,qt,jac);
   qt2 = qt*qt;
   return true;
@@ -88,7 +91,7 @@ bool phasespace::gen_qt_ctfo(double x, double& jac)
   return true;
 }
 
-bool phasespace::gen_mqty(const double x[3], double& jac, bool qtcut) //add switching boolean here
+bool phasespace::gen_mqty(const double x[3], double& jac, bool qtcut, bool qtswitching)
 {
   //generate phase space as m, qt, y
   //jac gets multiplied by the Jacobian of the change of variables from the unitary cube x[3] to the m, qt, y boundaries
@@ -102,7 +105,7 @@ bool phasespace::gen_mqty(const double x[3], double& jac, bool qtcut) //add swit
   else
     ymn = min(fabs(ymin),fabs(ymax));
   double mlim = opts.sroot/exp(ymn);
-  status = gen_m(x[0], jac, mlim, qtcut);
+  status = gen_m(x[0], jac, mlim, qtcut, qtswitching);
   if (!status)
     return false;
 
@@ -114,8 +117,18 @@ bool phasespace::gen_mqty(const double x[3], double& jac, bool qtcut) //add swit
   double cosh2y=pow((exppylim+expmylim)*0.5,2);
 
   //kinematic limit from the relation E < sqrt(s) ==> (mt + qt)*cosh(y) < sqrt(s)
-  //double qtlim = sqrt(max(0.,pow(pow(opts.sroot,2)-m2*cosh2y,2)/(4*pow(opts.sroot,2)*cosh2y))); //introduced max to avoid negative argument of sqrt when y=ymax --> wrong formula calculated by me
-  double qtlim = sqrt(max(0.,pow(pow(opts.sroot,2)+m2,2)/(4*pow(opts.sroot,2)*cosh2y)-m2)); //introduced max to avoid neqative argument of sqrt when y=ymax --> apparently correct formula, cannot check
+  double qtlim;
+  if (qtswitching)
+    {
+      //in switching mode (ct and res) do not account for y in the qt limit (actually the qtlimit should be 1e10, i.e. unphysical)
+      double kinqtlim = sqrt(max(0.,pow(pow(opts.sroot,2)+m2,2)/(4*pow(opts.sroot,2))-m2)); //introduced max to avoid neqative argument of sqrt
+      double switchqtlim = switching::qtlimit(m);
+      qtlim = min(kinqtlim, switchqtlim);
+    }
+  else
+    //qtlim = sqrt(max(0.,pow(pow(opts.sroot,2)-m2*cosh2y,2)/(4*pow(opts.sroot,2)*cosh2y))); //introduced max to avoid negative argument of sqrt when y=ymax --> wrong formula calculated by me
+    qtlim = sqrt(max(0.,pow(pow(opts.sroot,2)+m2,2)/(4*pow(opts.sroot,2)*cosh2y)-m2)); //introduced max to avoid neqative argument of sqrt when y=ymax --> apparently correct formula, cannot check
+  
   
   status = gen_qt(x[1], jac, qtlim, qtcut);
   if (!status)
@@ -132,7 +145,7 @@ bool phasespace::gen_mqty(const double x[3], double& jac, bool qtcut) //add swit
   return status;
 }
 
-bool phasespace::gen_myqt(const double x[3], double& jac, bool qtcut)
+bool phasespace::gen_myqt(const double x[3], double& jac, bool qtcut, bool qtswitching)
 {
   //With respect to the previous routine, the order in which y and qt are generated is reversed
   //generate phase space as m, y, qt
@@ -147,22 +160,27 @@ bool phasespace::gen_myqt(const double x[3], double& jac, bool qtcut)
   else
     ymn = min(fabs(ymin),fabs(ymax));
   double mlim = opts.sroot/exp(ymn);
-  status = gen_m(x[0], jac, mlim, qtcut);
+  status = gen_m(x[0], jac, mlim, qtcut, qtswitching);
   if (!status)
     return false;
 
   //Generate the boson rapidity between the integration boundaries
-  //double ylim = 0.5*log(pow(opts.sroot,2)/m2); //Limit y boundaries to the kinematic limit in y
-  double qtmn = qtcut ?
-    max(max(opts.qtcut,opts.xqtcut*m), phasespace::qtmin)
-    : phasespace::qtmin;
-  double mtmin = sqrt(m2+pow(qtmn,2));
-  double tmpx=(m2+pow(opts.sroot,2))/opts.sroot/mtmin;
-  double ylim=log((tmpx+sqrt(pow(tmpx,2)-4.))/2.); //Limit y boundaries to the kinematic limit in y, accounting for phasespace::qtmin
+  double ylim;
+  if (qtswitching)
+    ylim = 0.5*log(pow(opts.sroot,2)/m2); //Limit y boundaries to the kinematic limit in y
+  else
+    {
+      //Limit y boundaries to the kinematic limit in y, accounting for phasespace::qtmin  
+      double qtmn = qtcut ?
+	max(max(opts.qtcut,opts.xqtcut*m), phasespace::qtmin)
+	: phasespace::qtmin;
+      double mtmin = sqrt(m2+pow(qtmn,2));
+      double tmpx=(m2+pow(opts.sroot,2))/opts.sroot/mtmin;
+      ylim=log((tmpx+sqrt(pow(tmpx,2)-4.))/2.);
+    }
   status = gen_y(x[1], jac, ylim);
   if (!status)
     return false;
-  
 //  //fodyqt limits
 //  //.....kinematical limits on qt
 //  double z=q2/pow(energy_.sroot_,2);
@@ -175,15 +193,60 @@ bool phasespace::gen_myqt(const double x[3], double& jac, bool qtcut)
 //  
 
   //Generate the boson transverse momentum between the integration boundaries
-  calcexpy();
-  double cosh2y=pow((exppy+expmy)*0.5,2);
-  double qtlim = sqrt(max(0.,pow(pow(opts.sroot,2)+m2,2)/(4*pow(opts.sroot,2)*cosh2y)-m2)); //introduced max to avoid neqative argument of sqrt when y=ymax
+  double qtlim;
+  if (qtswitching)
+    {
+      //in switching mode (ct and res) do not account for y in the qt limit (actually the qtlimit should be 1e10, i.e. unphysical)
+      double kinqtlim = sqrt(max(0.,pow(pow(opts.sroot,2)+m2,2)/(4*pow(opts.sroot,2))-m2)); //introduced max to avoid neqative argument of sqrt
+      double switchqtlim = switching::qtlimit(m);
+      qtlim = min(kinqtlim, switchqtlim);
+    }
+  else
+    {
+      calcexpy();
+      double cosh2y=pow((exppy+expmy)*0.5,2);
+      qtlim = sqrt(max(0.,pow(pow(opts.sroot,2)+m2,2)/(4*pow(opts.sroot,2)*cosh2y)-m2)); //introduced max to avoid neqative argument of sqrt when y=ymax
+    }
   status = gen_qt(x[2], jac, qtlim, qtcut);
   if (!status)
     return false;
 
   return status;
 }
+
+bool phasespace::gen_mqt(const double x[2], double& jac, bool qtcut, bool qtswitching)
+{
+  //generate phase space as m, qt (for resummed part)
+  //jac gets multiplied by the Jacobian of the change of variables from the unitary square x[2] to the m, qt boundaries
+  //Current version works for born kinematics, i.e. qt=0 (which is, probably, the correct implementation for born, resummed and counterterm)
+  bool status = true;
+
+  //Generate the boson invariant mass between the integration boundaries
+  //kinematic limit from the relation x(1,2) < 1 ==> exp(fabs(y)) < sqrt(s)/m
+  double ymn;
+  if (ymin*ymax <= 0.)
+    ymn = 0.;
+  else
+    ymn = min(fabs(ymin),fabs(ymax));
+  double mlim = opts.sroot/exp(ymn);
+  status = gen_m(x[0], jac, mlim, qtcut, qtswitching);
+  if (!status)
+    return false;
+
+  //Generate the boson pt between the integration boundaries
+  //Here there is a delicate point, should consider the value of y != 0 when setting the kinematical limit for qt?
+  //For counterterm and resummed piece, the cross section is calculated at born level with pt=0, and the qt is generated independently
+  //However, this will determine some inconsistencies at large rapidities, because of nonzero cross sections above the kinematical limit for qt
+  
+  double kinqtlim = sqrt(max(0.,pow(pow(opts.sroot,2)+m2,2)/(4*pow(opts.sroot,2))-m2)); //introduced max to avoid neqative argument of sqrt
+  double switchqtlim = switching::qtlimit(m);
+  double qtlim = min(kinqtlim, switchqtlim);
+  status = gen_qt(x[1], jac, qtlim, qtcut);
+  if (!status)
+    return false;
+
+  return status;
+}  
 
 bool phasespace::gen_my(const double x[2], double& jac, bool qtcut, bool qtswitching)
 {
