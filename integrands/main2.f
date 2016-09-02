@@ -944,6 +944,20 @@ c retrieve values cached in cacheanom for
 C NORMALIZED ANOMALOUS DIMENSIONS AND COEFFICIENTS
       SIG = (-ISIGN+1)/2+1
 
+c     begin LL
+      if(flag1.eq.0) then
+         Hqqb=0d0 !cHqqb(I1,I2,SIG)
+C     all other channels are =0 at LL
+         Hqg_1= 0d0
+         Hqg_2= 0d0
+         Hgg = 0d0                !  Q Q -> Qb Q  = Qb Qb -> Q Qb  
+         Hqq_1 = 0d0            !  Qb Qb -> Qb Q =  Q Q -> Q Qb      
+         Hqq_2 = 0d0            ! Average QQ->QQb  and QbQb->QQb
+         Hqq = 0d0               !  qqp_1  means   Q' Q -> Qb Q  flavor in sigmaQQb determined by "second parton"
+         Hqqp_1 = 0d0           !  qqp_2  means   Q Q' -> Q Qb  flavor in sigmaQQb determined by "first parton"
+         Hqqp_2 = 0d0
+      endif
+      
 c begin NLL
 c the Hqqb NLL coefficients depend only on I1 and I2 (and isign)
 c Hqg_1(2) also on b through alpq in Cqg_1(2)
