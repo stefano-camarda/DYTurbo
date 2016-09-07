@@ -20,7 +20,13 @@ bin_SCRIPTS = dyturbo-config
 CLEANFILES = $(bin_SCRIPTS)
 
 sharedir = ${datadir}/${PACKAGE}
-dist_share_DATA = ${srcdir}/input/*.in ${srcdir}/pdfsets.list ${srcdir}/scripts/submit_DYTURBO.sh ${srcdir}/scripts/DYTURBO_*.in ${srcdir}/scripts/run_DYTURBO_Array_TMPL.sh
+dist_share_DATA = ${srcdir}/input/*.in \
+		  ${srcdir}/pdfsets.list \
+		  ${srcdir}/scripts/compile_grid.sh \
+		  ${srcdir}/scripts/run_grid.sh \
+		  ${srcdir}/scripts/run_on_batch_tmpl.sh \
+		  ${srcdir}/scripts/run_prun.sh \
+		  ${srcdir}/scripts/submit_jobs.sh
 
 #distribute the cuba library
 #lib_LIBRARIES = libcuba.a
