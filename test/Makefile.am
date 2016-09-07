@@ -25,8 +25,9 @@ TurboHist_unittest_SOURCES = TurboHist_unittest.cxx
 TurboHist_unittest_LDADD   = $(GMOCK_LDFLAGS) ../histo/libturbohist.la
 
 
-test:  TurboHist_unittest
+check:  TurboHist_unittest
 	./TurboHist_unittest
+	rm *.dat *.root
 
 endif
 
