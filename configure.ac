@@ -136,7 +136,7 @@ AM_CONDITIONAL([HAVE_DYRES],test "x$enable_dyres" = "xyes")
 # enable test programs
 AC_ARG_ENABLE([test], AC_HELP_STRING(--enable-test, [Compile test programs, Available only in git (default=no)]))
 AS_IF([test "x$enable_test" = "xyes"], [
-  GMOCK_OFILE=gmock/googletest/make/gtest-all.o
+  GMOCK_OFILE="${PWD}/gmock/googletest/make/gtest_main.a"
   AC_MSG_CHECKING([for GMock installation])
   gmockinst=`ls ${GMOCK_OFILE}  2> /dev/null`
   AS_IF([test "x$gmockinst" = x], [
@@ -145,14 +145,14 @@ AS_IF([test "x$enable_test" = "xyes"], [
          [ ! test -d ${srcdir}/gmock/googletest/make ] && git clone https://github.com/google/googletest.git ${srcdir}/gmock;
          cd ${srcdir}/gmock/googletest/make && make ;
          cd -;
-         GMOCK_CPPFLAGS="-pthread -isystem ${PWD}/gmock/googletest/include"
-         GMOCK_LDFLAGS="-lpthread "
-         AC_SUBST(GMOCK_CPPFLAGS)
-         AC_SUBST(GMOCK_LDFLAGS)
          ])
+  GMOCK_CPPFLAGS="-pthread -isystem ${PWD}/gmock/googletest/include"
+  GMOCK_LDFLAGS="-lpthread ${GMOCK_OFILE}"
   AC_MSG_RESULT([ compiling test. Using gmock in ${GMOCK_OFILE}])
 ])
 AM_CONDITIONAL([HAVE_TEST],test "x$enable_test" = "xyes")
+AC_SUBST(GMOCK_CPPFLAGS)
+AC_SUBST(GMOCK_LDFLAGS)
 
 # Set --enable-root option, for linking histograms
 AC_ARG_ENABLE([root],

@@ -20,11 +20,8 @@ typedef vector<string> VecStr;
 typedef vector<double> VecDbl;
 typedef vector<vector<double>> VecVecDbl;
 
-#include "TH1D.h"
-#include "TRandom3.h"
-
-#include "TurboHist_unittest.h"
 #include "gtest/gtest.h"
+
 
 // Helper functions
 // Array comparison : http://stackoverflow.com/a/10062016
@@ -239,6 +236,10 @@ TEST(TurboHist, IOoperations) {
     //ASSERT_DOUBLE_EQ(turbo3.GetBinError(2), turbo.GetBinError(2));
 }
 
+#ifdef USEROOT
+#include "TH1D.h"
+#include "TRandom3.h"
+
 //===============================
 // Versus ROOT
 //===============================
@@ -421,6 +422,7 @@ TEST(TurboHistVsROOT, SameNumbersAfterFill) {
         ASSERT_EQ(turbo->GetBinError  (i),root->GetBinError  (i)) << "After fill, unequal bin error in " << i;
     }
 }
+#endif /* ROOT */
 
 
 
