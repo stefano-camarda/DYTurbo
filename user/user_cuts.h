@@ -5,7 +5,7 @@
  * User definitions of fiducial cuts.
  *
  * @brief User definitions will be included in `histo/KinematicCuts.h`.
- * For example of definition check `histo/KinematicCuts.h` file 
+ * For example of definition check `histo/KinematicCuts.h` file.
  *
  * @author Jakub Cuth <Jakub.Cuth@cern.ch>
  * @date 2016-09-07
