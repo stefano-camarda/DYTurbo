@@ -10,6 +10,7 @@
  * @date 2016-09-05
  */
 
+#include "config.h"
 #include "TurboHist.h"
 
 #include <vector>
@@ -405,10 +406,11 @@ TEST(TurboHistVsROOT, SameNumbersAfterFill) {
     size_t N = 100;
     TurboHist::H1 *turbo = new TurboHist::H1 ("name","title", N, 0, 100);
     TH1D          *root  = new TH1D          ("name2","title", N, 0, 100);
+    root->Sumw2();
     //
     for (size_t i = 0; i < N+2; ++i){
-        ASSERT_EQ(turbo->GetBinContent(i),root->GetBinContent(i)) << "Before fill, unequal bin content in " << i;
-        ASSERT_EQ(turbo->GetBinError  (i),root->GetBinError  (i)) << "Before fill, unequal bin error in " << i;
+        ASSERT_DOUBLE_EQ(turbo->GetBinContent(i),root->GetBinContent(i)) << "Before fill, unequal bin content for i=" << i;
+        ASSERT_DOUBLE_EQ(turbo->GetBinError  (i),root->GetBinError  (i)) << "Before fill, unequal bin error for i=" << i;
     }
     VecVecDbl testdata;
     generateData(testdata,400);
@@ -418,8 +420,8 @@ TEST(TurboHistVsROOT, SameNumbersAfterFill) {
     }
     //
     for (size_t i = 0; i < N+2; ++i){
-        ASSERT_EQ(turbo->GetBinContent(i),root->GetBinContent(i)) << "After fill, unequal bin content in " << i;
-        ASSERT_EQ(turbo->GetBinError  (i),root->GetBinError  (i)) << "After fill, unequal bin error in " << i;
+        ASSERT_DOUBLE_EQ(turbo->GetBinContent(i),root->GetBinContent(i)) << "After fill, unequal bin content for i=" << i;
+        ASSERT_DOUBLE_EQ(turbo->GetBinError  (i),root->GetBinError  (i)) << "After fill, unequal bin error for i=" << i;
     }
 }
 #endif /* ROOT */

@@ -9,9 +9,6 @@ AM_CPPFLAGS += $(GMOCK_CPPFLAGS)
 
 AM_FFLAGS =  -I$(srcdir)/../dyres -I$(srcdir)/../mcfm -I$(srcdir)/../src
 
-if HAVE_ROOT
-AM_CPPFLAGS += $(ROOT_CFLAGS)
-endif
 
 bin_PROGRAMS = points TurboHist_unittest
 
@@ -24,10 +21,14 @@ points_LDADD = ../src/libdyturbo.la \
 TurboHist_unittest_SOURCES = TurboHist_unittest.cxx
 TurboHist_unittest_LDADD   = $(GMOCK_LDFLAGS) ../histo/libturbohist.la
 
+if HAVE_ROOT
+AM_CPPFLAGS += $(ROOT_CFLAGS)
+TurboHist_unittest_LDADD += $(ROOT_LDFLAGS)
+endif
 
 check:  TurboHist_unittest
 	./TurboHist_unittest
-	rm *.dat *.root
+	rm -f *.dat *.root
 
 endif
 
