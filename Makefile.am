@@ -1,8 +1,8 @@
 ACLOCAL_AMFLAGS=-I m4
-#add cuba to SUBDIRS to ship cuba
+# add cuba to SUBDIRS to ship cuba
 SUBDIRS = cernlib ancont pegasus cubature dequad dyres dynnlo dyqt mcfm integrands resum counterterm vjfo v2j eba phasespace src
 
-#add test directories if enabled
+# add test directories if enabled
 if HAVE_TEST
 SUBDIRS += test
 endif

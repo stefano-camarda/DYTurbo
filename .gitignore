@@ -57,3 +57,4 @@ dyturbo-config
 .deps/
 *.in
 *line.C
+gmock/

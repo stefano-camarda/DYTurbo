@@ -136,7 +136,21 @@ AM_CONDITIONAL([HAVE_DYRES],test "x$enable_dyres" = "xyes")
 # enable test programs
 AC_ARG_ENABLE([test], AC_HELP_STRING(--enable-test, [Compile test programs, Available only in git (default=no)]))
 AS_IF([test "x$enable_test" = "xyes"], [
-  AC_MSG_CHECKING([Compile test programs])
+  GMOCK_OFILE=gmock/googletest/make/gtest-all.o
+  AC_MSG_CHECKING([for GMock installation])
+  gmockinst=`ls ${GMOCK_OFILE}  2> /dev/null`
+  AS_IF([test "x$gmockinst" = x], [
+         # if not found, install it
+         AC_MSG_RESULT([ Gmock not found.. installing])
+         [ ! test -d ${srcdir}/gmock/googletest/make ] && git clone https://github.com/google/googletest.git ${srcdir}/gmock;
+         cd ${srcdir}/gmock/googletest/make && make ;
+         cd -;
+         GMOCK_CPPFLAGS="-pthread -isystem ${PWD}/gmock/googletest/include"
+         GMOCK_LDFLAGS="-lpthread "
+         AC_SUBST(GMOCK_CPPFLAGS)
+         AC_SUBST(GMOCK_LDFLAGS)
+         ])
+  AC_MSG_RESULT([ compiling test. Using gmock in ${GMOCK_OFILE}])
 ])
 AM_CONDITIONAL([HAVE_TEST],test "x$enable_test" = "xyes")
 
