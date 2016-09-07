@@ -217,6 +217,8 @@ AC_CONFIG_FILES([Makefile
 		 ancont/Makefile
 		 pegasus/Makefile
 		 cubature/Makefile
+		 user/Makefile
+		 histo/Makefile
 		 dyturbo-config])
 
 
