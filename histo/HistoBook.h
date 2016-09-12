@@ -10,6 +10,8 @@
  * @date 2016-08-29
  */
 
+#include "user_book.h"
+
 using namespace Kinematics;
 namespace HistoHandler{
     void Book() {
@@ -17,6 +19,8 @@ namespace HistoHandler{
         Add( new Histo2D   <BosPT,BosY    > ("qt","y"      ) );
         //Add( new HistoProfile   <BosPT,A1      > ("qt","a1"     ) );
         //Add( new HistoProfile2D <BosPT,BosY,A1 > ("qt","y","a1" ) );
+
+        UserBook();
     }
 }
 

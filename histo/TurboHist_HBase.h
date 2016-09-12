@@ -1,0 +1,198 @@
+#ifndef TurboHist_HBase_H
+#define TurboHist_HBase_H
+/**
+ * @file TurboHist_HBase.h
+ * Description of cpp file
+ *
+ * @brief A brief description
+ *
+ * @author Jakub Cuth <Jakub.Cuth@cern.ch>
+ * @date 2016-09-07
+ */
+
+#include "TurboHist.h"
+#include "TurboHist_Binning.h"
+
+
+#include <cmath>
+
+namespace TurboHist {
+
+    template<class HistoType, class CountType>
+    class HBase : public OBase {
+        public :
+            typedef vector<CountType> Data;
+
+            inline int GetDim() const { return dim;};
+            inline char GetType() const { return type;};
+
+            inline const bool IsEquidistant(size_t iaxis=X) const {
+                return GetBinning(iaxis).isEquidistant;
+            }
+
+            inline size_t GetBin(size_t ibinX, size_t ibinY=0, size_t ibinZ=0) const {
+                // column major order: hard-code per each case should speed up
+                size_t ibin = 0;
+                if (dim==1) {
+                    return ibinX;
+                }
+                if (dim==2) {
+                    ibin = ibinY;
+                    return ibinX + (binsX.N+2)*ibin;
+                }
+                if (dim==3) {
+                    ibin = ibinZ;
+                    ibin = ibinY + (binsY.N+2)*ibin;
+                    return ibinX + (binsX.N+2)*ibin;
+                }
+                return ibin;
+            };
+
+            inline PRE GetBinContent (size_t ibin) const { return data[ibin].sum_w; };
+            inline PRE GetBinError   (size_t ibin) const { return sqrt(data[ibin].sum_w2); };
+
+
+            void SaveToFile(File &file) const {
+                file << type;
+                file << dim;
+                file << binsX;
+                file << binsY;
+                file << binsZ;
+                file << data;
+                file << name;
+                file << title;
+                file << '\n';
+            }
+
+            bool LoadFromFile(File &file, bool doOnlyCheck=false){
+                size_t ptr = file.tellg();
+                bool isGoodSave = true;
+                //read and check type and dim
+                char _type;
+                int  _dim;
+                VecObs _ax;
+                VecObs _ay;
+                VecObs _az;
+                Data _data;
+                string _name;
+                VecStr _titles;
+                // Check this should be same order as in operator write
+                file >> _type;
+                file >> _dim;
+                file >> _ax;
+                file >> _ay;
+                file >> _az;
+                file >> _data;
+                file >> _name;
+                file >> _titles;
+                //
+                // Tests
+                try {
+                    isGoodSave&= _dim==dim;
+                    isGoodSave&= _type==type;
+                    if (!isGoodSave) throw false;
+                    if (dim>0) isGoodSave&= _ax.size()>0;
+                    if (dim>1) isGoodSave&= _ay.size()>0;
+                    if (dim>2) isGoodSave&= _az.size()>0;
+                    if (!isGoodSave) throw false;
+                    isGoodSave&= int(_titles.size())==dim;
+                    if (!isGoodSave) throw false;
+                    if (!doOnlyCheck){
+                        //set bin points
+                        if (dim >0) SetBinsAxis(X,_ax,_titles[X]);
+                        if (dim >1) SetBinsAxis(Y,_ay,_titles[Y]);
+                        if (dim >2) SetBinsAxis(Z,_az,_titles[Z]);
+                        //set data
+                        for (size_t i=0; i<GetMaxBin(); i++){
+                            data[i]=_data[i];
+                        }
+                    }
+                } catch (bool) { };
+                // it was only check, put read pointer back where we started
+                if (doOnlyCheck) file.seekg(ptr);
+                return isGoodSave;
+            }
+
+            const char * Print(string opt="") const {
+                printf("name '%s' tiltles : '", name.c_str());
+                for (auto tit : title ) printf(";%s",tit.c_str());
+                printf("'\n");
+                if (dim>0) binsX.Print();
+                if (dim>1) binsY.Print();
+                if (dim>2) binsZ.Print();
+                size_t ibin=0;
+                for (auto value : data) printf ("%zu: %f +- %f \n",ibin++, value.sum_w , sqrt(value.sum_w2));
+                return "\n";
+            }
+
+            void Add(const HBase<HistoType,CountType> &rhs , double c=1. ){
+                // check dim
+                if (dim!=rhs.dim) return;
+                if (type!=rhs.type) return;
+                // check binning
+                if(binsX!=rhs.binsX) return;
+                if(binsY!=rhs.binsY) return;
+                if(binsZ!=rhs.binsZ) return;
+                // loop over all data
+                for (size_t ibin = 0; ibin < data.size(); ++ibin) {
+                    data[ibin] += rhs.data[ibin]*c;
+                }
+            }
+
+            inline size_t GetMaxBin() const {
+                size_t    ibin =  binsX.N+2;
+                if(dim>1) ibin *= binsY.N+2;
+                if(dim>2) ibin *= binsZ.N+2;
+                return ibin;
+            }
+
+
+        protected :
+            // Static variables will be shared per each template specification
+            static int dim; // dimension (number of axis)
+            static char type; // type of counter
+            string name;
+            VecStr title; // size dim
+            Binning binsX; // bin edges size: (nbinsX+2)
+            Binning binsY; // bin edges size: (nbinsY+2)
+            Binning binsZ; // bin edges size: (nbinsZ+2)
+            Data data; // bin content (nbinX+2)*(nbinX+Y)*(nbinZ+2)
+
+            inline Binning &GetBinning(size_t iaxis){
+                switch (iaxis) {
+                    case X:
+                        return binsX;
+                    case Y:
+                        return binsY;
+                    case Z:
+                        return binsZ;
+                    default:
+                        return binsX;
+                }
+            }
+
+            inline const Binning &GetBinning(size_t iaxis) const{
+                switch (iaxis) {
+                    case X:
+                        return binsX;
+                    case Y:
+                        return binsY;
+                    case Z:
+                        return binsZ;
+                    default:
+                        return binsX;
+                }
+            }
+
+            void SetBinsAxis(AxisName iaxis, const VecObs &newbins, const string &tit){
+                title .resize(dim);
+                title[iaxis]=tit;
+                //
+                GetBinning(iaxis).SetBins(newbins);
+                data.assign( GetMaxBin() , CountType());
+            };
+
+    };
+}
+
+#endif /* ifndef TurboHist_HBase_H */

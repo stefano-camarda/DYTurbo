@@ -11,16 +11,37 @@
  */
 
 #include "TurboHist.h"
+#include "TurboHist_File.h"
 
+#include "TurboHist_HBase.h"
+template<class H, class C> int  TurboHist::HBase<H,C>::dim = -1;
+template<class H, class C> char TurboHist::HBase<H,C>::type = 'o';
+
+#include "TurboHist_H1.h"
+template<> int  TurboHist::HBase<TurboHist::H1,TurboHist::Counter>::dim = 1;
+template<> char TurboHist::HBase<TurboHist::H1,TurboHist::Counter>::type = 'h';
+
+// #include "TurboHist_H2.h"
+// template<> int  TurboHist::HBase<TurboHist::H2,TurboHist::Counter>::dim = 2;
+// template<> char TurboHist::HBase<TurboHist::H2,TurboHist::Counter>::type = 'h';
+// 
+// #include "TurboHist_H3.h"
+// template<> int  TurboHist::HBase<TurboHist::H3,TurboHist::Counter>::dim = 3;
+// template<> char TurboHist::HBase<TurboHist::H3,TurboHist::Counter>::type = 'h';
+// 
+// #include "TurboHist_P1.h"
+// template<> int  TurboHist::HBase<TurboHist::P1,TurboHist::Counter>::dim = 1;
+// template<> char TurboHist::HBase<TurboHist::P1,TurboHist::Counter>::type = 'p';
+// 
+// #include "TurboHist_P2.h"
+// template<> int  TurboHist::HBase<TurboHist::P2,TurboHist::Counter>::dim = 2;
+// template<> char TurboHist::HBase<TurboHist::P2,TurboHist::Counter>::type = 'p';
+
+#include <algorithm>
 using std::transform;
 using std::ios;
 
 namespace TurboHist {
-    template<class T> int HBase<T>::dim = -1;
-    template<class T> char HBase<T>::type = 'o';
-
-    template<> int HBase<H1>::dim = 1;
-    template<> char HBase<H1>::type = 'h';
 
 
     void File::Open(string name, string method){
@@ -66,6 +87,8 @@ namespace TurboHist {
         f.Close();
     };
 }
+
+
 
 
 #endif /* ifndef TurboHist_CXX */

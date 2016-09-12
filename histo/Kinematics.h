@@ -64,6 +64,8 @@ namespace Kinematics {
                 isCalculated = true;
             }
 
+            inline bool IsCalculated() const {return isCalculated;}
+
         protected :
             // Static will be per derived class
             static double value;

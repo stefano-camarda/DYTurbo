@@ -190,4 +190,6 @@ namespace Kinematics{
     NEWKIN( A7 ){ SinThCS  sinth;  SinPhiCS  sinph;  double calc(){ return 4.     * (sinth()*sinph()          ) ;       } };
 }
 
+#include "user_kinem.h"
+
 #endif /* ifndef KinematicDefinitions_H */
