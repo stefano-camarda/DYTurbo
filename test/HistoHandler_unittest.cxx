@@ -145,10 +145,3 @@ void Test_HistoSvc(){
     return;
 }
 
-
-int main(int argc, char *argv[])
-{
-    Test_HistoSvc();
-    //std::uniq_ptr
-    return 0;
-}

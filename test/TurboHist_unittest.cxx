@@ -11,12 +11,18 @@
  */
 
 #include "config.h"
-#include "TurboHist.h"
+#include "TurboHist_File.h"
+#include "TurboHist_H1.h"
 
+#include <algorithm>
+using std::lower_bound;
 #include <vector>
-#include <string>
 using std::vector;
+#include <string>
 using std::string;
+#include <map>
+using std::map;
+
 typedef vector<string> VecStr;
 typedef vector<double> VecDbl;
 typedef vector<vector<double>> VecVecDbl;
