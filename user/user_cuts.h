@@ -11,5 +11,8 @@
  * @date 2016-09-07
  */
 
+namespace Kinematics {
+    //template<> struct Cut<"DummyCut"> { bool keepEvent() { return true; } };
+}
 
 #endif /* ifndef user_cuts_H */

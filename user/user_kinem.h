@@ -11,5 +11,8 @@
  * @date 2016-09-07
  */
 
+namespace Kinematics {
+    //NEWKIN ( BigAnswer ) { double calc(){ return 42;}  };
+}
 
 #endif /* ifndef user_kinem_H */
