@@ -15,9 +15,9 @@
 
 #ifdef USEROOT
 
-//#include "HistoObjectsROOT.h"
+#include "HistoObjectsROOT.h"
 
-//#include "HistoHandler_unittest.cxx"
+#include "HistoHandler_unittest.cxx"
 
 #endif /* ROOT */
 #endif /* ifndef HistoHandlerROOT_unittest_CXX */
