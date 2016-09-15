@@ -1,0 +1,13 @@
+before_script:
+    - source /cvmfs/atlas.cern.ch/repo/ATLASLocalRootBase/user/atlasLocalSetup.sh'
+    - lsetup root
+
+with-root:
+    script:
+        - ./configure --enable-root --enable-Ofast --enable-test
+        - make check
+
+with-stl:
+    script:
+        - ./configure --enable-Ofast --enable-test
+        - make check
