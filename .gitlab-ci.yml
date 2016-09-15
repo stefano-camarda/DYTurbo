@@ -1,5 +1,5 @@
 before_script:
-    - source /cvmfs/atlas.cern.ch/repo/ATLASLocalRootBase/user/atlasLocalSetup.sh'
+    - source /cvmfs/atlas.cern.ch/repo/ATLASLocalRootBase/user/atlasLocalSetup.sh
     - lsetup root
 
 with-root:
