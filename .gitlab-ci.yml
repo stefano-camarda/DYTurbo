@@ -1,6 +1,6 @@
 check-with-root:
     tags:
-        - cvmfs
+        - dyturbo
     script:
         - export ATLAS_LOCAL_ROOT_BASE=/cvmfs/atlas.cern.ch/repo/ATLASLocalRootBase
         - ls -la ${ATLAS_LOCAL_ROOT_BASE}/user/atlasLocalSetup.sh
