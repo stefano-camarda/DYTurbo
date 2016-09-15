@@ -21,10 +21,10 @@ template<class H, class C> char TurboHist::HBase<H,C>::type = 'o';
 template<> int  TurboHist::HBase<TurboHist::H1,TurboHist::Counter>::dim = 1;
 template<> char TurboHist::HBase<TurboHist::H1,TurboHist::Counter>::type = 'h';
 
-// #include "TurboHist_H2.h"
-// template<> int  TurboHist::HBase<TurboHist::H2,TurboHist::Counter>::dim = 2;
-// template<> char TurboHist::HBase<TurboHist::H2,TurboHist::Counter>::type = 'h';
-// 
+#include "TurboHist_H2.h"
+template<> int  TurboHist::HBase<TurboHist::H2,TurboHist::Counter>::dim = 2;
+template<> char TurboHist::HBase<TurboHist::H2,TurboHist::Counter>::type = 'h';
+
 // #include "TurboHist_H3.h"
 // template<> int  TurboHist::HBase<TurboHist::H3,TurboHist::Counter>::dim = 3;
 // template<> char TurboHist::HBase<TurboHist::H3,TurboHist::Counter>::type = 'h';

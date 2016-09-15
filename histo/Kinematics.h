@@ -30,6 +30,7 @@ namespace Kinematics {
     extern double p3[4];
     extern double p4[4];
     extern double event_weight;
+    extern bool isIntegratorMode;
 
     // Struct for flag (isCalculated)
     typedef set<bool *> VariableFlags;
@@ -43,12 +44,16 @@ namespace Kinematics {
     template <class T> class Variable {
         public :
             virtual double calc()=0;
+            virtual double middlePoint(){return 0.;};
+
             Variable() {
                 flags.insert(&isCalculated);
-                //printf ("%s %p : Creating variable with pointer %p\n", typeid(*this).name(), this, &(this->isCalculated));
             };
 
             double operator()(){
+                // Integration mode
+                if(isIntegratorMode) return isIntegratorVariable ? middlePoint() : 0.;
+                // Filler Mode
                 if (!isCalculated){
                     value=calc();
                     isCalculated=true;
@@ -59,21 +64,18 @@ namespace Kinematics {
                 return value;
             }
 
-            void SetValue(double val){ // For Integrator mode: set middle of the bin.
-                value = val;
-                isCalculated = true;
-            }
-
             inline bool IsCalculated() const {return isCalculated;}
 
         protected :
             // Static will be per derived class
             static double value;
             static bool isCalculated;
+            const static bool isIntegratorVariable;
     };
 
     template<class T> double Variable<T>::value = -999.;
     template<class T> bool Variable<T>::isCalculated = false;
+    template<class T> const bool Variable<T>::isIntegratorVariable = false;
 }
 
 

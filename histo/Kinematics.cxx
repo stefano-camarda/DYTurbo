@@ -33,14 +33,13 @@ namespace Kinematics{
     }
 
     void SetMiddlePoint(){
-        // TODO: Implentation to DYTURBO: read current bin boundaries and set variables.
-        //double qt_val = ( phasespace::qtmax + phasespace::qtmin )/2.;
-        //double y_val  = ( phasespace::ymax  + phasespace::ymin  )/2.;
-        //double Q_val  = ( phasespace::mmax  + phasespace::mmin  )/2.;
-        // TODO: This needs to go cxx
-        // BosPT qt;
-        // qt.SetValue(qt_val); // set value and mark as "isCalculated"
+        // NOTE: There are only few observables which can be evaluated in
+        // integrator mode. We need to receive middle point of integration and recalculate
+        isIntegratorMode=true;
+        for (auto ptr_isCalculated : flags) *ptr_isCalculated=false;
     }
+
+    bool isIntegratorMode=false;
 
 
 }

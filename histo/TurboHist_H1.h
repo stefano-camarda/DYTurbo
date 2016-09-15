@@ -22,8 +22,12 @@ namespace TurboHist {
             SetBins(N,min,max,_title);
         };
 
-        inline size_t FindBin(const OBS &val){
+        inline size_t FindBin(const OBS &val) const {
             return binsX.FindBin(val);
+        };
+
+        void Fill (const OBS &val,const PRE &weight=1.0){
+            data[FindBin(val)]+=weight;
         };
 
         void SetBins(size_t N, OBS min, OBS max, const string &tit="X"){
@@ -35,9 +39,6 @@ namespace TurboHist {
             SetBinsAxis(X,newbins,tit);
         };
 
-        void Fill (const OBS &val,const PRE &weight=1.0){
-            data[FindBin(val)]+=weight;
-        };
     };
 }
 

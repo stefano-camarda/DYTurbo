@@ -12,9 +12,12 @@
 
 
 #include "gtest/gtest.h"
+#include "gmock/gmock.h"
 
 #include "Kinematics.h"
 #include "KinematicDefinitions.h"
+
+#include "phasespace.h"
 
 TEST(Kinemantic, CalculateOnlyOnce){
     double s22 = 2.*sqrt(2.);
@@ -49,10 +52,30 @@ TEST(Kinemantic, CalculateOnlyOnce){
     ASSERT_DOUBLE_EQ(pt2(), pt1());
 }
 
-TEST(Kinemantic, SetMiddlePoint){
+
+TEST(KinemanticInterface, IntegratorVariableIsCalculated){
+    double l1[] = {0.,2.,0.,2.};
+    Kinematics::SetKinematics(l1, l1, 1.0 );
+    phasespace::setbounds(0.,2., 2.,4., 4.,6.);
+    Kinematics::BosPT pt;
+    Kinematics::BosY y;
+    Kinematics::BosM m;
+    Kinematics::SetMiddlePoint();
+    // Check that integrable variable is calculated
+    ASSERT_DOUBLE_EQ(1., m());
+    ASSERT_DOUBLE_EQ(3., pt());
+    ASSERT_DOUBLE_EQ(5., y());
 }
 
-TEST(Kinemantic, CheckWithOldKinematics){
+TEST(KinemanticInterface, NonIntegratorVariableIsNotCalculated){
+    double l1[] = {0.,2.,0.,2.};
+    Kinematics::SetKinematics(l1, l1, 1.0 );
+    phasespace::setbounds(0.,2., 2.,4., 4.,6.);
+    Kinematics::SetMiddlePoint();
+    // Check that non-integrable variable is not calculated
+    Kinematics::LepPX lepPX;
+    ASSERT_DOUBLE_EQ(0., lepPX());
 }
+
 
 #endif /* ifndef Kinematics_unittest_CXX */

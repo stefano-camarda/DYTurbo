@@ -5,13 +5,10 @@ if HAVE_ROOT
 AM_CPPFLAGS +=  $(ROOT_CFLAGS)
 endif
 
+noinst_LTLIBRARIES = libhisto.la
+libhisto_la_SOURCES = Kinematics.cxx HistoHandler.cxx HistoObjects.cxx TurboHist.cxx
 
-noinst_LTLIBRARIES = libkin.la libhist.la libturbohist.la
-libkin_la_SOURCES = Kinematics.cxx
-libhist_la_SOURCES = HistoHandler.cxx HistoObjects.cxx
-libturbohist_la_SOURCES = TurboHist.cxx
-
-
-pkginclude_HEADERS  = Kinematics.h KinematicDefinitions.h
-pkginclude_HEADERS += HistoHandler.h HistoObjects.h HistoObjectsROOT.h HistoObjectsSTL.h HistoBook.h
-pkginclude_HEADERS += TurboHist.h
+pkginclude_HEADERS  = Kinematics.h KinematicDefinitions.h \
+		      HistoHandler.h HistoObjects.h HistoObjectsROOT.h \
+		      HistoObjectsSTL.h HistoBook.h \
+		      TurboHist.h

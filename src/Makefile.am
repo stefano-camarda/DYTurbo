@@ -8,6 +8,8 @@ AM_CPPFLAGS = -fpermissive \
 	-I$(srcdir)/../eba \
 	-I$(srcdir)/../cubature \
 	-I$(srcdir)/../phasespace \
+	-I$(srcdir)/../histo \
+	-I$(srcdir)/../user \
 	-Wl,Bstatic \
 	$(CUBA_CPPFLAGS) $(LHAPDF_CPPFLAGS) \
 	-DSHAREDIR=\"${datadir}/${PACKAGE}\"
@@ -24,6 +26,7 @@ lib_LTLIBRARIES = libdyturbo.la
 libdyturbo_la_SOURCES =
 libdyturbo_la_LIBADD = libdyturbobase.la \
 	../phasespace/libphasespace.la \
+	../histo/libhisto.la \
 	../integrands/libintegrands.la \
 	../resum/libresum.la \
 	../counterterm/libcounterterm.la \
@@ -37,6 +40,7 @@ libdyturbo_la_LIBADD = libdyturbobase.la \
 	../pegasus/libpegasus.la \
 	../dequad/libdequad.la \
 	../cubature/libcubature.la
+
 
 bin_PROGRAMS = dyturbo
 dyturbo_SOURCES = dyturbo.C

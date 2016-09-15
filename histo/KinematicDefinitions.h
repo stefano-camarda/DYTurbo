@@ -10,12 +10,18 @@
  * @date 2016-08-29
  */
 
+#include "Kinematics.h"
+
 #define NEWKIN(CLS) class CLS : public Variable< CLS >
 
 #include <cmath>
 #include <algorithm>
 using std::max;
 
+// forward phasespace
+namespace phasespace {
+    extern double mmin, mmax, qtmin, qtmax, ymin, ymax;
+}
 
 
 namespace Kinematics{
@@ -52,7 +58,11 @@ namespace Kinematics{
         double calc(){
             return sqrt( e()*e() - (px()*px() + py()*py() + pz()*pz()) )  ;
         }
+        double middlePoint(){
+            return ( phasespace::mmax + phasespace::mmin )/2. ;
+        }
     };
+    template<> const bool Variable<BosM>::isIntegratorVariable=true;
 
     class BosMT : public Variable< BosMT > {
         LepPX lmPX;
@@ -75,7 +85,11 @@ namespace Kinematics{
         double calc(){
             return sqrt(px()*px()+py()*py())  ;
         }
+        double middlePoint(){
+            return ( phasespace::qtmax + phasespace::qtmin )/2. ; 
+        }
     };
+    template<> const bool Variable<BosPT>::isIntegratorVariable=true;
 
     NEWKIN( BosPhi ) {
         BosPX px;
@@ -91,7 +105,11 @@ namespace Kinematics{
         double calc(){
             return 0.5*log((e()+pz())/(e()-pz()));
         }
+        double middlePoint(){
+            return ( phasespace::ymax + phasespace::ymin )/2. ;
+        }
     };
+    template<> const bool Variable<BosY>::isIntegratorVariable=true;
 
     // Longitudinal angle theta in Collin-Soper frame
     NEWKIN(CosThCS){

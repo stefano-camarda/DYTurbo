@@ -10,6 +10,8 @@
  * @date 2016-08-29
  */
 
+#include "KinematicDefinitions.h"
+
 #include "user_book.h"
 
 using namespace Kinematics;

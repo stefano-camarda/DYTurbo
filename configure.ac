@@ -136,17 +136,17 @@ AM_CONDITIONAL([HAVE_DYRES],test "x$enable_dyres" = "xyes")
 # enable test programs
 AC_ARG_ENABLE([test], AC_HELP_STRING(--enable-test, [Compile test programs, Available only in git (default=no)]))
 AS_IF([test "x$enable_test" = "xyes"], [
-  GMOCK_OFILE="${PWD}/gmock/googletest/make/gtest_main.a"
+  GMOCK_OFILE="${PWD}/gmock/googlemock/make/gmock_main.a"
   AC_MSG_CHECKING([for GMock installation])
   gmockinst=`ls ${GMOCK_OFILE}  2> /dev/null`
   AS_IF([test "x$gmockinst" = x], [
          # if not found, install it
          AC_MSG_RESULT([ Gmock not found.. installing])
-         [ ! test -d ${srcdir}/gmock/googletest/make ] && git clone https://github.com/google/googletest.git ${srcdir}/gmock;
-         cd ${srcdir}/gmock/googletest/make && make ;
+         [ ! test -d ${srcdir}/gmock/googlemock/make ] && git clone https://github.com/google/googletest.git ${srcdir}/gmock;
+         cd ${srcdir}/gmock/googlemock/make && make ;
          cd -;
          ])
-  GMOCK_CPPFLAGS="-pthread -isystem ${PWD}/gmock/googletest/include"
+  GMOCK_CPPFLAGS="-pthread -isystem ${PWD}/gmock/googletest/include -isystem ${PWD}/gmock/googlemock/include"
   GMOCK_LDFLAGS="-lpthread ${GMOCK_OFILE}"
   AC_MSG_RESULT([ compiling test. Using gmock in ${GMOCK_OFILE}])
 ])
@@ -200,7 +200,8 @@ AS_IF([test "x$enable_checkBounds" = "xyes"], [
 
 
 AC_CONFIG_FILES([Makefile 
-	 	 src/Makefile
+		 user/Makefile
+		 histo/Makefile
  	 	 resum/Makefile
 		 counterterm/Makefile
 		 vjfo/Makefile
@@ -217,8 +218,7 @@ AC_CONFIG_FILES([Makefile
 		 ancont/Makefile
 		 pegasus/Makefile
 		 cubature/Makefile
-		 user/Makefile
-		 histo/Makefile
+	 	 src/Makefile
 		 dyturbo-config])
 
 

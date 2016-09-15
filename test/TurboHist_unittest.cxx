@@ -13,6 +13,7 @@
 #include "config.h"
 #include "TurboHist_File.h"
 #include "TurboHist_H1.h"
+#include "TurboHist_H2.h"
 
 #include <algorithm>
 using std::lower_bound;
@@ -28,47 +29,9 @@ typedef vector<double> VecDbl;
 typedef vector<vector<double>> VecVecDbl;
 
 #include "gtest/gtest.h"
+#include "gmock/gmock.h"
 
 
-// Helper functions
-// Array comparison : http://stackoverflow.com/a/10062016
-// You don't need to add a dependency on googlemock if you don't want, you
-// could write your own simple function that returns a
-// testing::AssertionResult, e.g.
-template<typename T> ::testing::AssertionResult ArraysMatch(const T &expected, const T &actual){
-    if ( expected.size() != actual.size() )
-        return ::testing::AssertionFailure() << "incorrect length " <<  actual.size()
-           << "instead of "  << expected.size();
-    for (size_t i(0); i < expected.size(); ++i){
-        if (expected[i] != actual[i]){
-            return ::testing::AssertionFailure() << "array[" << i
-                << "] (" << actual[i] << ") != expected[" << i
-                << "] (" << expected[i] << ")";
-        }
-    }
-    return ::testing::AssertionSuccess();
-}
-// Then in your test, call:
-//EXPECT_TRUE(ArraysMatch(two_sorted, two));
-
-//===============================
-// Init, binning and filling
-//===============================
-TEST(TurboHist, InitHists) {
-    //
-    TurboHist::H1 turbo;
-    ASSERT_EQ ( 1   , turbo.GetDim    (  )  ) << "Wrong dimmension of class.";
-    ASSERT_EQ ( 'h' , turbo.GetType   (  )  ) << "Wrong type of class.";
-    ASSERT_EQ ( 3   , turbo.GetMaxBin (  )  ) << "Wrong number of bins.";
-    //
-    ASSERT_DOUBLE_EQ ( 0.   , turbo.GetBinContent(0)  ) << "Wrong dimmension of class.";
-    ASSERT_DOUBLE_EQ ( 0.   , turbo.GetBinContent(1)  ) << "Wrong dimmension of class.";
-    ASSERT_DOUBLE_EQ ( 0.   , turbo.GetBinContent(2)  ) << "Wrong dimmension of class.";
-    //
-    ASSERT_DOUBLE_EQ ( 0.   , turbo.GetBinError(0)  ) << "Wrong dimmension of class.";
-    ASSERT_DOUBLE_EQ ( 0.   , turbo.GetBinError(1)  ) << "Wrong dimmension of class.";
-    ASSERT_DOUBLE_EQ ( 0.   , turbo.GetBinError(2)  ) << "Wrong dimmension of class.";
-}
 
 TEST(TurboHist, Counter) {
     TurboHist::Counter c1;
@@ -96,12 +59,75 @@ TEST(TurboHist, Counter) {
     ASSERT_DOUBLE_EQ ( 5 , c2.sum_w2 ) << "Add Counter";
 }
 
+template <class HType>
+void CheckSpecifiers(HType &histo, const int &dim, const char &type, const size_t &maxbins){
+    ASSERT_EQ ( dim     , histo.GetDim    ( ) ) << "Wrong dimmension.";
+    ASSERT_EQ ( type    , histo.GetType   ( ) ) << "Wrong type.";
+    ASSERT_EQ ( maxbins , histo.GetMaxBin ( ) ) << "Wrong number of bins.";
+}
 
-TEST(TurboHist, Binning) {
-    //
+template <class HType>
+void CheckBinContent(HType &histo, VecDbl binval){
+    for (size_t ibin = 0; ibin < binval.size(); ++ibin) {
+        ASSERT_DOUBLE_EQ(binval[ibin], histo.GetBinContent(ibin)) << "Wrong bin CONTENT in bin " << ibin;
+    }
+}
+
+template <class HType>
+void CheckBinError(HType &histo, VecDbl binval){
+    for (size_t ibin = 0; ibin < binval.size(); ++ibin) {
+        ASSERT_DOUBLE_EQ(binval[ibin], histo.GetBinError(ibin)) << "Wrong bin ERROR in bin " << ibin;
+    }
+}
+
+//===============================
+// Init, binning and filling
+//===============================
+TEST(TurboHist, InitH1) {
+    TurboHist::H1 h;
+    CheckSpecifiers(h, 1, 'h', 3);
+    CheckBinContent(h, {0.,0.,0.});
+    CheckBinError(h, {0.,0.,0.});
+}
+
+TEST(TurboHist, InitH2) {
+    TurboHist::H2 h;
+    CheckSpecifiers(h, 2, 'h', 9);
+    CheckBinContent(h, {0.,0.,0., 0.,0.,0., 0.,0.,0. });
+    CheckBinError  (h, {0.,0.,0., 0.,0.,0., 0.,0.,0. });
+}
+
+// Helper functions
+// Array comparison : http://stackoverflow.com/a/10062016
+// You don't need to add a dependency on googlemock if you don't want, you
+// could write your own simple function that returns a
+// testing::AssertionResult, e.g.
+template<typename T> ::testing::AssertionResult ArraysMatch(const T &expected, const T &actual){
+    if ( expected.size() != actual.size() )
+        return ::testing::AssertionFailure() << "incorrect length " <<  actual.size()
+           << "instead of "  << expected.size();
+    for (size_t i(0); i < expected.size(); ++i){
+        if (expected[i] != actual[i]){
+            return ::testing::AssertionFailure() << "array[" << i
+                << "] (" << actual[i] << ") != expected[" << i
+                << "] (" << expected[i] << ")";
+        }
+    }
+    return ::testing::AssertionSuccess();
+}
+// Then in your test, call:
+//EXPECT_TRUE(ArraysMatch(two_sorted, two));
+
+TEST(TurboHist, CreateEquidistantVector) {
     VecDbl bins = {0.,2.,4.,6.};
     VecDbl equid = TurboHist::Binning::GetEquidistantVector(3,0.,6.);
     ASSERT_TRUE(ArraysMatch(bins,equid)) << "Wrong implementation of equidistant binning";
+}
+
+
+
+TEST(TurboHist, Binning) {
+    VecDbl bins = {0.,2.,4.,6.};
     //
     TurboHist::H1 turbo;
     // equidistant
@@ -111,20 +137,20 @@ TEST(TurboHist, Binning) {
     ASSERT_EQ( 0, turbo.FindBin(-100)) << "From min: Incorrect bin found.";
     ASSERT_EQ( 4, turbo.FindBin(100)) << "From max: Incorrect bin found.";
     ASSERT_EQ( 2, turbo.FindBin(3.33)) << "From range: Incorrect bin found.";
-    ASSERT_EQ( 2, turbo.GetBin(2)) << "Incorrect bin calculated.";
+    //ASSERT_EQ( 2, turbo.GetBin(2)) << "Incorrect bin calculated.";
     // equidistant
     turbo.SetBins(bins);
     ASSERT_TRUE(turbo.IsEquidistant()) << "From array: Wrong test of equidistancy.";
     // Find
     ASSERT_EQ( 2, turbo.FindBin(3.33)) << "From equid array: Incorrect bin found.";
-    ASSERT_EQ( 2, turbo.GetBin(2)) << "Incorrect bin calculated.";
+    //ASSERT_EQ( 2, turbo.GetBin(2)) << "Incorrect bin calculated.";
     // non-equidistant
     bins = {0.,3.,4.,6.};
     turbo.SetBins(bins);
     ASSERT_FALSE(turbo.IsEquidistant()) << "Wrong test of equidistancy.";
     // Find
     ASSERT_EQ( 2, turbo.FindBin(3.33)) << "From array: Incorrect bin found.";
-    ASSERT_EQ( 2, turbo.GetBin(2)) << "Incorrect bin calculated.";
+    //ASSERT_EQ( 2, turbo.GetBin(2)) << "Incorrect bin calculated.";
     // uniq
     bins = {0., 2.,2.,4.,6.};
     turbo.SetBins(bins);

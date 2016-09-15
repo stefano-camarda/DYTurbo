@@ -11,6 +11,7 @@
  */
 
 #include "TurboHist.h"
+#include "TurboHist_File.h"
 #include "TurboHist_Binning.h"
 
 
@@ -26,26 +27,20 @@ namespace TurboHist {
             inline int GetDim() const { return dim;};
             inline char GetType() const { return type;};
 
-            inline const bool IsEquidistant(size_t iaxis=X) const {
+            inline const bool IsEquidistant(const size_t iaxis=X) const {
                 return GetBinning(iaxis).isEquidistant;
             }
 
-            inline size_t GetBin(size_t ibinX, size_t ibinY=0, size_t ibinZ=0) const {
+            inline size_t GetBin(size_t ibinX, size_t ibinY) const {
                 // column major order: hard-code per each case should speed up
-                size_t ibin = 0;
-                if (dim==1) {
-                    return ibinX;
-                }
-                if (dim==2) {
-                    ibin = ibinY;
-                    return ibinX + (binsX.N+2)*ibin;
-                }
-                if (dim==3) {
-                    ibin = ibinZ;
-                    ibin = ibinY + (binsY.N+2)*ibin;
-                    return ibinX + (binsX.N+2)*ibin;
-                }
-                return ibin;
+                size_t ibin = ibinY;
+                return ibinX + (binsX.N+2)*ibin;
+            };
+            inline size_t GetBin(size_t ibinX, size_t ibinY, size_t ibinZ) const {
+                // column major order: hard-code per each case should speed up
+                size_t ibin = ibinZ;
+                ibin = ibinY + (binsY.N+2)*ibin;
+                return ibinX + (binsX.N+2)*ibin;
             };
 
             inline PRE GetBinContent (size_t ibin) const { return data[ibin].sum_w; };
@@ -75,7 +70,7 @@ namespace TurboHist {
                 VecObs _az;
                 Data _data;
                 string _name;
-                VecStr _titles;
+                string _title;
                 // Check this should be same order as in operator write
                 file >> _type;
                 file >> _dim;
@@ -84,7 +79,7 @@ namespace TurboHist {
                 file >> _az;
                 file >> _data;
                 file >> _name;
-                file >> _titles;
+                file >> _title;
                 //
                 // Tests
                 try {
@@ -95,13 +90,12 @@ namespace TurboHist {
                     if (dim>1) isGoodSave&= _ay.size()>0;
                     if (dim>2) isGoodSave&= _az.size()>0;
                     if (!isGoodSave) throw false;
-                    isGoodSave&= int(_titles.size())==dim;
                     if (!isGoodSave) throw false;
                     if (!doOnlyCheck){
                         //set bin points
-                        if (dim >0) SetBinsAxis(X,_ax,_titles[X]);
-                        if (dim >1) SetBinsAxis(Y,_ay,_titles[Y]);
-                        if (dim >2) SetBinsAxis(Z,_az,_titles[Z]);
+                        if (dim >0) SetBinsAxis(X,_ax,_title);
+                        if (dim >1) SetBinsAxis(Y,_ay,_title);
+                        if (dim >2) SetBinsAxis(Z,_az,_title);
                         //set data
                         for (size_t i=0; i<GetMaxBin(); i++){
                             data[i]=_data[i];
@@ -114,9 +108,7 @@ namespace TurboHist {
             }
 
             const char * Print(string opt="") const {
-                printf("name '%s' tiltles : '", name.c_str());
-                for (auto tit : title ) printf(";%s",tit.c_str());
-                printf("'\n");
+                printf("name '%s' titles '%s' \n", name.c_str(), title.c_str());
                 if (dim>0) binsX.Print();
                 if (dim>1) binsY.Print();
                 if (dim>2) binsZ.Print();
@@ -152,7 +144,7 @@ namespace TurboHist {
             static int dim; // dimension (number of axis)
             static char type; // type of counter
             string name;
-            VecStr title; // size dim
+            string title; // title of axes divided by semicolon
             Binning binsX; // bin edges size: (nbinsX+2)
             Binning binsY; // bin edges size: (nbinsY+2)
             Binning binsZ; // bin edges size: (nbinsZ+2)
@@ -185,8 +177,7 @@ namespace TurboHist {
             }
 
             void SetBinsAxis(AxisName iaxis, const VecObs &newbins, const string &tit){
-                title .resize(dim);
-                title[iaxis]=tit;
+                title=tit;
                 //
                 GetBinning(iaxis).SetBins(newbins);
                 data.assign( GetMaxBin() , CountType());

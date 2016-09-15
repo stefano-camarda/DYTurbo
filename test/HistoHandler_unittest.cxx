@@ -11,48 +11,123 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-#include "Kinematics.h"
 #include "HistoHandler.h"
-#include "KinematicDefinitions.h"
-
-#define USE_ROOT
-#ifdef USE_ROOT
-#include "HistoObjectsROOT.h"
-#else
-#include "HistoObjectsSTL.cxx"
-#endif
-
-#include "HistoBook.h"
-
 
 using namespace HistoHandler;
 using namespace Kinematics;
 
-#include "TRandom3.h"
-TRandom * rnd;
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
 
-void random_kin(double l1[4],double l2[4],double &wgt){
-   l1[0]= rnd->Gaus(0,10);
-   l1[1]= rnd->Gaus(0,10);
-   l1[2]= rnd->Gaus(0,30);
-   l1[3]=sqrt( l1[0]*l1[0] + l1[1]*l1[1] + l1[2]*l1[2]);
+#include <random>
 
-   l2[0]= rnd->Gaus(0,10);
-   l2[1]= rnd->Gaus(0,10);
-   l2[2]= rnd->Gaus(0,30);
-   l2[3]=sqrt( l2[0]*l2[0] + l2[1]*l2[1] + l2[2]*l2[2]);
 
-   wgt = rnd->Gaus(1,0.1);
-}
+class HistoServiceTest : public testing::Test{
+    protected :
+
+        virtual void SetUp(){
+            gen.seed(12345);
+            gausT.param( std::normal_distribution<>::param_type(0.,10.)  );
+            gausZ.param( std::normal_distribution<>::param_type(0.,30.)  );
+            gausW.param( std::normal_distribution<>::param_type(1.,0.1) );
+        }
+
+        virtual void TearDown(){
+        }
+
+
+        void random_kin(){
+
+            l1[0]= gausT(gen);
+            l1[1]= gausT(gen);
+            l1[2]= gausZ(gen);
+            l1[3]=sqrt( l1[0]*l1[0] + l1[1]*l1[1] + l1[2]*l1[2]);
+
+            l2[0]= gausT(gen);
+            l2[1]= gausT(gen);
+            l2[2]= gausZ(gen);
+            l2[3]=sqrt( l2[0]*l2[0] + l2[1]*l2[1] + l2[2]*l2[2]);
+
+            wgt = gausW(gen);
+        }
+
+        void CheckEntries(double entries=0.){
+        }
+
+        void Loop(){
+        }
+
+        void Fork(){
+        }
+
+        void Wait(){
+        }
+
+        void InitWorker(){
+        }
+
+        void ExitWorker(){
+        }
+
+        double l1[4];
+        double l2[4];
+        double wgt;
+
+        int Nterm;
+        int Nevents;
+        int Nnodes;
+
+        std::mt19937 gen;
+        std::normal_distribution<> gausT; // (0.,10.);
+        std::normal_distribution<> gausZ; // (0.,30.);
+        std::normal_distribution<> gausW; // (1.,0.1);
+
+};
+
+TEST_F(HistoServiceTest, Init){
+    HistoHandler::Init();
+};
+
+TEST_F(HistoServiceTest, LoopNoThread){
+    CheckEntries(0.);
+    Loop();
+    CheckEntries(Nterm*Nevents);
+    HistoHandler::Save();
+    CheckEntries(0.);
+};
+
+TEST_F(HistoServiceTest, LoopInsideThreads){
+    CheckEntries(0.);
+    for (int inodes = 0;  inodes < Nnodes; inodes++) {
+        Fork();
+        if(isParent) continue;
+        // only child goes here
+        InitWorker();
+        Loop();
+        CheckEntries(Nterm*Nevents);
+        HistoHandler::Save(inode);
+        CheckEntries(0.);
+        ExitWorker();
+    }
+    Wait();
+    HistoHandler::Save();
+    Loop();
+    HistoHandler::Save();
+    CheckEntries(0.);
+};
+
+TEST_F(HistoServiceTest, Terminate){
+    HistoHandler::Terminate();
+};
 
 
 // TODO: fork code and merge back
 // TODO: why 2 histograms
 
 // testing HistoSvc functionality
+/*
 void Test_HistoSvc(){
 
-    rnd = new TRandom3();
     const int parent_pid=getpid();
 
     bool usePrallel=true;
@@ -144,4 +219,5 @@ void Test_HistoSvc(){
     Terminate();
     return;
 }
+*/
 

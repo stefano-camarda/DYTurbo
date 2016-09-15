@@ -30,7 +30,15 @@ namespace HistoHandler {
     };
 }
 
+#include "config.h"
 
+#ifdef USEROOT
+#include "HistoObjectsROOT.h"
+#else
+#include "HistoObjectsSTL.h"
+#endif
+
+#include "HistoBook.h"
 
 
 

@@ -12,7 +12,7 @@
  */
 
 namespace HistoHandler {
-    void BookUser(){
+    void UserBook(){
     }
 }
 
