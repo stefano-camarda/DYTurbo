@@ -1,18 +1,18 @@
-before_script:
-    - export ATLAS_LOCAL_ROOT_BASE=/cvmfs/atlas.cern.ch/repo/ATLASLocalRootBase
-    - source ${ATLAS_LOCAL_ROOT_BASE}/user/atlasLocalSetup.sh
-    - lsetup root
-    - lsetup  "sft releases/Boost/1.55.0_python2.7-dcbb8"
-    - export BOOST_ROOT=$SFT_HOME_Boost
-    - export DYTURBOROOT=`pwd -P`
-    - autoreconf -i
-
-with-root:
+check-with-root:
+    tags:
+        - cvmfs
     script:
+        - export ATLAS_LOCAL_ROOT_BASE=/cvmfs/atlas.cern.ch/repo/ATLASLocalRootBase
+        - source ${ATLAS_LOCAL_ROOT_BASE}/user/atlasLocalSetup.sh
+        - lsetup root
+        - lsetup  "sft releases/Boost/1.55.0_python2.7-dcbb8"
+        - export BOOST_ROOT=$SFT_HOME_Boost
+        - export DYTURBOROOT=`pwd -P`
+        - autoreconf -i
         - ./configure --enable-root --enable-Ofast --enable-test
         - make check
 
-with-stl:
-    script:
-        - ./configure --enable-Ofast --enable-test
-        - make check
+#with-stl:
+#    script:
+#        - ./configure --enable-Ofast --enable-test
+#        - make check
