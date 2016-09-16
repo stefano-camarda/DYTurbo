@@ -51,27 +51,30 @@ integrand_t ctintegrandMC(const int &ndim, const double x[], const int &ncomp, d
     for (int i = 1; i < opts.totpdf; i++)
       f[i] = 0.;
     
+  if (opts.fixedorder && phasespace::qtmin > 0)
+    {
+      f[0]=0.;
+      return 0;
+    }
+
   //Jacobian of the change of variables from the unitary hypercube x[6] to the m, y, qt, phi, costh, philep boundaries
   double jac = 1.;
   
-  //////////////////////////////////////////////////////////////
-  /*
+  /************************
   bool status = true;
 
-  double r2[2] = {x[0], x[1]};
-  status = phasespace::gen_my(r2, jac, true, true);
+  double r1[2] = {x[0], x[1]};
+  status = phasespace::gen_my(r1, jac, true, true);
   if (!status)
     {
       f[0] = 0.;
       return 0;
     }
 
-  double qt;
   //In the fixed order calculation, integrate from qtcut to infinity
   if (opts.fixedorder)
     {
       phasespace::gen_qt_ctfo(x[2], jac);
-      qt = phasespace::qt;
       phasespace::set_qt(0.); //In the fixed order calculation evaluate kinematic cuts with qt=0
     }
   else
@@ -90,17 +93,49 @@ integrand_t ctintegrandMC(const int &ndim, const double x[], const int &ncomp, d
 	  f[0] = 0.;
 	  return 0;
 	}
-      qt = phasespace::qt;
     }
   jac = jac *2.*phasespace::qt;
 
-  phasespace::set_phiV(0.);
-  
-  double m = phasespace::m;
-  double y = phasespace::y;
-  */
-  //////////////////////////////////////////////////////////////
+  //generate boson 4-momentum, with m, qt, y, and phi
+  phasespace::set_phiV(-M_PI+2.*M_PI*x[5]);
 
+  /////////////////////
+  //This function set the RF axes according to the selected qt-recoil prescription
+  omegaintegr::genV4p();
+
+  //alternative, generate in naive RF, and calculate costh with the selected qt-recoil prescription
+  //phasespace::genRFaxes(phasespace::naive);
+  //phasespace::genV4p();
+  /////////////////////
+  
+  double r2[2] = {x[3], x[4]};
+  phasespace::gen_costhphi(r2, jac);
+  phasespace::genl4p();
+
+  //apply lepton cuts
+  if (opts.makelepcuts)
+    if (!cuts::lep(phasespace::p3, phasespace::p4))
+      {
+	f[0]=0.;
+	return 0;
+      }
+  
+  /////////////////////
+  double costh_CS = phasespace::costh;
+
+  //alternative, generate in naive RF, and calculate costh with the selected qt-recoil prescription
+  //double costh_CS = omegaintegr::costh_qtrec();
+  //cout << phasespace::costh << "  " << costh_CS << endl;
+  /////////////////////
+
+  double m = phasespace::m;
+  double qt = phasespace::qt;
+  double y = phasespace::y;
+
+  jac = jac/2./M_PI;
+  ************************/
+
+  /************************/
   // Generate the boson invariant mass between the integration boundaries
   double mcut = (opts.xqtcut != 0.) ? phasespace::qtmax/opts.xqtcut : phasespace::mmax;
   double wsqmin = pow(phasespace::mmin,2);
@@ -175,23 +210,6 @@ integrand_t ctintegrandMC(const int &ndim, const double x[], const int &ncomp, d
   jac=jac*qt2/pow(x2,2);
   
   double qt=sqrt(qt2);
-  //////////////////////////////////////////////////////////////
-
-  // incoming quarks (are they actually used?)
-  /*
-  double xx1=m/opts.sroot*expy;
-  double xx2=m/opts.sroot*expmy;
-  double p1[4];
-  p1[0]=0.;
-  p1[1]=0.;
-  p1[2]=xx1*0.5*opts.sroot;
-  p1[3]=xx1*0.5*opts.sroot;
-  double p2[4];
-  p2[0]=0.;
-  p2[1]=0.;
-  p2[2]=-xx2*0.5*opts.sroot;
-  p2[3]=xx2*0.5*opts.sroot;
-  */
 
   // First lepton direction: Cos of the polar angle
   double costh=-1.+2.*x[3];
@@ -308,6 +326,7 @@ integrand_t ctintegrandMC(const int &ndim, const double x[], const int &ncomp, d
 
       costh_CS=1.-4.*(kap1[3]*p4[3]-kap1[2]*p4[2]-kap1[1]*p4[1]-kap1[0]*p4[0])/m2;
     }
+  /************************/
 
   //apply resummation switching
   double swtch = switching::swtch(qt, m);
@@ -346,13 +365,13 @@ integrand_t ctintegrandMC(const int &ndim, const double x[], const int &ncomp, d
       {
 	double wt = weight*f[i];
 	hists_setpdf_(&i);
-	hists_fill_(p3, p4, &wt);
+	//hists_fill_(p3, p4, &wt);
       }
 
   end_time = clock();
   if (opts.timeprofile)
     cout << setw (3) << "m" << setw(10) << m << setw(4) << "qt" << setw(10) <<  qt
-	 << setw (3) << "y" << setw(10) << y << setw(4) << "costh" << setw(10) <<  costh
+	 << setw (3) << "y" << setw(10) << y << setw(4) << "costh" << setw(10) <<  costh_CS
 	 << setw(8) << "result" << setw(10) << f[0]
 	 << setw(10) << "tot time" << setw(10) << float( end_time - begin_time ) /  CLOCKS_PER_SEC
 	 << endl;
@@ -392,12 +411,10 @@ integrand_t ctintegrand3d(const int &ndim, const double x[], const int &ncomp, d
       return 0;
     }
 
-  double qt;
   //In the fixed order calculation, integrate from qtcut to infinity
   if (opts.fixedorder)
     {
       phasespace::gen_qt_ctfo(x[2], jac);
-      qt = phasespace::qt;
       phasespace::set_qt(0.); //In the fixed order calculation evaluate kinematic cuts with qt=0
     }
   else
@@ -416,23 +433,20 @@ integrand_t ctintegrand3d(const int &ndim, const double x[], const int &ncomp, d
 	  f[0] = 0.;
 	  return 0;
 	}
-      qt = phasespace::qt;
     }
   jac = jac *2.*phasespace::qt;
 
   phasespace::set_phiV(0.);
   
   double m = phasespace::m;
+  double qt = phasespace::qt;
   double y = phasespace::y;
 
   //generate boson 4-momentum, with m, qt, y and phi=0
   omegaintegr::genV4p();
 
-  //  SWITCHING FUNCTIONS is inside countdy
-  //  double swtch=1.;
-  //  if (qt >= m*3/4.)  swtch=exp(-pow((m*3/4.-qt),2)/pow((m/2.),2)); // GAUSS SWITCH
-  //  if (swtch <= 0.01) swtch = 0;
-  // double swtch = switching::swtch(qt, m);
+  //switching is applied inside countdy
+  //double swtch = switching::swtch(qt, m);
 
   //In this point of phase space (m, qt, y) the costh integration is performed by 
   //calculating the 0, 1 and 2 moments of costh
