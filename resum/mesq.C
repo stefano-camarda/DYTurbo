@@ -87,12 +87,14 @@ void mesq::init()
   gRZu=-gZ*eequ*coupling::xw;
   gRZd=-gZ*eeqd*coupling::xw;
 
+  //put here ka(q)
   for (int j = 0; j < MAXNF; j++)
     {
       gLZ[j]=gZ*(ewcharge_.tau_[j+MAXNF+1]*1./2.-ewcharge_.Q_[j+MAXNF+1]*coupling::xw);
       gRZ[j]=-gZ*ewcharge_.Q_[j+MAXNF+1]*coupling::xw;
     }
 
+  //put here ka(e)
   fLZ=gZ*(-1./2.+coupling::xw);
   fRZ=gZ*coupling::xw;
 
@@ -252,6 +254,11 @@ void mesq::free()
 template <class T>
 void mesq::setmesq(T one, T costh1, T costh2)
 {
+  //Important! in this matrix elements definition costh is the angle between the antilepton
+  //and the parton from the incoming beam 1, that is opposite sign with respect to the MCFM convention (angle between lepton and parton 1).
+  //To restore the usual convention, need to flip the sign of costh.
+  //This would be better done in the formulas below.
+  costh1 = -costh1;
   T omcosth2 = one - 2.*costh1 + costh2;
   T opcosth2 = one + 2.*costh1 + costh2;
   if (opts.nproc == 1) //W+ 
@@ -303,7 +310,7 @@ void mesq::setmesq(T one, T costh1, T costh2)
       */
       //0 1 2 3 4
       //d u s c b
-      mesqij[0]=fac*propZ*(gLpgR[1]*fLpfR*(one + costh2)-gLmgR[1]*fLmfR*(2.*costh1)); //u-ubar
+      mesqij[0]=fac*propZ*(gLpgR[1]*fLpfR*(one + costh2)-gLmgR[1]*fLmfR*(2.*costh1)); //u-ubar //+(ka(eq)-ka(e)*ka(q))*sin2thetaw*
       mesqij[6]=fac*propZ*(gLpgR[3]*fLpfR*(one + costh2)-gLmgR[3]*fLmfR*(2.*costh1)); //c-cbar
 	    
       mesqij[1]=fac*propZ*(gLpgR[1]*fLpfR*(one + costh2)+gLmgR[1]*fLmfR*(2.*costh1)); //ubar-u
