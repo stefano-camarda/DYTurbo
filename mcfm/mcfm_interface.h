@@ -1,6 +1,8 @@
 #ifndef mcfm_interface_h
 #define mcfm_interface_h
 
+#include "fcomplex.h"
+
 #define MAXNF 5
 
 extern "C"
@@ -16,6 +18,7 @@ extern "C"
   void qqb_w_(double p[4][12], double msqc[11][11]);
   void qqb_z_g_(double p[4][12], double msqc[11][11]);
   void qqb_w_g_(double p[4][12], double msqc[11][11]);
+  void spinoru_(int &N, double p[4][12], fcomplex za[12][12], fcomplex zb[12][12]);
   
   //Catani-Seymour subtraction cut-offs for initial-initial, initial-final, final-initial, and final-final dipoles
   extern struct {
@@ -24,11 +27,6 @@ extern "C"
     double afi_;
     double aff_;
   } alfacut_;
-
-  //initialization flag
-  extern struct {
-    int flag_;
-  } flag_;
 
   extern struct {
     int qflag_;
@@ -157,7 +155,12 @@ extern "C"
     double Vcs_;
     double Vcb_;
   } cabib_;
-
+  
+  extern struct {
+    double vsq_[11][11];
+    double vsum_[11][11];
+  } mcfmckm_;
+  
   //QCD coupling
   extern struct {
     double gsq_;
