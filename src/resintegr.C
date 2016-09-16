@@ -8,6 +8,7 @@
 #include "rapint.h"
 //#include "plotter.h"
 #include "cubacall.h"
+#include "isnan.h"
 
 #include <math.h>
 #include <iomanip>
@@ -155,7 +156,7 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
     f[0]=resumm_(costh,phasespace::m,phasespace::qt,y,mode)/(8./3.);
   clock_t ret = clock();
 
-  if (f[0] != f[0])
+  if (isnan_ofast(f[0]))
     f[0]=0.;  //avoid nans
 
   f[0] = f[0]*jac*swtch;
@@ -185,7 +186,7 @@ integrand_t resintegrand3d(const int &ndim, const double x[], const int &ncomp, 
   bool status = true;
 
   double r[3] = {x[0], x[1], x[2]};
-  status = phasespace::gen_myqt(r, jac, false, true);
+  status = phasespace::gen_myqt(r, jac, false, true); //(qtcut = false, qtswitching = true)
   if (!status)
     {
       f[0] = 0.;
@@ -228,7 +229,7 @@ integrand_t resintegrand3d(const int &ndim, const double x[], const int &ncomp, 
   else
     f[0]=resumm_(costh,phasespace::m,phasespace::qt,phasespace::y,mode)/(8./3.);
 
-  if (f[0] != f[0])
+  if (isnan_ofast(f[0]))
     f[0]=0.;  //avoid nans
 
 	   
@@ -255,6 +256,56 @@ integrand_t resintegrandMC(const int &ndim, const double x[], const int &ncomp, 
   clock_t begin_time, end_time;
 
   begin_time = clock();
+
+  if (opts.PDFerrors)
+    for (int i = 1; i < opts.totpdf; i++)
+      f[i] = 0.;
+
+  /****************************
+  //Jacobian of the change of variables from the unitary hypercube x[3] to the m, y, qt boundaries
+  double jac = 1.;
+  bool status = true;
+
+  double r[3] = {x[0], x[1], x[2]};
+  status = phasespace::gen_myqt(r, jac, false, true); //(qtcut = false, qtswitching = true)
+  if (!status)
+    {
+      f[0] = 0.;
+      return 0;
+    }
+
+  //generate boson 4-momentum, with m, qt, y, and phi
+  phasespace::set_phiV(-M_PI+2.*M_PI*x[5]);
+
+  //This function set the RF axes according to the qt-recoil prescription
+  //omegaintegr::genV4p();
+
+  //alternative, generate in naive RF, and calculate costh with qt-prescription
+  phasespace::genRFaxes(phasespace::naive);
+  phasespace::genV4p();
+  
+  double r2[2] = {x[3], x[4]};
+  phasespace::gen_costhphi(r2, jac);
+  phasespace::genl4p();
+
+  //apply lepton cuts
+  if (opts.makelepcuts)
+    if (!cuts::lep(p3, p4))
+      {
+	f[0]=0.;
+	return 0;
+      }
+  //double costh_CS = phasespace::costh;
+
+  //alternative, generate in naive RF, and calculate costh with qt-prescription
+  omegaintegr::genRFaxes(opts.qtrecoil);
+  phasespace::restframeid RF;
+  double costh_CS = omegaintegr::costh();
+
+
+  //qt switching
+  double swtch = switching::swtch(phasespace::qt, phasespace::m);
+  ****************************/
   
   //Jacobian of the change of variables from the unitary hypercube x[6] to the m, y, qt, phi, costh, philep boundaries
   double jac = 1.;
@@ -429,6 +480,8 @@ integrand_t resintegrandMC(const int &ndim, const double x[], const int &ncomp, 
   }
   */
 
+  int mode = 0;
+  /*
   //skip PDF loop in the preconditioning phase
   int Npdf = (iter!=last_iter ? 1 : opts.totpdf);
   for(int ipdf=0; ipdf<Npdf; ipdf++){
@@ -437,7 +490,6 @@ integrand_t resintegrandMC(const int &ndim, const double x[], const int &ncomp, 
       //setmellinpdf_(&ipdf);
       //hists_setpdf_(&ipdf);
       //Call the resummation integrand
-      int mode = 0;
       f[ipdf] = resumm_(costh_CS,m,qt,y,mode)/(8./3.);
       //avoid nans
       if (f[ipdf] != f[ipdf])
@@ -451,11 +503,26 @@ integrand_t resintegrandMC(const int &ndim, const double x[], const int &ncomp, 
           //hists_AiTest_(pjet,p4cm,&m,&qt,&y,&costh_CS,&phi_lep,&phi,&wt,&lowintHst0);
       }
   }
+  */
 
+  if (opts.resumcpp)
+    f[0]=resint::rint(costh_CS,m,qt,y,mode)/(8./3.);
+  else
+    f[0]=resumm_(costh_CS,m,qt,y,mode)/(8./3.);
+
+  //apply switching and jacobian
+  f[0] = f[0]*jac*swtch;
+  if (iter==last_iter){
+    double wt = weight*f[0];
+    //hists_fill_(p4,p3,&wt);
+    hists_fill_(p3,p4,&wt);
+    //hists_AiTest_(pjet,p4cm,&m,&qt,&y,&costh_CS,&phi_lep,&phi,&wt,&lowintHst0);
+  }
+  
   end_time = clock();
   if (opts.timeprofile)
     cout << setw (3) << "m" << setw(10) << m << setw(4) << "qt" << setw(10) <<  qt
-	 << setw (3) << "y" << setw(10) << y << setw(4) << "costh" << setw(10) <<  costh
+	 << setw (3) << "y" << setw(10) << y << setw(6) << "costh" << setw(10) <<  costh
 	 << setw(8) << "result" << setw(10) << f[0]
 	 << setw(10) << "tot time" << setw(10) << float( end_time - begin_time ) /  CLOCKS_PER_SEC
 	 << endl;
