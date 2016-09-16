@@ -636,7 +636,7 @@ c     convert proton into antiproton (need to switch only u and d, since the sea
             cfx2m(2,I)=cfx2m(-2,I)
             cfx2m(-2,I)=DTEMP
          endif                
-c         print *,I,cfx1(0,I)
+c     print *,'fortran',b,I,cfx2m(0,I)
 c     Cache the positive and negative branch of coefficients which depend only on one I index
          call cachehcoeff(I,1)
          call cachehcoeff(I,-1)
@@ -1807,7 +1807,7 @@ c     1    + sHCRN(-2,2)*sigmaij(-2,2)
          HCRN = GGN*Hgg + FX1(0)*QGN_1*Hqg_1 + FX2(0)*QGN_2*Hqg_2
      1        + QQBN_1*Hqqb + QQBN_2*Hqq + QQBN_3*Hqqp_1 + QQBN_4*Hqqp_2
       endif
-c      print *,I1,I2,GGN,Hgg
+c      print *,'fortran',I1,I2,GGN,Hgg
       RETURN
       END
 
