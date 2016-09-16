@@ -22,6 +22,7 @@ c     The result is actually alphas(qb2)/alphas(Q2), where Q2 is the resummation
 
       
 c     HERE CHANGE: order of alphas related to order of evolution
+      xlp=0
       if(iord.eq.1) then
       xlp=1
       elseif(iord.eq.0) then
