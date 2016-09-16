@@ -9,6 +9,11 @@
 #include <cuba.h>
 #include <iostream>
 
+//flags for cuba Vegas integration:
+//flags += 0 or 4; //collect only weights from final iteration (0) or from all iterations (4)
+//flags = 8; //smoothing of importance sampling (0) or not (8)
+
+
 /***************************************************************/
 //resummation
 void resintegr2d(vector <double> &res, double &err)
@@ -130,7 +135,7 @@ void resintegrMC(vector <double> &res, double &err)
 	flags, seed,
 	mineval, maxeval,
 	nstart, nincrease, nbatch,
-	gridno, statefile, NULL,
+	gridno, statefile, spin,
 	&neval, &fail,
 	integral, error, prob);
   res.clear();
