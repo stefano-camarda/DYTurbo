@@ -114,6 +114,7 @@ int main( int argc , char * argv[])
               for (int i = 0; i < opts.totpdf; i++)
                   totvals.push_back(0);
               //Set integration boundaries
+	      phasespace::setcthbounds(opts.costhmin,opts.costhmax);
               phasespace::setbounds(*mit, *(mit+1), *qit, *(qit+1), *yit, *(yit+1) );
               print_mbin();
               print_qtbin();
