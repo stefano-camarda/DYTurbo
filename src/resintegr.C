@@ -257,11 +257,6 @@ integrand_t resintegrandMC(const int &ndim, const double x[], const int &ncomp, 
 
   begin_time = clock();
 
-  if (opts.PDFerrors)
-    for (int i = 1; i < opts.totpdf; i++)
-      f[i] = 0.;
-
-  /****************************
   //Jacobian of the change of variables from the unitary hypercube x[3] to the m, y, qt boundaries
   double jac = 1.;
   bool status = true;
@@ -277,12 +272,17 @@ integrand_t resintegrandMC(const int &ndim, const double x[], const int &ncomp, 
   //generate boson 4-momentum, with m, qt, y, and phi
   phasespace::set_phiV(-M_PI+2.*M_PI*x[5]);
 
-  //This function set the RF axes according to the qt-recoil prescription
-  //omegaintegr::genV4p();
+  //  phasespace::calcexpy();
+  //  phasespace::calcmt();
 
-  //alternative, generate in naive RF, and calculate costh with qt-prescription
-  phasespace::genRFaxes(phasespace::naive);
-  phasespace::genV4p();
+  /////////////////////
+  //This function set the RF axes according to the selected qt-recoil prescription
+  omegaintegr::genV4p();
+
+  //alternative, generate in naive RF, and calculate costh with the selected qt-recoil prescription
+  //phasespace::genRFaxes(phasespace::naive);
+  //phasespace::genV4p();
+  /////////////////////
   
   double r2[2] = {x[3], x[4]};
   phasespace::gen_costhphi(r2, jac);
@@ -290,184 +290,30 @@ integrand_t resintegrandMC(const int &ndim, const double x[], const int &ncomp, 
 
   //apply lepton cuts
   if (opts.makelepcuts)
-    if (!cuts::lep(p3, p4))
+    if (!cuts::lep(phasespace::p3, phasespace::p4))
       {
 	f[0]=0.;
 	return 0;
       }
-  //double costh_CS = phasespace::costh;
-
-  //alternative, generate in naive RF, and calculate costh with qt-prescription
-  omegaintegr::genRFaxes(opts.qtrecoil);
-  phasespace::restframeid RF;
-  double costh_CS = omegaintegr::costh();
-
-
-  //qt switching
-  double swtch = switching::swtch(phasespace::qt, phasespace::m);
-  ****************************/
   
-  //Jacobian of the change of variables from the unitary hypercube x[6] to the m, y, qt, phi, costh, philep boundaries
-  double jac = 1.;
+  /////////////////////
+  double costh_CS = phasespace::costh;
 
-  // Generate the boson invariant mass
-  double wsqmin = pow(phasespace::mmin,2);
-  double wsqmax = pow(phasespace::mmax,2);
-  if (wsqmin >= wsqmax)
-    {
-      f[0]=0.;
-      return 0;
-    }
-  double x1=x[0];
-  double m2, wt;
-  breitw_(x1,wsqmin,wsqmax,opts.rmass,opts.rwidth,m2,wt);
-  double m=sqrt(m2);
-  jac=jac*wt;
-  
+  //alternative, generate in naive RF, and calculate costh with the selected qt-recoil prescription
+  //double costh_CS = omegaintegr::costh_qtrec();
+  //cout << phasespace::costh << "  " << costh_CS << endl;
+  /////////////////////
+
+  double m = phasespace::m;
+  double qt = phasespace::qt;
+  double y = phasespace::y;
+
   //Dynamic scale
   if (opts.dynamicscale)
-    scaleset_(m2);
-
-  //Limit y boundaries to the kinematic limit in y
-  double ylim = 0.5*log(pow(energy_.sroot_,2)/m2);
-  double ymn = min(max(-ylim, phasespace::ymin),ylim);
-  double ymx = max(min(ylim, phasespace::ymax),-ylim);
-  if (ymn >= ymx)
-    {
-      f[0]=0.;
-      return 0;
-    }
-
-  //integrate between ymin and ymax
-  double y=ymn+(ymx-ymn)*x[1];
-  jac=jac*(ymx-ymn);
-
-  //integrate between qtmin and qtmax
-  double expy=exp(y);
-  double expmy=exp(-y);
-  double cosh2y34=pow((expy+expmy)*0.5,2);
-  double qtmn = max(opts.qtcutoff, phasespace::qtmin);
-  double kinqtlim = sqrt(pow(pow(energy_.sroot_,2)+m*m,2)/(4*pow(energy_.sroot_,2)*cosh2y34)-m*m);
-  double switchqtlim = switching::qtlimit(m);
-  double qtlim = min(kinqtlim, switchqtlim);
-  double qtmx = min(qtlim, phasespace::qtmax);
-  if (qtmn >= qtmx)
-    {
-      f[0]=0.;
-      return 0;
-    }
-  double qt=qtmn+(qtmx-qtmn)*x[2];
-  jac=jac*(qtmx-qtmn);
+    scaleset_(phasespace::m2);
   
-
-  /********************** DYRES check ************************************/
-  /*  //integrate between qtmin and qtmax
-  double qtmn = 0.1;
-  double qtmx = sqrt(pow(pow(energy_.sroot_,2)+m*m,2)/(4*pow(energy_.sroot_,2)*cosh2y34)-m*m);
-  double qt=qtmn+qtmx*x[2];
-  if (qt < phasespace::qtmin || qt >= phasespace::qtmax)
-    {
-      f[0]=0.;
-      return 0;
-    }
-    jac=jac*qtmx;*/
-  /******************************************************************/
+  double psfac = 3./8./2./M_PI;
   
-  double qt2=pow(qt,2);
-
-  // incoming quarks (are they actually used?)
-  double xx1=sqrt(m2/pow(energy_.sroot_,2))*expy;
-  double xx2=sqrt(m2/pow(energy_.sroot_,2))*expmy;
-  double p1[4];
-  p1[0]=0.;
-  p1[1]=0.;
-  p1[2]=xx1*0.5*energy_.sroot_;
-  p1[3]=xx1*0.5*energy_.sroot_;
-  double p2[4];  
-  p2[0]=0.;
-  p2[1]=0.;
-  p2[2]=-xx2*0.5*energy_.sroot_;
-  p2[3]=xx2*0.5*energy_.sroot_;
-
-  // First lepton direction: Cos of the polar angle
-  double costh=-1.+2.*x[3];
-  jac=jac*2.;
-  
-  //Generate vector boson and lepton azimuthal angles 
-  double phi = 2.*M_PI*x[4];
-  double phi_lep = 2.*M_PI*x[5];
-      
-  //  vector boson momentum: pV(4)^2-pV(1)^2-pV(2)^2-pV(3)^2=m2
-  double mt2=m2+qt2;
-  double pV[4];
-  pV[0]=qt*cos(phi);
-  pV[1]=qt*sin(phi);
-  pV[2]=0.5*sqrt(mt2)*(expy-expmy);
-  pV[3]=0.5*sqrt(mt2)*(expy+expmy);
-
-  // momentum of the first lepton 
-  double p4cm[4];
-  p4cm[3]=m/2.;
-  p4cm[0]=p4cm[3]*sin(acos(costh))*sin(phi_lep);
-  p4cm[1]=p4cm[3]*sin(acos(costh))*cos(phi_lep);
-  p4cm[2]=p4cm[3]*costh;
-
-  // Boost to go in the Lab frame
-  double p4[4];
-  boost_(m,pV,p4cm,p4);
-
-  //  momentum of the second lepton
-  double p3[4];
-  p3[3]=pV[3]-p4[3];
-  p3[0]=pV[0]-p4[0];
-  p3[1]=pV[1]-p4[1];
-  p3[2]=pV[2]-p4[2];
-
-  //apply lepton cuts
-  if (opts.makelepcuts)
-    if (!cuts::lep(p3, p4))
-      {
-	f[0]=0.;
-	return 0;
-      }
-  
-  //Calculate costh according to a qt-recoil prescription
-  double kt1,kt2;
-  
-  //CS frame prescription
-  if (opts.qtrec_cs)
-    {
-      kt1 = pV[0]/2.;
-      kt2 = pV[1]/2.;
-    }
-
-  //MY (DYRES) prescription
-  if (opts.qtrec_naive)
-    {
-      kt1=(1.+pV[2]/(sqrt(m2)+pV[3]))*pV[0]/2;
-      kt2=(1.+pV[2]/(sqrt(m2)+pV[3]))*pV[1]/2;
-    }  
-
-  //alternative k1t = 0 prescription
-  if (opts.qtrec_kt0)
-    {
-      kt1 = 0;
-      kt2 = 0;
-    }
-
-  double zeta1=1./m2/2.*(m2+2.*(pV[0]*kt1+pV[1]*kt2)+sqrt(pow((m2+2.*(pV[0]*kt1+pV[1]*kt2)),2)-4.*mt2*(pow(kt1,2)+pow(kt2,2))));
-  
-  double qP1=(pV[3]-pV[2])*energy_.sroot_/2.;
-  double qP2=(pV[3]+pV[2])*energy_.sroot_/2.;
-  
-  double kap1[4];
-  kap1[3]=energy_.sroot_/2.*(zeta1*m2/2./qP1+(pow(kt1,2)+pow(kt2,2))/zeta1*qP1/m2/pow(energy_.sroot_,2)*2.);
-  kap1[0]=kt1;
-  kap1[1]=kt2;
-  kap1[2]=energy_.sroot_/2.*(zeta1*m2/2./qP1-(pow(kt1,2)+pow(kt2,2))/zeta1*qP1/m2/pow(energy_.sroot_,2)*2.);
-
-  double costh_CS=1.-4.*(kap1[3]*p4[3]-kap1[2]*p4[2]-kap1[1]*p4[1]-kap1[0]*p4[0])/m2;
-
   //apply resummation switching
   double swtch = switching::swtch(qt, m);
 
@@ -506,23 +352,26 @@ integrand_t resintegrandMC(const int &ndim, const double x[], const int &ncomp, 
   */
 
   if (opts.resumcpp)
-    f[0]=resint::rint(costh_CS,m,qt,y,mode)/(8./3.);
+    f[0]=resint::rint(costh_CS,m,qt,y,mode);
   else
-    f[0]=resumm_(costh_CS,m,qt,y,mode)/(8./3.);
+    f[0]=resumm_(costh_CS,m,qt,y,mode);
 
+  if (isnan_ofast(f[0]))
+    f[0]=0.;  //avoid nans
+  
   //apply switching and jacobian
-  f[0] = f[0]*jac*swtch;
-  if (iter==last_iter){
-    double wt = weight*f[0];
-    //hists_fill_(p4,p3,&wt);
-    hists_fill_(p3,p4,&wt);
-    //hists_AiTest_(pjet,p4cm,&m,&qt,&y,&costh_CS,&phi_lep,&phi,&wt,&lowintHst0);
-  }
+  f[0] = f[0]*jac*psfac*swtch;
+  if (iter==last_iter)
+    {
+      double wt = weight*f[0];
+      hists_fill_(phasespace::p3,phasespace::p4,&wt);
+      //hists_AiTest_(pjet,p4cm,&m,&qt,&y,&costh_CS,&phi_lep,&phi,&wt,&lowintHst0);
+    }
   
   end_time = clock();
   if (opts.timeprofile)
     cout << setw (3) << "m" << setw(10) << m << setw(4) << "qt" << setw(10) <<  qt
-	 << setw (3) << "y" << setw(10) << y << setw(6) << "costh" << setw(10) <<  costh
+	 << setw (3) << "y" << setw(10) << y << setw(6) << "costh" << setw(10) <<  costh_CS
 	 << setw(8) << "result" << setw(10) << f[0]
 	 << setw(10) << "tot time" << setw(10) << float( end_time - begin_time ) /  CLOCKS_PER_SEC
 	 << endl;
