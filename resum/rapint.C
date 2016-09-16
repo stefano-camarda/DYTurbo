@@ -65,6 +65,18 @@ void rapint::allocate()
 void rapint::integrate(double ymin, double ymax, double m)
 {
   //integration results are stored in Ithxx
+
+  //Initialize integrals
+  for (int i1 = 0; i1 < mellinint::mdim; i1++)
+    for (int i2 = 0; i2 < mellinint::mdim; i2++)
+      {
+	Ith0p[mellinint::index(i1,i2)] = 0.;
+	Ith1p[mellinint::index(i1,i2)] = 0.;
+	Ith2p[mellinint::index(i1,i2)] = 0.;
+	Ith0m[mellinint::index(i1,i2)] = 0.;
+	Ith1m[mellinint::index(i1,i2)] = 0.;
+	Ith2m[mellinint::index(i1,i2)] = 0.;
+      }
   
   double q2 = m*m;
   double bjx= q2/pow(opts.sroot,2);
@@ -85,40 +97,69 @@ void rapint::integrate(double ymin, double ymax, double m)
       for (int i2 = 0; i2 < mellinint::mdim; i2++)
 	{
 	  complex <double> yintp, yintm;
-	  complex <double> sumnpp = mellinint::Np[i1]+mellinint::Np[i2];
-	  complex <double> diffnpp = mellinint::Np[i1]-mellinint::Np[i2];
-	  if (i1 == i2)
-	    yintp=pow(mellinint::CCp/M_PI,2)*exp(-sumnpp*ax/2.)*(ymax-ymin);
-	  else
-	    yintp=1./(-diffnpp)*pow(mellinint::CCp/M_PI,2)*exp(-sumnpp*ax/2.)*(exp(-diffnpp*ymax)-exp(-diffnpp*ymin));
 
-	  complex <double> sumnpm = mellinint::Np[i1]+mellinint::Nm[i2];
-	  complex <double> diffnpm = mellinint::Np[i1]-mellinint::Nm[i2];
-	  //if (Np(I1) == Nm(I2)) // this never happens
-	  //yintm=(mellinint::CCp/M_PI)*(mellinint::CCm/M_PI)*exp(-(Np(I1)+Nm(I2))*ax/2.)*(ymax-ymin);
-	  //else
-	  yintm=1./(-diffnpm)*(mellinint::CCp/M_PI)*(mellinint::CCm/M_PI)*exp(-sumnpm*ax/2.)*(exp(-diffnpm*ymax)-exp(-diffnpm*ymin));
-	  Ith0p[mellinint::index(i1,i2)] = 2.*yintp*mellinint::wn[i1]*mellinint::wn[i2];
-	  Ith1p[mellinint::index(i1,i2)] = 0.;
-	  Ith2p[mellinint::index(i1,i2)] = 2./3.*yintp*mellinint::wn[i1]*mellinint::wn[i2];
-	  Ith0m[mellinint::index(i1,i2)] = 2.*yintm*mellinint::wn[i1]*mellinint::wn[i2];
-	  Ith1m[mellinint::index(i1,i2)] = 0.;
-	  Ith2m[mellinint::index(i1,i2)] = 2./3.*yintm*mellinint::wn[i1]*mellinint::wn[i2];
+	  //split between negative and positive y, so as to allow costh boundaries, and account for y+- sign flip on costh
+	  double ymn, ymx;
+	  ymn = min(0., ymin);
+	  ymx = min(0., ymax);
+	  if(ymn < 0)
+	    {
+	      phasespace::set_y((ymn+ymx)/2.);
+	      complex <double> sumnpp = mellinint::Np[i1]+mellinint::Np[i2];
+	      complex <double> diffnpp = mellinint::Np[i1]-mellinint::Np[i2];
+	      if (i1 == i2)
+		yintp=pow(mellinint::CCp/M_PI,2)*exp(-sumnpp*ax/2.)*(ymx-ymn);
+	      else
+		yintp=1./(-diffnpp)*pow(mellinint::CCp/M_PI,2)*exp(-sumnpp*ax/2.)*(exp(-diffnpp*ymx)-exp(-diffnpp*ymn));
+
+	      complex <double> sumnpm = mellinint::Np[i1]+mellinint::Nm[i2];
+	      complex <double> diffnpm = mellinint::Np[i1]-mellinint::Nm[i2];
+	      //if (Np(I1) == Nm(I2)) // this never happens
+	      //yintm=(mellinint::CCp/M_PI)*(mellinint::CCm/M_PI)*exp(-(Np(I1)+Nm(I2))*ax/2.)*(ymx-ymn);
+	      //else
+	      yintm=1./(-diffnpm)*(mellinint::CCp/M_PI)*(mellinint::CCm/M_PI)*exp(-sumnpm*ax/2.)*(exp(-diffnpm*ymx)-exp(-diffnpm*ymn));
+
+	      double cthmom0, cthmom1, cthmom2;
+	      omegaintegr::cthmoments(cthmom0,cthmom1,cthmom2);
+	      Ith0p[mellinint::index(i1,i2)] = cthmom0*yintp*mellinint::wn[i1]*mellinint::wn[i2];
+	      Ith1p[mellinint::index(i1,i2)] = cthmom1*yintp*mellinint::wn[i1]*mellinint::wn[i2];
+	      Ith2p[mellinint::index(i1,i2)] = cthmom2*yintp*mellinint::wn[i1]*mellinint::wn[i2];
+	      Ith0m[mellinint::index(i1,i2)] = cthmom0*yintm*mellinint::wn[i1]*mellinint::wn[i2];
+	      Ith1m[mellinint::index(i1,i2)] = cthmom1*yintm*mellinint::wn[i1]*mellinint::wn[i2];
+	      Ith2m[mellinint::index(i1,i2)] = cthmom2*yintm*mellinint::wn[i1]*mellinint::wn[i2];
+	    }
+
+	  ymn = max(0., ymin);
+	  ymx = max(0., ymax);
+	  if (ymx > 0.)
+	    {
+	      phasespace::set_y((ymn+ymx)/2.);
+	      complex <double> sumnpp = mellinint::Np[i1]+mellinint::Np[i2];
+	      complex <double> diffnpp = mellinint::Np[i1]-mellinint::Np[i2];
+	      if (i1 == i2)
+		yintp=pow(mellinint::CCp/M_PI,2)*exp(-sumnpp*ax/2.)*(ymx-ymn);
+	      else
+		yintp=1./(-diffnpp)*pow(mellinint::CCp/M_PI,2)*exp(-sumnpp*ax/2.)*(exp(-diffnpp*ymx)-exp(-diffnpp*ymn));
+	      
+	      complex <double> sumnpm = mellinint::Np[i1]+mellinint::Nm[i2];
+	      complex <double> diffnpm = mellinint::Np[i1]-mellinint::Nm[i2];
+	      //if (Np(I1) == Nm(I2)) // this never happens
+	      //yintm=(mellinint::CCp/M_PI)*(mellinint::CCm/M_PI)*exp(-(Np(I1)+Nm(I2))*ax/2.)*(ymx-ymn);
+	      //else
+	      yintm=1./(-diffnpm)*(mellinint::CCp/M_PI)*(mellinint::CCm/M_PI)*exp(-sumnpm*ax/2.)*(exp(-diffnpm*ymx)-exp(-diffnpm*ymn));
+
+	      double cthmom0, cthmom1, cthmom2;
+	      omegaintegr::cthmoments(cthmom0,cthmom1,cthmom2);
+	      Ith0p[mellinint::index(i1,i2)] += cthmom0*yintp*mellinint::wn[i1]*mellinint::wn[i2];
+	      Ith1p[mellinint::index(i1,i2)] += cthmom1*yintp*mellinint::wn[i1]*mellinint::wn[i2];
+	      Ith2p[mellinint::index(i1,i2)] += cthmom2*yintp*mellinint::wn[i1]*mellinint::wn[i2];
+	      Ith0m[mellinint::index(i1,i2)] += cthmom0*yintm*mellinint::wn[i1]*mellinint::wn[i2];
+	      Ith1m[mellinint::index(i1,i2)] += cthmom1*yintm*mellinint::wn[i1]*mellinint::wn[i2];
+	      Ith2m[mellinint::index(i1,i2)] += cthmom2*yintm*mellinint::wn[i1]*mellinint::wn[i2];
+	    }
 	}
   else //Numerical integration
     {
-      //Initialize integrals
-      for (int i1 = 0; i1 < mellinint::mdim; i1++)
-	for (int i2 = 0; i2 < mellinint::mdim; i2++)
-	  {
-	    Ith0p[mellinint::index(i1,i2)] = 0.;
-	    Ith1p[mellinint::index(i1,i2)] = 0.;
-	    Ith2p[mellinint::index(i1,i2)] = 0.;
-	    Ith0m[mellinint::index(i1,i2)] = 0.;
-	    Ith1m[mellinint::index(i1,i2)] = 0.;
-	    Ith2m[mellinint::index(i1,i2)] = 0.;
-	  }
-
       //cache the mass dependent part (ax) of the exponential
       //The caching is done for the numerical integration only, but can be done also for the analytical integration (there is no gain in speed, but the code would be cleaner)
       complex <double> cfpm[mellinint::mdim][mellinint::mdim];
