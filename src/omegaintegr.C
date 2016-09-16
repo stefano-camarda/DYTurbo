@@ -18,22 +18,20 @@
 #include <iomanip>
 #include <vector>
 
-/*
-//Vector boson 4-momentum and boost
-double omegaintegr::pV[4];
-double omegaintegr::gam;
-double omegaintegr::beta[3];
-
-//leptons 4-momenta
-double omegaintegr::p4[4];
-double omegaintegr::p3[4];
-*/
-
 //rest frame axes
 double omegaintegr::kap1[4];
 double omegaintegr::xax[3];
 double omegaintegr::yax[3];
 double omegaintegr::zax[3];
+
+//double omegaintegr::cthmin;
+//double omegaintegr::cthmax;
+
+//void omegaintegr::setcosthbounds(double min, double max)
+//{
+//  cthmin = min;
+//  cthmax = max;
+//}
 
 //fortran interface
 void genv4p_()
@@ -68,6 +66,14 @@ void omegaintegr::genV4p()
 
 void omegaintegr::genRFaxes()
 {
+  phasespace::restframeid RF;
+  if (opts.qtrec_naive) RF = phasespace::naive;
+  else if (opts.qtrec_cs) RF = phasespace::CS;
+  else if (opts.qtrec_kt0) RF = phasespace::kt0;
+
+  phasespace::genRFaxes(RF);
+  return;
+  
   //In some cases the generation of the first lepton 4-momentum is trivial,
   //i.e. it is done with respect to the reference system x = (1,0,0); y = (0,1,0); z=(0,0,1)
   //Do not need to calculate axes in these cases:
@@ -225,7 +231,9 @@ void omegaintegr::genl4p(double costh, double phi_lep)
   
   phasespace::set_cth(costh);
   phasespace::set_philep(phi_lep);
-
+  phasespace::genl4p();
+  return;
+    
   //In some cases the generation of the first lepton 4-momentum is trivial,
   //i.e. it is done with respect to the reference system x = (1,0,0); y = (0,1,0); z=(0,0,1)
   //a) With the cuba integration option, the phase space is generated uniformly
@@ -262,47 +270,46 @@ void omegaintegr::genl4p(double costh, double phi_lep)
       //rot2[2]=(zax[2]*zax[0]*(1-c)-zax[1]*s)*rot1[0] + (zax[2]*zax[1]*(1-c)+zax[0]*s)*rot1[1] + (c+zax[2]*zax[2]*(1-c))       *rot1[2];
       phasespace::rotate(rot1, c, s, zax, rot2);
 
-      double p4cm[4];
-      p4cm[3]=phasespace::m/2.;           //E
-      p4cm[0]=p4cm[3]*rot2[0];            //px
-      p4cm[1]=p4cm[3]*rot2[1];            //py
-      p4cm[2]=p4cm[3]*rot2[2];            //pz
-  
+      double p3cm[4];
+      p3cm[3]=phasespace::m/2.;           //E
+      p3cm[0]=p3cm[3]*rot2[0];            //px
+      p3cm[1]=p3cm[3]*rot2[1];            //py
+      p3cm[2]=p3cm[3]*rot2[2];            //pz
+
       /****************************
-      //check that the generated p4cm is at costh from zax
-      cout << "p4 generated in boson rest frame " << p4cm[0] << " " << p4cm[1] << " " << p4cm[2] << endl;
-      cout << "angle between p4cm and polar axis (should be costh)" << (zax[0]*p4cm[0]+zax[1]*p4cm[1]+zax[2]*p4cm[2])
+      //check that the generated p3cm is at costh from zax
+      cout << "p4 generated in boson rest frame " << p3cm[0] << " " << p3cm[1] << " " << p3cm[2] << endl;
+      cout << "angle between p3cm and polar axis (should be costh)" << (zax[0]*p3cm[0]+zax[1]*p3cm[1]+zax[2]*p3cm[2])
 	/ sqrt(pow(zax[0],2)+pow(zax[1],2)+pow(zax[2],2))
-	/ sqrt(pow(p4cm[0],2)+pow(p4cm[1],2)+pow(p4cm[2],2)) << "  " << costh << endl;
+	/ sqrt(pow(p3cm[0],2)+pow(p3cm[1],2)+pow(p3cm[2],2)) << "  " << costh << endl;
       ****************************/
 
       //Boost to go in the lab frame
-      //dyboost_(phasespace::gam, phasespace::beta, p3cm, p3);
-      dyboost_(phasespace::gam, phasespace::beta, p4cm, phasespace::p4);
+      dyboost_(phasespace::gam, phasespace::beta, p3cm, phasespace::p3);
 
       //  momentum of the second lepton
-      phasespace::p3[3]=phasespace::pV[3]-phasespace::p4[3];      //E
-      phasespace::p3[0]=phasespace::pV[0]-phasespace::p4[0];      //px
-      phasespace::p3[1]=phasespace::pV[1]-phasespace::p4[1];      //py
-      phasespace::p3[2]=phasespace::pV[2]-phasespace::p4[2];      //pz
-
+      phasespace::p4[3]=phasespace::pV[3]-phasespace::p3[3];      //E
+      phasespace::p4[0]=phasespace::pV[0]-phasespace::p3[0];      //px
+      phasespace::p4[1]=phasespace::pV[1]-phasespace::p3[1];      //py
+      phasespace::p4[2]=phasespace::pV[2]-phasespace::p3[2];      //pz
+      
       /****************************
       //check:
       //generate a lepton p4 according to the naive prescription and
       //check that costh of Catani's formula is equal to
       //the angle between the polar axis of the rest frame and the lepton p4
-      p4cm[3]=phasespace::m/2.;
-      p4cm[0]=p4cm[3]*sin(acos(costh))*sin(phi_lep);
-      p4cm[1]=p4cm[3]*sin(acos(costh))*cos(phi_lep);
-      p4cm[2]=p4cm[3]*costh;
-      double bdotp=p4cm[0]*beta[0]+p4cm[1]*beta[1]+p4cm[2]*beta[2];
-      p4[3]=gam*(p4cm[3]-bdotp);
-      p4[0]=p4cm[0]+gam*beta[0]*(gam/(gam+1)*bdotp-p4cm[3]);
-      p4[1]=p4cm[1]+gam*beta[1]*(gam/(gam+1)*bdotp-p4cm[3]);
-      p4[2]=p4cm[2]+gam*beta[2]*(gam/(gam+1)*bdotp-p4cm[3]);
-      double costhcs = (zax[0]*p4cm[0]+zax[1]*p4cm[1]+zax[2]*p4cm[2])
+      p3cm[3]=phasespace::m/2.;
+      p3cm[0]=p3cm[3]*sin(acos(costh))*sin(phi_lep);
+      p3cm[1]=p3cm[3]*sin(acos(costh))*cos(phi_lep);
+      p3cm[2]=p3cm[3]*costh;
+      double bdotp=p3cm[0]*beta[0]+p3cm[1]*beta[1]+p3cm[2]*beta[2];
+      p4[3]=gam*(p3cm[3]-bdotp);
+      p4[0]=p3cm[0]+gam*beta[0]*(gam/(gam+1)*bdotp-p3cm[3]);
+      p4[1]=p3cm[1]+gam*beta[1]*(gam/(gam+1)*bdotp-p3cm[3]);
+      p4[2]=p3cm[2]+gam*beta[2]*(gam/(gam+1)*bdotp-p3cm[3]);
+      double costhcs = (zax[0]*p3cm[0]+zax[1]*p3cm[1]+zax[2]*p3cm[2])
 	/ sqrt(pow(zax[0],2)+pow(zax[1],2)+pow(zax[2],2))
-	/ sqrt(pow(p4cm[0],2)+pow(p4cm[1],2)+pow(p4cm[2],2));
+	/ sqrt(pow(p3cm[0],2)+pow(p3cm[1],2)+pow(p3cm[2],2));
       cout << endl;
       cout << "rapidity " << phasespace::y << " costh  " <<  costh 
 	   << " costhcs calculated " << costhcs << " costhcs catani " << (1.-4.*(kap1[3]*p4[3]-kap1[2]*p4[2]-kap1[1]*p4[1]-kap1[0]*p4[0])/(phasespace::m*phasespace::m)) << endl;
@@ -331,14 +338,14 @@ void omegaintegr::costhbound(double phi_lep, vector<double> &min, vector<double>
 {
   if (!opts.makelepcuts)
     {
-      min.push_back(phasespace::cthmin);
-      max.push_back(phasespace::cthmax);
+      min.push_back(phasespace::getcthmin());
+      max.push_back(phasespace::getcthmax());
       return;
     }
 
   bool status;
-  double c1 = phasespace::cthmin;
-  double c2 = phasespace::cthmax;
+  double c1 = phasespace::getcthmin();
+  double c2 = phasespace::getcthmax();
   genl4p(c1, phi_lep);
   if (cuts::lep(phasespace::p3, phasespace::p4))
     {
@@ -352,7 +359,7 @@ void omegaintegr::costhbound(double phi_lep, vector<double> &min, vector<double>
     {
       if (status) //search for maximum
 	{
-	  double tempmax = phasespace::cthmax*1.1+0.1;
+	  double tempmax = phasespace::getcthmax()*1.1+0.1;
 	  int nc = opts.ncstart;
 	  for (int precision = 0; precision < 6; precision++)
 	    {
@@ -370,22 +377,22 @@ void omegaintegr::costhbound(double phi_lep, vector<double> &min, vector<double>
 		      break;
 		    }
 		}
-	      if (tempmax > phasespace::cthmax)
+	      if (tempmax > phasespace::getcthmax())
 		{
-		  max.push_back(phasespace::cthmax);
+		  max.push_back(phasespace::getcthmax());
 		  break;
 		}
 	    }
-	  if (tempmax > phasespace::cthmax)
+	  if (tempmax > phasespace::getcthmax())
 	    break;
 	  max.push_back(tempmax);
 	  status = false;
 	  c1 = tempmax;
-	  c2 = phasespace::cthmax;
+	  c2 = phasespace::getcthmax();
 	}
       else //search for minimum
 	{
-	  double tempmin = phasespace::cthmax*1.1+0.1;
+	  double tempmin = phasespace::getcthmax()*1.1+0.1;
 	  int nc = opts.ncstart;
 	  for (int precision = 0; precision < 6; precision++)
 	    {
@@ -403,15 +410,15 @@ void omegaintegr::costhbound(double phi_lep, vector<double> &min, vector<double>
 		      break;
 		    }
 		}
-	      if (tempmin > phasespace::cthmax)
+	      if (tempmin > phasespace::getcthmax())
 		break;
 	    }
-	  if (tempmin > phasespace::cthmax)
+	  if (tempmin > phasespace::getcthmax())
 	    break;
 	  min.push_back(tempmin);
 	  status = true;
 	  c1 = tempmin;
-	  c2 = phasespace::cthmax;
+	  c2 = phasespace::getcthmax();
 	}
     }
 }
@@ -422,9 +429,9 @@ void omegaintegr::cthmoments(double &cthmom0, double &cthmom1, double &cthmom2)
   clock_t begin_time, end_time;
   if (!opts.makelepcuts)
     {
-      cthmom0 = phasespace::cthmax-phasespace::cthmin;
-      cthmom1 = (pow(phasespace::cthmax,2)-pow(phasespace::cthmin,2))/2.;
-      cthmom2 = (pow(phasespace::cthmax,3)-pow(phasespace::cthmin,3))/3.;
+      cthmom0 = phasespace::getcthmax()-phasespace::getcthmin();
+      cthmom1 = (pow(phasespace::getcthmax(),2)-pow(phasespace::getcthmin(),2))/2.;
+      cthmom2 = (pow(phasespace::getcthmax(),3)-pow(phasespace::getcthmin(),3))/3.;
       return;
     }
 
@@ -642,4 +649,52 @@ integrand_t omegaintegr::thphiintegrand(const int &ndim, const double x[], const
       f[2] = 0.;
     }
   return 0;
+}
+
+
+double omegaintegr::costh_qtrec()
+{
+  //Calculate costh according to a qt-recoil prescription
+  phasespace::restframeid RF;
+  if (opts.qtrec_naive) RF = phasespace::naive;
+  else if (opts.qtrec_cs) RF = phasespace::CS;
+  else if (opts.qtrec_kt0) RF = phasespace::kt0;
+
+  double kt1,kt2;
+  double m2 = phasespace::m*phasespace::m;
+  
+  //CS frame prescription
+  if (RF == phasespace::CS)
+    {
+      kt1 = phasespace::pV[0]/2.;
+      kt2 = phasespace::pV[1]/2.;
+    }
+
+  //MY (DYRES) prescription
+  if (RF == phasespace::naive)
+    {
+      kt1=(1.+phasespace::pV[2]/(sqrt(m2)+phasespace::pV[3]))*phasespace::pV[0]/2;
+      kt2=(1.+phasespace::pV[2]/(sqrt(m2)+phasespace::pV[3]))*phasespace::pV[1]/2;
+    }  
+
+  //alternative k1t = 0 prescription
+  if (RF == phasespace::kt0)
+    {
+      kt1 = 0;
+      kt2 = 0;
+    }
+
+  double mt2 = phasespace::m*phasespace::m + phasespace::qt*phasespace::qt;
+  double zeta1=1./m2/2.*(m2+2.*(phasespace::pV[0]*kt1+phasespace::pV[1]*kt2)+sqrt(pow((m2+2.*(phasespace::pV[0]*kt1+phasespace::pV[1]*kt2)),2)-4.*mt2*(pow(kt1,2)+pow(kt2,2))));
+  
+  double qP1=(phasespace::pV[3]-phasespace::pV[2])*opts.sroot/2.;
+  double qP2=(phasespace::pV[3]+phasespace::pV[2])*opts.sroot/2.;
+  
+  double kap1[4];
+  kap1[3]=opts.sroot/2.*(zeta1*m2/2./qP1+(pow(kt1,2)+pow(kt2,2))/zeta1*qP1/m2/pow(opts.sroot,2)*2.);
+  kap1[0]=kt1;
+  kap1[1]=kt2;
+  kap1[2]=opts.sroot/2.*(zeta1*m2/2./qP1-(pow(kt1,2)+pow(kt2,2))/zeta1*qP1/m2/pow(opts.sroot,2)*2.);
+
+  double costh_CS=1.-4.*(kap1[3]*phasespace::p3[3]-kap1[2]*phasespace::p3[2]-kap1[1]*phasespace::p3[1]-kap1[0]*phasespace::p3[0])/m2;
 }
