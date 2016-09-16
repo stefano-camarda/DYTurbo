@@ -683,18 +683,18 @@ double omegaintegr::costh_qtrec()
       kt1 = 0;
       kt2 = 0;
     }
-
+  
   double mt2 = phasespace::m*phasespace::m + phasespace::qt*phasespace::qt;
   double zeta1=1./m2/2.*(m2+2.*(phasespace::pV[0]*kt1+phasespace::pV[1]*kt2)+sqrt(pow((m2+2.*(phasespace::pV[0]*kt1+phasespace::pV[1]*kt2)),2)-4.*mt2*(pow(kt1,2)+pow(kt2,2))));
   
   double qP1=(phasespace::pV[3]-phasespace::pV[2])*opts.sroot/2.;
   double qP2=(phasespace::pV[3]+phasespace::pV[2])*opts.sroot/2.;
-  
+
   double kap1[4];
   kap1[3]=opts.sroot/2.*(zeta1*m2/2./qP1+(pow(kt1,2)+pow(kt2,2))/zeta1*qP1/m2/pow(opts.sroot,2)*2.);
   kap1[0]=kt1;
   kap1[1]=kt2;
   kap1[2]=opts.sroot/2.*(zeta1*m2/2./qP1-(pow(kt1,2)+pow(kt2,2))/zeta1*qP1/m2/pow(opts.sroot,2)*2.);
 
-  double costh_CS=1.-4.*(kap1[3]*phasespace::p3[3]-kap1[2]*phasespace::p3[2]-kap1[1]*phasespace::p3[1]-kap1[0]*phasespace::p3[0])/m2;
+  return 1.-4.*(kap1[3]*phasespace::p3[3]-kap1[2]*phasespace::p3[2]-kap1[1]*phasespace::p3[1]-kap1[0]*phasespace::p3[0])/m2;
 }
