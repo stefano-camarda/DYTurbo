@@ -186,8 +186,8 @@ double besselint::bint(double b)
   else if (opts.evolmode == 4)
     pegasus::evolve();
 
-  //for (int i = 0; i < mellinint::mdim; i++)
-  //  cout << cx(creno_.cfx1_[i][0]) << "  " << cx(creno_.cfx2p_[i][5]) << "  " <<  cx(creno_.cfx2m_[i][5]) << endl;
+  //  for (int i = 0; i < mellinint::mdim; i++)
+  //    cout << "C++ " << b << "  " << i << "  " << cx(creno_.cfx1_[i][5]) << endl;
   //**************************************
 
   //aexp and aexpb are calculated in alphasl, they are used in hcoefficients::calcb only for the NNLL cross section
@@ -242,6 +242,6 @@ double besselint::bint(double b)
       cout << "Warning, invres = " << invres << ", qt = " << qt << ", b = "  << b << ", pdf*mesq = " << fun << ", S*bj0 = " << factorfin << endl;
       invres = 0;
     }
-  //  cout << setprecision(16) << "C++ " << b << "  " << invres << "  " << fun << "  " << factorfin << endl;
+  //cout << setprecision(16) << "C++ " << b << "  " << invres << "  " << fun << "  " << factorfin << endl;
   return invres;
 }
