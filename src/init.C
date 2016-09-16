@@ -44,6 +44,7 @@ void dyturboinit(int argc, char * argv[])
   qtsub_.xqtcut_= opts.xqtcut;          //Cut on qt/Q
   qtsub_.qtcut_= opts.qtcut;            //Cut on qt
   //move here the flaq.eq.0 initialisation part of resumm() in main2 instead of using this initialisation flag
+  flag_.flag_ = false;
   
   mcfm::init();
   
