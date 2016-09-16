@@ -10,10 +10,7 @@ double phasespace::xax[3];
 double phasespace::yax[3];
 double phasespace::zax[3];
 
-bool naiveRF = true;
-bool CSRF = false;
-bool kt0RF = false;
-
+phasespace::restframeid CurrentRF;
 
 //the m, qt, y, and phi variables are taken from the phasespace:: namelist
 void phasespace::genV4p()
@@ -49,7 +46,7 @@ void phasespace::genl4p()
 
   //Generate the 4-momentum of the first lepton in the boson rest frame, using costh and phi_lep
   double p3cm[4];
-  if (naiveRF)
+  if (qt == 0. || CurrentRF == naive)
     genp_(costh, phi_lep, m, p3cm);
   else
     {
@@ -109,12 +106,13 @@ void phasespace::genp5()
 
 void phasespace::genRFaxes(restframeid RF)
 {
+  CurrentRF = RF;
   //In some cases the generation of the first lepton 4-momentum is trivial,
   //i.e. it is done with respect to the reference system x = (1,0,0); y = (0,1,0); z=(0,0,1)
   //Do not need to calculate axes in these cases:
   //a) When qt=0, as in fixed order predictions, because all rest frames are equivalent
   //b) In the naive prescription, the rest frame axes are the native x,y,z axes of the laboratory frame
-  if (phasespace::qt == 0. || RF == naive)
+  if (qt == 0. || RF == naive)
     return;
 
   double m2 = pow(phasespace::m,2);

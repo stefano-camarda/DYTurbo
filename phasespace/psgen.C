@@ -74,7 +74,7 @@ bool phasespace::gen_qt(double x, double& jac, double qtlim, bool qtcut)
     qtweight_(x,qtmn,qtmx,qt,jac);
   else       //phase space generation for resummed cross section
     qtweight_res_(x,qtmn,qtmx,qt,jac);
-  //qtweight_flat_(xqt,qtmn,qtmx,qt,jac);
+  //qtweight_flat_(x,qtmn,qtmx,qt,jac);
   qt2 = qt*qt;
   return true;
 }
