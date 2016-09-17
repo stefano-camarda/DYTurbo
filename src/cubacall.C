@@ -757,8 +757,17 @@ void ctintegr2d(vector <double> &res, double &err)
 }
 /***************************************************************/
 
+void initfun(void * input, const int &core){
+    // clear hist only for workers (0<core<32768)
+    //printf("init core: %d, pid %d \n",core,getpid());
+}
+
+
 void exitfun(void * input, const int &core){
+    // Save for all (master,worker,accelerator)
+    // but only when non-empty
     if (opts.cubacores!=0) hists.Finalise(core);
+    //printf("exit core: %d, pid %d \n",core,getpid());
 }
 
 void tell_to_grid_we_are_alive(){

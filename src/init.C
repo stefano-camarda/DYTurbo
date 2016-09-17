@@ -71,6 +71,7 @@ void dyturboinit(int argc, char * argv[])
   switching::init(); //switching function initialisation
   rescinit_();
   cubacores(opts.cubacores,1000000);   //< set number of cores (move this to cubainit)
+  cubainit((void (*)()) initfun,NULL); //< merge at the end of the run
   cubaexit((void (*)()) exitfun,NULL); //< merge at the end of the run
   // histogram output
   hists.Init();

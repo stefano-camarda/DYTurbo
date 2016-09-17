@@ -34,6 +34,7 @@ void ctintegrMC(vector <double> &res, double &err);
 void ctintegr3d(vector <double> &res, double &err);
 void ctintegr2d(vector <double> &res, double &err);
 
+void initfun(void * input, const int &core);
 void exitfun(void * input, const int &core);
 
 #endif
