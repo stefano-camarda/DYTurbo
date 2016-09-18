@@ -7,13 +7,16 @@ LHAPDFset    = CT10nnlo
 LHAPDFmember    = 0
 PDFerrors = true
 
-intDimBorn = 2
-intDimCT = 3
+intDimRes = 2
+intDimBorn = 5
+intDimCT = 8
 intDimVJ = 3
 
+order   = 1
+fixedorder = true
 # term switches
-doBORN = false
-doCT   = false
+doBORN = true
+doCT   = true
 doVJ   = false
 
 doVJREAL = false
@@ -21,11 +24,12 @@ doVJVIRT = false
 
 
 # Cuba settings
+cubacores = 0
 niterBORN        = 5
 niterCT          = 5
 niterVJ          = 10
-vegasncallsBORN     = 10
-vegasncallsCT      = 1000
+vegasncallsBORN     = 1e6
+vegasncallsCT      = 1e6
 vegasncallsVJLO    = 1e3
 vegasncallsVJREAL  = 1000
 vegasncallsVJVIRT  = 100
