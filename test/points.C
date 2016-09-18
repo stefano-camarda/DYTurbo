@@ -68,7 +68,13 @@ int main( int argc , char * argv[])
   
   /**************************************/
   //Checks for resummed cross section
+  cout << "To match the numbers between fortran and C++ set:" << endl;
+  cout << "mellinrule = 64     #number of nodes" << endl;
+  cout << "zmax = 27.          #upper" << endl;
+  cout << "bintaccuracy = 1.0e-2  #accuracy" << endl;
+  cout << endl;
   //  std::cout << std::setprecision(15);
+
   costh = 0.; m = opts.rmass; qt = 1; y = 0;
   test_resum_speed(costh,m,qt,y,mode);
 
@@ -141,14 +147,15 @@ void test_resum_speed(double costh,double m,double qt,double y,int mode){
     double begin_time, end_time;
     double value;
     begin_time = clock_real();
-    value = resumm_(costh,m,qt,y,mode);
+    double mcosth=-costh;
+    value = resumm_(mcosth,m,qt,y,mode);
     end_time = clock_real();
-    cout << setw(10) << "Result" << setw(15) << value
+    cout << setw(10) << "Result" << setw(10) << "(fortran)" << setw(15) << value
          << setw(10) << "time "  << setw(15) << float(end_time - begin_time) << "s" << endl;
     begin_time = clock_real();
     value = resint::rint(costh,m,qt,y,mode);
     end_time = clock_real();
-    cout << setw(10) << "Result" << setw(15) << value
+    cout << setw(10) << "Result" << setw(10) << "(C++)" << setw(15) << value
 	 << setw(10) << "time "  << setw(15) << float(end_time - begin_time) << "s" << endl;
     return;
 }
