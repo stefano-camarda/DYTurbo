@@ -137,9 +137,10 @@ c     cached variables for fast integration
 
 
       if(first)  then           !! ONE TIME INITIALIZATION
-         print *, 'first call to ctint'
+         write (*,'(A)', advance='no') 'First call to ctint... '
          call ctquadinit
          first = .false.
+         print *, 'Done'
       end if
 
       ctint=0d0 
