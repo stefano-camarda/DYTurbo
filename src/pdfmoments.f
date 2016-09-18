@@ -182,7 +182,8 @@ c     Gaussian nodes of the integration contour in the complex plane
       include 'facscale.f'
       include 'quadrules.f'
 
-      Write(6,*)'Initialise PDF moments with numerical integration'
+      Write(6,'(A)', advance='no')
+     / 'Initialise PDF moments with numerical integration... '
       NFITMAX = 14
 c     calculate Mellin moments of PDFs
 c     Beam 1        
@@ -317,6 +318,6 @@ c     negative branch
       enddo
 
       call cacheanom
-      Write(6,*)'End initialization'
+      Write(6,*)'Done'
       return
       end

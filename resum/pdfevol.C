@@ -53,7 +53,7 @@ void pdfevol::init()
   BOP = new complex <double>[mellinint::mdim];
 
   //calculate Mellin moments of PDFs
-  cout << "Initialise PDF moments with numerical integration (C++) " << endl;
+  cout << "Initialise PDF moments with numerical integration (C++)... " << flush;
 
   fcomplex uval,dval,usea,dsea,splus,ssea,glu,charm,bot;
   for (int k = 0; k < mellinint::mdim; k++)
@@ -80,7 +80,7 @@ void pdfevol::init()
       BOP[k] = cx(bot);
     }
 
-  cout << "End PDF moments initialization" << endl;
+  cout << "Done" << endl;
 }
 
 // PROVIDES MOMENTS OF DENSITIES AT A GIVEN SCALE (INCLUDES EVOLUTION)

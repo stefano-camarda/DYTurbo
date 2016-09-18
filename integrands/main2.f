@@ -123,7 +123,9 @@ c     include 'constants.f'
       
       mod = mode
       if(flag.eq.0)  then       !! ONE TIME INITIALIZATION
-         print *, 'first call to resum'
+         !print *, 'Warming up: first call to resum ... '
+         write(*,'(A)',advance='no') 'First call to resum ... '
+         !write(*,'()',advance='no') 'First call to resum ... '
          call resummconst
          call reno2const !this seems to be unused
      
@@ -133,7 +135,7 @@ C     Initialization for Gauss inversion
          else
             call INITO           ! dyres original quadrature rule
          endif
-         print *,'done'
+         print *,'Done'
 c     Initialization of redundant variables       
          flag1=order            ! set flag1 to order of calculation (carbon copy of order, 1=NLO+NLL, 2=NNLO+NNLL)
 c     Choose pp or ppbar collider
