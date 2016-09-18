@@ -18,7 +18,7 @@ AM_FFLAGS =  -I$(srcdir)/../dyres \
 	-I$(srcdir)/../mcfm
 
 noinst_LTLIBRARIES = libdyturbobase.la
-libdyturbobase_la_SOURCES = resintegr.C ctintegr.C finintegr.C omegaintegr.C settings.C init.C cubacall.C plotter.C switch.C cuts.C usercuts.C pdf.C printsettings.C coupling.C clock_real.C banner.C kinematic.C #solvew.C
+libdyturbobase_la_SOURCES = dyturbo.C resintegr.C ctintegr.C finintegr.C omegaintegr.C settings.C init.C cubacall.C plotter.C switch.C cuts.C usercuts.C pdf.C printsettings.C coupling.C clock_real.C banner.C kinematic.C #solvew.C
 libdyturbobase_la_SOURCES += flavreduce.f gaussinit.f rescinit.f pdfmoments.f
 libdyturbobase_la_SOURCES += AiMoments.cxx TLVUtils.cxx
 
@@ -39,15 +39,15 @@ libdyturbo_la_LIBADD = libdyturbobase.la \
 	../dyqt/libdyqt.la \
 	../pegasus/libpegasus.la \
 	../dequad/libdequad.la \
-	../cubature/libcubature.la
+	../cubature/libcubature.la \
+	../cernlib/libcern.la \
+	-lgfortran \
+	$(LHAPDF_LDFLAGS) #-lgsl -lgslcblas -lifcore -limf -lifport -lintlc -lquadmath
 
 
 bin_PROGRAMS = dyturbo
-dyturbo_SOURCES = dyturbo.C
-dyturbo_LDADD = libdyturbo.la \
-	../cernlib/libcern.la \
-	-lgfortran \
-	$(CUBA_LDFLAGS) $(LHAPDF_LDFLAGS) #-lgsl -lgslcblas -lifcore -limf -lifport -lintlc -lquadmath
+dyturbo_SOURCES = main.C
+dyturbo_LDADD = libdyturbo.la $(CUBA_LDFLAGS)
 
 if HAVE_ROOT
 dyturbo_LDADD += $(ROOT_LDFLAGS)
@@ -59,7 +59,7 @@ dyturbo_merger_SOURCES = merger.C
 dyturbo_merger_LDADD = $(ROOT_LDFLAGS)
 endif
 
-pkginclude_HEADERS = resintegr.h ctintegr.h finintegr.h omegaintegr.h interface.h settings.h cubacall.h plotter.h init.h switch.h options.f flred.f gauss.f quadrules.f cuts.h coupling.h pdf.h printsettings.h clock_real.h fcomplex.h banner.h cxxopts.hpp kinematic.h isnan.h #solvew.h
+pkginclude_HEADERS = dyturbo.h resintegr.h ctintegr.h finintegr.h omegaintegr.h interface.h settings.h cubacall.h plotter.h init.h switch.h options.f flred.f gauss.f quadrules.f cuts.h coupling.h pdf.h printsettings.h clock_real.h fcomplex.h banner.h cxxopts.hpp kinematic.h isnan.h #solvew.h
 
 check:
 	./dyturbo ../input/test.in
