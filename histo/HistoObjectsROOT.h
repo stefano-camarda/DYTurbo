@@ -38,25 +38,10 @@ namespace HistoHandler {
         outfname << result_filename;
         //if (iworker!=PARENT_PROC) outfname << "_" << iworker; // better to use getpid
         int current_pid = getpid();
-        if (current_pid!=parent_pid) outfname << "_" << current_pid;
+        if (current_pid!=parent_pid) outfname << "_" << iworker << "_" << current_pid;
         outfname << ".root";
         outf = TFile::Open(outfname.str().c_str(),"RECREATE");
         outf->cd();
-    }
-
-
-    string expand_env(const string& var, int flags = 0) {
-        string vars = "";
-        wordexp_t p;
-        if(!wordexp(var.c_str(), &p, flags)) {
-            if(p.we_wordc)
-                for(char** exp = p.we_wordv; *exp; ++exp){
-                    vars+=" ";
-                    vars+=exp[0];
-                }
-            wordfree(&p);
-        }
-        return vars;
     }
 
 
@@ -64,17 +49,13 @@ namespace HistoHandler {
         outf->Write();
         outf->Close();
         outf=0;
-        // TODO: remove commented code if this is working.
-        // Since there could be some parallel files from jobs which has been finished try to merge them and save result hadd file.
-        //if (iworker==PARENT_PROC){ // merge only in main thread (better to use getpid
+        // Since there could be some parallel files from jobs which has been
+        // finished try to merge them and save result hadd file.
         if (getpid()==parent_pid){ // only in main thread
-            ostringstream tmp;
-            //tmp << result_filename <<"_*.root";
-            //tmp << "ls -la " << expand_env(tmp.str()) <<" #> /dev/null 2>&1";
-            tmp.str(""); // clear first
+            ostringstream tmp; tmp.str(""); // clear first
             tmp << "ls -la " << result_filename <<"_*.root > /dev/null 2>&1";
             if (system(tmp.str().c_str())==0) { // if there is ${result_filename}_*.root file:
-                tmp.str("");
+                tmp.str(""); // clear tmp
                 // this will include current workers as well as previous hadd
                 tmp << "hadd addtmp.root " << result_filename <<"_*.root > /dev/null && ";
                 // remove workers and previous hadd
@@ -122,7 +103,7 @@ namespace HistoHandler {
     }
 
     // wrapper for common functionality above ROOT histograms
-    template<class TH> class HistoROOT : public HistoBase {
+    template<class TH> class HistoROOT : virtual public HistoBase {
         protected :
             // Common initialization
             vector<double> binsX;
@@ -206,7 +187,7 @@ namespace HistoHandler {
             // TODO: Destructor:
             //   * Proper clear memory for current or whole variations
             virtual void Save(){
-                printf("Saving %s : current %p variations.size %zu \n", name.c_str(), current, variations.size() );
+                //printf("Saving %s : current %p variations.size %zu \n", name.c_str(), current, variations.size() );
                 outf->cd();
                 if (variations.size()==0) current->Write();
                 else {
@@ -272,6 +253,7 @@ namespace HistoHandler {
 
             // Integrator Mode:
             void AddToBin(double int_val, double int_err){
+                // TODO: if (!isIntegratorSafe) return; // dont fill if all variables are integrator safe
                 int ibin = CurrentBin();
                 // if there somethin in bin add it properly
                 double val = current->GetBinContent (ibin);
@@ -283,9 +265,15 @@ namespace HistoHandler {
                 current->SetBinError   (ibin, err);
             }
 
+            inline double GetEntries() const {return current->GetEntries();}
+            inline const char* GetName() const {return current->GetName();}
+            inline void Clear() {return current->Reset();}
+
 
     };
 
+
+    // specialization
     template<class TX> class Histo1D : public HistoROOT<TH1D> {
         public:
             Histo1D(const string &bin_name_X){

@@ -11,8 +11,8 @@
  * @date 2016-08-27
  */
 
-#include <list>
-using std::list;
+#include <vector>
+using std::vector;
 
 // TODO: C++11 ?
 //#include <memory>
@@ -39,12 +39,14 @@ extern "C" {
 namespace HistoHandler {
     // Typedef and forward declarations
     class HistoBase;
-    typedef list<HistoBase*> HistoContainer;
+    typedef vector<HistoBase*> HistoContainer;
 
     // Main functions
     void Init();
+    void Clear();
     void Book();
     void SetVariation(int imember);
+    void FillResult(double int_val,double int_err);
     void FillEvent(double *l1,double *l2, double wgt);
     void FillDipole(double *l1,double *l2, double wgt);
     void FillRealEvent();
@@ -74,6 +76,5 @@ namespace HistoHandler {
 }
 
 
-#include "HistoObjects.h"
 
 #endif /* ifndef HistoHandler_H */

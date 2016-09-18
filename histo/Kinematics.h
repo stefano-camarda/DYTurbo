@@ -13,11 +13,6 @@
 
 #include <set>
 #include <cmath>
-#include <typeinfo>
-#include <iostream>
-
-using std::set;
-using std::type_info;
 
 
 // TODO: Implementation to DYTURBO. Use Kinematics for cuts.
@@ -33,7 +28,7 @@ namespace Kinematics {
     extern bool isIntegratorMode;
 
     // Struct for flag (isCalculated)
-    typedef set<bool *> VariableFlags;
+    typedef std::set<bool *> VariableFlags;
     typedef VariableFlags::iterator VariableFlagsItr;
     extern VariableFlags flags;
 
@@ -54,12 +49,10 @@ namespace Kinematics {
                 // Integration mode
                 if(isIntegratorMode) return isIntegratorVariable ? middlePoint() : 0.;
                 // Filler Mode
+                // calculate if needed
                 if (!isCalculated){
                     value=calc();
                     isCalculated=true;
-                    //printf("%s %p : Calc was eval to %f\n",typeid(*this).name(),this, this->value);
-                } else {
-                    //printf("%s %p : Calc is already calculated\n", typeid(*this).name(), this);
                 }
                 return value;
             }
@@ -78,7 +71,5 @@ namespace Kinematics {
     template<class T> const bool Variable<T>::isIntegratorVariable = false;
 }
 
-
-//#include "KinematicDefinitions.h"
 
 #endif /* ifndef Kinematics_H */

@@ -28,7 +28,7 @@ namespace Kinematics{
             p4[i]=_p4[i];
         }
         event_weight=wgt;
-        // Set all flags to uncalculated
+        // Set all variables to re-calculate
         for (auto ptr_isCalculated : flags) *ptr_isCalculated=false;
     }
 
@@ -40,7 +40,6 @@ namespace Kinematics{
     }
 
     bool isIntegratorMode=false;
-
 
 }
 

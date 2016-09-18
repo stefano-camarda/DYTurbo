@@ -10,8 +10,9 @@
  * @date 2016-08-26
  */
 
-#include "HistoHandler.h"
 #include "Kinematics.h"
+#include "HistoHandler.h"
+#include "HistoObjects.h"
 
 #include <map>
 using std::map;
@@ -58,6 +59,12 @@ namespace HistoHandler{
         // TODO: Implmentation to dyturbo
         // Check we will use just one variation, then set it from beginning
         parent_pid=getpid();
+    }
+
+    void Clear(){
+        for (auto h_it = hists.begin();h_it!=hists.end();h_it++){
+            (*h_it)->Clear();
+        }
     }
 
     void FillEvent(double p3[4],double p4[4], double wgt){
@@ -134,7 +141,7 @@ namespace HistoHandler{
 
     void Terminate(int iworker){
         Merge(iworker);
-        // TODO: Properly remove all histograms from your
+        // TODO: Properly remove all histograms from your memory
     }
 }
 
