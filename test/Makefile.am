@@ -2,9 +2,17 @@ AUTOMAKE_OPTIONS = foreign
 
 if HAVE_TEST
 AM_CPPFLAGS = -fpermissive \
-	      -I$(srcdir)/../include -I$(srcdir)/../histo -I$(srcdir)/../user \
-	      -I$(srcdir)/../dequad -I$(srcdir)/../resum -I$(srcdir)/../src \
-	      -I$(srcdir)/../mcfm -I$(srcdir)/../phasespace \
+	      -I$(srcdir)/../src \
+	      -I$(srcdir)/../include \
+	      -I$(srcdir)/../dequad \
+	      -I$(srcdir)/../mcfm \
+	      -I$(srcdir)/../resum \
+	      -I$(srcdir)/../vjfo \
+	      -I$(srcdir)/../eba \
+	      -I$(srcdir)/../cubature \
+	      -I$(srcdir)/../phasespace \
+	      -I$(srcdir)/../histo \
+	      -I$(srcdir)/../user \
 	      -Wl,Bstatic \
 	      $(CUBA_CPPFLAGS) $(LHAPDF_CPPFLAGS) \
 	      -DSHAREDIR=\"${datadir}/${PACKAGE}\"
@@ -15,7 +23,7 @@ DYTURBOLIBS= ../src/libdyturbo.la ../cernlib/libcern.la \
 
 AM_FFLAGS =  -I$(srcdir)/../dyres -I$(srcdir)/../mcfm -I$(srcdir)/../src
 
-bin_PROGRAMS = points TurboHist_unittest Kinematics_unittest  HistoHandler_unittest Cuts_unittest
+bin_PROGRAMS = points TurboHist_unittest Kinematics_unittest  HistoHandler_unittest Cuts_unittest DYTurbo_unittest
 
 points_SOURCES = points.C finitemapping.C
 points_LDADD = ../src/libdyturbo.la \
@@ -37,11 +45,15 @@ HistoHandler_unittest_LDADD   = $(GMOCK_LDFLAGS) $(DYTURBOLIBS)
 Cuts_unittest_SOURCES = Cuts_unittest.cxx
 Cuts_unittest_LDADD   = $(GMOCK_LDFLAGS) $(DYTURBOLIBS)
 
+DYTurbo_unittest_SOURCES = DYTurbo_unittest.cxx
+DYTurbo_unittest_LDADD   = $(GMOCK_LDFLAGS) $(DYTURBOLIBS)
+
 if HAVE_ROOT
 AM_CPPFLAGS += $(ROOT_CFLAGS)
 Kinematics_unittest_LDADD += $(ROOT_LDFLAGS)
 TurboHist_unittest_LDADD += $(ROOT_LDFLAGS)
 HistoHandler_unittest_LDADD += $(ROOT_LDFLAGS)
+DYTurbo_unittest_LDADD += $(ROOT_LDFLAGS)
 endif #ROOT
 
 
@@ -49,8 +61,10 @@ check:  TurboHist_unittest
 	./TurboHist_unittest
 	./Kinematics_unittest
 	./HistoHandler_unittest
-	rm -f *.dat *.root
+	./DYTurbo_unittest
 	@echo ALL OK
+
+#rm -f *.dat *.root
 
 endif #TEST
 

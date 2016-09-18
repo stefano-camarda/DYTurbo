@@ -12,9 +12,7 @@
 #include <unistd.h>
 
 #include "HistoHandler.h"
-
-using namespace HistoHandler;
-using namespace Kinematics;
+#include "HistoObjects.h"
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -30,6 +28,13 @@ class HistoServiceTest : public testing::Test{
             gausT.param( std::normal_distribution<>::param_type(0.,10.)  );
             gausZ.param( std::normal_distribution<>::param_type(0.,30.)  );
             gausW.param( std::normal_distribution<>::param_type(1.,0.1) );
+
+            Nterm=1;
+            Nevents=1;
+            Nnodes=1;
+            isParent=true;
+            inode=0;
+            parent_pid=getpid();
         }
 
         virtual void TearDown(){
@@ -52,21 +57,67 @@ class HistoServiceTest : public testing::Test{
         }
 
         void CheckEntries(double entries=0.){
+            for (auto h_it = HistoHandler::hists.begin();h_it!=HistoHandler::hists.end();h_it++){
+                double hentries = (*h_it)->GetEntries();
+                ASSERT_DOUBLE_EQ(entries, (*h_it)->GetEntries())
+                    << "Histogram " << (*h_it)->GetName()
+                    << " has incorect number of entries: " << hentries 
+                    << " instead of " << entries ;
+            }
         }
 
         void Loop(){
+            for (int iTerm = 0; iTerm < Nterm; ++iTerm) {
+                for (int iEvent = 0; iEvent < Nevents; ++iEvent) {
+                    random_kin();
+                    HistoHandler::FillEvent(l1,l2,wgt);
+                }
+            }
+        }
+        void LoopIntegrator(){
+            for (int iTerm = 0; iTerm < Nterm; ++iTerm) {
+                // Set Middle point
+                // Add to bin
+                HistoHandler::FillResult(1.0,0.1);
+            }
+        }
+
+        bool IsParent(){
+            return parent_pid == getpid();
+            // parent skip and fork again ( double condition just to be sure)
+            //if ((child_pid!=0) || (this_pid==parent_pid)) continue;
         }
 
         void Fork(){
+            if (IsParent()){
+                child_pid = fork();
+            }
         }
 
         void Wait(){
+            // from: http://stackoverflow.com/a/279761
+            //printf("parent is waiting...\n"); fflush(stdout);
+            while (true) {
+                int status;
+                pid_t done = wait(&status);
+                if (done == -1) {
+                    if (errno == ECHILD) break; // no more child processes
+                } else {
+                    if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
+                        printf("pid %d failed!!!\n",done); fflush(stdout);
+                        exit(1);
+                    }
+                }
+            }
         }
 
         void InitWorker(){
+            HistoHandler::Clear();
         }
 
-        void ExitWorker(){
+        void ExitWorker(int inode){
+            HistoHandler::Save(inode);
+            exit(0);
         }
 
         double l1[4];
@@ -76,47 +127,74 @@ class HistoServiceTest : public testing::Test{
         int Nterm;
         int Nevents;
         int Nnodes;
+        bool isParent;
+        int inode;
+        static double total_entries;
+
+
+        int child_pid;
+        int parent_pid;
 
         std::mt19937 gen;
         std::normal_distribution<> gausT; // (0.,10.);
         std::normal_distribution<> gausZ; // (0.,30.);
         std::normal_distribution<> gausW; // (1.,0.1);
+};
 
+double HistoServiceTest::total_entries = 0.;
+
+TEST_F(HistoServiceTest, HistCreateAndFill){
+    HistoHandler::Histo1D<BosPT> htmp("dummy");
+    random_kin();
+    Kinematics::SetKinematics(l1,l2,wgt);
+    htmp.FillEvent();
+    ASSERT_DOUBLE_EQ(1., htmp.GetEntries()) << "FillEvent failed.";
+    //
+    random_kin();
+    Kinematics::SetKinematics(l1,l2,wgt);
+    htmp.FillDipole();
+    htmp.FillDipole();
+    htmp.FillRealEvent();
+    ASSERT_DOUBLE_EQ(2., htmp.GetEntries()) << "FillRealEvent failed.";
 };
 
 TEST_F(HistoServiceTest, Init){
     HistoHandler::Init();
+    total_entries=0.;
+    CheckEntries(total_entries);
 };
 
 TEST_F(HistoServiceTest, LoopNoThread){
-    CheckEntries(0.);
     Loop();
-    CheckEntries(Nterm*Nevents);
-    HistoHandler::Save();
-    CheckEntries(0.);
+    total_entries+=Nterm*Nevents;
+    CheckEntries(total_entries);
 };
 
+TEST_F(HistoServiceTest, LoopNoThreadIntegrator){
+    LoopIntegrator();
+    total_entries+=1;
+    CheckEntries(total_entries);
+}
+
 TEST_F(HistoServiceTest, LoopInsideThreads){
-    CheckEntries(0.);
     for (int inodes = 0;  inodes < Nnodes; inodes++) {
         Fork();
-        if(isParent) continue;
+        if(IsParent()) continue;
         // only child goes here
         InitWorker();
         Loop();
         CheckEntries(Nterm*Nevents);
-        HistoHandler::Save(inode);
-        CheckEntries(0.);
-        ExitWorker();
+        ExitWorker(inode); // turn off worker
     }
-    Wait();
-    HistoHandler::Save();
+    Wait(); // wait for all workers to finish
     Loop();
-    HistoHandler::Save();
-    CheckEntries(0.);
+    total_entries+=Nterm*Nevents;
+    CheckEntries(total_entries);
+    HistoHandler::Save(); // parent always saves its instance and check for temporary files
 };
 
 TEST_F(HistoServiceTest, Terminate){
+    HistoHandler::Save();
     HistoHandler::Terminate();
 };
 
