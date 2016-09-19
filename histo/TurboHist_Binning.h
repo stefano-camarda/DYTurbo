@@ -19,13 +19,13 @@ using std::sort;
 namespace TurboHist {
     struct Binning {
         VecObs data; ///< Mapping value to index.
-        size_t N; ///< Number of bins, without underflow and overflow.
-        OBS min; ///< Low edge of first bin
-        OBS max; ///< High edge of last bin
+        size_t N= 0.; ///< Number of bins, without underflow and overflow.
+        OBS min = 0.; ///< Low edge of first bin
+        OBS max = 0.; ///< High edge of last bin
         bool isEquidistant=false; ///<Is equidistant flag.
         VecObsCItr BEG;
         VecObsCItr END;
-        const double *aBEG; ///< trick std::lower_bound to think its array not vector
+        const double *aBEG = NULL; ///< trick std::lower_bound to think its array not vector
 
         inline size_t     size()   const{ return data .size()   ;}
         inline VecObsItr  begin()  {      return data .begin()  ;}
