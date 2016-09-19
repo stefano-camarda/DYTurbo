@@ -39,6 +39,12 @@
 
 #include "dyturbo.h"
 
+#include<iostream>
+#include<iomanip>
+using std::setw;
+using std::cout;
+using std::endl;
+
 bool DYTurbo::HasOnlyVegas = false;
 
 namespace DYTurbo {
@@ -55,8 +61,8 @@ namespace DYTurbo {
 
     enum BoundaryIndex {
         b_M=0,
-        b_QT,
         b_Y,
+        b_QT,
         //b_CosTh,
         //b_Phi,
         N_boundaries
@@ -105,7 +111,7 @@ namespace DYTurbo {
     void Term::RunIntegration(){
         VecDbl val;
         double err=0;
-        // specialized (need to recorporate)
+        // specialized (need to reincorporate)
         if (opts.doBORN && !opts.fixedorder && opts.resint2d ){
             if (opts.resumcpp) rapint::cache(phasespace::ymin, phasespace::ymax);
             else cacheyrapint_(phasespace::ymin, phasespace::ymax);
@@ -113,6 +119,10 @@ namespace DYTurbo {
         integrate(val,err);
         total_int+=val[0];
         total_err2+=err*err;
+    }
+    void Term::Print(){
+        cout << setw(24)  << name.c_str() << ":";
+        cout << description.c_str();
     }
     Term subtotal;
     TermList ActiveTerms;
@@ -181,40 +191,72 @@ namespace DYTurbo {
         /***********************************/
     }
 
-    void AddTermIfActive(bool isActive, string name, void (* fun)(VecDbl &val,double &err), bool is_vegas ){
-        if (!isActive) return;
-        ActiveTerms.push_back({name, fun, 0., 0.});
+    Term & AddTermIfActive(bool isActive, void (* fun)(VecDbl &val,double &err), String name, bool is_vegas ){
+        if (!isActive) return subtotal;
+        ActiveTerms.push_back({name, "", fun, 0., 0., 0.});
         HasOnlyVegas&=is_vegas;
+        return ActiveTerms.back();
+    }
+
+    SStream strm;
+    template<class Streamable> Term & Term::operator<<(Streamable data){
+        strm.str("");
+        strm << data;
+        description += strm.str();
+        return (*this);
     }
 
 
     void AddTerms(){
         ActiveTerms.clear();
         HasOnlyVegas=true;
+        const bool isVegas=true;
+        const bool isNotVegas=false;
+        int w0=25;
+        int w1=30;
+        int w2=12;
+        int w3=12;
+        string name;
         // born
         bool fixed_born = opts.doBORN && opts.fixedorder;
-        AddTermIfActive ( fixed_born && opts.bornint2d      , "fixed born" , bornintegr2d   , false ) ;
-        AddTermIfActive ( fixed_born && opts.bornintvegas4d , "fixed born" , bornintegrMC4d , true  ) ;
-        AddTermIfActive ( fixed_born && opts.bornintvegas6d , "fixed born" , bornintegrMC6d , true  ) ;
+        if (fixed_born) {
+            name="Fixed born";
+            AddTermIfActive ( opts.bornint2d      , bornintegr2d   , name, isNotVegas ) << PrintTable::Col3( "cuhre (dm, dpt)" , "iter ="   , opts.niterBORN       );
+            AddTermIfActive ( opts.bornintvegas4d , bornintegrMC4d , name, isVegas    ) << PrintTable::Col3( "vegas 4D"        , "ncalls =" , opts.vegasncallsBORN );
+            AddTermIfActive ( opts.bornintvegas6d , bornintegrMC6d , name, isVegas    ) << PrintTable::Col3( "vegas 6D"        , "ncalls =" , opts.vegasncallsBORN );
+        }
         // resummation
         bool resum_born = opts.doBORN && !opts.fixedorder;
-        AddTermIfActive ( resum_born && opts.resint2d     , "resummation" , resintegr2d , false ) ;
-        AddTermIfActive ( resum_born && opts.resint3d     , "resummation" , resintegr3d , false ) ;
-        AddTermIfActive ( resum_born && opts.resintvegas  , "resummation" , resintegrMC , true ) ;
+        if (resum_born) {
+            name="Resummation";
+            AddTermIfActive ( opts.resint2d    , resintegr2d  , name , isNotVegas ) << PrintTable::Col3 ( "cuhre (dm, dpt)"     , "iter ="      , opts.niterBORN       )
+                                                                                    << PrintTable::Col4 ( "","gauss (dy)"       , "nodes ="     , opts.yrule           )
+                                                                                    << PrintTable::Col4 ( "",""                 , "intervals =" , opts.yintervals      );
+            AddTermIfActive ( opts.resint3d    , resintegr3d  , name , isNotVegas ) << PrintTable::Col3 ( "cuhre (dm, dpt, dy)" , "iter ="      , opts.niterBORN       );
+            AddTermIfActive ( opts.resintvegas , resintegrMC  , name , isVegas    ) << PrintTable::Col3 ( "vegas"               , "ncalls ="    , opts.vegasncallsBORN );
+        }
         // CT
-        AddTermIfActive ( opts.doCT && opts.ctint2d      , "counter term" , ctintegr2d , false ) ;
-        AddTermIfActive ( opts.doCT && opts.ctint3d      , "counter term" , ctintegr2d , false ) ;
-        AddTermIfActive ( opts.doCT && opts.ctintvegas6d , "counter term" , ctintegrMC , true ) ;
-        AddTermIfActive ( opts.doCT && opts.ctintvegas8d , "counter term" , ctintegr   , true ) ;
+        if (opts.doCT) {
+            name="Counter term";
+            AddTermIfActive ( opts.ctint2d      , ctintegr2d , name , isNotVegas  ) << PrintTable::Col3 ( "cuhre (dm, dy)"  , "iter ="      , opts.niterCT )
+                                                                                    << PrintTable::Col4 ( "","gauss (dpt)"  , "nodes ="     , 20           )
+                                                                                    << PrintTable::Col4 ( "",""             , "intervals =" , 5            );
+            AddTermIfActive ( opts.ctint3d      , ctintegr3d , name , isNotVegas  ) << PrintTable::Col3 ( "cuhre (dm, dpt, dy)" , "iter ="   , opts.niterCT       );
+            AddTermIfActive ( opts.ctintvegas6d , ctintegrMC , name , isVegas     ) << PrintTable::Col3 ( "vegas 6D"            , "ncalls =" , opts.vegasncallsCT );
+            AddTermIfActive ( opts.ctintvegas8d , ctintegr   , name , isVegas     ) << PrintTable::Col3 ( "vegas 8D"            , "ncalls =" , opts.vegasncallsCT );
+        }
         // VJ finite
         bool vj_finite = opts.doVJ && !opts.doVJREAL && !opts.doVJVIRT;
-        AddTermIfActive   ( vj_finite && opts.vjint3d                         , "V+J"    , vjintegr3d   , false ) ;
-        AddTermIfActive   ( vj_finite && opts.vjint5d && opts.order == 1      , "V+J LO" , vjlointegr5d , false ) ;
-        AddTermIfActive   ( vj_finite && opts.vjintvegas7d && opts.order == 1 , "V+J LO" , vjlointegr7d , true ) ;
-        //AddTermIfActive ( vj_finite && opts.vjintvegas7d && opts.order == 1 , "V+J LO" , vjlointegr   , true ) ;
+        name="V+J LO";
+        if (vj_finite){
+            AddTermIfActive   ( opts.vjint3d                         , vjintegr3d   , name , isNotVegas )  << PrintTable::Col3 ( "cuhre (dm, dpt, dy)" , "iter ="   , opts.niterVJ         );
+            AddTermIfActive   ( opts.vjint5d && opts.order == 1      , vjlointegr5d , name , isVegas    )  << PrintTable::Col3 ( "vegas 5D"            , "ncalls =" , opts.vegasncallsVJLO );
+            AddTermIfActive   ( opts.vjintvegas7d && opts.order == 1 , vjlointegr7d , name , isVegas    )  << PrintTable::Col3 ( "vegas 7D"            , "ncalls =" , opts.vegasncallsVJLO );
+            //AddTermIfActive ( opts.vjintvegas7d && opts.order == 1 , vjlointegr   , name , isVegas    )  << PrintTable::Col3 ( "vegas 7D"            , "ncalls =" , opts.vegasncallsVJLO );
+        }
         // VJ NLO
-        AddTermIfActive ( opts.doVJREAL , "V+J real"    , vjrealintegr , true ) ;
-        AddTermIfActive ( opts.doVJVIRT , "V+J virtual" , vjrealintegr , true ) ;
+        AddTermIfActive ( opts.doVJREAL  , vjrealintegr , "V+J Real"    , isVegas) << PrintTable::Col3 ( "vegas" , "ncalls =" , opts.vegasncallsVJREAL );
+        AddTermIfActive ( opts.doVJVIRT  , vjvirtintegr , "V+J Virtual" , isVegas) << PrintTable::Col3 ( "vegas" , "ncalls =" , opts.vegasncallsVJVIRT );
     }
 
     void AddBoundary(size_t ib, string name, VecDbl &bins ){
@@ -282,7 +324,8 @@ namespace DYTurbo {
         // check if we need to warm up CT integration or Resummation
         WarmUpResummation();
         // clear subtotal
-        subtotal = {"TOATL", 0, 0., 0.};
+        subtotal = {"TOTAL", "", 0, 0., 0., 0.};
+        PrintTable::IntegrationSettings();
     }
 
     void SetBounds(BoundIterator bounds){
@@ -304,8 +347,64 @@ namespace DYTurbo {
             // loop over bounds
         }
 
+        template<class S1, class S2, class S3, class S4 > const char * Col4( S1 col1, S2 col2, S3 col3, S4 col4){
+            SStream strm;
+            strm << setw(25) << col1;
+            strm << setw(20) << col2;
+            strm << setw(12) << col3;
+            strm << setw(12) << col4;
+            strm << '\n';
+            return strm.str().c_str();
+        }
+        template<class S2, class S3, class S4 > const char * Col3(S2 col2, S3 col3, S4 col4){
+            SStream strm;
+            strm << setw(20) << col2;
+            strm << setw(12) << col3;
+            strm << setw(12) << col4;
+            strm << '\n';
+            return strm.str().c_str();
+        }
+
+        void IntegrationSettings(){
+            int w1= 25;
+            int w2= 30;
+            int w3= 12;
+            bool fixed_born = opts.doBORN && opts.fixedorder;
+            bool fixed_born_cubature = fixed_born && opts.bornint2d ;
+            bool resum_born = opts.doBORN && !opts.fixedorder;
+            bool resum_born_cubature = resum_born && (opts.resint3d || opts.resint2d);
+            bool ct_cubature = opts.doCT && (opts.ctint2d || opts.ctint3d);
+            cout << endl;
+            cout << "========================  Integration settings ====================" << endl;
+            cout << endl;
+            cout << Col4 ( "Random seeds"   , opts.rseed     , "" , "" ) ;
+            cout << Col4 ( "Parallel cores" , opts.cubacores , "" , "" ) ;
+            cout << endl;
+            for (TermIterator iterm;!iterm.IsEnd();++iterm){
+                (*iterm).Print();
+            }
+            cout << endl;
+            if (resum_born && opts_.approxpdf_==0){
+                cout << Col4 ( "Mellin inverse transform:" , "gaussian "      , "nodes ="     , opts.mellinrule      ) ;
+                cout << Col4 ( ""                          , ""               , "intervals =" , opts.mellinintervals ) ;
+                cout << Col4 ( ""                          , "imaginary axis" , "zmax ="      , opts.zmax            ) ;
+            }
+            if ( resum_born_cubature || ct_cubature || fixed_born_cubature ){
+                if (opts.cubaint)
+                    cout << Col4( "Angular variables:" , "Suave in dcosth,dphi" , "ncalls =" , opts.suavepoints );
+                else if (opts.quadint) {
+                    cout << Col4( "Angular variable costh:" , "semi-analytical", "ncstart ="   , opts.ncstart      );
+                    cout << Col4( "Angular variables phi:"  , "gaussian"       , "intervals =" , opts.phiintervals );
+                }
+                else if (opts.trapezint) {
+                    cout << Col4( "Angular variables costh:" , "semi-analytical" , "ncstart =" , opts.ncstart   );
+                    cout << Col4( "Angular variables phi:"   , "trapezoidal"     , "points ="  , opts.nphitrape );
+                }
+            }
+            cout << endl;
+        }
+
         void Header() {
-            //BoundsNonLooping();
             // count line width
             // bounds non looping message
             // bounds non looping message

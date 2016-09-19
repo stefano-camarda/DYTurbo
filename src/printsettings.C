@@ -203,4 +203,5 @@ void printsettings()
   cout << setw(25) << "cubaverbosity:"    << setw(30) << opts.cubaverbosity << endl;
   cout << endl;
   cout << "============================================================" << endl;
+  cout << endl;
 }

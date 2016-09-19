@@ -8,19 +8,19 @@ LHAPDFmember    = 0
 PDFerrors = true
 
 intDimRes = 2
-intDimBorn = 5
-intDimCT = 8
-intDimVJ = 3
+intDimBorn = 2
+intDimCT = 2
+intDimVJ = 2
 
-order   = 1
-fixedorder = true
+order   = 2
+fixedorder = false
 # term switches
 doBORN = true
 doCT   = true
 doVJ   = false
 
-doVJREAL = false
-doVJVIRT = false
+doVJREAL = true
+doVJVIRT = true
 
 
 # Cuba settings
