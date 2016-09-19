@@ -61,6 +61,13 @@ namespace HistoHandler{
         parent_pid=getpid();
     }
 
+    void DeleteHists(){
+        while (!hists.empty()){
+            hists.back()->Delete();
+            hists.pop_back();
+        }
+    }
+
     void Clear(){
         for (auto h_it = hists.begin();h_it!=hists.end();h_it++){
             (*h_it)->Clear();

@@ -142,6 +142,36 @@ namespace DYTurbo {
         return ActiveTerms[icurrent];
     }
 
+
+    namespace PrintTable{
+        struct Col4 {
+            String data;
+            template<class S1, class S2, class S3, class S4 > Col4( S1 col1, S2 col2, S3 col3, S4 col4){
+                SStream tmp;
+                tmp << setw(25) << col1;
+                tmp << setw(20) << col2;
+                tmp << setw(12) << col3;
+                tmp << setw(12) << col4;
+                tmp << '\n';
+                data = tmp.str();
+            }
+        };
+        inline std::ostream & operator<< (std::ostream & strm, const Col4 &col){ strm << col.data; return strm; }
+
+        struct Col3{
+            String data;
+            template<class S2, class S3, class S4 > Col3(S2 col2, S3 col3, S4 col4){
+                SStream tmp;
+                tmp << setw(20) << col2;
+                tmp << setw(12) << col3;
+                tmp << setw(12) << col4;
+                tmp << '\n';
+                data = tmp.str();
+            }
+        };
+        inline std::ostream & operator<< (std::ostream & strm, const Col3 &col){ strm << col.data; return strm; }
+    }
+
     void Init( int argc, char * argv[]){
         banner();
         gaussinit_();             //initialisation of fortran gaussian quadrature nodes and weights
@@ -198,9 +228,8 @@ namespace DYTurbo {
         return ActiveTerms.back();
     }
 
-    SStream strm;
     template<class Streamable> Term & Term::operator<<(Streamable data){
-        strm.str("");
+        SStream strm;
         strm << data;
         description += strm.str();
         return (*this);
@@ -345,24 +374,6 @@ namespace DYTurbo {
 
         void BoundsAllLooping(bool printNames=false){
             // loop over bounds
-        }
-
-        template<class S1, class S2, class S3, class S4 > const char * Col4( S1 col1, S2 col2, S3 col3, S4 col4){
-            SStream strm;
-            strm << setw(25) << col1;
-            strm << setw(20) << col2;
-            strm << setw(12) << col3;
-            strm << setw(12) << col4;
-            strm << '\n';
-            return strm.str().c_str();
-        }
-        template<class S2, class S3, class S4 > const char * Col3(S2 col2, S3 col3, S4 col4){
-            SStream strm;
-            strm << setw(20) << col2;
-            strm << setw(12) << col3;
-            strm << setw(12) << col4;
-            strm << '\n';
-            return strm.str().c_str();
         }
 
         void IntegrationSettings(){

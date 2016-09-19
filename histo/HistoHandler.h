@@ -45,6 +45,7 @@ namespace HistoHandler {
     void Init();
     void Clear();
     void Book();
+    void DeleteHists();
     void SetVariation(int imember);
     void FillResult(double int_val,double int_err);
     void FillEvent(double *l1,double *l2, double wgt);

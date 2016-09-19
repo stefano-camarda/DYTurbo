@@ -104,10 +104,6 @@ namespace HistoHandler {
 
     // wrapper for common functionality above ROOT histograms
     template<class TH> class HistoROOT : virtual public HistoBase {
-        public :
-            ~HistoROOT(){
-                if (current!=0) delete current;
-            };
         protected :
             // Common initialization
             vector<double> binsX;
@@ -204,6 +200,10 @@ namespace HistoHandler {
                     outf->cd();
                 }
             }
+
+            void Delete(){
+                if (current!=0) delete current;
+            };
 
 
         protected :

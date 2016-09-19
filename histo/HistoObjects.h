@@ -27,6 +27,7 @@ namespace HistoHandler {
             virtual void FillRealEvent()=0;
             virtual void SetVariation(const KeySuffix)=0;
             virtual void Save()=0;
+            virtual void Delete()=0;
             virtual void Clear()=0;
             virtual void AddToBin(double int_val,double int_err)=0;
             virtual double GetEntries() const =0; //{ return 666.;};

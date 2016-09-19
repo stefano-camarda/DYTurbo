@@ -17,7 +17,7 @@
 using namespace Kinematics;
 namespace HistoHandler{
     void Book() {
-        hists.clear();
+        DeleteHists();
         Add( new Histo1D   <BosPT         > ("qt"          ) );
         Add( new Histo2D   <BosPT,BosY    > ("qt","y"      ) );
         //Add( new HistoProfile   <BosPT,A1      > ("qt","a1"     ) );

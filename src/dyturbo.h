@@ -64,8 +64,6 @@ namespace DYTurbo {
     void Terminate();
 
     namespace PrintTable {
-        template<class S1, class S2, class S3, class S4 > const char * Col4( S1 col1, S2 col2, S3 col3, S4 col4);
-        template<class S2, class S3, class S4 > const char * Col3(S2 col2, S3 col3, S4 col4);
         void IntegrationSettings();
         void Header() ;
         void Bounds() ;
