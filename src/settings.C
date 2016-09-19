@@ -336,20 +336,20 @@ void settings::check_consitency(){
         resintvegas = true;
     }
 
+
+
     // born term integration dimension
-    if (intDimBorn<5 && intDimBorn>1){
-        bornint2d = (intDimBorn == 2);
-        bornintvegas4d = (intDimBorn == 4);
-        bornintvegas6d = false;
-    } else {
-        bornint2d = false;
+    if (order > 0){
+        printf("Warning: quadratures not yet implemented in orders NLO and NNLO only for order=0.\n");
+        bornint2d      = false;
         bornintvegas4d = false;
         bornintvegas6d = true;
+    } else {
+        bornint2d      = (intDimBorn == 2);
+        bornintvegas4d = (intDimBorn == 4);
+        bornintvegas6d = (intDimBorn >  5);
     }
 
-    //quadratures not yet implemented in orders NLO and NNLO
-    if (order > 0)
-      bornintvegas6d = true;
 
     // counter term integration dimension
     if (intDimCT<4 && intDimCT>1){
