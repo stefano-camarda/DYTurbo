@@ -123,7 +123,9 @@ double vjloint::calc(const double x[5])
   omegaintegr::genV4p();
   vector <double> cthmin;
   vector <double> cthmax;
-  omegaintegr::costhbound(phasespace::phi_lep, cthmin, cthmax);
+  phasespace::setcthbounds(phasespace::getcthmin(), phasespace::getcthmax());
+  phasespace::genRFaxes(phasespace::CS);
+  omegaintegr::costhbound(phasespace::phi_lep, cthmin, cthmax); //!be carefull, this way costh is integrated according to a given boson rest frame (CS or others)
   vector<double>::iterator itmn;
   vector<double>::iterator itmx;
   itmn = cthmin.begin(); itmx = cthmax.begin();
@@ -140,6 +142,7 @@ double vjloint::calc(const double x[5])
 	  
 	  //Generate leptons 4-momenta: p3 is the lepton and p4 is the antilepton
 	  phasespace::set_cth(xcth);
+	  //phasespace::genRFaxes(CS);
 	  phasespace::genl4p();
 
 	  //calculate V+j matrix elements

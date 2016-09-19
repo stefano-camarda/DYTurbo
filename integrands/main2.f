@@ -638,7 +638,7 @@ c     convert proton into antiproton (need to switch only u and d, since the sea
             cfx2m(2,I)=cfx2m(-2,I)
             cfx2m(-2,I)=DTEMP
          endif                
-c         print *,I,cfx1(0,I)
+c     print *,'fortran',b,I,cfx2m(0,I)
 c     Cache the positive and negative branch of coefficients which depend only on one I index
          call cachehcoeff(I,1)
          call cachehcoeff(I,-1)
@@ -946,6 +946,20 @@ c retrieve values cached in cacheanom for
 C NORMALIZED ANOMALOUS DIMENSIONS AND COEFFICIENTS
       SIG = (-ISIGN+1)/2+1
 
+c     begin LL
+      if(flag1.eq.0) then
+         Hqqb=0d0 !cHqqb(I1,I2,SIG)
+C     all other channels are =0 at LL
+         Hqg_1= 0d0
+         Hqg_2= 0d0
+         Hgg = 0d0                !  Q Q -> Qb Q  = Qb Qb -> Q Qb  
+         Hqq_1 = 0d0            !  Qb Qb -> Qb Q =  Q Q -> Q Qb      
+         Hqq_2 = 0d0            ! Average QQ->QQb  and QbQb->QQb
+         Hqq = 0d0               !  qqp_1  means   Q' Q -> Qb Q  flavor in sigmaQQb determined by "second parton"
+         Hqqp_1 = 0d0           !  qqp_2  means   Q Q' -> Q Qb  flavor in sigmaQQb determined by "first parton"
+         Hqqp_2 = 0d0
+      endif
+      
 c begin NLL
 c the Hqqb NLL coefficients depend only on I1 and I2 (and isign)
 c Hqg_1(2) also on b through alpq in Cqg_1(2)
@@ -1795,7 +1809,7 @@ c     1    + sHCRN(-2,2)*sigmaij(-2,2)
          HCRN = GGN*Hgg + FX1(0)*QGN_1*Hqg_1 + FX2(0)*QGN_2*Hqg_2
      1        + QQBN_1*Hqqb + QQBN_2*Hqq + QQBN_3*Hqqp_1 + QQBN_4*Hqqp_2
       endif
-c      print *,I1,I2,GGN,Hgg
+c      print *,'fortran',I1,I2,GGN,Hgg
       RETURN
       END
 

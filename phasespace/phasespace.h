@@ -1,7 +1,14 @@
 #ifndef phasespace_h
 #define phasespace_h
 
-#include <cmath>
+#include <math.h>
+#include <algorithm>
+
+//bool naiveRF = false;
+//bool CSRF = true;
+//bool kt0RF = false;
+
+using namespace std;
 
 //fortran interface
 extern "C" {
@@ -24,6 +31,11 @@ extern "C" {
 
 namespace phasespace
 {
+  enum restframeid {CS=0, naive=1, kt0=2};
+
+  //  extern restframeid RF;
+  //  inline void setRF(restframeid rfid) {RF = rfid;};
+  
   //boson integration boundaries
   extern double mmin;
   extern double mmax;
@@ -36,7 +48,7 @@ namespace phasespace
   extern double cthmin;
   extern double cthmax;
   extern void setcthbounds(double cth1, double cth2);
-  
+
   //point in phase space
   extern double m, qt, y, phiV;
 #pragma omp threadprivate(m, qt, y, phiV)
@@ -44,6 +56,13 @@ namespace phasespace
 #pragma omp threadprivate(costh,phi_lep)
   extern double x1, x2;
 #pragma omp threadprivate(x1,x2)
+
+
+  //sign flip the costh boundaries according to y
+  //inline double getcthmin() {return cthmin;};
+  //inline double getcthmax() {return cthmax;};
+  inline double getcthmin() {return min(cthmin * (y < 0 ? -1 : 1),cthmax * (y < 0 ? -1 : 1));};
+  inline double getcthmax() {return max(cthmin * (y < 0 ? -1 : 1),cthmax * (y < 0 ? -1 : 1));};
   
   //auxiliary useful quantities
   extern double m2, qt2;
@@ -91,7 +110,7 @@ namespace phasespace
   extern double p4[4];
   extern double p3[4];
 #pragma omp threadprivate(p4,p3)
-  /*
+
   inline void getp3(double p[4])
   {
     p[0] = p3[0];
@@ -106,7 +125,13 @@ namespace phasespace
     p[2] = p4[2];
     p[3] = p4[3];
   }
-  */
+
+  //rest frame axes
+  extern double kap1[4];
+  extern double xax[3];
+  extern double yax[3];
+  extern double zax[3];
+  extern void genRFaxes(restframeid RF);
   
   extern void genl4p();
 

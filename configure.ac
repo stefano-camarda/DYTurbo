@@ -178,8 +178,8 @@ AC_ARG_ENABLE([debug],
   [AC_HELP_STRING(--enable-debug, [Add debug flags. (default=no)])])
 AS_IF([test "x$enable_debug" = "xyes"], [
   AC_MSG_RESULT([Adding debug symbols.])
-  FFLAGS="$FFLAGS -ggdb"
-  CXXFLAGS="$CXXFLAGS -ggdb"
+  FFLAGS="$FFLAGS -ggdb -gdwarf"
+  CXXFLAGS="$CXXFLAGS -ggdb -gdwarf"
 ])
 
 # Check for trapFPE flag

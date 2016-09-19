@@ -80,6 +80,10 @@ extern "C" {
     int lhapdfs_;
     } lhapdfs_;*/
 
+  //initialization flag
+  extern struct {
+    int flag_;
+  } flag_;
 
   extern struct {
     double a_param_;

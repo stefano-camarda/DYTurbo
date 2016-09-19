@@ -76,7 +76,8 @@ double switching::qtlimit(double m)
 
 double switching::mlimit(double qt)
 {
-  double limit=opts.sroot/2.;
+  //This is a lower limit
+  double limit=0.;
 
   if (opts.fixedorder)
     return limit;

@@ -121,6 +121,7 @@ c      call zgamps2(5,2,3,4,1,za,zb,AgqbZqb2)
       double precision amps2(2,2)
       integer hq,hl,hg,j1,j2,j3,j4,j5
 c-- amplitude helicities are amps(quark,lepton,gluon)
+c     See table 5 of hep-th/0509223
       
       amps(1,1,1)=za(j2,j3)/za(j1,j5)/za(j2,j5)
      .             *(za(j2,j1)*zb(j4,j1)+za(j2,j5)*zb(j4,j5))

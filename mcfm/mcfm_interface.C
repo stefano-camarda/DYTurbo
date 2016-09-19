@@ -31,8 +31,6 @@ void mcfm::init()
   dymasses_.zwidth_ = opts.zwidth;
   
   //initialise MCFM settings
-  flag_.flag_ = false;
-
   noglue_.noglue_=false;
   noglue_.ggonly_=false;
   noglue_.gqonly_=false;

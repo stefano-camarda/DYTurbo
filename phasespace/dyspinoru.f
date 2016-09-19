@@ -3,7 +3,7 @@ c---Calculate spinor products
 c---extended to deal with negative energies ie with all momenta outgoing
 c---Arbitrary conventions of Bern, Dixon, Kosower, Weinzierl, 
 c---za(i,j)*zb(j,i)=s(i,j)
-c---26/08/2016 Fixed numerical instabilities for rt(j) close to 0 or negative
+c---  26/08/2016 Fixed numerical instabilities for rt(j) close to 0 or negative
       implicit none
       double complex im,czip,cone
       parameter(im=(0d0,1d0),czip=(0d0,0d0),cone=(1d0,0d0))
@@ -15,6 +15,11 @@ c---26/08/2016 Fixed numerical instabilities for rt(j) close to 0 or negative
       double precision p(12,4),rt(12)
       double complex c23(12),f(12)
       integer i,j,N
+
+c     See arXiv:hep-ph/9601359 Sec 2.2 for definitions
+c     za(i,j) = <i,j>, zb(i,j) = [i,j]
+c     rt(j) = k0 + k3 = k+
+c     c23(j) = k1 + i*k2
       
 c---if one of the vectors happens to be zero this routine fails.
       do j=1,N

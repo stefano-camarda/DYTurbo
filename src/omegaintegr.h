@@ -2,6 +2,7 @@
 #define omegaintegr_h
 
 #include "cuba.h"
+#include "phasespace.h"
 
 #include <vector>
 
@@ -16,24 +17,9 @@ extern "C" {
 
 namespace omegaintegr
 {
-  /*
-  //Vector boson 4-momentum and boost
-  extern double pV[4];
-  extern double gam;
-  extern double beta[3];
-#pragma omp threadprivate(pV,gam,beta)
-  */
-
   extern void genV4p();
   extern void genRFaxes();
   extern void genzaxisCS();
-
-  /*
-  //leptons 4-momenta
-  extern double p4[4];
-  extern double p3[4];
-#pragma omp threadprivate(p4,p3)
-  */
 
   //  extern void genl4p(float costh, float phi_lep);
   extern void genl4p(double costh, double phi_lep);
@@ -46,7 +32,9 @@ namespace omegaintegr
 #pragma omp threadprivate(kap1,xax,yax,zax)
 
   double costhCS();
-  
+
+  double costh_qtrec();
+
   //integration functions
   void costhbound(double phi_lep, vector<double> &min, vector<double> &max);
   void cthmoments(double &cthmom0, double &cthmom1, double &cthmom2);
