@@ -36,6 +36,7 @@
 #include "phasespace.h"
 #include "ctintegr.h"
 #include "HistoHandler.h"
+#include "clock_real.h"
 
 #include "dyturbo.h"
 
@@ -48,6 +49,8 @@ using std::endl;
 bool DYTurbo::HasOnlyVegas = false;
 
 namespace DYTurbo {
+
+    Term subtotal;
 
     struct Boundaries{
         std::string name;
@@ -109,22 +112,38 @@ namespace DYTurbo {
 
 
     void Term::RunIntegration(){
-        VecDbl val;
-        double err=0;
-        // specialized (need to reincorporate)
-        if (opts.doBORN && !opts.fixedorder && opts.resint2d ){
+        last_int.assign(opts.totpdf,0.);
+        last_err2=0;
+        double err;
+        double b_time = clock_real();
+        // TODO: specialized (need to reincorporate)
+        if ( integrate == resintegr2d ){
             if (opts.resumcpp) rapint::cache(phasespace::ymin, phasespace::ymax);
             else cacheyrapint_(phasespace::ymin, phasespace::ymax);
         }
-        integrate(val,err);
-        total_int+=val[0];
-        total_err2+=err*err;
+        // run
+        //integrate(last_int,last_err);
+        printf(" UNCOMMENT TO RUN \n");
+        last_time = clock_real()-b_time;
+        last_err2 += err*err;
+        // cumulate
+        total_time+=last_time;
+        total_int+=last_int[0];
+        total_err2+=last_err2;
+        // cumulate time to subtotal
+        subtotal.last_time   += last_time;
+        subtotal.total_time  += last_time;
+        // cumulate integral to subtotal
+        subtotal.last_int[0] += last_int[0];
+        subtotal.total_int   += last_int[0];
+        // cumulate error to subtotal
+        subtotal.last_err2   += last_err2;
+        subtotal.total_err2  += last_err2;
     }
     void Term::Print(){
         cout << setw(24)  << name.c_str() << ":";
         cout << description.c_str();
     }
-    Term subtotal;
     TermList ActiveTerms;
 
     TermIterator::TermIterator() : icurrent(0) { }
@@ -221,14 +240,18 @@ namespace DYTurbo {
         /***********************************/
     }
 
-    Term & AddTermIfActive(bool isActive, void (* fun)(VecDbl &val,double &err), String name, bool is_vegas ){
+    Term & AddTermIfActive(const bool &isActive, void (* fun)(VecDbl &val,double &err), const String &name, const bool &is_vegas ){
+        subtotal.description = "";
         if (!isActive) return subtotal;
-        ActiveTerms.push_back({name, "", fun, 0., 0., 0.});
+        ActiveTerms.push_back(Term());
+        ActiveTerms.back().name = name;
+        ActiveTerms.back().description = "";
+        ActiveTerms.back().integrate = fun;
         HasOnlyVegas&=is_vegas;
         return ActiveTerms.back();
     }
 
-    template<class Streamable> Term & Term::operator<<(Streamable data){
+    template<class Streamable> Term & Term::operator<<(const Streamable &data){
         SStream strm;
         strm << data;
         description += strm.str();
@@ -353,17 +376,21 @@ namespace DYTurbo {
         // check if we need to warm up CT integration or Resummation
         WarmUpResummation();
         // clear subtotal
-        subtotal = {"TOTAL", "", 0, 0., 0., 0.};
+        subtotal = Term();
+        subtotal.name = "TOTAL";
         PrintTable::IntegrationSettings();
     }
 
     void SetBounds(BoundIterator bounds){
-    }
-
-    void SetTotalBounds(){
+        phasespace::setcthbounds(opts.costhmin, opts.costhmax);
+        phasespace::setbounds(
+                bounds.loBound ( b_M  )  , bounds.hiBound ( b_M  )  ,
+                bounds.loBound ( b_QT )  , bounds.hiBound ( b_QT )  ,
+                bounds.loBound ( b_Y  )  , bounds.hiBound ( b_Y  )  );
     }
 
     void Terminate(){
+        ActiveTerms.clear();
     }
 
     namespace PrintTable {
@@ -372,7 +399,7 @@ namespace DYTurbo {
         void EndOfRow(){};
         void Hline(){};
 
-        void BoundsAllLooping(bool printNames=false){
+        void BoundsAllLooping(bool printNames=false, bool useFullBound=false){
             // loop over bounds
         }
 
@@ -386,7 +413,7 @@ namespace DYTurbo {
             bool resum_born_cubature = resum_born && (opts.resint3d || opts.resint2d);
             bool ct_cubature = opts.doCT && (opts.ctint2d || opts.ctint3d);
             cout << endl;
-            cout << "========================  Integration settings ====================" << endl;
+            cout << "========================  Integration settings =======================" << endl;
             cout << endl;
             cout << Col4 ( "Random seeds"   , opts.rseed     , "" , "" ) ;
             cout << Col4 ( "Parallel cores" , opts.cubacores , "" , "" ) ;
@@ -432,9 +459,9 @@ namespace DYTurbo {
         void Footer() {};
 
 
-        void Bounds() {
+        void Bounds(bool use_full_bound) {
             BeginOfRow();
-            BoundsAllLooping();
+            BoundsAllLooping(false,use_full_bound);
         };
 
         void Result(const Term &term, bool printGrandTotal) {
@@ -449,7 +476,7 @@ namespace DYTurbo {
         void ResultGrandTotal() {
             Hline();
             BeginOfRow();
-            SetTotalBounds();
+            Bounds(true);
             for( TermIterator term; !term.IsEnd(); ++term){
                 Result((*term),true);
             }

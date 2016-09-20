@@ -24,16 +24,20 @@ namespace DYTurbo {
     typedef std::string String;
     typedef std::stringstream SStream;
     struct Term {
-        String name;
-        String description;
-        void (*integrate)(VecDbl &val,double &err);
-        double total_int;
-        double total_err2;
-        double total_time;
+        String name = "dummy";
+        String description = "";
+        void (*integrate)(VecDbl &val,double &err) = NULL;
+        double total_int = 0;
+        double total_err2 = 0;
+        double total_time = 0;
+        VecDbl last_int = {};
+        double last_err2 =0;
+        double last_time =0;
         void RunIntegration();
         void Print();
-        template<class Streamable> Term & operator<<(Streamable data);
+        template<class Streamable> Term & operator<<(const Streamable &data);
     };
+    extern Term subtotal;
     struct TermIterator {
         size_t icurrent;
         TermIterator();
@@ -56,6 +60,8 @@ namespace DYTurbo {
         bool IsEnd();
         BoundIterator& operator++();
         void Print();
+        inline double loBound(size_t ib){return *current[ib]     ;}
+        inline double hiBound(size_t ib){return *(current[ib]+1) ;}
     };
 
     void Init(int argc, char * argv[]);
@@ -66,7 +72,7 @@ namespace DYTurbo {
     namespace PrintTable {
         void IntegrationSettings();
         void Header() ;
-        void Bounds() ;
+        void Bounds(bool use_full_bound=false) ;
         void Result(const Term &term,bool printGrandTotal=false) ;
         void ResultSubTotal() ;
         void ResultGrandTotal() ;
