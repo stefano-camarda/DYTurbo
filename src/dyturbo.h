@@ -36,6 +36,7 @@ namespace DYTurbo {
         void RunIntegration();
         void Print();
         template<class Streamable> Term & operator<<(const Streamable &data);
+        void last_reset();
     };
     extern Term subtotal;
     struct TermIterator {
@@ -62,6 +63,11 @@ namespace DYTurbo {
         void Print();
         inline double loBound(size_t ib){return *current[ib]     ;}
         inline double hiBound(size_t ib){return *(current[ib]+1) ;}
+        //inline BoundIterator& operator=(const BoundIterator rhs){
+            //this.isFirst = rhs.isFirst;
+            //this.current = rhs.current;
+            //return (*this);
+        //}
     };
 
     void Init(int argc, char * argv[]);
@@ -74,7 +80,7 @@ namespace DYTurbo {
         void Header() ;
         void Bounds(bool use_full_bound=false) ;
         void Result(const Term &term,bool printGrandTotal=false) ;
-        void ResultSubTotal() ;
+        void ResultSubTotal(bool is_grandtotal=false) ;
         void ResultGrandTotal() ;
         void Footer() ;
     }

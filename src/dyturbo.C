@@ -53,11 +53,14 @@ namespace DYTurbo {
     Term subtotal;
 
     struct Boundaries{
-        std::string name;
+        std::string name ="";
         VecDbl data;
 
         inline BoundariesListItr begin() { return data.begin();};
         inline BoundariesListItr end()   { return data.end(); };
+        inline double front() { return data.front();};
+        inline double back()  { return data.back(); };
+        inline size_t size()  { return data.size(); };
     };
 
     BoundariesList ActiveBoundaries;
@@ -66,7 +69,7 @@ namespace DYTurbo {
         b_M=0,
         b_Y,
         b_QT,
-        //b_CosTh,
+        b_CsTh,
         //b_Phi,
         N_boundaries
     };
@@ -74,11 +77,12 @@ namespace DYTurbo {
 
     BoundIterator::BoundIterator(){
         // set first boundary
-        current.clear();
-        for (size_t i = 0; i < N_boundaries; ++i) {
-            current.push_back(ActiveBoundaries[i].begin());
-        }
         isFirst=true;
+        current.clear();
+        if (!ActiveBoundaries.empty())
+            for (size_t i = 0; i < N_boundaries; ++i) {
+                current.push_back(ActiveBoundaries[i].begin());
+            }
     }
 
     bool BoundIterator::IsEnd(){
@@ -104,27 +108,37 @@ namespace DYTurbo {
 
     void BoundIterator::Print(){
         printf ("Boundaries ");
-        printf ( "| M : %f -- %f " , *current [ b_M  ]  , * ( current [ b_M  ] +1 )  ) ;
-        printf ( "| Qt: %f -- %f " , *current [ b_QT ]  , * ( current [ b_QT ] +1 )  ) ;
-        printf ( "| Y : %f -- %f " , *current [ b_Y  ]  , * ( current [ b_Y  ] +1 )  ) ;
+        printf ( "| M    : %f -- %f " , *current [ b_M    ] , * ( current [ b_M    ] +1 ) ) ;
+        printf ( "| Qt   : %f -- %f " , *current [ b_QT   ] , * ( current [ b_QT   ] +1 ) ) ;
+        printf ( "| Y    : %f -- %f " , *current [ b_Y    ] , * ( current [ b_Y    ] +1 ) ) ;
+        printf ( "| CsTh : %f -- %f " , *current [ b_CsTh ] , * ( current [ b_CsTh ] +1 ) ) ;
         printf ( "\n");
+    }
+
+    void Term::last_reset() {
+        last_int.assign(opts.totpdf,0.);
+        last_err2=0;
+        last_time = clock_real();
     }
 
 
     void Term::RunIntegration(){
-        last_int.assign(opts.totpdf,0.);
-        last_err2=0;
+        bool dummy = true;
         double err;
-        double b_time = clock_real();
+        last_reset();
         // TODO: specialized (need to reincorporate)
         if ( integrate == resintegr2d ){
             if (opts.resumcpp) rapint::cache(phasespace::ymin, phasespace::ymax);
             else cacheyrapint_(phasespace::ymin, phasespace::ymax);
         }
         // run
-        //integrate(last_int,last_err);
-        printf(" UNCOMMENT TO RUN \n");
-        last_time = clock_real()-b_time;
+        if (dummy){
+           last_int[0] = 1; err = 1;
+        } else {
+           integrate(last_int,err);
+        }
+        //
+        last_time = clock_real()-last_time;
         last_err2 += err*err;
         // cumulate
         total_time+=last_time;
@@ -324,9 +338,11 @@ namespace DYTurbo {
 
     void AddBoundaries(){
         ActiveBoundaries.resize(N_boundaries);
-        AddBoundary ( b_M  , "q2" , bins.mbins  ) ;
-        AddBoundary ( b_Y  , "y"  , bins.ybins  ) ;
-        AddBoundary ( b_QT , "qT" , bins.qtbins ) ;
+        VecDbl costh{opts.costhmin , opts.costhmax};
+        AddBoundary ( b_M    , "q2"    , bins.mbins     ) ;
+        AddBoundary ( b_Y    , "y"     , bins.ybins     ) ;
+        AddBoundary ( b_QT   , "qT"    , bins.qtbins    ) ;
+        AddBoundary ( b_CsTh , "costh" , costh );
     }
 
     void WarmUpResummation(){
@@ -378,15 +394,21 @@ namespace DYTurbo {
         // clear subtotal
         subtotal = Term();
         subtotal.name = "TOTAL";
+        subtotal.last_int.assign(opts.totpdf,0);
         PrintTable::IntegrationSettings();
     }
 
+    BoundIterator last_bounds;
+
     void SetBounds(BoundIterator bounds){
-        phasespace::setcthbounds(opts.costhmin, opts.costhmax);
+        phasespace::setcthbounds(
+                bounds.loBound ( b_CsTh  )  , bounds.hiBound ( b_CsTh  ) 
+                );
         phasespace::setbounds(
                 bounds.loBound ( b_M  )  , bounds.hiBound ( b_M  )  ,
                 bounds.loBound ( b_QT )  , bounds.hiBound ( b_QT )  ,
                 bounds.loBound ( b_Y  )  , bounds.hiBound ( b_Y  )  );
+        last_bounds = bounds;
     }
 
     void Terminate(){
@@ -395,18 +417,44 @@ namespace DYTurbo {
 
     namespace PrintTable {
 
-        void BeginOfRow(){};
-        void EndOfRow(){};
-        void Hline(){};
+        size_t eoc=2; // bound length
+        size_t wb=5; // bound length
+        size_t wr=5; // result length
+        size_t bound_width = 2*wb+3;
+        size_t time_width = 0;
+        size_t term_width = 2*wr+4 + time_width;
+
+        inline void EndOfCell()  { cout << " |" << flush; }
+        inline void BeginOfRow() { cout << "|"  << flush; }
+        inline void EndOfRow()   { cout << endl;          }
+        void Hline(){
+            size_t N_loopingBounds =0;
+            for (auto &a: ActiveBoundaries ) if (a.size()>2) N_loopingBounds++;
+            size_t wtotal = 1; // begin of line
+            wtotal += (bound_width +eoc)*N_loopingBounds;
+            wtotal += (term_width  +eoc)*(ActiveTerms.size() + 1);
+            string hline ( wtotal, '-');
+            cout << hline << endl;
+        };
 
         void BoundsAllLooping(bool printNames=false, bool useFullBound=false){
             // loop over bounds
+            for (size_t ibound=0; ibound < N_boundaries; ++ibound){
+                if (ActiveBoundaries[ibound].size()<3) continue;
+                if (printNames){
+                    cout << setw(bound_width) << ActiveBoundaries[ibound].name ;
+                } else {
+                    double lo = useFullBound ? ActiveBoundaries[ibound].front() : last_bounds.loBound(ibound);
+                    double hi = useFullBound ? ActiveBoundaries[ibound].back()  : last_bounds.hiBound(ibound);
+                    cout << setw(wb) << lo ;
+                    cout << " - ";
+                    cout << setw(wb) << hi ;
+                }
+                EndOfCell();
+            }
         }
 
         void IntegrationSettings(){
-            int w1= 25;
-            int w2= 30;
-            int w3= 12;
             bool fixed_born = opts.doBORN && opts.fixedorder;
             bool fixed_born_cubature = fixed_born && opts.bornint2d ;
             bool resum_born = opts.doBORN && !opts.fixedorder;
@@ -440,23 +488,35 @@ namespace DYTurbo {
                 }
             }
             cout << endl;
+            string col1 = "Constant boundaries";
+            for (size_t ibound = 0; ibound < N_boundaries; ++ibound){
+                if (ActiveBoundaries[ibound].size() > 2) continue;
+                string col2 = ActiveBoundaries[ibound].name;
+                cout << Col4 ( col1 , col2 , "low ="  , ActiveBoundaries [ ibound ] .front (  )  ) ;
+                cout << Col4 ( ""   , ""   , "high =" , ActiveBoundaries [ ibound ] .back  (  )  ) ;
+                col1 = "";
+            }
+            cout << endl;
+        }
+
+        inline void TermName(Term &term){
+            cout << setw(term_width) << term.name;
+            EndOfCell();
         }
 
         void Header() {
-            // count line width
-            // bounds non looping message
-            // bounds non looping message
             Hline();
             BeginOfRow();
             BoundsAllLooping(true); // print only names
             for( TermIterator term; !term.IsEnd(); ++term){
-                // term->name
+                TermName(*term);
             }
+            TermName(subtotal);
             EndOfRow();
             Hline();
         };
 
-        void Footer() {};
+        void Footer() { Hline(); };
 
 
         void Bounds(bool use_full_bound) {
@@ -465,22 +525,28 @@ namespace DYTurbo {
         };
 
         void Result(const Term &term, bool printGrandTotal) {
+            double val  = ( printGrandTotal ) ? term.total_int  : term.last_int[0] ;
+            double err2 = ( printGrandTotal ) ? term.total_err2 : term.last_err2   ;
+            cout << setw(wr) <<  val;
+            cout << " +- ";
+            cout << setw(wr) <<  sqrt(err2);
+            EndOfCell();
         };
 
-        void ResultSubTotal() {
-            Result(subtotal);
+        void ResultSubTotal(bool is_grandtotal) {
+            Result(subtotal,is_grandtotal);
             EndOfRow();
+            subtotal.last_reset();
         };
 
 
         void ResultGrandTotal() {
             Hline();
-            BeginOfRow();
             Bounds(true);
             for( TermIterator term; !term.IsEnd(); ++term){
                 Result((*term),true);
             }
-            EndOfRow();
+            ResultSubTotal(true);
             Hline();
         };
 

@@ -62,9 +62,8 @@ check:  TurboHist_unittest
 	./Kinematics_unittest
 	./HistoHandler_unittest
 	./DYTurbo_unittest
+	rm -f *.dat *.root
 	@echo ALL OK
-
-#rm -f *.dat *.root
 
 endif #TEST
 

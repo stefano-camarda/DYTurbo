@@ -65,7 +65,6 @@ TEST(DYTurbo,BoundIteration){
     // every step
     bins.qtbins = {0., 10., 20., 30.};
     bins.ybins  = {-3., 0. ,3.};
-    bins.mbins  = {50., 66., 116., 500. };
     expected = (bins.qtbins.size() - 1 ) * (bins.ybins.size() - 1 ) * (bins.mbins.size() - 1 ) ;
     counter = 0 ;
     DYTurbo::WarmUp();
@@ -75,7 +74,7 @@ TEST(DYTurbo,BoundIteration){
     ASSERT_EQ ( expected , counter  ) << " Incorrect number of bins from boundaries.";
 }
 
-TEST(DYTurbo,DISABLED_Integration){
+TEST(DYTurbo,Integration){
     DYTurbo::WarmUp();
     DYTurbo::PrintTable::Header();
     for ( DYTurbo::BoundIterator bounds; !bounds.IsEnd(); ++bounds) {
