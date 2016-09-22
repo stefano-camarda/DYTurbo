@@ -42,12 +42,13 @@ namespace Kinematics {
             virtual double middlePoint(){return 0.;};
 
             Variable() {
+                // add pointer to flag, this is common flag per class
                 flags.insert(&isCalculated);
             };
 
             double operator()(){
                 // Integration mode
-                if(isIntegratorMode) return isIntegratorVariable ? middlePoint() : 0.;
+                if(isIntegratorMode) return IsIntegratorVariable() ? middlePoint() : 666.;
                 // Filler Mode
                 // calculate if needed
                 if (!isCalculated){
@@ -58,17 +59,16 @@ namespace Kinematics {
             }
 
             inline bool IsCalculated() const {return isCalculated;}
+            virtual inline bool IsIntegratorVariable() const {return false;}
 
         protected :
             // Static will be per derived class
             static double value;
             static bool isCalculated;
-            const static bool isIntegratorVariable;
     };
 
     template<class T> double Variable<T>::value = -999.;
     template<class T> bool Variable<T>::isCalculated = false;
-    template<class T> const bool Variable<T>::isIntegratorVariable = false;
 }
 
 

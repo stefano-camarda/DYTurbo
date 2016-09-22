@@ -11,8 +11,8 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-#include "HistoHandler.h"
-#include "HistoObjects.h"
+#include "histo/HistoHandler.h"
+#include "histo/HistoObjects.h"
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"

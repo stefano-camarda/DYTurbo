@@ -12,24 +12,21 @@
 
 
 namespace Kinematics {
-    template<> struct Cut<"Lep:_pT>15_|eta|<2.5"> {
-        BosCh ch;
-        LepPt pt1;
-        ALpPt pt2;
-        LepAEta aeta1;
-        ALpAEta aeta2;
-        bool keepEvent() {
-            if (pt1   () < 15. ) return false;
-            if (pt2   () < 15. ) return false;
-            if (aeta1 () > 2.5 ) return false;
-            if (aeta2 () > 2.5 ) return false;
-            return true;
-        }
+    namespace Cuts {
+
+        extern const bool KeepEvent;
+        extern const bool SkipEvent;
+
+        // Cut base class
+        struct CutBase{
+            virtual bool operator()()=0;
+        };
+
+        bool KeepThisEvent(double p3[4], double p4[4]);
     }
 }
 
 
-#include "user_cuts.h"
 
 
 

@@ -54,6 +54,7 @@ Kinematics_unittest_LDADD += $(ROOT_LDFLAGS)
 TurboHist_unittest_LDADD += $(ROOT_LDFLAGS)
 HistoHandler_unittest_LDADD += $(ROOT_LDFLAGS)
 DYTurbo_unittest_LDADD += $(ROOT_LDFLAGS)
+Cuts_unittest_LDADD   += $(ROOT_LDFLAGS)
 endif #ROOT
 
 

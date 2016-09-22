@@ -14,10 +14,9 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
-#include "Kinematics.h"
-#include "KinematicDefinitions.h"
-
-#include "phasespace.h"
+#include "histo/Kinematics.h"
+#include "histo/KinematicDefinitions.h"
+#include "phasespace/phasespace.h"
 
 TEST(Kinemantic, CalculateOnlyOnce){
     double s22 = 2.*sqrt(2.);
@@ -74,7 +73,7 @@ TEST(KinemanticInterface, NonIntegratorVariableIsNotCalculated){
     Kinematics::SetMiddlePoint();
     // Check that non-integrable variable is not calculated
     Kinematics::LepPX lepPX;
-    ASSERT_DOUBLE_EQ(0., lepPX());
+    ASSERT_DOUBLE_EQ(666., lepPX());
 }
 
 

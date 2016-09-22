@@ -11,6 +11,7 @@
  */
 
 #include "Kinematics.h"
+#include "KinUtils.h"
 
 #define NEWKIN(CLS) class CLS : public Variable< CLS >
 
@@ -19,34 +20,53 @@
 using std::max;
 
 // forward phasespace
-namespace phasespace {
-    extern double mmin, mmax, qtmin, qtmax, ymin, ymax;
-}
-
+#include "phasespace/phasespace.h"
+#include "src/settings.h"
 
 namespace Kinematics{
+
     // NOTE: Writing twice the class name is intentional (CTRP)! Check
     // `Kinematic.h` for more info. Or use preprocessor macro NEWKIN.
     // Description of posibilities can be found in `CosThCS`
 
     // TODO: Decide which lepton
     // lepton
-    NEWKIN( LepPX ) { double calc(){ return p3[0]; } };
-    NEWKIN( LepPY ) { double calc(){ return p3[1]; } };
-    NEWKIN( LepPZ ) { double calc(){ return p3[2]; } };
-    NEWKIN( LepE  ) { double calc(){ return p3[3]; } };
+    NEWKIN( LepPX  ) { double calc(){ return p3[0]; } };
+    NEWKIN( LepPY  ) { double calc(){ return p3[1]; } };
+    NEWKIN( LepPZ  ) { double calc(){ return p3[2]; } };
+    NEWKIN( LepE   ) { double calc(){ return p3[3]; } };
+    NEWKIN( LepPT  ) { double calc(){ return Util::pT(p3[0],p3[1]); } };
+    NEWKIN( LepCh  ) { double calc(){ return opts.nproc==1 ? 0 : -1 ; } };
+    NEWKIN( LepEta ) { double calc(){ return Util::eta(p3[0],p3[1],p3[2]); } };
+    NEWKIN( LepAbsEta ) { LepEta eta; double calc(){ return fabs(eta()); } };
 
     // antilepton
-    NEWKIN( ALpPX ) { double calc(){ return p4[0]; } };
-    NEWKIN( ALpPY ) { double calc(){ return p4[1]; } };
-    NEWKIN( ALpPZ ) { double calc(){ return p4[2]; } };
-    NEWKIN( ALpE  ) { double calc(){ return p4[3]; } };
+    NEWKIN( ALpPX  ) { double calc(){ return p4[0]; } };
+    NEWKIN( ALpPY  ) { double calc(){ return p4[1]; } };
+    NEWKIN( ALpPZ  ) { double calc(){ return p4[2]; } };
+    NEWKIN( ALpE   ) { double calc(){ return p4[3]; } };
+    NEWKIN( AlpPT  ) { double calc(){ return Util::pT(p4[0],p4[1]); } };
+    NEWKIN( AlpCh  ) { double calc(){ return opts.nproc==2 ? 0 : +1 ; } };
+    NEWKIN( AlpEta ) { double calc(){ return Util::eta(p3[0],p3[1],p3[2]); } };
+    NEWKIN( AlpAbsEta ) { AlpEta eta; double calc(){ return fabs(eta()); } };
+
+    NEWKIN ( MET ) {
+        LepCh ch1;
+        LepPT pt1;
+        AlpCh ch2;
+        AlpPT pt2;
+        double calc(){
+            if (ch1()) return pt1();
+            if (ch2()) return pt2();
+            return 0;
+        }
+    };
 
     // boson
-    class BosPX : public Variable< BosPX > { double calc(){ return p3[0]+p4[0]; } };
-    class BosPY : public Variable< BosPY > { double calc(){ return p3[1]+p4[1]; } };
-    class BosPZ : public Variable< BosPZ > { double calc(){ return p3[2]+p4[2]; } };
-    class BosE  : public Variable< BosE  > { double calc(){ return p3[3]+p4[3]; } };
+    NEWKIN( BosPX ) { double calc(){ return p3[0]+p4[0]; } };
+    NEWKIN( BosPY ) { double calc(){ return p3[1]+p4[1]; } };
+    NEWKIN( BosPZ ) { double calc(){ return p3[2]+p4[2]; } };
+    NEWKIN( BosE  ) { double calc(){ return p3[3]+p4[3]; } };
 
 
     class BosM : public Variable< BosM > {
@@ -56,13 +76,13 @@ namespace Kinematics{
         BosE  e;
         // Calc is 
         double calc(){
-            return sqrt( e()*e() - (px()*px() + py()*py() + pz()*pz()) )  ;
+            return Util::mass(px(),py(),pz(),e());
         }
         double middlePoint(){
             return ( phasespace::mmax + phasespace::mmin )/2. ;
         }
+        inline bool IsIntegratorVariable() const {return true;}
     };
-    template<> const bool Variable<BosM>::isIntegratorVariable=true;
 
     class BosMT : public Variable< BosMT > {
         LepPX lmPX;
@@ -83,13 +103,13 @@ namespace Kinematics{
         BosPX px;
         BosPY py;
         double calc(){
-            return sqrt(px()*px()+py()*py())  ;
+            return Util::pT(px(),py())  ;
         }
         double middlePoint(){
             return ( phasespace::qtmax + phasespace::qtmin )/2. ; 
         }
+        inline bool IsIntegratorVariable() const {return true;}
     };
-    template<> const bool Variable<BosPT>::isIntegratorVariable=true;
 
     NEWKIN( BosPhi ) {
         BosPX px;
@@ -108,8 +128,8 @@ namespace Kinematics{
         double middlePoint(){
             return ( phasespace::ymax + phasespace::ymin )/2. ;
         }
+        inline bool IsIntegratorVariable() const {return true;}
     };
-    template<> const bool Variable<BosY>::isIntegratorVariable=true;
 
     // Longitudinal angle theta in Collin-Soper frame
     NEWKIN(CosThCS){
@@ -132,6 +152,10 @@ namespace Kinematics{
             costh *=  pz() < 0. ? -1 : 1; //sign flip according to boson rapidity
             return costh;
         }
+        double middlePoint(){
+            return ( phasespace::cthmax + phasespace::cthmin )/2. ;
+        }
+        inline bool IsIntegratorVariable() const {return true;}
     };
 
     // Azimuthal angle phi in Collin-Soper frame
@@ -208,6 +232,6 @@ namespace Kinematics{
     NEWKIN( A7 ){ SinThCS  sinth;  SinPhiCS  sinph;  double calc(){ return 4.     * (sinth()*sinph()          ) ;       } };
 }
 
-#include "user_kinem.h"
+#include "user/user_kinem.h"
 
 #endif /* ifndef KinematicDefinitions_H */

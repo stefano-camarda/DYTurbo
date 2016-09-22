@@ -80,6 +80,8 @@ double cuts::getM(double p3[4], double p4[4]){
 
 //fortran interface
 int cuts_(double p[4][12], int &njet){
+    // MCFM expects opposite logic false=accept event
+    //return !Kinematics::Cuts::KeepThisEvent(p3,p4);
     double p3[4];
     double p4[4];
     for (int i=0; i<4; i++){
@@ -88,6 +90,7 @@ int cuts_(double p[4][12], int &njet){
     }
     //MCFM expects opposite logic false=accept event
     return !cuts::lep(p3,p4);
+
 }
 
 //C native function

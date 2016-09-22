@@ -11,8 +11,23 @@
  * @date 2016-09-07
  */
 
+#include "histo/Kinematics.h"
+#include "histo/KinematicCuts.h"
+
 namespace Kinematics {
-    //template<> struct Cut<"DummyCut"> { bool keepEvent() { return true; } };
+    namespace Cuts {
+        struct UserCuts : public CutBase {
+
+            // define variables here (e.g. Observables, cut values)
+            // bool IDontLikeEvent = false;
+
+            bool operator()(){
+                // put your cut here:
+                // if (IDontLikeEvent) return SkipEvent;
+                return KeepEvent;
+            }
+        } user_cut;
+    }
 }
 
 #endif /* ifndef user_cuts_H */
