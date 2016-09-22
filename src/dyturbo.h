@@ -16,6 +16,7 @@
 
 namespace DYTurbo {
     extern bool HasOnlyVegas;
+    extern bool isDryRun;
 
     struct Term;
     struct TermIterator;
@@ -63,11 +64,6 @@ namespace DYTurbo {
         void Print();
         inline double loBound(size_t ib){return *current[ib]     ;}
         inline double hiBound(size_t ib){return *(current[ib]+1) ;}
-        //inline BoundIterator& operator=(const BoundIterator rhs){
-            //this.isFirst = rhs.isFirst;
-            //this.current = rhs.current;
-            //return (*this);
-        //}
     };
 
     void Init(int argc, char * argv[]);

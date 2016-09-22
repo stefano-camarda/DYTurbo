@@ -47,15 +47,16 @@ using std::cout;
 using std::endl;
 
 bool DYTurbo::HasOnlyVegas = false;
+bool DYTurbo::isDryRun = false;
 
 namespace DYTurbo {
 
     Term subtotal;
 
+    // Boundaries
     struct Boundaries{
         std::string name ="";
         VecDbl data;
-
         inline BoundariesListItr begin() { return data.begin();};
         inline BoundariesListItr end()   { return data.end(); };
         inline double front() { return data.front();};
@@ -123,7 +124,6 @@ namespace DYTurbo {
 
 
     void Term::RunIntegration(){
-        bool dummy = true;
         double err;
         last_reset();
         // TODO: specialized (need to reincorporate)
@@ -132,10 +132,11 @@ namespace DYTurbo {
             else cacheyrapint_(phasespace::ymin, phasespace::ymax);
         }
         // run
-        if (dummy){
-           last_int[0] = 1; err = 1;
+        if (isDryRun){
+            // this is for testing interface
+            last_int[0] = 1; err = 1;
         } else {
-           integrate(last_int,err);
+            integrate(last_int,err);
         }
         //
         last_time = clock_real()-last_time;
@@ -254,9 +255,12 @@ namespace DYTurbo {
         /***********************************/
     }
 
+    // this is hidden only for test purposes
+    bool TestAllTerms=false;
+
     Term & AddTermIfActive(const bool &isActive, void (* fun)(VecDbl &val,double &err), const String &name, const bool &is_vegas ){
         subtotal.description = "";
-        if (!isActive) return subtotal;
+        if (!isActive && !TestAllTerms) return subtotal;
         ActiveTerms.push_back(Term());
         ActiveTerms.back().name = name;
         ActiveTerms.back().description = "";
@@ -285,7 +289,7 @@ namespace DYTurbo {
         string name;
         // born
         bool fixed_born = opts.doBORN && opts.fixedorder;
-        if (fixed_born) {
+        if (fixed_born || TestAllTerms) {
             name="Fixed born";
             AddTermIfActive ( opts.bornint2d      , bornintegr2d   , name, isNotVegas ) << PrintTable::Col3( "cuhre (dm, dpt)" , "iter ="   , opts.niterBORN       );
             AddTermIfActive ( opts.bornintvegas4d , bornintegrMC4d , name, isVegas    ) << PrintTable::Col3( "vegas 4D"        , "ncalls =" , opts.vegasncallsBORN );
@@ -293,7 +297,7 @@ namespace DYTurbo {
         }
         // resummation
         bool resum_born = opts.doBORN && !opts.fixedorder;
-        if (resum_born) {
+        if (resum_born || TestAllTerms) {
             name="Resummation";
             AddTermIfActive ( opts.resint2d    , resintegr2d  , name , isNotVegas ) << PrintTable::Col3 ( "cuhre (dm, dpt)"     , "iter ="      , opts.niterBORN       )
                                                                                     << PrintTable::Col4 ( "","gauss (dy)"       , "nodes ="     , opts.yrule           )
@@ -302,7 +306,7 @@ namespace DYTurbo {
             AddTermIfActive ( opts.resintvegas , resintegrMC  , name , isVegas    ) << PrintTable::Col3 ( "vegas"               , "ncalls ="    , opts.vegasncallsBORN );
         }
         // CT
-        if (opts.doCT) {
+        if (opts.doCT || TestAllTerms) {
             name="Counter term";
             AddTermIfActive ( opts.ctint2d      , ctintegr2d , name , isNotVegas  ) << PrintTable::Col3 ( "cuhre (dm, dy)"  , "iter ="      , opts.niterCT )
                                                                                     << PrintTable::Col4 ( "","gauss (dpt)"  , "nodes ="     , 20           )
@@ -314,7 +318,7 @@ namespace DYTurbo {
         // VJ finite
         bool vj_finite = opts.doVJ && !opts.doVJREAL && !opts.doVJVIRT;
         name="V+J LO";
-        if (vj_finite){
+        if (vj_finite || TestAllTerms){
             AddTermIfActive   ( opts.vjint3d                         , vjintegr3d   , name , isNotVegas )  << PrintTable::Col3 ( "cuhre (dm, dpt, dy)" , "iter ="   , opts.niterVJ         );
             AddTermIfActive   ( opts.vjint5d && opts.order == 1      , vjlointegr5d , name , isVegas    )  << PrintTable::Col3 ( "vegas 5D"            , "ncalls =" , opts.vegasncallsVJLO );
             AddTermIfActive   ( opts.vjintvegas7d && opts.order == 1 , vjlointegr7d , name , isVegas    )  << PrintTable::Col3 ( "vegas 7D"            , "ncalls =" , opts.vegasncallsVJLO );
