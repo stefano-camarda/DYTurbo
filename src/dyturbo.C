@@ -206,12 +206,7 @@ namespace DYTurbo {
         inline std::ostream & operator<< (std::ostream & strm, const Col3 &col){ strm << col.data; return strm; }
     }
 
-    void Init( int argc, char * argv[]){
-        banner();
-        gaussinit_();             //initialisation of fortran gaussian quadrature nodes and weights
-        coupling::SMparameters(); //initialisation of unused MCFM parameters
-        // parsing options from input file
-        opts.parse_options(argc,argv);
+    void init_params(){
         // init filling
         dofill_.doFill_ = 0;
         //Initialise some DYRES settings
@@ -248,6 +243,15 @@ namespace DYTurbo {
         cubaexit((void (*)()) exitfun,NULL); //< merge at the end of the run
         // histogram output
         hists.Init();
+    }
+
+    void Init( int argc, char * argv[]){
+        banner();
+        gaussinit_();             //initialisation of fortran gaussian quadrature nodes and weights
+        coupling::SMparameters(); //initialisation of unused MCFM parameters
+        // parsing options from input file
+        opts.parse_options(argc,argv);
+        init_params();
         /***********************************/
         //print out EW and QCD parameters and other settings
         if (opts.verbose) opts.dumpAll();

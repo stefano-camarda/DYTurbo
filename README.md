@@ -188,3 +188,7 @@ There are several grid related scripts in `scripts` folder, which you can edit f
 * `run_grid.sh`: running on grid side
 
 
+# LICENCE
+This project consist of several packages and each has its own licence.
+We did not decided yet what licence should be there for our contributions.
+

@@ -18,6 +18,10 @@
 #include "src/settings.h"
 #include "src/cubacall.h"
 
+#include "src/resintegr.h"
+#include "src/ctintegr.h"
+#include "mcfm/mcfm_interface.h"
+
 typedef std::vector<string> VecStr;
 typedef std::vector<double> VecDbl;
 typedef std::stringstream SStream;
@@ -93,62 +97,97 @@ TEST(DYTurbo,DryLooping){
     DYTurbo::PrintTable::ResultGrandTotal();
 }
 
-namespace DYTurbo{ extern bool TestAllTerms; }
+namespace DYTurbo{ 
+    extern bool TestAllTerms; 
+    void init_params();
+}
+
+/*
+
+template<typename IntFun>
 struct ResTab {
-    int ord;
-    void (* fun)(VecDbl &val,double &err);
-    double integ;
-    double unc;
+    const char * name;
+    IntFun fun;
+    //integrand_t fun;
+    //)(const int &ndim, const double x[], const int &ncomp, double f[],
+                           //void* userdata, const int &nvec, const int &core,
+                           //double &weight, const int &iter);
+    int dim;
+    double expected[3]; // per order
+
+    void CheckIntegrand(const int &ord) {
+        VecDbl point  (dim, 0.5); // fake random point for integrands
+        VecDbl result (opts.totpdf,0.);
+        int ncomp = 1;
+        void *userdata=NULL;
+        fun(dim,&point[0],ncomp,&result[0]);
+        ASSERT_EQ(result[0],expected[ord]) << "Wrong value of integrand " <<  name << "order="<<ord;
+    }
 };
 typedef vector<ResTab> VecResTab;
-
-VecResTab results_list = { 
-    { 0 , bornintegr2d   , 1.000000 , 1.000000} ,
-    { 0 , bornintegrMC4d , 1.000000 , 1.000000} ,
-    { 0 , bornintegrMC6d , 1.000000 , 1.000000} ,
-    { 0 , resintegr2d    , 1.000000 , 1.000000} ,
-    { 0 , resintegr3d    , 1.000000 , 1.000000} ,
-    { 0 , resintegrMC    , 1.000000 , 1.000000} ,
-    { 0 , ctintegr2d     , 1.000000 , 1.000000} ,
-    { 0 , ctintegr3d     , 1.000000 , 1.000000} ,
-    { 0 , ctintegrMC     , 1.000000 , 1.000000} ,
-    { 0 , ctintegr       , 1.000000 , 1.000000} ,
-    { 0 , vjintegr3d     , 1.000000 , 1.000000} ,
-    { 0 , vjlointegr5d   , 1.000000 , 1.000000} ,
-    { 0 , vjlointegr7d   , 1.000000 , 1.000000} ,
-    { 0 , vjrealintegr   , 1.000000 , 1.000000} ,
-    { 0 , vjvirtintegr   , 1.000000 , 1.000000} ,
-    { 1 , bornintegr2d   , 1.000000 , 1.000000} ,
-    { 1 , bornintegrMC4d , 1.000000 , 1.000000} ,
-    { 1 , bornintegrMC6d , 1.000000 , 1.000000} ,
-    { 1 , resintegr2d    , 1.000000 , 1.000000} ,
-    { 1 , resintegr3d    , 1.000000 , 1.000000} ,
-    { 1 , resintegrMC    , 1.000000 , 1.000000} ,
-    { 1 , ctintegr2d     , 1.000000 , 1.000000} ,
-    { 1 , ctintegr3d     , 1.000000 , 1.000000} ,
-    { 1 , ctintegrMC     , 1.000000 , 1.000000} ,
-    { 1 , ctintegr       , 1.000000 , 1.000000} ,
-    { 1 , vjintegr3d     , 1.000000 , 1.000000} ,
-    { 1 , vjlointegr5d   , 1.000000 , 1.000000} ,
-    { 1 , vjlointegr7d   , 1.000000 , 1.000000} ,
-    { 1 , vjrealintegr   , 1.000000 , 1.000000} ,
-    { 1 , vjvirtintegr   , 1.000000 , 1.000000} ,
-    { 2 , bornintegr2d   , 1.000000 , 1.000000} ,
-    { 2 , bornintegrMC4d , 1.000000 , 1.000000} ,
-    { 2 , bornintegrMC6d , 1.000000 , 1.000000} ,
-    { 2 , resintegr2d    , 1.000000 , 1.000000} ,
-    { 2 , resintegr3d    , 1.000000 , 1.000000} ,
-    { 2 , resintegrMC    , 1.000000 , 1.000000} ,
-    { 2 , ctintegr2d     , 1.000000 , 1.000000} ,
-    { 2 , ctintegr3d     , 1.000000 , 1.000000} ,
-    { 2 , ctintegrMC     , 1.000000 , 1.000000} ,
-    { 2 , ctintegr       , 1.000000 , 1.000000} ,
-    { 2 , vjintegr3d     , 1.000000 , 1.000000} ,
-    { 2 , vjlointegr5d   , 1.000000 , 1.000000} ,
-    { 2 , vjlointegr7d   , 1.000000 , 1.000000} ,
-    { 2 , vjrealintegr   , 1.000000 , 1.000000} ,
-    { 2 , vjvirtintegr   , 1.000000 , 1.000000} ,
+ResTab p = {"Resintegr MC" , resintegrandMC , 6 , {0.0 , 1.0 , 1.0} };
+// extend to all process
+VecResTab integ_check_list = {
+    {"Resintegr MC" , resintegrandMC , 6 , {0.0 , 1.0 , 1.0} } ,
+    {"Resintegr 3D" , resintegrand3d , 3 , {0.0 , 1.0 , 1.0} } ,
+    {"Resintegr 2D" , resintegrand2d , 2 , {0.0 , 1.0 , 1.0} }
 };
+*/
+
+void writefloat(double v, FILE *f) {
+  fwrite((void*)(&v), sizeof(v), 1, f);
+}
+
+double readfloat(FILE *f) {
+  double v;
+  fread((void*)(&v), sizeof(v), 1, f);
+  return v;
+}
+
+void RunIntegrand( int (* (*fun)(const int&, const double*, const int&, double*))(const int*, const double*, const int*, double*, void*),
+        int & dim, double *point,double * result
+        ){
+    int ncomp = 1;
+    fun(dim,point,ncomp,result);
+}
+void RunIntegrand( int (* (*fun)(const int&, const double*, const int&, double*, void*, const int&, const int&, double&, const int&))(const int*, const double*, const int*, double*, void*),
+        int & dim, double *point,double * result
+        ){
+    int ncomp = 1;
+    void* userdata=0;
+    const int nvec=0;
+    const int core=0;
+    double weight=1.0;
+    const int iter=1;
+    fun(dim,point,ncomp,result,userdata,nvec,core,weight,iter);
+}
+
+
+bool onlyPrintResults=true;
+
+template<typename IntFun>
+void CheckIntegrand(int &ord, const char *name, IntFun fun, int dim, double expc1, double expc2, double expc3){
+    double expected[3] =  {expc1,expc2,expc3};
+    VecDbl point  (dim, 0.5); // fake random point for integrands
+    VecDbl result (opts.totpdf,0.);
+    RunIntegrand(fun, dim,&point[0],&result[0]);
+    if (onlyPrintResults) printf (" %d , %s , %a \n", ord, name, result[0]);
+    else ASSERT_EQ(result[0],expected[ord]) << "Wrong value of integrand " <<  name << " order="<<ord;
+}
+
+
+//|| int (* (*)(const int&, const double*, const int&, double*))(const int*, const double*, const int*, double*, void*)
+//|| int (* (*)(const int&, const double*, const int&, double*))(const int*, const double*, const int*, double*, void*)
+//template<typename IntFunLong>
+//void RunIntegrand(IntFunLong fun, int & dim, double *point,double * result){
+    //int ncomp = 1;
+    //void* userdata=0;
+    //const int nvec=0;
+    //const int core=0;
+    //double weight=1.0;
+    //const int iter=1;
+    //fun(dim,point,ncomp,result,userdata,nvec,core,weight,iter);
+//}
 
 const char * print_term(int &ord, DYTurbo::TermIterator &iterm){
     SStream strm;
@@ -161,25 +200,16 @@ const char * print_term(int &ord, DYTurbo::TermIterator &iterm){
     
 }
 
-void CheckResult(int &ord, DYTurbo::TermIterator &iterm){
-    size_t ires= ord*DYTurbo::ActiveTerms.size();
-    ires+= iterm.icurrent;
-    ASSERT_EQ(ord, results_list[ires].ord) 
-        << "Wrong order! Expected " << ord << "But have this:" << print_term(ord,iterm);
-    ASSERT_EQ((*iterm).integrate, results_list[ires].fun) 
-        << "Wrong function! But have this:" << print_term(ord,iterm);
-}
-
-
-
-TEST(DYTurbo,ResultEveryTerm){
+TEST(DYTurbo,CheckIntegrandFunctions){
     // turn off dryrun
     DYTurbo::isDryRun = true;
     // turn on all terms 
     DYTurbo::TestAllTerms = true;
     // set boundaries
-    bins.qtbins = {10. , 30.  };
-    bins.ybins  = {0.  , 1.   };
+    opts.nproc=3;
+    nproc_.nproc_ = opts.nproc;
+    bins.qtbins = {5. , 20.  };
+    bins.ybins  = {0.5 , 1.   };
     bins.mbins  = {50. , 100. };
     opts.costhmin=-1;
     opts.costhmax=+1;
@@ -189,12 +219,18 @@ TEST(DYTurbo,ResultEveryTerm){
     DYTurbo::SetBounds(bound);
     // for all orders and for all terms
     for (int ord = 0; ord < 3; ++ord) {
-        for (DYTurbo::TermIterator iterm; !iterm.IsEnd(); ++iterm ){
-            // run
-            (*iterm).RunIntegration();
-            // check according to function and order
-            CheckResult(ord,iterm);
-        }
+        opts.order=ord;
+        //
+        opts.fixedorder=false;
+        DYTurbo::init_params();
+        CheckIntegrand ( ord , "Resintegr 2d"      , resintegrand2d , 2 , 0.000000      , 28324.449648  , 28925.786526  ) ;
+        CheckIntegrand ( ord , "Resintegr 3d"      , resintegrand3d , 3 , 0.000000      , 28324.449648  , 28925.786526  ) ;
+        CheckIntegrand ( ord , "Resintegr MC"      , resintegrandMC , 6 , 0.000000      , 28324.449648  , 28925.786526  ) ;
+
+        CheckIntegrand ( ord , "Counter Resum 2D"  , ctintegrand2d  , 2 , -33191.420050 , -28011.834642 , -33191.420050 ) ;
+        CheckIntegrand ( ord , "Counter Resum 3D"  , ctintegrand3d  , 3 , -33191.420050 , -28011.834642 , -33191.420050 ) ;
+        CheckIntegrand ( ord , "Counter Resum MC6" , ctintegrandMC  , 6 , -33191.420050 , -28011.834642 , -33191.420050 ) ;
+        CheckIntegrand ( ord , "Counter Resum MC8" , ctintegrand    , 8 , -33191.420050 , -28011.834642 , -33191.420050 ) ;
     }
 }
 
