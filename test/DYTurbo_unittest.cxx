@@ -20,6 +20,7 @@
 
 #include "src/resintegr.h"
 #include "src/ctintegr.h"
+#include "src/finintegr.h"
 #include "mcfm/mcfm_interface.h"
 
 typedef std::vector<string> VecStr;
@@ -103,13 +104,17 @@ namespace DYTurbo{
     void init_params();
 }
 
+bool onlyPrintResults=true;
+
 void writefloat(double v, FILE *f) {
   fwrite((void*)(&v), sizeof(v), 1, f);
 }
 
 double readfloat(FILE *f) {
-  double v;
-  int i = fread((void*)(&v), sizeof(v), 1, f);
+  double v=666.;
+  if (!onlyPrintResults) {
+      int i = fread((void*)(&v), sizeof(v), 1, f);
+  }
   return v;
 }
 
@@ -132,7 +137,6 @@ void RunIntegrand( int (* (*fun)(const int&, const double*, const int&, double*,
 }
 
 
-bool onlyPrintResults=false;
 
 template<typename IntFun>
 void CheckIntegrand(int &ord, const char *name, IntFun fun, int dim, double expc){
@@ -140,6 +144,7 @@ void CheckIntegrand(int &ord, const char *name, IntFun fun, int dim, double expc
     VecDbl result (opts.totpdf,0.);
     RunIntegrand(fun, dim,&point[0],&result[0]);
     if (onlyPrintResults){
+        printf(" saving to file: %d %s : %.10e \n", dim, name, result[0]);
         FILE *F=fopen("terms.res","a");
         writefloat(result[0], F);
         fclose(F);
@@ -167,18 +172,40 @@ TEST(DYTurbo,CheckIntegrandFunctions){
     // for all orders and for all terms
     FILE *F = fopen("terms.res","r");
     for (int ord = 0; ord < 3; ++ord) {
+        // NOTE: If you are adding new term, dont forget to run first with onlyPrintResults=true; to save results
         opts.order=ord;
         //
         opts.fixedorder=false;
         DYTurbo::init_params();
-        CheckIntegrand ( ord , "Resintegr 2d"      , resintegrand2d , 2 , readfloat(F) ) ;
-        CheckIntegrand ( ord , "Resintegr 3d"      , resintegrand3d , 3 , readfloat(F) ) ;
+        CheckIntegrand ( ord , "Resintegr 2D"      , resintegrand2d , 2 , readfloat(F) ) ;
+        CheckIntegrand ( ord , "Resintegr 3D"      , resintegrand3d , 3 , readfloat(F) ) ;
         CheckIntegrand ( ord , "Resintegr MC"      , resintegrandMC , 6 , readfloat(F) ) ;
 
         CheckIntegrand ( ord , "Counter Resum 2D"  , ctintegrand2d  , 2 , readfloat(F) ) ;
         CheckIntegrand ( ord , "Counter Resum 3D"  , ctintegrand3d  , 3 , readfloat(F) ) ;
         CheckIntegrand ( ord , "Counter Resum MC6" , ctintegrandMC  , 6 , readfloat(F) ) ;
         CheckIntegrand ( ord , "Counter Resum MC8" , ctintegrand    , 8 , readfloat(F) ) ;
+
+        opts.fixedorder=true;
+        DYTurbo::init_params();
+        CheckIntegrand ( ord , "Born Fixed 2D"     , lointegrand2d       , 2  , readfloat(F) ) ;
+        CheckIntegrand ( ord , "Born Fixed MC4"    , lointegrandMC       , 4  , readfloat(F) ) ;
+
+        CheckIntegrand ( ord , "Counter Fixed 2D"  , ctintegrand2d       , 2  , readfloat(F) ) ;
+        CheckIntegrand ( ord , "Counter Fixed 3D"  , ctintegrand3d       , 3  , readfloat(F) ) ;
+        CheckIntegrand ( ord , "Counter Fixed MC6" , ctintegrandMC       , 6  , readfloat(F) ) ;
+        CheckIntegrand ( ord , "Counter Fixed MC8" , ctintegrand         , 8  , readfloat(F) ) ;
+
+        CheckIntegrand ( ord , "VJ LO 3D"          , vjintegrand         , 3  , readfloat(F) ) ;
+        CheckIntegrand ( ord , "VJ LO 5D"          , vjlointegrand       , 5  , readfloat(F) ) ;
+        CheckIntegrand ( ord , "VJ LO MC7"         , vjlointegrandMC     , 7  , readfloat(F) ) ;
+
+        CheckIntegrand ( ord , "VJ LO MC7"         , lowintegrand        , 7  , readfloat(F) ) ;
+        CheckIntegrand ( ord , "VJ REAL MC"        , realintegrand       , 10 , readfloat(F) ) ;
+        CheckIntegrand ( ord , "VJ VIRT MC"        , virtintegrand       , 8  , readfloat(F) ) ;
+        CheckIntegrand ( ord , "VJ VV MC6"         , doublevirtintegrand , 6  , readfloat(F) ) ;
+        CheckIntegrand ( ord , "VJ VV MC10"        , v2jintegrand        , 10 , readfloat(F) ) ;
+
     }
     fclose(F);
 }
