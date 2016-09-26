@@ -97,42 +97,11 @@ TEST(DYTurbo,DryLooping){
     DYTurbo::PrintTable::ResultGrandTotal();
 }
 
+// Testing term
 namespace DYTurbo{ 
     extern bool TestAllTerms; 
     void init_params();
 }
-
-/*
-
-template<typename IntFun>
-struct ResTab {
-    const char * name;
-    IntFun fun;
-    //integrand_t fun;
-    //)(const int &ndim, const double x[], const int &ncomp, double f[],
-                           //void* userdata, const int &nvec, const int &core,
-                           //double &weight, const int &iter);
-    int dim;
-    double expected[3]; // per order
-
-    void CheckIntegrand(const int &ord) {
-        VecDbl point  (dim, 0.5); // fake random point for integrands
-        VecDbl result (opts.totpdf,0.);
-        int ncomp = 1;
-        void *userdata=NULL;
-        fun(dim,&point[0],ncomp,&result[0]);
-        ASSERT_EQ(result[0],expected[ord]) << "Wrong value of integrand " <<  name << "order="<<ord;
-    }
-};
-typedef vector<ResTab> VecResTab;
-ResTab p = {"Resintegr MC" , resintegrandMC , 6 , {0.0 , 1.0 , 1.0} };
-// extend to all process
-VecResTab integ_check_list = {
-    {"Resintegr MC" , resintegrandMC , 6 , {0.0 , 1.0 , 1.0} } ,
-    {"Resintegr 3D" , resintegrand3d , 3 , {0.0 , 1.0 , 1.0} } ,
-    {"Resintegr 2D" , resintegrand2d , 2 , {0.0 , 1.0 , 1.0} }
-};
-*/
 
 void writefloat(double v, FILE *f) {
   fwrite((void*)(&v), sizeof(v), 1, f);
@@ -163,7 +132,7 @@ void RunIntegrand( int (* (*fun)(const int&, const double*, const int&, double*,
 }
 
 
-bool onlyPrintResults=true;
+bool onlyPrintResults=false;
 
 template<typename IntFun>
 void CheckIntegrand(int &ord, const char *name, IntFun fun, int dim, double expc){
