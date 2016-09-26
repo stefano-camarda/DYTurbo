@@ -140,7 +140,7 @@ void writefloat(double v, FILE *f) {
 
 double readfloat(FILE *f) {
   double v;
-  fread((void*)(&v), sizeof(v), 1, f);
+  int i = fread((void*)(&v), sizeof(v), 1, f);
   return v;
 }
 
@@ -166,38 +166,16 @@ void RunIntegrand( int (* (*fun)(const int&, const double*, const int&, double*,
 bool onlyPrintResults=true;
 
 template<typename IntFun>
-void CheckIntegrand(int &ord, const char *name, IntFun fun, int dim, double expc1, double expc2, double expc3){
-    double expected[3] =  {expc1,expc2,expc3};
+void CheckIntegrand(int &ord, const char *name, IntFun fun, int dim, double expc){
     VecDbl point  (dim, 0.5); // fake random point for integrands
     VecDbl result (opts.totpdf,0.);
     RunIntegrand(fun, dim,&point[0],&result[0]);
-    if (onlyPrintResults) printf (" %d , %s , %a \n", ord, name, result[0]);
-    else ASSERT_EQ(result[0],expected[ord]) << "Wrong value of integrand " <<  name << " order="<<ord;
-}
-
-
-//|| int (* (*)(const int&, const double*, const int&, double*))(const int*, const double*, const int*, double*, void*)
-//|| int (* (*)(const int&, const double*, const int&, double*))(const int*, const double*, const int*, double*, void*)
-//template<typename IntFunLong>
-//void RunIntegrand(IntFunLong fun, int & dim, double *point,double * result){
-    //int ncomp = 1;
-    //void* userdata=0;
-    //const int nvec=0;
-    //const int core=0;
-    //double weight=1.0;
-    //const int iter=1;
-    //fun(dim,point,ncomp,result,userdata,nvec,core,weight,iter);
-//}
-
-const char * print_term(int &ord, DYTurbo::TermIterator &iterm){
-    SStream strm;
-    strm << endl;
-    strm << "name: " << (*iterm).name.c_str() << endl;
-    strm << "ord: " << ord << endl;
-    strm << "result: " << (*iterm).last_int[0] << " +- " << sqrt((*iterm).last_err2) << endl;
-    strm << "Description: " << (*iterm).description.c_str() << endl;
-    return strm.str().c_str();
-    
+    if (onlyPrintResults){
+        FILE *F=fopen("terms.res","a");
+        writefloat(result[0], F);
+        fclose(F);
+    }
+    else ASSERT_EQ(result[0],expc) << "Wrong value of integrand " <<  name << " order="<<ord;
 }
 
 TEST(DYTurbo,CheckIntegrandFunctions){
@@ -218,20 +196,22 @@ TEST(DYTurbo,CheckIntegrandFunctions){
     DYTurbo::BoundIterator bound;
     DYTurbo::SetBounds(bound);
     // for all orders and for all terms
+    FILE *F = fopen("terms.res","r");
     for (int ord = 0; ord < 3; ++ord) {
         opts.order=ord;
         //
         opts.fixedorder=false;
         DYTurbo::init_params();
-        CheckIntegrand ( ord , "Resintegr 2d"      , resintegrand2d , 2 , 0.000000      , 28324.449648  , 28925.786526  ) ;
-        CheckIntegrand ( ord , "Resintegr 3d"      , resintegrand3d , 3 , 0.000000      , 28324.449648  , 28925.786526  ) ;
-        CheckIntegrand ( ord , "Resintegr MC"      , resintegrandMC , 6 , 0.000000      , 28324.449648  , 28925.786526  ) ;
+        CheckIntegrand ( ord , "Resintegr 2d"      , resintegrand2d , 2 , readfloat(F) ) ;
+        CheckIntegrand ( ord , "Resintegr 3d"      , resintegrand3d , 3 , readfloat(F) ) ;
+        CheckIntegrand ( ord , "Resintegr MC"      , resintegrandMC , 6 , readfloat(F) ) ;
 
-        CheckIntegrand ( ord , "Counter Resum 2D"  , ctintegrand2d  , 2 , -33191.420050 , -28011.834642 , -33191.420050 ) ;
-        CheckIntegrand ( ord , "Counter Resum 3D"  , ctintegrand3d  , 3 , -33191.420050 , -28011.834642 , -33191.420050 ) ;
-        CheckIntegrand ( ord , "Counter Resum MC6" , ctintegrandMC  , 6 , -33191.420050 , -28011.834642 , -33191.420050 ) ;
-        CheckIntegrand ( ord , "Counter Resum MC8" , ctintegrand    , 8 , -33191.420050 , -28011.834642 , -33191.420050 ) ;
+        CheckIntegrand ( ord , "Counter Resum 2D"  , ctintegrand2d  , 2 , readfloat(F) ) ;
+        CheckIntegrand ( ord , "Counter Resum 3D"  , ctintegrand3d  , 3 , readfloat(F) ) ;
+        CheckIntegrand ( ord , "Counter Resum MC6" , ctintegrandMC  , 6 , readfloat(F) ) ;
+        CheckIntegrand ( ord , "Counter Resum MC8" , ctintegrand    , 8 , readfloat(F) ) ;
     }
+    fclose(F);
 }
 
 TEST(DYTurbo,Termination){
