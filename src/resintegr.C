@@ -1,11 +1,11 @@
 #include "resintegr.h"
 #include "omegaintegr.h"
-#include "phasespace.h"
+#include "phasespace/phasespace.h"
 #include "settings.h"
 #include "interface.h"
 #include "switch.h"
-#include "resint.h"
-#include "rapint.h"
+#include "resum/resint.h"
+#include "resum/rapint.h"
 //#include "plotter.h"
 #include "cubacall.h"
 #include "isnan.h"
@@ -85,14 +85,14 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
     scaleset_(phasespace::m2);
 
   //Perform quadrature rule integration in rapidity and semi-analitical costh, phi_lep integration
-  int nocuts = !opts.makelepcuts;
+  int nocuts = !opts.makecuts;
 
   clock_t ybt, yet;
   ybt = clock();
   //there is a potential issue here, when lepton cuts are applied
   //the rapidity dependent exponential are cached assuming integration between ymin and ymax
   //for consistency, has to keep the integration between ymin and ymax
-  if (opts.makelepcuts)
+  if (opts.makecuts)
     {
       if (opts.resumcpp)
 	{
@@ -289,7 +289,7 @@ integrand_t resintegrandMC(const int &ndim, const double x[], const int &ncomp, 
   phasespace::genl4p();
 
   //apply lepton cuts
-  if (opts.makelepcuts)
+  if (opts.makecuts)
     if (!cuts::lep(phasespace::p3, phasespace::p4))
       {
 	f[0]=0.;

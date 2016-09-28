@@ -41,10 +41,8 @@ TEST(DYTurbo,Initialization){
 TEST(DYTurbo,TermIteration){
     DYTurbo::WarmUp();
     std::vector <void (*)(std::vector<double>&, double&)> term_funs;
-    term_funs.push_back(resintegr2d);
+    term_funs.push_back(bornintegrMC6d);
     term_funs.push_back(ctintegr2d);
-    term_funs.push_back(vjrealintegr);
-    term_funs.push_back(vjvirtintegr);
     ASSERT_EQ(term_funs.size(), DYTurbo::ActiveTerms.size() )
         << "Incorrect number of terms. Check your input file." ;
     for ( DYTurbo::TermIterator it_term; !it_term.IsEnd(); ++it_term) {
@@ -82,39 +80,60 @@ TEST(DYTurbo,BoundIteration){
     ASSERT_EQ ( expected , counter  ) << " Incorrect number of bins from boundaries.";
 }
 
-TEST(DYTurbo,DryLooping){
-    DYTurbo::isDryRun = true;
-    DYTurbo::WarmUp();
-    DYTurbo::PrintTable::Header();
-    for ( DYTurbo::BoundIterator bounds; !bounds.IsEnd(); ++bounds) {
-        DYTurbo::SetBounds(bounds);
-        DYTurbo::PrintTable::Bounds();
-        for (DYTurbo::TermIterator term; !term.IsEnd(); ++term){
-            (*term).RunIntegration();
-            DYTurbo::PrintTable::Result((*term));
-        }
-        DYTurbo::PrintTable::ResultSubTotal();
-    }
-    DYTurbo::PrintTable::ResultGrandTotal();
-}
 
-// Testing term
-namespace DYTurbo{ 
-    extern bool TestAllTerms; 
-    void init_params();
-}
-
-bool onlyPrintResults=false;
+/**
+ * @brief Save results to file.
+ *
+ * We have to save results as binary values. For this you need first
+ * calibration run to create files. This happens when you set
+ * `doSaveResults=true`
+ *
+ * For actual testing you have to keep it `false`. Then values will be compared
+ * to calibration run.
+ */
+bool doSaveResults=false;
 FILE *F = 0;
 void writefloat(double v) {
   fwrite((void*)(&v), sizeof(v), 1, F);
 }
 double readfloat() {
   double v=666.;
-  if (!onlyPrintResults) {
+  if (!doSaveResults) {
       int i = fread((void*)(&v), sizeof(v), 1, F);
   }
   return v;
+}
+
+
+TEST(DYTurbo,MainLoop){
+    DYTurbo::isDryRun = false;
+    DYTurbo::WarmUp();
+    DYTurbo::PrintTable::Header();
+    F= fopen( "integration.res", (!DYTurbo::isDryRun && doSaveResults) ? "w" : "r");
+    for ( DYTurbo::BoundIterator bounds; !bounds.IsEnd(); ++bounds) {
+        DYTurbo::SetBounds(bounds);
+        DYTurbo::PrintTable::Bounds();
+        for (DYTurbo::TermIterator term; !term.IsEnd(); ++term){
+            (*term).RunIntegration();
+            DYTurbo::PrintTable::Result((*term));
+            if (!DYTurbo::isDryRun){
+                double val = (*term).last_int[0];
+                double exp = readfloat();
+                if (doSaveResults) writefloat(val);
+                else ASSERT_EQ(val,exp);
+            }
+        }
+        DYTurbo::PrintTable::ResultSubTotal();
+    }
+    DYTurbo::PrintTable::ResultGrandTotal();
+    fclose(F);
+}
+
+
+// Testing term
+namespace DYTurbo{ 
+    extern bool TestAllTerms; 
+    void init_params();
 }
 
 
@@ -138,10 +157,12 @@ void RunIntegrand( int (* (*fun)(const int&, const double*, const int&, double*,
 }
 template<typename IntFun>
 void CheckIntegrand(int &ord, const char *name, IntFun fun, int dim){
-    VecDbl point  (dim, 0.0); // fake random point for integrands, set to lower bound of integration
+    /// @todo For finite born level set random number corresponding to pt to 0
+    // point: Fake random point for integrands, set to lower bound of integration.
+    VecDbl point  (dim, 0.8);
     VecDbl result (opts.totpdf,0.);
     RunIntegrand(fun, dim,&point[0],&result[0]);
-    if (onlyPrintResults){
+    if (doSaveResults){
         printf(" saving to file: %d %s : %.10e \n", dim, name, result[0]);
         writefloat(result[0]);
     } else {
@@ -156,9 +177,10 @@ TEST(DYTurbo,CheckIntegrandFunctions){
     // turn on all terms 
     DYTurbo::TestAllTerms = true;
     // set boundaries
+    opts.makecuts=false;
     opts.nproc=3;
     nproc_.nproc_ = opts.nproc;
-    bins.qtbins = {0., 10. , 50., 100.  };
+    bins.qtbins = {0., 10. , 80., 100.  };
     bins.ybins  = {0., 1. , 3.   };
     bins.mbins  = {80. , 100. };
     opts.costhmin=-1;
@@ -166,62 +188,60 @@ TEST(DYTurbo,CheckIntegrandFunctions){
     // warm up
     DYTurbo::WarmUp();
     // for all orders and for all terms
-    if (onlyPrintResults){
-        F = fopen("terms.res","w");
-    } else {
-        F = fopen("terms.res","r");
-    }
-        for (int ord = 0; ord < 3; ++ord) {
-            // NOTE: If you are adding new term, dont forget to run first with
-            // `onlyPrintResults=true;` to update values in file.
-            opts.order=ord;
-            // Resummed part
-            opts.fixedorder=false;
-            DYTurbo::init_params();
-            for (DYTurbo::BoundIterator bound; !bound.IsEnd(); ++bound){
-                DYTurbo::SetBounds(bound);
-                CheckIntegrand ( ord , "Resintegr 2D"      , resintegrand2d , 2 ) ;
-                CheckIntegrand ( ord , "Resintegr 3D"      , resintegrand3d , 3 ) ;
-                CheckIntegrand ( ord , "Resintegr MC"      , resintegrandMC , 6 ) ;
+    F = fopen("terms.res", doSaveResults ? "w" : "r");
+    for (int ord = 0; ord < 3; ++ord) {
+        // NOTE: If you are adding new term, dont forget to run first with
+        // `doSaveResults=true;` to update values in file.
+        opts.order=ord;
+        // Resummed part
+        opts.fixedorder=false;
+        DYTurbo::init_params();
+        for (DYTurbo::BoundIterator bound; !bound.IsEnd(); ++bound){
+            DYTurbo::SetBounds(bound);
+            CheckIntegrand ( ord , "Resintegr 2D"      , resintegrand2d , 2 ) ;
+            CheckIntegrand ( ord , "Resintegr 3D"      , resintegrand3d , 3 ) ;
+            CheckIntegrand ( ord , "Resintegr MC"      , resintegrandMC , 6 ) ;
 
-                CheckIntegrand ( ord , "Counter Resum 2D"  , ctintegrand2d  , 2 ) ;
-                CheckIntegrand ( ord , "Counter Resum 3D"  , ctintegrand3d  , 3 ) ;
-                CheckIntegrand ( ord , "Counter Resum MC6" , ctintegrandMC  , 6 ) ;
-                CheckIntegrand ( ord , "Counter Resum MC8" , ctintegrand    , 8 ) ;
-            }
-            // Fixed part
-            opts.fixedorder=true;
-            DYTurbo::init_params();
-            for ( DYTurbo::BoundIterator bound ; !bound.IsEnd(); ++bound){
-                DYTurbo::SetBounds(bound);
-                CheckIntegrand ( ord , "Born Fixed 2D"     , lointegrand2d       , 2   ) ;
-                CheckIntegrand ( ord , "Born Fixed MC4"    , lointegrandMC       , 4   ) ;
-
-                CheckIntegrand ( ord , "Counter Fixed 2D"  , ctintegrand2d       , 2   ) ;
-                CheckIntegrand ( ord , "Counter Fixed 3D"  , ctintegrand3d       , 3   ) ;
-                CheckIntegrand ( ord , "Counter Fixed MC6" , ctintegrandMC       , 6   ) ;
-                CheckIntegrand ( ord , "Counter Fixed MC8" , ctintegrand         , 8   ) ;
-
-                CheckIntegrand ( ord , "VJ LO 3D"          , vjintegrand         , 3   ) ;
-                CheckIntegrand ( ord , "VJ LO 5D"          , vjlointegrand       , 5   ) ;
-                CheckIntegrand ( ord , "VJ LO MC7"         , vjlointegrandMC     , 7   ) ;
-
-                CheckIntegrand ( ord , "VJ LO MC7"         , lowintegrand        , 7   ) ;
-                CheckIntegrand ( ord , "VJ REAL MC"        , realintegrand       , 10  ) ;
-                CheckIntegrand ( ord , "VJ VIRT MC"        , virtintegrand       , 8   ) ;
-                CheckIntegrand ( ord , "VJ VV MC6"         , doublevirtintegrand , 6   ) ;
-                CheckIntegrand ( ord , "VJ VV MC10"        , v2jintegrand        , 10  ) ;
-            }
-
+            CheckIntegrand ( ord , "Counter Resum 2D"  , ctintegrand2d  , 2 ) ;
+            CheckIntegrand ( ord , "Counter Resum 3D"  , ctintegrand3d  , 3 ) ;
+            CheckIntegrand ( ord , "Counter Resum MC6" , ctintegrandMC  , 6 ) ;
+            CheckIntegrand ( ord , "Counter Resum MC8" , ctintegrand    , 8 ) ;
         }
+        // Fixed part
+        opts.fixedorder=true;
+        DYTurbo::init_params();
+        for ( DYTurbo::BoundIterator bound ; !bound.IsEnd(); ++bound){
+            DYTurbo::SetBounds(bound);
+            CheckIntegrand ( ord , "Born Fixed 2D"     , lointegrand2d       , 2  ) ;
+            CheckIntegrand ( ord , "Born Fixed MC4"    , lointegrandMC       , 4  ) ;
+            CheckIntegrand ( ord , "Born DYNNLO MC6"   , doublevirtintegrand , 6  ) ;
+
+            CheckIntegrand ( ord , "Counter Fixed 2D"  , ctintegrand2d       , 2  ) ;
+            CheckIntegrand ( ord , "Counter Fixed 3D"  , ctintegrand3d       , 3  ) ;
+            CheckIntegrand ( ord , "Counter Fixed MC6" , ctintegrandMC       , 6  ) ;
+            CheckIntegrand ( ord , "Counter Fixed MC8" , ctintegrand         , 8  ) ;
+
+            CheckIntegrand ( ord , "VJ LO 3D"          , vjintegrand         , 3  ) ;
+            CheckIntegrand ( ord , "VJ LO 5D"          , vjlointegrand       , 5  ) ;
+            CheckIntegrand ( ord , "VJ LO MC7"         , vjlointegrandMC     , 7  ) ;
+            CheckIntegrand ( ord , "VJ LO MCFM7"       , lowintegrand        , 7  ) ;
+
+            CheckIntegrand ( ord , "VJ REAL MCFM"      , realintegrand       , 10 ) ;
+            CheckIntegrand ( ord , "VJ VIRT MCFM"      , virtintegrand       , 8  ) ;
+
+            CheckIntegrand ( ord , "VJJ MC10"          , v2jintegrand        , 10 ) ;
+        }
+
+    }
     fclose(F);
-    // To see values saved in file run
+    // NOTE: To see values saved in file run
     //  `hexdump -v -e '"%010_ad :" 7/8 " %e " "\n"' test/terms.res`
     //   - one line is seven numbers, there are 6 kinematic points
     //   - first 6 lines is for resummed part 
     //   - next 12 lines is for fixed order part
     //   - This repeated 3 times (per each order)
 }
+
 
 TEST(DYTurbo,Termination){
     DYTurbo::PrintTable::Footer();

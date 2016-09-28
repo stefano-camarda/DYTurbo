@@ -82,7 +82,7 @@ pcubature = true
 pcubaccuracy = 1e-4
 
 # total or with lepton cuts
-makelepcuts = false
+makecuts = false
 
 # debug settings
 timeprofile = false  # debug and time profile resummation integration

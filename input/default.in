@@ -139,7 +139,7 @@ costhmin = -1
 costhmax = +1
 
 # total or with lepton cuts
-makelepcuts = false
+makecuts = false
 lptcut = 20
 lycut = 2.5
 l1ptcut = 0

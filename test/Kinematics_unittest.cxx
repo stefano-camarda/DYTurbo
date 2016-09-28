@@ -56,14 +56,17 @@ TEST(KinemanticInterface, IntegratorVariableIsCalculated){
     double l1[] = {0.,2.,0.,2.};
     Kinematics::SetKinematics(l1, l1, 1.0 );
     phasespace::setbounds(0.,2., 2.,4., 4.,6.);
+    phasespace::setcthbounds(-1.,0.);
     Kinematics::BosPT pt;
     Kinematics::BosY y;
     Kinematics::BosM m;
+    Kinematics::CosThCS costh;
     Kinematics::SetMiddlePoint();
     // Check that integrable variable is calculated
     ASSERT_DOUBLE_EQ(1., m());
     ASSERT_DOUBLE_EQ(3., pt());
     ASSERT_DOUBLE_EQ(5., y());
+    ASSERT_DOUBLE_EQ(-.5, costh());
 }
 
 TEST(KinemanticInterface, NonIntegratorVariableIsNotCalculated){

@@ -29,6 +29,12 @@ extern "C" {
   void mweight_flat_(double& x,double& mmin,double& mmax,double& m,double& jac);
 }
 
+/** @brief Interface between calculation and user input.
+ *
+ * This namespace is used to provide values of kinematic parameters to integral
+ * boundaries and integrands.
+ *
+ */
 namespace phasespace
 {
   enum restframeid {CS=0, naive=1, kt0=2};

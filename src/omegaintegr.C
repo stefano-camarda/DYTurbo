@@ -336,7 +336,7 @@ double omegaintegr::costhCS()
 //Algorithm to determine all the subintervals of costh between -1 and +1 in which the lepton cuts are satisfied
 void omegaintegr::costhbound(double phi_lep, vector<double> &min, vector<double> &max)
 {
-  if (!opts.makelepcuts)
+  if (!opts.makecuts)
     {
       min.push_back(phasespace::getcthmin());
       max.push_back(phasespace::getcthmax());
@@ -427,7 +427,7 @@ void omegaintegr::costhbound(double phi_lep, vector<double> &min, vector<double>
 void omegaintegr::cthmoments(double &cthmom0, double &cthmom1, double &cthmom2)
 {
   clock_t begin_time, end_time;
-  if (!opts.makelepcuts)
+  if (!opts.makecuts)
     {
       cthmom0 = phasespace::getcthmax()-phasespace::getcthmin();
       cthmom1 = (pow(phasespace::getcthmax(),2)-pow(phasespace::getcthmin(),2))/2.;

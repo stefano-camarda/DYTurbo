@@ -14,7 +14,7 @@
 #include <vector>
 using std::vector;
 
-// TODO: C++11 ?
+// C++11 : use smart pointers
 //#include <memory>
 //using std::unique_ptr;
 
@@ -36,6 +36,9 @@ extern "C" {
     void histo_fillreal();
 }
 
+/** 
+ * @brief Histogramming services
+ */
 namespace HistoHandler {
     // Typedef and forward declarations
     class HistoBase;

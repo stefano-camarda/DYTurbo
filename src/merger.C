@@ -682,7 +682,7 @@ class OutlierRemoval{
         }
 
         double interpolate_NaN(TH1* o, int ibin){
-            // TODO: NaN in uncertainty treatment
+            /// @todo NaN in uncertainty treatment
             int dim = o->GetDimension();
             bool isProf = isProfile(o);
             double val=0;

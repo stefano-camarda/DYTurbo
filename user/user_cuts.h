@@ -2,10 +2,10 @@
 #define user_cuts_H
 /**
  * @file user_cuts.h
- * User definitions of fiducial cuts.
  *
- * @brief User definitions will be included in `histo/KinematicCuts.h`.
- * For example of definition check `histo/KinematicCuts.h` file.
+ * @brief User definitions of cuts.
+ *
+ * For example of definition see class \ref StandartCuts in `histo/Kinematics.cxx`
  *
  * @author Jakub Cuth <Jakub.Cuth@cern.ch>
  * @date 2016-09-07
@@ -18,12 +18,19 @@ namespace Kinematics {
     namespace Cuts {
         struct UserCuts : public CutBase {
 
-            // define variables here (e.g. Observables, cut values)
+            // You can define variables here (e.g. Observables, cut values, etc.)
+            //
             // bool IDontLikeEvent = false;
+            // BigAnswer answer;
 
             bool operator()(){
-                // put your cut here:
+                // Fastest way to cut is to return SkipEvent after each
+                // condition:
+                //
                 // if (IDontLikeEvent) return SkipEvent;
+                // if (answer()!=42) return SkipEvent;
+                //
+                // Put your cut here:
                 return KeepEvent;
             }
         } user_cut;

@@ -48,7 +48,7 @@ namespace TurboHist {
         void SetBins(VecObs newbins){
             data.clear();
             sort(newbins.begin(),newbins.end());
-            // TODO: remove Repeat
+            /// @todo remove repeated bin edges
             min = newbins.front();
             max = newbins.back();
             //

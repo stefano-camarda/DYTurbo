@@ -21,8 +21,8 @@ namespace Kinematics{
     double p4[4];
     double event_weight;
 
-    // all flags are stored here
-    VariableFlags flags;
+    // All flags are stored here
+    ObservableFlags flags;
 
     void SetKinematics(double _p3[4], double _p4[4], double wgt=1.){
         for (auto i=0; i<4;i++){
@@ -35,8 +35,6 @@ namespace Kinematics{
     }
 
     void SetMiddlePoint(){
-        // NOTE: There are only few observables which can be evaluated in
-        // integrator mode. We need to receive middle point of integration and recalculate
         isIntegratorMode=true;
         for (auto ptr_isCalculated : flags) *ptr_isCalculated=false;
     }
@@ -48,7 +46,7 @@ namespace Kinematics{
         const bool KeepEvent=true;
         const bool SkipEvent=false;
 
-        struct LeptonPtEtaCut : public CutBase {
+        struct StandardCuts : public CutBase {
             // define here all observables and variables
             LepCh      ch1;
             LepPT      pt1;
@@ -76,14 +74,14 @@ namespace Kinematics{
                 if (opts.l2ycut    >0 && aeta2()  > opts.l2ycut    ) return SkipEvent;
                 return KeepEvent;
             }
-        } lepton_cut;
+        } standard_cuts;
 
         bool KeepThisEvent(double p3[4], double p4[4]){
             SetKinematics(p3,p4);
-            if (opts.makelepcuts){ // use standard cuts
-                if ( lepton_cut() == SkipEvent ) return SkipEvent ;
+            if (opts.makecuts){
+                if ( standard_cuts() == SkipEvent ) return SkipEvent ;
+                if ( user_cut() == SkipEvent ) return SkipEvent ;
             }
-            if ( user_cut() == SkipEvent ) return SkipEvent ;
             return KeepEvent;
         }
     }

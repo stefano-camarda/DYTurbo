@@ -49,15 +49,14 @@ namespace HistoHandler{
     int parent_pid=0;
 
     void Init() {
-        //TODO: Implement to DYTURBO
-        //isFillMode = (bins.plotmode == "integrate");
+        /**
+         * @todo Implement to DYTURBO
+         * - isFillMode = (bins.plotmode == "integrate");
+         * - Initiate as long vector as necessary in beginning : Check if we are  doing pdf scanning, if yes then prebook histograms.
+         * - Check we will use just one variation, then set it from beginning
+         */
         Book();
         SetVariation(0); // start from 0
-        // TODO: Implmentation to dyturbo
-        // Initiate as long vector as necessary in beginning : Check if we are
-        // doing pdf scanning, if yes then prebook histograms.
-        // TODO: Implmentation to dyturbo
-        // Check we will use just one variation, then set it from beginning
         parent_pid=getpid();
     }
 
@@ -116,7 +115,8 @@ namespace HistoHandler{
             // scale variations
             KeySuffix addkey = {"",0};
             if (imember==0){ // add central
-            } else { // PDF case TODO: Check is PDF memeber i.e is positive and smaller than number of memebrs in pdfset
+            } else { // PDF case
+                /// @todo Check is PDF memeber i.e is positive and smaller than number of memebrs in pdfset
                 ostringstream suffix;
                 suffix << "_pdf" << imember;
                 addkey.suffix=suffix.str();
@@ -148,7 +148,7 @@ namespace HistoHandler{
 
     void Terminate(int iworker){
         Merge(iworker);
-        // TODO: Properly remove all histograms from your memory
+        /// @todo Properly remove all histograms from your memory
     }
 }
 

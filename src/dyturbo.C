@@ -126,7 +126,7 @@ namespace DYTurbo {
     void Term::RunIntegration(){
         double err;
         last_reset();
-        // TODO: specialized (need to reincorporate)
+        /// @todo specialized (need to reincorporate)
         if ( integrate == resintegr2d ){
             if (opts.resumcpp) rapint::cache(phasespace::ymin, phasespace::ymax);
             else cacheyrapint_(phasespace::ymin, phasespace::ymax);

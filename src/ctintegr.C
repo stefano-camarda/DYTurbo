@@ -115,7 +115,7 @@ integrand_t ctintegrandMC(const int &ndim, const double x[], const int &ncomp, d
   phasespace::genl4p();
 
   //apply lepton cuts
-  if (opts.makelepcuts)
+  if (opts.makecuts)
     if (!cuts::lep(phasespace::p3, phasespace::p4))
       {
 	f[0]=0.;

@@ -15,9 +15,9 @@
 #include "histo/Kinematics.h"
 #include "histo/KinematicCuts.h"
 
-TEST(CutInterface,StandartCuts){
+TEST(CutInterface,StandardCuts){
     double l1[] = {1., 1., 1., sqrt(3)};
-    opts.makelepcuts = true;
+    opts.makecuts = true;
     opts.l1ptcut = 10;
     opts.l2ptcut = 10;
     ASSERT_EQ(Kinematics::Cuts::SkipEvent, Kinematics::Cuts::KeepThisEvent(l1,l1));

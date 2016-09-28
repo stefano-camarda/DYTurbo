@@ -2,18 +2,18 @@
 #define  KinematicDefinitions_H
 /**
  * @file KinematicDefinitions.h
- * Description of cpp file
+ * @brief Definition of all Observables inside Kinematics namespace.
+ * Only developers should edit this file. User-defined observables should be in
+ * `user/user_kinem.h`
  *
- * @brief A brief description
- *
- * @author Jakub Cuth <Jakub.Cuth@cern.ch>
+ * @author Jakub Cuth <Jakub.Cuth@cern.ch>, Stefano Camarda <Stefano.Camarda@cern.ch>
  * @date 2016-08-29
  */
 
 #include "Kinematics.h"
 #include "KinUtils.h"
 
-#define NEWKIN(CLS) class CLS : public Variable< CLS >
+#define NEWKIN(CLS) class CLS : public Observable< CLS >
 
 #include <cmath>
 #include <algorithm>
@@ -25,12 +25,11 @@ using std::max;
 
 namespace Kinematics{
 
-    // NOTE: Writing twice the class name is intentional (CTRP)! Check
-    // `Kinematic.h` for more info. Or use preprocessor macro NEWKIN.
-    // Description of posibilities can be found in `CosThCS`
 
-    // TODO: Decide which lepton
-    // lepton
+
+    /// @todo Decide which lepton is charged. Should be done. Please write test.
+    /// @defgroup LepVar Lepton related observables.
+    /// @{
     NEWKIN( LepPX  ) { double calc(){ return p3[0]; } };
     NEWKIN( LepPY  ) { double calc(){ return p3[1]; } };
     NEWKIN( LepPZ  ) { double calc(){ return p3[2]; } };
@@ -39,8 +38,10 @@ namespace Kinematics{
     NEWKIN( LepCh  ) { double calc(){ return opts.nproc==1 ? 0 : -1 ; } };
     NEWKIN( LepEta ) { double calc(){ return Util::eta(p3[0],p3[1],p3[2]); } };
     NEWKIN( LepAbsEta ) { LepEta eta; double calc(){ return fabs(eta()); } };
+    /// @}
 
-    // antilepton
+    /// @defgroup AlpVar Anti-lepton related observables.
+    /// @{
     NEWKIN( ALpPX  ) { double calc(){ return p4[0]; } };
     NEWKIN( ALpPY  ) { double calc(){ return p4[1]; } };
     NEWKIN( ALpPZ  ) { double calc(){ return p4[2]; } };
@@ -49,6 +50,88 @@ namespace Kinematics{
     NEWKIN( AlpCh  ) { double calc(){ return opts.nproc==2 ? 0 : +1 ; } };
     NEWKIN( AlpEta ) { double calc(){ return Util::eta(p3[0],p3[1],p3[2]); } };
     NEWKIN( AlpAbsEta ) { AlpEta eta; double calc(){ return fabs(eta()); } };
+    /// @}
+
+
+    /// @defgroup BosVar Vector boson related observables.
+    /// @{
+    NEWKIN( BosPX ) { double calc(){ return p3[0]+p4[0]; } };
+    NEWKIN( BosPY ) { double calc(){ return p3[1]+p4[1]; } };
+    NEWKIN( BosPZ ) { double calc(){ return p3[2]+p4[2]; } };
+    NEWKIN( BosE  ) { double calc(){ return p3[3]+p4[3]; } };
+
+
+    class BosM : public Observable< BosM > {
+        BosPX px;
+        BosPY py;
+        BosPZ pz;
+        BosE  e;
+        double calc(){
+            return Util::mass(px(),py(),pz(),e());
+        }
+        double middlePoint(){
+            return ( phasespace::mmax + phasespace::mmin )/2. ;
+        }
+        inline bool IsIntegrableObservable() const {return true;}
+    };
+
+    /**
+     * @brief Boson transverse mass (experimentalist definition)
+     *
+     * Implemetation follows definition:
+     *
+     * \f$m_T \equiv \sqrt{ 2 p_{T,\ell} p_{T,\nu} (1-\cos(\phi) }\f$
+     *
+     * For saving calculation time cos is calculated as dot product.
+     */
+    class BosMT : public Observable< BosMT > {
+        LepPX lmPX;
+        LepPY lmPY;
+        ALpPX lpPX;
+        ALpPY lpPY;
+
+        double calc(){
+            double mtrans = 1;
+            mtrans*=sqrt(lmPX()*lmPX() + lmPY()*lmPY());
+            mtrans*=sqrt(lpPX()*lpPX() + lpPY()*lpPY());
+            mtrans-=    (lmPX()*lpPX() + lmPY()*lpPY());
+            mtrans*=2;
+            return sqrt(max(mtrans,0.));
+        }
+    };
+
+    class BosPT : public Observable< BosPT > {
+        BosPX px;
+        BosPY py;
+        double calc(){
+            return Util::pT(px(),py())  ;
+        }
+        double middlePoint(){
+            return ( phasespace::qtmax + phasespace::qtmin )/2. ; 
+        }
+        inline bool IsIntegrableObservable() const {return true;}
+    };
+
+    NEWKIN( BosPhi ) {
+        BosPX px;
+        BosPY py;
+        double calc(){
+            return atan2(py(),px())  ;
+        }
+    };
+
+    class BosY : public Observable<BosY> {
+        BosPZ pz;
+        BosE  e;
+        double calc(){
+            return 0.5*log((e()+pz())/(e()-pz()));
+        }
+        double middlePoint(){
+            return ( phasespace::ymax + phasespace::ymin )/2. ;
+        }
+        inline bool IsIntegrableObservable() const {return true;}
+    };
+    /// @}
 
     NEWKIN ( MET ) {
         LepCh ch1;
@@ -62,89 +145,39 @@ namespace Kinematics{
         }
     };
 
-    // boson
-    NEWKIN( BosPX ) { double calc(){ return p3[0]+p4[0]; } };
-    NEWKIN( BosPY ) { double calc(){ return p3[1]+p4[1]; } };
-    NEWKIN( BosPZ ) { double calc(){ return p3[2]+p4[2]; } };
-    NEWKIN( BosE  ) { double calc(){ return p3[3]+p4[3]; } };
+    /// @defgroup AngulVar Final state kinematic observables.
+    /// @{
 
-
-    class BosM : public Variable< BosM > {
-        BosPX px;
-        BosPY py;
-        BosPZ pz;
-        BosE  e;
-        // Calc is 
-        double calc(){
-            return Util::mass(px(),py(),pz(),e());
-        }
-        double middlePoint(){
-            return ( phasespace::mmax + phasespace::mmin )/2. ;
-        }
-        inline bool IsIntegratorVariable() const {return true;}
-    };
-
-    class BosMT : public Variable< BosMT > {
-        LepPX lmPX;
-        LepPY lmPY;
-        ALpPX lpPX;
-        ALpPY lpPY;
-        double calc(){
-            double mtrans = 1;
-            mtrans*=sqrt(lmPX()*lmPX() + lmPY()*lmPY());
-            mtrans*=sqrt(lpPX()*lpPX() + lpPY()*lpPY());
-            mtrans-=    (lmPX()*lpPX() + lmPY()*lpPY());
-            mtrans*=2;
-            return sqrt(max(mtrans,0.));
-        }
-    };
-
-    class BosPT : public Variable< BosPT > {
-        BosPX px;
-        BosPY py;
-        double calc(){
-            return Util::pT(px(),py())  ;
-        }
-        double middlePoint(){
-            return ( phasespace::qtmax + phasespace::qtmin )/2. ; 
-        }
-        inline bool IsIntegratorVariable() const {return true;}
-    };
-
-    NEWKIN( BosPhi ) {
-        BosPX px;
-        BosPY py;
-        double calc(){
-            return atan2(py(),px())  ;
-        }
-    };
-
-    class BosY : public Variable<BosY> {
-        BosPZ pz;
-        BosE  e;
-        double calc(){
-            return 0.5*log((e()+pz())/(e()-pz()));
-        }
-        double middlePoint(){
-            return ( phasespace::ymax + phasespace::ymin )/2. ;
-        }
-        inline bool IsIntegratorVariable() const {return true;}
-    };
-
-    // Longitudinal angle theta in Collin-Soper frame
-    NEWKIN(CosThCS){
-        // You can define additional functions for this class
+    /**
+     * @brief Cosine of longitudinal angle \f$\theta\f$ in Collin-Soper frame.
+     *
+     * This class was choosen as example implementation of Observable.
+     *
+     * @note Writing twice the class name is intentional. Check \ref
+     * Observable description for more info. Or use preprocessor macro NEWKIN.
+     */
+    class CosThCS : public Observable< CosThCS > {
+        //! You can define additional functions within this class.
         double Vplus  (double p[4]) { return (p[3]+p[2]); };
         double Vminus (double p[4]) { return (p[3]-p[2]); };
-        // Pointers to global arrays stays updated
+        //! Pointers to global arrays -- stays updated.
         double * lm = p3;
         double * lp = p4;
-        // Variable objects updated automatically. Keeping as class memebers is
-        // less time consuming.
+        /**
+         * @brief Observable objects are updated automatically.
+         *
+         * Keeping them as class memebers is less time consuming.
+         */
         BosPZ pz;
         BosM m;
         BosPT pt;
-        // Mandatory function `calc`: is called when kinematics is updated
+        /**
+         * Mandatory function `calc`: is called when kinematics is updated.
+         *
+         * This where actual calculation of observable goes.
+         *
+         * This definition is consistent with Collins-Sopper-Sterman definition 
+         */
         double calc(){
             double costh=0;
             costh = (Vplus(lm)*Vminus(lp) - Vplus(lp)*Vminus(lm));
@@ -152,13 +185,19 @@ namespace Kinematics{
             costh *=  pz() < 0. ? -1 : 1; //sign flip according to boson rapidity
             return costh;
         }
+        /**
+         * Optional reimplementation of `middlePoint` for Integrable Observables. 
+         * 
+         * @note Dont forget also to set `IsIntegrableObservable` to true !
+         */
         double middlePoint(){
             return ( phasespace::cthmax + phasespace::cthmin )/2. ;
         }
-        inline bool IsIntegratorVariable() const {return true;}
+        //! Optional reimplementation of `IsIntegrableObservable` for Integrable Observables. Otherwise false.
+        inline bool IsIntegrableObservable() const {return true;}
     };
 
-    // Azimuthal angle phi in Collin-Soper frame
+    //! Azimuthal angle phi in Collin-Soper frame.
     NEWKIN(PhiCS){
         double * lm = p3;
         double * lp = p4;
@@ -230,6 +269,7 @@ namespace Kinematics{
     NEWKIN( A5 ){ SinThCS  sinth;  Sin2PhiCS sin2ph; double calc(){ return 5.     * (sinth()*sinth()*sin2ph() ) ;       } };
     NEWKIN( A6 ){ Sin2ThCS sin2th; SinPhiCS  sinph;  double calc(){ return 4.     * (sin2th()*sinph()         ) ;       } };
     NEWKIN( A7 ){ SinThCS  sinth;  SinPhiCS  sinph;  double calc(){ return 4.     * (sinth()*sinph()          ) ;       } };
+    /// @}
 }
 
 #include "user/user_kinem.h"

@@ -184,7 +184,7 @@ public:
   double costhmin, costhmax;
   
   //lepton fiducial cuts
-  bool makelepcuts;
+  bool makecuts;
   double lptcut, lycut;
   double mtcut, etmisscut;
   double l1ptcut, l1ycut, l2ptcut, l2ycut;

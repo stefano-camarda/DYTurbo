@@ -2,39 +2,40 @@
 nproc = 3
 g_param = 0.83595
 order = 1
+seed = 123321
 
 LHAPDFset    = CT10nnlo
 LHAPDFmember    = 0
 PDFerrors = true
 
 intDimRes = 2
-intDimBorn = 2
+intDimBorn = 6
 intDimCT = 2
 intDimVJ = 2
 
-order   = 2
-fixedorder = false
+order   = 1
+fixedorder = true
 # term switches
 doBORN = true
 doCT   = true
 doVJ   = false
 
-doVJREAL = true
-doVJVIRT = true
+doVJREAL = false
+doVJVIRT = false
 
 
 # Cuba settings
 cubacores = 0
-niterBORN        = 5
-niterCT          = 5
-niterVJ          = 10
-vegasncallsBORN     = 1e6
-vegasncallsCT      = 1e6
-vegasncallsVJLO    = 1e3
+niterBORN        = 1
+niterCT          = 1
+niterVJ          = 1
+vegasncallsBORN     = 1e2
+vegasncallsCT      = 1e2
+vegasncallsVJLO    = 1e2
 vegasncallsVJREAL  = 1000
 vegasncallsVJVIRT  = 100
 
-makelepcuts = false
+makecuts = false
 
 qt_bins =  [ 1.0 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0 5.5 6.0 6.5 7.0 7.5 8.0 8.5 9.0 9.5 10.0 ]
 y_bins  =  [ 0 0.2 0.4 0.6 0.8 1.0 ]

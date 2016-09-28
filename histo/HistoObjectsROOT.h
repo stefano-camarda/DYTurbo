@@ -117,7 +117,7 @@ namespace HistoHandler {
             int N_binsZ;
 
             virtual void Init(string bin_name_X, string bin_name_Y="", string bin_name_Z=""){
-                // TODO: Implementing to DYTURBO bins -> get binning
+                /// @todo: Implementing to DYTURBO bins -> get binning
                 for (int i = 0; i < 101; ++i) {
                     binsX.push_back(i);
                     binsY.push_back(i);
@@ -184,8 +184,8 @@ namespace HistoHandler {
             }
 
 
-            // TODO: Destructor:
-            //   * Proper clear memory for current or whole variations
+            /// @todo Destructor: Proper clear memory for current or whole variations
+            
             virtual void Save(){
                 //printf("Saving %s : current %p variations.size %zu \n", name.c_str(), current, variations.size() );
                 outf->cd();
@@ -248,7 +248,6 @@ namespace HistoHandler {
                     }
                     // fill histograms in ibin with sum of all weights
                     if (point.weight!=0 ){ 
-                        // TODO: point fiducial
                         FillPoint(point);
                     }
                 }
@@ -257,7 +256,7 @@ namespace HistoHandler {
 
             // Integrator Mode:
             void AddToBin(double int_val, double int_err){
-                // TODO: if (!isIntegratorSafe) return; // dont fill if all variables are integrator safe
+                /// @todo if (!isIntegratorSafe) return; // dont fill if all variables are integrator safe
                 int ibin = CurrentBin();
                 // if there somethin in bin add it properly
                 double val = current->GetBinContent (ibin);

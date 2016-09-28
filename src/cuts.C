@@ -96,7 +96,7 @@ int cuts_(double p[4][12], int &njet){
 //C native function
 bool cuts::lep(double p3[4], double p4[4])
 {
-  if (!opts.makelepcuts) return true;
+  if (!opts.makecuts) return true;
   return decide_fiducial(p3,p4);
 }
 
@@ -115,10 +115,10 @@ bool cuts::decide_fiducial( double p3[4], double p4[4] ){
 
 	// Fiducial type is zero so in normal run there is no cut. But,
 	// because for wwidth I need fiducial / full I decided to run one job
-	// with full integral (makelepcuts=false) and plots fill only fiducial
+	// with full integral (makecuts=false) and plots fill only fiducial
 	// (fiducial!=0). In case I want to run standard full-integral
 	// full-plotting I need to sef fiducial=0 and makecuts=false
-	if (!opts.makelepcuts) return true; //< so this is here for plotting.
+	if (!opts.makecuts) return true; //< so this is here for plotting.
 	/*****************************/
 
 	if (opts.lptcut > 0)

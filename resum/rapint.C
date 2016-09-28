@@ -1,9 +1,9 @@
 #include "rapint.h"
-#include "settings.h"
+#include "src/settings.h"
 #include "gaussrules.h"
 #include "mellinint.h"
-#include "omegaintegr.h"
-#include "phasespace.h"
+#include "src/omegaintegr.h"
+#include "phasespace/phasespace.h"
 #include <iostream>
 
 int rapint::ydim;
@@ -91,7 +91,7 @@ void rapint::integrate(double ymin, double ymax, double m)
 
   //If there are no cuts on the leptons, calculate the integrals analitically
   //Int_ymin^ymax (CCp/M_PI)^2 * exp(Np(i1)*ax1) * exp(Np(i2)*ax2)
-  if (!opts.makelepcuts)
+  if (!opts.makecuts)
     //Analytical integration
     for (int i1 = 0; i1 < mellinint::mdim; i1++)
       for (int i2 = 0; i2 < mellinint::mdim; i2++)

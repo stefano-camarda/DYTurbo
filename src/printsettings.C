@@ -172,8 +172,8 @@ void printsettings()
   cout << endl;
   //cout << setw(25) << "y range:"      << setw(12) << opts.ylow << setw(12) << opts.yhigh << endl;
   //cout << setw(25) << "m range:"      << setw(12) << opts.mlow << setw(12) << opts.mhigh << endl;
-  cout << setw(25) << "apply lepton cuts:"      << setw(20) << (opts.makelepcuts ? "true" : "false") << endl;
-  if (opts.makelepcuts)
+  cout << setw(25) << "apply lepton cuts:"      << setw(20) << (opts.makecuts ? "true" : "false") << endl;
+  if (opts.makecuts)
     if (opts.fiducial == 0)
       {
 	cout << setw(25) << "pt_l > " << setw(6) << opts.lptcut << endl;
