@@ -13,6 +13,7 @@
 
 #include "histo/Kinematics.h"
 #include "histo/KinematicCuts.h"
+#include "user_kinem.h"
 
 namespace Kinematics {
     namespace Cuts {
@@ -20,20 +21,20 @@ namespace Kinematics {
 
             // You can define variables here (e.g. Observables, cut values, etc.)
             //
-            // bool IDontLikeEvent = false;
-            // BigAnswer answer;
+             bool IDontLikeEvent = false;
+             BigAnswer answer;
 
             bool operator()(){
                 // Fastest way to cut is to return SkipEvent after each
                 // condition:
                 //
-                // if (IDontLikeEvent) return SkipEvent;
-                // if (answer()!=42) return SkipEvent;
+                 if (IDontLikeEvent) return SkipEvent;
+                 if (answer()!=42) return SkipEvent;
                 //
                 // Put your cut here:
                 return KeepEvent;
             }
-        } user_cut;
+        };
     }
 }
 

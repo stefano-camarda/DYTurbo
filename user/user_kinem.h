@@ -10,11 +10,13 @@
  * @date 2016-09-07
  */
 
+#include "histo/KinematicDefinitions.h"
+
 namespace Kinematics {
     // You can define custom observables and use them afterwards for custom
     // histograms or cuts.
     //
-    // NEWKIN ( BigAnswer ) { double calc(){ return 42;}  };
+     NEWKIN ( BigAnswer ) { double calc(){ return 42;}  };
     //
     // Put your Observable definition here:
 }

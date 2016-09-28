@@ -12,7 +12,7 @@
 
 #include "Kinematics.h"
 #include "KinematicDefinitions.h"
-#include "user/user_cuts.h"
+#include "KinematicCuts.h"
 
 namespace Kinematics{
 
@@ -76,11 +76,13 @@ namespace Kinematics{
             }
         } standard_cuts;
 
+        UserCuts user_cuts;
+
         bool KeepThisEvent(double p3[4], double p4[4]){
             SetKinematics(p3,p4);
             if (opts.makecuts){
                 if ( standard_cuts() == SkipEvent ) return SkipEvent ;
-                if ( user_cut() == SkipEvent ) return SkipEvent ;
+                if ( user_cuts() == SkipEvent ) return SkipEvent ;
             }
             return KeepEvent;
         }
