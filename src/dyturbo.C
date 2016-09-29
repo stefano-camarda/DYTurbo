@@ -51,77 +51,18 @@ bool DYTurbo::isDryRun = false;
 
 namespace DYTurbo {
 
+    // definition of data member
     Term subtotal;
-
-    // Boundaries
-    struct Boundaries{
-        std::string name ="";
-        VecDbl data;
-        inline BoundariesListItr begin() { return data.begin();};
-        inline BoundariesListItr end()   { return data.end(); };
-        inline double front() { return data.front();};
-        inline double back()  { return data.back(); };
-        inline size_t size()  { return data.size(); };
-    };
-
+    TermList ActiveTerms;
     BoundariesList ActiveBoundaries;
 
-    enum BoundaryIndex {
-        b_M=0,
-        b_Y,
-        b_QT,
-        b_CsTh,
-        //b_Phi,
-        N_boundaries
-    };
-
-
-    BoundIterator::BoundIterator(){
-        // set first boundary
-        isFirst=true;
-        current.clear();
-        if (!ActiveBoundaries.empty())
-            for (size_t i = 0; i < N_boundaries; ++i) {
-                current.push_back(ActiveBoundaries[i].begin());
-            }
-    }
-
-    bool BoundIterator::IsEnd(){
-        if (isFirst) {
-            isFirst=false;
-            return false;
-        }
-        for (size_t i = 0; i < N_boundaries; ++i)
-            if (current[i] != ActiveBoundaries[i].begin() )
-                return false;
-        return true;
-    }
-
-    BoundIterator & BoundIterator::operator++(){
-        for (int i = N_boundaries-1; i >= 0; --i) { // start from end
-            current[i]++; // increase
-            // check if it's equal to previous to last (need two numbers as boundaries)
-            if(current[i]!=ActiveBoundaries[i].end()-1) break; // go to return
-            else current[i]=ActiveBoundaries[i].begin(); // is previous to last 
-        }
-        return (*this);
-    }
-
-    void BoundIterator::Print(){
-        printf ("Boundaries ");
-        printf ( "| M    : %f -- %f " , *current [ b_M    ] , * ( current [ b_M    ] +1 ) ) ;
-        printf ( "| Qt   : %f -- %f " , *current [ b_QT   ] , * ( current [ b_QT   ] +1 ) ) ;
-        printf ( "| Y    : %f -- %f " , *current [ b_Y    ] , * ( current [ b_Y    ] +1 ) ) ;
-        printf ( "| CsTh : %f -- %f " , *current [ b_CsTh ] , * ( current [ b_CsTh ] +1 ) ) ;
-        printf ( "\n");
-    }
+    // Term
 
     void Term::last_reset() {
         last_int.assign(opts.totpdf,0.);
         last_err2=0;
         last_time = clock_real();
     }
-
 
     void Term::RunIntegration(){
         double err;
@@ -159,7 +100,8 @@ namespace DYTurbo {
         cout << setw(24)  << name.c_str() << ":";
         cout << description.c_str();
     }
-    TermList ActiveTerms;
+
+    // Term iterator
 
     TermIterator::TermIterator() : icurrent(0) { }
 
@@ -176,7 +118,51 @@ namespace DYTurbo {
         return ActiveTerms[icurrent];
     }
 
+    // Boundary iterator
 
+    BoundIterator::BoundIterator(){
+        // set first boundary
+        isFirst=true;
+        current.clear();
+        if (!ActiveBoundaries.empty())
+            for (size_t i = 0; i < N_boundaries; ++i) {
+                current.push_back(ActiveBoundaries[i].begin());
+            }
+    }
+
+    bool BoundIterator::IsEnd(){
+        if (isFirst) return false;
+        for (size_t i = 0; i < N_boundaries; ++i)
+            if (current[i] != ActiveBoundaries[i].begin() )
+                return false;
+        return true;
+    }
+
+    BoundIterator & BoundIterator::operator++(){
+        for (int i = N_boundaries-1; i >= 0; --i) { // start from last 
+            current[i]++; // increase
+            // check if it's equal to previous to last (need two numbers as boundaries)
+            if(current[i]!=ActiveBoundaries[i].end()-1) break; // go to return
+            else current[i]=ActiveBoundaries[i].begin(); // is previous to last 
+        }
+        /**
+         * @attention After looping through all of boundary bins it points back
+         * to beginning. Therefore it is necessary to set `isFirst=false` 
+         */
+        if (isFirst) isFirst=false;
+        return (*this);
+    }
+
+    void BoundIterator::Print(){
+        printf ("Boundaries ");
+        printf ( "| M    : %f -- %f " , *current [ b_M    ] , * ( current [ b_M    ] +1 ) ) ;
+        printf ( "| Qt   : %f -- %f " , *current [ b_QT   ] , * ( current [ b_QT   ] +1 ) ) ;
+        printf ( "| Y    : %f -- %f " , *current [ b_Y    ] , * ( current [ b_Y    ] +1 ) ) ;
+        printf ( "| CsTh : %f -- %f " , *current [ b_CsTh ] , * ( current [ b_CsTh ] +1 ) ) ;
+        printf ( "\n");
+    }
+
+    // Helper structs for printing.
     namespace PrintTable{
         struct Col4 {
             String data;
@@ -206,6 +192,10 @@ namespace DYTurbo {
         inline std::ostream & operator<< (std::ostream & strm, const Col3 &col){ strm << col.data; return strm; }
     }
 
+
+    // Main DYTurbo functions
+
+    //! Initialize parameters of submodules
     void init_params(){
         // init filling
         dofill_.doFill_ = 0;
@@ -259,9 +249,21 @@ namespace DYTurbo {
         /***********************************/
     }
 
-    // this is hidden only for test purposes
+    //! Internal flag only for test purposes
     bool TestAllTerms=false;
 
+    /**
+     * @brief Add term to active terms if is requested.
+     *
+     * Also it is checked if we are only using Vegas for integration. TYhi
+     *
+     * @param isActive If this false then skip all stuff.
+     * @param fun The pointer to integration function, which should be called for calculation.
+     * @param name Set the name of term
+     * @param is_vegas For checking if we need Integration mode.
+     *
+     * @return It returns newly added term so we can define description by using stream operator.
+     */
     Term & AddTermIfActive(const bool &isActive, void (* fun)(VecDbl &val,double &err), const String &name, const bool &is_vegas ){
         subtotal.description = "";
         if (!isActive && !TestAllTerms) return subtotal;
@@ -291,7 +293,7 @@ namespace DYTurbo {
         int w2=12;
         int w3=12;
         string name;
-        // born
+        // finite born
         bool fixed_born = opts.doBORN && opts.fixedorder;
         if (fixed_born || TestAllTerms) {
             name="Fixed born";
@@ -333,17 +335,40 @@ namespace DYTurbo {
         AddTermIfActive ( opts.doVJVIRT  , vjvirtintegr , "V+J Virtual" , isVegas) << PrintTable::Col3 ( "vegas" , "ncalls =" , opts.vegasncallsVJVIRT );
     }
 
+    /**
+     * @brief Check for Integration mode and add boundary.
+     *
+     * If we have only Vegas calculations we can run with simple boundaries.
+     * This means we will only pick up one bin with lowest and hightest value
+     * as boundaries.
+     *
+     * @param ib Index of variable (\ref BoundaryIndex can be used as input)
+     * @param name Name of boundary. Will be used for printing.
+     * @param bins All boundaries requested from user.
+     * @return Description of return.
+     */
     void AddBoundary(size_t ib, string name, VecDbl &bins ){
         ActiveBoundaries[ib].name = name;
         ActiveBoundaries[ib].data.clear();
-        if (HasOnlyVegas){
+        if (HasOnlyVegas){ // simple boundary mode
             ActiveBoundaries[ib].data.push_back(bins.front());
             ActiveBoundaries[ib].data.push_back(bins.back());
-        } else {
+        } else { // integration mode
             ActiveBoundaries[ib].data = bins;
         }
     }
 
+    /**
+     * @brief Adding all boundaries
+     *
+     *  This have to be done after adding all terms (becaus of check for Vegas
+     *  only).
+     *
+     *  If adding new boundary definition please also add new enum item into \ref BoundaryIndex.
+     *
+     * @param _inArg Description of param
+     * @return Description of return.
+     */
     void AddBoundaries(){
         ActiveBoundaries.resize(N_boundaries);
         VecDbl costh{opts.costhmin , opts.costhmax};
@@ -353,10 +378,15 @@ namespace DYTurbo {
         AddBoundary ( b_CsTh , "costh" , costh );
     }
 
+    /**
+     * @brief First run of resummation.
+     *
+     * If using the DYRES approximation for PDFs, make sure that the PDF fit
+     * is initialised in the same way Need to throw a random point according
+     * to a breit wigner, which is used to determine xtauf in the PDF fit
+     *
+     */
     void WarmUpResummation(){
-        /*****************************************/
-        //If using the DYRES approximation for PDFs, make sure that the PDF fit is initialised in the same way
-        //Need to throw a random point according to a breit wigner, which is used to determine xtauf in the PDF fit
         double costh, m, qt, y;
         int mode = 0;
         if (opts.doBORN || opts.doCT){
@@ -386,28 +416,29 @@ namespace DYTurbo {
         }
         double f[opts.totpdf];
         ctint_(costh,m,qt,y,mode,f);
-        /****************************************/
     }
 
 
     void WarmUp(){
-        // create term list for calculation
-        // check if bounds should be simple (MC) or per each bin (cubature mode)
+        /// - Create term list for calculation
+        /// - Check if bounds should be simple (MC) or per each bin (cubature mode)
         AddTerms();
         AddBoundaries();
-        // check if all histograms are integrable if necessary (make warning)
+        /// - Check if all histograms are integrable if necessary (make warning)
         HistoHandler::Book();
-        // check if we need to warm up CT integration or Resummation
+        /// - Check if we need to warm up CT integration or Resummation
         WarmUpResummation();
-        // clear subtotal
+        /// - Clear subtotal
         subtotal = Term();
         subtotal.name = "TOTAL";
         subtotal.last_int.assign(opts.totpdf,0);
         PrintTable::IntegrationSettings();
     }
 
+    //! Helper bounds: remember last bounds for printing.
     BoundIterator last_bounds;
 
+    //! Set current boundaries to phasespace.
     void SetBounds(BoundIterator bounds){
         phasespace::setcthbounds(
                 bounds.loBound ( b_CsTh  )  , bounds.hiBound ( b_CsTh  ) 
@@ -419,15 +450,20 @@ namespace DYTurbo {
         last_bounds = bounds;
     }
 
+    //! Close, clear, delete and say bye bye..
     void Terminate(){
         ActiveTerms.clear();
+        ActiveBoundaries.clear();
+        subtotal.last_reset();
+        /// @todo HistoHandler::Terminate();
     }
+
 
     namespace PrintTable {
 
-        size_t eoc=2; // bound length
-        size_t wb=5; // bound length
-        size_t wr=5; // result length
+        size_t eoc=2; //!< end of cell length
+        size_t wb=5; //!< bound length
+        size_t wr=5; //!< result length
         size_t bound_width = 2*wb+3;
         size_t time_width = 0;
         size_t term_width = 2*wr+4 + time_width;
@@ -435,6 +471,7 @@ namespace DYTurbo {
         inline void EndOfCell()  { cout << " |" << flush; }
         inline void BeginOfRow() { cout << "|"  << flush; }
         inline void EndOfRow()   { cout << endl;          }
+
         void Hline(){
             size_t N_loopingBounds =0;
             for (auto &a: ActiveBoundaries ) if (a.size()>2) N_loopingBounds++;

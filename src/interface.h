@@ -108,6 +108,7 @@ extern "C" {
     double xqtcut_;
   } qtsub_;
 
+  //! Flag for filling. Only last 60% of events are used to fill histogram.
   extern struct {
     int doFill_;
   } dofill_;

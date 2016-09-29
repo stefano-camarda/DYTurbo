@@ -130,7 +130,7 @@ TEST(DYTurbo,MainLoop){
 }
 
 
-// Testing term
+// Helper interface to DYTurbo for testing all terms.
 namespace DYTurbo{ 
     extern bool TestAllTerms; 
     void init_params();
@@ -138,12 +138,14 @@ namespace DYTurbo{
 
 
 
+//! RunIntegrand for cubature like integrands.
 void RunIntegrand( int (* (*fun)(const int&, const double*, const int&, double*))(const int*, const double*, const int*, double*, void*),
         int & dim, double *point,double * result
         ){
     int ncomp = 1;
     fun(dim,point,ncomp,result);
 }
+//! RunIntegrand for Vegas like integrands.
 void RunIntegrand( int (* (*fun)(const int&, const double*, const int&, double*, void*, const int&, const int&, double&, const int&))(const int*, const double*, const int*, double*, void*),
         int & dim, double *point,double * result
         ){
@@ -155,6 +157,7 @@ void RunIntegrand( int (* (*fun)(const int&, const double*, const int&, double*,
     const int iter=1;
     fun(dim,point,ncomp,result,userdata,nvec,core,weight,iter);
 }
+//! Run and check integrand output.
 template<typename IntFun>
 void CheckIntegrand(int &ord, const char *name, IntFun fun, int dim){
     /// @todo For finite born level set random number corresponding to pt to 0
@@ -171,6 +174,9 @@ void CheckIntegrand(int &ord, const char *name, IntFun fun, int dim){
     }
 }
 
+/**
+ * @brief Testing the output of every integrand function separatelly
+ */
 TEST(DYTurbo,CheckIntegrandFunctions){
     // turn off dryrun
     DYTurbo::isDryRun = true;
@@ -234,12 +240,16 @@ TEST(DYTurbo,CheckIntegrandFunctions){
 
     }
     fclose(F);
-    // NOTE: To see values saved in file run
-    //  `hexdump -v -e '"%010_ad :" 7/8 " %e " "\n"' test/terms.res`
-    //   - one line is seven numbers, there are 6 kinematic points
-    //   - first 6 lines is for resummed part 
-    //   - next 12 lines is for fixed order part
-    //   - This repeated 3 times (per each order)
+    /**
+     *  @note To see values saved in file run
+     *
+     *         hexdump -v -e '"%010_ad :" 7/8 " %e " "\n"' test/terms.res
+     *
+     *    - one line is seven numbers, there are 6 kinematic points
+     *    - first 6 lines is for resummed part
+     *    - next 12 lines is for fixed order part
+     *    - This repeated 3 times (per each order)
+     */
 }
 
 
