@@ -1,15 +1,15 @@
 #include "config.h"
 
-#include "init.h"
-#include "omegaintegr.h"
-#include "phasespace.h"
-#include "settings.h"
-#include "interface.h"
+#include "src/dyturbo.h"
+#include "src/init.h"
+#include "src/omegaintegr.h"
+#include "src/settings.h"
+#include "src/interface.h"
+#include "phasespace/phasespace.h"
 #include "resintegr.h"
 #include "ctintegr.h"
 #include "finintegr.h"
 #include "finitemapping.h"
-#include "printsettings.h"
 #include "resint.h"
 #include "rapint.h"
 
@@ -30,7 +30,7 @@ int main( int argc , char * argv[])
   /***********************************/
   //Initialization
   try {
-      dyturboinit(argc,argv);
+      DYTurbo::Init(argc,argv);
   } catch (QuitProgram &e) {
       // print help and die
       printf("%s \n",e.what());
@@ -43,7 +43,7 @@ int main( int argc , char * argv[])
   ///@todo: print out EW parameters and other settings
   // just a check
   opts.dumpAll();
-  printsettings();
+  DYTurbo::PrintTable::Settings();
   /***********************************/
 
   double costh, m, qt, y;

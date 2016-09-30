@@ -13,6 +13,9 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <iomanip>
+using std::setw;
+using std::setprecision;
 
 /**
  * @brief Interface to properly control calculation.
@@ -55,6 +58,10 @@ namespace DYTurbo {
      * also calling initialization of submodules.
      */
     void Init(int argc, char * argv[]);
+    /**
+     * @brief Initialization of submodules.
+     */
+    void init_params();
 
     /**
      * @brief Warming up integration.
@@ -79,7 +86,7 @@ namespace DYTurbo {
     void Terminate();
 
     namespace PrintTable {
-        void IntegrationSettings();
+        void Settings();
         void Header() ;
         void Bounds(bool use_full_bound=false) ;
         void Result(const Term &term,bool printGrandTotal=false) ;
@@ -271,7 +278,46 @@ namespace DYTurbo {
          */
         bool isFirst;
     };
+ 
+    //! Helper bounds: remember last bounds for printing.
+    extern BoundIterator last_bounds;
 
+
+    namespace PrintTable{
+        //! Helper structs for printing: Four column
+        const int colw1 = 25;
+        const int colw2 = 20;
+        const int colw3 = 15;
+        const int colw4 = 12;
+
+        struct Col4 {
+            String data;
+            template<class S1, class S2, class S3, class S4 > Col4( S1 col1, S2 col2, S3 col3, S4 col4, int prec=6){
+                SStream tmp;
+                tmp << setprecision(prec) << setw(colw1) << col1;
+                tmp << setprecision(prec) << setw(colw2) << col2;
+                tmp << setprecision(prec) << setw(colw3) << col3;
+                tmp << setprecision(prec) << setw(colw4) << col4;
+                tmp << '\n';
+                data = tmp.str();
+            }
+        };
+        inline std::ostream & operator<< (std::ostream & strm, const Col4 &col){ strm << col.data; return strm; }
+
+        //! Helper structs for printing: Four column, skip first
+        struct Col3{
+            String data;
+            template<class S2, class S3, class S4 > Col3(S2 col2, S3 col3, S4 col4){
+                SStream tmp;
+                tmp << setw(colw2) << col2;
+                tmp << setw(colw3) << col3;
+                tmp << setw(colw4) << col4;
+                tmp << '\n';
+                data = tmp.str();
+            }
+        };
+        inline std::ostream & operator<< (std::ostream & strm, const Col3 &col){ strm << col.data; return strm; }
+    }
 
 }
 
