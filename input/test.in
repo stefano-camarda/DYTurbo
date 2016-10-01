@@ -1,8 +1,8 @@
 
-nproc = 3
+nproc = 1
 g_param = 0.83595
 order = 1
-seed = 123321
+rseed = 123321
 
 LHAPDFset    = CT10nnlo
 LHAPDFmember    = 0

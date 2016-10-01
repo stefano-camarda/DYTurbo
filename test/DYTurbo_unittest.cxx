@@ -183,9 +183,6 @@ TEST(DYTurbo,CheckIntegrandFunctions){
     // turn on all terms 
     DYTurbo::TestAllTerms = true;
     // set boundaries
-    opts.makecuts=false;
-    opts.nproc=3;
-    nproc_.nproc_ = opts.nproc;
     bins.qtbins = {0., 10. , 80., 100.  };
     bins.ybins  = {0., 1. , 3.   };
     bins.mbins  = {80. , 100. };
