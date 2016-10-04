@@ -10,8 +10,9 @@
  * @date 2016-08-28
  */
 
-#include "Kinematics.h"
+#include "src/settings.h"
 
+// ROOT includes
 #include <TFile.h>
 #include <TH1D.h>
 #include <TH2D.h>
@@ -19,27 +20,30 @@
 #include <TProfile.h>
 #include <TProfile2D.h>
 
-#include <sstream>
-using std::ostringstream;
+#include "Kinematics.h"
+#include "HistoHandler.h"
 
-#include <vector>
-using std::vector;
-
-#include <string>
-using std::string;
-#include <wordexp.h>
+//#include <wordexp.h>
+#include <ctime>
 
 namespace HistoHandler {
 
     TFile * outf;
 
     void OpenOutputFile(int iworker){
-        ostringstream outfname;
+        SStream outfname;
+        outfname << "tmp_";
         outfname << result_filename;
-        //if (iworker!=PARENT_PROC) outfname << "_" << iworker; // better to use getpid
+        outfname << "_";
         int current_pid = getpid();
-        if (current_pid!=parent_pid) outfname << "_" << iworker << "_" << current_pid;
-        outfname << ".root";
+        if (current_pid!=parent_pid or iworker!=PARENT_PROC){
+            // worker always create uniq file
+            outfname << iworker << "_" << current_pid << "_" << time(NULL);
+        } else {
+            // main is always rewriten, because it stays in memory.
+            outfname << "main";
+        }
+        outfname << file_suffix;
         outf = TFile::Open(outfname.str().c_str(),"RECREATE");
         outf->cd();
     }
@@ -49,66 +53,32 @@ namespace HistoHandler {
         outf->Write();
         outf->Close();
         outf=0;
-        // Since there could be some parallel files from jobs which has been
-        // finished try to merge them and save result hadd file.
-        if (getpid()==parent_pid){ // only in main thread
-            ostringstream tmp; tmp.str(""); // clear first
-            tmp << "ls -la " << result_filename <<"_*.root > /dev/null 2>&1";
-            if (system(tmp.str().c_str())==0) { // if there is ${result_filename}_*.root file:
-                tmp.str(""); // clear tmp
-                // this will include current workers as well as previous hadd
-                tmp << "hadd addtmp.root " << result_filename <<"_*.root > /dev/null && ";
-                // remove workers and previous hadd
-                tmp << "rm " <<  result_filename <<"_*.root && ";
-                // save temporary file file for future runs
-                tmp << "mv addtmp.root " << result_filename <<"_hadd.root ";
-                if (system(tmp.str().c_str())!=0) printf ("Something went wrong during `%s`. Better to throw exception",tmp.str().c_str());
-            } // no results_*.root file: parent file was already rewritten
-        } // else do nothing.. merge only after all workers are finished (beacause of async, you have to wait)
     }
 
     void Merge(int iworker){
         // Merging of files in the end.
-        if (getpid()==parent_pid){ // only in main thread
-            ostringstream tmp;
-            tmp.str(""); tmp << "ls " << result_filename <<"_hadd.root > /dev/null 2>&1";
-            if (system(tmp.str().c_str())==0) { // if there is hadd file.
-                // merge it with parent file
-                tmp.str("");
-                tmp << "hadd addtmp.root " << result_filename <<".root " << result_filename <<"_hadd.root > /dev/null && ";
-                // remove already merged files
-                tmp << "rm " << result_filename <<".root " << result_filename <<"_hadd.root && ";
-                // rename final merge
-                tmp << "mv addtmp.root " << result_filename <<".root ";
-                if (system(tmp.str().c_str())!=0) printf ("Something went wrong during `%s`. Better to throw exception",tmp.str().c_str());
-            } // else do nothing, it was single thread run
+        if (getpid()==parent_pid || iworker==PARENT_PROC){ // only in main thread
+            SStream tmp;
+            // merge it with parent file
+            tmp.str("");
+            tmp << " hadd -f " << result_filename << file_suffix;
+            tmp << " tmp_" << result_filename <<"_*" << file_suffix;
+            // @todo if verbose print
+            tmp << " > /dev/null ";
+            // remove temporary files
+            tmp << " && rm -f ";
+            tmp << " tmp_" << result_filename <<"_*" << file_suffix;
+            if (system(tmp.str().c_str())!=0) printf ("Something went wrong during `%s`. Better to throw exception",tmp.str().c_str());
         } // else do nothing, workers should not terminate anything
-
-        // THis is wrong
-        // async exitfun: could hadd wrong files
-        // if (iworker==PARENT_PROC){
-        //     // if there is tmp.root file:
-        //         // hadd add.root result.root tmp.root
-        //         // mv add.root result.root
-        //         // rm tmp.root
-        //     // not tmp.root file: do nothing
-        // } else {  // is worker
-        //     // if there is tmp.root file:
-        //         // hadd add.root result_i.root tmp.root
-        //         // mv add.root tmp.root
-        //         // rm result_i.root
-        //     // not temp file 
-        //         // create one
-        // }
     }
 
     // wrapper for common functionality above ROOT histograms
     template<class TH> class HistoROOT : virtual public HistoBase {
         protected :
             // Common initialization
-            vector<double> binsX;
-            vector<double> binsY;
-            vector<double> binsZ;
+            VecDbl binsX;
+            VecDbl binsY;
+            VecDbl binsZ;
             double * p_binsX;
             double * p_binsY;
             double * p_binsZ;
@@ -116,23 +86,21 @@ namespace HistoHandler {
             int N_binsY;
             int N_binsZ;
 
-            virtual void Init(string bin_name_X, string bin_name_Y="", string bin_name_Z=""){
-                /// @todo: Implementing to DYTURBO bins -> get binning
-                for (int i = 0; i < 101; ++i) {
-                    binsX.push_back(i);
-                    binsY.push_back(i);
-                    binsZ.push_back(i);
-                }
+            ~HistoROOT(){
+                Delete();
+            }
+
+            virtual void Init(String bin_name_X, String bin_name_Y="", String bin_name_Z=""){
                 name="";
                 title=";";
                 // get binning, name and title
-                //bins.Get(bin_name_X,binsX);
+                bins.GetBins(bin_name_X,binsX);
                 N_binsX=binsX.size()-1;
                 p_binsX=&binsX.front();
                 name+=bin_name_X;
                 title+=bin_name_X;
                 if (bin_name_Y.length()!=0){
-                    //bins.Get(bin_name_Y,binsY);
+                    bins.GetBins(bin_name_Y,binsY);
                     N_binsY=binsY.size()-1;
                     p_binsY=&binsY.front();
                     name+="_vs_";
@@ -141,7 +109,7 @@ namespace HistoHandler {
                     title+=bin_name_Y;
                 }
                 if (bin_name_Z.length()!=0){
-                    //bins.Get(bin_name_Z,binsZ);
+                    bins.GetBins(bin_name_Z,binsZ);
                     N_binsZ=binsZ.size()-1;
                     p_binsZ=&binsZ.front();
                     name+="_vs_";
@@ -153,9 +121,9 @@ namespace HistoHandler {
 
             // Histogram and PDF
             // histogram and container for all pdf variations
-            TH* current;
-            vector<TH*> variations;
-            size_t current_variation;
+            TH* current=NULL;
+            std::vector<TH*> variations;
+            size_t current_variation=0;
 
         public :
             // changing PDF
@@ -176,7 +144,7 @@ namespace HistoHandler {
                     newmem->Reset();
                     variations.push_back(newmem);
                     size = variations.size();
-                } else if(ivar.index>size) printf("ERROR: this should not happen\n");
+                } else if(ivar.index>size) printf("ERROR: this should not happen ivar.index = %zu size= %zu\n", ivar.index, size);
                 // change poiters to correct variation histograms and set last member
                 current = variations[ivar.index];
                 current_variation = ivar.index;
@@ -184,8 +152,7 @@ namespace HistoHandler {
             }
 
 
-            /// @todo Destructor: Proper clear memory for current or whole variations
-            
+
             virtual void Save(){
                 //printf("Saving %s : current %p variations.size %zu \n", name.c_str(), current, variations.size() );
                 outf->cd();
@@ -202,7 +169,20 @@ namespace HistoHandler {
             }
 
             void Delete(){
-                if (current!=0) delete current;
+                if (variations.size()==0) {
+                    if (current!=NULL){
+                        delete current;
+                    }
+                } else {
+                    for (size_t ivar = 0; ivar < variations.size(); ++ivar) {
+                        if (variations[ivar]!=NULL){
+                            delete variations[ivar];
+                            variations[ivar]=NULL;
+                        }
+                    }
+                    variations.clear();
+                }
+                current = NULL;
             };
 
 
@@ -218,7 +198,7 @@ namespace HistoHandler {
                 double valZ;
                 double weight;
             } current_point;
-            vector<DipPt> dipole_points;
+            std::vector<DipPt> dipole_points;
 
             virtual int CurrentBin()=0;
             virtual void FillPoint(DipPt point)=0;
@@ -255,8 +235,11 @@ namespace HistoHandler {
 
 
             // Integrator Mode:
+            bool isIntegrationSafe=false;
+            inline bool IsIntegrationSafe() const {return isIntegrationSafe;}
+
             void AddToBin(double int_val, double int_err){
-                /// @todo if (!isIntegratorSafe) return; // dont fill if all variables are integrator safe
+                if (!isIntegrationSafe) return;
                 int ibin = CurrentBin();
                 // if there somethin in bin add it properly
                 double val = current->GetBinContent (ibin);
@@ -270,22 +253,28 @@ namespace HistoHandler {
 
             inline double GetEntries() const {return current->GetEntries();}
             inline const char* GetName() const {return current->GetName();}
-            inline void Clear() {return current->Reset();}
 
-
+            inline void Reset() {
+                current->Reset();
+                for (size_t ivar = 0; ivar < variations.size(); ++ivar) variations[ivar]->Reset();
+            }
     };
 
 
     // specialization
     template<class TX> class Histo1D : public HistoROOT<TH1D> {
+        private:
+            TX varX;
+
         public:
-            Histo1D(const string &bin_name_X){
+            Histo1D(const String &bin_name_X){
                 // general init
                 Init(bin_name_X);
                 name = "s_"+name;
                 title += ";#sigma[fb]";
                 // create new
                 current = new TH1D( name.c_str(), title.c_str(), N_binsX, p_binsX );
+                isIntegrationSafe = varX.IsIntegrableObservable();
             }
 
             virtual void FillEvent(){
@@ -304,21 +293,18 @@ namespace HistoHandler {
             void FillPoint(DipPt point){
                 current->Fill(point.valX,point.weight);
             }
-
-
-        private:
-            TX varX;
     };
 
     template<class TX, class TY> class Histo2D : public HistoROOT<TH2D> {
         public :
-            Histo2D(const string &bin_name_X, const string &bin_name_Y){
+            Histo2D(const String &bin_name_X, const String &bin_name_Y){
                 // general init
                 Init(bin_name_X,bin_name_Y);
                 name = "s_"+name;
                 title += ";#sigma[fb]";
                 // create new
                 current = new TH2D( name.c_str(), title.c_str(), N_binsX, p_binsX, N_binsY, p_binsY );
+                isIntegrationSafe = varX.IsIntegrableObservable() && varY.IsIntegrableObservable();
             }
 
             virtual void FillEvent(){
@@ -347,12 +333,13 @@ namespace HistoHandler {
 
     template<class TX, class TY, class TZ> class Histo3D : public HistoROOT<TH3D> {
         public :
-            Histo3D(const string &bin_name_X, const string &bin_name_Y, const string &bin_name_Z){
+            Histo3D(const String &bin_name_X, const String &bin_name_Y, const String &bin_name_Z){
                 // general init
                 Init(bin_name_X,bin_name_Y,bin_name_Z);
                 name = "s_"+name;
                 // create new
                 current = new TH3D( name.c_str(), title.c_str(), N_binsX, p_binsX, N_binsY, p_binsY ,  N_binsZ, p_binsZ );
+                isIntegrationSafe = varX.IsIntegrableObservable() && varY.IsIntegrableObservable() && varZ.IsIntegrableObservable();
             }
 
             virtual void FillEvent(){
@@ -384,7 +371,7 @@ namespace HistoHandler {
 
     template<class TX, class TY> class HistoProfile : public HistoROOT<TProfile> {
         public :
-            HistoProfile(const string &bin_name_X,const string &bin_name_Y){
+            HistoProfile(const String &bin_name_X,const String &bin_name_Y){
                 // general init
                 Init(bin_name_X);
                 // change name, add axis title
@@ -393,6 +380,7 @@ namespace HistoHandler {
                 name=bin_name_Y+"_"+name;
                 // create new
                 current = new TProfile( name.c_str(), title.c_str(), N_binsX, p_binsX);
+                isIntegrationSafe = varX.IsIntegrableObservable() && varY.IsIntegrableObservable();
             }
 
             virtual void FillEvent(){
@@ -424,7 +412,7 @@ namespace HistoHandler {
 
     template<class TX, class TY, class TZ> class HistoProfile2D : public HistoROOT<TProfile2D> {
         public :
-            HistoProfile2D(const string &bin_name_X,const string &bin_name_Y, const string &bin_name_Z){
+            HistoProfile2D(const String &bin_name_X,const String &bin_name_Y, const String &bin_name_Z){
                 // general init
                 Init(bin_name_X, bin_name_Y);
                 // change name, add axis title
@@ -433,6 +421,7 @@ namespace HistoHandler {
                 name=bin_name_Z+"_"+name;
                 // create new
                 current = new TProfile2D( name.c_str(), title.c_str(), N_binsX, p_binsX, N_binsY, p_binsY);
+                isIntegrationSafe = varX.IsIntegrableObservable() && varY.IsIntegrableObservable() && varZ.IsIntegrableObservable();
             }
 
             virtual void FillEvent(){
@@ -458,7 +447,7 @@ namespace HistoHandler {
         private:
             TX varX;
             TY varY;
-            TY varZ;
+            TZ varZ;
     };
 
 }

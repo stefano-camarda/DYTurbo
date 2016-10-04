@@ -14,8 +14,6 @@
 #include "HistoHandler.h"
 #include "HistoObjects.h"
 
-#include <map>
-using std::map;
 
 #include <sstream>
 using std::ostringstream;
@@ -23,37 +21,54 @@ using std::ostringstream;
 using namespace Kinematics;
 
 // interface:
-void histo_setpdf(int *imember){
-    HistoHandler::SetVariation(*imember);
+void disabled_hists_setpdf_(int * npdf){
+    HistoHandler::SetVariation(*npdf);
 }
-void histo_fill(double *l1,double *l2,double *wgt){
-    HistoHandler::FillEvent(l1,l2,*wgt);
+
+void disabled_hists_fill_pdf_(double p3[4], double p4[4], double *weight, int *npdf){
+    HistoHandler::SetVariation(*npdf);
+    HistoHandler::FillEvent(p3,p4,*weight);
 }
-void histo_filldipole(double *l1,double *l2, double *wgt){
-    HistoHandler::FillDipole(l1,l2,*wgt);
+
+void disabled_hists_real_dipole_(double p3[4], double p4[4], double *weight, int * nd){
+    HistoHandler::FillDipole(p3,p4,*weight);
 }
-void histo_fillreal(){
+
+void disabled_hists_real_dipole_pdf_(double p3[4], double p4[4], double *weight, int * nd, int* npdf){
+    HistoHandler::SetVariation(*npdf);
+    HistoHandler::FillDipole(p3,p4,*weight);
+}
+
+void disabled_hists_real_event_(){
     HistoHandler::FillRealEvent();
 }
+
+void disabled_hists_real_event_pdf_(int *npdf){
+    /// @attention This is very dangerous !!!
+    HistoHandler::SetVariation(*npdf);
+    HistoHandler::FillRealEvent();
+}
+
+void disabled_hists_finalize_(){
+    HistoHandler::Terminate();
+}
+
 
 
 namespace HistoHandler{
 
-    // Container of all histograms and profiles
-    HistoContainer hists;
-    // Mode of integration
+    // declaration of global data members
+    HistoContainer histos;
     bool isFillMode=true;
-    // Output file withou suffix
-    string result_filename="results";
-    // Pid for main thread
+    String result_filename="results";
     int parent_pid=0;
 
     void Init() {
         /**
          * @todo Implement to DYTURBO
-         * - isFillMode = (bins.plotmode == "integrate");
-         * - Initiate as long vector as necessary in beginning : Check if we are  doing pdf scanning, if yes then prebook histograms.
-         * - Check we will use just one variation, then set it from beginning
+         *  - isFillMode , check terms is done on warm up, we need additional check
+         *  - Check we will use just one variation, then set it from beginning
+         *  - Initiate as long vector as necessary in beginning : Check if we are  doing pdf scanning, if yes then prebook histograms
          */
         Book();
         SetVariation(0); // start from 0
@@ -61,50 +76,52 @@ namespace HistoHandler{
     }
 
     void DeleteHists(){
-        while (!hists.empty()){
-            hists.back()->Delete();
-            hists.pop_back();
+        for (size_t ih = 0; ih < histos.size(); ++ih) {
+            histos[ih]->Delete();
         }
+        histos.clear();
     }
 
-    void Clear(){
-        for (auto h_it = hists.begin();h_it!=hists.end();h_it++){
-            (*h_it)->Clear();
+    void Reset(){
+        for (size_t ih = 0; ih < histos.size(); ++ih) {
+            histos[ih]->Reset();
         }
     }
 
     void FillEvent(double p3[4],double p4[4], double wgt){
         SetKinematics(p3,p4,wgt);
-        for (auto h_it = hists.begin();h_it!=hists.end();h_it++){
-            (*h_it)->FillEvent();
+        for (size_t ih = 0; ih < histos.size(); ++ih) {
+            histos[ih]->FillEvent();
         }
     }
 
     void FillResult(double int_val, double int_err){
         SetMiddlePoint();
-        for (auto h_it = hists.begin();h_it!=hists.end();h_it++){
-            (*h_it)->AddToBin(int_val,int_err);
+        for (size_t ih = 0; ih < histos.size(); ++ih) {
+            histos[ih]->AddToBin(int_val,int_err);
         }
     }
 
     void FillDipole(double p3[4],double p4[4], double wgt){
         SetKinematics(p3,p4,wgt);
-        for (auto h_it = hists.begin();h_it!=hists.end();h_it++){
-            (*h_it)->FillDipole();
+        for (size_t ih = 0; ih < histos.size(); ++ih) {
+            histos[ih]->FillDipole();
         }
     }
 
     void FillRealEvent(){
-        for (auto h_it = hists.begin();h_it!=hists.end();h_it++){
-            (*h_it)->FillRealEvent();
+        for (size_t ih = 0; ih < histos.size(); ++ih) {
+            histos[ih]->FillRealEvent();
         }
     }
 
-    // Variations treatment.
-    // This part is handeling consitent variation treatment of PDF. It is also
-    // possible to extend this by other options scale variations in future.
+#ifdef USEROOT
+    String file_suffix = ".root";
+#else
+    String file_suffix = ".dat";
+#endif
+
     size_t last_index=0;
-    typedef map<int,const KeySuffix> MapSuffix;
     MapSuffix variation_suffixes;
 
     void SetVariation(int imember){
@@ -121,34 +138,57 @@ namespace HistoHandler{
                 suffix << "_pdf" << imember;
                 addkey.suffix=suffix.str();
                 addkey.index=last_index;
-                last_index++;
             }
             // add it and increase index
             variation_suffixes.insert(MapSuffix::value_type(imember,addkey));
             last_index++;
         }
         // Pickup correct histogram
-        for (auto h_it = hists.begin();h_it!=hists.end();h_it++){
-            (*h_it)->SetVariation(variation_suffixes.at(imember));
+        for (size_t ih = 0; ih < histos.size(); ++ih) {
+            histos[ih]->SetVariation(variation_suffixes.at(imember));
         }
     }
 
     // forward declaration : specialized in implementation header file
+    /**
+     * @brief Open file to save histograms.
+     *
+     * Implementation depends on ROOT or STL switch.
+     *
+     *  @todo always save to tmp file with timestamp. Only Terminate will save to final file.
+     *
+     * @param iworker Worker id from cuba.
+     */
     void OpenOutputFile(int iworker);
+
+    /**
+     * @brief Close file with histograms.
+     *
+     * Implementation depends on ROOT or STL switch.
+     *
+     */
     void CloseOutputFile();
+
+    /**
+     * @brief Close file with histograms.
+     *
+     * Implementation depends on ROOT or STL switch.
+     * Merge files from all cores.
+     */
     void Merge(int iworker);
 
     void Save(int iworker){
         OpenOutputFile(iworker);
-        for (auto h_it = hists.begin();h_it!=hists.end();h_it++){
-            (*h_it)->Save();
+        for (size_t ih = 0; ih < histos.size(); ++ih) {
+            histos[ih]->Save();
         }
         CloseOutputFile();
     }
 
     void Terminate(int iworker){
+        Save(iworker);
         Merge(iworker);
-        /// @todo Properly remove all histograms from your memory
+        DeleteHists();
     }
 }
 

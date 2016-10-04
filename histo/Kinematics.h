@@ -110,6 +110,7 @@ namespace Kinematics {
             //! Wrapper around flag isCalculated.
             inline bool IsCalculated() const {return isCalculated;}
 
+        public :
             /** @brief Is observable available in integration mode.
              *
              * Default return value is false. If observable is available in

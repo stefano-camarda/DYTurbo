@@ -72,6 +72,7 @@ namespace Kinematics{
         double middlePoint(){
             return ( phasespace::mmax + phasespace::mmin )/2. ;
         }
+        public :
         inline bool IsIntegrableObservable() const {return true;}
     };
 
@@ -109,6 +110,7 @@ namespace Kinematics{
         double middlePoint(){
             return ( phasespace::qtmax + phasespace::qtmin )/2. ; 
         }
+        public :
         inline bool IsIntegrableObservable() const {return true;}
     };
 
@@ -129,6 +131,7 @@ namespace Kinematics{
         double middlePoint(){
             return ( phasespace::ymax + phasespace::ymin )/2. ;
         }
+        public :
         inline bool IsIntegrableObservable() const {return true;}
     };
     /// @}
@@ -194,6 +197,7 @@ namespace Kinematics{
             return ( phasespace::cthmax + phasespace::cthmin )/2. ;
         }
         //! Optional reimplementation of `IsIntegrableObservable` for Integrable Observables. Otherwise false.
+        public :
         inline bool IsIntegrableObservable() const {return true;}
     };
 

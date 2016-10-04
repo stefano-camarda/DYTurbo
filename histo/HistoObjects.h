@@ -11,12 +11,8 @@
  * @date 2016-08-26
  */
 
-#include <string>
-
 #include "HistoHandler.h"
-#include "config.h"
 
-using std::string;
 
 namespace HistoHandler {
     // Base Histogram class: make possible to store in one container
@@ -28,15 +24,25 @@ namespace HistoHandler {
             virtual void SetVariation(const KeySuffix)=0;
             virtual void Save()=0;
             virtual void Delete()=0;
-            virtual void Clear()=0;
+            virtual void Reset()=0;
             virtual void AddToBin(double int_val,double int_err)=0;
             virtual double GetEntries() const =0; //{ return 666.;};
             virtual const char* GetName() const =0; // {return "Belzeebos";};
+            virtual bool IsIntegrationSafe() const =0; //{ return 666.;};
         protected :
-            string name;
-            string title;
+            String name;
+            String title;
+    };
+
+
+    // Object class: covering common functionality
+    template <class TH>
+    class HistoObject : public HistoBase {
     };
 }
+
+// need to be include config to decide whether to use ROOT
+#include "config.h"
 
 #ifdef USEROOT
 #include "HistoObjectsROOT.h"
