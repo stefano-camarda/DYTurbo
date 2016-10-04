@@ -31,30 +31,28 @@ namespace DYTurbo {
     namespace PrintTable {
 
         bool useUnicode=false;
-        String c_hor = "\u2501";
-        String c_ver = "\u2503";
+        String c_hor = useUnicode ? "\u2501" : "-";
+        String c_ver = useUnicode ? "\u2503" : "|";
+        String c_ul = useUnicode  ? "\u250f" : "/";
+        String c_uc = useUnicode  ? "\u2530" : "-";
+        String c_ur = useUnicode  ? "\u2513" : "\\";
+        String c_ml = useUnicode  ? "\u2523" : "|";
+        String c_mc = useUnicode  ? "\u254b" : "+";
+        String c_mr = useUnicode  ? "\u252b" : "|";
+        String c_bl = useUnicode  ? "\u2517" : "\\";
+        String c_bc = useUnicode  ? "\u253b" : "-";
+        String c_br = useUnicode  ? "\u251b" : "/";
 
-        String c_ul = "\u250f";
-        String c_uc = "\u2530";
-        String c_ur = "\u2513";
-
-        String c_ml = "\u2523";
-        String c_mc = "\u254b";
-        String c_mr = "\u252b";
-
-        String c_bl = "\u2517";
-        String c_bc = "\u253b";
-        String c_br = "\u251b";
         size_t eoc=2; //!< end of cell length
         size_t wb=5; //!< bound length
         size_t wr=8; //!< result length
         size_t we=6; //!< error length
-        size_t wx=(useUnicode ? 6 : 5 ); //!< exponent length
+        size_t wx=(useUnicode ? 7 : 5 ); //!< exponent length
         size_t wt=5; //!< time length
         size_t bound_width = 2*wb+3;
         size_t time_width = 2+ // parenthesis
             wt+
-            2; // second and parenthesis
+            1; // parenthesis
         size_t term_width = wr + // result
             (useUnicode ? 3:4) + // plus minus
             we + // error
@@ -179,10 +177,6 @@ namespace DYTurbo {
             subtotal.last_reset();
         };
 
-        void Footer() {
-            cout << "Total cross-section:        "; Result(subtotal,true); cout << endl;
-            cout << "Result was written in file: " << HistoHandler::result_filename << HistoHandler::file_suffix <<endl;
-        };
 
 
         void Bounds(bool use_full_bound) {
@@ -230,26 +224,32 @@ namespace DYTurbo {
             return tmp;
         }
 
-        String engineering_exponent(int dec_max){
+        String engineering_exponent(int dec_max,bool unit=false){
             // Decimal order where we print (==exponent)
             int decimal_print = (dec_max/3)*3;
             SStream tmp;
-            // leading sign
-            if (decimal_print!=0){
-                if (useUnicode){
-                    //tmp << char( 215 ); // mult
-                    tmp << " \u00B7"; // dot
-                    tmp << "10"; // 10
-                    if (decimal_print>0) tmp << "\u207A"; // always print sign on exponent
-                    if (decimal_print<0) tmp << "\u207B"; // always print sign on exponent
-                    tmp << unicode_exponent(abs(decimal_print));
-                } else {
-                    tmp << " e";
-                    if (decimal_print>0) tmp << "+"; // always print sign on exponent
-                    if (decimal_print<0) tmp << "-"; // always print sign on exponent
-                    tmp <<setw(2)<<setfill('0')<<abs(decimal_print); // two digits leading with zero
-                }
-            } else tmp << " ";
+            if (unit && decimal_print > 0 && decimal_print < 12 ){
+                if (decimal_print < 3)  tmp << "fb";
+                else if (decimal_print < 6)  tmp << "pb";
+                else if (decimal_print < 9)  tmp << "nb";
+                else if (decimal_print < 12) tmp << "ub";
+            } else{
+                if (decimal_print!=0){
+                    if (useUnicode){
+                        //tmp << " \u00d7"; // mult
+                        tmp << " \u00b7"; // dot
+                        tmp << "10";
+                        if (decimal_print>0) tmp << "\u207A"; // always print sign on exponent
+                        if (decimal_print<0) tmp << "\u207B"; // always print sign on exponent
+                        tmp << unicode_exponent(abs(decimal_print));
+                    } else {
+                        tmp << " e";
+                        if (decimal_print>0) tmp << "+"; // always print sign on exponent
+                        if (decimal_print<0) tmp << "-"; // always print sign on exponent
+                        tmp <<setw(2)<<setfill('0')<<abs(decimal_print); // two digits leading with zero
+                    }
+                } else tmp << " ";
+            }
             return tmp.str();
         }
 
@@ -266,7 +266,7 @@ namespace DYTurbo {
         }
 
 
-        VecStr result_format(double value, double error=0, bool sign=false) {
+        VecStr result_format(double value, double error=0, bool unit=false) {
             // make sure error always positive
             error=fabs(error);
             // round by significant digits in error
@@ -275,30 +275,56 @@ namespace DYTurbo {
             int decimal_max = floor(log10(fabs(  (value==0 ? error : value )  )));
             //
             VecStr result;
-            result.push_back(engineering_base(value,decimal_max,sign)); // value
+            result.push_back(engineering_base(value,decimal_max,false)); // value
             result.push_back(engineering_base(error,decimal_max,false)); // error
-            result.push_back(engineering_exponent(decimal_max)); // exponent
+            result.push_back(engineering_exponent(decimal_max,unit)); // exponent
+            return result;
+        }
+
+        String  pm () {
+            SStream out;
+            if (useUnicode){
+                out << ' ' << "\u00b1" << ' ' ;
+            } else {
+                out << " +- ";
+            }
+            return out.str();
+        }
+
+        VecStr time_format (double time_in_sec, bool useLong=false) {
+            double time = time_in_sec;
+            string time_unit = "s";
+            string time_unit_long = " seconds";
+            if      ( time_in_sec < 1e-3  ) { time *= 1e6   ; time_unit="us"; time_unit_long=" microseconds" ; }
+            else if ( time_in_sec < 1.    ) { time *= 1000. ; time_unit="ms"; time_unit_long=" miliseconds"  ; }
+            else if ( time_in_sec < 60.   ) { time /= 1.    ; time_unit="s"; time_unit_long=" seconds"      ; }
+            else if ( time_in_sec < 3600. ) { time /= 60.   ; time_unit="mi"; time_unit_long=" minutes"      ; }
+            else                            { time /= 3600. ; time_unit="hr"; time_unit_long=" hours"        ; }
+            SStream out;
+            VecStr result;
+            out << setprecision(3) << time;
+            result.push_back(out.str());
+            if (useLong) result.push_back(time_unit_long);
+            else result.push_back(time_unit);
             return result;
         }
 
         void Result(const Term &term, bool printGrandTotal) {
-            /// @todo set correct width of table cell
             double time = ( printGrandTotal ) ? term.total_time  : term.last_time ;
-            double val  = ( printGrandTotal ) ? term.total_int  : term.last_int[0] ;
-            double err  = ( printGrandTotal ) ? term.total_err2 : term.last_err2   ;
+            double val  = ( printGrandTotal ) ? term.total_int   : term.last_int[0] ;
+            double err  = ( printGrandTotal ) ? term.total_err2  : term.last_err2   ;
             err = sqrt(err);
             VecStr result = result_format(val,err);
+            // integration
             cout << setw(wr) <<  result[0];
-            if (useUnicode){
-                cout << ' ' << char(177) << ' ' ;
-            } else {
-                cout << " +- ";
-            }
+            cout << pm();
             cout << setw(we) <<  result[1];
             cout << setw(wx) <<  result[2];
-            //
-            cout << " (" << setprecision(3) << setw(wt) << time << "s)";
-            cout << setprecision(6);
+            // time
+            result = time_format(time);
+            cout << " (";
+            cout << setw(wt) << result[0] + result[1];
+            cout << ")";
             EndOfCell();
         };
 
@@ -324,15 +350,20 @@ namespace DYTurbo {
 
         void SettingsHeader(String title){
             size_t t_length =title.size();
-            size_t head_width = 70;
-            char symb = '=';
+            size_t head_width = 72;
+            String symb = useUnicode ? "\u254d" : "=";
             cout << endl;
-            if (t_length == 0 ) cout << String(head_width, symb) <<endl;
+            if (t_length == 0 ) {
+                coutN(head_width, symb);
+                cout << endl;
+            }
             else {
-                String line ( int((head_width-t_length)/2), symb); 
-                cout << line << ((head_width-t_length)%2 ? "=" : "") ;
+                t_length+=2;
+                int length = (head_width-t_length)/2;
+                int add = (head_width-t_length)%2;
+                coutN(length+add,symb);
                 cout << " " << title << " ";
-                cout << line << endl;
+                coutN(length,symb);
             }
             cout << endl;
         }
@@ -432,7 +463,7 @@ namespace DYTurbo {
         }
 
         void AppliedCuts(){
-            SettingsHeader("QCD settings");
+            SettingsHeader("Cuts");
             cout << Col4( "", "apply cuts:" ,   (opts.makecuts ? "true" : "false") , "" );
             if (opts.makecuts){
                 cout << Col4("" , "pt_l > "         , opts.lptcut  , "" );
@@ -474,6 +505,16 @@ namespace DYTurbo {
             ResummationDamp();
             DebugSettings();
             SettingsHeader(); // empty header will create line
+        }
+
+        void Footer() {
+            SettingsHeader("Summary");
+            VecStr s_res = result_format(subtotal.total_int, sqrt(subtotal.total_err2), true);
+            cout << Col4 ("Total cross section" , "" , s_res[0]+pm()+s_res[1] , s_res[2]  );
+            s_res = time_format(subtotal.total_time, true);
+            cout << Col4 ("Calculation time"    , "" , s_res[0] , s_res[1] );
+            cout << Col4 ("Output file"         , "" , HistoHandler::result_filename + HistoHandler::file_suffix , "");
+            SettingsHeader();
         }
     }
 }
