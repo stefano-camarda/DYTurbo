@@ -32,6 +32,25 @@ typedef std::vector<string> VecStr;
 typedef std::vector<double> VecDbl;
 
 
+#include <iostream>
+
+::testing::AssertionResult ApproxDoubles(double exp, double equalto) {
+    double significance = exp - equalto;
+    if (significance==0) return ::testing::AssertionSuccess();
+    significance/=exp;
+    significance=fabs(significance);
+    char exp_hex[40];
+    char eqt_hex[40];
+    sprintf(exp_hex, "%a", exp);
+    sprintf(eqt_hex, "%a", equalto);
+    if (fabs(significance) > 5e-12 ) {
+        return ::testing::AssertionFailure() << endl <<
+            "Expected       : " << exp     << "    " << exp_hex << std::endl <<
+            "To be equal to : " << equalto << "    " << eqt_hex << std::endl <<
+            "Significance   : " << significance << std::endl;
+    }
+    return ::testing::AssertionSuccess();
+}
 
 TEST(DYTurbo,Initialization){
     int argc = 2;
@@ -124,7 +143,8 @@ TEST(DYTurbo,MainLoop){
                 double val = (*term).last_int[0];
                 double exp = readfloat();
                 if (doSaveResults) writefloat(val);
-                else ASSERT_EQ(val-exp,0);
+                //else ASSERT_TRUE(ApproxDoubles(exp,val));
+                else ASSERT_DOUBLE_EQ(exp,val);
             }
         }
         DYTurbo::PrintTable::ResultSubTotal();
@@ -163,7 +183,7 @@ void RunIntegrand( int (* (*fun)(const int&, const double*, const int&, double*,
 }
 //! Run and check integrand output.
 template<typename IntFun>
-void CheckIntegrand(int &ord, const char *name, IntFun fun, int dim){
+::testing::AssertionResult CheckIntegrand(int &ord, const char *name, IntFun fun, int dim){
     /// @todo For finite born level set random number corresponding to pt to 0
     // point: Fake random point for integrands, set to lower bound of integration.
     VecDbl point  (dim, 0.8);
@@ -174,9 +194,10 @@ void CheckIntegrand(int &ord, const char *name, IntFun fun, int dim){
     if (doSaveResults){
         printf(" saving to file: %d %s : %.10e ( %fs) \n", dim, name, result[0], time_ellapsed);
         writefloat(result[0]);
+        return ::testing::AssertionSuccess();
     } else {
         double expected = readfloat();
-        ASSERT_EQ(result[0],expected) << "Wrong value of integrand " <<  name << " order="<<ord;
+        return ApproxDoubles(result[0],expected) << "Wrong value of integrand " <<  name << " order="<<ord <<endl;
     }
 }
 
@@ -207,38 +228,38 @@ TEST(DYTurbo,CheckIntegrandFunctions){
         DYTurbo::init_params();
         for (DYTurbo::BoundIterator bound; !bound.IsEnd(); ++bound){
             DYTurbo::SetBounds(bound);
-            CheckIntegrand ( ord , "Resintegr 2D"      , resintegrand2d , 2 ) ;
-            CheckIntegrand ( ord , "Resintegr 3D"      , resintegrand3d , 3 ) ;
-            CheckIntegrand ( ord , "Resintegr MC"      , resintegrandMC , 6 ) ;
+            ASSERT_TRUE(CheckIntegrand ( ord , "Resintegr 2D"      , resintegrand2d , 2 ) ) ;
+            ASSERT_TRUE(CheckIntegrand ( ord , "Resintegr 3D"      , resintegrand3d , 3 ) ) ;
+            ASSERT_TRUE(CheckIntegrand ( ord , "Resintegr MC"      , resintegrandMC , 6 ) ) ;
 
-            CheckIntegrand ( ord , "Counter Resum 2D"  , ctintegrand2d  , 2 ) ;
-            CheckIntegrand ( ord , "Counter Resum 3D"  , ctintegrand3d  , 3 ) ;
-            CheckIntegrand ( ord , "Counter Resum MC6" , ctintegrandMC  , 6 ) ;
-            CheckIntegrand ( ord , "Counter Resum MC8" , ctintegrand    , 8 ) ;
+            ASSERT_TRUE(CheckIntegrand ( ord , "Counter Resum 2D"  , ctintegrand2d  , 2 ) ) ;
+            ASSERT_TRUE(CheckIntegrand ( ord , "Counter Resum 3D"  , ctintegrand3d  , 3 ) ) ;
+            ASSERT_TRUE(CheckIntegrand ( ord , "Counter Resum MC6" , ctintegrandMC  , 6 ) ) ;
+            ASSERT_TRUE(CheckIntegrand ( ord , "Counter Resum MC8" , ctintegrand    , 8 ) ) ;
         }
         // Fixed part
         opts.fixedorder=true;
         DYTurbo::init_params();
         for ( DYTurbo::BoundIterator bound ; !bound.IsEnd(); ++bound){
             DYTurbo::SetBounds(bound);
-            CheckIntegrand ( ord , "Born Fixed 2D"     , lointegrand2d       , 2  ) ;
-            CheckIntegrand ( ord , "Born Fixed MC4"    , lointegrandMC       , 4  ) ;
-            CheckIntegrand ( ord , "Born DYNNLO MC6"   , doublevirtintegrand , 6  ) ;
+            ASSERT_TRUE(CheckIntegrand ( ord , "Born Fixed 2D"     , lointegrand2d       , 2  ))  ;
+            ASSERT_TRUE(CheckIntegrand ( ord , "Born Fixed MC4"    , lointegrandMC       , 4  )) ;
+            ASSERT_TRUE(CheckIntegrand ( ord , "Born DYNNLO MC6"   , doublevirtintegrand , 6  )) ;
 
-            CheckIntegrand ( ord , "Counter Fixed 2D"  , ctintegrand2d       , 2  ) ;
-            CheckIntegrand ( ord , "Counter Fixed 3D"  , ctintegrand3d       , 3  ) ;
-            CheckIntegrand ( ord , "Counter Fixed MC6" , ctintegrandMC       , 6  ) ;
-            CheckIntegrand ( ord , "Counter Fixed MC8" , ctintegrand         , 8  ) ;
+            ASSERT_TRUE(CheckIntegrand ( ord , "Counter Fixed 2D"  , ctintegrand2d       , 2  )) ;
+            ASSERT_TRUE(CheckIntegrand ( ord , "Counter Fixed 3D"  , ctintegrand3d       , 3  )) ;
+            ASSERT_TRUE(CheckIntegrand ( ord , "Counter Fixed MC6" , ctintegrandMC       , 6  )) ;
+            ASSERT_TRUE(CheckIntegrand ( ord , "Counter Fixed MC8" , ctintegrand         , 8  )) ;
 
-            CheckIntegrand ( ord , "VJ LO 3D"          , vjintegrand         , 3  ) ;
-            CheckIntegrand ( ord , "VJ LO 5D"          , vjlointegrand       , 5  ) ;
-            CheckIntegrand ( ord , "VJ LO MC7"         , vjlointegrandMC     , 7  ) ;
-            CheckIntegrand ( ord , "VJ LO MCFM7"       , lowintegrand        , 7  ) ;
+            ASSERT_TRUE(CheckIntegrand ( ord , "VJ LO 3D"          , vjintegrand         , 3  )) ;
+            ASSERT_TRUE(CheckIntegrand ( ord , "VJ LO 5D"          , vjlointegrand       , 5  )) ;
+            ASSERT_TRUE(CheckIntegrand ( ord , "VJ LO MC7"         , vjlointegrandMC     , 7  )) ;
+            ASSERT_TRUE(CheckIntegrand ( ord , "VJ LO MCFM7"       , lowintegrand        , 7  )) ;
 
-            CheckIntegrand ( ord , "VJ REAL MCFM"      , realintegrand       , 10 ) ;
-            CheckIntegrand ( ord , "VJ VIRT MCFM"      , virtintegrand       , 8  ) ;
+            ASSERT_TRUE(CheckIntegrand ( ord , "VJ REAL MCFM"      , realintegrand       , 10 )) ;
+            ASSERT_TRUE(CheckIntegrand ( ord , "VJ VIRT MCFM"      , virtintegrand       , 8  )) ;
 
-            CheckIntegrand ( ord , "VJJ MC10"          , v2jintegrand        , 10 ) ;
+            ASSERT_TRUE(CheckIntegrand ( ord , "VJJ MC10"          , v2jintegrand        , 10 )) ;
         }
 
     }
@@ -276,7 +297,8 @@ void CheckResultFile(string fname = ""){
         double val = hist->Integral();
         double exp = readfloat();
         if (doSaveResults) writefloat(val);
-        else ASSERT_EQ(val,exp)
+        //else ASSERT_TRUE(ApproxDoubles(val,exp))
+        else ASSERT_DOUBLE_EQ(val,exp)
             << "Incorrect number of entries in saved histogram " << hname
             << " inside file" << fname;
     }
