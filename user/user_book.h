@@ -11,8 +11,12 @@
  * @date 2016-09-07
  */
 
+using namespace Kinematics;
+
 namespace HistoHandler {
     void UserBook(){
+        // dont forget to define binning
+        Add( new Histo1D <BigAnswer>("biganswer"));
     }
 }
 
