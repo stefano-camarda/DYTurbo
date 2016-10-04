@@ -389,7 +389,8 @@ TEST(TurboHistVsROOT, ThreeTimesFasterThanROOT_FindBin) {
     // run time
     double timeTurbo = tp_find(turbo,testdata);
     double timeROOT =  tp_find(root,testdata);
-    EXPECT_GT(timeROOT,timeTurbo) << "time is in seconds -- Equidistant";
+    EXPECT_GT(timeROOT,timeTurbo) << "time is in seconds -- Equidistant"
+        << "\n This should not happen, do you have optimalization on?";
     //EXPECT_GT(timeROOT,4*timeTurbo) << "time is in seconds -- Equidistant";
     // non-equidistant
     turbo->SetBins(bins);
@@ -399,8 +400,10 @@ TEST(TurboHistVsROOT, ThreeTimesFasterThanROOT_FindBin) {
     timeROOT =  tp_find(root,testdata);
     timeTurbo = tp_find(turbo,testdata);
     timeROOT =  tp_find(root,testdata);
-    EXPECT_GT(timeROOT,timeTurbo) << "time is in seconds -- BinarySearch";
-    EXPECT_GT(timeROOT,3*timeTurbo) << "time is in seconds -- BinarySearch";
+    EXPECT_GT(timeROOT,timeTurbo) << "time is in seconds -- BinarySearch"
+        << "\n This should not happen, do you have optimalization on?";
+    EXPECT_GT(timeROOT,3*timeTurbo) << "time is in seconds -- BinarySearch"
+        << "\n This could happen from time to time, run test again.";
 }
 
 // We have to be faster then ROOT
@@ -426,8 +429,10 @@ TEST(TurboHistVsROOT, ThreeTimesFasterThanROOT_Fill) {
     timeROOT =  tp_fill(root,testdata);
     timeTurbo = tp_fill(turbo,testdata);
     timeROOT =  tp_fill(root,testdata);
-    EXPECT_GT(timeROOT,timeTurbo) << "time is in seconds -- BinarySearch";
-    EXPECT_GT(timeROOT,3*timeTurbo) << "time is in seconds -- BinarySearch";
+    EXPECT_GT(timeROOT,timeTurbo) << "time is in seconds -- BinarySearch" <<
+        "\n This should not happen, do you have optimalization on?";
+    EXPECT_GT(timeROOT,3*timeTurbo) << "time is in seconds -- BinarySearch" <<
+        "\n This could happen from time to time, run test again.";
 }
 
 
