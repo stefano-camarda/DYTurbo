@@ -65,7 +65,8 @@ TEST(DYTurbo,TermIteration){
     DYTurbo::WarmUp();
     std::vector <void (*)(std::vector<double>&, double&)> term_funs;
     term_funs.push_back(bornintegrMC6d);
-    term_funs.push_back(vjintegr3d);
+    if (opts.makecuts) term_funs.push_back(vjlointegr7d);
+    else term_funs.push_back(vjintegr3d);
     ASSERT_EQ(term_funs.size(), DYTurbo::ActiveTerms.size() )
         << "Incorrect number of terms. Check your input file." ;
     for ( DYTurbo::TermIterator it_term; !it_term.IsEnd(); ++it_term) {
@@ -91,6 +92,7 @@ TEST(DYTurbo,BoundIteration){
         counter ++;
     }
     ASSERT_EQ ( expected , counter  ) << " Incorrect number of bins from boundaries.";
+    if (opts.makecuts) return;
     // every step
     bins.qtbins = {0., 10., 20., 30.};
     bins.ybins  = {-3., 0. ,3.};
@@ -132,7 +134,7 @@ TEST(DYTurbo,MainLoop){
     DYTurbo::isDryRun = false;
     DYTurbo::WarmUp();
     DYTurbo::PrintTable::Header();
-    F= fopen( "integration.res", (!DYTurbo::isDryRun && doSaveResults) ? "w" : "r");
+    F= fopen( opts.makecuts ? "integration_cuts.res" : "integration.res", (!DYTurbo::isDryRun && doSaveResults) ? "w" : "r");
     for ( DYTurbo::BoundIterator bounds; !bounds.IsEnd(); ++bounds) {
         DYTurbo::SetBounds(bounds);
         DYTurbo::PrintTable::Bounds();
@@ -218,7 +220,7 @@ TEST(DYTurbo,CheckIntegrandFunctions){
     // warm up
     DYTurbo::WarmUp();
     // for all orders and for all terms
-    F = fopen("terms.res", doSaveResults ? "w" : "r");
+    F = fopen( opts.makecuts ? "terms_cut.res" : "terms.res", doSaveResults ? "w" : "r");
     for (int ord = 0; ord < 3; ++ord) {
         // NOTE: If you are adding new term, dont forget to run first with
         // `doSaveResults=true;` to update values in file.
@@ -287,7 +289,7 @@ void CheckResultFile(string fname = ""){
         fname += HistoHandler::file_suffix;
     }
     VecStr names = { "s_qt" };
-    F= fopen( "filecheck.res", (doSaveResults) ? "w" : "r");
+    F= fopen( opts.makecuts ? "filecheck_cuts.res" : "filecheck.res", (doSaveResults) ? "w" : "r");
 #ifdef USEROOT
     TFile *f = TFile::Open(fname.c_str());
     ASSERT_NE(f,NULL) << "Wrong file name " << fname;
@@ -311,8 +313,9 @@ void CheckResultFile(string fname = ""){
 TEST(DYTurbo,Termination){
     DYTurbo::PrintTable::Footer();
     DYTurbo::Terminate();
-    CheckResultFile();
+    CheckResultFile("../src/results.root");
     CheckResultFile("../src/oldresults.root");
+    CheckResultFile();
 }
 
 #endif /* ifndef DYTurbo_unittest_CXX */

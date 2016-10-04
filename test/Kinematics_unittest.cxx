@@ -14,13 +14,16 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
+#include "src/kinematic.h"
+
 #include "histo/Kinematics.h"
 #include "histo/KinematicDefinitions.h"
 #include "phasespace/phasespace.h"
 
+double s22 = 2.*sqrt(2.);
+double s24 = 4.*sqrt(2.);
+
 TEST(Kinemantic, CalculateOnlyOnce){
-    double s22 = 2.*sqrt(2.);
-    double s24 = 4.*sqrt(2.);
     Kinematics::BosPT pt1;
     Kinematics::BosPT pt2;
     ASSERT_FALSE( pt1.IsCalculated() );
@@ -51,6 +54,43 @@ TEST(Kinemantic, CalculateOnlyOnce){
     ASSERT_DOUBLE_EQ(pt2(), pt1());
 }
 
+TEST(KinemanticInterface, CrossCheckWithPrevious){
+    double l1[] = {0.,2.,2.,s24};
+    double l2[] = {0.,-2.,2.,s24};
+
+    Kinematics::SetKinematics(l1,l2,1.0);
+
+    kinematic::set(l1,l2);
+    kinematic::calc_vb();
+    kinematic::calc_angles();
+
+   ASSERT_DOUBLE_EQ(kinematic::lp  [0] , Kinematics::ALpPX()() );
+   ASSERT_DOUBLE_EQ(kinematic::lm  [0] , Kinematics::LepPX()() );
+   ASSERT_DOUBLE_EQ(kinematic::v   [0] , Kinematics::BosPX()() );
+
+   ASSERT_DOUBLE_EQ(kinematic::lp  [1] , Kinematics::ALpPY()() );
+   ASSERT_DOUBLE_EQ(kinematic::lm  [1] , Kinematics::LepPY()() );
+   ASSERT_DOUBLE_EQ(kinematic::v   [1] , Kinematics::BosPY()() );
+
+   ASSERT_DOUBLE_EQ(kinematic::lp  [2] , Kinematics::ALpPZ()() );
+   ASSERT_DOUBLE_EQ(kinematic::lm  [2] , Kinematics::LepPZ()() );
+   ASSERT_DOUBLE_EQ(kinematic::v   [2] , Kinematics::BosPZ()() );
+
+   ASSERT_DOUBLE_EQ(kinematic::lp  [3] , Kinematics::ALpE()() );
+   ASSERT_DOUBLE_EQ(kinematic::lm  [3] , Kinematics::LepE()() );
+   ASSERT_DOUBLE_EQ(kinematic::v   [3] , Kinematics::BosE()() );
+
+   ASSERT_DOUBLE_EQ(kinematic::m2      , Kinematics::BosM2()() );
+   ASSERT_DOUBLE_EQ(kinematic::m       , Kinematics::BosM()() );
+   ASSERT_DOUBLE_EQ(kinematic::qt2     , Kinematics::BosPT2()() );
+   ASSERT_DOUBLE_EQ(kinematic::qt      , Kinematics::BosPT()() );
+   ASSERT_DOUBLE_EQ(kinematic::y       , Kinematics::BosY()() );
+   ASSERT_DOUBLE_EQ(kinematic::phiZ    , Kinematics::BosPhi()() );
+   ASSERT_DOUBLE_EQ(kinematic::costh   , Kinematics::CosThCS()() );
+   ASSERT_DOUBLE_EQ(kinematic::phi_lep , Kinematics::PhiCS()() );
+   ASSERT_DOUBLE_EQ(kinematic::mtrans  , Kinematics::BosMT()() );
+}
+
 
 TEST(KinemanticInterface, IntegratorVariableIsCalculated){
     double l1[] = {0.,2.,0.,2.};
@@ -68,6 +108,7 @@ TEST(KinemanticInterface, IntegratorVariableIsCalculated){
     ASSERT_DOUBLE_EQ(5., y());
     ASSERT_DOUBLE_EQ(-.5, costh());
 }
+
 
 TEST(KinemanticInterface, NonIntegratorVariableIsNotCalculated){
     double l1[] = {0.,2.,0.,2.};
