@@ -60,14 +60,26 @@ namespace Kinematics{
     NEWKIN( BosPZ ) { double calc(){ return p3[2]+p4[2]; } };
     NEWKIN( BosE  ) { double calc(){ return p3[3]+p4[3]; } };
 
-
-    class BosM : public Observable< BosM > {
+    class BosM2 : public Observable< BosM2 > {
         BosPX px;
         BosPY py;
         BosPZ pz;
         BosE  e;
         double calc(){
-            return Util::mass(px(),py(),pz(),e());
+            return Util::mass2(px(),py(),pz(),e());
+        }
+        double middlePoint(){
+            double m = ( phasespace::mmax + phasespace::mmin )/2. ;
+            return m*m;
+        }
+        public :
+        inline bool IsIntegrableObservable() const {return true;}
+    };
+
+    class BosM : public Observable< BosM > {
+        BosM2 m2;
+        double calc(){
+            return sqrt(m2());
         }
         double middlePoint(){
             return ( phasespace::mmax + phasespace::mmin )/2. ;
@@ -101,11 +113,24 @@ namespace Kinematics{
         }
     };
 
-    class BosPT : public Observable< BosPT > {
+    class BosPT2 : public Observable< BosPT2 > {
         BosPX px;
         BosPY py;
         double calc(){
-            return Util::pT(px(),py())  ;
+            return Util::pT2(px(),py())  ;
+        }
+        double middlePoint(){
+            double qt = ( phasespace::qtmax + phasespace::qtmin )/2. ; 
+            return  qt*qt;
+        }
+        public :
+        inline bool IsIntegrableObservable() const {return true;}
+    };
+
+    class BosPT : public Observable< BosPT > {
+        BosPT2 qt2;
+        double calc(){
+            return sqrt(qt2());
         }
         double middlePoint(){
             return ( phasespace::qtmax + phasespace::qtmin )/2. ; 
@@ -172,8 +197,8 @@ namespace Kinematics{
          * Keeping them as class memebers is less time consuming.
          */
         BosPZ pz;
-        BosM m;
-        BosPT pt;
+        BosM2 m2;
+        BosPT2 pt2;
         /**
          * Mandatory function `calc`: is called when kinematics is updated.
          *
@@ -184,7 +209,7 @@ namespace Kinematics{
         double calc(){
             double costh=0;
             costh = (Vplus(lm)*Vminus(lp) - Vplus(lp)*Vminus(lm));
-            costh /= sqrt(m()*m() * (m()*m() + pt()*pt()));
+            costh /= sqrt(m2() * (m2() + pt2()));
             costh *=  pz() < 0. ? -1 : 1; //sign flip according to boson rapidity
             return costh;
         }
@@ -208,8 +233,10 @@ namespace Kinematics{
         BosPX px;
         BosPY py;
         BosPZ pz;
+        BosM2 m2;
         BosM m;
         BosPT pt;
+        BosPT2 pt2;
         double calc(){
             double plxCS, plyCS;
             if (pt() == 0) //if qt = 0, use the original x and y axis to determine phiCS in the boson rest frame
@@ -228,7 +255,7 @@ namespace Kinematics{
                 double ply = s*lm[0] + c*lm[1];
 
                 //Now apply formulas (22) of Nucl.Phys. B387 (1992) 385
-                plxCS = 0.5 * m() / sqrt(m()*m()+pt()*pt()) * (2.*plx - pt());
+                plxCS = 0.5 * m() / sqrt(m2()+pt2()) * (2.*plx - pt());
                 plyCS = ply;
 
                 /*******************************************************************/
@@ -247,7 +274,7 @@ namespace Kinematics{
                 rht[0] = -py()/pt();
                 rht[1] = px()/pt();
 
-                plxCS = 0.5 * m()/sqrt(m()*m()+pt()*pt()) * (delta[0]*qht[0]+delta[1]*qht[1]);
+                plxCS = 0.5 * m()/sqrt(m2()+pt2()) * (delta[0]*qht[0]+delta[1]*qht[1]);
                 plyCS = 0.5 * (delta[0]*rht[0]+delta[1]*rht[1]);
                 /*******************************************************************/
             }

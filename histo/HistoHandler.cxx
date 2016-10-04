@@ -64,15 +64,20 @@ namespace HistoHandler{
     int parent_pid=0;
 
     void Init() {
-        /**
-         * @todo Implement to DYTURBO
-         *  - isFillMode , check terms is done on warm up, we need additional check
-         *  - Check we will use just one variation, then set it from beginning
-         *  - Initiate as long vector as necessary in beginning : Check if we are  doing pdf scanning, if yes then prebook histograms
-         */
         Book();
-        SetVariation(0); // start from 0
+        SetVariation(0); // always start from 0
         parent_pid=getpid();
+    }
+
+    void DeleteNonIntegrableHists(){
+        for (size_t ih = 0; ih < histos.size(); ++ih) {
+            if (!histos[ih]->IsIntegrationSafe()){
+                printf ("Warining: Histogram `%s` contains non-integrable observable and will be deleted \n", histos[ih]->GetName());
+                histos[ih]->Delete();
+                histos.erase(histos.begin()+ih);
+                ih--;
+            }
+        }
     }
 
     void DeleteHists(){

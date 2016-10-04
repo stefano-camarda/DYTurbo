@@ -19,6 +19,10 @@ namespace Kinematics {
             return sqrt(x*x + y*y);
         }
 
+        inline double pT2(double x,double y){
+            return (x*x + y*y);
+        }
+
         inline double mom( double x,  double y,  double z){
             return sqrt(x*x + y*y + z*z);
         }
@@ -32,8 +36,8 @@ namespace Kinematics {
             return rap(p,z);
         }
 
-        inline double mass( double x,  double y,  double z, double e){
-            return sqrt(e*e - (x*x + y*y + z*z));
+        inline double mass2( double x,  double y,  double z, double e){
+            return (e*e - (x*x + y*y + z*z));
         }
     }
 }

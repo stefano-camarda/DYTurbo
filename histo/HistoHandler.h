@@ -84,7 +84,9 @@ namespace HistoHandler {
     void Reset();
     //! Book general and user histograms histograms.
     void Book();
-    //! Remove all histograms from container. It deletes all histograms.
+    //! Remove all histograms which contains non-integrable observable. It prints out warning
+    void DeleteNonIntegrableHists();
+    //! Remove all histograms from container. It deletes all histograms and variations.
     void DeleteHists();
 
     /**
