@@ -82,9 +82,6 @@ namespace DYTurbo {
         total_time+=last_time;
         total_int+=last_int[0];
         total_err2+=last_err2;
-        // cumulate time to subtotal
-        subtotal.last_time   += last_time;
-        subtotal.total_time  += last_time;
         // cumulate integral to subtotal
         subtotal.last_int[0] += last_int[0];
         subtotal.total_int   += last_int[0];
@@ -367,6 +364,7 @@ namespace DYTurbo {
         subtotal = Term();
         subtotal.name = "TOTAL";
         subtotal.last_int.assign(opts.totpdf,0);
+        if (!HasOnlyVegas) HistoHandler::DeleteNonIntegrableHists();
         PrintTable::IntegrationSettings();
     }
 

@@ -15,6 +15,7 @@
 #include "interface.h"
 #include "coupling.h"
 #include "histo/HistoHandler.h"
+#include "clock_real.h"
 
 #include <LHAPDF/LHAPDF.h>
 
@@ -29,16 +30,39 @@ using std::endl;
 namespace DYTurbo {
     namespace PrintTable {
 
+        bool useUnicode=false;
+        char c_hor = '-';
+        char c_ver = '|';
+
+        char c_ul = 218;
+        char c_um = 194;
+        char c_ur = 191;
+
+        char c_cl = 195;
+        char c_cm = 197;
+        char c_cr = 180;
+
+        char c_bl = 192;
+        char c_bm = 193;
+        char c_br = 217;
         size_t eoc=2; //!< end of cell length
         size_t wb=5; //!< bound length
         size_t wr=8; //!< result length
+        size_t we=6; //!< error length
+        size_t wx=(useUnicode ? 6 : 5 ); //!< exponent length
         size_t wt=5; //!< time length
         size_t bound_width = 2*wb+3;
-        size_t time_width = 2+wt+2;
-        size_t term_width = 2*wr+4 + time_width;
+        size_t time_width = 2+ // parenthesis
+            wt+
+            2; // second and parenthesis
+        size_t term_width = wr + // result
+            (useUnicode ? 3:4) + // plus minus
+            we + // error
+            wx + // exponenent
+            time_width;
 
-        inline void EndOfCell()  { cout << " |" << flush; }
-        inline void BeginOfRow() { cout << "|"  << flush; }
+        inline void EndOfCell()  { std::wcout << " " << c_ver << flush; }
+        inline void BeginOfRow() { std::wcout << c_ver << flush; }
         inline void EndOfRow()   { cout << endl;          }
 
         void Hline(){
@@ -47,7 +71,7 @@ namespace DYTurbo {
             size_t wtotal = 1; // begin of line
             wtotal += (bound_width +eoc)*N_loopingBounds;
             wtotal += (term_width  +eoc)*(ActiveTerms.size() + 1/*total column*/ );
-            String hline ( wtotal, '-');
+            String hline ( wtotal, c_hor);
             cout << hline << endl;
         };
 
@@ -128,6 +152,7 @@ namespace DYTurbo {
             TermName(subtotal);
             EndOfRow();
             Hline();
+            subtotal.last_reset();
         };
 
         void Footer() {
@@ -141,27 +166,94 @@ namespace DYTurbo {
             BoundsAllLooping(false,use_full_bound);
         };
 
-        vector<string> Round(double value, double error=0, bool sign=false) {
-            vector <string> result;
-            int decimal = 0;
-            //If no error, value is rounded to two significant digits
-            if (error == 0) error = value;
-            if (error != 0) decimal = -log10(fabs(error)) + 2; //-> this 2 sets the number of digits
-            decimal = max(0, decimal);
 
-            char Dec[10];
-            sprintf (Dec, "%d", decimal);
-            string D = Dec;
+        String engineering_base(double value, int dec_max, bool sign){
+            // Decimal order where we print (==exponent)
+            int decimal_print = (dec_max/3)*3;
+            // Prepare number for printing
+            double fac = pow (10, decimal_print);
+            value/=fac;
+            // Prepare number for printing
+            SStream tmp;
+            // leading sign
+            if (sign && value >=0) tmp << "+";
+            tmp << value;
+            // if (decimal_print!=0 && value!=0){
+            //     tmp << "e";
+            //     if (decimal_print>0) tmp << "+"; // always print sign on exponent
+            //     tmp <<setw(2)<<setfill('0')<<decimal_print; // two digits leading with zero
+            // }
+            return tmp.str();
+        }
 
-            char Numb[50];
-            // write number
-            if(sign) sprintf (Numb, ((string)"%+." + D + "f").c_str(), value);
-            else     sprintf (Numb, ((string)"%."  + D + "f").c_str(), value);
-            result.push_back(Numb);
-            // write error
-            sprintf (Numb, ((string)"%." + D + "f").c_str(), error);
-            result.push_back(Numb);
+        String unicode_exponent(int exp){
+            char ch_exp[10];
+            sprintf(ch_exp,"%d",exp+100);
+            String tmp;
+            for ( size_t ich = 1; ich<3; ++ich){
+                if      (ch_exp[ich] == '0' ) tmp += "\u2070";
+                else if (ch_exp[ich] == '1' ) tmp += "\u00B9";
+                else if (ch_exp[ich] == '2' ) tmp += "\u00B2";
+                else if (ch_exp[ich] == '3' ) tmp += "\u00B3";
+                else if (ch_exp[ich] == '4' ) tmp += "\u2074";
+                else if (ch_exp[ich] == '5' ) tmp += "\u2075";
+                else if (ch_exp[ich] == '6' ) tmp += "\u2076";
+                else if (ch_exp[ich] == '7' ) tmp += "\u2077";
+                else if (ch_exp[ich] == '8' ) tmp += "\u2078";
+                else if (ch_exp[ich] == '9' ) tmp += "\u2079";
+                else tmp += " ";
+            }
+            return tmp;
+        }
 
+        String engineering_exponent(int dec_max){
+            // Decimal order where we print (==exponent)
+            int decimal_print = (dec_max/3)*3;
+            SStream tmp;
+            // leading sign
+            if (decimal_print!=0){
+                if (useUnicode){
+                    //tmp << char( 215 ); // mult
+                    tmp << " \u00B7"; // dot
+                    tmp << "10"; // 10
+                    if (decimal_print>0) tmp << "\u207A"; // always print sign on exponent
+                    if (decimal_print<0) tmp << "\u207B"; // always print sign on exponent
+                    tmp << unicode_exponent(abs(decimal_print));
+                } else {
+                    tmp << " e";
+                    if (decimal_print>0) tmp << "+"; // always print sign on exponent
+                    if (decimal_print<0) tmp << "-"; // always print sign on exponent
+                    tmp <<setw(2)<<setfill('0')<<abs(decimal_print); // two digits leading with zero
+                }
+            } else tmp << " ";
+            return tmp.str();
+        }
+
+        // Rounding to significant digits
+        void round_by_error(double &value, double &error, int nsd = 2 /*number of significant digits*/){
+            // Decimal order where we round
+            //   If no error, take significant digits of value
+            int decimal_round = ceil(log10(fabs(  (error==0) ? value : error ))) - nsd;
+            double fac = pow (10, decimal_round);
+            // round numbers
+            value = roundf(value/fac)*fac;
+            error = roundf(error/fac)*fac;
+            // Put correct decimal base
+        }
+
+
+        VecStr result_format(double value, double error=0, bool sign=false) {
+            // make sure error always positive
+            error=fabs(error);
+            // round by significant digits in error
+            round_by_error(value,error);
+            // Highest decimal part from value
+            int decimal_max = floor(log10(fabs(  (value==0 ? error : value )  )));
+            //
+            VecStr result;
+            result.push_back(engineering_base(value,decimal_max,sign)); // value
+            result.push_back(engineering_base(error,decimal_max,false)); // error
+            result.push_back(engineering_exponent(decimal_max)); // exponent
             return result;
         }
 
@@ -171,10 +263,15 @@ namespace DYTurbo {
             double val  = ( printGrandTotal ) ? term.total_int  : term.last_int[0] ;
             double err  = ( printGrandTotal ) ? term.total_err2 : term.last_err2   ;
             err = sqrt(err);
-            VecStr result = Round(val,err);
+            VecStr result = result_format(val,err);
             cout << setw(wr) <<  result[0];
-            cout << " +- ";
-            cout << setw(wr) <<  result[1];
+            if (useUnicode){
+                cout << ' ' << char(177) << ' ' ;
+            } else {
+                cout << " +- ";
+            }
+            cout << setw(we) <<  result[1];
+            cout << setw(wx) <<  result[2];
             //
             cout << " (" << setprecision(3) << setw(wt) << time << "s)";
             cout << setprecision(6);
@@ -182,6 +279,9 @@ namespace DYTurbo {
         };
 
         void ResultSubTotal(bool is_grandtotal) {
+            // cumulate time to subtotal
+            subtotal.last_time   = clock_real()-subtotal.last_time;
+            subtotal.total_time  += subtotal.last_time;
             Result(subtotal,is_grandtotal);
             EndOfRow();
             subtotal.last_reset();

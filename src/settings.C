@@ -256,7 +256,6 @@ void settings::readfromfile(const string fname){
     verbose            = in.GetBool   ( "verbose"         ); //false   # debug       and      time       profile costh       phi_lep         integration
     resumcpp           = in.GetBool   ( "resumcpp"        );
     useGamma           = in.GetBool ( "useGamma" );//
-    fiducial           = static_cast<cuts::DetFiducial>( in.GetNumber( "fiducial" )); //0
     PDFerrors           = in.GetBool ( "PDFerrors" );//
     opts_.approxpdf_    = in.GetNumber ( "opts_approxpdf" ); //0
     opts_.pdfintervals_ = in.GetNumber ( "opts_pdfintervals" ); //100
@@ -545,7 +544,6 @@ void settings::dumpAll(){
         dumpD("lycut             ", lycut               );
         dumpD("mtcut             ", mtcut               );
         dumpD("etmisscut         ", etmisscut           );
-        dumpI("fiducial          ", fiducial            );
         dumpB("cubaint           ", cubaint             );
         dumpB("trapezint         ", trapezint           );
         dumpB("quadint           ", quadint             );

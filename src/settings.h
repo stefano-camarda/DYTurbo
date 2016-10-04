@@ -232,9 +232,6 @@ public:
   //dyres or pegasus PDF evolution
   int evolmode;
 
-  // fiducial switches
-  cuts::DetFiducial fiducial;
-
   //bin width normalisation
   bool ptbinwidth, ybinwidth;
 };

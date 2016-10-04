@@ -101,100 +101,100 @@ bool cuts::lep(double p3[4], double p4[4])
 }
 
 bool cuts::decide_fiducial( double p3[4], double p4[4] ){
-  switch (opts.fiducial)
-    {
-    case cuts::D0    : return fiducial_D0    (p3,p4); break;
-    case cuts::CDF   : return fiducial_CDF   (p3,p4); break;
-    case cuts::ATLAS : return fiducial_ATLAS (p3,p4); break;
-    case cuts::CMS7  : return fiducial_CMS7  (p3,p4); break;
-    case cuts::CMS8  : return fiducial_CMS8  (p3,p4); break;
-    case cuts::GENEXP :
-      {
-	/*****************************/
-	// Can we clean up this or is it still needed?
+    //switch (opts.fiducial)
+    //{
+        //case cuts::D0    : return fiducial_D0    (p3,p4); break;
+        //case cuts::CDF   : return fiducial_CDF   (p3,p4); break;
+        //case cuts::ATLAS : return fiducial_ATLAS (p3,p4); break;
+        //case cuts::CMS7  : return fiducial_CMS7  (p3,p4); break;
+        //case cuts::CMS8  : return fiducial_CMS8  (p3,p4); break;
+        //case cuts::GENEXP :
+                           //{
+                               /*****************************/
+                               // Can we clean up this or is it still needed?
 
-	// Fiducial type is zero so in normal run there is no cut. But,
-	// because for wwidth I need fiducial / full I decided to run one job
-	// with full integral (makecuts=false) and plots fill only fiducial
-	// (fiducial!=0). In case I want to run standard full-integral
-	// full-plotting I need to sef fiducial=0 and makecuts=false
-	if (!opts.makecuts) return true; //< so this is here for plotting.
-	/*****************************/
+                               // Fiducial type is zero so in normal run there is no cut. But,
+                               // because for wwidth I need fiducial / full I decided to run one job
+                               // with full integral (makecuts=false) and plots fill only fiducial
+                               // (fiducial!=0). In case I want to run standard full-integral
+                               // full-plotting I need to sef fiducial=0 and makecuts=false
+                               if (!opts.makecuts) return true; //< so this is here for plotting.
+                               /*****************************/
 
-	if (opts.lptcut > 0)
-	  if (opts.nproc == 3)
-	    {
-	      float pt3 = sqrt((float)pow(p3[0],2)+(float)pow(p3[1],2));
-	      if (pt3 < opts.lptcut)
-		return false;
-	      float pt4 = sqrt((float)pow(p4[0],2)+(float)pow(p4[1],2));
-	      if (pt4 < opts.lptcut)
-		return false;
-	    }
-	  else
-	    if (getLPt(p3, p4) < opts.lptcut)
-	      return false;
-	
-	if (opts.lycut < 100)
-	  if (opts.nproc == 3)
-	    {
-	      float y3 = 0.5 *log(((float)p3[3] + (float)p3[2]) / ((float)p3[3] - (float)p3[2]));
-	      if (fabs(y3) > opts.lycut)
-		return false;
-	      float y4 = 0.5 *log(((float)p4[3] + (float)p4[2]) / ((float)p4[3] - (float)p4[2]));
-	      if (fabs(y4) > opts.lycut)
-		return false;
-	    }
-	  else
-	    if (fabs(getLY(p3, p4)) > opts.lycut)
-	      return false;
+                               if (opts.lptcut > 0)
+                                   if (opts.nproc == 3)
+                                   {
+                                       float pt3 = sqrt((float)pow(p3[0],2)+(float)pow(p3[1],2));
+                                       if (pt3 < opts.lptcut)
+                                           return false;
+                                       float pt4 = sqrt((float)pow(p4[0],2)+(float)pow(p4[1],2));
+                                       if (pt4 < opts.lptcut)
+                                           return false;
+                                   }
+                                   else
+                                       if (getLPt(p3, p4) < opts.lptcut)
+                                           return false;
 
-	if (opts.mtcut > 0)
-	    if (getMt(p3, p4) < opts.mtcut)
-	      return false;
+                               if (opts.lycut < 100)
+                                   if (opts.nproc == 3)
+                                   {
+                                       float y3 = 0.5 *log(((float)p3[3] + (float)p3[2]) / ((float)p3[3] - (float)p3[2]));
+                                       if (fabs(y3) > opts.lycut)
+                                           return false;
+                                       float y4 = 0.5 *log(((float)p4[3] + (float)p4[2]) / ((float)p4[3] - (float)p4[2]));
+                                       if (fabs(y4) > opts.lycut)
+                                           return false;
+                                   }
+                                   else
+                                       if (fabs(getLY(p3, p4)) > opts.lycut)
+                                           return false;
 
-	if (opts.etmisscut > 0)
-	    if (getEtMiss(p3, p4) < opts.etmisscut)
-	      return false;
-	
-	if (opts.l1ptcut > 0 || opts.l2ptcut > 0
-	    || opts.l1ycut < 100 || opts.l2ycut < 100)
-	  {
-	    float pt3 = sqrt((float)pow(p3[0],2)+(float)pow(p3[1],2));
-	    float pt4 = sqrt((float)pow(p4[0],2)+(float)pow(p4[1],2));
-	    float y3 = 0.5 *log(((float)p3[3] + (float)p3[2]) / ((float)p3[3] - (float)p3[2]));
-	    float y4 = 0.5 *log(((float)p4[3] + (float)p4[2]) / ((float)p4[3] - (float)p4[2]));
+                               if (opts.mtcut > 0)
+                                   if (getMt(p3, p4) < opts.mtcut)
+                                       return false;
 
-	    float pt1, pt2, y1, y2;
-	    if (pt3 > pt4)
-	      {
-		pt1 = pt3; y1 = y3;
-		pt2 = pt4; y2 = y4;
-	      }
-	    else
-	      {
-		pt1 = pt4; y1 = y4;
-		pt2 = pt3; y2 = y3;
-	      }
+                               if (opts.etmisscut > 0)
+                                   if (getEtMiss(p3, p4) < opts.etmisscut)
+                                       return false;
 
-	    if (pt1 < opts.l1ptcut)
-	      return false;
-	    if (pt2 < opts.l2ptcut)
-	      return false;
-	    if (fabs(y1) > opts.l1ycut)
-	      return false;
-	    if (fabs(y2) > opts.l2ycut)
-	      return false;
-	  }
+                               if (opts.l1ptcut > 0 || opts.l2ptcut > 0
+                                       || opts.l1ycut < 100 || opts.l2ycut < 100)
+                               {
+                                   float pt3 = sqrt((float)pow(p3[0],2)+(float)pow(p3[1],2));
+                                   float pt4 = sqrt((float)pow(p4[0],2)+(float)pow(p4[1],2));
+                                   float y3 = 0.5 *log(((float)p3[3] + (float)p3[2]) / ((float)p3[3] - (float)p3[2]));
+                                   float y4 = 0.5 *log(((float)p4[3] + (float)p4[2]) / ((float)p4[3] - (float)p4[2]));
 
-	
-	break;
-      }
-    case cuts::CUSTOM : return user_cuts(p3,p4); break;
-    default:
-      cout << "not recognised cuts" << endl;
-    }
-  return true;
+                                   float pt1, pt2, y1, y2;
+                                   if (pt3 > pt4)
+                                   {
+                                       pt1 = pt3; y1 = y3;
+                                       pt2 = pt4; y2 = y4;
+                                   }
+                                   else
+                                   {
+                                       pt1 = pt4; y1 = y4;
+                                       pt2 = pt3; y2 = y3;
+                                   }
+
+                                   if (pt1 < opts.l1ptcut)
+                                       return false;
+                                   if (pt2 < opts.l2ptcut)
+                                       return false;
+                                   if (fabs(y1) > opts.l1ycut)
+                                       return false;
+                                   if (fabs(y2) > opts.l2ycut)
+                                       return false;
+                               }
+
+
+                               //break;
+                           //}
+        //case cuts::CUSTOM : return user_cuts(p3,p4); break;
+        //default:
+                            //cout << "not recognised cuts" << endl;
+    //}
+    return true;
 }
 
 /// fiducial cuts
