@@ -31,20 +31,20 @@ namespace DYTurbo {
     namespace PrintTable {
 
         bool useUnicode=false;
-        char c_hor = '-';
-        char c_ver = '|';
+        String c_hor = "\u2501";
+        String c_ver = "\u2503";
 
-        char c_ul = 218;
-        char c_um = 194;
-        char c_ur = 191;
+        String c_ul = "\u250f";
+        String c_uc = "\u2530";
+        String c_ur = "\u2513";
 
-        char c_cl = 195;
-        char c_cm = 197;
-        char c_cr = 180;
+        String c_ml = "\u2523";
+        String c_mc = "\u254b";
+        String c_mr = "\u252b";
 
-        char c_bl = 192;
-        char c_bm = 193;
-        char c_br = 217;
+        String c_bl = "\u2517";
+        String c_bc = "\u253b";
+        String c_br = "\u251b";
         size_t eoc=2; //!< end of cell length
         size_t wb=5; //!< bound length
         size_t wr=8; //!< result length
@@ -61,18 +61,42 @@ namespace DYTurbo {
             wx + // exponenent
             time_width;
 
-        inline void EndOfCell()  { std::wcout << " " << c_ver << flush; }
-        inline void BeginOfRow() { std::wcout << c_ver << flush; }
+        inline void EndOfCell()  { std::cout << " " << c_ver << flush; }
+        inline void BeginOfRow() { std::cout << c_ver << flush; }
         inline void EndOfRow()   { cout << endl;          }
 
-        void Hline(){
+        void coutN(size_t N, String s) { for (size_t i = 0; i < N; ++i) { cout << s; }}
+
+        void Hline(char p='m'){
+            String left   = c_ml;
+            String center = c_mc;
+            String right  = c_mr;
+            if (p=='u') {
+                left   = c_ul;
+                center = c_uc;
+                right  = c_ur;
+            }
+            if (p=='b') {
+                left   = c_bl;
+                center = c_bc;
+                right  = c_br;
+            }
             size_t N_loopingBounds =0;
             for (auto &a: ActiveBoundaries ) if (a.size()>2) N_loopingBounds++;
+            cout << left;
             size_t wtotal = 1; // begin of line
             wtotal += (bound_width +eoc)*N_loopingBounds;
-            wtotal += (term_width  +eoc)*(ActiveTerms.size() + 1/*total column*/ );
-            String hline ( wtotal, c_hor);
-            cout << hline << endl;
+            for (size_t i = 0; i < N_loopingBounds; ++i) {
+                coutN(bound_width+1,c_hor);
+                cout << center;
+            }
+            for (size_t i = 0; i < ActiveTerms.size(); ++i) {
+                coutN(term_width+1,c_hor);
+                cout << center;
+            }
+            // total column
+            coutN(term_width+1,c_hor);
+            cout << right << endl;
         };
 
         void BoundsAllLooping(bool printNames=false, bool useFullBound=false){
@@ -143,7 +167,7 @@ namespace DYTurbo {
         }
 
         void Header() {
-            Hline();
+            Hline('u');
             BeginOfRow();
             BoundsAllLooping(true); // print only names
             for( TermIterator term; !term.IsEnd(); ++term){
@@ -295,7 +319,7 @@ namespace DYTurbo {
                 Result((*term),true);
             }
             ResultSubTotal(true);
-            Hline();
+            Hline('b');
         };
 
         void SettingsHeader(String title){
