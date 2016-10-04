@@ -32,7 +32,6 @@ typedef vector<vector<double>> VecVecDbl;
 #include "gmock/gmock.h"
 
 
-
 TEST(TurboHist, Counter) {
     TurboHist::Counter c1;
     ASSERT_DOUBLE_EQ ( 0 , c1.sum_w  ) << "Construct ";
@@ -368,7 +367,7 @@ struct MapoBin{
 };
 
 // We have to be faster then ROOT
-TEST(TurboHistVsROOT, FourTimesFasterThanROOT_FindBin) {
+TEST(TurboHistVsROOT, ThreeTimesFasterThanROOT_FindBin) {
     // prepare data
     VecDbl bins ={ 0., 1., 2., 3., 4., 5., 6., 7., 8. , 9., 10., 13., 14., 15., 16., 17., 18., 19., 20., 21., 22., 23., 24., 25., 26., 27., 28., 29., 30., 31., 32., 33., 34., 35., 36., 37., 38., 39., 40., 41., 42., 43., 44., 45., 46., 47., 48., 49., 50., 51., 52., 53., 54., 55., 56., 57., 58., 59., 60., 61., 62., 63., 64., 65., 66., 67., 68., 69., 70., 71., 72., 73., 74., 75., 76., 77., 78., 79., 80., 81., 82., 83., 84., 85., 86., 87., 88., 89., 90., 91., 92., 93., 94., 95., 96., 97., 98., 99., 100. };
     VecVecDbl testdata;
@@ -401,11 +400,11 @@ TEST(TurboHistVsROOT, FourTimesFasterThanROOT_FindBin) {
     timeTurbo = tp_find(turbo,testdata);
     timeROOT =  tp_find(root,testdata);
     EXPECT_GT(timeROOT,timeTurbo) << "time is in seconds -- BinarySearch";
-    EXPECT_GT(timeROOT,4*timeTurbo) << "time is in seconds -- BinarySearch";
+    EXPECT_GT(timeROOT,3*timeTurbo) << "time is in seconds -- BinarySearch";
 }
 
 // We have to be faster then ROOT
-TEST(TurboHistVsROOT, FourTimesFasterThanROOT_Fill) {
+TEST(TurboHistVsROOT, ThreeTimesFasterThanROOT_Fill) {
     // prepare data
     VecDbl bins ={ 0., 1., 2., 3., 4., 5., 6., 7., 8. , 9., 10., 13., 14., 15., 16., 17., 18., 19., 20., 21., 22., 23., 24., 25., 26., 27., 28., 29., 30., 31., 32., 33., 34., 35., 36., 37., 38., 39., 40., 41., 42., 43., 44., 45., 46., 47., 48., 49., 50., 51., 52., 53., 54., 55., 56., 57., 58., 59., 60., 61., 62., 63., 64., 65., 66., 67., 68., 69., 70., 71., 72., 73., 74., 75., 76., 77., 78., 79., 80., 81., 82., 83., 84., 85., 86., 87., 88., 89., 90., 91., 92., 93., 94., 95., 96., 97., 98., 99., 100. };
     VecVecDbl testdata;
@@ -428,7 +427,7 @@ TEST(TurboHistVsROOT, FourTimesFasterThanROOT_Fill) {
     timeTurbo = tp_fill(turbo,testdata);
     timeROOT =  tp_fill(root,testdata);
     EXPECT_GT(timeROOT,timeTurbo) << "time is in seconds -- BinarySearch";
-    EXPECT_GT(timeROOT,4*timeTurbo) << "time is in seconds -- BinarySearch";
+    EXPECT_GT(timeROOT,3*timeTurbo) << "time is in seconds -- BinarySearch";
 }
 
 
