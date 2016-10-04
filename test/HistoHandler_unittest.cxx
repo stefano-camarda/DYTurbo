@@ -19,6 +19,9 @@
 
 #include <random>
 
+typedef std::vector<String> VecStr;
+using HistoHandler::histos;
+
 
 class HistoServiceTest : public testing::Test{
     protected :
@@ -29,11 +32,10 @@ class HistoServiceTest : public testing::Test{
             gausZ.param( std::normal_distribution<>::param_type(0.,30.)  );
             gausW.param( std::normal_distribution<>::param_type(1.,0.1) );
 
-            Nterm=1;
-            Nevents=1;
-            Nnodes=1;
+            Nterm=2;
+            Nevents=100;
+            Nnodes=4;
             isParent=true;
-            inode=0;
             parent_pid=getpid();
         }
 
@@ -56,13 +58,14 @@ class HistoServiceTest : public testing::Test{
             wgt = gausW(gen);
         }
 
-        void CheckEntries(double entries=0.){
-            for (auto h_it = HistoHandler::hists.begin();h_it!=HistoHandler::hists.end();h_it++){
-                double hentries = (*h_it)->GetEntries();
-                ASSERT_DOUBLE_EQ(entries, (*h_it)->GetEntries())
-                    << "Histogram " << (*h_it)->GetName()
+        void CheckEntries(double entries=0., double integr=0.){
+            for (size_t ihist = 0; ihist < histos.size(); ++ihist) {
+                double hentries = histos[ihist]->GetEntries();
+                double exp = entries + (histos[ihist]->IsIntegrationSafe() ? integr : 0) ;
+                ASSERT_DOUBLE_EQ(exp, histos[ihist]->GetEntries())
+                    << "Histogram " << histos[ihist]->GetName()
                     << " has incorect number of entries: " << hentries 
-                    << " instead of " << entries ;
+                    << " instead of " << exp ;
             }
         }
 
@@ -112,7 +115,7 @@ class HistoServiceTest : public testing::Test{
         }
 
         void InitWorker(){
-            HistoHandler::Clear();
+            HistoHandler::Reset();
         }
 
         void ExitWorker(int inode){
@@ -128,8 +131,9 @@ class HistoServiceTest : public testing::Test{
         int Nevents;
         int Nnodes;
         bool isParent;
-        int inode;
         static double total_entries;
+        static double total_entries_integ;
+        static VecStr hist_names;
 
 
         int child_pid;
@@ -142,9 +146,11 @@ class HistoServiceTest : public testing::Test{
 };
 
 double HistoServiceTest::total_entries = 0.;
+double HistoServiceTest::total_entries_integ = 0.;
+VecStr HistoServiceTest::hist_names;
 
 TEST_F(HistoServiceTest, HistCreateAndFill){
-    HistoHandler::Histo1D<BosPT> htmp("dummy");
+    HistoHandler::Histo1D<BosPT> htmp("qt");
     random_kin();
     Kinematics::SetKinematics(l1,l2,wgt);
     htmp.FillEvent();
@@ -162,6 +168,10 @@ TEST_F(HistoServiceTest, Init){
     HistoHandler::Init();
     total_entries=0.;
     CheckEntries(total_entries);
+    // store all names of all histograms
+    for (auto h_it = HistoHandler::histos.begin();h_it!=HistoHandler::histos.end();h_it++){
+        hist_names.push_back((*h_it)->GetName());
+    }
 };
 
 TEST_F(HistoServiceTest, LoopNoThread){
@@ -172,8 +182,8 @@ TEST_F(HistoServiceTest, LoopNoThread){
 
 TEST_F(HistoServiceTest, LoopNoThreadIntegrator){
     LoopIntegrator();
-    total_entries+=1;
-    CheckEntries(total_entries);
+    total_entries_integ+=Nterm;
+    CheckEntries(total_entries,total_entries_integ);
 }
 
 TEST_F(HistoServiceTest, LoopInsideThreads){
@@ -184,13 +194,15 @@ TEST_F(HistoServiceTest, LoopInsideThreads){
         InitWorker();
         Loop();
         CheckEntries(Nterm*Nevents);
-        ExitWorker(inode); // turn off worker
+        cout << "exit worker" << inodes << endl;
+        ExitWorker(inodes); // turn off worker
     }
+    cout << "Waiting" << endl;
     Wait(); // wait for all workers to finish
+    cout << "all finished" << endl;
     Loop();
     total_entries+=Nterm*Nevents;
-    CheckEntries(total_entries);
-    HistoHandler::Save(); // parent always saves its instance and check for temporary files
+    CheckEntries(total_entries,total_entries_integ);
 };
 
 TEST_F(HistoServiceTest, Terminate){
@@ -198,104 +210,41 @@ TEST_F(HistoServiceTest, Terminate){
     HistoHandler::Terminate();
 };
 
-
-// TODO: fork code and merge back
-// TODO: why 2 histograms
-
-// testing HistoSvc functionality
-/*
-void Test_HistoSvc(){
-
-    const int parent_pid=getpid();
-
-    bool usePrallel=true;
-    int this_pid=parent_pid;
-    int child_pid=0;
-
-    double l1[4] = {0.3,0.3,0.3,0.33};
-    double l2[4] = {0.3,0.3,0.3,0.33};
-    double wgt=1;
-    double* pwgt=&wgt;
-    printf ("\n\nPID: %d Testing Kinematics\n",this_pid); fflush(stdout);
-    BosPX var_px1;
-    BosPX var_px2;
-    BosPT var_qt1;
-    BosPT var_qt2;
-    SetKinematics(l1,l2,wgt);
-    printf( "PID: %d px1 %f is same as  px2 %f; pt1 %f is same as pt2 %f\n",this_pid,var_px1(),var_px2(),var_qt1(),var_qt2()); fflush(stdout);
-
-    // init histograms
-    Init();
-    int ipdf = 2;
-
-    // simulate different term calculation
-    for (int iterm = 0; iterm < 2; ++iterm) {
-        int Nnodes = 3;
-        // from http://stackoverflow.com/a/16890759
-        for (int inode = 0; inode < Nnodes; ++inode) {
-            if (usePrallel){
-                if (this_pid==parent_pid){
-                    printf("forking %d \n",this_pid); fflush(stdout);
-                    child_pid = fork();
-                    this_pid = getpid();
-                    printf("I am %d \n",this_pid); fflush(stdout);
-                }
-                // parent skip and fork again ( double condition just to be sure)
-                if ((child_pid!=0) || (this_pid==parent_pid)) continue;
-            }
-
-            printf ("\n\nTesting Looping pid %d inode %d \n",this_pid, inode); fflush(stdout);
-            for (size_t ievent=0; ievent < 3; ievent++){
-                printf ("PID %d Event %zu\n",this_pid,ievent); fflush(stdout);
-                random_kin(l1,l2,wgt);
-                //
-                printf ("PID %d SetPDF0 and fill %zu\n",this_pid,ievent); fflush(stdout);
-                SetVariation(0);
-                histo_fill(l1,l2,pwgt);
-                //
-                printf ("PID %d SetPDF2 and filldipole %zu\n",this_pid,ievent); fflush(stdout);
-                histo_setpdf(&ipdf);
-                histo_filldipole(l1,l2,pwgt);
-                wgt+=0.3;
-                printf ("PID %d filldipole2 %zu\n",this_pid,ievent); fflush(stdout);
-                histo_filldipole(l1,l2,pwgt);
-                histo_fillreal();
-            }
-
-            if (usePrallel){
-                // save worker
-                printf ("\n\nPID %d Testing Save worker\n",this_pid); fflush(stdout);
-                Save(inode);
-                printf("child %d is dying... bye bye\n",this_pid); fflush(stdout);
-                return;  // only child should go here and then die
-            }
-        } // end of parallel
-        if (usePrallel){
-            // from: http://stackoverflow.com/a/279761
-            printf("parent is waiting...\n"); fflush(stdout);
-            while (true) {
-                int status;
-                pid_t done = wait(&status);
-                if (done == -1) {
-                    if (errno == ECHILD) break; // no more child processes
-                } else {
-                    if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
-                        printf("pid %d failed!!!\n",done); fflush(stdout);
-                        exit(1);
-                    }
-                }
-            }
-        }
-        // save tmp and parent thread
-        Save();
-    }
-    // save main
-    printf ("\n\nTesting Save\n"); fflush(stdout);
-    SetVariation(0);
-    histo_fill(l1,l2,pwgt);
-    Save();
-    Terminate();
-    return;
+bool IsIntegName(string hname){
+    if ( hname == "s_qt"      ) return true;
+    if ( hname == "s_qt_vs_y" ) return true;
+    if ( hname == "s_qt_vs_y_vs_m" ) return true;
+    return false;
 }
-*/
+
+#ifdef USEROOT
+#include "TH1.h"
+
+
+TEST_F(HistoServiceTest, CheckSavedFiles){
+    // open root file or stl file
+    String fname = HistoHandler::result_filename;
+    fname+=HistoHandler::file_suffix;
+    TFile *f = TFile::Open(fname.c_str());
+    total_entries+=Nnodes*Nterm*Nevents;
+    // for all histograms
+    for (auto hname : hist_names){
+        // check number of entries
+        TH1 * hist = ((TH1*) f->Get(hname.c_str()));
+        double hentries = hist->GetEntries();
+        double exp = total_entries + (IsIntegName(hname)  ? total_entries_integ : 0) ;
+        ASSERT_DOUBLE_EQ(exp, hentries)
+            << "Saved histogram " << hname
+            << " has incorect number of entries: " << hentries 
+            << " instead of " << exp ;
+    }
+    f->Close();
+};
+
+#else  // STL
+TEST_F(HistoServiceTest, CheckSavedFiles){
+    total_entries+=Nnodes*Nterm*Nevents;
+    ASSERT_TRUE(false) << "Not implemented for STL";
+};
+#endif
 

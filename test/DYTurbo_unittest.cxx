@@ -14,18 +14,22 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
+#include "config.h"
 #include "src/dyturbo.h"
 #include "src/settings.h"
 #include "src/cubacall.h"
+#include "src/clock_real.h"
+
 
 #include "src/resintegr.h"
 #include "src/ctintegr.h"
 #include "src/finintegr.h"
 #include "mcfm/mcfm_interface.h"
 
+#include "histo/HistoHandler.h"
+
 typedef std::vector<string> VecStr;
 typedef std::vector<double> VecDbl;
-typedef std::stringstream SStream;
 
 
 
@@ -42,7 +46,7 @@ TEST(DYTurbo,TermIteration){
     DYTurbo::WarmUp();
     std::vector <void (*)(std::vector<double>&, double&)> term_funs;
     term_funs.push_back(bornintegrMC6d);
-    term_funs.push_back(ctintegr2d);
+    term_funs.push_back(vjintegr3d);
     ASSERT_EQ(term_funs.size(), DYTurbo::ActiveTerms.size() )
         << "Incorrect number of terms. Check your input file." ;
     for ( DYTurbo::TermIterator it_term; !it_term.IsEnd(); ++it_term) {
@@ -120,7 +124,7 @@ TEST(DYTurbo,MainLoop){
                 double val = (*term).last_int[0];
                 double exp = readfloat();
                 if (doSaveResults) writefloat(val);
-                else ASSERT_EQ(val,exp);
+                else ASSERT_EQ(val-exp,0);
             }
         }
         DYTurbo::PrintTable::ResultSubTotal();
@@ -164,9 +168,11 @@ void CheckIntegrand(int &ord, const char *name, IntFun fun, int dim){
     // point: Fake random point for integrands, set to lower bound of integration.
     VecDbl point  (dim, 0.8);
     VecDbl result (opts.totpdf,0.);
+    double time_ellapsed = clock_real();
     RunIntegrand(fun, dim,&point[0],&result[0]);
+    time_ellapsed = clock_real()-time_ellapsed;
     if (doSaveResults){
-        printf(" saving to file: %d %s : %.10e \n", dim, name, result[0]);
+        printf(" saving to file: %d %s : %.10e ( %fs) \n", dim, name, result[0], time_ellapsed);
         writefloat(result[0]);
     } else {
         double expected = readfloat();
@@ -249,10 +255,42 @@ TEST(DYTurbo,CheckIntegrandFunctions){
      */
 }
 
+#ifdef USEROOT
+#include "TFile.h"
+#include "TH1.h"
+#endif
+
+void CheckResultFile(string fname = ""){
+    if (fname.size()==0){
+        fname =  HistoHandler::result_filename;
+        fname += HistoHandler::file_suffix;
+    }
+    VecStr names = { "s_qt" };
+    F= fopen( "filecheck.res", (doSaveResults) ? "w" : "r");
+#ifdef USEROOT
+    TFile *f = TFile::Open(fname.c_str());
+    ASSERT_NE(f,NULL) << "Wrong file name " << fname;
+    for (String hname: names){
+        TH1* hist = (TH1*) f->Get(hname.c_str());
+        ASSERT_NE(hist,NULL) << "Wrong hist name " << hname << " in filename " << fname;
+        double val = hist->Integral();
+        double exp = readfloat();
+        if (doSaveResults) writefloat(val);
+        else ASSERT_EQ(val,exp)
+            << "Incorrect number of entries in saved histogram " << hname
+            << " inside file" << fname;
+    }
+#else // STL
+#endif
+    fclose(F);
+}
+
 
 TEST(DYTurbo,Termination){
     DYTurbo::PrintTable::Footer();
     DYTurbo::Terminate();
+    CheckResultFile();
+    CheckResultFile("../src/oldresults.root");
 }
 
 #endif /* ifndef DYTurbo_unittest_CXX */
