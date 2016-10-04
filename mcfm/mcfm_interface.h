@@ -1,7 +1,7 @@
 #ifndef mcfm_interface_h
 #define mcfm_interface_h
 
-#include "fcomplex.h"
+#include "src/fcomplex.h"
 
 #define MAXNF 5
 

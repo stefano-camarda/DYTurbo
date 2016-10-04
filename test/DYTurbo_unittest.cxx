@@ -311,10 +311,8 @@ void CheckResultFile(string fname = ""){
 
 
 TEST(DYTurbo,Termination){
-    DYTurbo::PrintTable::Footer();
     DYTurbo::Terminate();
     CheckResultFile("../src/results.root");
-    CheckResultFile("../src/oldresults.root");
     CheckResultFile();
 }
 

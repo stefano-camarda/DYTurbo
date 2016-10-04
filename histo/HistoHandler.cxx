@@ -14,6 +14,7 @@
 #include "HistoHandler.h"
 #include "HistoObjects.h"
 
+#include "src/interface.h"
 
 #include <sstream>
 using std::ostringstream;
@@ -21,25 +22,29 @@ using std::ostringstream;
 using namespace Kinematics;
 
 // interface:
-void disabled_hists_setpdf_(int * npdf){
+void hists_setpdf_(int * npdf){
     HistoHandler::SetVariation(*npdf);
 }
 
-void disabled_hists_fill_pdf_(double p3[4], double p4[4], double *weight, int *npdf){
+void hists_fill_(double p3[4], double p4[4], double *weight){
+    HistoHandler::FillEvent(p3,p4,*weight);
+}
+
+void hists_fill_pdf_(double p3[4], double p4[4], double *weight, int *npdf){
     HistoHandler::SetVariation(*npdf);
     HistoHandler::FillEvent(p3,p4,*weight);
 }
 
-void disabled_hists_real_dipole_(double p3[4], double p4[4], double *weight, int * nd){
+void hists_real_dipole_(double p3[4], double p4[4], double *weight, int * nd){
     HistoHandler::FillDipole(p3,p4,*weight);
 }
 
-void disabled_hists_real_dipole_pdf_(double p3[4], double p4[4], double *weight, int * nd, int* npdf){
+void hists_real_dipole_pdf_(double p3[4], double p4[4], double *weight, int * nd, int* npdf){
     HistoHandler::SetVariation(*npdf);
     HistoHandler::FillDipole(p3,p4,*weight);
 }
 
-void disabled_hists_real_event_(){
+void hists_real_event_(){
     HistoHandler::FillRealEvent();
 }
 

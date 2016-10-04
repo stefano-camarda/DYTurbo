@@ -21,7 +21,6 @@
 #include "phasespace/phasespace.h"
 #include "resum/rapint.h"
 #include "histo/HistoHandler.h"
-#include "plotter.h" // <<< REMOVE THIS
 #include "dyturbo.h"
 
 using DYTurbo::PrintTable::Col3;
@@ -74,8 +73,6 @@ namespace DYTurbo {
             for (size_t ivar = 0; ivar < last_int.size(); ++ivar) {
                 HistoHandler::SetVariation(ivar);
                 HistoHandler::FillResult(last_int[ivar],sqrt(last_err2));
-                hists.SetPDF(ivar);
-                hists.FillResult(plotter::Total, last_int[ivar], sqrt(last_err2), last_time);
             }
         }
         // cumulate
@@ -167,7 +164,6 @@ namespace DYTurbo {
         // parsing options from input file
         opts.parse_options(argc,argv);
         init_params();
-        hists.Init();
         HistoHandler::Init();
         /***********************************/
         //print out EW and QCD parameters and other settings
@@ -387,7 +383,6 @@ namespace DYTurbo {
         ActiveTerms.clear();
         ActiveBoundaries.clear();
         subtotal.last_reset();
-        hists.Finalise();
         HistoHandler::Terminate();
     }
 

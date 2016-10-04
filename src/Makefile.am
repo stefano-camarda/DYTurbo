@@ -19,7 +19,7 @@ AM_FFLAGS =  -I$(srcdir)/../dyres \
 
 noinst_LTLIBRARIES = libdyturbobase.la
 libdyturbobase_la_SOURCES = dyturbo.C resintegr.C ctintegr.C finintegr.C \
-			    omegaintegr.C settings.C init.C cubacall.C plotter.C switch.C cuts.C usercuts.C \
+			    omegaintegr.C settings.C init.C cubacall.C switch.C cuts.C usercuts.C \
 			    pdf.C coupling.C clock_real.C banner.C kinematic.C print_table.C #solvew.C
 libdyturbobase_la_SOURCES += flavreduce.f gaussinit.f rescinit.f pdfmoments.f
 libdyturbobase_la_SOURCES += AiMoments.cxx TLVUtils.cxx
@@ -27,24 +27,24 @@ libdyturbobase_la_SOURCES += AiMoments.cxx TLVUtils.cxx
 lib_LTLIBRARIES = libdyturbo.la
 libdyturbo_la_SOURCES =
 libdyturbo_la_LIBADD = libdyturbobase.la \
-	../phasespace/libphasespace.la \
-	../histo/libhisto.la \
-	../integrands/libintegrands.la \
-	../resum/libresum.la \
-	../counterterm/libcounterterm.la \
-	../vjfo/libvjfo.la \
-	../v2j/libv2j.la \
-	../eba/libeba.la \
-	../dynnlo/libdynnlo.la \
-	../dyres/libdyres.la \
-	../mcfm/libmcfm.la \
-	../dyqt/libdyqt.la \
-	../pegasus/libpegasus.la \
-	../dequad/libdequad.la \
-	../cubature/libcubature.la \
-	../cernlib/libcern.la \
-	-lgfortran \
-	$(LHAPDF_LDFLAGS) #-lgsl -lgslcblas -lifcore -limf -lifport -lintlc -lquadmath
+		       ../histo/libhisto.la \
+		       ../phasespace/libphasespace.la \
+		       ../integrands/libintegrands.la \
+		       ../resum/libresum.la \
+		       ../counterterm/libcounterterm.la \
+		       ../vjfo/libvjfo.la \
+		       ../v2j/libv2j.la \
+		       ../eba/libeba.la \
+		       ../dynnlo/libdynnlo.la \
+		       ../dyres/libdyres.la \
+		       ../mcfm/libmcfm.la \
+		       ../dyqt/libdyqt.la \
+		       ../pegasus/libpegasus.la \
+		       ../dequad/libdequad.la \
+		       ../cubature/libcubature.la \
+		       ../cernlib/libcern.la \
+		       -lgfortran \
+		       $(LHAPDF_LDFLAGS) #-lgsl -lgslcblas -lifcore -limf -lifport -lintlc -lquadmath
 
 
 bin_PROGRAMS = dyturbo
@@ -62,7 +62,7 @@ dyturbo_merger_LDADD = $(ROOT_LDFLAGS)
 endif
 
 pkginclude_HEADERS = dyturbo.h resintegr.h ctintegr.h finintegr.h omegaintegr.h \
-		     interface.h settings.h cubacall.h plotter.h init.h switch.h options.f flred.f \
+		     interface.h settings.h cubacall.h init.h switch.h options.f flred.f \
 		     gauss.f quadrules.f cuts.h coupling.h pdf.h clock_real.h \
 		     fcomplex.h banner.h cxxopts.hpp kinematic.h isnan.h #solvew.h
 

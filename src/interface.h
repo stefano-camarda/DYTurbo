@@ -1,7 +1,7 @@
 #ifndef interface_h
 #define interface_h
 
-#include "mcfm_interface.h"
+#include "mcfm/mcfm_interface.h"
 #include "fcomplex.h"
 
 #include <complex>
@@ -117,14 +117,13 @@ extern "C" {
     double sigmaij_[11][11];
   } sigmaij_;
 
-  void hists_setpdf_(int * npdf);
-  void hists_fill_(double p3[4], double p4[4], double *weight);
-  void hists_AiTest_(double pjet[4][12], double p4cm[4],double *Q,double *qt,double *y,double* pcosthCS, double* pphiCS, double *pphiVB, double *wt, double *loHst );
-  void hists_real_dipole_(double p3[4], double p4[4], double *weight,int *nd);
-  void hists_real_event_();
-  void hists_fill_pdf_(double p3[4], double p4[4], double *weight, int *npdf);
-  void hists_real_dipole_pdf_(double p3[4], double p4[4], double *weight,int *nd, int *npdf);
-  void hists_real_event_pdf_(int* npdf);
+  void hists_setpdf_          (int*   npdf   );
+  void hists_fill_            (double p3[4], double p4[4], double *weight );
+  void hists_fill_pdf_        (double p3[4], double p4[4], double *weight, int *npdf );
+  void hists_real_dipole_     (double p3[4], double p4[4], double *weight, int *nd   );
+  void hists_real_dipole_pdf_ (double p3[4], double p4[4], double *weight, int *nd,  int *npdf);
+  void hists_real_event_      ();
+  //void hists_real_event_pdf_ (int* npdf); // this is very dangerous, please dont use it
 }
 #pragma omp threadprivate(a_param_,scale_,facscale_,qcdcouple_,sigmaij_)
 

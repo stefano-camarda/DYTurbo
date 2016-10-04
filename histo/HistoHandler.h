@@ -28,16 +28,6 @@ typedef std::ostringstream SStream;
 
 #define PARENT_PROC 32768
 
-extern "C" {
-    //! Interface to HistoHander: SetPDF
-    void histo_setpdf(int *imember);
-    //! Interface to HistoHander: FillEvent
-    void histo_fill(double *l1,double *l2,double *wgt);
-    //! Interface to HistoHander: FillDipole
-    void histo_filldipole(double *l1,double *l2, double *wgt);
-    //! Interface to HistoHander: FillRealEvent
-    void histo_fillreal();
-}
 
 /** 
  * @brief Histogramming services
