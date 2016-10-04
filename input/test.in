@@ -29,13 +29,15 @@ cubacores = 0
 niterBORN        = 1
 niterCT          = 1
 niterVJ          = 1
-vegasncallsBORN     = 1e2
+vegasncallsBORN     = 1e3
 vegasncallsCT      = 1e2
 vegasncallsVJLO    = 1e2
 vegasncallsVJREAL  = 1000
 vegasncallsVJVIRT  = 100
 
 makecuts = false
+lptcut = 20
+lycut = 2.5
 
 qt_bins =  [ 0. 10. 20. 30. ]
 y_bins  =  [ -3.0 0. 3.0 ]

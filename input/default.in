@@ -148,7 +148,6 @@ l2ptcut = 0
 l2ycut = 1000
 mtcut = 0
 etmisscut = 0
-fiducial = 0
 
 # integration types and settings for costh phi_lep phase space
 cubaint   = false   # integration with Cuba Suave
