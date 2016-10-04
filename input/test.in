@@ -6,19 +6,19 @@ rseed = 123321
 
 LHAPDFset    = CT10nnlo
 LHAPDFmember    = 0
-PDFerrors = true
+PDFerrors = false
 
 intDimRes = 2
 intDimBorn = 6
-intDimCT = 2
-intDimVJ = 2
+intDimCT = 3
+intDimVJ = 3
 
 order   = 1
 fixedorder = true
 # term switches
 doBORN = true
-doCT   = true
-doVJ   = false
+doCT   = false
+doVJ   = true
 
 doVJREAL = false
 doVJVIRT = false
