@@ -22,9 +22,9 @@ class InputParser {
         string GetString(string name);
         bool GetBool(string name);
         void GetVectorDouble(string name, vector<double> &vec);
+        void parse_file(const string fname);
     private :
         // functions
-        void parse_file(const string fname);
         void trim(string & str);
         void has_key(const string key);
         // data members
@@ -244,6 +244,7 @@ class binning
  public:
   binning() {};
   void readfromfile(const string fname);
+  void GetBins(string name,vector<double> &bins);
   // private:
   string plotmode;
   vector <double> qtbins;
@@ -252,6 +253,8 @@ class binning
   vector <double> hist_qt_bins;
   vector <double> hist_y_bins;
   vector <double> hist_m_bins;
+ private:
+  InputParser in;
 };
 
 

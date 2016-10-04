@@ -69,6 +69,15 @@ namespace DYTurbo {
         //
         last_time = clock_real()-last_time;
         last_err2 += err*err;
+        // save results to histograms
+        if (!isVegas){
+            for (size_t ivar = 0; ivar < last_int.size(); ++ivar) {
+                HistoHandler::SetVariation(ivar);
+                HistoHandler::FillResult(last_int[ivar],sqrt(last_err2));
+                hists.SetPDF(ivar);
+                hists.FillResult(plotter::Total, last_int[ivar], sqrt(last_err2), last_time);
+            }
+        }
         // cumulate
         total_time+=last_time;
         total_int+=last_int[0];
@@ -162,6 +171,7 @@ namespace DYTurbo {
         opts.parse_options(argc,argv);
         init_params();
         hists.Init();
+        HistoHandler::Init();
         /***********************************/
         //print out EW and QCD parameters and other settings
         if (opts.verbose) opts.dumpAll();
@@ -191,6 +201,7 @@ namespace DYTurbo {
         ActiveTerms.back().name = name;
         ActiveTerms.back().description = "";
         ActiveTerms.back().integrate = fun;
+        ActiveTerms.back().isVegas = is_vegas;
         HasOnlyVegas&=is_vegas;
         return ActiveTerms.back();
     }
@@ -299,7 +310,7 @@ namespace DYTurbo {
     }
 
     /**
-     * @brief First run of resummation.
+     * @brief First run of resummation and counter term.
      *
      * If using the DYRES approximation for PDFs, make sure that the PDF fit
      * is initialised in the same way Need to throw a random point according
@@ -349,7 +360,7 @@ namespace DYTurbo {
         AddTerms();
         AddBoundaries();
         /// - Check if all histograms are integrable if necessary (make warning)
-        HistoHandler::Book();
+        //HistoHandler::Book();
         /// - Check if we need to warm up CT integration or Resummation
         WarmUpResummation();
         /// - Clear subtotal
@@ -374,10 +385,12 @@ namespace DYTurbo {
 
     //! Close, clear, delete and say bye bye..
     void Terminate(){
+        PrintTable::Footer();
         ActiveTerms.clear();
         ActiveBoundaries.clear();
         subtotal.last_reset();
-        /// @todo HistoHandler::Terminate();
+        hists.Finalise();
+        HistoHandler::Terminate();
     }
 
 };

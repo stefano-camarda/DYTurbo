@@ -682,13 +682,19 @@ void settings::parse_binning(string name, vector<double> &bins, po::Options &arg
     }
 }
 
+void binning::GetBins(string name, vector<double> &vec){
+    vec.clear();
+    name+="_bins";
+    in.GetVectorDouble(name.c_str(), vec);
+    if ( vec.size() < 2) throw QuitProgram( "Option `" +name+ "` needs at least 2 items ");
+}
 
 void binning::readfromfile(const string fname){
-    InputParser in(fname);
+    in.parse_file(fname);
     plotmode =  in.GetString( "plotmode");
-    qtbins       .clear(); in.GetVectorDouble( "qt_bins"      , qtbins       );
-    ybins        .clear(); in.GetVectorDouble( "y_bins"       , ybins        );
-    mbins        .clear(); in.GetVectorDouble( "m_bins"       , mbins        );
+    GetBins("qt" , qtbins );
+    GetBins("y"  , ybins  );
+    GetBins("m"  , mbins  );
     hist_qt_bins .clear();
     hist_y_bins  .clear();
     hist_m_bins  .clear();

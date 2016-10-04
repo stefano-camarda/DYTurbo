@@ -117,11 +117,11 @@ void plotter::Init(){
     double * diff_y_array    = &(bins.hist_y_bins  [0]);
     double * diff_Q_array    = &(bins.hist_m_bins  [0]);
     // differential xsection and ai profiles
-    h_qt     = new TH1D ( "h_qt" , "VB qt"   , diff_qt_n , diff_qt_array ) ;
-    h_y      = new TH1D ( "h_y"  , "VB y"    , diff_y_n  , diff_y_array  ) ;
-    h_m      = new TH1D ( "h_m"  , "VB mass" , diff_Q_n  , diff_Q_array  ) ;
-    h_qtVy   = new TH2D ( "h_qtVy" , "VB qtVy" , diff_qt_n , diff_qt_array , diff_y_n , diff_y_array ) ;
-    h_yVm    = new TH2D ( "h_yVm"  , "VB yVm"  , diff_y_n  , diff_y_array  , diff_Q_n , diff_Q_array ) ;
+    h_qt     = new TH1D ( "s_qt" , "VB qt"   , diff_qt_n , diff_qt_array ) ;
+    h_y      = new TH1D ( "s_y"  , "VB y"    , diff_y_n  , diff_y_array  ) ;
+    h_m      = new TH1D ( "s_m"  , "VB mass" , diff_Q_n  , diff_Q_array  ) ;
+    h_qtVy   = new TH2D ( "s_qt_vs_y" , "VB qtVy" , diff_qt_n , diff_qt_array , diff_y_n , diff_y_array ) ;
+    h_yVm    = new TH2D ( "s_yVm"  , "VB yVm"  , diff_y_n  , diff_y_array  , diff_Q_n , diff_Q_array ) ;
     if (doAiMoments){ // ai moments could be turned off
         TString name,title;
         for (int i=0; i<NMOM; i++){
@@ -173,7 +173,7 @@ bool plotter::IsInitialized(){return (h_qt!=0);};
 void plotter::FillEvent(double p3[4], double p4[4], double wgt){
     // save after 10M events
     // if(int(h_qt->GetEntries()+1)%int(1e6)==0) Finalise(0);
-    if (wgt == 0 || !isFillMode ) return;
+    if (wgt == 0 /*|| !isFillMode*/ ) return;
 #ifdef AIMOM
     TLorentzVector lep1(p3);
     TLorentzVector lep2(p4);
@@ -213,7 +213,7 @@ void plotter::FillEvent(double p3[4], double p4[4], double wgt){
 }
 
 void plotter::FillRealDipole(double p3[4], double p4[4], double wgt, int nd){
-    if ( (nd!=0 && wgt == 0) || !isFillMode ) return; // make sure you have at least first one for kinematics
+    if ( (nd!=0 && wgt == 0)  /*||!isFillMode*/ ) return; // make sure you have at least first one for kinematics
 #ifdef AIMOM
     // x check
     TLorentzVector lep1(p3);
@@ -258,7 +258,7 @@ void plotter::FillRealDipole(double p3[4], double p4[4], double wgt, int nd){
 
 void plotter::FillRealEvent(plotter::TermType term){
     // process all calculated contributions
-    while (!dipole_points.empty() && isFillMode ){
+    while (!dipole_points.empty() /*&& isFillMode*/ ){
         // until you erase all points
         point = dipole_points.back(); // take the last one
         dipole_points.pop_back();
@@ -301,13 +301,13 @@ void plotter::FillRealEvent(plotter::TermType term){
 //}
 
 void plotter::FillResult(TermType term, double int_val, double int_error, double time){
-    if (!isFillMode){ // bins.plotmode=="integrate"
+    //if (!isFillMode){ // bins.plotmode=="integrate"
         addToBin( h_m    , int_val , int_error);
         addToBin( h_qt   , int_val , int_error);
         addToBin( h_y    , int_val , int_error);
         addToBin( h_qtVy , int_val , int_error);
         addToBin( h_yVm  , int_val , int_error);
-    }
+    //}
     //TH2D * h = 0 ;
     // switch (term) {
     //     case Resum : h = qt_y_resum ; break;
@@ -477,7 +477,7 @@ void plotter::Finalise(int worker){
         //h_qt->SetBinError   (ibin, err/width);
     //}
     // get name from options
-    TString outfname = "results";
+    TString outfname = "oldresults";
     if (isworker) outfname+=worker;
     outfname+= ".root";
     // save file
@@ -542,9 +542,9 @@ void plotter::addToBin(TH1*h, double int_val, double int_error){
     double y_val  = ( phasespace::ymax  + phasespace::ymin  )/2.;
     double Q_val  = ( phasespace::mmax  + phasespace::mmin  )/2.;
     int ibin = 0;
-    if      (!TString(h->GetName()).CompareTo( "h_qtVy"   )) ibin = h->FindBin( qt_val, y_val);
+    if      (!TString(h->GetName()).CompareTo( "s_qt_vs_y"   )) ibin = h->FindBin( qt_val, y_val);
     else if (!TString(h->GetName()).CompareTo( "h_qtVyVQ" )) ibin = h->FindBin( qt_val, y_val, Q_val);
-    else if (!TString(h->GetName()).CompareTo( "h_qt"     )) ibin = h->FindBin( qt_val  );
+    else if (!TString(h->GetName()).CompareTo( "s_qt"     )) ibin = h->FindBin( qt_val  );
     else if (!TString(h->GetName()).CompareTo( "h_y"      )) ibin = h->FindBin( y_val   );
     else if (!TString(h->GetName()).CompareTo( "h_m"      )) ibin = h->FindBin( Q_val   );
     else if (!TString(h->GetName()).CompareTo( "h_yVm"    )) ibin = h->FindBin( y_val, Q_val);
@@ -714,8 +714,11 @@ void plotter::rebin_vec(std::vector<double> & in_vec, std::vector<double> & out_
 // FORTRAN interface to ROOT
 //==========================
 
+#include "histo/HistoHandler.h"
+
 void hists_fill_(double p3[4], double p4[4], double *weight){
     hists.FillEvent(p3,p4,*weight);
+    HistoHandler::FillEvent(p3,p4,*weight);
     return;
 }
 
@@ -784,13 +787,17 @@ void hists_AiTest_(double pjet[4][12], double p4cm[4],double *Q,double *qt,doubl
     return;
 }
 
+
 void hists_setpdf_(int * npdf){
     hists.SetPDF(*npdf);
+    HistoHandler::SetVariation(*npdf);
 }
 
 void hists_fill_pdf_(double p3[4], double p4[4], double *weight, int *npdf){
     hists.SetPDF(*npdf);
     hists_fill_(p3,p4,weight);
+    HistoHandler::SetVariation(*npdf);
+    HistoHandler::FillEvent(p3,p4,*weight);
 }
 
 void hists_real_dipole_(double p3[4], double p4[4], double *weight, int * nd){

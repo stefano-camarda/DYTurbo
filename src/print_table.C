@@ -14,6 +14,7 @@
 #include "settings.h"
 #include "interface.h"
 #include "coupling.h"
+#include "histo/HistoHandler.h"
 
 #include <LHAPDF/LHAPDF.h>
 
@@ -30,9 +31,10 @@ namespace DYTurbo {
 
         size_t eoc=2; //!< end of cell length
         size_t wb=5; //!< bound length
-        size_t wr=5; //!< result length
+        size_t wr=8; //!< result length
+        size_t wt=5; //!< time length
         size_t bound_width = 2*wb+3;
-        size_t time_width = 0;
+        size_t time_width = 2+wt+2;
         size_t term_width = 2*wr+4 + time_width;
 
         inline void EndOfCell()  { cout << " |" << flush; }
@@ -44,7 +46,7 @@ namespace DYTurbo {
             for (auto &a: ActiveBoundaries ) if (a.size()>2) N_loopingBounds++;
             size_t wtotal = 1; // begin of line
             wtotal += (bound_width +eoc)*N_loopingBounds;
-            wtotal += (term_width  +eoc)*(ActiveTerms.size() + 1);
+            wtotal += (term_width  +eoc)*(ActiveTerms.size() + 1/*total column*/ );
             String hline ( wtotal, '-');
             cout << hline << endl;
         };
@@ -128,7 +130,10 @@ namespace DYTurbo {
             Hline();
         };
 
-        void Footer() { Hline(); };
+        void Footer() {
+            cout << "Total cross-section:        "; Result(subtotal,true); cout << endl;
+            cout << "Result was written in file: " << HistoHandler::result_filename << HistoHandler::file_suffix <<endl;
+        };
 
 
         void Bounds(bool use_full_bound) {
@@ -136,16 +141,42 @@ namespace DYTurbo {
             BoundsAllLooping(false,use_full_bound);
         };
 
+        vector<string> Round(double value, double error=0, bool sign=false) {
+            vector <string> result;
+            int decimal = 0;
+            //If no error, value is rounded to two significant digits
+            if (error == 0) error = value;
+            if (error != 0) decimal = -log10(fabs(error)) + 2; //-> this 2 sets the number of digits
+            decimal = max(0, decimal);
+
+            char Dec[10];
+            sprintf (Dec, "%d", decimal);
+            string D = Dec;
+
+            char Numb[50];
+            // write number
+            if(sign) sprintf (Numb, ((string)"%+." + D + "f").c_str(), value);
+            else     sprintf (Numb, ((string)"%."  + D + "f").c_str(), value);
+            result.push_back(Numb);
+            // write error
+            sprintf (Numb, ((string)"%." + D + "f").c_str(), error);
+            result.push_back(Numb);
+
+            return result;
+        }
+
         void Result(const Term &term, bool printGrandTotal) {
+            /// @todo set correct width of table cell
             double time = ( printGrandTotal ) ? term.total_time  : term.last_time ;
             double val  = ( printGrandTotal ) ? term.total_int  : term.last_int[0] ;
             double err  = ( printGrandTotal ) ? term.total_err2 : term.last_err2   ;
             err = sqrt(err);
-            /// @todo proper rounding
-            cout << setw(wr) <<  val;
+            VecStr result = Round(val,err);
+            cout << setw(wr) <<  result[0];
             cout << " +- ";
-            cout << setw(wr) <<  err;
-            cout << " (" << setprecision(3) << time << "s)";
+            cout << setw(wr) <<  result[1];
+            //
+            cout << " (" << setprecision(3) << setw(wt) << time << "s)";
             cout << setprecision(6);
             EndOfCell();
         };

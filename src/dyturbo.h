@@ -39,6 +39,8 @@ namespace DYTurbo {
     typedef std::vector<double> VecDbl;
     //! Handy typedef: string.
     typedef std::string String;
+    //! Handy typedef: string vector.
+    typedef std::vector<String> VecStr;
     //! Handy typedef: stringstream.
     typedef std::stringstream SStream;
 
@@ -106,6 +108,7 @@ namespace DYTurbo {
     struct Term {
         String name = "dummy"; //!< Name of term will be used in header of table.
         String description = ""; //!< Description is used while calling \ref Print function.
+        bool isVegas = true; //!< If term is not Vegas fill result.
 
         /**
          * @brief Pointer to integration function. This par
