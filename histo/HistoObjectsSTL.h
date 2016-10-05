@@ -53,7 +53,16 @@ namespace HistoHandler {
 
     template <> TurboHist::H1* New(HistoObject<TurboHist::H1> *parent){
         TurboHist::H1* h = new TurboHist::H1();
-        h->SetBins(parent->binsX, parent->title);
+        h->SetName(parent->name);
+        h->SetBins(parent->binsX, parent->titleX);
+        return h;
+    }
+
+    template <> TurboHist::H2* New(HistoObject<TurboHist::H2> *parent){
+        TurboHist::H2* h = new TurboHist::H2();
+        h->SetName(parent->name);
+        h->SetBinsAxis(TurboHist::X, parent->binsX, parent->titleX);
+        h->SetBinsAxis(TurboHist::Y, parent->binsY, parent->titleY);
         return h;
     }
 }

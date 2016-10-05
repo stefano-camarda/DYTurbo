@@ -34,9 +34,9 @@ namespace HistoHandler{
 namespace HistoHandler{
     typedef TurboHist::H1 H1;
     typedef TurboHist::H2 H2;
-    //typedef TurboHist::H3 H3;
-    //typedef TurboHist::P1 P1;
-    //typedef TurboHist::P2 P2;
+    typedef TurboHist::H3 H3;
+    typedef TurboHist::P1 P1;
+    typedef TurboHist::P2 P2;
 }
 #endif
 

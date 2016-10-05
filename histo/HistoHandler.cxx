@@ -10,15 +10,13 @@
  * @date 2016-08-26
  */
 
+#include "src/handy_typdefs.h"
+
 #include "Kinematics.h"
 #include "HistoHandler.h"
 
 #include "HistoObjects.h"
 
-
-
-#include <sstream>
-typedef std::ostringstream SStream;
 
 using namespace Kinematics;
 
@@ -92,7 +90,8 @@ namespace HistoHandler{
     String hadd_program = "hadd -f";
 #else
     String file_suffix = ".dat";
-    String hadd_program = "turbo-hadd";
+    //String hadd_program = "turbo-hadd";
+    String hadd_program = "ls -l ";
 #endif
 
     size_t last_index=0;

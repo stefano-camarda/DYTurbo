@@ -17,7 +17,7 @@ namespace TurboHist {
     struct H2 : public HBase<H2,Counter> {
         H2() { SetBins(1,0.,1., 1,0.,1.);};
 
-        H2(const string &_name, const string &_title,
+        H2(const String &_name, const String &_title,
                 const size_t &NX, const OBS &minX, const OBS &maxX,
                 const size_t &NY, const OBS &minY, const OBS &maxY
                 ){
@@ -25,18 +25,20 @@ namespace TurboHist {
             SetBins( NX,minX,maxX, NY,minY,maxY, _title);
         };
 
+
         inline size_t FindBin(const OBS &valX, const OBS &valY) const {
             return GetBin(binsX.FindBin(valX), binsY.FindBin(valY));
         };
 
         void Fill (const OBS &valX, const OBS &valY, const PRE &weight=1.0){
             data[FindBin(valX,valY)]+=weight;
+            entries++;
         };
 
 
         void SetBins(size_t NX, OBS minX, OBS maxX,
                 size_t NY, OBS minY, OBS maxY,
-                const string &tit="X;Y"){
+                const String &tit="X;Y"){
             VecObs newbins=Binning::GetEquidistantVector(NX,minX,maxX);
             SetBinsAxis(X,newbins,tit);
             newbins=Binning::GetEquidistantVector(NY,minY,maxY);

@@ -11,16 +11,9 @@
  * @date 2016-08-27
  */
 
-#include <vector>
+#include "src/handy_typdefs.h"
+
 #include <map>
-#include <string>
-#include <sstream>
-
-// handy typedefs
-typedef std::vector<double> VecDbl;
-typedef std::string String;
-typedef std::ostringstream SStream;
-
 #include <sys/wait.h>
 #include <unistd.h>
 

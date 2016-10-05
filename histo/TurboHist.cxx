@@ -25,17 +25,17 @@ template<> char TurboHist::HBase<TurboHist::H1,TurboHist::Counter>::type = 'h';
 template<> int  TurboHist::HBase<TurboHist::H2,TurboHist::Counter>::dim = 2;
 template<> char TurboHist::HBase<TurboHist::H2,TurboHist::Counter>::type = 'h';
 
-// #include "TurboHist_H3.h"
-// template<> int  TurboHist::HBase<TurboHist::H3,TurboHist::Counter>::dim = 3;
-// template<> char TurboHist::HBase<TurboHist::H3,TurboHist::Counter>::type = 'h';
-// 
-// #include "TurboHist_P1.h"
-// template<> int  TurboHist::HBase<TurboHist::P1,TurboHist::Counter>::dim = 1;
-// template<> char TurboHist::HBase<TurboHist::P1,TurboHist::Counter>::type = 'p';
-// 
-// #include "TurboHist_P2.h"
-// template<> int  TurboHist::HBase<TurboHist::P2,TurboHist::Counter>::dim = 2;
-// template<> char TurboHist::HBase<TurboHist::P2,TurboHist::Counter>::type = 'p';
+#include "TurboHist_H3.h"
+template<> int  TurboHist::HBase<TurboHist::H3,TurboHist::Counter>::dim = 3;
+template<> char TurboHist::HBase<TurboHist::H3,TurboHist::Counter>::type = 'h';
+ 
+ #include "TurboHist_P1.h"
+ template<> int  TurboHist::HBase<TurboHist::P1,TurboHist::Averager>::dim = 1;
+ template<> char TurboHist::HBase<TurboHist::P1,TurboHist::Averager>::type = 'p';
+ 
+ #include "TurboHist_P2.h"
+ template<> int  TurboHist::HBase<TurboHist::P2,TurboHist::Averager>::dim = 2;
+ template<> char TurboHist::HBase<TurboHist::P2,TurboHist::Averager>::type = 'p';
 
 #include <algorithm>
 using std::transform;
@@ -44,7 +44,7 @@ using std::ios;
 namespace TurboHist {
 
 
-    void File::Open(string name, string method){
+    void File::Open(String name, String method){
         fname=name;
         transform(method.begin(), method.end(), method.begin(), ::tolower);
         if( method.compare("recreate")==0 ){
@@ -66,7 +66,17 @@ namespace TurboHist {
         return a*b;
     }
 
-    void MergeFiles(string outname,VecStr inNames){
+    Averager operator* ( const Averager &a , const double &b ) {
+        Averager out (a);
+        out*=b;
+        return out;
+    }
+
+    Averager operator* ( const double &b, const Averager &a  ) {
+        return a*b;
+    }
+
+    void MergeFiles(String outname,VecStr inNames){
         H1 hout;
         File f;
         bool isFirst = true;
