@@ -6,7 +6,6 @@
 #include "switch.h"
 #include "resum/resint.h"
 #include "resum/rapint.h"
-//#include "plotter.h"
 #include "cubacall.h"
 #include "isnan.h"
 
@@ -14,6 +13,8 @@
 #include <iomanip>
 #include <iostream>
 #include <omp.h>
+
+#include "old_cuts.h"
 
 int resintegrand2d_cubature_v(unsigned ndim, long unsigned npts, const double x[], void *data, unsigned ncomp, double f[])
 {

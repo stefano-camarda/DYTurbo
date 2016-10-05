@@ -15,6 +15,8 @@
 #include <math.h>
 
 
+#include "old_cuts.h"
+
 using namespace std;
 
 int vjintegrand_cubature_v(unsigned ndim, long unsigned npts, const double x[], void *data, unsigned ncomp, double f[])

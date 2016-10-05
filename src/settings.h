@@ -1,11 +1,8 @@
 #ifndef settings_h
 #define settings_h
 
-#include "cuts.h"
-
 #include <vector>
 using namespace std;
-using namespace cuts;
 
 #include <algorithm>
 #include <map>

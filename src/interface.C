@@ -14,6 +14,9 @@
 #include "histo/KinematicCuts.h"
 #include "histo/HistoHandler.h"
 
+  enum DetFiducial { CUSTOM=-1, GENEXP=0, D0=1, CDF=2, ATLAS=3, CMS7=4, CMS8=5};
+#include "old_cuts.C"
+
 /*
 int cuts_(double p[4][12], int &njet){
     double p3[4];

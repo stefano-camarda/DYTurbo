@@ -15,6 +15,8 @@
 
 using namespace std;
 
+#include "old_cuts.h"
+
 
 integrand_t ctintegrand(const int &ndim, const double x[], const int &ncomp, double f[],
                         void* userdata, const int &nvec, const int &core,

@@ -18,6 +18,8 @@
 #include <iomanip>
 #include <vector>
 
+#include "old_cuts.h"
+
 //rest frame axes
 double omegaintegr::kap1[4];
 double omegaintegr::xax[3];

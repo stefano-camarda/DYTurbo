@@ -35,7 +35,7 @@ vegasncallsVJLO    = 1e2
 vegasncallsVJREAL  = 1000
 vegasncallsVJVIRT  = 100
 
-makecuts = false
+makecuts = true
 lptcut = 20
 lycut = 2.5
 

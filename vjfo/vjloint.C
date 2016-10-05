@@ -2,7 +2,6 @@
 
 #include "settings.h"
 #include "mcfm_interface.h"
-#include "cuts.h"
 #include "mesq.h"
 #include "pdf.h"
 #include "phasespace.h"
@@ -15,6 +14,8 @@
 #include <algorithm>
 #include <iostream>
 #include <iomanip>
+
+#include "old_cuts.h"
 
 const double scutoff = 1e-6;
 
