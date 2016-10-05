@@ -10,26 +10,20 @@
  * @date 2016-09-17
  */
 
-#include "resum/rapint.h"
-#include "banner.h"
-#include "coupling.h"
+#include "dyturbo.h"
+
 #include "cubacall.h"
-#include "ctintegr.h"
 #include "clock_real.h"
 #include "settings.h"
 #include "interface.h"
+#include "ctintegr.h"
+
 #include "phasespace/phasespace.h"
 #include "resum/rapint.h"
 #include "histo/HistoHandler.h"
-#include "dyturbo.h"
 
 using DYTurbo::PrintTable::Col3;
 using DYTurbo::PrintTable::Col4;
-
-#include <iostream>
-using std::cout;
-using std::endl;
-
 
 bool DYTurbo::HasOnlyVegas = false;
 bool DYTurbo::isDryRun = false;
@@ -88,8 +82,7 @@ namespace DYTurbo {
     }
 
     void Term::Print(){
-        cout << setw(24)  << name.c_str() << ":";
-        cout << description.c_str();
+        printf("%24s:%s",name.c_str(), description.c_str());
     }
 
     // Term iterator
@@ -154,23 +147,6 @@ namespace DYTurbo {
     }
 
 
-
-    // Main DYTurbo functions
-
-    void Init( int argc, char * argv[]){
-        banner();
-        gaussinit_();             //initialisation of fortran gaussian quadrature nodes and weights
-        coupling::SMparameters(); //initialisation of unused MCFM parameters
-        // parsing options from input file
-        opts.parse_options(argc,argv);
-        init_params();
-        HistoHandler::Init();
-        /***********************************/
-        //print out EW and QCD parameters and other settings
-        if (opts.verbose) opts.dumpAll();
-        PrintTable::Settings();
-        /***********************************/
-    }
 
     //! Internal flag only for test purposes
     bool TestAllTerms=false;

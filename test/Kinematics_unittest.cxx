@@ -14,13 +14,13 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
-#include "src/kinematic.h"
 
 #include "histo/Kinematics.h"
 #include "histo/KinematicDefinitions.h"
 #include "phasespace/phasespace.h"
 
 #include "old_cuts.C"
+#include "old_kinem.C"
 
 double s22 = 2.*sqrt(2.);
 double s24 = 4.*sqrt(2.);

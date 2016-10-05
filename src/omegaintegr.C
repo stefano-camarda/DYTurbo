@@ -10,7 +10,6 @@
 #include "phasespace.h"
 #include "gaussrules.h"
 #include "cuba.h"
-#include "kinematic.h"
 
 #include <ctime>
 #include <math.h>

@@ -1,3 +1,13 @@
+
+#include "dyturbo.h"
+#include "banner.h"
+#include "settings.h"
+#include "cubacall.h"
+#include "interface.h"
+#include "coupling.h"
+#include "switch.h"
+
+#include "histo/HistoHandler.h"
 #include "mcfm/mcfm_interface.h"
 #include "resum/gaussrules.h"
 #include "resum/pdfevol.h"
@@ -10,15 +20,24 @@
 #include "resum/resconst.h"
 #include "vjfo/vjint.h"
 #include "vjfo/vjloint.h"
-#include "interface.h"
-#include "coupling.h"
-#include "switch.h"
-#include "cubacall.h"
-#include "settings.h"
-#include "dyturbo.h"
 
 #include <cuba.h>
 #include <math.h>
+
+void DYTurbo::Init( int argc, char * argv[]){
+    banner();
+    gaussinit_();             //initialisation of fortran gaussian quadrature nodes and weights
+    coupling::SMparameters(); //initialisation of unused MCFM parameters
+    // parsing options from input file
+    opts.parse_options(argc,argv);
+    init_params();
+    HistoHandler::Init();
+    /***********************************/
+    //print out EW and QCD parameters and other settings
+    if (opts.verbose) opts.dumpAll();
+    PrintTable::Settings();
+    /***********************************/
+}
 
 /**
  * @brief  Initialize parameters of submodules
