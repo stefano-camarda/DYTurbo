@@ -65,6 +65,36 @@ namespace HistoHandler {
         return h;
     }
 
+    template <> TH2D* New(HistoObject<TH2D> *parent){
+        TH2D* h = new TH2D( parent ->name.c_str(), parent->title.c_str(),
+                parent->N_binsX, parent->p_binsX,
+                parent->N_binsY, parent->p_binsY
+                );
+        return h;
+    }
+
+    template <> TH3D* New(HistoObject<TH3D> *parent){
+        TH3D* h = new TH3D( parent ->name.c_str(), parent->title.c_str(),
+                parent->N_binsX, parent->p_binsX,
+                parent->N_binsY, parent->p_binsY,
+                parent->N_binsZ, parent->p_binsZ
+                );
+        return h;
+    }
+
+    template <> TProfile* New(HistoObject<TProfile> *parent){
+        TProfile* h = new TProfile( parent ->name.c_str(), parent->title.c_str(), parent->N_binsX, parent->p_binsX);
+        return h;
+    }
+
+    template <> TProfile2D* New(HistoObject<TProfile2D> *parent){
+        TProfile2D* h = new TProfile2D( parent ->name.c_str(), parent->title.c_str(),
+                parent->N_binsX, parent->p_binsX,
+                parent->N_binsY, parent->p_binsY
+                );
+        return h;
+    }
+
 }
 
 #endif /* ifndef HistoObjectsROOT_H */
