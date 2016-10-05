@@ -61,6 +61,7 @@ endif #ROOT
 check:  TurboHist_unittest
 	./TurboHist_unittest
 	./Kinematics_unittest
+	./Cuts_unittest
 	./HistoHandler_unittest
 	./DYTurbo_unittest
 	rm -f *.dat *.root
