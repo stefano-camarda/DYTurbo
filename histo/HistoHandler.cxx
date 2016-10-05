@@ -12,7 +12,9 @@
 
 #include "Kinematics.h"
 #include "HistoHandler.h"
+
 #include "HistoObjects.h"
+
 
 
 #include <sstream>
@@ -87,8 +89,10 @@ namespace HistoHandler{
 
 #ifdef USEROOT
     String file_suffix = ".root";
+    String hadd_program = "hadd -f";
 #else
     String file_suffix = ".dat";
+    String hadd_program = "turbo-hadd";
 #endif
 
     size_t last_index=0;
@@ -119,17 +123,38 @@ namespace HistoHandler{
         }
     }
 
-    // forward declaration : specialized in implementation header file
     /**
-     * @brief Open file to save histograms.
+     * @brief Open file where histograms will be written
      *
      * Implementation depends on ROOT or STL switch.
      *
-     *  @todo always save to tmp file with timestamp. Only Terminate will save to final file.
+     * @param name Name of output file.
+     */
+    void OpenHistoFile(String name);
+
+    /**
+     * @brief Open file to save histograms.
+     *
+     *  @note Always save to tmp file with timestamp. Only Terminate will save to final file.
      *
      * @param iworker Worker id from cuba.
      */
-    void OpenOutputFile(int iworker);
+    void OpenOutputFile(int iworker){
+        SStream outfname;
+        outfname << "tmp_";
+        outfname << result_filename;
+        outfname << "_";
+        int current_pid = getpid();
+        if (current_pid!=parent_pid or iworker!=PARENT_PROC){
+            // worker always create uniq file
+            outfname << iworker << "_" << current_pid << "_" << time(NULL);
+        } else {
+            // main is always rewriten, because it stays in memory.
+            outfname << "main";
+        }
+        outfname << file_suffix;
+        OpenHistoFile(outfname.str());
+    }
 
     /**
      * @brief Close file with histograms.
@@ -145,7 +170,24 @@ namespace HistoHandler{
      * Implementation depends on ROOT or STL switch.
      * Merge files from all cores.
      */
-    void Merge(int iworker);
+    void Merge(int iworker){
+        // Merging of files in the end.
+        if (getpid()==parent_pid || iworker==PARENT_PROC){ // only in main thread
+            SStream tmp;
+            // merge it with parent file
+            tmp.str("");
+            tmp << " " << hadd_program << " " << result_filename << file_suffix;
+            tmp << " tmp_" << result_filename <<"_*" << file_suffix;
+            // @todo if verbose print
+            tmp << " > /dev/null ";
+            // remove temporary files
+            tmp << " && rm -f ";
+            tmp << " tmp_" << result_filename <<"_*" << file_suffix;
+            if (system(tmp.str().c_str())!=0) printf ("Something went wrong during `%s`. Better to throw exception",tmp.str().c_str());
+        } // else do nothing, workers should not terminate anything
+    }
+
+
 
     void Save(int iworker){
         OpenOutputFile(iworker);

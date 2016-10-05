@@ -12,47 +12,36 @@
  */
 
 #include "HistoHandler.h"
+#include "HistoBase.h"
 
-
-namespace HistoHandler {
-    // Base Histogram class: make possible to store in one container
-    class HistoBase{
-        public :
-            virtual void FillEvent()=0;
-            virtual void FillDipole()=0;
-            virtual void FillRealEvent()=0;
-            virtual void SetVariation(const KeySuffix)=0;
-            virtual void Save()=0;
-            virtual void Delete()=0;
-            virtual void Reset()=0;
-            virtual void AddToBin(double int_val,double int_err)=0;
-            virtual double GetEntries() const =0; //{ return 666.;};
-            virtual const char* GetName() const =0; // {return "Belzeebos";};
-            virtual bool IsIntegrationSafe() const =0; //{ return 666.;};
-        protected :
-            String name;
-            String title;
-    };
-
-
-    // Object class: covering common functionality
-    template <class TH>
-    class HistoObject : public HistoBase {
-    };
-}
-
-// need to be include config to decide whether to use ROOT
-#include "config.h"
+#include "config.h" // need to be include config to decide whether to use ROOT
 
 #ifdef USEROOT
 #include "HistoObjectsROOT.h"
-#else
+#define HistoImp HistoROOT
+namespace HistoHandler{
+    // c++11: template<typename T> using HistoImp = HistoROOT<T>;
+    typedef TH1D        H1;
+    typedef TH2D        H2;
+    typedef TH3D        H3;
+    typedef TProfile    P1;
+    typedef TProfile2D  P2;
+}
+
+#else // STL
 #include "HistoObjectsSTL.h"
+#define HistoImp HistoSTL
+namespace HistoHandler{
+    typedef TurboHist::H1 H1;
+    typedef TurboHist::H2 H2;
+    //typedef TurboHist::H3 H3;
+    //typedef TurboHist::P1 P1;
+    //typedef TurboHist::P2 P2;
+}
 #endif
 
-#include "HistoBook.h"
-
-
+#include "HistoSpecialization.h"
+#include "HistoBook.h" // move this to HistoBook cxx and compile
 
 
 

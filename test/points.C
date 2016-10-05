@@ -1,7 +1,6 @@
 #include "config.h"
 
 #include "src/dyturbo.h"
-#include "src/init.h"
 #include "src/omegaintegr.h"
 #include "src/settings.h"
 #include "src/interface.h"

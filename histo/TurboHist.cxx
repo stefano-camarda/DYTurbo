@@ -48,7 +48,7 @@ namespace TurboHist {
         fname=name;
         transform(method.begin(), method.end(), method.begin(), ::tolower);
         if( method.compare("recreate")==0 ){
-            // todo ios::binary
+            //! @todo ios::binary
             fst.open(name.c_str(), ios::out|ios::trunc);
         } else { // READ
             fst.open(name.c_str(), ios::in);
