@@ -38,7 +38,7 @@ namespace Kinematics {
             virtual bool operator()()=0;
         };
 
-        ///  function
+        //! Cut decission function.
         bool KeepThisEvent(double p3[4], double p4[4]);
     }
 }

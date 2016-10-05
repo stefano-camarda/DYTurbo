@@ -25,6 +25,7 @@ namespace Kinematics{
     ObservableFlags flags;
 
     void SetKinematics(double _p3[4], double _p4[4], double wgt=1.){
+        isIntegratorMode=false;
         for (auto i=0; i<4;i++){
             p3[i]=_p3[i];
             p4[i]=_p4[i];

@@ -14,51 +14,11 @@
 #include "HistoHandler.h"
 #include "HistoObjects.h"
 
-#include "src/interface.h"
 
 #include <sstream>
-using std::ostringstream;
+typedef std::ostringstream SStream;
 
 using namespace Kinematics;
-
-// interface:
-void hists_setpdf_(int * npdf){
-    HistoHandler::SetVariation(*npdf);
-}
-
-void hists_fill_(double p3[4], double p4[4], double *weight){
-    HistoHandler::FillEvent(p3,p4,*weight);
-}
-
-void hists_fill_pdf_(double p3[4], double p4[4], double *weight, int *npdf){
-    HistoHandler::SetVariation(*npdf);
-    HistoHandler::FillEvent(p3,p4,*weight);
-}
-
-void hists_real_dipole_(double p3[4], double p4[4], double *weight, int * nd){
-    HistoHandler::FillDipole(p3,p4,*weight);
-}
-
-void hists_real_dipole_pdf_(double p3[4], double p4[4], double *weight, int * nd, int* npdf){
-    HistoHandler::SetVariation(*npdf);
-    HistoHandler::FillDipole(p3,p4,*weight);
-}
-
-void hists_real_event_(){
-    HistoHandler::FillRealEvent();
-}
-
-void disabled_hists_real_event_pdf_(int *npdf){
-    /// @attention This is very dangerous !!!
-    HistoHandler::SetVariation(*npdf);
-    HistoHandler::FillRealEvent();
-}
-
-void disabled_hists_finalize_(){
-    HistoHandler::Terminate();
-}
-
-
 
 namespace HistoHandler{
 
@@ -144,7 +104,7 @@ namespace HistoHandler{
             if (imember==0){ // add central
             } else { // PDF case
                 /// @todo Check is PDF memeber i.e is positive and smaller than number of memebrs in pdfset
-                ostringstream suffix;
+                SStream suffix;
                 suffix << "_pdf" << imember;
                 addkey.suffix=suffix.str();
                 addkey.index=last_index;
