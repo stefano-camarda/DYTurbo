@@ -51,10 +51,10 @@ namespace Kinematics{
             // define here all observables and variables
             LepCh      ch1;
             LepPT      pt1;
-            LepAbsEta  aeta1;
-            AlpCh      ch2;
-            AlpPT      pt2;
-            AlpAbsEta  aeta2;
+            LepAbsRap  absy1;
+            ALpCh      ch2;
+            ALpPT      pt2;
+            ALpAbsRap  absy2;
             BosMT      mt;
             MET        etmiss;
             // define here cut decision
@@ -64,15 +64,15 @@ namespace Kinematics{
                     if (ch2()!=0 && pt2() < opts.lptcut) return SkipEvent;
                 }
                 if (opts.lycut < 100){
-                    if (ch1()!=0 && aeta1() > opts.lycut) return SkipEvent;
-                    if (ch2()!=0 && aeta2() > opts.lycut) return SkipEvent;
+                    if (ch1()!=0 && absy1() > opts.lycut) return SkipEvent;
+                    if (ch2()!=0 && absy2() > opts.lycut) return SkipEvent;
                 }
                 if (opts.mtcut     >0   && mt()     < opts.mtcut     ) return SkipEvent;
                 if (opts.etmisscut >0   && etmiss() < opts.etmisscut ) return SkipEvent;
                 if (opts.l1ptcut   >0   && pt1()    < opts.l1ptcut   ) return SkipEvent;
                 if (opts.l2ptcut   >0   && pt2()    < opts.l2ptcut   ) return SkipEvent;
-                if (opts.l1ycut    <100 && aeta1()  > opts.l1ycut    ) return SkipEvent;
-                if (opts.l2ycut    <100 && aeta2()  > opts.l2ycut    ) return SkipEvent;
+                if (opts.l1ycut    <100 && absy1()  > opts.l1ycut    ) return SkipEvent;
+                if (opts.l2ycut    <100 && absy2()  > opts.l2ycut    ) return SkipEvent;
                 return KeepEvent;
             }
         } standard_cuts;

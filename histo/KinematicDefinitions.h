@@ -38,6 +38,8 @@ namespace Kinematics{
     NEWKIN( LepCh  ) { double calc(){ return opts.nproc==1 ? 0 : -1 ; } };
     NEWKIN( LepEta ) { double calc(){ return Util::eta(p3[0],p3[1],p3[2]); } };
     NEWKIN( LepAbsEta ) { LepEta eta; double calc(){ return fabs(eta()); } };
+    NEWKIN( LepRap ) { double calc(){ return Util::rap(p3[3],p3[2]); } };
+    NEWKIN( LepAbsRap ) { LepRap rap; double calc(){ return fabs(rap()); } };
     /// @}
 
     /// @defgroup AlpVar Anti-lepton related observables.
@@ -46,10 +48,12 @@ namespace Kinematics{
     NEWKIN( ALpPY  ) { double calc(){ return p4[1]; } };
     NEWKIN( ALpPZ  ) { double calc(){ return p4[2]; } };
     NEWKIN( ALpE   ) { double calc(){ return p4[3]; } };
-    NEWKIN( AlpPT  ) { double calc(){ return Util::pT(p4[0],p4[1]); } };
-    NEWKIN( AlpCh  ) { double calc(){ return opts.nproc==2 ? 0 : +1 ; } };
-    NEWKIN( AlpEta ) { double calc(){ return Util::eta(p3[0],p3[1],p3[2]); } };
-    NEWKIN( AlpAbsEta ) { AlpEta eta; double calc(){ return fabs(eta()); } };
+    NEWKIN( ALpPT  ) { double calc(){ return Util::pT(p4[0],p4[1]); } };
+    NEWKIN( ALpCh  ) { double calc(){ return opts.nproc==2 ? 0 : +1 ; } };
+    NEWKIN( ALpEta ) { double calc(){ return Util::eta(p4[0],p4[1],p4[2]); } };
+    NEWKIN( ALpAbsEta ) { ALpEta eta; double calc(){ return fabs(eta()); } };
+    NEWKIN( ALpRap ) { double calc(){ return Util::rap(p4[3],p4[2]); } };
+    NEWKIN( ALpAbsRap ) { ALpRap rap; double calc(){ return fabs(rap()); } };
     /// @}
 
 
@@ -164,8 +168,8 @@ namespace Kinematics{
     NEWKIN ( MET ) {
         LepCh ch1;
         LepPT pt1;
-        AlpCh ch2;
-        AlpPT pt2;
+        ALpCh ch2;
+        ALpPT pt2;
         double calc(){
             if (ch1()) return pt1();
             if (ch2()) return pt2();
