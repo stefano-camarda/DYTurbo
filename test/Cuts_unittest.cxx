@@ -15,13 +15,13 @@
 #include "histo/Kinematics.h"
 #include "histo/KinematicCuts.h"
 
-#include "src/old_cuts.h"
-//#include "src/old_cuts.C"
+#include "old_cuts.h"
+#include "old_cuts.C"
 
 TEST(CutInterface,StandardCuts){
     double l1[] = {1., 1., 1., sqrt(3)};
     opts.makecuts = true;
-    opts.lptcut = 0;
+    opts.lptcut = 20;
     opts.lycut = 1000;
     opts.l1ptcut = 10;
     opts.l2ptcut = 10;
@@ -34,10 +34,12 @@ TEST(CutInterface,StandardCuts){
 
 
 TEST(CutInterface,CrossCheckWithPrevious){
-    double l1[] = {1., 1., 1., sqrt(3)};
-    ASSERT_EQ(cuts::lep(l1,l1), Kinematics::Cuts::KeepThisEvent(l1,l1));
-    double l2[] = {100., 100., 100., 100.*sqrt(3)};
-    ASSERT_EQ(cuts::lep(l2,l2), Kinematics::Cuts::KeepThisEvent(l2,l2));
+    opts.nproc=1;
+    opts.lptcut = 20;
+    opts.lycut = 2.5;
+    double l1[] = { -38.674565, 2.399558, 378.431728, 380.410374};
+    double l2[] = { 38.674565, -2.399558, 229.881660, 233.124554};
+    ASSERT_EQ(cuts::lep(l1,l2), Kinematics::Cuts::KeepThisEvent(l1,l2));
 }
 
 

@@ -20,6 +20,8 @@
 #include "histo/KinematicDefinitions.h"
 #include "phasespace/phasespace.h"
 
+#include "old_cuts.C"
+
 double s22 = 2.*sqrt(2.);
 double s24 = 4.*sqrt(2.);
 
@@ -54,15 +56,17 @@ TEST(Kinemantic, CalculateOnlyOnce){
     ASSERT_DOUBLE_EQ(pt2(), pt1());
 }
 
+
 TEST(KinemanticInterface, CrossCheckWithPrevious){
-    double l1[] = {0.,2.,2.,s24};
-    double l2[] = {0.,-2.,2.,s24};
+    double l1[] = { -38.674565, 2.399558, 378.431728, 380.410374};
+    double l2[] = { 38.674565, -2.399558, 229.881660, 233.124554};
 
     Kinematics::SetKinematics(l1,l2,1.0);
 
     kinematic::set(l1,l2);
     kinematic::calc_vb();
     kinematic::calc_angles();
+
 
    ASSERT_DOUBLE_EQ(kinematic::lp  [0] , Kinematics::ALpPX()() );
    ASSERT_DOUBLE_EQ(kinematic::lm  [0] , Kinematics::LepPX()() );
@@ -79,6 +83,10 @@ TEST(KinemanticInterface, CrossCheckWithPrevious){
    ASSERT_DOUBLE_EQ(kinematic::lp  [3] , Kinematics::ALpE()() );
    ASSERT_DOUBLE_EQ(kinematic::lm  [3] , Kinematics::LepE()() );
    ASSERT_DOUBLE_EQ(kinematic::v   [3] , Kinematics::BosE()() );
+
+   ASSERT_DOUBLE_EQ(cuts::getY(kinematic::v) , Kinematics::BosY()() );
+   ASSERT_DOUBLE_EQ(cuts::getY(l1)           , Kinematics::LepRap()() );
+   ASSERT_DOUBLE_EQ(cuts::getY(l2)           , Kinematics::ALpRap()() );
 
    ASSERT_DOUBLE_EQ(kinematic::m2      , Kinematics::BosM2()() );
    ASSERT_DOUBLE_EQ(kinematic::m       , Kinematics::BosM()() );
