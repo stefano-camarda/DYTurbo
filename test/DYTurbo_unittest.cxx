@@ -28,10 +28,6 @@
 
 #include "histo/HistoHandler.h"
 
-typedef std::vector<string> VecStr;
-typedef std::vector<double> VecDbl;
-
-
 #include <iostream>
 
 ::testing::AssertionResult ApproxDoubles(double exp, double equalto) {

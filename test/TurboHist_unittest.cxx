@@ -11,22 +11,20 @@
  */
 
 #include "config.h"
-#include "TurboHist_File.h"
-#include "TurboHist_H1.h"
-#include "TurboHist_H2.h"
+#include "histo/TurboHist_File.h"
+#include "histo/TurboHist_Counter.h"
+#include "histo/TurboHist_H1.h"
+#include "histo/TurboHist_H2.h"
+#include "histo/TurboHist_H3.h"
+#include "histo/TurboHist_P1.h"
+#include "histo/TurboHist_P2.h"
 
 #include <algorithm>
 using std::lower_bound;
-#include <vector>
-using std::vector;
-#include <string>
-using std::string;
 #include <map>
 using std::map;
 
-typedef vector<string> VecStr;
-typedef vector<double> VecDbl;
-typedef vector<vector<double>> VecVecDbl;
+#include "src/handy_typdefs.h"
 
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
@@ -56,6 +54,58 @@ TEST(TurboHist, Counter) {
     c2+=c1;
     ASSERT_DOUBLE_EQ ( 3 , c2.sum_w  ) << "Add Counter";
     ASSERT_DOUBLE_EQ ( 5 , c2.sum_w2 ) << "Add Counter";
+
+    //set value get value
+    c2.value(5);
+    c2.error(5);
+    ASSERT_DOUBLE_EQ(5.,c2.value()) << "Values";
+    ASSERT_DOUBLE_EQ(5.,c2.error()) << "Error";
+}
+
+TEST(TurboHist, Averager) {
+    TurboHist::Averager c1;
+    ASSERT_DOUBLE_EQ ( 0 , c1.sum_w   ) << "Construct ";
+    ASSERT_DOUBLE_EQ ( 0 , c1.sum_w2  ) << "Construct ";
+    ASSERT_DOUBLE_EQ ( 0 , c1.sum_aw  ) << "Construct ";
+    ASSERT_DOUBLE_EQ ( 0 , c1.sum_a2w ) << "Construct ";
+    ASSERT_DOUBLE_EQ ( 0 , c1.value() ) << "Construct ";
+    ASSERT_DOUBLE_EQ ( 0 , c1.error() ) << "Construct ";
+    // add double
+    c1.increment(5.,3.);
+    ASSERT_DOUBLE_EQ ( 3.  , c1.sum_w    ) << "Increment";
+    ASSERT_DOUBLE_EQ ( 9.  , c1.sum_w2   ) << "Increment";
+    ASSERT_DOUBLE_EQ ( 15. , c1.sum_aw   ) << "Increment";
+    ASSERT_DOUBLE_EQ ( 75. , c1.sum_a2w  ) << "Increment";
+    ASSERT_DOUBLE_EQ ( 5   , c1.value()  ) << "Increment";
+    ASSERT_DOUBLE_EQ ( 0   , c1.error()  ) << "Increment";
+    //
+    TurboHist::Averager c2;
+    c2=c1;
+    c2+=c1;
+    // mult double
+    c1*=2;
+    ASSERT_DOUBLE_EQ ( 3.  *2 , c1.sum_w   ) << "Mult double";
+    ASSERT_DOUBLE_EQ ( 9.  *2 , c1.sum_w2  ) << "Mult double";
+    ASSERT_DOUBLE_EQ ( 15. *2 , c1.sum_aw  ) << "Mult double";
+    ASSERT_DOUBLE_EQ ( 75. *2 , c1.sum_a2w ) << "Mult double";
+    ASSERT_DOUBLE_EQ ( 5      , c1.value() ) << "Mult double";
+    ASSERT_DOUBLE_EQ ( 0      , c1.error() ) << "Mult double";
+    // 
+    ASSERT_DOUBLE_EQ ( c1.sum_w  , c2.sum_w  ) << "sum count";
+    ASSERT_DOUBLE_EQ ( c1.sum_w2 , c2.sum_w2 ) << "sum count";
+    ASSERT_DOUBLE_EQ ( c1.sum_aw  , c2.sum_aw  ) << "sum count";
+    ASSERT_DOUBLE_EQ ( c1.sum_a2w , c2.sum_a2w ) << "sum count";
+    //set value get value
+    c2.value(5);
+    ASSERT_DOUBLE_EQ(5.         ,c2.value() ) << "Set Value";
+    ASSERT_DOUBLE_EQ(c1.error() ,c2.error() ) << "Set Value";
+    ASSERT_DOUBLE_EQ(c1.sum_w   ,c2.sum_w   ) << "Set Value";
+    ASSERT_DOUBLE_EQ(c1.sum_w2  ,c2.sum_w2  ) << "Set Value";
+    c2.error(3);
+    ASSERT_DOUBLE_EQ(5.,c2.value()) << "Set Error";
+    ASSERT_DOUBLE_EQ(3.,c2.error()) << "Set Error";
+    ASSERT_DOUBLE_EQ(c1.sum_w   ,c2.sum_w   ) << "Set Error";
+    ASSERT_DOUBLE_EQ(c1.sum_w2  ,c2.sum_w2  ) << "Set Error";
 }
 
 template <class HType>
@@ -94,6 +144,27 @@ TEST(TurboHist, InitH2) {
     CheckSpecifiers(h, 2, 'h', 9);
     CheckBinContent(h, {0.,0.,0., 0.,0.,0., 0.,0.,0. });
     CheckBinError  (h, {0.,0.,0., 0.,0.,0., 0.,0.,0. });
+}
+
+TEST(TurboHist, InitH3) {
+    TurboHist::H3 h;
+    CheckSpecifiers(h, 3, 'h', 27);
+    CheckBinContent(h, VecDbl(27,0.));
+    CheckBinError  (h, VecDbl(27,0.));
+}
+
+TEST(TurboHist, InitP1) {
+    TurboHist::P1 h;
+    CheckSpecifiers(h, 1, 'p', 3);
+    CheckBinContent(h, VecDbl(3,0.));
+    CheckBinError  (h, VecDbl(3,0.));
+}
+
+TEST(TurboHist, InitP2) {
+    TurboHist::P2 h;
+    CheckSpecifiers(h, 2, 'p', 9);
+    CheckBinContent(h, VecDbl(9,0.));
+    CheckBinError  (h, VecDbl(9,0.));
 }
 
 // Helper functions
@@ -280,25 +351,25 @@ TEST(TurboHist, IOoperations) {
 template <class T>
 double tp_find(T* h, VecVecDbl & datastream ){
     clock_t startTime = clock();
-    for (vector<double> &a : datastream) h->FindBin(a[0]);
+    for (VecDbl &a : datastream) h->FindBin(a[0]);
     return double( clock() - startTime ) / (double)CLOCKS_PER_SEC;
 }
 template <class T>
 double tp_find2(T* h, VecVecDbl & datastream ){
     clock_t startTime = clock();
-    for (vector<double> &a : datastream) h->FindBin(a[0],a[1]);
+    for (VecDbl &a : datastream) h->FindBin(a[0],a[1]);
     return double( clock() - startTime ) / (double)CLOCKS_PER_SEC;
 }
 template <class T>
 double tp_fill(T* h, VecVecDbl & datastream ){
     clock_t startTime = clock();
-    for (vector<double> &a : datastream) h->Fill(a[0]);
+    for (VecDbl &a : datastream) h->Fill(a[0]);
     return double( clock() - startTime ) / (double)CLOCKS_PER_SEC;
 }
 template <class T>
 double tp_fill2(T* h, VecVecDbl & datastream ){
     clock_t startTime = clock();
-    for (vector<double> &a : datastream) h->Fill(a[0],a[1]);
+    for (VecDbl &a : datastream) h->Fill(a[0],a[1]);
     return double( clock() - startTime ) / (double)CLOCKS_PER_SEC;
 }
 

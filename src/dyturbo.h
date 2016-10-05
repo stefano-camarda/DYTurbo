@@ -10,12 +10,11 @@
  * @date 2016-09-17
  */
 
-#include <vector>
-#include <string>
-#include <sstream>
 #include <iomanip>
 using std::setw;
 using std::setprecision;
+
+#include "handy_typdefs.h"
 
 /**
  * @brief Interface to properly control calculation.
@@ -35,14 +34,6 @@ namespace DYTurbo {
     //! Debug flag for testing code.
     extern bool isDryRun;
 
-    //! Handy typedef: vector of doubles.
-    typedef std::vector<double> VecDbl;
-    //! Handy typedef: string.
-    typedef std::string String;
-    //! Handy typedef: string vector.
-    typedef std::vector<String> VecStr;
-    //! Handy typedef: stringstream.
-    typedef std::stringstream SStream;
 
     //forward
     struct Term;

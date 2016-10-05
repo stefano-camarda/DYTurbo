@@ -19,7 +19,7 @@
 
 #include <random>
 
-typedef std::vector<String> VecStr;
+#include "src/handy_typdefs.h"
 using HistoHandler::histos;
 
 
@@ -219,6 +219,7 @@ bool IsIntegName(string hname){
 
 #ifdef USEROOT
 #include "TH1.h"
+#include "TFile.h"
 
 
 TEST_F(HistoServiceTest, CheckSavedFiles){

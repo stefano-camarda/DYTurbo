@@ -18,10 +18,14 @@
 typedef std::string String;
 //! Handy typedef: stringstream.
 typedef std::ostringstream SStream;
+
+//! Handy typedef: vector of doubles.
+template<typename T>
+using Vec = std::vector<T>;
 //! Handy typedef: vector of doubles.
 typedef std::vector<double> VecDbl;
 //! Handy typedef: vector of vectors of doubles.
-typedef vector<vector<double>> VecVecDbl;
+typedef std::vector<std::vector<double>> VecVecDbl;
 //! Handy typedef: string vector.
 typedef std::vector<String> VecStr;
 
