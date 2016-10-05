@@ -14,7 +14,7 @@
 #include <iostream>
 #include <omp.h>
 
-#include "old_cuts.h"
+#include "histo/KinematicCuts.h"
 
 int resintegrand2d_cubature_v(unsigned ndim, long unsigned npts, const double x[], void *data, unsigned ncomp, double f[])
 {
@@ -291,7 +291,7 @@ integrand_t resintegrandMC(const int &ndim, const double x[], const int &ncomp, 
 
   //apply lepton cuts
   if (opts.makecuts)
-    if (!cuts::lep(phasespace::p3, phasespace::p4))
+    if (!Kinematics::Cuts::KeepThisEvent(phasespace::p3, phasespace::p4))
       {
 	f[0]=0.;
 	return 0;

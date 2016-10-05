@@ -15,7 +15,7 @@
 #include <math.h>
 
 
-#include "old_cuts.h"
+#include "histo/KinematicCuts.h"
 
 using namespace std;
 
@@ -373,7 +373,7 @@ integrand_t lointegrandMC(const int &ndim, const double x[], const int &ncomp, d
   phasespace::genl4p();
 
   //apply cuts
-  if (!cuts::lep(phasespace::p3,phasespace::p4))
+  if (!Kinematics::Cuts::KeepThisEvent(phasespace::p3,phasespace::p4))
     {
       f[0] = 0.;
       return 0;

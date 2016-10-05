@@ -15,8 +15,6 @@
 #include <iostream>
 #include <iomanip>
 
-#include "old_cuts.h"
-
 const double scutoff = 1e-6;
 
 using namespace std;

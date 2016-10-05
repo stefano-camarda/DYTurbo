@@ -18,7 +18,7 @@
 #include <iomanip>
 #include <vector>
 
-#include "old_cuts.h"
+#include "histo/KinematicCuts.h"
 
 //rest frame axes
 double omegaintegr::kap1[4];
@@ -349,7 +349,7 @@ void omegaintegr::costhbound(double phi_lep, vector<double> &min, vector<double>
   double c1 = phasespace::getcthmin();
   double c2 = phasespace::getcthmax();
   genl4p(c1, phi_lep);
-  if (cuts::lep(phasespace::p3, phasespace::p4))
+  if (Kinematics::Cuts::KeepThisEvent(phasespace::p3, phasespace::p4))
     {
       min.push_back(c1);
       status = true;
@@ -370,7 +370,7 @@ void omegaintegr::costhbound(double phi_lep, vector<double> &min, vector<double>
 		{
 		  double costh = i*hc+c1;
 		  genl4p(costh, phi_lep);
-		  if (!cuts::lep(phasespace::p3, phasespace::p4))
+		  if (!Kinematics::Cuts::KeepThisEvent(phasespace::p3, phasespace::p4))
 		    {
 		      tempmax = costh; //tempmax = costh_CS;
 		      c2 = i*hc+c1;
@@ -403,7 +403,7 @@ void omegaintegr::costhbound(double phi_lep, vector<double> &min, vector<double>
 		{
 		  double costh = i*hc+c1;
 		  genl4p(costh, phi_lep);
-		  if (cuts::lep(phasespace::p3, phasespace::p4))
+		  if (Kinematics::Cuts::KeepThisEvent(phasespace::p3, phasespace::p4))
 		    {
 		      tempmin = costh; //tempmin = costh_CS;
 		      c2 = i*hc+c1;
@@ -633,7 +633,7 @@ integrand_t omegaintegr::thphiintegrand(const int &ndim, const double x[], const
   */
 
   genl4p(costh, phi_lep);
-  if (cuts::lep(phasespace::p3, phasespace::p4))
+  if (Kinematics::Cuts::KeepThisEvent(phasespace::p3, phasespace::p4))
     {
       //evaluate couplings using cos(theta) in CS framework
       double costh_CS = costhCS();

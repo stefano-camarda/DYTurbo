@@ -7,6 +7,8 @@
 #include "cubacall.h"
 #include "isnan.h"
 
+#include "histo/KinematicCuts.h"
+
 #include <iostream>
 #include <iomanip>
 #include <ctime>
@@ -14,8 +16,6 @@
 
 
 using namespace std;
-
-#include "old_cuts.h"
 
 
 integrand_t ctintegrand(const int &ndim, const double x[], const int &ncomp, double f[],
@@ -118,7 +118,7 @@ integrand_t ctintegrandMC(const int &ndim, const double x[], const int &ncomp, d
 
   //apply lepton cuts
   if (opts.makecuts)
-    if (!cuts::lep(phasespace::p3, phasespace::p4))
+    if (!Kinematics::Cuts::KeepThisEvent(phasespace::p3, phasespace::p4))
       {
 	f[0]=0.;
 	return 0;
