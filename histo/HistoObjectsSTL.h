@@ -54,12 +54,36 @@ namespace HistoHandler {
     template <> TurboHist::H1* New(HistoObject<TurboHist::H1> *parent){
         TurboHist::H1* h = new TurboHist::H1();
         h->SetName(parent->name);
-        h->SetBins(parent->binsX, parent->titleX);
+        h->SetBinsAxis(TurboHist::X, parent->binsX, parent->titleX);
         return h;
     }
 
     template <> TurboHist::H2* New(HistoObject<TurboHist::H2> *parent){
         TurboHist::H2* h = new TurboHist::H2();
+        h->SetName(parent->name);
+        h->SetBinsAxis(TurboHist::X, parent->binsX, parent->titleX);
+        h->SetBinsAxis(TurboHist::Y, parent->binsY, parent->titleY);
+        return h;
+    }
+
+    template <> TurboHist::H3* New(HistoObject<TurboHist::H3> *parent){
+        TurboHist::H3* h = new TurboHist::H3();
+        h->SetName(parent->name);
+        h->SetBinsAxis(TurboHist::X, parent->binsX, parent->titleX);
+        h->SetBinsAxis(TurboHist::Y, parent->binsY, parent->titleY);
+        h->SetBinsAxis(TurboHist::Z, parent->binsZ, parent->titleZ);
+        return h;
+    }
+
+    template <> TurboHist::P1* New(HistoObject<TurboHist::P1> *parent){
+        TurboHist::P1* h = new TurboHist::P1();
+        h->SetName(parent->name);
+        h->SetBinsAxis(TurboHist::X, parent->binsX, parent->titleX);
+        return h;
+    }
+
+    template <> TurboHist::P2* New(HistoObject<TurboHist::P2> *parent){
+        TurboHist::P2* h = new TurboHist::P2();
         h->SetName(parent->name);
         h->SetBinsAxis(TurboHist::X, parent->binsX, parent->titleX);
         h->SetBinsAxis(TurboHist::Y, parent->binsY, parent->titleY);

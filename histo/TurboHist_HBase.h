@@ -59,7 +59,7 @@ namespace TurboHist {
                 inline size_t GetEntries () const { return entries; };
                 inline const char * GetName () const { return name.c_str(); };
 
-                inline void SetBinContent (size_t ibin, PRE val) { data[ibin].value(val); };
+                inline void SetBinContent (size_t ibin, PRE val) { data[ibin].value(val); entries++; };
                 inline void SetBinError   (size_t ibin, PRE err) { data[ibin].error(err); };
 
 
@@ -174,7 +174,7 @@ namespace TurboHist {
                 Binning binsY; // bin edges size: (nbinsY+2)
                 Binning binsZ; // bin edges size: (nbinsZ+2)
                 Data data; // bin content (nbinX+2)*(nbinX+Y)*(nbinZ+2)
-                size_t entries; // number off called fill or set bin content
+                size_t entries=0; // number off called fill or set bin content
 
                 inline Binning &GetBinning(size_t iaxis){
                     switch (iaxis) {

@@ -40,10 +40,13 @@ namespace TurboHist {
                 size_t NY, OBS minY, OBS maxY,
                 size_t NZ, OBS minZ, OBS maxZ,
                 const String &tit="X;Y;Z"){
+            //
             VecObs newbins=Binning::GetEquidistantVector(NX,minX,maxX);
             SetBinsAxis(X,newbins,tit);
+            //
             newbins=Binning::GetEquidistantVector(NY,minY,maxY);
             SetBinsAxis(Y,newbins,tit);
+            //
             newbins=Binning::GetEquidistantVector(NZ,minZ,maxZ);
             SetBinsAxis(Z,newbins,tit);
         };

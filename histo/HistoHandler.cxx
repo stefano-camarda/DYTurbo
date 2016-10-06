@@ -90,8 +90,7 @@ namespace HistoHandler{
     String hadd_program = "hadd -f";
 #else
     String file_suffix = ".dat";
-    //String hadd_program = "turbo-hadd";
-    String hadd_program = "ls -l ";
+    String hadd_program = "dyturbo-hadd";
 #endif
 
     size_t last_index=0;

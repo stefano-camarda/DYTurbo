@@ -8,6 +8,9 @@ endif
 noinst_LTLIBRARIES = libhisto.la
 libhisto_la_SOURCES = Kinematics.cxx HistoHandler.cxx HistoObjects.cxx TurboHist.cxx
 
+bin_PROGRAMS = dyturbo-hadd
+dyturbo_hadd_SOURCES =  dyturbo-hadd.C
+
 pkginclude_HEADERS  = Kinematics.h KinematicDefinitions.h KinematicCuts.h KinUtils.h\
 		      HistoHandler.h HistoObjects.h HistoBase.h HistoSpecialization.h \
 		      HistoObjectsROOT.h HistoObjectsSTL.h HistoBook.h \
