@@ -49,12 +49,18 @@
 }
 
 TEST(DYTurbo,Initialization){
-    int argc = 2;
+    int argc = 4;
     char *argv[] =  {
         ((char *) "DYTurbo_unittest"),
         ((char *) "../input/test.in"),
+        ((char *) "--qtbins"),
+        ((char *) "10,0,100"),
     };
     DYTurbo::Init(argc,argv);
+    //test histogram binning inherits from CLI
+    VecDbl mbins;
+    bins.GetBins("qt", mbins);
+    ASSERT_EQ(11, mbins.size());
 }
 
 TEST(DYTurbo,TermIteration){
