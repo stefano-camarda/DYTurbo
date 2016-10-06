@@ -20,6 +20,8 @@
 #include <LHAPDF/LHAPDF.h>
 
 #include<iostream>
+#include<limits>
+#include<fstream>
 #include<iomanip>
 
 using std::setw;
@@ -29,6 +31,8 @@ using std::endl;
 
 namespace DYTurbo {
     namespace PrintTable {
+
+        SStream textfile("empty", std::ios_base::ate);
 
         bool useUnicode=false;
         String c_hor = useUnicode ? "\u2501" : "-";
@@ -48,7 +52,7 @@ namespace DYTurbo {
         size_t wr=8; //!< result length
         size_t we=6; //!< error length
         size_t wx=(useUnicode ? 7 : 5 ); //!< exponent length
-        size_t wt=5; //!< time length
+        size_t wt=6; //!< time length
         size_t bound_width = 2*wb+3;
         size_t time_width = 2+ // parenthesis
             wt+
@@ -103,12 +107,17 @@ namespace DYTurbo {
                 if (ActiveBoundaries[ibound].size()<3) continue;
                 if (printNames){
                     cout << setw(bound_width) << ActiveBoundaries[ibound].name ;
+                    if (opts.texttable) {
+                        textfile << ActiveBoundaries[ibound].name << "lo ";
+                        textfile << ActiveBoundaries[ibound].name << "hi ";
+                    } 
                 } else {
                     double lo = useFullBound ? ActiveBoundaries[ibound].front() : last_bounds.loBound(ibound);
                     double hi = useFullBound ? ActiveBoundaries[ibound].back()  : last_bounds.hiBound(ibound);
                     cout << setw(wb) << lo ;
                     cout << " - ";
                     cout << setw(wb) << hi ;
+                    if (opts.texttable) textfile << lo << " " << hi << " ";
                 }
                 EndOfCell();
             }
@@ -167,11 +176,19 @@ namespace DYTurbo {
         void Header() {
             Hline('u');
             BeginOfRow();
+            if (opts.texttable){
+                textfile.str("#"); // start of text file
+                textfile.precision(std::numeric_limits<double>::digits10+1);
+            }
             BoundsAllLooping(true); // print only names
             for( TermIterator term; !term.IsEnd(); ++term){
                 TermName(*term);
             }
             TermName(subtotal);
+            if (opts.texttable){
+                for (int ipdf = 0; ipdf < opts.totpdf; ++ipdf) textfile << "PDF" << ipdf << " ";
+                textfile << " uncertainty\n";
+            }
             EndOfRow();
             Hline();
             subtotal.last_reset();
@@ -333,6 +350,16 @@ namespace DYTurbo {
             subtotal.last_time   = clock_real()-subtotal.last_time;
             subtotal.total_time  += subtotal.last_time;
             Result(subtotal,is_grandtotal);
+            if (opts.texttable) {
+                if (is_grandtotal){
+                    textfile  << subtotal.total_int << " ";
+                    textfile  << sqrt(subtotal.total_err2);
+                } else{
+                    for (double val : subtotal.last_int) textfile << val << " ";
+                    textfile  << sqrt(subtotal.last_err2);
+                }
+                textfile  << "\n";
+            }
             EndOfRow();
             subtotal.last_reset();
         };
@@ -514,6 +541,13 @@ namespace DYTurbo {
             s_res = time_format(subtotal.total_time, true);
             cout << Col4 ("Calculation time"    , "" , s_res[0] , s_res[1] );
             cout << Col4 ("Output file"         , "" , HistoHandler::result_filename + HistoHandler::file_suffix , "");
+            if (opts.texttable){
+                String name = HistoHandler::result_filename + ".txt";
+                cout << Col4 ("Result in text file" , "" , name , "");
+                std::ofstream f (name.c_str(), std::ofstream::trunc);
+                f << textfile.str();
+                f.close();
+            }
             SettingsHeader();
         }
     }

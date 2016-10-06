@@ -225,8 +225,8 @@ namespace DYTurbo {
         bool vj_finite = opts.doVJ && !opts.doVJREAL && !opts.doVJVIRT;
         name="V+J LO";
         if (vj_finite || TestAllTerms){
-            AddTermIfActive   ( opts.vjint3d                         , vjintegr3d   , name , isNotVegas )  << Col3 ( "cuhre (dm, dpt, dy)" , "iter ="   , opts.niterVJ         );
-            AddTermIfActive   ( opts.vjint5d && opts.order == 1      , vjlointegr5d , name , isVegas    )  << Col3 ( "vegas 5D"            , "ncalls =" , opts.vegasncallsVJLO );
+            AddTermIfActive   ( opts.vjint3d                         , vjintegr3d   , name , isNotVegas )  << Col3 ( "cuhre (dm, dpt, dy)" , "iter ="   , opts.niterVJ );
+            AddTermIfActive   ( opts.vjint5d && opts.order == 1      , vjlointegr5d , name , isNotVegas )  << Col3 ( "cuhre 5D???"         , "iter ="   , opts.niterVJ );
             AddTermIfActive   ( opts.vjintvegas7d && opts.order == 1 , vjlointegr7d , name , isVegas    )  << Col3 ( "vegas 7D"            , "ncalls =" , opts.vegasncallsVJLO );
             //AddTermIfActive ( opts.vjintvegas7d && opts.order == 1 , vjlointegr   , name , isVegas    )  << Col3 ( "vegas 7D"            , "ncalls =" , opts.vegasncallsVJLO );
         }

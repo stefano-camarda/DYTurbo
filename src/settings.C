@@ -5,10 +5,12 @@
 
 #include "settings.h"
 #include "interface.h"
-#include "phasespace.h"
+#include "phasespace/phasespace.h"
 
 // CXX option parser: https://raw.githubusercontent.com/jarro2783/cxxopts/master/src/cxxopts.hpp
 #include "cxxopts.hpp"
+
+#include "handy_typdefs.h"
 
 
 settings opts;
@@ -161,6 +163,72 @@ void settings::parse_options(int argc, char* argv[]){
     check_consitency();
 }
 
+// PROTOTYPE OF VARIABLE REGISTRATION
+struct  var_def{
+    string name = "";
+    void * ptr = NULL;
+    char type = '0'; // 0-group name, b-bool, s-string, i-int, d-doubl, v-VecDbl
+
+    string dump(){
+        SStream tmp;
+        if (type == '0') {
+            tmp << "# " << name;
+        } else {
+            tmp << name << " = ";
+            if (type != 'b'){
+                bool *val = (bool*) ptr;
+                tmp << ((*val) ? "true" : "false");
+            }
+            if (type != 'd'){
+                double *val = (double*) ptr;
+                tmp << *val;
+            }
+            if (type != 'i'){
+                int *val = (int*) ptr;
+                tmp << *val;
+            }
+            if (type != 's'){
+                string *val = (string*) ptr;
+                tmp << *val;
+            }
+            if (type != 'v'){
+                VecDbl *val = (VecDbl*) ptr;
+                tmp << "[ ";
+                for (double v: *val) tmp << v << " ";
+                tmp <<  " ]";
+            }
+        }
+        tmp << "\n";
+        return tmp.str();
+    }
+};
+Vec<var_def> var_reg;
+
+void GroupName(string name){ var_def add; add.name=name; var_reg.push_back(add); };
+void RegVar(string name, bool   *var){ var_def add; add.name=name; add.ptr=var; add.type='b'; var_reg.push_back(add); };
+void RegVar(string name, double *var){ var_def add; add.name=name; add.ptr=var; add.type='d'; var_reg.push_back(add); };
+void RegVar(string name, int    *var){ var_def add; add.name=name; add.ptr=var; add.type='i'; var_reg.push_back(add); };
+void RegVar(string name, string *var){ var_def add; add.name=name; add.ptr=var; add.type='s'; var_reg.push_back(add); };
+void RegVar(string name, VecDbl *var){ var_def add; add.name=name; add.ptr=var; add.type='v'; var_reg.push_back(add); };
+
+void GetVar(string name, bool   &var, InputParser &in){ var = in.GetBool(name)  ; };
+void GetVar(string name, double &var, InputParser &in){ var = in.GetNumber(name); };
+void GetVar(string name, int    &var, InputParser &in){ var = in.GetNumber(name); };
+void GetVar(string name, string &var, InputParser &in){ var = in.GetString(name); };
+void GetVar(string name, VecDbl &var, InputParser &in){ var.clear(); in.GetVectorDouble(name,var); };
+
+template <class Tvar>
+void addVariable(string name, Tvar& var, InputParser &in){
+    GetVar(name,var,in);
+    AddToDump(name,&var);
+};
+
+// #define GETVARIABLE(var) addVariable( ##var, var, in);
+
+// END OF VARIABLE REGISTRATION
+
+
+
 void settings::readfromfile(const string fname){
     //read input settings from file
     InputParser in(fname);
@@ -254,6 +322,7 @@ void settings::readfromfile(const string fname){
     qtrec_kt0          = in.GetBool   ( "qtrec_kt0"       ); //true
     timeprofile        = in.GetBool   ( "timeprofile"     ); //false   # debug       and      time       profile resummation integration
     verbose            = in.GetBool   ( "verbose"         ); //false   # debug       and      time       profile costh       phi_lep         integration
+    texttable          = in.GetBool   ( "texttable"       ); //
     resumcpp           = in.GetBool   ( "resumcpp"        );
     useGamma           = in.GetBool ( "useGamma" );//
     PDFerrors           = in.GetBool ( "PDFerrors" );//
@@ -419,17 +488,18 @@ void settings::check_consitency(){
             bins. ybins  .back()
             );
     // plot mode consitency with integration
-    if ( bins.plotmode=="fill" && 
-	 ( (doBORN && !fixedorder && (resint2d || resint3d)) || (doCT && (ctint2d || ctint3d)) || (doVJ && (vjint3d || vjint5d)))
-       ) {
-        printf ("Warning: plotmode: Filling not work for quadrature integration. I am switching to integrate.\n");
-        bins.plotmode="integrate";
-    }
+    // if ( bins.plotmode=="fill" && 
+    //      ( (doBORN && !fixedorder && (resint2d || resint3d)) || (doCT && (ctint2d || ctint3d)) || (doVJ && (vjint3d || vjint5d)))
+    //    ) {
+    //     printf ("Warning: plotmode: Filling not work for quadrature integration. I am switching to integrate.\n");
+    //     bins.plotmode="integrate";
+    // }
+    // This is leftover of old plotter
     if (bins.plotmode=="fill"){ 
         // integration boundaries are max and minimum
-        bins.qtbins = { bins.qtbins .front(), bins.qtbins .back() };
-        bins.ybins  = { bins.ybins  .front(), bins.ybins  .back() };
-        bins.mbins  = { bins.mbins  .front(), bins.mbins  .back() };
+        //bins.qtbins = { bins.qtbins .front(), bins.qtbins .back() };
+        //bins.ybins  = { bins.ybins  .front(), bins.ybins  .back() };
+        //bins.mbins  = { bins.mbins  .front(), bins.mbins  .back() };
     } else if (bins.plotmode=="integrate"){
         // NOTE: this is here only to checkout plotmode mistype
         // keep integration bins same as plotting (quadrature)
@@ -557,6 +627,7 @@ void settings::dumpAll(){
         dumpB("qtrec_kt0         ", qtrec_kt0           );
         dumpB("timeprofile       ", timeprofile         );
         dumpB("verbose           ", verbose             );
+        dumpB("texttable         ", texttable           );
         dumpB("resumcpp          ", resumcpp            );
         dumpI("approxpdf         ", opts_.approxpdf_    );
         dumpI("pdfintervals      ", opts_.pdfintervals_ );
@@ -682,6 +753,11 @@ void settings::parse_binning(string name, vector<double> &bins, po::Options &arg
 
 void binning::GetBins(string name, vector<double> &vec){
     vec.clear();
+    // CLI defined
+    if (name == "qt" && qtbins .size()!=0) { vec = qtbins; return; }
+    if (name == "y"  && ybins  .size()!=0) { vec = ybins;  return; }
+    if (name == "m"  && mbins  .size()!=0) { vec = mbins;  return; }
+    // input file defined
     name+="_bins";
     in.GetVectorDouble(name.c_str(), vec);
     if ( vec.size() < 2) throw QuitProgram( "Option `" +name+ "` needs at least 2 items ");
@@ -690,9 +766,9 @@ void binning::GetBins(string name, vector<double> &vec){
 void binning::readfromfile(const string fname){
     in.parse_file(fname);
     plotmode =  in.GetString( "plotmode");
-    GetBins("qt" , qtbins );
-    GetBins("y"  , ybins  );
-    GetBins("m"  , mbins  );
+    in.GetVectorDouble("qt_bins" , qtbins );
+    in.GetVectorDouble("y_bins"  , ybins  );
+    in.GetVectorDouble("m_bins"  , mbins  );
     hist_qt_bins .clear();
     hist_y_bins  .clear();
     hist_m_bins  .clear();

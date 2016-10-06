@@ -39,6 +39,8 @@ makecuts = true
 lptcut = 20
 lycut = 2.5
 
+texttable = true
+
 qt_bins =  [ 0. 10. 20. 30. ]
 y_bins  =  [ -3.0 0. 3.0 ]
 m_bins  =  [ 50 500 ]

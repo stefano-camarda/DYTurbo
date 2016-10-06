@@ -168,6 +168,7 @@ qtrec_kt0   = false
 # debug settings
 timeprofile = false  # debug and time profile resummation integration
 verbose     = false  # debug and time profile costh phi_lep integration
+texttable = false # dump result table to text file (including pdf variations)
 
 # binning
 

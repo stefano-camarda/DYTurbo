@@ -222,6 +222,7 @@ public:
   //debug settings
   bool timeprofile;
   bool verbose;
+  bool texttable;
 
   //resummed code in C++
   bool resumcpp;
