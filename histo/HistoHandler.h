@@ -168,8 +168,9 @@ namespace HistoHandler {
 
     //! Add histogram to the list.
     template<class T>
-    void Add(T* newhist){
+    T* Add(T* newhist){
         histos.push_back(newhist);
+        return newhist;
     }
     //! @}
 

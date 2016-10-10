@@ -139,6 +139,18 @@ namespace HistoHandler {
                 current = NULL;
             };
 
+            void SetName(string newname){
+                // set new name
+                this->name = newname;
+                // and rename all histograms
+                current->SetName(this->name.c_str());
+                if(!variations.empty()) for (size_t i = 0; i < last_index; ++i) {
+                    KeySuffix ivar = variation_suffixes[i];
+                    if (ivar.index>=variations.size()) continue;
+                    variations[ivar.index]->SetName((this->name+ivar.suffix).c_str());
+                }
+            }
+
 
         protected :
             // Dipole structure:

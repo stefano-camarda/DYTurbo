@@ -61,11 +61,13 @@ namespace HistoHandler {
     };
 
     template <> TH1D* New(HistoObject<TH1D> *parent){
+        TH1::AddDirectory(false);
         TH1D* h = new TH1D( parent ->name.c_str(), parent->title.c_str(), parent->N_binsX, parent->p_binsX);
         return h;
     }
 
     template <> TH2D* New(HistoObject<TH2D> *parent){
+        TH1::AddDirectory(false);
         TH2D* h = new TH2D( parent ->name.c_str(), parent->title.c_str(),
                 parent->N_binsX, parent->p_binsX,
                 parent->N_binsY, parent->p_binsY
@@ -74,6 +76,7 @@ namespace HistoHandler {
     }
 
     template <> TH3D* New(HistoObject<TH3D> *parent){
+        TH1::AddDirectory(false);
         TH3D* h = new TH3D( parent ->name.c_str(), parent->title.c_str(),
                 parent->N_binsX, parent->p_binsX,
                 parent->N_binsY, parent->p_binsY,
@@ -83,11 +86,13 @@ namespace HistoHandler {
     }
 
     template <> TProfile* New(HistoObject<TProfile> *parent){
+        TH1::AddDirectory(false);
         TProfile* h = new TProfile( parent ->name.c_str(), parent->title.c_str(), parent->N_binsX, parent->p_binsX);
         return h;
     }
 
     template <> TProfile2D* New(HistoObject<TProfile2D> *parent){
+        TH1::AddDirectory(false);
         TProfile2D* h = new TProfile2D( parent ->name.c_str(), parent->title.c_str(),
                 parent->N_binsX, parent->p_binsX,
                 parent->N_binsY, parent->p_binsY

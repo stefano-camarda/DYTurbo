@@ -214,6 +214,7 @@ bool IsIntegName(string hname){
     if ( hname == "s_qt"      ) return true;
     if ( hname == "s_qt_vs_y" ) return true;
     if ( hname == "s_qt_vs_y_vs_m" ) return true;
+    if ( hname == "user_qt"   ) return true;
     return false;
 }
 

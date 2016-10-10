@@ -16,7 +16,9 @@ using namespace Kinematics;
 namespace HistoHandler {
     void UserBook(){
         // dont forget to define binning
-        Add( new Histo1D <BigAnswer>("biganswer"));
+        Add( new Histo1D <BigAnswer>("biganswer") );
+        // For example you can change binning and set different name
+        Add( new Histo1D <BosPT>("qt") )->SetName("user_qt");
     }
 }
 

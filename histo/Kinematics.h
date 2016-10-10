@@ -22,8 +22,6 @@
  *  for histograms and cuts.
  *
  *  For input to integration is used @ref phasespace.
- *
- * @todo Implementation to DYTURBO. Use Kinematics for cuts.
  */
 namespace Kinematics {
 
