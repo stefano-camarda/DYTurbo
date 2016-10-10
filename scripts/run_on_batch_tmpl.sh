@@ -60,7 +60,6 @@ CP DYTURBOINPUTFILE input.in
 
 # run
 /usr/bin/time -v ./dyturbo SETPROGARGUMETS
-hadd -f results_merge.root results*.root || exit 3
-CP results_merge.root OUTDIR/JOBNAME_${LSB_JOBINDEX}.root
+CP results.root OUTDIR/JOBNAME_${LSB_JOBINDEX}.root
 
 exit 0

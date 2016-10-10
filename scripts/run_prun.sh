@@ -27,7 +27,7 @@ PRUN(){
  --extFile dyturbo-${DYTURBOVERSION}.tar.gz \
  --nJobs $njobs \
  --outDS ${CERNGROUP}.${CERNUSER}.${jobname}_${gridv}/ \
- --outputs results_merge.root \
+ --outputs results.root \
  --tmpDir /tmp/${CERNUSER} \
  --nGBPerJob=MAX \
  --destSE=ANALY_CERN_SLC6 \
@@ -40,7 +40,7 @@ prun \
 --nJobs $njobs \
 --maxFileSize=25000000 \
 --outDS ${CERNGROUP}.${CERNUSER}.${jobname}_${gridv}/ \
---outputs results_merge.root \
+--outputs results.root \
 --noCompile \
 --tmpDir /tmp/${CERNUSER} \
 --nGBPerJob=MAX \

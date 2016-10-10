@@ -49,6 +49,4 @@ rm -f results*.root
 
 ./bin/dyturbo $arguments
 
-hadd -f results_merge.root results*.root
-
 
