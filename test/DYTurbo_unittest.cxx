@@ -94,7 +94,8 @@ TEST(DYTurbo,BoundIteration){
         counter ++;
     }
     ASSERT_EQ ( expected , counter  ) << " Incorrect number of bins from boundaries.";
-    if (opts.makecuts) return;
+    opts.force_binner_mode=true;
+    //if (opts.makecuts) return; // in case of leton cut it automatically changes to Vegas
     // every step
     bins.qtbins = {0., 10., 20., 30.};
     bins.ybins  = {-3., 0. ,3.};
@@ -105,6 +106,7 @@ TEST(DYTurbo,BoundIteration){
         counter ++;
     }
     ASSERT_EQ ( expected , counter  ) << " Incorrect number of bins from boundaries.";
+    opts.force_binner_mode=false;
 }
 
 

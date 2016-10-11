@@ -232,6 +232,9 @@ public:
 
   //bin width normalisation
   bool ptbinwidth, ybinwidth;
+
+  // Force to loop over all bins even you have all Vegas integrands
+  bool force_binner_mode = false;
 };
 
 class binning
@@ -241,7 +244,6 @@ class binning
   void readfromfile(const string fname);
   void GetBins(string name,vector<double> &bins);
   // private:
-  string plotmode;
   vector <double> qtbins;
   vector <double> ybins;
   vector <double> mbins;

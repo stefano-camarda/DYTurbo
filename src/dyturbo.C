@@ -250,7 +250,7 @@ namespace DYTurbo {
     void AddBoundary(size_t ib, string name, VecDbl &bins ){
         ActiveBoundaries[ib].name = name;
         ActiveBoundaries[ib].data.clear();
-        if (HasOnlyVegas){ // simple boundary mode
+        if (HasOnlyVegas && !opts.force_binner_mode){ // simple boundary mode
             ActiveBoundaries[ib].data.push_back(bins.front());
             ActiveBoundaries[ib].data.push_back(bins.back());
         } else { // integration mode

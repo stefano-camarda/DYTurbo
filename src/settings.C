@@ -338,6 +338,7 @@ void settings::readfromfile(const string fname){
     yrule              = in.GetNumber ( "yrule" );
     ptbinwidth         = in.GetBool ( "ptbinwidth" );
     ybinwidth          = in.GetBool ( "ybinwidth" );
+    force_binner_mode  = in.GetBool ( "force_binner_mode" );
 
     return ;
 }
@@ -472,8 +473,6 @@ void settings::check_consitency(){
     sort( bins.qtbins .begin () , bins.qtbins .end () ) ;
     sort( bins.ybins  .begin () , bins.ybins  .end () ) ;
     sort( bins.mbins  .begin () , bins.mbins  .end () ) ;
-    // plotmode
-    ToLower(bins.plotmode);
     // set histogram bins
     bins.hist_qt_bins = bins.qtbins ;
     bins.hist_y_bins  = bins.ybins ;
@@ -487,25 +486,6 @@ void settings::check_consitency(){
             bins. ybins  .front() ,
             bins. ybins  .back()
             );
-    // plot mode consitency with integration
-    // if ( bins.plotmode=="fill" && 
-    //      ( (doBORN && !fixedorder && (resint2d || resint3d)) || (doCT && (ctint2d || ctint3d)) || (doVJ && (vjint3d || vjint5d)))
-    //    ) {
-    //     printf ("Warning: plotmode: Filling not work for quadrature integration. I am switching to integrate.\n");
-    //     bins.plotmode="integrate";
-    // }
-    // This is leftover of old plotter
-    if (bins.plotmode=="fill"){ 
-        // integration boundaries are max and minimum
-        //bins.qtbins = { bins.qtbins .front(), bins.qtbins .back() };
-        //bins.ybins  = { bins.ybins  .front(), bins.ybins  .back() };
-        //bins.mbins  = { bins.mbins  .front(), bins.mbins  .back() };
-    } else if (bins.plotmode=="integrate"){
-        // NOTE: this is here only to checkout plotmode mistype
-        // keep integration bins same as plotting (quadrature)
-    } else {
-        throw QuitProgram("Unsupported value of plotmode : "+bins.plotmode);
-    }
 
     return ;
 }
@@ -641,6 +621,7 @@ void settings::dumpAll(){
         dumpI("yrule             ", yrule               );
         dumpB("ptbinwidth        ", ptbinwidth          );
         dumpB("ybinwidth         ", ybinwidth           );
+        dumpB("force_binner_mode ", force_binner_mode   );
     }
 
     if (print_masses){
@@ -765,7 +746,6 @@ void binning::GetBins(string name, vector<double> &vec){
 
 void binning::readfromfile(const string fname){
     in.parse_file(fname);
-    plotmode =  in.GetString( "plotmode");
     in.GetVectorDouble("qt_bins" , qtbins );
     in.GetVectorDouble("y_bins"  , ybins  );
     in.GetVectorDouble("m_bins"  , mbins  );
