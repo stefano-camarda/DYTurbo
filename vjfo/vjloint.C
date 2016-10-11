@@ -2,7 +2,6 @@
 
 #include "settings.h"
 #include "mcfm_interface.h"
-#include "cuts.h"
 #include "mesq.h"
 #include "pdf.h"
 #include "phasespace.h"
