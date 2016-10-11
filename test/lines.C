@@ -141,22 +141,23 @@ void xline()
       //      rapintegrals_(ymin,ymax,m,nocuts);
       const int ncomp = 1;
       //const int ndim = 4; //3; //2;
-      const int ndim = 4;
+      const int ndim = 3;
       double x[ndim];
       double f[ncomp];
       x[0] = xx;
       x[1] = 0.5;
       x[2] = 0.5;
-      x[3] = 0.5;
-      //x[4] = xx;
+      //x[3] = 0.5;
+      //x[4] = 0.5;
       //x[5] = 0.5;
+      //x[6] = 0.5;
       void* userdata = 0;
       const int nvec = 1;
       const int core = 0;
       double weight;
       const int iter = 0;
       //resintegrand2d(ndim, x, ncomp, f);
-      //vjlointegrand(ndim, x, ncomp, f);
+      vjlointegrand(ndim, x, ncomp, f);
       //resintegrand3d(ndim, x, ncomp, f);
       //ctintegrand3d(ndim, x, ncomp, f);
       //ctintegrand2d(ndim, x, ncomp, f);
@@ -164,7 +165,8 @@ void xline()
       //lointegrand2d(ndim, x, ncomp, f);
       //lointegrandMC(ndim, x, ncomp, f, userdata, nvec, core, weight, iter);
       //resintegrandMC(ndim, x, ncomp, f, userdata, nvec, core, weight, iter);
-      ctintegrandMC(ndim, x, ncomp, f, userdata, nvec, core, weight, iter);
+      //ctintegrandMC(ndim, x, ncomp, f, userdata, nvec, core, weight, iter);
+      //vjlointegrandMC(ndim, x, ncomp, f, userdata, nvec, core, weight, iter);
       //void* userdata; int nvec; int core; double weight; int iter; resintegrand4d(ndim, x, ncomp, f, userdata, nvec, core, weight, iter);
       xf << "gx->SetPoint(gx->GetN(), " << i*hx+x1 << ", " << f[0] << ");" << endl;
     }
