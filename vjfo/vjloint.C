@@ -2,6 +2,7 @@
 
 #include "settings.h"
 #include "mcfm_interface.h"
+#include "cuts.h"
 #include "mesq.h"
 #include "pdf.h"
 #include "phasespace.h"
@@ -232,9 +233,15 @@ double vjloint::calcvegas(const double x[7])
   jac = jac * wt;
   
   double r3[3] = {x[0], x[1], x[2]};
-  status = phasespace::gen_mqty(r3, jac, true);
+  //two alternatives for phase space generation
+  //status = phasespace::gen_mqty(r3, jac, true);
+  //phasespace::calcexpy(); //calculate exp(y) and exp(-y), since they are used in genV4p() and genx2()
+  status = phasespace::gen_myqt(r3, jac, true);
+  phasespace::calcmt(); //calculate mt, since it is used in genV4p() and genx2()
+  
   if (!status)
     return 0.;
+  
   jac = jac *2.*phasespace::qt;
 
   //Set factorization and renormalization scales
@@ -246,11 +253,9 @@ double vjloint::calcvegas(const double x[7])
       scaleset_(mur2);
     }
 
-  //calculate exp(y) and exp(-y), since they are used in genV4p() and genx2()
-  phasespace::calcexpy();
-  
   //Generate the boson 4-momentum
   phasespace::set_phiV(-M_PI+2.*M_PI*x[6]);
+  phasespace::genRFaxes(phasespace::naive);
   phasespace::genV4p();
 
   //move dx2 integration here
