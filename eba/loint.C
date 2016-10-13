@@ -5,17 +5,61 @@
 #include "omegaintegr.h"
 #include "pdf.h"
 #include "phasespace.h"
+#include "gaussrules.h"
+#include "resconst.h"
+#include "dyres_interface.h"
+#include "dynnlo_interface.h"
 
 #include <iostream>
+#include <string.h>
 
 using namespace std;
+
+double *abx;
+double *abw;
+int abdim;
+
+void loint::init()
+{
+  //initialize the points of the gaussian quadrature for the alfa and beta integration
+  int abintervals = 1;
+  int abrule = 64;
+  abdim = abintervals*abrule;
+
+  abx = new double [abdim];
+  abw = new double [abdim];
+    
+  double  x,t,jac;
+  int i,j;
+
+  double min = 1e-7;
+  double max = 1.;
+  double lmm = log(max/min);
+    
+  for (int i = 0;  i < abintervals; i++)
+    {
+      double a = min+(max-min)*i/abintervals;
+      double b = min+(max-min)*(i+1)/abintervals;
+      double c = 0.5*(a+b);
+      double m = 0.5*(b-a);
+      for (int j = 0; j < abrule; j++)
+	{
+	  double x = c+m*gr::xxx[abrule-1][j];
+	  double t = min*pow(max/min,x);
+	  double jac=t*lmm;
+	  abx[j+i*abrule]=t;
+	  abw[j+i*abrule]=gr::www[abrule-1][j]*m*jac;
+	}
+    }
+}
 
 double loint::lint(double costh, double m, double y, int mode)
 {
   double m2 = m*m;
   double exppy = exp(y);
   double expmy = 1./exppy;
-
+  //double tau = sqrt(m2/pow(opts.sroot,2));
+  
   /*
   if (y >= 0)
     phasespace::setcthbounds(opts.costhmin,opts.costhmax);
@@ -49,6 +93,11 @@ double loint::lint(double costh, double m, double y, int mode)
   double x1 = sqrt(m2/pow(opts.sroot,2))*exppy;
   double x2 = sqrt(m2/pow(opts.sroot,2))*expmy;
 
+  //double x1 = tau*exppy;
+  //double x2 = tau*expmy;
+  if (x1 >= 1 || x2 >= 1)
+    return 0.;
+  
   /*
   // **************** Check matrix element calculation
   //    phase space generation
@@ -173,11 +222,17 @@ double loint::lint(double costh, double m, double y, int mode)
   */
   
   //Set factorization scale
-  double muf;
+  double muf, mur;
   if (opts.dynamicscale)
-    muf = m*opts.kmufac;
+    {
+      muf = m*opts.kmufac;
+      mur = m*opts.kmuren;
+    }
   else
-    muf = opts.rmass*opts.kmufac;
+    {
+      muf = opts.rmass*opts.kmufac;
+      mur = opts.rmass*opts.kmuren;
+    }
   
   double fx1[2*MAXNF+1],fx2[2*MAXNF+1];
   fdist_(opts.ih1,x1,muf,fx1);
@@ -214,6 +269,7 @@ double loint::lint(double costh, double m, double y, int mode)
     }
   else if (opts.nproc == 2)
     {
+      //!!! remove parenthesis!!!
       xmsq += real(mesq::mesqij[0]*fx1[parton::D ]*fx2[parton::Ub]);
       xmsq += real(mesq::mesqij[1]*fx1[parton::Ub]*fx2[parton::D ]);
       xmsq += real(mesq::mesqij[2]*fx1[parton::S ]*fx2[parton::Ub]);
@@ -228,8 +284,362 @@ double loint::lint(double costh, double m, double y, int mode)
       xmsq += real(mesq::mesqij[11]*fx1[parton::Cb]*fx2[parton::B ]);
     }
 
-  double shad = pow(opts.sroot,2);
+
+  // start NLO 
+  /*****************************************************/
+  double LF, LR;
+  if (opts.order >= 1)
+    LF = log(m2/pow(muf,2));
+  if (opts.order >= 2)
+    LR = log(m2/pow(mur,2));
+
+  double lx1, lx2;
+  double pqqintx1, pqqintx2;
+  double d0intx1, d0intx2;
+  double d1intx1, d1intx2;
+  if (opts.order >= 1)
+    {
+      lx1 = log(x1);
+      lx2 = log(x2);
+      pqqintx1 = pqqint_(x1);
+      pqqintx2 = pqqint_(x2);
+    }
+  if (opts.order >= 2)
+    {
+      d0intx1 = d0int_(x1);
+      d0intx2 = d0int_(x2);
+      d1intx1 = d1int_(x1);
+      d1intx2 = d1int_(x2);
+    }
+ 
+  //Start the fast alfa beta integration
+
+  //Preliminary loop for caching
+  double cz1[abdim];
+  double cz2[abdim];
+  // --> cache the logs, and pass them as parameters to the CxxPxx, Pxxxx functions
+  //double lz1[abdim];
+  //double lz2[abdim];
+  //double l1z1[abdim];
+  //double l1z2[abdim];
+  double lzoz1[abdim];
+  double lzoz2[abdim];
+  if (opts.order >= 1)
+    for (int ab = 0; ab < abdim; ab++)
+      {
+	cz1[ab] = pow(x1,abx[ab]);
+	cz2[ab] = pow(x2,abx[ab]);
+	//lz1[ab] = log(cz1[ab]);
+	//lz2[ab] = log(cz2[ab]);
+	//l1z1[ab] = log(1.-cz1[ab]);
+	//l1z2[ab] = log(1.-cz2[ab]);
+	lzoz1[ab] = log(1.-cz1[ab])/(1.-cz1[ab]);
+	lzoz2[ab] = log(1.-cz2[ab])/(1.-cz2[ab]);
+      }
+
+  //cache scaled PDFs
+  double fx1p[abdim][2*MAXNF+1],fx2p[abdim][2*MAXNF+1];
+  if (opts.order >= 1)
+    for (int ab = 0; ab < abdim; ab++)
+      {
+	double fx1temp[2*MAXNF+1],fx2temp[2*MAXNF+1];
+	double xx1 = pow(x1,(1-abx[ab]));
+	double xx2 = pow(x2,(1-abx[ab]));
+	fdist_(opts.ih1,xx1,muf,fx1temp);
+	fdist_(opts.ih2,xx2,muf,fx2temp);
+	memcpy(fx1p[ab], fx1temp, (2*MAXNF+1)*sizeof(double));
+	memcpy(fx2p[ab], fx2temp, (2*MAXNF+1)*sizeof(double));
+      }
+
+  double sumfx1p[abdim];
+  double sumfx2p[abdim];
+  if (opts.order >= 2)
+    for (int ab = 0; ab < abdim; ab++)
+      {
+	sumfx1p[ab] = 0.;
+	sumfx2p[ab] = 0.;
+	for (int f = 0; f < MAXNF; f++)
+	  {
+	    sumfx1p[ab] += fx1p[ab][f]+fx1p[ab][parton::charge_conj(parton::pdgid(f))];
+	    sumfx2p[ab] += fx2p[ab][f]+fx2p[ab][parton::charge_conj(parton::pdgid(f))];
+	  }
+      }
   
+  
+  // Start calculation
+  double tdelta = 0; //LO
+  double th1st = 0;  //NLO
+  double th1stF = 0; //NLO
+  double th2st = 0;  //NNLO
+  double tcga = 0;   //NNLO
+  double tgamma2 = 0;//NNLO
+  double tgaga = 0;  //NNLO
+
+  //loop on born subprocesses, i.e. born incoming partons ij
+  for (int sp = 0; sp < mesq::totpch; sp++)
+    {
+      //simplify notation
+      double bornmesqij = real(mesq::mesqij[sp]); //born level amplitudes
+      parton::pdgid i = mesq::pid1[sp];         //parton 1
+      parton::pdgid j = mesq::pid2[sp];         //parton 2
+      parton::pdgid g = parton::G;              //gluon
+      parton::pdgid im = parton::charge_conj(i);
+      parton::pdgid jm = parton::charge_conj(j);
+
+      //LO
+      //Simplest term without convolutions
+      tdelta += fx1[i]*fx2[j]*bornmesqij;
+      if (opts.order == 0) continue;
+
+      //NLO
+      //H1st delta term
+      th1st += 2*resconst::C1qqdelta*fx1[i]*fx2[j]*bornmesqij;
+      
+      //alfa loop (first leg)
+      for (int a = 0; a < abdim; a++)
+	{
+	  if (cz1[a] >= 1) continue;
+	  
+	  //H1st non delta terms
+	  th1st += (fx1p[a][i]*cqq_(cz1[a])+fx1p[a][g]*cqg_(cz1[a]))*(-lx1)*fx2[j]*bornmesqij * abw[a];
+	  
+	  //H1st muf dependence, gammaqq and gammaqg:
+	  th1stF += (-lx1*((fx1p[a][i]-fx1[i]*cz1[a])*pqq_(cz1[a])+fx1p[a][g]*dypqg_(cz1[a])))*fx2[j]*bornmesqij * abw[a];
+	}
+      th1stF += -pqqintx1*fx1[i]*fx2[j]*bornmesqij;
+      
+      //beta loop (second leg)
+      for (int b = 0; b < abdim; b++)
+	{
+	  if (cz2[b] >= 1) continue;
+
+	  //H1st non delta terms
+	  th1st += (fx2p[b][j]*cqq_(cz2[b])+fx2p[b][g]*cqg_(cz2[b]))*(-lx2)*fx1[i]*bornmesqij * abw[b];
+	  
+	  //H1st muf dependence, gammaqq and gammaqg:
+	  th1stF += (-lx2*((fx2p[b][j]-fx2[j]*cz2[b])*pqq_(cz2[b])+fx2p[b][g]*dypqg_(cz2[b])))*fx1[i]*bornmesqij * abw[b];
+	}
+      th1stF += -pqqintx2*fx1[i]*fx2[j]*bornmesqij;
+      if (opts.order == 1) continue;
+
+      //NNLO
+      //alfa loop
+      double diffg1f = 0;
+      double diffg10 = 0;
+      double diff1 = 0;
+      double diffc1f = 0;
+      double diffc10 = 0;
+      for (int a = 0; a < abdim; a++)
+	{
+	  if (cz1[a] >= 1) continue;
+
+	  //h2st qqbar contribution from c1*c1 (without delta term) -> regular-delta
+	  th2st += fx1p[a][i]*cqq_(cz1[a])*(-lx1)*fx2[j]*resconst::C1qqdelta*bornmesqij * abw[a];
+
+	  //h2st qg contribution from c1*c1 ->regular-delta
+	  th2st += fx1p[a][g]*cqg_(cz1[a])*(-lx1)*fx2[j]*resconst::C1qqdelta*bornmesqij * abw[a];
+
+	  //H2st qqbar channel: D0(z), first leg
+	  th2st += 0.5*(-lx1*(fx1p[a][i]-fx1[i]*cz1[a])*resconst::H2qqD0/(1.-cz1[a]))*fx2[j]*bornmesqij * abw[a];
+	  th2st += -0.5*resconst::H2qqD0*d0intx1*fx1[i]*fx2[j]*bornmesqij * abw[a];
+
+	  //C2qq, regular part, first leg
+	  th2st += fx1p[a][i]*c2qqreg_(cz1[a])*(-lx1)*fx2[j]*bornmesqij * abw[a];
+
+	  //C2qg, first leg
+	  th2st += fx1p[a][g]*c2qg_(cz1[a])*(-lx1)*fx2[j]*bornmesqij * abw[a];
+
+	  //Cqqbar contribution: first leg
+	  th2st += fx1p[a][im]*c2qqb_(cz1[a])*(-lx1)*fx2[j]*bornmesqij * abw[a];
+
+	  //Cqqp contribution: first leg
+	  th2st += (sumfx1p[a]-(fx1p[a][i]+fx1p[a][parton::charge_conj(parton::pdgid(i))]))*c2qqp_(cz1[a])*(-lx1)*fx2[j]*bornmesqij * abw[a];
+
+	  //Terms needed for NNLO scale dependence
+	  //(gamma+gamma)*(gamma+gamma) term
+
+	  //First part: one gamma for each leg
+	  diffg1f += (-lx1*(fx1p[a][i]-fx1[i]*cz1[a])*pqq_(cz1[a]) - pqqintx1*fx1[i]) * abw[a];
+	  diffg10 += -lx1*fx1p[a][g]*dypqg_(cz1[a]) * abw[a];
+
+	  //Second part: gamma*gamma terms
+	  //Pij * Pjk = D1ijjk (log(1-z)/(1-z))_+ + D0ijjk/(1-z)_+ 
+	  //          + Pijjk(z) + Deltaijjk delta(1-z)
+	  //First leg
+	  diff1 += (-lx1*((fx1p[a][i]-fx1[i]*cz1[a])
+			  *(resconst::D0qqqq/(1-cz1[a])+resconst::D1qqqq*lzoz1[a])
+			  +fx1p[a][i]*pqqqq_(cz1[a])+fx1p[a][g]*(pqqqg_(cz1[a])+pqggg_(cz1[a])))
+		    +(resconst::Deltaqqqq-resconst::D0qqqq*d0intx1-resconst::D1qqqq*d1intx1)
+		    *fx1[i]) * abw[a];
+
+	  //Include Pqggq
+	  diff1 += -lx1*sumfx1p[a]*pqggq_(cz1[a]) * abw[a];
+	  //End of (gamma+gamma)*(gamma+gamma) term
+
+	  //Start  (C+C)*(gamma+gamma) term
+	  //C first leg, gamma second leg
+	  diffc1f += (-lx1*fx1p[a][i]*cqq_(cz1[a])+resconst::C1qqdelta*fx1[i]) * abw[a];
+	  diffc10 += -lx1*fx1p[a][g]*cqg_(cz1[a]) * abw[a];
+      
+	  //C*gamma: first leg (ignore delta term in Cqq: taken into account with th1stF)
+	  tcga += (fx1p[a][i]*cqqpqq_(cz1[a])+fx1p[a][g]*(cqqpqg_(cz1[a])+cqgpgg_(cz1[a])))*(-lx1)*fx2[j]*bornmesqij * abw[a];
+
+	  //Add Cqg*Pgq contribution
+	  tcga += sumfx1p[a]*cqgpgq_(cz1[a])*(-lx1)*fx2[j]*bornmesqij * abw[a];
+
+	  //Start 2-loop AP
+	  // Gluon + pure singlet
+	  //f == gluon piece
+	  tgamma2 += fx1p[a][g]*p2qg_(cz1[a])*(-lx1)*fx2[j]*bornmesqij * abw[a];
+
+	  //f != gluon piece
+	  tgamma2 += sumfx1p[a]*p2qqs_(cz1[a])*(-lx1)*fx2[j]*bornmesqij * abw[a];
+
+	  //P2qq non-singlet: regular part
+	  tgamma2 += fx1p[a][i]*p2qqv_(cz1[a])*(-lx1)*fx2[j]*bornmesqij * abw[a];
+
+	  //P2qq non-singlet: 1/(1-z)_+
+	  tgamma2 += 2./3.*resconst::Kappa*(-lx1*(fx1p[a][i]-fx1[i]*cz1[a])/(1-cz1[a])-d0intx1*fx1[i])*fx2[j]*bornmesqij * abw[a];
+
+	  //P2qqb non singlet
+	  tgamma2 += fx1p[a][im]*p2qqbv_(cz1[a])*(-lx1)*fx2[j]*bornmesqij * abw[a];
+	}
+	  
+      //beta loop
+      double diffg2f = 0;
+      double diffg20 = 0;
+      double diff2 = 0;
+      double diffc2f = 0;
+      double diffc20 = 0;
+      for (int b = 0; b < abdim; b++)
+	{
+	  if (cz2[b] >= 1) continue;
+	  
+	  //h2st qqbar contribution from c1*c1 (without delta term) -> regular-delta
+	  th2st += fx2p[b][j]*cqq_(cz2[b])*(-lx2)*fx1[i]*resconst::C1qqdelta*bornmesqij * abw[b];
+
+	  //h2st qg contribution from c1*c1 ->regular-delta
+	  th2st += fx2p[b][g]*cqg_(cz2[b])*(-lx2)*fx1[i]*resconst::C1qqdelta*bornmesqij * abw[b];
+
+	  //H2st, qqbar channel: D0(z), second leg
+	  th2st += 0.5*(-lx2*(fx2p[b][j]-fx2[j]*cz2[b])*resconst::H2qqD0/(1.-cz2[b]))*fx1[i]*bornmesqij * abw[b];
+	  th2st += -0.5*resconst::H2qqD0*d0intx2*fx1[i]*fx2[j]*bornmesqij * abw[b];
+
+	  //C2qq, regular part, second leg
+	  th2st += fx2p[b][j]*c2qqreg_(cz2[b])*(-lx2)*fx1[i]*bornmesqij * abw[b];
+
+	  //C2qg, second leg
+	  th2st += fx2p[b][g]*c2qg_(cz2[b])*(-lx2)*fx1[i]*bornmesqij * abw[b];
+
+	  //Cqqbar contribution: second leg
+	  th2st += fx2p[b][jm]*c2qqb_(cz2[b])*(-lx2)*fx1[i]*bornmesqij * abw[b];
+
+	  //Cqqp contribution: second leg
+	  th2st += (sumfx2p[b]-(fx2p[b][j]+fx2p[b][parton::charge_conj(parton::pdgid(j))]))*c2qqp_(cz2[b])*(-lx2)*fx1[i]*bornmesqij * abw[b];
+
+	  //Terms needed for NNLO scale dependence
+	  //(gamma+gamma)*(gamma+gamma) term
+
+	  //First part: one gamma for each leg
+	  diffg2f += (-lx2*(fx2p[b][j]-fx2[j]*cz2[b])*pqq_(cz2[b]) - pqqintx2*fx2[j]) * abw[b];
+	  diffg20 += -lx2*fx2p[b][g]*dypqg_(cz2[b]) * abw[b];
+
+	  //Second part: gamma*gamma terms
+	  //Pij * Pjk = D1ijjk (log(1-z)/(1-z))_+ + D0ijjk/(1-z)_+ 
+	  //          + Pijjk(z) + Deltaijjk delta(1-z)
+	  //Second leg
+	  diff2 += (-lx2*((fx2p[b][j]-fx2[j]*cz2[b])
+			  *(resconst::D0qqqq/(1-cz2[b])+resconst::D1qqqq*lzoz2[b])
+			  +fx2p[b][j]*pqqqq_(cz2[b])+fx2p[b][g]*(pqqqg_(cz2[b])+pqggg_(cz2[b])))
+		    +(resconst::Deltaqqqq-resconst::D0qqqq*d0intx2-resconst::D1qqqq*d1intx2)
+		    *fx2[j])* abw[b];
+	  //Include Pqggq
+	  diff2 += -lx2*sumfx2p[b]*pqggq_(cz2[b]) * abw[b];
+	  //End of (gamma+gamma)*(gamma+gamma) term
+
+	  //Start  (C+C)*(gamma+gamma) term
+	  //gamma first leg, C second leg
+	  diffc2f += (-lx2*fx2p[b][j]*cqq_(cz2[b])+resconst::C1qqdelta*fx2[j]) * abw[b];
+	  diffc20 += -lx2*fx2p[b][g]*cqg_(cz2[b]) * abw[b];
+
+	  //C*gamma: second leg (ignore delta term in Cqq: taken into account with th1stF)
+	  tcga += (fx2p[b][j]*cqqpqq_(cz2[b])+fx2p[b][g]*(cqqpqg_(cz2[b])+cqgpgg_(cz2[b])))*(-lx2)*fx1[i]*bornmesqij * abw[b];
+
+	  //Add Cqg*Pgq contribution
+	  tcga += sumfx2p[b]*cqgpgq_(cz2[b])*(-lx2)*fx1[i]*bornmesqij * abw[b];
+
+	  //Start 2-loop AP
+	  // Gluon + pure singlet
+	  //f == gluon piece
+	  tgamma2 += fx2p[b][g]*p2qg_(cz2[b])*(-lx2)*fx1[i]*bornmesqij * abw[b];
+
+	  //f != gluon piece
+	  tgamma2 += sumfx2p[b]*p2qqs_(cz2[b])*(-lx2)*fx1[i]*bornmesqij * abw[b];
+
+	  //P2qq non-singlet: regular part
+	  tgamma2 += fx2p[b][j]*p2qqv_(cz2[b])*(-lx2)*fx1[i]*bornmesqij * abw[b];
+
+	  //P2qq non-singlet: 1/(1-z)_+
+	  tgamma2 += 2./3.*resconst::Kappa*(-lx2*(fx2p[b][j]-fx2[j]*cz2[b])/(1-cz2[b])-d0intx2*fx2[j])*fx1[i]*bornmesqij * abw[b];
+
+	  //P2qqb non singlet
+	  tgamma2 += fx2p[b][jm]*p2qqbv_(cz2[b])*(-lx2)*fx1[i]*bornmesqij * abw[b];
+	}
+
+      tgaga=tgaga+2*(diffg10*diffg20+diffg1f*diffg2f+diffg10*diffg2f+diffg1f*diffg20)*bornmesqij;
+      tgaga += diff1*fx2[j]*bornmesqij;
+      tgaga += diff2*fx1[i]*bornmesqij;
+
+      tcga += bornmesqij*(diffc10*diffg20+diffc1f*diffg2f+diffc10*diffg2f+diffc1f*diffg20);
+      tcga += bornmesqij*(diffg10*diffc20+diffg1f*diffc2f+diffg10*diffc2f+diffg1f*diffc20);
+
+      //alfa-beta loop
+      for (int a = 0; a < abdim; a++)
+	for (int b = 0; b < abdim; b++)
+	  {
+	    //h2st gg contribution
+	    th2st += fx1p[a][g]*cqg_(cz1[a])*(-lx1)*fx2p[b][g]*cqg_(cz2[b])*(-lx2)*bornmesqij * abw[a]*abw[b];
+
+	    //h2st qqbar contribution from c1*c1 (without delta term) -> regular*regular
+	    th2st += fx1p[a][i]*cqq_(cz1[a])*(-lx1)*fx2p[b][j]*cqq_(cz2[b])*(-lx2)*bornmesqij * abw[a]*abw[b];
+
+	    //h2st qg contribution from c1*c1 -> regular*regular
+	    th2st += fx1p[a][g]*cqg_(cz1[a])*(-lx1)*fx2p[b][j]*cqq_(cz2[b])*(-lx2)*bornmesqij * abw[a]*abw[b];
+	    th2st += fx1p[a][i]*cqq_(cz1[a])*(-lx1)*fx2p[b][g]*cqg_(cz2[b])*(-lx2)*bornmesqij * abw[a]*abw[b];
+	  }
+    }
+
+  double asopi = qcdcouple_.ason2pi_*2.;
+  
+  //LO term
+  xmsq=tdelta;
+
+  //NLO terms
+  if (opts.order >= 1)
+    xmsq += asopi*(th1st+LF*th1stF);
+
+  //NNLO terms
+  if (opts.order >= 2)
+    {
+      xmsq += pow(asopi,2)*(tdelta*resconst::H2qqdelta+th2st);
+
+      //add scale dependence at NNLO
+      xmsq += pow(asopi,2)*(0.5*resconst::beta0*pow(LF,2)*th1stF
+			    +tgamma2*LF
+			    -resconst::beta0*LR*(th1st+LF*th1stF)
+			    +LF*tcga+0.5*pow(LF,2)*tgaga);
+
+
+      //Include missing delta term from C*gamma (no factor 2 here !)
+      xmsq += pow(asopi,2)*(LF*resconst::C1qqdelta*th1stF);
+
+      //Include missing term from contact term in 2 loop AP
+      xmsq += pow(asopi,2)*(2*resconst::Delta2qq*tdelta)*LF;
+    }
+  /****************************/
+  
+  
+  double shad = pow(opts.sroot,2);
 
   //double fbGeV2=0.38937966e12;
   //double fac = M_PI*6./fbGeV2*(2*m2);
