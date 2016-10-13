@@ -2,6 +2,7 @@ AUTOMAKE_OPTIONS = foreign
 AM_CPPFLAGS = -fpermissive \
 	-I$(srcdir)/../include \
 	-I$(srcdir)/../dequad \
+	-I$(srcdir)/../dyres \
 	-I$(srcdir)/../mcfm \
 	-I$(srcdir)/../resum \
 	-I$(srcdir)/../vjfo \
