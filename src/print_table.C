@@ -12,6 +12,7 @@
 
 #include "dyturbo.h"
 #include "settings.h"
+#include "dyres_interface.h"
 #include "interface.h"
 #include "coupling.h"
 #include "histo/HistoHandler.h"
