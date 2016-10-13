@@ -296,6 +296,7 @@ extern "C"
     double cutoff_;
   } cutoff_;
 }  
+#pragma omp threadprivate(scale_,facscale_,qcdcouple_)
 
 namespace mcfm
 {
