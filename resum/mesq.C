@@ -85,6 +85,28 @@ void setmesq_expy_(int& mode, double& m, double& costh, double& y)
 
 void mesq::init()
 {
+  //Number of partonic channels
+  if (opts.nproc == 3)
+    totpch = 10; //only 4 partonic channels are actually needed
+  else
+    totpch = 12;
+
+  if (opts.nproc == 3)
+    {
+      pid1 = p1Z;
+      pid2 = p2Z;
+    }
+  else if (opts.nproc == 1)
+    {
+      pid1 = p1Wp;
+      pid2 = p2Wp;
+    }
+  else if (opts.nproc == 2)
+    {
+      pid1 = p1Wm;
+      pid2 = p2Wm;
+    }
+
   mZ2 = pow(coupling::zmass, 2);
   wZ2 = pow(dymasses_.zwidth_,2);
   mW2 = pow(coupling::wmass, 2);
@@ -258,28 +280,6 @@ void mesq::free()
 template <class T>
 void mesq::setmesq(T one, T costh1, T costh2)
 {
-  //Number of partonic channels
-  if (opts.nproc == 3)
-    totpch = 10; //only 4 partonic channels are actually needed
-  else
-    totpch = 12;
-
-  if (opts.nproc == 3)
-    {
-      pid1 = p1Z;
-      pid2 = p2Z;
-    }
-  else if (opts.nproc == 1)
-    {
-      pid1 = p1Wp;
-      pid2 = p2Wp;
-    }
-  else if (opts.nproc == 2)
-    {
-      pid1 = p1Wm;
-      pid2 = p2Wm;
-    }
-
   //Important! in this matrix elements definition costh is the angle between the antilepton
   //and the parton from the incoming beam 1, that is opposite sign with respect to the MCFM convention (angle between lepton and parton 1).
   //To restore the usual convention, need to flip the sign of costh.
