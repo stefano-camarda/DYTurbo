@@ -12,5 +12,7 @@ namespace parton
   // bb cb sb ub db g d u s c b
   // -5 -4 -3 -2 -1 0 1 2 3 4 5
   enum pdgid {Bb=0, Cb=1, Sb=2, Ub=3, Db=4, G=5, D=6, U=7, S=8, C=9, B=10};
+
+  inline pdgid charge_conj(pdgid i)  {return pdgid(int((i-G))*(-1)+G);}
 }
 #endif
