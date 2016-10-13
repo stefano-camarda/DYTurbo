@@ -177,7 +177,7 @@ bool phasespace::gen_myqt(const double x[3], double& jac, bool qtcut, bool qtswi
 	: phasespace::qtmin;
       double mtmin = sqrt(m2+pow(qtmn,2));
       double tmpx=(m2+pow(opts.sroot,2))/opts.sroot/mtmin;
-      ylim=log((tmpx+sqrt(pow(max(0.,tmpx,2)-4.)))/2.); //introduced max to avoid neqative argument of sqrt
+      ylim=log((tmpx+sqrt(max(0.,pow(tmpx,2)-4.)))/2.); //introduced max to avoid neqative argument of sqrt
     }
   status = gen_y(x[1], jac, ylim);
   if (!status)
