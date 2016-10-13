@@ -1,3 +1,4 @@
+#include "dyres_interface.h"
 #include "interface.h"
 #include "ctintegr.h"
 #include "omegaintegr.h"
