@@ -19,7 +19,7 @@ AM_FFLAGS =  -I$(srcdir)/../dyres \
 	-I$(srcdir)/../mcfm
 
 noinst_LTLIBRARIES = libdyturbobase.la
-libdyturbobase_la_SOURCES = dyturbo.C resintegr.C ctintegr.C finintegr.C \
+libdyturbobase_la_SOURCES = dyturbo.C resintegr.C ctintegr.C finintegr.C bornintegr.C \
 			    omegaintegr.C interface.C settings.C init.C cubacall.C switch.C  \
 			    pdf.C coupling.C clock_real.C banner.C print_table.C #solvew.C
 libdyturbobase_la_SOURCES += flavreduce.f gaussinit.f rescinit.f pdfmoments.f
@@ -62,7 +62,7 @@ dyturbo_merger_SOURCES = merger.C
 dyturbo_merger_LDADD = $(ROOT_LDFLAGS)
 endif
 
-pkginclude_HEADERS = dyturbo.h resintegr.h ctintegr.h finintegr.h omegaintegr.h \
+pkginclude_HEADERS = dyturbo.h resintegr.h ctintegr.h finintegr.h bornintegr.h omegaintegr.h \
 		     interface.h settings.h cubacall.h switch.h options.f flred.f \
 		     gauss.f quadrules.f coupling.h pdf.h clock_real.h \
 		     fcomplex.h banner.h cxxopts.hpp isnan.h #solvew.h

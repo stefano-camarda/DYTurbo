@@ -3,6 +3,7 @@
 #include "resintegr.h"
 #include "ctintegr.h"
 #include "finintegr.h"
+#include "bornintegr.h"
 #include "cubature/cubature.h"
 #include "histo/HistoHandler.h"
 
