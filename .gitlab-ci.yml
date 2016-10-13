@@ -1,10 +1,8 @@
 before_script:
-  - yum install -y tar make
-  - yum install -y gcc gcc-c++ gcc-gfortran
-  - yum install -y python python-devel
+  - yum install -y gcc-gfortran
   - yum install -y boost-devel
-  - yum install -y autoconf automake libtool
-  - yum install -y root root-physics root-multiproc
+  - yum install -y libtool
+  - yum install -y root root-physics
 
 stages:
     - build
@@ -69,7 +67,7 @@ testdevel:
   script:
     - autoreconf -i
 #    - ./configure --enable-root --enable-Ofast --enable-test
-    - ./configure --enable-Ofast --enable-test
+    - ./configure --enable-test --disable-openmp
     - make check
   only:
     - devel
