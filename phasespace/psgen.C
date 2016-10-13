@@ -1,6 +1,7 @@
 #include "phasespace.h"
 #include "settings.h"
 #include "switch.h"
+#include "isnan.h"
 
 #include <iostream>
 #include <math.h>
@@ -137,7 +138,7 @@ bool phasespace::gen_mqty(const double x[3], double& jac, bool qtcut, bool qtswi
   //Generate the boson rapidity between the integration boundaries
   calcmt();
   double tmpx=(m2+pow(opts.sroot,2))/opts.sroot/mt;
-  double ylim=log((tmpx+sqrt(pow(tmpx,2)-4.))/2.); //Limit y boundaries to the kinematic limit in y
+  double ylim=log((tmpx+sqrt(max(0.,pow(tmpx,2)-4.)))/2.); //Limit y boundaries to the kinematic limit in y --> introduced max to avoid neqative argument of sqrt
   status = gen_y(x[2], jac, ylim);
   if (!status)
     return false;
@@ -176,7 +177,7 @@ bool phasespace::gen_myqt(const double x[3], double& jac, bool qtcut, bool qtswi
 	: phasespace::qtmin;
       double mtmin = sqrt(m2+pow(qtmn,2));
       double tmpx=(m2+pow(opts.sroot,2))/opts.sroot/mtmin;
-      ylim=log((tmpx+sqrt(pow(tmpx,2)-4.))/2.);
+      ylim=log((tmpx+sqrt(pow(max(0.,tmpx,2)-4.)))/2.); //introduced max to avoid neqative argument of sqrt
     }
   status = gen_y(x[1], jac, ylim);
   if (!status)
