@@ -1,6 +1,6 @@
 #include "mesq.h"
 #include "settings.h"
-#include "interface.h"
+#include "dyres_interface.h"
 #include "coupling.h"
 #include "omegaintegr.h"
 #include "rapint.h"
@@ -65,6 +65,17 @@ double mesq::propZG;
 
 complex <double> mesq::mesqij[12];
 complex <double>* mesq::mesqij_expy;
+
+//parton mapping for subprocesses
+int mesq::totpch;
+pdgid *mesq::pid1;
+pdgid *mesq::pid2;
+pdgid p1Z[10] = {U,Ub,D,Db,S,Sb,C,Cb,B,Bb};
+pdgid p2Z[10] = {Ub,U,Db,D,Sb,S,Cb,C,Bb,B};
+pdgid p1Wp[12] = {U,Db,U,Sb,U,Bb,C,Sb,C,Db,C,Bb};
+pdgid p2Wp[12] = {Db,U,Sb,U,Bb,U,Sb,C,Db,C,Bb,C};
+pdgid p1Wm[12] = {Ub,D,Ub,S,Ub,B,Cb,S,Cb,D,Cb,B};
+pdgid p2Wm[12] = {D,Ub,S,Ub,B,Ub,S,Cb,D,Cb,B,Cb};
 
 //fortran interface
 void setmesq_expy_(int& mode, double& m, double& costh, double& y)
@@ -156,13 +167,6 @@ void mesq::allocate()
 
 void mesq::setmesq_expy(int mode, double m, double costh, double y)
 {
-  //Number of partonic channels
-  int totpch;
-  if (opts.nproc == 3)
-    totpch = 10; //only 4 partonic channels are actually needed
-  else
-    totpch = 12;
-
   //mass dependent part
   q2 = pow(m,2);
   if (opts.nproc == 3)
@@ -254,6 +258,28 @@ void mesq::free()
 template <class T>
 void mesq::setmesq(T one, T costh1, T costh2)
 {
+  //Number of partonic channels
+  if (opts.nproc == 3)
+    totpch = 10; //only 4 partonic channels are actually needed
+  else
+    totpch = 12;
+
+  if (opts.nproc == 3)
+    {
+      pid1 = p1Z;
+      pid2 = p2Z;
+    }
+  else if (opts.nproc == 1)
+    {
+      pid1 = p1Wp;
+      pid2 = p2Wp;
+    }
+  else if (opts.nproc == 2)
+    {
+      pid1 = p1Wm;
+      pid2 = p2Wm;
+    }
+
   //Important! in this matrix elements definition costh is the angle between the antilepton
   //and the parton from the incoming beam 1, that is opposite sign with respect to the MCFM convention (angle between lepton and parton 1).
   //To restore the usual convention, need to flip the sign of costh.
