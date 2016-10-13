@@ -3,6 +3,7 @@
 #include "phasespace/phasespace.h"
 #include "settings.h"
 #include "interface.h"
+#include "dyres_interface.h"
 #include "switch.h"
 #include "resum/resint.h"
 #include "resum/rapint.h"
