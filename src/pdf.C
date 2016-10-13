@@ -1,4 +1,5 @@
 #include "pdf.h"
+#include "dyres_interface.h"
 #include "interface.h"
 #include "settings.h"
 
