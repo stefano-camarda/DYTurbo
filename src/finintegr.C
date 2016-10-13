@@ -395,7 +395,7 @@ integrand_t lointegrandMC(const int &ndim, const double x[], const int &ncomp, d
 
 int lointegrand2d_cubature_v(unsigned ndim, long unsigned npts, const double x[], void *data, unsigned ncomp, double f[])
 {
-#pragma omp parallel for num_threads(opts.cubacores)
+#pragma omp parallel for num_threads(opts.cubacores) copyin(scale_,facscale_,qcdcouple_)
   for (unsigned i = 0; i < npts; i++)
     {
       // evaluate the integrand for npts points
