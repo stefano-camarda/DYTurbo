@@ -27,21 +27,22 @@ make install
 ## How to setup DEVEL
  1. ask for developer access and checkout the repository
 ```
-git clone https://gitlab.cern.ch/DYdevel/DYTURBO.git
+git clone ssh://git@gitlab.cern.ch:7999/DYdevel/DYTURBO.git
+git co devel
 ```
 
- 2. setup/compile
+ 2. setup/compile and test
 ```
 autoreconf -i
 (optional PATH=<lhapdfdir>:$PATH if you want to use your version of lhapdf previously installed in <lhapdfdir>)
-./configure
-make && make install
+./configure --enable-test --enable-Ofast [--enable-root]
+make && make install && make check
 ```
 
- 3. have fun (by default with CT10NLO)
-```
-./bin/dyturbo
-```
+ 3. branch your repository add your code and dont forget to test ;)
+
+        make check
+
 
 ## Description of project
  - autotools are used for building project
