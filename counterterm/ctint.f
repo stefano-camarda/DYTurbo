@@ -384,7 +384,13 @@ c     use the C++ module mesq.C
 CC  
 
 c The following alfa beta integral depends only on x1 and x2, which depend on y and m
-c---  calculate PDF's  
+c---  calculate PDF's
+c     speed up:
+c     tau =dsqrt(q2/sqrts**2)
+c     exppy = exp(yy)
+c      xx0(1)=tau*exppy
+c      xx0(2)=tau/exppy
+      
       xx0(1)=dsqrt(q2/sqrts**2)*dexp(+yy)
       xx0(2)=dsqrt(q2/sqrts**2)*dexp(-yy)
 c---check if x is out of normal range
@@ -411,7 +417,7 @@ c     Preliminary loop for caching
          z2 = xx20**ctx(ii)
          oz1(ii) = 1d0/(1d0-z1)
          oz2(ii) = 1d0/(1d0-z2)
-         z2 = xx20**ctx(ii)
+         z2 = xx20**ctx(ii) !!duplicated!!
          cz1(ii) = z1
          cz2(ii) = z2
          logz1 = dlog(z1)
