@@ -1,6 +1,5 @@
 #include "resint.h"
 #include "settings.h"
-//#include "interface.h"
 #include "dyres_interface.h"
 #include "resconst.h"
 #include "mesq.h"
