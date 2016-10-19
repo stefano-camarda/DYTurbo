@@ -380,6 +380,10 @@ c     endif
 
 c.....lower limit of integration for x2
       x2min=(q2-ss*tm*expym)/(ss*tm*expyp-s)
+      if (x2min.ge.1d0) then
+         xdelta=0d0
+         return
+      endif
 c      print *,'x2min', q,qt,y,x2min
 c      print *,q2,ss,tm,expym,expyp,s
       if(x2min.gt.1d0.or.x2min.lt.0d0) then
