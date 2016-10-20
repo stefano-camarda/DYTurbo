@@ -344,7 +344,7 @@ integrand_t vjlointegrand(const int &ndim, const double x[], const int &ncomp, d
 
   begin_time = clock();
 
-  f[0] = vjloint::calc(x);
+  vjloint::calc(x, f);
 
   if (isnan_ofast(f[0]))
     f[0] = 0.;  //avoid nans
@@ -364,6 +364,26 @@ integrand_t vjlointegrand(const int &ndim, const double x[], const int &ncomp, d
 int vjlointegrand_cubature(unsigned ndim, const double x[], void *data, unsigned ncomp, double f[])
 {
   vjlointegrand(ndim, x, ncomp, f);
+  tell_to_grid_we_are_alive();
+  return 0;
+}
+
+int vjlointegrand_cubature_v(unsigned ndim, long unsigned npts, const double x[], void *data, unsigned ncomp, double f[])
+{
+#pragma omp parallel for num_threads(opts.cubacores) copyin(scale_,facscale_,qcdcouple_)
+  for (unsigned i = 0; i < npts; i++)
+    {
+      // evaluate the integrand for npts points
+      double xi[ndim];
+      double fi[ncomp];
+      for (unsigned j = 0; j < ndim; j++)
+	xi[j] = x[i*ndim + j];
+
+      vjlointegrand(ndim, xi, ncomp, fi);
+      
+      for (unsigned k = 0; k < ncomp; ++k)
+	f[i*ncomp + k] = fi[k];
+    }
   tell_to_grid_we_are_alive();
   return 0;
 }
