@@ -65,7 +65,7 @@ endif
 pkginclude_HEADERS = dyturbo.h resintegr.h ctintegr.h finintegr.h bornintegr.h omegaintegr.h \
 		     interface.h settings.h cubacall.h switch.h options.f flred.f \
 		     gauss.f quadrules.f coupling.h pdf.h clock_real.h \
-		     fcomplex.h banner.h cxxopts.hpp isnan.h #solvew.h
+		     fcomplex.h banner.h cxxopts.hpp isnan.h handy_typdefs.h #solvew.h
 
 check:
 	./dyturbo ../input/test.in
