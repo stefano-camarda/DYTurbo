@@ -11,6 +11,7 @@ double phasespace::yax[3];
 double phasespace::zax[3];
 
 phasespace::restframeid CurrentRF;
+#pragma omp threadprivate(CurrentRF)
 
 //the m, qt, y, and phi variables are taken from the phasespace:: namelist
 void phasespace::genV4p()
