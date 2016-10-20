@@ -6,6 +6,7 @@ AM_CPPFLAGS = -fpermissive \
 	      -I$(srcdir)/../include \
 	      -I$(srcdir)/../dequad \
 	      -I$(srcdir)/../mcfm \
+	      -I$(srcdir)/../dyres \
 	      -I$(srcdir)/../resum \
 	      -I$(srcdir)/../vjfo \
 	      -I$(srcdir)/../eba \
