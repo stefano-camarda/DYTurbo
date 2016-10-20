@@ -1,7 +1,7 @@
 #ifndef interface_h
 #define interface_h
 
-#include "mcfm/mcfm_interface.h"
+#include "mcfm_interface.h"
 #include "fcomplex.h"
 
 #include <complex>
