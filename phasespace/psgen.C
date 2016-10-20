@@ -310,7 +310,7 @@ void phasespace::gen_phi(const double x, double& jac)
   jac=jac*2.*M_PI;
 }
 
-void phasespace::gen_x2(const double x, double& jac)
+bool phasespace::gen_x2(const double x, double& jac)
 {
   //Calculate Bjorken x1 and x2
   //Phase space is generated for integration performed in dx2
@@ -321,9 +321,9 @@ void phasespace::gen_x2(const double x, double& jac)
     
   if (x2min > 1. || x2min < 0.)
     {
-      cout << "error in x2min " << x2min << " m " << m << " pt " << qt  << " y " << y << endl;
+      //cout << "error in x2min " << x2min << " m " << m << " pt " << qt  << " y " << y << endl;
       jac=0.;
-      return;
+      return false;
     }
   
   x2=exp((1.-pow(x,esp))*lx2min);
@@ -335,7 +335,7 @@ void phasespace::gen_x2(const double x, double& jac)
   if (x1 > 1. || x2 > 1.)
     {
       jac=0.;
-      return;
+      return false;
     }
 
   //Jacobian from the change of variable in delta(p1+p2-p3-p4-p5)
