@@ -46,79 +46,85 @@ void coupling::init()
   ewcharge_.tau_[MAXNF+4] =  1. * opts.Zcc;
   ewcharge_.tau_[MAXNF+5] = -1. * opts.Zbb;
 
-
-  //Gmu scheme, inputs: Gf, MZ, MW
-  Gf = opts.Gf;
-  zmass = opts.zmass;
-  wmass = opts.wmass;
-
-  if (opts.aemmz == 0. && opts.xw == 0.)
+  //electroweak schemes as in MCFM 6.8
+  if (opts.ewscheme == -1)
     {
-      //Gmu scheme: tree level derived sin2thetaW and alphaEM(MZ)
-      xw  = 1.-pow(wmass/zmass,2);
-      aemmz = sqrt(2)*Gf*pow(wmass,2)*xw/M_PI;
-    }
-  else if (opts.aemmz != 0. && opts.xw != 0.) 
-    {
-      //Scheme completely determined by the user
-      aemmz = opts.aemmz;
-      xw = opts.xw;
-    }
-  else if (opts.aemmz != 0.)
-  //If the input aemmz is non zero the scheme
-  //used is the old MCFM default, corresponding to an effective
-  //field theory approach valid for scales below the top-mass
-  //(see Georgi, Nucl. Phys. B 363 (1991) 301).
-    {
-      aemmz = opts.aemmz;
-      xw  = 4*M_PI*aemmz/(8.*pow(wmass,2)*Gf/sqrt(2));
-      dymasses_.mt_  = sqrt(16.*pow(M_PI,2)/3./sqrt(2)/Gf*(pow(wmass,2)/(zmass,2)/(1.-xw)-1.)); //is the top mass actually used at all?
-    }
-  else if (opts.xw != 0.)
-    {
-      //Effective value of the weak mixing angle
-      xw = opts.xw;
-      //!!!!! Check this value, should use  1.-pow(wmass/zmass,2) instead of xw?
-      //      aemmz = sqrt(2)*Gf*pow(wmass,2)*xw/M_PI;
-      aemmz = sqrt(2)*Gf*pow(wmass,2)*(1.-pow(wmass/zmass,2))/M_PI;
-    }
+      // This is the MCFM default, corresponding to an effective
+      // field theory approach valid for scales below the top-mass
+      // (see Georgi, Nucl. Phys. B 363 (1991) 301).
+      // There are 4 inputs here instead of the usual 3 ... --> I guess alpha(mz) is set to an effective value
+      Gf = opts.Gf;
+      wmass = opts.wmass;
+      zmass = opts.zmass;
+      aemmz  = opts.aemmz;
 
-
-  /*  if (ewscheme_.ewscheme_ == -1)
-    {
-      //This is the old MCFM default, corresponding to an effective
-      //field theory approach valid for scales below the top-mass
-      //(see Georgi, Nucl. Phys. B 363 (1991) 301).
-
-      //inputs: Gf, alphaEM(MZ), MW, MZ
-      Gf = ewinput_.Gf_inp_;
-      aemmz = ewinput_.aemmz_inp_;
-      wmass = ewinput_.wmass_inp_;
-      zmass = ewinput_.zmass_inp_;
-        
-      //Derived: sin2thetaW
+      // xw is derived using wmass=zmass*dsqrt(rho)*cos(theta_w)
       xw  = 4*M_PI*aemmz/(8.*pow(wmass,2)*Gf/sqrt(2));
 
       //is the top mass actually used at all?
-      dymasses_.mt_  = sqrt(16.*pow(M_PI,2)/3./sqrt(2)/Gf*(pow(wmass,2)/(zmass,2)/(1.-xw)-1.));
+      //dymasses_.mt_  = sqrt(16.*pow(M_PI,2)/3./sqrt(2)/Gf*(pow(wmass,2)/(zmass,2)/(1.-xw)-1.));
     }
-  else if (ewscheme_.ewscheme_ = 1)
+  else if (opts.ewscheme == 0)
     {
-      //Gmu scheme, inputs: MZ, MW, Gf
-      zmass  = ewinput_.zmass_inp_;
-      wmass  = ewinput_.wmass_inp_;
-      Gf = ewinput_.Gf_inp_;
-	   
-      //Derived: sin2thetaW, alphaEM(MZ)
+      //------------------------------------------------------------
+      //     option=0 : MadEvent default (= AlpGen with iewopt=2)
+      //------------------------------------------------------------
+
+      //input values: sin2thetaW, alphaEM(mZ), mZ
+      xw  = opts.xw;
+      aemmz  = opts.aemmz;
+      zmass  = opts.zmass;
+      
+      //derived: mW, Gf
+      wmass  = zmass * sqrt(1. - xw);
+      Gf = aemmz * 4*M_PI/xw/(8.*pow(wmass,2)/sqrt(2));
+    }
+  else if (opts.ewscheme == 1)
+    {
+      //-----------------------------------------------------
+      //     option=1 : LUSIFER and AlpGen (iewopt=3) default
+      //-----------------------------------------------------
+	
+      //Gmu scheme, input values: mZ, mW, Gf
+      Gf = opts.Gf;
+      wmass  = opts.wmass;
+      zmass  = opts.zmass;
+      
+      //derived: sin2thetaW, alphaEM(MZ)
       xw  = 1.-pow(wmass/zmass,2);
-      aemmz = sqrt(2)*Gf*pow(wmass,2)*xw/M_PI;
+      aemmz  = sqrt(2)*Gf*pow(wmass,2)*xw/M_PI;
+    }
+  else if (opts.ewscheme = 2)
+    {
+      //-------------------------------------------------------------------
+      //     option=2 : W and Z mass are derived from couplings
+      //-------------------------------------------------------------------
+
+      //input values: Gf, alphaEM(mZ), sin2thetaW
+      Gf = opts.Gf;
+      aemmz  = opts.aemmz;
+      xw  = opts.xw;
+      
+      //derived: mW, mZ
+      wmass  = sqrt(aemmz*M_PI/xw/Gf/sqrt(2));
+      zmass  = wmass/sqrt(1.-xw);
+    }
+  else if (opts.ewscheme = 3)
+    {
+      //-----------------------------------------------------------------
+      //     option=3 : USER choice : you should know what you're doing!!
+      //-----------------------------------------------------------------
+      Gf = opts.Gf;
+      aemmz  = opts.aemmz;
+      xw  = opts.xw;
+      wmass  = opts.wmass;
+      zmass  = opts.zmass;
     }
   else
-    { 
-      cout << "ewscheme = " << ewscheme_.ewscheme_ << " is not implemented." << endl;
-      exit(0);
+    {
+      cout << "opts.ewscheme = " << opts.ewscheme << " is not a valid input." << endl;
+      exit (-1);
     }
-  */
 
   ewcouple_.Gf_ = Gf;
   ewcouple_.xw_ = xw;
@@ -133,6 +139,8 @@ void coupling::init()
 
   //photon coupling (used also for Z)
   ewcouple_.esq_= ewcouple_.gwsq_* xw; //= 4 * M_PI * aemmz;
+
+  //The Z coupling are evaluated as esq/(sin2w)^2 => Gf * mw^2 / cw^2 = Gf * mz^2
 
   //calculate the couplings as given in Kunszt and Gunion
   //Modified to notation of DKS (ie divided by 2*sw*cw)
@@ -193,7 +201,7 @@ void coupling::SMparameters()
   //                    input values = G_F,m_Z,m_W
   //                    output values = sin^2(theta_W),alpha(m_Z).
 
-  ewscheme_.ewscheme_=1;
+  //  ewscheme_.ewscheme_=1;
 
   //  ewinput_.Gf_inp_= 1.1663787e-5;
   //  ewinput_.wmass_inp_= 80.385;
