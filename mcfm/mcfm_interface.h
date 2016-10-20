@@ -90,6 +90,7 @@ extern "C"
   } dymasses_;
 
   // ewinput
+  /*
   extern struct {
     double Gf_inp_;
     double aemmz_inp_;
@@ -97,11 +98,7 @@ extern "C"
     double wmass_inp_;
     double zmass_inp_;
   } ewinput_;
-
-  //EW scheme
-  extern struct {
-    int ewscheme_;
-  } ewscheme_;
+  */
 
   // ewcouple
   extern struct {
