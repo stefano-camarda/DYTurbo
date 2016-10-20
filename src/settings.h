@@ -97,6 +97,7 @@ public:
   double blim;
   
   //EW parameters
+  int ewscheme;
   double Gf, zmass, wmass;
   double xw, aemmz;
   double zwidth, wwidth;
@@ -235,6 +236,9 @@ public:
 
   // Force to loop over all bins even you have all Vegas integrands
   bool force_binner_mode = false;
+
+  // Calculate helicity cross sections
+  int helicity;
 };
 
 class binning

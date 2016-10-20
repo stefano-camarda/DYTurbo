@@ -6,7 +6,7 @@
 #include "settings.h"
 #include "dyres_interface.h"
 #include "interface.h"
-#include "phasespace/phasespace.h"
+#include "phasespace.h"
 
 // CXX option parser: https://raw.githubusercontent.com/jarro2783/cxxopts/master/src/cxxopts.hpp
 #include "cxxopts.hpp"
@@ -252,6 +252,7 @@ void settings::readfromfile(const string fname){
     blim           = in.GetNumber ( "blim"           );
     LHAPDFset      = in.GetString ( "LHAPDFset"      ); //CT10nlo.LHgrid
     LHAPDFmember   = in.GetNumber ( "LHAPDFmember"   ); //0              # set,        member   (LHAPDFs)
+    ewscheme       = in.GetNumber ( "ewscheme"        );
     Gf             = in.GetNumber ( "Gf"        );
     zmass          = in.GetNumber ( "zmass"        );
     wmass          = in.GetNumber ( "wmass"        );
@@ -340,6 +341,7 @@ void settings::readfromfile(const string fname){
     ptbinwidth         = in.GetBool ( "ptbinwidth" );
     ybinwidth          = in.GetBool ( "ybinwidth" );
     force_binner_mode  = in.GetBool ( "force_binner_mode" );
+    helicity           = in.GetNumber ( "helicity" );
 
     return ;
 }
@@ -456,6 +458,12 @@ void settings::check_consitency(){
 	vjintvegas7d = true;
       }
 
+    if (makecuts && helicity >= 0)
+      {
+	cout << "Required cuts on the final state leptons, cannot calculate helicity cross sections, enforce helicity = -1" << endl;
+	helicity = -1;
+      }
+    
     if (opts_.approxpdf_ == 1)
       {
 	cout << "DYRES-style approximate PDF requested, enforce vegas integration for the resummed cross section" << endl;
@@ -522,6 +530,7 @@ void settings::dumpAll(){
         dumpS("LHAPDFset          ", LHAPDFset           );
         dumpI("LHAPDFmember       ", LHAPDFmember        );
         dumpI("rseed              ", rseed               );
+	dumpI("ewscheme           ", ewscheme );
 	dumpD("Gf"                 , Gf);
 	dumpD("zmass"              , zmass);
 	dumpD("wmass"              , wmass   );
@@ -622,6 +631,7 @@ void settings::dumpAll(){
         dumpB("ptbinwidth        ", ptbinwidth          );
         dumpB("ybinwidth         ", ybinwidth           );
         dumpB("force_binner_mode ", force_binner_mode   );
+        dumpI("helicity ",          helicity   );
     }
 
     if (print_masses){
@@ -645,12 +655,13 @@ void settings::dumpAll(){
         dumpD ( "mtausq    " , dymasses_   . mtausq_    );
         dumpD ( "mcsq      " , dymasses_   . mcsq_      );
         dumpD ( "mbsq      " , dymasses_   . mbsq_      );
+	/*
         dumpD ( "Gf_inp    " , ewinput_  . Gf_inp_    );
         dumpD ( "aemmz_inp " , ewinput_  . aemmz_inp_ );
         dumpD ( "xw_inp    " , ewinput_  . xw_inp_    );
         dumpD ( "wmass_inp " , ewinput_  . wmass_inp_ );
         dumpD ( "zmass_inp " , ewinput_  . zmass_inp_ );
-        dumpI ( "ewscheme  " , ewscheme_ . ewscheme_  );
+	*/
         dumpD ( "Vud       " , cabib_    . Vud_       );
         dumpD ( "Vus       " , cabib_    . Vus_       );
         dumpD ( "Vub       " , cabib_    . Vub_       );
