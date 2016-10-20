@@ -285,7 +285,7 @@ void vjlointegr7d(vector <double> &res, double &err)
 void vjlointegr5d(vector <double> &res, double &err)
 {
   const int ndim = 5;     //dimensions of the integral
-  const int ncomp = 1;    //components of the integrand
+  const int ncomp = (opts.helicity >= 0 ? 2 : 1);    //components of the integrand
   void *userdata;
   const int nvec = 1;
   const double epsrel = 0.;
@@ -317,19 +317,42 @@ void vjlointegr5d(vector <double> &res, double &err)
       const double epsrel = opts.pcubaccuracy;
       const double epsabs = 0.;
       double tiny = 0.;//1e-6;
+      /*
       double xmin[5] = {0., 0., tiny,    0., 0.};
       double xmax[5] = {1., 1., 1.-tiny, 1., 1.};
       //if (opts.cubacores == 0)
-      //pcubature(ncomp, vjlointegrand_cubature, userdata, //--> pcubature has an issue when phi is symmetric, it is resonant for nested quadrature rules, and pcubature misses the substructure of the phy distribution
+      //pcubature(ncomp, vjlointegrand_cubature, userdata, //--> pcubature has an issue when phi is symmetric, it is resonant for nested quadrature rules, and pcubature misses the substructure of the phi distribution
       hcubature(ncomp, vjlointegrand_cubature, userdata, 
 		ndim, xmin, xmax, 
 		eval, epsabs, epsrel, ERROR_INDIVIDUAL, integral, error);
+      */
+
+      //4d integration (phi_lep integrated inside) works better in full phase space, and to calculate moments
+      double xmin[4] = {0., 0., tiny,    0.};
+      double xmax[4] = {1., 1., 1.-tiny, 1.};
+      if (opts.cubacores == 0)
+	//pcubature(ncomp, vjlointegrand_cubature, userdata, //--> pcubature has an issue when phi is symmetric, it is resonant for nested quadrature rules, and pcubature misses the substructure of the phi distribution
+	hcubature(ncomp, vjlointegrand_cubature, userdata, 
+		  4, xmin, xmax, 
+		  eval, epsabs, epsrel, ERROR_LINF, integral, error);
+      else
+	//pcubature_v(ncomp, vjlointegrand_cubature_v, userdata, 
+	hcubature_v(ncomp, vjlointegrand_cubature_v, userdata, 
+		  4, xmin, xmax, 
+		  eval, epsabs, epsrel, ERROR_LINF, integral, error);
     }
   res.clear();
-  res.push_back(integral[0]);
+  if (opts.helicity >= 0)
+    res.push_back(integral[0] != 0? integral[1]/integral[0] : 0);
+  else
+    res.push_back(integral[0]);
   for (int i = 1; i < opts.totpdf; i++)
     res.push_back(0);
-  err = error[0];
+  
+  if (opts.helicity >= 0)
+    err = integral[0] != 0? error[0]/integral[0]*integral[1]/integral[0] : 0; // error[1]/integral[1]*integral[1]/integral[0]
+  else
+    err = error[0];
   return;
 }
 
@@ -495,7 +518,7 @@ void bornintegrMC4d(vector <double> &res, double &err)
 void bornintegr2d(vector <double> &res, double &err)
 {
   const int ndim = 2;     //dimensions of the integral
-  const int ncomp = 1;  //components of the integrand
+  const int ncomp = (opts.helicity >= 0 ? 2 : 1);    //components of the integrand
   void *userdata = NULL;
   const int nvec = 1;
   const double epsrel = 0.;
@@ -539,10 +562,28 @@ void bornintegr2d(vector <double> &res, double &err)
 		    eval, epsabs, epsrel, ERROR_INDIVIDUAL, integral, error);
     }
   res.clear();
+
+  /*
   res.push_back(integral[0]);
   for (int i = 1; i < opts.totpdf; i++)
     res.push_back(0);
   err = error[0];
+  */
+
+  if (opts.helicity >= 0)
+    res.push_back(integral[0] != 0? integral[1]/integral[0] : 0);
+  else
+    res.push_back(integral[0]);
+  for (int i = 1; i < opts.totpdf; i++)
+    res.push_back(0);
+  
+  if (opts.helicity >= 0)
+    err = integral[0] != 0? error[0]/integral[0]*integral[1]/integral[0] : 0; // error[1]/integral[1]*integral[1]/integral[0]
+  else
+    err = error[0];
+  return;
+
+  
   return;
 }
 
