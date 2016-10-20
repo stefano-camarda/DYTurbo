@@ -10,7 +10,7 @@ C     Scale dependence included up to NNLO
       include 'options.f'
       include 'constants.f'
       include 'noglue.f'
-      include 'vegas_common.f'
+      include 'mxdim.f'
       include 'ptilde.f'
       include 'npart.f'
       include 'scale.f'
@@ -723,8 +723,8 @@ C     Fill only if it's last iteration
       enddo                     ! end PDF loop
       countint=f(1)
      
-      xreal=xreal+xint*wgt/dfloat(itmx)
-      xreal2=xreal2+(xint*wgt)**2/dfloat(itmx)
+c      xreal=xreal+xint*wgt/dfloat(itmx)
+c      xreal2=xreal2+(xint*wgt)**2/dfloat(itmx)
       
       return
 
