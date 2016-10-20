@@ -12,6 +12,7 @@ c---  26/08/2016 Fixed numerical instabilities for rt(j) close to 0 or negative
       double complex za(12,12),zb(12,12)
       double precision s(12,12)
       common/sprods/s
+!$OMP THREADPRIVATE(/sprods/)
       double precision p(12,4),rt(12)
       double complex c23(12),f(12)
       integer i,j,N
