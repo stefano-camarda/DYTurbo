@@ -28,8 +28,11 @@ void vjloint::init()
   mur = opts.rmass*opts.kmures;
 }
 
-double vjloint::calc(const double x[5])
+void vjloint::calc(const double x[5], double f[2])
 {
+  f[0] = 0.;
+  f[1] = 0.;
+
   //generate phase space as m, qt, y, costh, phi_lep, x2
   //Jacobian of the change of variables from the unitary hypercube x[6] to the m, qt, y, costh, phi_lep, x2 boundaries
   double jac = 1.;
@@ -51,7 +54,7 @@ double vjloint::calc(const double x[5])
   phasespace::calcmt(); //calculate mt, since it is used in genV4p() and genx2()
   
   if (!status)
-    return 0.;
+    return;
   
   jac = jac *2.*phasespace::qt;
 
@@ -70,12 +73,16 @@ double vjloint::calc(const double x[5])
 
   //move dx2 integration here
   //Calculate Bjorken x1 and x2 (integration is performed in dx2)
-  phasespace::gen_x2(x[3], jac);
+  status = phasespace::gen_x2(x[3], jac);
+  if (!status)
+    return;
+  /*
   if (jac == 0.)
     {
       //cout << "x2 with jac = 0 " << phasespace::x2 << endl;
-      return 0.;
+      return;
     }
+  */
 
   //Generate incoming partons
   phasespace::genp12();
@@ -90,11 +97,12 @@ double vjloint::calc(const double x[5])
   if (-s15 < scutoff || -s25 < scutoff)
     {
       //      cout << "failed s cut off " << s15 << "  " << s25 << endl;
-      return 0.;
+      return;
     }
 
 
   /*
+  //6d integration
   /////////////////////
   //perform dOmega integration (start loop on phi_lep, costh)
   double r2[2] = {x[3], x[4]};
@@ -112,18 +120,24 @@ double vjloint::calc(const double x[5])
   /////////////////////
   */
 
+  /*
+  //5d integration
   /////////////////////
+  omegaintegr::genV4p(); //--> this function calls genRFaxes for qt-prescription
+  phasespace::genRFaxes(phasespace::CS);  //-->overwrite RF axes
+  //phasespace::genRFaxes(phasespace::naive);
+  
+  //generate phi phase space
   phasespace::gen_phi(x[4], jac);
+
   //start costh integration
   double msq_cth[11][11];
   for (int j = 0; j < 2*MAXNF+1; j++)
     for (int k = 0; k < 2*MAXNF+1; k++)
       msq_cth[j][k] = 0.;
-  omegaintegr::genV4p();
   vector <double> cthmin;
   vector <double> cthmax;
   phasespace::setcthbounds(phasespace::getcthmin(), phasespace::getcthmax());
-  phasespace::genRFaxes(phasespace::CS);
   omegaintegr::costhbound(phasespace::phi_lep, cthmin, cthmax); //!be carefull, this way costh is integrated according to a given boson rest frame (CS or others)
   vector<double>::iterator itmn;
   vector<double>::iterator itmx;
@@ -134,7 +148,7 @@ double vjloint::calc(const double x[5])
       double cthc=0.5*(*itmn+*itmx);
       double cthm=0.5*(*itmx-*itmn);
       
-      int cthrule = 2;
+      int cthrule = 4;
       for(int i=0; i < cthrule; i++)
 	{
 	  double xcth = cthc+cthm*gr::xxx[cthrule-1][i];
@@ -153,11 +167,37 @@ double vjloint::calc(const double x[5])
 	    qqb_z_g_(p,msq);
 	  else
 	    qqb_w_g_(p,msq);
-	  
+
+	  double cth = xcth*(phasespace::y >= 0. ? 1 : -1);
+	  double sth = sqrt(max(0.,1.-cth*cth));
+	  double s2th = 2*xcth*sth;
+	  double phi = phasespace::phi_lep*(phasespace::y > 0. ? 1 : -1);
+	  double cphi = cos(phi);
+	  double c2phi = 2*cphi*cphi-1.;
+	  double sphi = sqrt(max(0.,1.-cphi*cphi))*(phi>0?1:-1);
+	  double s2phi = 2*cphi*sphi;
+
+	  //Angular polynomials
+	  //NEWKIN( A5 ){ SinThCS  sinth;  Sin2PhiCS sin2ph; double calc(){ return 5.     * (sinth()*sinth()*sin2ph() ) ;       } };
+	  //NEWKIN( A6 ){ Sin2ThCS sin2th; SinPhiCS  sinph;  double calc(){ return 4.     * (sin2th()*sinph()         ) ;       } };
+	  //NEWKIN( A7 ){ SinThCS  sinth;  SinPhiCS  sinph;  double calc(){ return 4.     * (sinth()*sinph()          ) ;       } };
+
+	  double pol = 1.;
+	  if (opts.helicity == 0)
+	    pol = 20./3.*(0.5-1.5*cth*cth) +2./3.;
+	  else if (opts.helicity == 1)
+	    pol = 5.*(s2th*cphi);
+	  else if (opts.helicity == 2)
+	    pol = 10.*(sth*sth*c2phi);
+	  else if (opts.helicity == 3)
+	    pol = 4.*(sth*cphi);
+	  else if (opts.helicity == 4)
+	    pol = 4.*cth;
+	  //cout << cth << "  " << phi << endl;
 	  for (int j = 0; j < 2*MAXNF+1; j++)
 	    for (int k = 0; k < 2*MAXNF+1; k++)
 	      if (msq[k][j] != 0.)
-		msq_cth[k][j] += msq[k][j] *gr::www[cthrule-1][i]*cthm;
+		msq_cth[k][j] += msq[k][j] *gr::www[cthrule-1][i]*cthm * pol;
 	  
 	} //end dcosth loop
     } //end loop on costh boundaries
@@ -166,15 +206,147 @@ double vjloint::calc(const double x[5])
     for (int k = 0; k < 2*MAXNF+1; k++)
       msq[j][k] = msq_cth[j][k];
   /////////////////////
+  */
+
+  //4d integration
+  //dOmega integration
+  omegaintegr::genV4p(); //--> this function calls genRFaxes for qt-prescription
+  phasespace::genRFaxes(phasespace::CS);  //--> overwrite RF axes: RF here determines the frame for the coefficients if opts.helicity != -1, and/or the RF for the costh boundaries
+  //phasespace::genRFaxes(phasespace::naive);
+
+  double msq_omega[11][11];
+  double msq_omega_m[11][11];
+  for (int j = 0; j < 2*MAXNF+1; j++)
+    for (int k = 0; k < 2*MAXNF+1; k++)
+      {
+	msq_omega[j][k] = 0.;
+	msq_omega_m[j][k] = 0.;
+      }
   
+  //start phi integration
+  int phiintervals, phirule;
+  if (opts.makecuts)
+    {
+      phiintervals = opts.phiintervals;
+      phirule = opts.phirule;
+    }
+  else
+    {
+      phiintervals = 1;
+      phirule = 10;
+    }
+  double phi1 = 0.;
+  double phi2 = 2. * M_PI;
+  double hphi=(phi2-phi1)/phiintervals;
+  for(int i=0; i < phiintervals; i++)
+    {
+      double phimin = i*hphi+phi1;
+      double phimax = (i+1)*hphi+phi1;
+      double phic=0.5*(phimin+phimax);
+      double phim=0.5*(phimax-phimin);
+      for(int iphi = 0; iphi < phirule; iphi++)
+	{
+	  double xphi = phic+phim*gr::xxx[phirule-1][iphi];
+	  phasespace::set_philep(xphi);
+
+	  double phi, cphi, c2phi, sphi, s2phi;
+	  if (opts.helicity >= 0)
+	    {
+	      phi = phasespace::phi_lep*(phasespace::y > 0. ? 1 : -1);
+	      cphi = cos(phi);
+	      c2phi = 2*cphi*cphi-1.;
+	      sphi = sqrt(max(0.,1.-cphi*cphi))*(phi>0?1:-1);
+	      s2phi = 2*cphi*sphi;
+	    }
+      
+	  //start costh integration
+	  vector <double> cthmin;
+	  vector <double> cthmax;
+	  phasespace::setcthbounds(phasespace::getcthmin(), phasespace::getcthmax());
+	  omegaintegr::costhbound(phasespace::phi_lep, cthmin, cthmax); //!be carefull, this way costh is integrated according to a given boson rest frame (CS or others)
+	  vector<double>::iterator itmn;
+	  vector<double>::iterator itmx;
+	  itmn = cthmin.begin(); itmx = cthmax.begin();
+	  for (; itmn != cthmin.end(); itmn++, itmx++)
+	    {
+	      //cout << *itmn << "  " << *itmx << "  " << cthmin.size() << endl;
+	      double cthc=0.5*(*itmn+*itmx);
+	      double cthm=0.5*(*itmx-*itmn);
+      
+	      int cthrule = 3;
+	      for(int i=0; i < cthrule; i++)
+		{
+		  double xcth = cthc+cthm*gr::xxx[cthrule-1][i];
+	  
+		  //Generate leptons 4-momenta: p3 is the lepton and p4 is the antilepton
+		  phasespace::set_cth(xcth);
+		  //phasespace::genRFaxes(CS);
+		  phasespace::genl4p();
+
+		  //calculate V+j matrix elements
+		  double p[4][12];
+		  fillp(p);
+
+		  double msq[11][11];
+		  if(opts.nproc == 3)
+		    qqb_z_g_(p,msq);
+		  else
+		    qqb_w_g_(p,msq);
+
+		  double cth, sth, s2th;
+		  if (opts.helicity >= 0)
+		    {
+		      cth = xcth*(phasespace::y >= 0. ? 1 : -1);
+		      sth = sqrt(max(0.,1.-cth*cth));
+		      s2th = 2*cth*sth;
+		    }
+
+		  double poly = 1.;
+		  if (opts.helicity == 0)
+		    poly = 20./3.*(0.5-1.5*cth*cth) +2./3.;
+		  else if (opts.helicity == 1)
+		    poly = 5.*(s2th*cphi);
+		  else if (opts.helicity == 2)
+		    poly = 10.*(sth*sth*c2phi);
+		  else if (opts.helicity == 3)
+		    poly = 4.*(sth*cphi);
+		  else if (opts.helicity == 4)
+		    poly = 4.*cth;
+		  else if (opts.helicity > 4)
+		    poly = 0.;
+		  //Angular polynomials
+		  //NEWKIN( A5 ){ SinThCS  sinth;  Sin2PhiCS sin2ph; double calc(){ return 5.     * (sinth()*sinth()*sin2ph() ) ;       } };
+		  //NEWKIN( A6 ){ Sin2ThCS sin2th; SinPhiCS  sinph;  double calc(){ return 4.     * (sin2th()*sinph()         ) ;       } };
+		  //NEWKIN( A7 ){ SinThCS  sinth;  SinPhiCS  sinph;  double calc(){ return 4.     * (sinth()*sinph()          ) ;       } };
+
+		  for (int j = 0; j < 2*MAXNF+1; j++)
+		    for (int k = 0; k < 2*MAXNF+1; k++)
+		      if (msq[k][j] != 0.)
+			{
+			  msq_omega[k][j] += msq[k][j] *gr::www[cthrule-1][i]*cthm *gr::www[phirule-1][iphi]*phim;
+			  //msq_omega[k][j] += gr::www[cthrule-1][i]*cthm *gr::www[phirule-1][iphi]*phim;
+			  if (opts.helicity >= 0)
+			    msq_omega_m[k][j] += msq[k][j] *gr::www[cthrule-1][i]*cthm *gr::www[phirule-1][iphi]*phim * poly;
+			}
+	  
+		} //end dcosth loop
+	    } //end loop on costh boundaries
+	}
+    }//end philep integration
+  //double msq[11][11];
+  //for (int j = 0; j < 2*MAXNF+1; j++)
+  //for (int k = 0; k < 2*MAXNF+1; k++)
+  //msq[j][k] = msq_omega[j][k];
+
+  /////////////////////
 
   // Load central PDF and QCD coupling
   //if (pdferr) then
-  int npdf = 0;
-  dysetpdf_(npdf);
+  //int npdf = 0;
+  //dysetpdf_(npdf);
   //double gsqcentral=gsq;
   //     skip PDF loop in the preconditioning phase
-  int maxpdf=0;
+  //int maxpdf=0;
   //if (doFill.ne.0) maxpdf = totpdf-1
       
   //     start PDF loop
@@ -190,10 +362,14 @@ double vjloint::calc(const double x[5])
   fdist_(opts.ih1,phasespace::x1,muf,fx1);
   fdist_(opts.ih2,phasespace::x2,muf,fx2);
 
-  double xmsq = convolute(fx1, fx2, msq);
+  double xmsq = convolute(fx1, fx2, msq_omega);
+  double xmsq_m;
+  if (opts.helicity >= 0)
+    xmsq_m = convolute(fx1, fx2, msq_omega_m);
 
   double shad = pow(opts.sroot,2);
-  xmsq=xmsq*gevfb/(2.*phasespace::x1*phasespace::x2*shad);
+  xmsq *= gevfb/(2.*phasespace::x1*phasespace::x2*shad);
+  xmsq_m *= gevfb/(2.*phasespace::x1*phasespace::x2*shad);
   //double fbGeV2 = 0.389379e12;
   //xmsq=xmsq*fbGeV2/(2.*phasespace::x1*phasespace::x2*shad);
   
@@ -212,10 +388,12 @@ double vjloint::calc(const double x[5])
   if (isnan_ofast(xmsq))
     {
       //      cout << "xmsq in vjloint is nan" << endl;
-      return 0.;
+      return;
     }
-  
-  return xmsq*jac;
+
+  f[0] = xmsq*jac;
+  f[1] = xmsq_m*jac;
+  return;
 }
 
 double vjloint::calcvegas(const double x[7])
@@ -298,11 +476,11 @@ double vjloint::calcvegas(const double x[7])
 
   // Load central PDF and QCD coupling
   //if (pdferr) then
-  int npdf = 0;
-  dysetpdf_(npdf);
+  //int npdf = 0;
+  //dysetpdf_(npdf);
   //double gsqcentral=gsq;
   //     skip PDF loop in the preconditioning phase
-  int maxpdf=0;
+  //int maxpdf=0;
   //if (doFill.ne.0) maxpdf = totpdf-1
       
   //     start PDF loop
