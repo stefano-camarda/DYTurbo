@@ -24,6 +24,7 @@ C1 = 1.
 C3 = 1.
 
 # EW parameters (Gmu scheme)
+ewscheme = 1
 Gf = 1.1663787e-5        # G-Fermi
 zmass = 91.1876          # Mass of the Z boson
 wmass = 80.385           # Mass of the W boson
@@ -31,11 +32,8 @@ zwidth = 2.4950          # Width of the Z boson
 wwidth = 2.091           # Width of the W boson
 zerowidth = false        # zero-width approximation (not really implemented)
 
-# To use an effective weak-mixing angle, set xw to a non-zero value, otherwise it is calculated according to the Gmu scheme
-xw = 0.   # effective weak-mixing angle
-
-# To use an effective value of alpha_EM(MZ), set aemmz to a non-zero value, otherwise it is calculated according to the Gmu scheme
-aemmz = 0.  #effective value of alpha_EM(MZ)
+xw = 0.23153                 # weak-mixing angle (not used in the Gmu scheme)
+aemmz = 7.7585538055706d-03  # alpha_EM(MZ) (not used in the Gmu scheme)
 
 # CKM matrix
 Vud = 0.97427
@@ -168,7 +166,7 @@ qtrec_kt0   = false
 # debug settings
 timeprofile = false  # debug and time profile resummation integration
 verbose     = false  # debug and time profile costh phi_lep integration
-texttable = false # dump result table to text file (including pdf variations)
+texttable   = true # dump result table to text file (including pdf variations)
 
 # binning
 
@@ -178,6 +176,9 @@ ybinwidth = false
 
 # Force to loop over all bins even you have all Vegas integrands
 force_binner_mode = false
+
+# Compute total (-1) or helicity cross sections (0-7)
+helicity = -1
 
 # pt, y, m bins
 qt_bins = [ 0 2 4 6 8 10 12 14 16 18 22 26 30 34 38 42 46 50 54 60 70 80 100 150 200 300 800 ]
