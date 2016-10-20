@@ -24,6 +24,7 @@
 #include "src/resintegr.h"
 #include "src/ctintegr.h"
 #include "src/finintegr.h"
+#include "src/bornintegr.h"
 #include "mcfm/mcfm_interface.h"
 
 #include "histo/HistoHandler.h"
