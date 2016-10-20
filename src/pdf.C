@@ -27,7 +27,8 @@ void pdfini_()
   cfg.set_entry("MTop"                  , 172.9          );
   cfg.set_entry("Pythia6LambdaV5Compat" , true           );
 
-  LHAPDF::initPDFSetByName(opts.LHAPDFset);
+  LHAPDF::initPDFSet(opts.LHAPDFset);
+  //LHAPDF::initPDFSetByName(opts.LHAPDFset);
   LHAPDF::initPDF(opts.LHAPDFmember);
   // initialization of alphas
   couple_.amz_=LHAPDF::alphasPDF(dymasses_.zmass_) ;
