@@ -96,7 +96,7 @@ c     cached for invres and cachecoeff
       double precision cqt,cq2,cy
       common/kinematic/cqt,cq2,cy
 C     
-      include 'ewinput.f' 
+c      include 'ewinput.f' 
       include 'masses.f' 
       include 'const.h' 
 c     include 'constants.f' 
