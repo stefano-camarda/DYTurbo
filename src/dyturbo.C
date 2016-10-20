@@ -227,8 +227,8 @@ namespace DYTurbo {
         if (vj_finite || TestAllTerms){
             AddTermIfActive   ( opts.vjint3d                         , vjintegr3d   , name , isNotVegas )  << Col3 ( "cuhre (dm, dpt, dy)" , "iter ="   , opts.niterVJ );
             AddTermIfActive   ( opts.vjint5d && opts.order == 1      , vjlointegr5d , name , isNotVegas )  << Col3 ( "cuhre 5D???"         , "iter ="   , opts.niterVJ );
-            AddTermIfActive   ( opts.vjintvegas7d && opts.order == 1 , vjlointegr7d , name , isVegas    )  << Col3 ( "vegas 7D"            , "ncalls =" , opts.vegasncallsVJLO );
-            //AddTermIfActive ( opts.vjintvegas7d && opts.order == 1 , vjlointegr   , name , isVegas    )  << Col3 ( "vegas 7D"            , "ncalls =" , opts.vegasncallsVJLO );
+            AddTermIfActive   ( opts.vjintvegas7d && opts.order == 1 , vjlointegr7d , name , isVegas    )  << Col3 ( "vegas 7D"            , "ncalls =" , opts.vegasncallsVJLO ); //phase space improved MCFM integration
+            //AddTermIfActive ( opts.vjintvegas7d && opts.order == 1 , vjlointegr   , name , isVegas    )  << Col3 ( "vegas 7D"            , "ncalls =" , opts.vegasncallsVJLO ); //original MCFM integration
         }
         // VJ NLO
         AddTermIfActive ( opts.doVJREAL  , vjrealintegr , "V+J Real"    , isVegas) << Col3 ( "vegas" , "ncalls =" , opts.vegasncallsVJREAL );
