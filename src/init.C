@@ -21,7 +21,7 @@
 #include "resum/resconst.h"
 #include "vjfo/vjint.h"
 #include "vjfo/vjloint.h"
-#include "eba/loint.h"
+#include "src/abint.h"
 
 #include <cuba.h>
 #include <math.h>
@@ -72,7 +72,7 @@ void DYTurbo::init_params(){
     vjint::init();
     vjloint::init();
     //
-    loint::init(); //Born term initialisation
+    abint::init(); //alfa beta integration initialisation
     switching::init(); //switching function initialisation
     rescinit_();
     // cuba init
