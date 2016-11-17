@@ -228,6 +228,9 @@ public:
   //resummed code in C++
   bool resumcpp;
 
+  //counter term code in C++
+  bool ctcpp;
+  
   //dyres or pegasus PDF evolution
   int evolmode;
 

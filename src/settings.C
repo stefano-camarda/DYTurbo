@@ -326,6 +326,7 @@ void settings::readfromfile(const string fname){
     verbose            = in.GetBool   ( "verbose"         ); //false   # debug       and      time       profile costh       phi_lep         integration
     texttable          = in.GetBool   ( "texttable"       ); //
     resumcpp           = in.GetBool   ( "resumcpp"        );
+    ctcpp              = in.GetBool   ( "ctcpp"        );
     useGamma           = in.GetBool ( "useGamma" );//
     PDFerrors           = in.GetBool ( "PDFerrors" );//
     opts_.approxpdf_    = in.GetNumber ( "opts_approxpdf" ); //0
@@ -618,6 +619,7 @@ void settings::dumpAll(){
         dumpB("verbose           ", verbose             );
         dumpB("texttable         ", texttable           );
         dumpB("resumcpp          ", resumcpp            );
+	dumpB("ctcpp             ", ctcpp               );
         dumpI("approxpdf         ", opts_.approxpdf_    );
         dumpI("pdfintervals      ", opts_.pdfintervals_ );
         dumpI("evolmode          ", evolmode            );
