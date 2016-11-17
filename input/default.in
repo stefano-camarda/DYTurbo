@@ -56,6 +56,7 @@ useGamma = true
 
 # Resummation parameters
 resumcpp  = true  # use C++ code for resummation
+ctcpp     = true  # use C++ code for the counter term
 qtcutoff = 0.02   # resummation cutoff
 blim = -1         # scale factor for blim
 
