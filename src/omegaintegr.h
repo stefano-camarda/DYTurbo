@@ -24,7 +24,7 @@ namespace omegaintegr
   //  extern void genl4p(float costh, float phi_lep);
   extern void genl4p(double costh, double phi_lep);
   
-  //CS framework
+  //CS framework --> not used, already moved to phasespace, need to clean up
   extern double kap1[4];
   extern double xax[3];
   extern double yax[3];
