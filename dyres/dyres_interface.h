@@ -25,6 +25,7 @@ extern "C"
   double  p2qqs_(double& x);
   double  s2_(double& x);
 
+  double itilde_(int& m);
 
   extern struct {
     double amz_;
@@ -47,7 +48,11 @@ extern "C"
     double a_param_;
     double b0p_;
   } a_param_;
-  
+
+  extern struct {
+    double xmio_;
+  } xmio_;
+
   //non perturbative g
   extern struct {
     double g_param_;
@@ -72,7 +77,7 @@ extern "C"
 
 
 }
-#pragma omp threadprivate(a_param_,sigmaij_)
+#pragma omp threadprivate(a_param_,sigmaij_,xmio_)
 
 namespace dyres
 {
