@@ -1,12 +1,15 @@
+#include "ctintegr.h"
+
 #include "dyres_interface.h"
 #include "interface.h"
-#include "ctintegr.h"
 #include "omegaintegr.h"
 #include "phasespace.h"
 #include "settings.h"
 #include "switch.h"
 #include "cubacall.h"
 #include "isnan.h"
+#include "qtint.h"
+#include "ctint.h"
 
 #include "histo/KinematicCuts.h"
 
@@ -254,6 +257,9 @@ integrand_t ctintegrand3d(const int &ndim, const double x[], const int &ncomp, d
   double m = phasespace::m;
   double y = phasespace::y;
 
+  if (opts.ctcpp)
+    qtint::calc(m,qt,0,1);
+  
   //generate boson 4-momentum, with m, qt, y and phi=0
   omegaintegr::genV4p();
 
@@ -278,7 +284,10 @@ integrand_t ctintegrand3d(const int &ndim, const double x[], const int &ncomp, d
   */
 
   //evaluate the fixed order expansion of the resummed cross section
-  f[0]=ctint_(costh,m,qt,y,mode,f);
+  if (opts.ctcpp)
+    ctint::calc(costh,m,qt,y,mode,f);
+  else
+    f[0]=ctint_(costh,m,qt,y,mode,f);
   
   //avoid nans
   if (isnan_ofast(f[0]))
@@ -400,7 +409,10 @@ integrand_t ctintegrand2d(const int &ndim, const double x[], const int &ncomp, d
 
   clock_t qtbt, qtet;
   qtbt = clock();
-  ctqtint_(m,y,qtmn,qtmx);
+  if (opts.ctcpp)
+    qtint::calc(m,qtmn,qtmx,2);
+  else
+    ctqtint_(m,y,qtmn,qtmx);
   qtet = clock();
   
   //generate boson 4-momentum, with m, qt, y and phi=0 (not actually needed)
@@ -417,7 +429,10 @@ integrand_t ctintegrand2d(const int &ndim, const double x[], const int &ncomp, d
   //evaluate the fixed order expansion of the resummed cross section
   double qt = (qtmn+qtmx)/2.;
   clock_t cbt = clock();
-  f[0]=ctint_(costh,m,qt,y,mode,f);
+  if (opts.ctcpp)
+    ctint::calc(costh,m,qt,y,mode,f);
+  else
+    f[0]=ctint_(costh,m,qt,y,mode,f);
   clock_t cet = clock();
 
   //avoid nans
