@@ -179,6 +179,13 @@ CC    Jacobian for qt2
 
       shad=sqrts**2
 
+!bug bug bug -> missing dynamic resummation scale
+c      if(dynamicresscale) then
+c      else
+c      a_param=m/resscale
+c      endif
+
+      
       xmioOLD=dsqrt(qt2/q2)
       xmio=dsqrt(qt2/(q2/a_param**2))
 !      xmio=dsqrt(qt2/q2)
