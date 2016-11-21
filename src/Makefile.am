@@ -69,5 +69,4 @@ pkginclude_HEADERS = dyturbo.h resintegr.h ctintegr.h finintegr.h bornintegr.h o
 
 check:
 	./dyturbo ../input/test.in
-	echo 's_qt->Integral()' | root -l -b oldresults.root
 	echo 's_qt->Integral()' | root -l -b results.root
