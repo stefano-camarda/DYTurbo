@@ -77,7 +77,9 @@ bintaccuracy = 1.0e-4  #accuracy
 mellinintervals = 1 #number of intervals
 mellinrule = 64     #number of nodes
 zmax = 27.   	    #upper limit of the contour in the imaginary axis
+cpoint = 1.   	    #point of intersection of the contour with the real axis
 mellincores = 1     #number of parallel threads for the mellin integration
+mellin1d = false    #use 1d (y-integrated) or 2d (y-dependent) mellin inversion
 
 #number of intervals and gaussian rule for the rapidity integrations
 yintervals = 1
