@@ -207,7 +207,9 @@ public:
   int mellinintervals;
   int mellinrule;
   double zmax;
+  double cpoint;
   int mellincores;
+  bool mellin1d;
   
   //settings for rapidity integration
   int yintervals;

@@ -336,7 +336,9 @@ void settings::readfromfile(const string fname){
     mellinintervals    = in.GetNumber ( "mellinintervals" );
     mellinrule         = in.GetNumber ( "mellinrule" );
     zmax               = in.GetNumber ( "zmax" );
+    cpoint             = in.GetNumber ( "cpoint" );
     mellincores        = in.GetNumber ( "mellincores" );
+    mellin1d           = in.GetBool   ( "mellin1d" );
     yintervals         = in.GetNumber ( "yintervals" );
     yrule              = in.GetNumber ( "yrule" );
     ptbinwidth         = in.GetBool ( "ptbinwidth" );
@@ -379,10 +381,10 @@ void settings::check_consitency(){
 	exit (-1);
       }
 
-    if (dynamicscale == true && evolmode < 3)
+    if (dynamicscale == true && evolmode < 3 && order > 0 && fixedorder == false)
       {
 	//cannot use a dynamic muren, mufac, when the PDFs are converted from x-space to N-space at the factorisation scale
-	cout << "dynamicscale possible only with evolmode = 3 or 4" << endl;
+	cout << "At NLL and NNLL dynamicscale is possible only with evolmode = 3 or 4" << endl;
 	exit (-1);
       }
 
@@ -452,6 +454,18 @@ void settings::check_consitency(){
         vjintvegas7d = true;
       }
 
+    if (mellin1d && !bornint2d && makecuts)
+      {
+	cout << "mellin1d option is possible only for 2d integration of resummed piece, no cuts on leptons, and integration between [-ymin,ymax]" << endl;
+	exit (-1);
+      }
+
+    if (mellinintervals*mellinrule >= 512)
+      {
+	cout << "mellinintervals*mellinrule  should be less than 512 " << endl;
+	exit(-1);
+      }
+    
     if (makecuts && vjint3d)
       {
 	cout << "Required cuts on the final state leptons, enforce vegas integration for V+J fixed order cross section" << endl;
@@ -627,7 +641,9 @@ void settings::dumpAll(){
         dumpI("mellinintervals   ", mellinintervals     );
         dumpI("mellinrule        ", mellinrule          );
         dumpD("zmax              ", zmax                );
+	dumpD("cpoint            ", cpoint              );
         dumpD("mellincores       ", mellincores         );
+	dumpB("mellin1d          ", mellin1d            );
         dumpI("yintervals        ", yintervals          );
         dumpI("yrule             ", yrule               );
         dumpB("ptbinwidth        ", ptbinwidth          );
