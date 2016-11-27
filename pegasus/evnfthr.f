@@ -29,7 +29,7 @@
 *
        IMPLICIT DOUBLE COMPLEX (A - Z)
        INTEGER NPORD, NDIM, NMAX, KN
-       PARAMETER (NDIM = 144)
+       PARAMETER (NDIM = 512)
        DOUBLE PRECISION MC2, MB2, MT2, M20, M2C, M2B, M2T, R20, R2C, 
      1                  R2B, R2T, AS, ASNF1, AS0, ASC, ASB, AST, ASC2, 
      2                  ASB2, AST2, ASC3, ASB4, AST5, LOGFR, SC, SB, ST

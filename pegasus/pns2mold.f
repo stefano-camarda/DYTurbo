@@ -30,7 +30,7 @@
 *
        IMPLICIT DOUBLE COMPLEX (A - Z)
        INTEGER NMAX, NDIM, NFMIN, NFMAX, IAPP2, KN, NF
-       PARAMETER (NDIM = 144, NFMIN = 3, NFMAX = 6)
+       PARAMETER (NDIM = 512, NFMIN = 3, NFMAX = 6)
 *
 * ---------------------------------------------------------------------
 *

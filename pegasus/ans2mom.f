@@ -27,7 +27,7 @@
 *
        IMPLICIT DOUBLE COMPLEX (A - Z)
        INTEGER NMAX, NDIM, KN
-       PARAMETER (NDIM = 144)
+       PARAMETER (NDIM = 512)
        DOUBLE PRECISION ZETA(6), CF, CA, TR
 *
 * ---------------------------------------------------------------------
