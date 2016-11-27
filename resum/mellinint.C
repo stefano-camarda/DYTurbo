@@ -48,7 +48,7 @@ void mellinint::initgauss()
   //cpoint is the starting point on the real axis for the positive and negative part of the integration path
   //phi is the angle in the complex plane of the positive part of the integration path
        
-  double cpoint = 1.;
+  double cpoint = opts.cpoint;
   double phi = M_PI * 1./2.;
 
   double zmin = 0;
@@ -61,7 +61,7 @@ void mellinint::initgauss()
   double zmax = opts.zmax;
 
   mdim = opts.mellinintervals*opts.mellinrule;
-
+  
   //allocate memory
   wn = new double [mdim];
   Np = new complex <double> [mdim];
@@ -128,10 +128,10 @@ void mellinint::initgauss()
 //output: qqbn, qgn, ggn
 void mellinint::pdf_mesq_expy(int i1, int i2, int sign)
 {
-  GGN=0;
+  QQBN=0;
   QGN_1=0;
   QGN_2=0;
-  QQBN=0;
+  GGN=0;
   QQN=0;
   QQN_1=0;
   QQN_2=0;
@@ -159,29 +159,7 @@ void mellinint::pdf_mesq_expy(int i1, int i2, int sign)
       complex <double> mesq_bbr = mesq::mesqij_expy[mesq::index(8,i1,i2,sign)];
       complex <double> mesq_brb = mesq::mesqij_expy[mesq::index(9,i1,i2,sign)];
       
-      //NLL part
-      QGN_1 = fn1[g]*(fn2[ub]*mesq_uub
-		      +fn2[cb]*mesq_ccb
-		      +fn2[db]*mesq_ddb
-		      +fn2[sb]*mesq_ssb
-		      +fn2[bb]*mesq_bbr
-		      +fn2[u]*mesq_ubu
-		      +fn2[c]*mesq_cbc
-		      +fn2[d]*mesq_dbd
-		      +fn2[s]*mesq_sbs
-		      +fn2[b]*mesq_brb);
-
-      QGN_2 = fn2[g]*(fn1[u]*mesq_uub
-		      +fn1[c]*mesq_ccb
-		      +fn1[d]*mesq_ddb
-		      +fn1[s]*mesq_ssb
-		      +fn1[b]*mesq_bbr
-		      +fn1[ub]*mesq_ubu
-		      +fn1[cb]*mesq_cbc
-		      +fn1[db]*mesq_dbd
-		      +fn1[sb]*mesq_sbs
-		      +fn1[bb]*mesq_brb);
-
+      //LL part
       QQBN = fn1[u]*fn2[ub]*mesq_uub
 	+fn1[c]*fn2[cb]*mesq_ccb
 	+fn1[d]*fn2[db]*mesq_ddb
@@ -192,6 +170,32 @@ void mellinint::pdf_mesq_expy(int i1, int i2, int sign)
 	+fn1[db]*fn2[d]*mesq_dbd
 	+fn1[sb]*fn2[s]*mesq_sbs
 	+fn1[bb]*fn2[b]*mesq_brb;
+
+      //NLL part
+      if(opts.order >= 1)
+	{
+	  QGN_1 = fn1[g]*(fn2[ub]*mesq_uub
+			  +fn2[cb]*mesq_ccb
+			  +fn2[db]*mesq_ddb
+			  +fn2[sb]*mesq_ssb
+			  +fn2[bb]*mesq_bbr
+			  +fn2[u]*mesq_ubu
+			  +fn2[c]*mesq_cbc
+			  +fn2[d]*mesq_dbd
+			  +fn2[s]*mesq_sbs
+			  +fn2[b]*mesq_brb);
+
+	  QGN_2 = fn2[g]*(fn1[u]*mesq_uub
+			  +fn1[c]*mesq_ccb
+			  +fn1[d]*mesq_ddb
+			  +fn1[s]*mesq_ssb
+			  +fn1[b]*mesq_bbr
+			  +fn1[ub]*mesq_ubu
+			  +fn1[cb]*mesq_cbc
+			  +fn1[db]*mesq_dbd
+			  +fn1[sb]*mesq_sbs
+			  +fn1[bb]*mesq_brb);
+	}
 
       //NNLL
       if(opts.order >= 2)
@@ -418,33 +422,8 @@ void mellinint::pdf_mesq_expy(int i1, int i2, int sign)
       complex <double> mesq_dbc = mesq::mesqij_expy[mesq::index(9,i1,i2,sign)];
       complex <double> mesq_cbb = mesq::mesqij_expy[mesq::index(10,i1,i2,sign)];
       complex <double> mesq_bbc = mesq::mesqij_expy[mesq::index(11,i1,i2,sign)];
-      // NLL part
-      QGN_1 = fn1[g]*(fn2[db]*mesq_udb
-		      + fn2[sb]*mesq_usb
-		      + fn2[bb]*mesq_ubb
-		      + fn2[db]*mesq_cdb
-		      + fn2[sb]*mesq_csb
-		      + fn2[bb]*mesq_cbb
-		      + fn2[u]*mesq_dbu
-		      + fn2[c]*mesq_dbc
-		      + fn2[u]*mesq_sbu
-		      + fn2[c]*mesq_sbc
-		      + fn2[u]*mesq_bbu
-		      + fn2[c]*mesq_bbc);
-      
-      QGN_2 = fn2[g]*(fn1[u]*mesq_udb
-		      + fn1[u]*mesq_usb
-		      + fn1[u]*mesq_ubb
-		      + fn1[c]*mesq_cdb
-		      + fn1[c]*mesq_csb
-		      + fn1[c]*mesq_cbb
-		      + fn1[db]*mesq_dbu
-		      + fn1[db]*mesq_dbc
-		      + fn1[sb]*mesq_sbu
-		      + fn1[sb]*mesq_sbc
-		      + fn1[bb]*mesq_bbu
-		      + fn1[bb]*mesq_bbc);
 
+      //LL part
       QQBN = fn1[u]*fn2[db]*mesq_udb
 	+ fn1[u]*fn2[sb]*mesq_usb
 	+ fn1[u]*fn2[bb]*mesq_ubb
@@ -458,6 +437,36 @@ void mellinint::pdf_mesq_expy(int i1, int i2, int sign)
 	+ fn1[bb]*fn2[u]*mesq_bbu
 	+ fn1[bb]*fn2[c]*mesq_bbc;
 
+      // NLL part
+      if(opts.order >= 1)
+	{
+	  QGN_1 = fn1[g]*(fn2[db]*mesq_udb
+			  + fn2[sb]*mesq_usb
+			  + fn2[bb]*mesq_ubb
+			  + fn2[db]*mesq_cdb
+			  + fn2[sb]*mesq_csb
+			  + fn2[bb]*mesq_cbb
+			  + fn2[u]*mesq_dbu
+			  + fn2[c]*mesq_dbc
+			  + fn2[u]*mesq_sbu
+			  + fn2[c]*mesq_sbc
+			  + fn2[u]*mesq_bbu
+			  + fn2[c]*mesq_bbc);
+      
+	  QGN_2 = fn2[g]*(fn1[u]*mesq_udb
+			  + fn1[u]*mesq_usb
+			  + fn1[u]*mesq_ubb
+			  + fn1[c]*mesq_cdb
+			  + fn1[c]*mesq_csb
+			  + fn1[c]*mesq_cbb
+			  + fn1[db]*mesq_dbu
+			  + fn1[db]*mesq_dbc
+			  + fn1[sb]*mesq_sbu
+			  + fn1[sb]*mesq_sbc
+			  + fn1[bb]*mesq_bbu
+			  + fn1[bb]*mesq_bbc);
+	}
+      
       //NNLL
       if(opts.order >= 2)
 	{
@@ -642,33 +651,8 @@ void mellinint::pdf_mesq_expy(int i1, int i2, int sign)
       complex <double> mesq_cbd = mesq::mesqij_expy[mesq::index(9,i1,i2,sign)];
       complex <double> mesq_bcb = mesq::mesqij_expy[mesq::index(10,i1,i2,sign)];
       complex <double> mesq_cbb = mesq::mesqij_expy[mesq::index(11,i1,i2,sign)];
-      // NLL part
-      QGN_1 = fn1[g]*(fn2[d]*mesq_ubd
-		      + fn2[s]*mesq_ubs
-		      + fn2[b]*mesq_ubb
-		      + fn2[d]*mesq_cbd
-		      + fn2[s]*mesq_cbs
-		      + fn2[b]*mesq_cbb
-		      + fn2[ub]*mesq_dub
-		      + fn2[cb]*mesq_dcb
-		      + fn2[ub]*mesq_sub
-		      + fn2[cb]*mesq_scb
-		      + fn2[ub]*mesq_bub
-		      + fn2[cb]*mesq_bcb);
-      
-      QGN_2 = fn2[g]*(fn1[ub]*mesq_ubd
-		      + fn1[ub]*mesq_ubs
-		      + fn1[ub]*mesq_ubb
-		      + fn1[cb]*mesq_cbd
-		      + fn1[cb]*mesq_cbs
-		      + fn1[cb]*mesq_cbb
-		      + fn1[d]*mesq_dub
-		      + fn1[d]*mesq_dcb
-		      + fn1[s]*mesq_sub
-		      + fn1[s]*mesq_scb
-		      + fn1[b]*mesq_bub
-		      + fn1[b]*mesq_bcb);
 
+      //LL part
       QQBN = fn1[ub]*fn2[d]*mesq_ubd
 	+ fn1[ub]*fn2[s]*mesq_ubs
 	+ fn1[ub]*fn2[b]*mesq_ubb
@@ -681,6 +665,37 @@ void mellinint::pdf_mesq_expy(int i1, int i2, int sign)
 	+ fn1[s]*fn2[cb]*mesq_scb
 	+ fn1[b]*fn2[ub]*mesq_bub
 	+ fn1[b]*fn2[cb]*mesq_bcb;
+      
+      // NLL part
+      if(opts.order >= 1)
+	{
+	  QGN_1 = fn1[g]*(fn2[d]*mesq_ubd
+			  + fn2[s]*mesq_ubs
+			  + fn2[b]*mesq_ubb
+			  + fn2[d]*mesq_cbd
+			  + fn2[s]*mesq_cbs
+			  + fn2[b]*mesq_cbb
+			  + fn2[ub]*mesq_dub
+			  + fn2[cb]*mesq_dcb
+			  + fn2[ub]*mesq_sub
+			  + fn2[cb]*mesq_scb
+			  + fn2[ub]*mesq_bub
+			  + fn2[cb]*mesq_bcb);
+      
+	  QGN_2 = fn2[g]*(fn1[ub]*mesq_ubd
+			  + fn1[ub]*mesq_ubs
+			  + fn1[ub]*mesq_ubb
+			  + fn1[cb]*mesq_cbd
+			  + fn1[cb]*mesq_cbs
+			  + fn1[cb]*mesq_cbb
+			  + fn1[d]*mesq_dub
+			  + fn1[d]*mesq_dcb
+			  + fn1[s]*mesq_sub
+			  + fn1[s]*mesq_scb
+			  + fn1[b]*mesq_bub
+			  + fn1[b]*mesq_bcb);
+	}
+      
       //NNLL
       if(opts.order >= 2)
 	{
@@ -852,6 +867,9 @@ void mellinint::pdf_mesq_expy(int i1, int i2, int sign)
 
 complex <double> mellinint::integrand(int i1, int i2, int sign)
 {
+  if (opts.order == 0)
+    return QQBN;
+
   int i = hcoefficients::index(i1,i2,sign);
   //cout << "C++" << i1 << "  " << i2 << "  " << GGN << "  " << hcoefficients::Hgg[i] << endl;
 
@@ -868,3 +886,4 @@ complex <double> mellinint::integrand(int i1, int i2, int sign)
     //    + QQN_1*hcoefficients::Hqq_1[i] + QQN_2*hcoefficients::Hqq_2[i] //I believe this is more correct, since it accounts for which leg undergoes the q -> qb or qb -> q transformation
     + QQPN_1*hcoefficients::Hqqp_1[i] + QQPN_2*hcoefficients::Hqqp_2[i];
 }
+
