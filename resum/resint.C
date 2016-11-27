@@ -62,7 +62,7 @@ void resint::init()
   flag1_.flag1_ = opts.order;              //order for the sudakov
   iorder_.iord_ = opts.order - 1;          //order for LL/NLL running of alphas
   flagrealcomplex_.flagrealcomplex_ = 0;   // choose real axis (complex plane) integration of bstar (b) (always 0)
-  modified_.imod_ = 1;                     // normal (imod=0) or modified (imod=1) sudakov      
+  modified_.imod_ = 1;                     // normal (imod=0) or modified (imod=1) sudakov
 
   // g-parameter of the non perturbative form factor
   np_.g_ = opts.g_param;
@@ -169,7 +169,7 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
   aass_.aass_ = aass; 
   double q = m;
   double blim;
-  if (q2 > 2.2*muren2) //avoid large values of b in f2(y) when q2>mur2 
+  if (opts.order == 2 && q2 > 2.2*muren2) //avoid large values of b in f2(y) when q2>mur2 
     blim = a_param_.b0p_*(1./q)*exp(1./(2.*aass*resconst::beta0))*sqrt(muren2/q2);
   else
     blim = a_param_.b0p_*(1./q)*exp(1./(2.*aass*resconst::beta0)); // avoid Landau pole
@@ -189,6 +189,7 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
 
   //  blim = 100;
   //  blim = 4.0;
+  //  blim = 1.5;
 
   blimit_.rblim_ = blim;
   blimit_.cblim_ = fcx(blim);
@@ -255,14 +256,17 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
 
 double resint::bintegral(double qt)
 {
-  // Compute integral using double exponential quadratures for oscillatory functions (intde2.c)
-
   double res, err;
+
+  // Compute integral using double exponential quadratures for oscillatory functions (intde2.c)
   intdeo(besselint::bint, 0.0, qt, awinf, &res, &err);
-  //  cout << "dequad result of inverse bessel transform, pt=" << _qt << " m=" << _m << " y=" << _y << " : " << setprecision(16) << res << " +- " << err/res*100 << "%" << endl;
-  //  cout.precision(6); cout.unsetf(ios_base::floatfield);
+  if (err < 0)
+    cout << "warning: dequad abnormal termination, pt=" << _qt << " m=" << _m << " y=" << _y << " bint: " << res << " err " << err << endl;
 
   /*
+  //cout << "dequad result of inverse bessel transform, pt=" << _qt << " m=" << _m << " y=" << _y << " : " << setprecision(16) << res << " +- " << err/res*100 << "%" << endl;
+  //cout.precision(6); cout.unsetf(ios_base::floatfield);
+
   //split the integral above and below the b mass
   //scale b0/b without a_param
   double bstar_mb = resconst::b0/LHAPDF::getThreshold(5);
@@ -271,14 +275,18 @@ double resint::bintegral(double qt)
   double b_mb = bstar_mb / sqrt(1-(bstar_mb*bstar_mb)/(blimit_.rblim_*blimit_.rblim_));
 
 
+  //same for charm mass
+  double bstar_mc = resconst::b0/LHAPDF::getThreshold(4);
+  double b_mc = bstar_mc / sqrt(1-(bstar_mc*bstar_mc)/(blimit_.rblim_*blimit_.rblim_));
+  
   double res1, err1;
-  intdeo(besselint::bint, b_mb, qt, awinf, &res1, &err1);
+  //intdeo(besselint::bint, b_mc, qt, awinf, &res1, &err1);
+  intdeo(besselint::bint, b_mc, qt, awinf, &res1, &err1);
 
 
   double res2, err2;
   //dequad seems not to be appropriate for this integral 
   //  intde(besselint::bint, 0.0, b_mb, awfin, &res2, &err2);
-
 
   //try simple pcubature
   const int ndim = 1;     //dimensions of the integral
@@ -290,33 +298,51 @@ double resint::bintegral(double qt)
   const double epsrel = 1e-2;//opts.bintaccuracy;
   const double epsabs = 0.;
   double xmin[1] = {0};
-  double xmax[2] = {b_mb};
-
+  double xmax[1] = {b_mb};
   pcubature(ncomp, besselint_cubature, userdata, 
 	    ndim, xmin, xmax, 
 	    eval, epsabs, epsrel, ERROR_INDIVIDUAL, integral, error);
   res2 = integral[0];
   err2 = error[0];
 
-  
-  cout << "split: dequad result of inverse bessel transform  " << setprecision(16) << res1+res2 << " +- " << res1 << "  " << err1/res1*100 << "% "  << res2 << "  " << err2/res2*100 << "%" << endl;
-  cout.precision(6); cout.unsetf(ios_base::floatfield);
-  res = res1+res2;
-  cout << endl;
+  double res3, err3;
+  xmin[0] = {b_mb};
+  xmax[0] = {b_mc};
+  pcubature(ncomp, besselint_cubature, userdata, 
+	    ndim, xmin, xmax, 
+	    eval, epsabs, epsrel, ERROR_INDIVIDUAL, integral, error);
+  res3 = integral[0];
+  err3 = error[0];
 
+  res = res1+res2+res3;
+  */
+
+  /*
+  cout << "split: dequad result of inverse bessel transform, " << endl;
+  cout << "total: "
+    //<< setprecision(16)
+       << res << "  " << (err1+err2+err3)/res*100 << endl;
+  cout << " b(mc)-inf: " << res1 << "  " << err1/res1*100 << "%"
+       << " 0-b(mb): "  << res2 << "  " << err2/res2*100 << "%"
+       << " b(mb)-b(mc): "  << res3 << "  " << err3/res3*100 << "%"
+  //cout.precision(6); cout.unsetf(ios_base::floatfield);
+  cout << "b_mb " << b_mb << " b_mc " << b_mc << " blim " << blimit_.rblim_ << endl;
+  cout << endl;
+  */
+
+  /*
   //plot the b-integrand
   cout << "{" << endl;
   cout << "TGraph *g = new TGraph();" << endl;
   for (int i = 0; i < 1000; i++)
     {
       //      double b = b_mb*0.95+i*(b_mb*1.05 -b_mb*0.95)/100.;
-      double b = 0.+i*(b_mb*50 -0)/1000.;
-  //      cout << b << "  " << b_mb << "  " << besselint::bint(b) << endl;;
+      double b = 0.+i*(b_mb*5 -0)/1000.;
+      //      cout << b << "  " << b_mb << "  " << besselint::bint(b) << endl;;
       cout << "g->SetPoint(g->GetN(), " << b << ", " << besselint::bint(b) << ");" << endl;
     }
   cout << "g->Draw();" << endl;
   cout << "}" << endl;
   */
-
   return res;
 }
