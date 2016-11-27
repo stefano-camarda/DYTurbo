@@ -235,6 +235,10 @@ void pegasus::init()
   asfthr_.m2c_ = pow(LHAPDF::getThreshold(4),2);
   asfthr_.m2b_ = pow(LHAPDF::getThreshold(5),2);
   asfthr_.m2t_ = pow(LHAPDF::getThreshold(6),2);
+
+  //modify the matching scales:
+  //asfthr_.m2c_ = 1.1*1.1; // --> make a setting
+  //asfthr_.m2b_ = asfthr_.m2b_*2.; // --> make a setting
   
   //Stop some nonsense
   if (ivfns == 1 && asinp_.m20_ > asfthr_.m2c_)
@@ -586,7 +590,7 @@ void pegasus::evolve()
   int nlow = 1;
   int nhigh = mellinint::mdim;
   int IPSTD = 1;
-  fcomplex PDFN[13][144];
+  fcomplex PDFN[13][ndim];
   if (ivfns == 0)
     dyevnffn_(PDFN, ASI, ASF, NF, nlow, nhigh, IPSTD); //modified ffn evolution with charm and bottom at the starting scale
   else
@@ -607,7 +611,8 @@ void pegasus::evolve()
   for (int i = 0; i < mellinint::mdim; i++)
     {
       pdfevol::calculate (i);
-      cout << "direct " << fabs(pdfevol::bstarscale) << "  "
+      //cout << "direct " << fabs(pdfevol::bstarscale) << "  "
+      cout << "direct " << fabs(pdfevol::bstartilde) << "  "
   	   << i << "  " << mellinint::Np[i] << "  "
   	   << cx(creno_.cfx1_[i][0+MAXNF]) << "  "
   	   << cx(creno_.cfx1_[i][1+MAXNF])-cx(creno_.cfx1_[i][-1+MAXNF]) << "  "
