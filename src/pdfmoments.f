@@ -175,7 +175,7 @@ c     Common blocks of PDFs mellin moments, where the moments are stored
       common / DISTM2/ UVM2,DVM2,USM2,DSM2,SSM2,GLM2,CHM2,BOM2
 
 c     Gaussian nodes of the integration contour in the complex plane
-      COMPLEX*16 CCp,CCm, Np(NMX),Nm(NMX),XN
+      COMPLEX*16 CCp,CCm, Np(136),Nm(136),XN
       COMMON / MOMS2    / Np,Nm,CCP,CCm
 
       integer ih1,ih2
