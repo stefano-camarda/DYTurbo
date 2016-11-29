@@ -132,7 +132,7 @@ vegasncallsVJREAL = 10000000 # only for real 10d vegas integration
 vegasncallsVJVIRT = 1000000  # only for virt 8d vegas integration
 
 # cubature settings
-pcubature = false
+pcubature = true
 pcubaccuracy = 1e-3
 
 # costh CS boundaries
