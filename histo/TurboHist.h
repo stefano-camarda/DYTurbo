@@ -10,7 +10,7 @@
  * @date 2016-09-01
  */
 
-#include "src/handy_typdefs.h"
+#include "handy_typdefs.h"
 
 namespace TurboHist {
     // OBS: observable ususaly double but I think float is fine
