@@ -231,15 +231,11 @@ void pegasus::init()
 
   double ASI = LHAPDF::alphasPDF(sqrt(asinp_.m20_));
 
-  //The heavy quark masses squared, input values from LHAPDF
-  asfthr_.m2c_ = pow(LHAPDF::getThreshold(4),2);
-  asfthr_.m2b_ = pow(LHAPDF::getThreshold(5),2);
-  asfthr_.m2t_ = pow(LHAPDF::getThreshold(6),2);
+  //The heavy quark masses squared, input values from LHAPDF (kmux can be used to modify the matching scales)
+  asfthr_.m2c_ = pow(LHAPDF::getThreshold(4)*opts.kmuc,2);
+  asfthr_.m2b_ = pow(LHAPDF::getThreshold(5)*opts.kmub,2);
+  asfthr_.m2t_ = pow(LHAPDF::getThreshold(6)*opts.kmut,2);
 
-  //modify the matching scales:
-  //asfthr_.m2c_ = 1.1*1.1; // --> make a setting
-  //asfthr_.m2b_ = asfthr_.m2b_*2.; // --> make a setting
-  
   //Stop some nonsense
   if (ivfns == 1 && asinp_.m20_ > asfthr_.m2c_)
     {
