@@ -242,6 +242,9 @@ void settings::readfromfile(const string fname){
     kmures         = in.GetNumber ( "kmures"            ); //91.1876e0      # mur,        muf
     C1             = in.GetNumber ( "C1"            ); //91.1876e0      # mur,        muf
     C3             = in.GetNumber ( "C3"            ); //91.1876e0      # mur,        muf
+    kmuc           = in.GetNumber ( "kmuc"            );
+    kmub           = in.GetNumber ( "kmub"            );
+    kmut           = in.GetNumber ( "kmut"            );
     //    a_param        = in.GetNumber ( "a_param"        ); //2.0e0          # a_param
     g_param        = in.GetNumber ( "g_param"        ); //1.0e0          # g_param
     order          = in.GetNumber ( "order"          ); //1              # order
@@ -341,6 +344,10 @@ void settings::readfromfile(const string fname){
     mellin1d           = in.GetBool   ( "mellin1d" );
     yintervals         = in.GetNumber ( "yintervals" );
     yrule              = in.GetNumber ( "yrule" );
+    qtintervals        = in.GetNumber ( "qtintervals" );
+    qtrule             = in.GetNumber ( "qtrule" );
+    abintervals        = in.GetNumber ( "abintervals" );
+    abrule             = in.GetNumber ( "abrule" );
     ptbinwidth         = in.GetBool ( "ptbinwidth" );
     ybinwidth          = in.GetBool ( "ybinwidth" );
     force_binner_mode  = in.GetBool ( "force_binner_mode" );
@@ -541,6 +548,9 @@ void settings::dumpAll(){
 	dumpD ( "kmures       ",  kmures   ) ;
 	dumpD ( "C1       ",  C1   ) ;
 	dumpD ( "C3       ",  C3   ) ;
+        dumpD ( "kmuc      ",  kmuc                     ) ;
+        dumpD ( "kmub      ",  kmub                     ) ;
+	dumpD ( "kmut      ",  kmut   ) ;
         dumpD( "blim              ",  blim    ) ;
         dumpS("LHAPDFset          ", LHAPDFset           );
         dumpI("LHAPDFmember       ", LHAPDFmember        );
@@ -646,6 +656,10 @@ void settings::dumpAll(){
 	dumpB("mellin1d          ", mellin1d            );
         dumpI("yintervals        ", yintervals          );
         dumpI("yrule             ", yrule               );
+        dumpI("qtintervals       ", qtintervals          );
+        dumpI("qtrule            ", qtrule               );
+        dumpI("abintervals       ", abintervals          );
+        dumpI("abrule            ", abrule               );
         dumpB("ptbinwidth        ", ptbinwidth          );
         dumpB("ybinwidth         ", ybinwidth           );
         dumpB("force_binner_mode ", force_binner_mode   );

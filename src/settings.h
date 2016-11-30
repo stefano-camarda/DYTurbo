@@ -88,6 +88,11 @@ public:
   double kmuren;
   double kmufac;
 
+  //scale factors for the matching scales
+  double kmuc;
+  double kmub;
+  double kmut;
+  
   //Additional resummation scales
   double C1,C3;
   
@@ -211,10 +216,18 @@ public:
   int mellincores;
   bool mellin1d;
   
-  //settings for rapidity integration
+  //settings for rapidity integration in 2D resummed piece
   int yintervals;
   int yrule;
-  
+
+  //settings for qt integration in 2D counter term
+  int qtintervals;
+  int qtrule;
+
+  //settings for alfa beta scaled-PDF integration in counter term and born fixed order
+  int abintervals;
+  int abrule;
+ 
   //qt-recoil prescriptions
   bool qtrec_naive, qtrec_cs, qtrec_kt0;
 
