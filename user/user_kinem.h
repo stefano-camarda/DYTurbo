@@ -10,7 +10,7 @@
  * @date 2016-09-07
  */
 
-#include "histo/KinematicDefinitions.h"
+#include "KinematicDefinitions.h"
 
 namespace Kinematics {
     // You can define custom observables and use them afterwards for custom
