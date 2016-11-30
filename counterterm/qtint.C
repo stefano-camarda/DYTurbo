@@ -13,9 +13,6 @@ int two = 2;
 int three = 3;
 int four = 4;
 
-int qtintervals = 1; //--> make a setting
-int qtrule = 64;     //--> make a setting
-
 double qtint::LL1_mesqij[12];
 double qtint::LL2_mesqij[12];
 double qtint::LL3_mesqij[12];
@@ -83,19 +80,19 @@ void qtint::calc(double m, double qtmin, double qtmax, int mode)
   double qtb = 1./(1.+log(qtmin2/tiny));
   double min = 0;
   double max = 1;
-  for (int i = 0; i < qtintervals; i++)
+  for (int i = 0; i < opts.qtintervals; i++)
     {
-      double xa = min+(max-min)*i/qtintervals;
-      double xb = min+(max-min)*(i+1)/qtintervals;
+      double xa = min+(max-min)*i/opts.qtintervals;
+      double xb = min+(max-min)*(i+1)/opts.qtintervals;
       double xc = 0.5*(xa+xb);
       double xm = 0.5*(xb-xa);
-      for (int j = 0; j < qtrule; j++)
+      for (int j = 0; j < opts.qtrule; j++)
 	{
-	  double x = xc+xm*gr::xxx[qtrule-1][j];
+	  double x = xc+xm*gr::xxx[opts.qtrule-1][j];
 	  double qtx = qta + (qtb-qta) * x;
 	  double qt2 = tiny*exp(1./qtx - 1.);
 	  double jac = (qtb-qta)*qt2/pow(qtx,2);
-	  double w = gr::www[qtrule-1][j]*xm*jac;
+	  double w = gr::www[opts.qtrule-1][j]*xm*jac;
 
 	  double qt = sqrt(qt2);
 
