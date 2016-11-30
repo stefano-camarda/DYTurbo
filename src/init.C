@@ -11,6 +11,7 @@
 #include "dyres/dyres_interface.h"
 #include "mcfm/mcfm_interface.h"
 #include "resum/gaussrules.h"
+#include "src/clenshawcurtisrules.h"
 #include "resum/pdfevol.h"
 #include "resum/mellinint.h"
 #include "resum/mesq.h"
@@ -56,6 +57,7 @@ void DYTurbo::init_params(){
     mcfm::init();
     iniflavreduce_(); //need to call this after nproc_.nproc_ is set
     coupling::initscales();
+    cc::init(); //nodes and weights of Clenshaw-Curtis quadrature rules
     //C++ resum
     //initialise all the C modules
     gr::init(); //nodes and weights of gaussian quadrature rules
