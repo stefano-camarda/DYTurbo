@@ -2,6 +2,7 @@
 #include "mesq.h"
 #include "settings.h"
 #include "gaussrules.h"
+#include "clenshawcurtisrules.h"
 #include "hcoefficients.h"
 #include "pdfevol.h"
 #include "interface.h"
