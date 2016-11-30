@@ -11,7 +11,7 @@
 #include "qtint.h"
 #include "ctint.h"
 
-#include "histo/KinematicCuts.h"
+#include "KinematicCuts.h"
 
 #include <iostream>
 #include <iomanip>

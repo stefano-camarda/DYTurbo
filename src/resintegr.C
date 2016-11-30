@@ -1,12 +1,12 @@
 #include "resintegr.h"
 #include "omegaintegr.h"
-#include "phasespace/phasespace.h"
+#include "phasespace.h"
 #include "settings.h"
 #include "interface.h"
 #include "dyres_interface.h"
 #include "switch.h"
-#include "resum/resint.h"
-#include "resum/rapint.h"
+#include "resint.h"
+#include "rapint.h"
 #include "cubacall.h"
 #include "isnan.h"
 
@@ -15,7 +15,7 @@
 #include <iostream>
 #include <omp.h>
 
-#include "histo/KinematicCuts.h"
+#include "KinematicCuts.h"
 
 int resintegrand2d_cubature_v(unsigned ndim, long unsigned npts, const double x[], void *data, unsigned ncomp, double f[])
 {

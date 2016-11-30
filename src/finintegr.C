@@ -15,7 +15,7 @@
 #include <math.h>
 
 
-#include "histo/KinematicCuts.h"
+#include "KinematicCuts.h"
 
 using namespace std;
 

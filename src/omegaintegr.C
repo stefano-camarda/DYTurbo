@@ -17,7 +17,7 @@
 #include <iomanip>
 #include <vector>
 
-#include "histo/KinematicCuts.h"
+#include "KinematicCuts.h"
 
 //rest frame axes
 double omegaintegr::kap1[4];

@@ -18,9 +18,9 @@
 #include "interface.h"
 #include "ctintegr.h"
 
-#include "phasespace/phasespace.h"
-#include "resum/rapint.h"
-#include "histo/HistoHandler.h"
+#include "phasespace.h"
+#include "rapint.h"
+#include "HistoHandler.h"
 
 using DYTurbo::PrintTable::Col3;
 using DYTurbo::PrintTable::Col4;
