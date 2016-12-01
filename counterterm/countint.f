@@ -154,6 +154,12 @@ c     cached variables for fast integration
 CC   Dynamic scale
       if(dynamicscale) call scaleset(q2)
 
+!bug bug bug -> missing dynamic resummation scale
+c      if(dynamicresscale) then
+c      else
+c      a_param=m/resscale
+c      endif
+      
 CC   LR,LF,LQ
 
       LR=dlog(q2/scale**2)

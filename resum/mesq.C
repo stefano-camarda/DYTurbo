@@ -179,6 +179,10 @@ void mesq::setpropagators(double m)
       propG = 1./q2;
       propZG = (q2-mZ2)/(pow(q2-mZ2,2)+mZ2*wZ2);
     }
+  //flat propagators, for tests
+  //propZ = 1./m*(8./3.)*pow(opts.sroot,2)/2/(1./9./M_PI*gevfb);
+  //propW = 1./m*(8./3.)*pow(opts.sroot,2)/2/(1./9./M_PI*gevfb);
+  //propG = 1./m*(8./3.)*pow(opts.sroot,2)/2/(1./9./M_PI*gevfb);
 }
 
 void mesq::allocate()
@@ -190,17 +194,7 @@ void mesq::allocate()
 void mesq::setmesq_expy(int mode, double m, double costh, double y)
 {
   //mass dependent part
-  q2 = pow(m,2);
-  if (opts.nproc == 3)
-    propZ = q2/(pow(q2-mZ2,2)+mZ2*wZ2);
-  else
-    propW = q2/(pow(q2-mW2,2)+mW2*wW2);
-  if (opts.useGamma)
-    {
-      propG = 1./q2;
-      propZG = (q2-mZ2)/(pow(q2-mZ2,2)+mZ2*wZ2);
-    }
-  //setpropagators(m);
+  setpropagators(m);
   
   if (mode < 2)
     {
@@ -249,27 +243,47 @@ void mesq::setmesq_expy(int mode, double m, double costh, double y)
     }
   else //if mode == 2 -> rapidity integrated mode
     {
-      for (int i1 = 0; i1 < mellinint::mdim; i1++)
-	for (int i2 = 0; i2 < mellinint::mdim; i2++)
-	  {
-	    complex <double> one, costh1, costh2;
-
-	    //retrieve Ithxp Ithxm positive branch integrals of the x1^-z1 * x2^-z2 piece 
-	    one = rapint::Ith0p[mellinint::index(i1,i2)];
-	    costh1 = rapint::Ith1p[mellinint::index(i1,i2)];
-	    costh2 = rapint::Ith2p[mellinint::index(i1,i2)];
-	    setmesq(one, costh1, costh2);
+      //1D mellin
+      if (opts.mellin1d)
+	{
+	  double cthmom0, cthmom1, cthmom2;
+	  cthmoments_(cthmom0, cthmom1, cthmom2);
+	  setmesq(cthmom0, cthmom1, cthmom2);
+	  double bjx= q2/pow(opts.sroot,2);
+	  double ax = log(bjx);
+	  for (int i = 0; i < mellinint::mdim; i++)
 	    for (int pch = 0; pch < totpch; pch++)
-	      mesqij_expy[mesq::index(pch, i1, i2, mesq::positive)] = mesqij[pch];
+	      {
+		complex <double> cexp = exp(-mellinint::Np[i] * ax)/M_PI * mellinint::CCp/complex <double>(0.,1);
+		complex <double> cexm = exp(-mellinint::Nm[i] * ax)/M_PI * mellinint::CCm/complex <double>(0.,1);
+		mesqij_expy[mesq::index(pch, i, i, mesq::positive)] = mesqij[pch] * cexp * mellinint::wn[i];
+		mesqij_expy[mesq::index(pch, i, i, mesq::negative)] = mesqij[pch] * cexm * mellinint::wn[i];
+	      }
+	}
+      else
+	{
+	  for (int i1 = 0; i1 < mellinint::mdim; i1++)
+	    for (int i2 = 0; i2 < mellinint::mdim; i2++)
+	      {
+		complex <double> one, costh1, costh2;
 
-	    //retrieve Ithxp Ithxm positive branch integrals of the x1^-z1 * x2^-z2 piece 
-	    one = rapint::Ith0m[mellinint::index(i1,i2)];
-	    costh1 = rapint::Ith1m[mellinint::index(i1,i2)];
-	    costh2 = rapint::Ith2m[mellinint::index(i1,i2)];
-	    setmesq(one, costh1, costh2);
-	    for (int pch = 0; pch < totpch; pch++)
-	      mesqij_expy[mesq::index(pch, i1, i2, mesq::negative)] = mesqij[pch];
-	  }
+		//retrieve Ithxp Ithxm positive branch integrals of the x1^-z1 * x2^-z2 piece 
+		one = rapint::Ith0p[mellinint::index(i1,i2)];
+		costh1 = rapint::Ith1p[mellinint::index(i1,i2)];
+		costh2 = rapint::Ith2p[mellinint::index(i1,i2)];
+		setmesq(one, costh1, costh2);
+		for (int pch = 0; pch < totpch; pch++)
+		  mesqij_expy[mesq::index(pch, i1, i2, mesq::positive)] = mesqij[pch];
+
+		//retrieve Ithxp Ithxm negative branch integrals of the x1^-z1 * x2^-z2 piece 
+		one = rapint::Ith0m[mellinint::index(i1,i2)];
+		costh1 = rapint::Ith1m[mellinint::index(i1,i2)];
+		costh2 = rapint::Ith2m[mellinint::index(i1,i2)];
+		setmesq(one, costh1, costh2);
+		for (int pch = 0; pch < totpch; pch++)
+		  mesqij_expy[mesq::index(pch, i1, i2, mesq::negative)] = mesqij[pch];
+	      }
+	}
     }
 }
 void mesq::free()

@@ -7,21 +7,22 @@
 #include "coupling.h"
 #include "switch.h"
 
-#include "histo/HistoHandler.h"
-#include "dyres/dyres_interface.h"
-#include "mcfm/mcfm_interface.h"
-#include "resum/gaussrules.h"
-#include "resum/pdfevol.h"
-#include "resum/mellinint.h"
-#include "resum/mesq.h"
-#include "resum/rapint.h"
-#include "resum/resint.h"
-#include "resum/pegasus.h"
-#include "resum/anomalous.h"
-#include "resum/resconst.h"
-#include "vjfo/vjint.h"
-#include "vjfo/vjloint.h"
-#include "eba/loint.h"
+#include "HistoHandler.h"
+#include "dyres_interface.h"
+#include "mcfm_interface.h"
+#include "gaussrules.h"
+#include "clenshawcurtisrules.h"
+#include "pdfevol.h"
+#include "mellinint.h"
+#include "mesq.h"
+#include "rapint.h"
+#include "resint.h"
+#include "pegasus.h"
+#include "anomalous.h"
+#include "resconst.h"
+#include "vjint.h"
+#include "vjloint.h"
+#include "abint.h"
 
 #include <cuba.h>
 #include <math.h>
@@ -56,6 +57,7 @@ void DYTurbo::init_params(){
     mcfm::init();
     iniflavreduce_(); //need to call this after nproc_.nproc_ is set
     coupling::initscales();
+    cc::init(); //nodes and weights of Clenshaw-Curtis quadrature rules
     //C++ resum
     //initialise all the C modules
     gr::init(); //nodes and weights of gaussian quadrature rules
@@ -72,7 +74,7 @@ void DYTurbo::init_params(){
     vjint::init();
     vjloint::init();
     //
-    loint::init(); //Born term initialisation
+    abint::init(); //alfa beta integration initialisation
     switching::init(); //switching function initialisation
     rescinit_();
     // cuba init

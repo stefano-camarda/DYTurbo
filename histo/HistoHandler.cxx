@@ -10,7 +10,7 @@
  * @date 2016-08-26
  */
 
-#include "src/handy_typdefs.h"
+#include "handy_typdefs.h"
 
 #include "Kinematics.h"
 #include "HistoHandler.h"

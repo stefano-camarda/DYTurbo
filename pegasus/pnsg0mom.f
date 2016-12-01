@@ -26,7 +26,7 @@
 *
        IMPLICIT DOUBLE COMPLEX (A - Z)
        INTEGER NMAX, NDIM, NFMIN, NFMAX, KN, NF
-       PARAMETER (NDIM = 144, NFMIN = 3, NFMAX = 6)
+       PARAMETER (NDIM = 512, NFMIN = 3, NFMAX = 6)
        DOUBLE PRECISION CF, CA, TR
 *
 * ---------------------------------------------------------------------
@@ -72,7 +72,7 @@
 *
        IMPLICIT DOUBLE COMPLEX (A - Z)
        INTEGER NMAX, NDIM, NFMIN, NFMAX, KN, NF
-       PARAMETER (NDIM = 144, NFMIN = 3, NFMAX = 6)
+       PARAMETER (NDIM = 512, NFMIN = 3, NFMAX = 6)
        DOUBLE PRECISION CF, CA, TR
 *
 * ---------------------------------------------------------------------

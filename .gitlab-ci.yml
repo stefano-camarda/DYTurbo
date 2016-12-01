@@ -1,4 +1,4 @@
-image: "docker.cern.ch/linuxsupport/cc7-base"
+image: docker.cern.ch/linuxsupport/cc7-base:latest
 
 before_script:
   - yum install -y tar wget make

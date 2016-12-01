@@ -4,8 +4,8 @@
 #include "ctintegr.h"
 #include "finintegr.h"
 #include "bornintegr.h"
-#include "cubature/cubature.h"
-#include "histo/HistoHandler.h"
+#include "cubature.h"
+#include "HistoHandler.h"
 
 #include <cuba.h>
 #include <iostream>
