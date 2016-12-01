@@ -34,7 +34,7 @@ OPTIONS :
     --term     [LO]         {RES,CT}               Monte-Carlo integration with order as above
                             {RES3D,CT3D}           Cubature 3D integration with order set above
                             {RES2D,CT2D}           Cubature 2D integration with order set above
-                            {REAL,VIRT,LO}         Real, virt and V+J LO  with MC
+                            {VJREAL,VJVIRT,VJLO}   Real, virt and V+J LO  with MC
                             {VV,FIXCT,FIXCT2D}     Fixed terms
     --seeds                 {int or range or list} MANDATORY: Set range (for batch) or Njobs (grid)
     --griduser              {GRID username}        MANDATORY IF GRID
@@ -92,11 +92,11 @@ parse_input(){
     #
     order=1
     #termlist="LO VV FIXCT"
-    termlist=LO
+    termlist=VJLO
     #order=2
-    #termlist="REAL VIRT FIXCT VV"
+    #termlist="VJREAL VJVIRT FIXCT VV"
     #
-    pdflist="CT10nnlo CT10nnlo68clProfiled"
+    pdflist="CT10nnlo"
     #pdfvarlist=all
     #pdfvarlist="0 1 2 3"
     pdfvarlist=0
@@ -222,8 +222,8 @@ submit_jobs_wmass(){
         [[ $seedlist =~ -|, ]]  || seedlist=1-$seedlist
     fi
     # check order term
-    [[ $order == 1 ]] && [[ $termlist =~ REAL|VIRT ]] && echo "WRONG ORDER $order TO TERM $termlist" && return 3
-    [[ $order == 2 ]] && [[ $termlist =~ LO        ]] && echo "WRONG ORDER $order TO TERM $termlist" && return 3 
+    [[ $order == 1 ]] && [[ $termlist =~ VJREAL|VJVIRT ]] && echo "WRONG ORDER $order TO TERM $termlist" && return 3
+    [[ $order == 2 ]] && [[ $termlist =~ VJLO          ]] && echo "WRONG ORDER $order TO TERM $termlist" && return 3 
     # loops, lopps and loops
     for pdfset in $pdflist 
     do
@@ -236,7 +236,9 @@ submit_jobs_wmass(){
         do
             for terms in $termlist
             do
-                for variation in $pdfvarlist
+                variations=$pdfvarlist
+                [[ $pdfvarlist =~ all ]] && variations=`get_PDF_Nmembers $pdfset`
+                for variation in $variations
                 do
                     qtregion=`echo o${order}t${terms} | sed "s/\.//g;s/ //g"`
                     prepare_script
@@ -471,6 +473,15 @@ finalize_grid_submission(){
     #ls -hla --color=auto $griddir
     #echo
     #echo "Go to GRID folder 'cd GRID' edit subm.sh (change user name, role) and run it './subm.sh' "
+}
+
+get_PDF_Nmembers(){
+    pdfname=$1
+    pdfdir=lhapdf6/share/LHAPDF
+    [ -d $pdfdir  ] || pdfdir=`lhapdf-config --datadir`
+    nmem=`ls -1 $pdfdir/$pdfname/$pdfname*.dat | wc -l`
+    nmem=$((nmem-1))
+    seq 0 $nmem
 }
 
 DRYRUN=echo 
