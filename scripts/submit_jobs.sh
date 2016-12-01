@@ -31,11 +31,8 @@ OPTIONS :
     --pdfset   [CT10nnlo]   {LHAPDFname}           Set LHAPDF set name (can be comma separated list)
     --pdfvar   [0]          {int or all or array}  Set member number or run all
     --order    [1]          {1,2}                  1: NLL+NLO 2: NNLL+NNLO
-    --term     [LO]         {RES,CT}               Monte-Carlo integration with order as above
-                            {RES3D,CT3D}           Cubature 3D integration with order set above
-                            {RES2D,CT2D}           Cubature 2D integration with order set above
+    --term     [LO]         {BORN,CT}              Born and counter-term
                             {VJREAL,VJVIRT,VJLO}   Real, virt and V+J LO  with MC
-                            {VV,FIXCT,FIXCT2D}     Fixed terms
     --seeds                 {int or range or list} MANDATORY: Set range (for batch) or Njobs (grid)
     --griduser              {GRID username}        MANDATORY IF GRID
     --gridvoms              {voms settings}        If you want to run with group privileges.
@@ -91,10 +88,7 @@ parse_input(){
     proclist=z0
     #
     order=1
-    #termlist="LO VV FIXCT"
     termlist=VJLO
-    #order=2
-    #termlist="VJREAL VJVIRT FIXCT VV"
     #
     pdflist="CT10nnlo"
     #pdfvarlist=all
