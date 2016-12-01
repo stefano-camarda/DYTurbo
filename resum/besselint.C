@@ -99,7 +99,7 @@ double besselint::bint(double b)
   //alpq is used in hcoefficients::calcb, it is alpq = alphas(b0^2/b^2)
   //it is used only at NLL, at NNLL instead aexp and aexpb are used (aexp is the same as alphasl, but with a different blim)
   complex <double> alpq;
-  alpq = resint::alpqres * cx(alphasl_(fscale2_mub));
+  alpq = resint::alpqres * cx(alphasl_(fscale2_mub)); //--> Attention! in DYRES it is alphas(qres), in DyQT it is alphas(mur)
   if (opts.evolmode == 2 || opts.evolmode == 3)
     //In order to have variable flavour evolution, use here a VFN definition of alpq
     //There is possibly an issue here when the renormalisation scale is (very) different from mll, since aass=alphas(muren) is used in xlambda = beta0*aass*blog
