@@ -169,7 +169,8 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
   aass_.aass_ = aass; 
   double q = m;
   double blim;
-  if (opts.order == 2 && q2 > 2.2*muren2) //avoid large values of b in f2(y) when q2>mur2 
+  //if (opts.order == 2 && q2 > 2.2*muren2) //avoid large values of b in f2(y) when q2>mur2
+  if (q2 > 2.2*muren2) //avoid large values of b in f2(y) when q2>mur2 
     blim = a_param_.b0p_*(1./q)*exp(1./(2.*aass*resconst::beta0))*sqrt(muren2/q2);
   else
     blim = a_param_.b0p_*(1./q)*exp(1./(2.*aass*resconst::beta0)); // avoid Landau pole
