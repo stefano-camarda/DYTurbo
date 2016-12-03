@@ -461,7 +461,7 @@ void settings::check_consitency(){
         vjintvegas7d = true;
       }
 
-    if (mellin1d && (!bornint2d || makecuts))
+    if (mellin1d && (!resint2d || makecuts))
       {
 	cout << "mellin1d option is possible only for 2d integration of resummed piece, no cuts on leptons, and integration between [-ymin,ymax]" << endl;
 	exit (-1);
