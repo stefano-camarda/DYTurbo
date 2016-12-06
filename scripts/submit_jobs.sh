@@ -385,14 +385,14 @@ prepare_tarbal(){
     if [[ $target =~ compile ]]
     then
         echo "NOT TESTED $target" && exit 6
-        echo "Making a tarbal.. please wait"
+        echo "Making tarbal.. please wait"
         if ! make dist > /dev/null
         then
             echo "Compilation problem.. Try to 'make install'. I am exiting."
             exit 3
         fi
     else
-        echo "Making a executable... please wait"
+        echo "Making program.. please wait"
         if ! make install > /dev/null
         then
             echo "Compilation problem.. Try to 'make install'. I am exiting."
