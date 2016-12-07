@@ -227,7 +227,10 @@ public:
   //settings for alfa beta scaled-PDF integration in counter term and born fixed order
   int abintervals;
   int abrule;
- 
+
+  //settings for the phi integration in the V+J LO term when makecuts is false
+  int vjphirule;
+  
   //qt-recoil prescriptions
   bool qtrec_naive, qtrec_cs, qtrec_kt0;
 

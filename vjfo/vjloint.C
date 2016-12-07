@@ -233,7 +233,7 @@ void vjloint::calc(const double x[5], double f[2])
   else
     {
       phiintervals = 1;
-      phirule = 20;
+      phirule = opts.vjphirule;
     }
   double phi1 = -M_PI;
   double phi2 = M_PI;
