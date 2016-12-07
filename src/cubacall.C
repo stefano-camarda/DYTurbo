@@ -11,7 +11,7 @@
 #include <iostream>
 
 //flags for cuba Vegas integration:
-//flags += 0 or 4; //collect only weights from final iteration (0) or from all iterations (4)
+//flags += 0 or 4; //collect only weights from final iteration (4) or from all iterations (0)
 //flags = 8; //smoothing of importance sampling (0) or not (8)
 
 
