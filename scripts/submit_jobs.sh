@@ -207,13 +207,14 @@ submit_jobs_wmass(){
         exit 5
     fi
     if [[ $target =~ grid ]]
-    then
+    then # grid
+        [[ $seedlist =~ -|, ]]  && echo "Wrong seed '${seedlist}'. Set only number of jobs and seed inside input will be used as offset." && exit 1
         [[ $cernuser == unset ]] \
             && echo " GRID usernaname is mandatory please set '--griduser NAME'" \
             && echo " You can also specify your voms by '--voms VOMS'" \
             &&   exit 6
     else # not grid
-        [[ $seedlist =~ -|, ]]  || seedlist=1-$seedlist
+        ! [[ $seedlist =~ -|, ]]  && seedlist=1-$seedlist
     fi
     # check order term
     [[ $order == 1 ]] && [[ $termlist =~ VJREAL|VJVIRT ]] && echo "WRONG ORDER $order TO TERM $termlist" && return 3
@@ -384,14 +385,14 @@ prepare_tarbal(){
     if [[ $target =~ compile ]]
     then
         echo "NOT TESTED $target" && exit 6
-        echo "Making a tarbal.. please wait"
+        echo "Making tarbal.. please wait"
         if ! make dist > /dev/null
         then
             echo "Compilation problem.. Try to 'make install'. I am exiting."
             exit 3
         fi
     else
-        echo "Making a executable... please wait"
+        echo "Making program.. please wait"
         if ! make install > /dev/null
         then
             echo "Compilation problem.. Try to 'make install'. I am exiting."
