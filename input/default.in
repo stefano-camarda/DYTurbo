@@ -102,7 +102,7 @@ qtrule = 64
 
 #number of intervals and gaussian rule for the alfa beta scaled-PDF integration in the counter term and born fixed order term
 abintervals = 1
-abrule = 20
+abrule = 64
 
 # resummation damping
 dampk = 0.5
