@@ -9,6 +9,7 @@
 #include "cubature.h"
 #include "isnan.h"
 #include "gaussrules.h"
+#include "KinematicCuts.h"
 
 #include <math.h>
 #include <algorithm>
@@ -465,6 +466,10 @@ double vjloint::calcvegas(const double x[7])
   double r2[2] = {x[3], x[4]};
   phasespace::gen_costhphi(r2, jac);
   phasespace::genl4p();
+
+  if (!Kinematics::Cuts::KeepThisEvent(phasespace::p3, phasespace::p4))
+    return 0.;
+
   //calculate V+j matrix elements
   double p[4][12];
   fillp(p);
