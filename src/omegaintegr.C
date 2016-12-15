@@ -9,6 +9,7 @@
 #include "interface.h"
 #include "phasespace.h"
 #include "gaussrules.h"
+#include "KinematicCuts.h"
 #include "cuba.h"
 
 #include <ctime>
@@ -17,7 +18,6 @@
 #include <iomanip>
 #include <vector>
 
-#include "KinematicCuts.h"
 
 //rest frame axes
 double omegaintegr::kap1[4];
