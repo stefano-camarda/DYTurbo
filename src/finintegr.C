@@ -344,10 +344,19 @@ integrand_t vjlointegrand(const int &ndim, const double x[], const int &ncomp, d
 
   begin_time = clock();
 
-  vjloint::calc(x, f);
+  double ff[2];
+  vjloint::calc(x, ff);
+
+  f[0] = ff[0];
+  if (opts.helicity >= 0)
+    f[1] = ff[1];
 
   if (isnan_ofast(f[0]))
-    f[0] = 0.;  //avoid nans
+    {
+      f[0] = 0.;  //avoid nans
+      if (opts.helicity >= 0)
+	f[1]=0.;
+    }
   
   end_time = clock();
   if (opts.timeprofile)
