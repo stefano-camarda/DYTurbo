@@ -284,7 +284,7 @@ void vjlointegr7d(vector <double> &res, double &err)
 
 void vjlointegr5d(vector <double> &res, double &err)
 {
-  const int ndim = 5;     //dimensions of the integral
+  const int ndim = 4;//5;     //dimensions of the integral
   const int ncomp = (opts.helicity >= 0 ? 2 : 1);    //components of the integrand
   void *userdata;
   const int nvec = 1;
@@ -298,8 +298,8 @@ void vjlointegr5d(vector <double> &res, double &err)
   double error[ncomp];
   double prob[ncomp];
   const int flags = 0+opts.cubaverbosity;
-  const int mineval = 127+2*127*opts.niterVJ;
-  const int maxeval = 127+2*127*opts.niterVJ;
+  const int mineval = 153+2*153*opts.niterVJ;
+  const int maxeval = 153+2*153*opts.niterVJ;
   const int key = 13;
   int nregions;
   if (!opts.pcubature)
