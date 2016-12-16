@@ -1,12 +1,12 @@
 #include "resintegr.h"
 #include "omegaintegr.h"
-#include "phasespace/phasespace.h"
+#include "phasespace.h"
 #include "settings.h"
 #include "interface.h"
 #include "dyres_interface.h"
 #include "switch.h"
-#include "resum/resint.h"
-#include "resum/rapint.h"
+#include "resint.h"
+#include "rapint.h"
 #include "cubacall.h"
 #include "isnan.h"
 
@@ -15,7 +15,7 @@
 #include <iostream>
 #include <omp.h>
 
-#include "histo/KinematicCuts.h"
+#include "KinematicCuts.h"
 
 int resintegrand2d_cubature_v(unsigned ndim, long unsigned npts, const double x[], void *data, unsigned ncomp, double f[])
 {
@@ -111,8 +111,11 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
       if (opts.resumcpp)
 	{
 	  //C++ rewritten resum
-	  rapint::allocate();
-	  rapint::integrate(ymn,ymx,phasespace::m);
+	  if (!opts.mellin1d)
+	    {
+	      rapint::allocate();
+	      rapint::integrate(ymn,ymx,phasespace::m);
+	    }
 	  //end C++ resum
 	}
       else
@@ -171,7 +174,8 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
 	 << setw(10) << "resumm"  << setw(10) << float( ret - rbt ) /  CLOCKS_PER_SEC
 	 << endl;
   if (opts.resumcpp)
-    rapint::free();
+    if (!opts.mellin1d)
+      rapint::free();
   return 0;
 }
 

@@ -11,7 +11,7 @@
  * @date 2016-08-27
  */
 
-#include "src/handy_typdefs.h"
+#include "handy_typdefs.h"
 
 #include <map>
 #include <sys/wait.h>

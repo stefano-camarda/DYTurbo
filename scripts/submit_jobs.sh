@@ -31,11 +31,8 @@ OPTIONS :
     --pdfset   [CT10nnlo]   {LHAPDFname}           Set LHAPDF set name (can be comma separated list)
     --pdfvar   [0]          {int or all or array}  Set member number or run all
     --order    [1]          {1,2}                  1: NLL+NLO 2: NNLL+NNLO
-    --term     [LO]         {RES,CT}               Monte-Carlo integration with order as above
-                            {RES3D,CT3D}           Cubature 3D integration with order set above
-                            {RES2D,CT2D}           Cubature 2D integration with order set above
-                            {REAL,VIRT,LO}         Real, virt and V+J LO  with MC
-                            {VV,FIXCT,FIXCT2D}     Fixed terms
+    --term     [LO]         {BORN,CT}              Born and counter-term
+                            {VJREAL,VJVIRT,VJLO}   Real, virt and V+J LO  with MC
     --seeds                 {int or range or list} MANDATORY: Set range (for batch) or Njobs (grid)
     --griduser              {GRID username}        MANDATORY IF GRID
     --gridvoms              {voms settings}        If you want to run with group privileges.
@@ -91,12 +88,9 @@ parse_input(){
     proclist=z0
     #
     order=1
-    #termlist="LO VV FIXCT"
-    termlist=LO
-    #order=2
-    #termlist="REAL VIRT FIXCT VV"
+    termlist=VJLO
     #
-    pdflist="CT10nnlo CT10nnlo68clProfiled"
+    pdflist="CT10nnlo"
     #pdfvarlist=all
     #pdfvarlist="0 1 2 3"
     pdfvarlist=0
@@ -213,17 +207,18 @@ submit_jobs_wmass(){
         exit 5
     fi
     if [[ $target =~ grid ]]
-    then
+    then # grid
+        [[ $seedlist =~ -|, ]]  && echo "Wrong seed '${seedlist}'. Set only number of jobs and seed inside input will be used as offset." && exit 1
         [[ $cernuser == unset ]] \
             && echo " GRID usernaname is mandatory please set '--griduser NAME'" \
             && echo " You can also specify your voms by '--voms VOMS'" \
             &&   exit 6
     else # not grid
-        [[ $seedlist =~ -|, ]]  || seedlist=1-$seedlist
+        ! [[ $seedlist =~ -|, ]]  && seedlist=1-$seedlist
     fi
     # check order term
-    [[ $order == 1 ]] && [[ $termlist =~ REAL|VIRT ]] && echo "WRONG ORDER $order TO TERM $termlist" && return 3
-    [[ $order == 2 ]] && [[ $termlist =~ LO        ]] && echo "WRONG ORDER $order TO TERM $termlist" && return 3 
+    [[ $order == 1 ]] && [[ $termlist =~ VJREAL|VJVIRT ]] && echo "WRONG ORDER $order TO TERM $termlist" && return 3
+    [[ $order == 2 ]] && [[ $termlist =~ VJLO          ]] && echo "WRONG ORDER $order TO TERM $termlist" && return 3 
     # loops, lopps and loops
     for pdfset in $pdflist 
     do
@@ -236,7 +231,9 @@ submit_jobs_wmass(){
         do
             for terms in $termlist
             do
-                for variation in $pdfvarlist
+                variations=$pdfvarlist
+                [[ $pdfvarlist =~ all ]] && variations=`get_PDF_Nmembers $pdfset`
+                for variation in $variations
                 do
                     qtregion=`echo o${order}t${terms} | sed "s/\.//g;s/ //g"`
                     prepare_script
@@ -388,14 +385,14 @@ prepare_tarbal(){
     if [[ $target =~ compile ]]
     then
         echo "NOT TESTED $target" && exit 6
-        echo "Making a tarbal.. please wait"
+        echo "Making tarbal.. please wait"
         if ! make dist > /dev/null
         then
             echo "Compilation problem.. Try to 'make install'. I am exiting."
             exit 3
         fi
     else
-        echo "Making a executable... please wait"
+        echo "Making program.. please wait"
         if ! make install > /dev/null
         then
             echo "Compilation problem.. Try to 'make install'. I am exiting."
@@ -471,6 +468,15 @@ finalize_grid_submission(){
     #ls -hla --color=auto $griddir
     #echo
     #echo "Go to GRID folder 'cd GRID' edit subm.sh (change user name, role) and run it './subm.sh' "
+}
+
+get_PDF_Nmembers(){
+    pdfname=$1
+    pdfdir=lhapdf6/share/LHAPDF
+    [ -d $pdfdir  ] || pdfdir=`lhapdf-config --datadir`
+    nmem=`ls -1 $pdfdir/$pdfname/$pdfname*.dat | wc -l`
+    nmem=$((nmem-1))
+    seq 0 $nmem
 }
 
 DRYRUN=echo 

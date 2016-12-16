@@ -18,7 +18,7 @@ namespace pegasus
 
 
 //fortran interface to pegasus common blocks and functions
-const int ndim = 144; //maximum dimension of the moments array
+const int ndim = 512; //maximum dimension of the moments array
 
 extern "C" {
 

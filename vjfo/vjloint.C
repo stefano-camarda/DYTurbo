@@ -233,10 +233,10 @@ void vjloint::calc(const double x[5], double f[2])
   else
     {
       phiintervals = 1;
-      phirule = 10;
+      phirule = opts.vjphirule;
     }
-  double phi1 = 0.;
-  double phi2 = 2. * M_PI;
+  double phi1 = -M_PI;
+  double phi2 = M_PI;
   double hphi=(phi2-phi1)/phiintervals;
   for(int i=0; i < phiintervals; i++)
     {
@@ -249,14 +249,15 @@ void vjloint::calc(const double x[5], double f[2])
 	  double xphi = phic+phim*gr::xxx[phirule-1][iphi];
 	  phasespace::set_philep(xphi);
 
-	  double phi, cphi, c2phi, sphi, s2phi;
+	  double phi, cphi, c2phi;
+	  //double sphi, s2phi;
 	  if (opts.helicity >= 0)
 	    {
 	      phi = phasespace::phi_lep*(phasespace::y > 0. ? 1 : -1);
 	      cphi = cos(phi);
 	      c2phi = 2*cphi*cphi-1.;
-	      sphi = sqrt(max(0.,1.-cphi*cphi))*(phi>0?1:-1);
-	      s2phi = 2*cphi*sphi;
+	      //sphi = sqrt(max(0.,1.-cphi*cphi))*(phi>0?1:-1);
+	      //s2phi = 2*cphi*sphi;
 	    }
       
 	  //start costh integration

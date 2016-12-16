@@ -1,9 +1,9 @@
 #include "rapint.h"
-#include "src/settings.h"
+#include "settings.h"
 #include "gaussrules.h"
 #include "mellinint.h"
-#include "src/omegaintegr.h"
-#include "phasespace/phasespace.h"
+#include "omegaintegr.h"
+#include "phasespace.h"
 #include <iostream>
 
 int rapint::ydim;

@@ -106,7 +106,7 @@ c****************************
 c mass dependence in blim
       blim=cblim
 
-c     In reading these formulas, notice that L = q*bstar/b0p = (q/a_param)*bstar/b0 = Q * bstar/b0, according to Eq. (13) and (17) of hep-ph/0508068.
+c     In reading these formulas, notice that blog is L = log(q*bstar/b0p) = log[(q/a_param)*bstar/b0] = log[Q * bstar/b0], according to Eq. (13) and (17) of hep-ph/0508068.
       
       bstar=b
 c.....choose bstar (b) for real axis (complex plane) integration

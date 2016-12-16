@@ -20,8 +20,8 @@
 using std::max;
 
 // forward phasespace
-#include "phasespace/phasespace.h"
-#include "src/settings.h"
+#include "phasespace.h"
+#include "settings.h"
 
 namespace Kinematics{
 
@@ -307,6 +307,6 @@ namespace Kinematics{
     /// @}
 }
 
-#include "user/user_kinem.h"
+#include "user_kinem.h"
 
 #endif /* ifndef KinematicDefinitions_H */

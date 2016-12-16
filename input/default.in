@@ -23,6 +23,12 @@ kmures          = 0.5         # scale factor for the resummation scale
 C1 = 1.
 C3 = 1.
 
+#PDF matching scales
+kmuc          = 1.        # scale factor for the charm matching scale
+kmub          = 1.        # scale factor for the bottom matching scale
+kmut          = 1.        # scale factor for the top matching scale
+
+
 # EW parameters (Gmu scheme)
 ewscheme = 1
 Gf = 1.1663787e-5        # G-Fermi
@@ -56,6 +62,7 @@ useGamma = true
 
 # Resummation parameters
 resumcpp  = true  # use C++ code for resummation
+ctcpp     = true  # use C++ code for the counter term
 qtcutoff = 0.02   # resummation cutoff
 blim = -1         # scale factor for blim
 
@@ -66,7 +73,12 @@ opts_approxpdf = 0
 # number of intervals for integration of PDF moments (direct Mellin transform), relevant only for opts_approxpdf = 0
 opts_pdfintervals = 100
 
-# Type of PDF evolution (0: DYRES, 1: Pegasus as DYRES, 2: Mellin transform, 3: Pegasus VFN)
+# Type of PDF evolution
+#0: DYRES (backward evolution)
+#1: Pegasus as DYRES (backward evolution)
+#2: Mellin transform (forward evolution)
+#3: Pegasus VFN (forward evolution)
+#4: Pegasus VFN with alphas from DYRES (forward evolution)
 evolmode = 0
 
 #Settings for the Bessel integration
@@ -76,11 +88,24 @@ bintaccuracy = 1.0e-4  #accuracy
 mellinintervals = 1 #number of intervals
 mellinrule = 64     #number of nodes
 zmax = 27.   	    #upper limit of the contour in the imaginary axis
+cpoint = 1.   	    #point of intersection of the contour with the real axis
 mellincores = 1     #number of parallel threads for the mellin integration
+mellin1d = false    #use 1d (y-integrated) or 2d (y-dependent) mellin inversion
 
-#number of intervals and gaussian rule for the rapidity integrations
+#number of intervals and gaussian rule for the rapidity integrations in the 2dim resummed piece
 yintervals = 1
 yrule = 20
+
+#number of intervals and gaussian rule for the qt integration in the 2dim counter term
+qtintervals = 1
+qtrule = 64
+
+#number of intervals and gaussian rule for the alfa beta scaled-PDF integration in the counter term and born fixed order term
+abintervals = 1
+abrule = 64
+
+#gaussian rule for the phi integration in the V+J LO term when makecuts is false
+vjphirule = 20
 
 # resummation damping
 dampk = 0.5
@@ -129,7 +154,7 @@ vegasncallsVJREAL = 10000000 # only for real 10d vegas integration
 vegasncallsVJVIRT = 1000000  # only for virt 8d vegas integration
 
 # cubature settings
-pcubature = false
+pcubature = true
 pcubaccuracy = 1e-3
 
 # costh CS boundaries

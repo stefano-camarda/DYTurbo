@@ -242,6 +242,9 @@ void settings::readfromfile(const string fname){
     kmures         = in.GetNumber ( "kmures"            ); //91.1876e0      # mur,        muf
     C1             = in.GetNumber ( "C1"            ); //91.1876e0      # mur,        muf
     C3             = in.GetNumber ( "C3"            ); //91.1876e0      # mur,        muf
+    kmuc           = in.GetNumber ( "kmuc"            );
+    kmub           = in.GetNumber ( "kmub"            );
+    kmut           = in.GetNumber ( "kmut"            );
     //    a_param        = in.GetNumber ( "a_param"        ); //2.0e0          # a_param
     g_param        = in.GetNumber ( "g_param"        ); //1.0e0          # g_param
     order          = in.GetNumber ( "order"          ); //1              # order
@@ -326,6 +329,7 @@ void settings::readfromfile(const string fname){
     verbose            = in.GetBool   ( "verbose"         ); //false   # debug       and      time       profile costh       phi_lep         integration
     texttable          = in.GetBool   ( "texttable"       ); //
     resumcpp           = in.GetBool   ( "resumcpp"        );
+    ctcpp              = in.GetBool   ( "ctcpp"        );
     useGamma           = in.GetBool ( "useGamma" );//
     PDFerrors           = in.GetBool ( "PDFerrors" );//
     opts_.approxpdf_    = in.GetNumber ( "opts_approxpdf" ); //0
@@ -335,9 +339,16 @@ void settings::readfromfile(const string fname){
     mellinintervals    = in.GetNumber ( "mellinintervals" );
     mellinrule         = in.GetNumber ( "mellinrule" );
     zmax               = in.GetNumber ( "zmax" );
+    cpoint             = in.GetNumber ( "cpoint" );
     mellincores        = in.GetNumber ( "mellincores" );
+    mellin1d           = in.GetBool   ( "mellin1d" );
     yintervals         = in.GetNumber ( "yintervals" );
     yrule              = in.GetNumber ( "yrule" );
+    qtintervals        = in.GetNumber ( "qtintervals" );
+    qtrule             = in.GetNumber ( "qtrule" );
+    abintervals        = in.GetNumber ( "abintervals" );
+    abrule             = in.GetNumber ( "abrule" );
+    vjphirule          = in.GetNumber ( "vjphirule" );
     ptbinwidth         = in.GetBool ( "ptbinwidth" );
     ybinwidth          = in.GetBool ( "ybinwidth" );
     force_binner_mode  = in.GetBool ( "force_binner_mode" );
@@ -378,10 +389,10 @@ void settings::check_consitency(){
 	exit (-1);
       }
 
-    if (dynamicscale == true && evolmode < 3)
+    if (dynamicscale == true && evolmode < 3 && order > 0 && fixedorder == false)
       {
 	//cannot use a dynamic muren, mufac, when the PDFs are converted from x-space to N-space at the factorisation scale
-	cout << "dynamicscale possible only with evolmode = 3 or 4" << endl;
+	cout << "At NLL and NNLL dynamicscale is possible only with evolmode = 3 or 4" << endl;
 	exit (-1);
       }
 
@@ -451,6 +462,18 @@ void settings::check_consitency(){
         vjintvegas7d = true;
       }
 
+    if (mellin1d && (!resint2d || makecuts))
+      {
+	cout << "mellin1d option is possible only for 2d integration of resummed piece, no cuts on leptons, and integration between [-ymin,ymax]" << endl;
+	exit (-1);
+      }
+
+    if (mellinintervals*mellinrule >= 512)
+      {
+	cout << "mellinintervals*mellinrule  should be less than 512 " << endl;
+	exit(-1);
+      }
+    
     if (makecuts && vjint3d)
       {
 	cout << "Required cuts on the final state leptons, enforce vegas integration for V+J fixed order cross section" << endl;
@@ -526,6 +549,9 @@ void settings::dumpAll(){
 	dumpD ( "kmures       ",  kmures   ) ;
 	dumpD ( "C1       ",  C1   ) ;
 	dumpD ( "C3       ",  C3   ) ;
+        dumpD ( "kmuc      ",  kmuc                     ) ;
+        dumpD ( "kmub      ",  kmub                     ) ;
+	dumpD ( "kmut      ",  kmut   ) ;
         dumpD( "blim              ",  blim    ) ;
         dumpS("LHAPDFset          ", LHAPDFset           );
         dumpI("LHAPDFmember       ", LHAPDFmember        );
@@ -618,6 +644,7 @@ void settings::dumpAll(){
         dumpB("verbose           ", verbose             );
         dumpB("texttable         ", texttable           );
         dumpB("resumcpp          ", resumcpp            );
+	dumpB("ctcpp             ", ctcpp               );
         dumpI("approxpdf         ", opts_.approxpdf_    );
         dumpI("pdfintervals      ", opts_.pdfintervals_ );
         dumpI("evolmode          ", evolmode            );
@@ -625,9 +652,16 @@ void settings::dumpAll(){
         dumpI("mellinintervals   ", mellinintervals     );
         dumpI("mellinrule        ", mellinrule          );
         dumpD("zmax              ", zmax                );
+	dumpD("cpoint            ", cpoint              );
         dumpD("mellincores       ", mellincores         );
+	dumpB("mellin1d          ", mellin1d            );
         dumpI("yintervals        ", yintervals          );
         dumpI("yrule             ", yrule               );
+        dumpI("qtintervals       ", qtintervals          );
+        dumpI("qtrule            ", qtrule               );
+        dumpI("abintervals       ", abintervals          );
+        dumpI("abrule            ", abrule               );
+	dumpI("vjphirule         ", vjphirule            );
         dumpB("ptbinwidth        ", ptbinwidth          );
         dumpB("ybinwidth         ", ybinwidth           );
         dumpB("force_binner_mode ", force_binner_mode   );

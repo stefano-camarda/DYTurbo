@@ -5,7 +5,7 @@
 #include "omegaintegr.h"
 #include "pdf.h"
 #include "phasespace.h"
-#include "gaussrules.h"
+#include "abint.h"
 #include "resconst.h"
 #include "dyres_interface.h"
 #include "dynnlo_interface.h"
@@ -15,44 +15,6 @@
 #include <string.h>
 
 using namespace std;
-
-double *abx;
-double *abw;
-int abdim;
-
-void loint::init()
-{
-  //initialize the points of the gaussian quadrature for the alfa and beta integration
-  int abintervals = 1;
-  int abrule = 64;
-  abdim = abintervals*abrule;
-
-  abx = new double [abdim];
-  abw = new double [abdim];
-    
-  double  x,t,jac;
-  int i,j;
-
-  double min = 1e-7;
-  double max = 1.;
-  double lmm = log(max/min);
-    
-  for (int i = 0;  i < abintervals; i++)
-    {
-      double a = min+(max-min)*i/abintervals;
-      double b = min+(max-min)*(i+1)/abintervals;
-      double c = 0.5*(a+b);
-      double m = 0.5*(b-a);
-      for (int j = 0; j < abrule; j++)
-	{
-	  double x = c+m*gr::xxx[abrule-1][j];
-	  double t = min*pow(max/min,x);
-	  double jac=t*lmm;
-	  abx[j+i*abrule]=t;
-	  abw[j+i*abrule]=gr::www[abrule-1][j]*m*jac;
-	}
-    }
-}
 
 //double loint::lint(double costh, double m, double y, int mode, double f[])
 void loint::lint(double costh, double m, double y, int mode, double f[2])
@@ -312,20 +274,20 @@ void loint::lint(double costh, double m, double y, int mode, double f[2])
   //Start the fast alfa beta integration
 
   //Preliminary loop for caching
-  double cz1[abdim];
-  double cz2[abdim];
+  double cz1[abint::abdim];
+  double cz2[abint::abdim];
   // --> cache the logs, and pass them as parameters to the CxxPxx, Pxxxx functions
-  //double lz1[abdim];
-  //double lz2[abdim];
-  //double l1z1[abdim];
-  //double l1z2[abdim];
-  double lzoz1[abdim];
-  double lzoz2[abdim];
+  //double lz1[abint::abdim];
+  //double lz2[abint::abdim];
+  //double l1z1[abint::abdim];
+  //double l1z2[abint::abdim];
+  double lzoz1[abint::abdim];
+  double lzoz2[abint::abdim];
   if (opts.order >= 1)
-    for (int ab = 0; ab < abdim; ab++)
+    for (int ab = 0; ab < abint::abdim; ab++)
       {
-	cz1[ab] = pow(x1,abx[ab]);
-	cz2[ab] = pow(x2,abx[ab]);
+	cz1[ab] = pow(x1,abint::abx[ab]);
+	cz2[ab] = pow(x2,abint::abx[ab]);
 	//lz1[ab] = log(cz1[ab]);
 	//lz2[ab] = log(cz2[ab]);
 	//l1z1[ab] = log(1.-cz1[ab]);
@@ -335,23 +297,23 @@ void loint::lint(double costh, double m, double y, int mode, double f[2])
       }
 
   //cache scaled PDFs
-  double fx1p[abdim][2*MAXNF+1],fx2p[abdim][2*MAXNF+1];
+  double fx1p[abint::abdim][2*MAXNF+1],fx2p[abint::abdim][2*MAXNF+1];
   if (opts.order >= 1)
-    for (int ab = 0; ab < abdim; ab++)
+    for (int ab = 0; ab < abint::abdim; ab++)
       {
 	double fx1temp[2*MAXNF+1],fx2temp[2*MAXNF+1];
-	double xx1 = pow(x1,(1-abx[ab]));
-	double xx2 = pow(x2,(1-abx[ab]));
+	double xx1 = pow(x1,(1-abint::abx[ab]));
+	double xx2 = pow(x2,(1-abint::abx[ab]));
 	fdist_(opts.ih1,xx1,muf,fx1temp);
 	fdist_(opts.ih2,xx2,muf,fx2temp);
 	memcpy(fx1p[ab], fx1temp, (2*MAXNF+1)*sizeof(double));
 	memcpy(fx2p[ab], fx2temp, (2*MAXNF+1)*sizeof(double));
       }
 
-  double sumfx1p[abdim];
-  double sumfx2p[abdim];
+  double sumfx1p[abint::abdim];
+  double sumfx2p[abint::abdim];
   if (opts.order >= 2)
-    for (int ab = 0; ab < abdim; ab++)
+    for (int ab = 0; ab < abint::abdim; ab++)
       {
 	sumfx1p[ab] = 0.;
 	sumfx2p[ab] = 0.;
@@ -394,28 +356,28 @@ void loint::lint(double costh, double m, double y, int mode, double f[2])
       th1st += 2*resconst::C1qqdelta*fx1[i]*fx2[j]*bornmesqij;
       
       //alfa loop (first leg)
-      for (int a = 0; a < abdim; a++)
+      for (int a = 0; a < abint::abdim; a++)
 	{
 	  if (cz1[a] >= 1) continue;
 	  
 	  //H1st non delta terms
-	  th1st += (fx1p[a][i]*cqq_(cz1[a])+fx1p[a][g]*cqg_(cz1[a]))*(-lx1)*fx2[j]*bornmesqij * abw[a];
+	  th1st += (fx1p[a][i]*cqq_(cz1[a])+fx1p[a][g]*cqg_(cz1[a]))*(-lx1)*fx2[j]*bornmesqij * abint::abw[a];
 	  
 	  //H1st muf dependence, gammaqq and gammaqg:
-	  th1stF += (-lx1*((fx1p[a][i]-fx1[i]*cz1[a])*pqq_(cz1[a])+fx1p[a][g]*dypqg_(cz1[a])))*fx2[j]*bornmesqij * abw[a];
+	  th1stF += (-lx1*((fx1p[a][i]-fx1[i]*cz1[a])*pqq_(cz1[a])+fx1p[a][g]*dypqg_(cz1[a])))*fx2[j]*bornmesqij * abint::abw[a];
 	}
       th1stF += -pqqintx1*fx1[i]*fx2[j]*bornmesqij;
       
       //beta loop (second leg)
-      for (int b = 0; b < abdim; b++)
+      for (int b = 0; b < abint::abdim; b++)
 	{
 	  if (cz2[b] >= 1) continue;
 
 	  //H1st non delta terms
-	  th1st += (fx2p[b][j]*cqq_(cz2[b])+fx2p[b][g]*cqg_(cz2[b]))*(-lx2)*fx1[i]*bornmesqij * abw[b];
+	  th1st += (fx2p[b][j]*cqq_(cz2[b])+fx2p[b][g]*cqg_(cz2[b]))*(-lx2)*fx1[i]*bornmesqij * abint::abw[b];
 	  
 	  //H1st muf dependence, gammaqq and gammaqg:
-	  th1stF += (-lx2*((fx2p[b][j]-fx2[j]*cz2[b])*pqq_(cz2[b])+fx2p[b][g]*dypqg_(cz2[b])))*fx1[i]*bornmesqij * abw[b];
+	  th1stF += (-lx2*((fx2p[b][j]-fx2[j]*cz2[b])*pqq_(cz2[b])+fx2p[b][g]*dypqg_(cz2[b])))*fx1[i]*bornmesqij * abint::abw[b];
 	}
       th1stF += -pqqintx2*fx1[i]*fx2[j]*bornmesqij;
       if (opts.order == 1) continue;
@@ -427,38 +389,38 @@ void loint::lint(double costh, double m, double y, int mode, double f[2])
       double diff1 = 0;
       double diffc1f = 0;
       double diffc10 = 0;
-      for (int a = 0; a < abdim; a++)
+      for (int a = 0; a < abint::abdim; a++)
 	{
 	  if (cz1[a] >= 1) continue;
 
 	  //h2st qqbar contribution from c1*c1 (without delta term) -> regular-delta
-	  th2st += fx1p[a][i]*cqq_(cz1[a])*(-lx1)*fx2[j]*resconst::C1qqdelta*bornmesqij * abw[a];
+	  th2st += fx1p[a][i]*cqq_(cz1[a])*(-lx1)*fx2[j]*resconst::C1qqdelta*bornmesqij * abint::abw[a];
 
 	  //h2st qg contribution from c1*c1 ->regular-delta
-	  th2st += fx1p[a][g]*cqg_(cz1[a])*(-lx1)*fx2[j]*resconst::C1qqdelta*bornmesqij * abw[a];
+	  th2st += fx1p[a][g]*cqg_(cz1[a])*(-lx1)*fx2[j]*resconst::C1qqdelta*bornmesqij * abint::abw[a];
 
 	  //H2st qqbar channel: D0(z), first leg
-	  th2st += 0.5*(-lx1*(fx1p[a][i]-fx1[i]*cz1[a])*resconst::H2qqD0/(1.-cz1[a]))*fx2[j]*bornmesqij * abw[a];
-	  th2st += -0.5*resconst::H2qqD0*d0intx1*fx1[i]*fx2[j]*bornmesqij * abw[a];
+	  th2st += 0.5*(-lx1*(fx1p[a][i]-fx1[i]*cz1[a])*resconst::H2qqD0/(1.-cz1[a]))*fx2[j]*bornmesqij * abint::abw[a];
+	  th2st += -0.5*resconst::H2qqD0*d0intx1*fx1[i]*fx2[j]*bornmesqij * abint::abw[a];
 
 	  //C2qq, regular part, first leg
-	  th2st += fx1p[a][i]*c2qqreg_(cz1[a])*(-lx1)*fx2[j]*bornmesqij * abw[a];
+	  th2st += fx1p[a][i]*c2qqreg_(cz1[a])*(-lx1)*fx2[j]*bornmesqij * abint::abw[a];
 
 	  //C2qg, first leg
-	  th2st += fx1p[a][g]*c2qg_(cz1[a])*(-lx1)*fx2[j]*bornmesqij * abw[a];
+	  th2st += fx1p[a][g]*c2qg_(cz1[a])*(-lx1)*fx2[j]*bornmesqij * abint::abw[a];
 
 	  //Cqqbar contribution: first leg
-	  th2st += fx1p[a][im]*c2qqb_(cz1[a])*(-lx1)*fx2[j]*bornmesqij * abw[a];
+	  th2st += fx1p[a][im]*c2qqb_(cz1[a])*(-lx1)*fx2[j]*bornmesqij * abint::abw[a];
 
 	  //Cqqp contribution: first leg
-	  th2st += (sumfx1p[a]-(fx1p[a][i]+fx1p[a][parton::charge_conj(parton::pdgid(i))]))*c2qqp_(cz1[a])*(-lx1)*fx2[j]*bornmesqij * abw[a];
+	  th2st += (sumfx1p[a]-(fx1p[a][i]+fx1p[a][parton::charge_conj(parton::pdgid(i))]))*c2qqp_(cz1[a])*(-lx1)*fx2[j]*bornmesqij * abint::abw[a];
 
 	  //Terms needed for NNLO scale dependence
 	  //(gamma+gamma)*(gamma+gamma) term
 
 	  //First part: one gamma for each leg
-	  diffg1f += (-lx1*(fx1p[a][i]-fx1[i]*cz1[a])*pqq_(cz1[a]) - pqqintx1*fx1[i]) * abw[a];
-	  diffg10 += -lx1*fx1p[a][g]*dypqg_(cz1[a]) * abw[a];
+	  diffg1f += (-lx1*(fx1p[a][i]-fx1[i]*cz1[a])*pqq_(cz1[a]) - pqqintx1*fx1[i]) * abint::abw[a];
+	  diffg10 += -lx1*fx1p[a][g]*dypqg_(cz1[a]) * abint::abw[a];
 
 	  //Second part: gamma*gamma terms
 	  //Pij * Pjk = D1ijjk (log(1-z)/(1-z))_+ + D0ijjk/(1-z)_+ 
@@ -468,39 +430,39 @@ void loint::lint(double costh, double m, double y, int mode, double f[2])
 			  *(resconst::D0qqqq/(1-cz1[a])+resconst::D1qqqq*lzoz1[a])
 			  +fx1p[a][i]*pqqqq_(cz1[a])+fx1p[a][g]*(pqqqg_(cz1[a])+pqggg_(cz1[a])))
 		    +(resconst::Deltaqqqq-resconst::D0qqqq*d0intx1-resconst::D1qqqq*d1intx1)
-		    *fx1[i]) * abw[a];
+		    *fx1[i]) * abint::abw[a];
 
 	  //Include Pqggq
-	  diff1 += -lx1*sumfx1p[a]*pqggq_(cz1[a]) * abw[a];
+	  diff1 += -lx1*sumfx1p[a]*pqggq_(cz1[a]) * abint::abw[a];
 	  //End of (gamma+gamma)*(gamma+gamma) term
 
 	  //Start  (C+C)*(gamma+gamma) term
 	  //C first leg, gamma second leg
-	  diffc1f += (-lx1*fx1p[a][i]*cqq_(cz1[a])+resconst::C1qqdelta*fx1[i]) * abw[a];
-	  diffc10 += -lx1*fx1p[a][g]*cqg_(cz1[a]) * abw[a];
+	  diffc1f += (-lx1*fx1p[a][i]*cqq_(cz1[a])+resconst::C1qqdelta*fx1[i]) * abint::abw[a];
+	  diffc10 += -lx1*fx1p[a][g]*cqg_(cz1[a]) * abint::abw[a];
       
 	  //C*gamma: first leg (ignore delta term in Cqq: taken into account with th1stF)
-	  tcga += (fx1p[a][i]*cqqpqq_(cz1[a])+fx1p[a][g]*(cqqpqg_(cz1[a])+cqgpgg_(cz1[a])))*(-lx1)*fx2[j]*bornmesqij * abw[a];
+	  tcga += (fx1p[a][i]*cqqpqq_(cz1[a])+fx1p[a][g]*(cqqpqg_(cz1[a])+cqgpgg_(cz1[a])))*(-lx1)*fx2[j]*bornmesqij * abint::abw[a];
 
 	  //Add Cqg*Pgq contribution
-	  tcga += sumfx1p[a]*cqgpgq_(cz1[a])*(-lx1)*fx2[j]*bornmesqij * abw[a];
+	  tcga += sumfx1p[a]*cqgpgq_(cz1[a])*(-lx1)*fx2[j]*bornmesqij * abint::abw[a];
 
 	  //Start 2-loop AP
 	  // Gluon + pure singlet
 	  //f == gluon piece
-	  tgamma2 += fx1p[a][g]*p2qg_(cz1[a])*(-lx1)*fx2[j]*bornmesqij * abw[a];
+	  tgamma2 += fx1p[a][g]*p2qg_(cz1[a])*(-lx1)*fx2[j]*bornmesqij * abint::abw[a];
 
 	  //f != gluon piece
-	  tgamma2 += sumfx1p[a]*p2qqs_(cz1[a])*(-lx1)*fx2[j]*bornmesqij * abw[a];
+	  tgamma2 += sumfx1p[a]*p2qqs_(cz1[a])*(-lx1)*fx2[j]*bornmesqij * abint::abw[a];
 
 	  //P2qq non-singlet: regular part
-	  tgamma2 += fx1p[a][i]*p2qqv_(cz1[a])*(-lx1)*fx2[j]*bornmesqij * abw[a];
+	  tgamma2 += fx1p[a][i]*p2qqv_(cz1[a])*(-lx1)*fx2[j]*bornmesqij * abint::abw[a];
 
 	  //P2qq non-singlet: 1/(1-z)_+
-	  tgamma2 += 2./3.*resconst::Kappa*(-lx1*(fx1p[a][i]-fx1[i]*cz1[a])/(1-cz1[a])-d0intx1*fx1[i])*fx2[j]*bornmesqij * abw[a];
+	  tgamma2 += 2./3.*resconst::Kappa*(-lx1*(fx1p[a][i]-fx1[i]*cz1[a])/(1-cz1[a])-d0intx1*fx1[i])*fx2[j]*bornmesqij * abint::abw[a];
 
 	  //P2qqb non singlet
-	  tgamma2 += fx1p[a][im]*p2qqbv_(cz1[a])*(-lx1)*fx2[j]*bornmesqij * abw[a];
+	  tgamma2 += fx1p[a][im]*p2qqbv_(cz1[a])*(-lx1)*fx2[j]*bornmesqij * abint::abw[a];
 	}
 	  
       //beta loop
@@ -509,38 +471,38 @@ void loint::lint(double costh, double m, double y, int mode, double f[2])
       double diff2 = 0;
       double diffc2f = 0;
       double diffc20 = 0;
-      for (int b = 0; b < abdim; b++)
+      for (int b = 0; b < abint::abdim; b++)
 	{
 	  if (cz2[b] >= 1) continue;
 	  
 	  //h2st qqbar contribution from c1*c1 (without delta term) -> regular-delta
-	  th2st += fx2p[b][j]*cqq_(cz2[b])*(-lx2)*fx1[i]*resconst::C1qqdelta*bornmesqij * abw[b];
+	  th2st += fx2p[b][j]*cqq_(cz2[b])*(-lx2)*fx1[i]*resconst::C1qqdelta*bornmesqij * abint::abw[b];
 
 	  //h2st qg contribution from c1*c1 ->regular-delta
-	  th2st += fx2p[b][g]*cqg_(cz2[b])*(-lx2)*fx1[i]*resconst::C1qqdelta*bornmesqij * abw[b];
+	  th2st += fx2p[b][g]*cqg_(cz2[b])*(-lx2)*fx1[i]*resconst::C1qqdelta*bornmesqij * abint::abw[b];
 
 	  //H2st, qqbar channel: D0(z), second leg
-	  th2st += 0.5*(-lx2*(fx2p[b][j]-fx2[j]*cz2[b])*resconst::H2qqD0/(1.-cz2[b]))*fx1[i]*bornmesqij * abw[b];
-	  th2st += -0.5*resconst::H2qqD0*d0intx2*fx1[i]*fx2[j]*bornmesqij * abw[b];
+	  th2st += 0.5*(-lx2*(fx2p[b][j]-fx2[j]*cz2[b])*resconst::H2qqD0/(1.-cz2[b]))*fx1[i]*bornmesqij * abint::abw[b];
+	  th2st += -0.5*resconst::H2qqD0*d0intx2*fx1[i]*fx2[j]*bornmesqij * abint::abw[b];
 
 	  //C2qq, regular part, second leg
-	  th2st += fx2p[b][j]*c2qqreg_(cz2[b])*(-lx2)*fx1[i]*bornmesqij * abw[b];
+	  th2st += fx2p[b][j]*c2qqreg_(cz2[b])*(-lx2)*fx1[i]*bornmesqij * abint::abw[b];
 
 	  //C2qg, second leg
-	  th2st += fx2p[b][g]*c2qg_(cz2[b])*(-lx2)*fx1[i]*bornmesqij * abw[b];
+	  th2st += fx2p[b][g]*c2qg_(cz2[b])*(-lx2)*fx1[i]*bornmesqij * abint::abw[b];
 
 	  //Cqqbar contribution: second leg
-	  th2st += fx2p[b][jm]*c2qqb_(cz2[b])*(-lx2)*fx1[i]*bornmesqij * abw[b];
+	  th2st += fx2p[b][jm]*c2qqb_(cz2[b])*(-lx2)*fx1[i]*bornmesqij * abint::abw[b];
 
 	  //Cqqp contribution: second leg
-	  th2st += (sumfx2p[b]-(fx2p[b][j]+fx2p[b][parton::charge_conj(parton::pdgid(j))]))*c2qqp_(cz2[b])*(-lx2)*fx1[i]*bornmesqij * abw[b];
+	  th2st += (sumfx2p[b]-(fx2p[b][j]+fx2p[b][parton::charge_conj(parton::pdgid(j))]))*c2qqp_(cz2[b])*(-lx2)*fx1[i]*bornmesqij * abint::abw[b];
 
 	  //Terms needed for NNLO scale dependence
 	  //(gamma+gamma)*(gamma+gamma) term
 
 	  //First part: one gamma for each leg
-	  diffg2f += (-lx2*(fx2p[b][j]-fx2[j]*cz2[b])*pqq_(cz2[b]) - pqqintx2*fx2[j]) * abw[b];
-	  diffg20 += -lx2*fx2p[b][g]*dypqg_(cz2[b]) * abw[b];
+	  diffg2f += (-lx2*(fx2p[b][j]-fx2[j]*cz2[b])*pqq_(cz2[b]) - pqqintx2*fx2[j]) * abint::abw[b];
+	  diffg20 += -lx2*fx2p[b][g]*dypqg_(cz2[b]) * abint::abw[b];
 
 	  //Second part: gamma*gamma terms
 	  //Pij * Pjk = D1ijjk (log(1-z)/(1-z))_+ + D0ijjk/(1-z)_+ 
@@ -550,38 +512,38 @@ void loint::lint(double costh, double m, double y, int mode, double f[2])
 			  *(resconst::D0qqqq/(1-cz2[b])+resconst::D1qqqq*lzoz2[b])
 			  +fx2p[b][j]*pqqqq_(cz2[b])+fx2p[b][g]*(pqqqg_(cz2[b])+pqggg_(cz2[b])))
 		    +(resconst::Deltaqqqq-resconst::D0qqqq*d0intx2-resconst::D1qqqq*d1intx2)
-		    *fx2[j])* abw[b];
+		    *fx2[j])* abint::abw[b];
 	  //Include Pqggq
-	  diff2 += -lx2*sumfx2p[b]*pqggq_(cz2[b]) * abw[b];
+	  diff2 += -lx2*sumfx2p[b]*pqggq_(cz2[b]) * abint::abw[b];
 	  //End of (gamma+gamma)*(gamma+gamma) term
 
 	  //Start  (C+C)*(gamma+gamma) term
 	  //gamma first leg, C second leg
-	  diffc2f += (-lx2*fx2p[b][j]*cqq_(cz2[b])+resconst::C1qqdelta*fx2[j]) * abw[b];
-	  diffc20 += -lx2*fx2p[b][g]*cqg_(cz2[b]) * abw[b];
+	  diffc2f += (-lx2*fx2p[b][j]*cqq_(cz2[b])+resconst::C1qqdelta*fx2[j]) * abint::abw[b];
+	  diffc20 += -lx2*fx2p[b][g]*cqg_(cz2[b]) * abint::abw[b];
 
 	  //C*gamma: second leg (ignore delta term in Cqq: taken into account with th1stF)
-	  tcga += (fx2p[b][j]*cqqpqq_(cz2[b])+fx2p[b][g]*(cqqpqg_(cz2[b])+cqgpgg_(cz2[b])))*(-lx2)*fx1[i]*bornmesqij * abw[b];
+	  tcga += (fx2p[b][j]*cqqpqq_(cz2[b])+fx2p[b][g]*(cqqpqg_(cz2[b])+cqgpgg_(cz2[b])))*(-lx2)*fx1[i]*bornmesqij * abint::abw[b];
 
 	  //Add Cqg*Pgq contribution
-	  tcga += sumfx2p[b]*cqgpgq_(cz2[b])*(-lx2)*fx1[i]*bornmesqij * abw[b];
+	  tcga += sumfx2p[b]*cqgpgq_(cz2[b])*(-lx2)*fx1[i]*bornmesqij * abint::abw[b];
 
 	  //Start 2-loop AP
 	  // Gluon + pure singlet
 	  //f == gluon piece
-	  tgamma2 += fx2p[b][g]*p2qg_(cz2[b])*(-lx2)*fx1[i]*bornmesqij * abw[b];
+	  tgamma2 += fx2p[b][g]*p2qg_(cz2[b])*(-lx2)*fx1[i]*bornmesqij * abint::abw[b];
 
 	  //f != gluon piece
-	  tgamma2 += sumfx2p[b]*p2qqs_(cz2[b])*(-lx2)*fx1[i]*bornmesqij * abw[b];
+	  tgamma2 += sumfx2p[b]*p2qqs_(cz2[b])*(-lx2)*fx1[i]*bornmesqij * abint::abw[b];
 
 	  //P2qq non-singlet: regular part
-	  tgamma2 += fx2p[b][j]*p2qqv_(cz2[b])*(-lx2)*fx1[i]*bornmesqij * abw[b];
+	  tgamma2 += fx2p[b][j]*p2qqv_(cz2[b])*(-lx2)*fx1[i]*bornmesqij * abint::abw[b];
 
 	  //P2qq non-singlet: 1/(1-z)_+
-	  tgamma2 += 2./3.*resconst::Kappa*(-lx2*(fx2p[b][j]-fx2[j]*cz2[b])/(1-cz2[b])-d0intx2*fx2[j])*fx1[i]*bornmesqij * abw[b];
+	  tgamma2 += 2./3.*resconst::Kappa*(-lx2*(fx2p[b][j]-fx2[j]*cz2[b])/(1-cz2[b])-d0intx2*fx2[j])*fx1[i]*bornmesqij * abint::abw[b];
 
 	  //P2qqb non singlet
-	  tgamma2 += fx2p[b][jm]*p2qqbv_(cz2[b])*(-lx2)*fx1[i]*bornmesqij * abw[b];
+	  tgamma2 += fx2p[b][jm]*p2qqbv_(cz2[b])*(-lx2)*fx1[i]*bornmesqij * abint::abw[b];
 	}
 
       tgaga=tgaga+2*(diffg10*diffg20+diffg1f*diffg2f+diffg10*diffg2f+diffg1f*diffg20)*bornmesqij;
@@ -592,18 +554,18 @@ void loint::lint(double costh, double m, double y, int mode, double f[2])
       tcga += bornmesqij*(diffg10*diffc20+diffg1f*diffc2f+diffg10*diffc2f+diffg1f*diffc20);
 
       //alfa-beta loop
-      for (int a = 0; a < abdim; a++)
-	for (int b = 0; b < abdim; b++)
+      for (int a = 0; a < abint::abdim; a++)
+	for (int b = 0; b < abint::abdim; b++)
 	  {
 	    //h2st gg contribution
-	    th2st += fx1p[a][g]*cqg_(cz1[a])*(-lx1)*fx2p[b][g]*cqg_(cz2[b])*(-lx2)*bornmesqij * abw[a]*abw[b];
+	    th2st += fx1p[a][g]*cqg_(cz1[a])*(-lx1)*fx2p[b][g]*cqg_(cz2[b])*(-lx2)*bornmesqij * abint::abw[a]*abint::abw[b];
 
 	    //h2st qqbar contribution from c1*c1 (without delta term) -> regular*regular
-	    th2st += fx1p[a][i]*cqq_(cz1[a])*(-lx1)*fx2p[b][j]*cqq_(cz2[b])*(-lx2)*bornmesqij * abw[a]*abw[b];
+	    th2st += fx1p[a][i]*cqq_(cz1[a])*(-lx1)*fx2p[b][j]*cqq_(cz2[b])*(-lx2)*bornmesqij * abint::abw[a]*abint::abw[b];
 
 	    //h2st qg contribution from c1*c1 -> regular*regular
-	    th2st += fx1p[a][g]*cqg_(cz1[a])*(-lx1)*fx2p[b][j]*cqq_(cz2[b])*(-lx2)*bornmesqij * abw[a]*abw[b];
-	    th2st += fx1p[a][i]*cqq_(cz1[a])*(-lx1)*fx2p[b][g]*cqg_(cz2[b])*(-lx2)*bornmesqij * abw[a]*abw[b];
+	    th2st += fx1p[a][g]*cqg_(cz1[a])*(-lx1)*fx2p[b][j]*cqq_(cz2[b])*(-lx2)*bornmesqij * abint::abw[a]*abint::abw[b];
+	    th2st += fx1p[a][i]*cqq_(cz1[a])*(-lx1)*fx2p[b][g]*cqg_(cz2[b])*(-lx2)*bornmesqij * abint::abw[a]*abint::abw[b];
 	  }
     }
 
@@ -668,28 +630,28 @@ void loint::lint(double costh, double m, double y, int mode, double f[2])
       th1st += 2*resconst::C1qqdelta*fx1[i]*fx2[j];
       
       //alfa loop (first leg)
-      for (int a = 0; a < abdim; a++)
+      for (int a = 0; a < abint::abdim; a++)
 	{
 	  if (cz1[a] >= 1) continue;
 	  
 	  //H1st non delta terms
-	  th1st += (fx1p[a][i]*cqq_(cz1[a])+fx1p[a][g]*cqg_(cz1[a]))*(-lx1)*fx2[j] * abw[a];
+	  th1st += (fx1p[a][i]*cqq_(cz1[a])+fx1p[a][g]*cqg_(cz1[a]))*(-lx1)*fx2[j] * abint::abw[a];
 	  
 	  //H1st muf dependence, gammaqq and gammaqg:
-	  th1stF += (-lx1*((fx1p[a][i]-fx1[i]*cz1[a])*pqq_(cz1[a])+fx1p[a][g]*dypqg_(cz1[a])))*fx2[j] * abw[a];
+	  th1stF += (-lx1*((fx1p[a][i]-fx1[i]*cz1[a])*pqq_(cz1[a])+fx1p[a][g]*dypqg_(cz1[a])))*fx2[j] * abint::abw[a];
 	}
       th1stF += -pqqintx1*fx1[i]*fx2[j];
       
       //beta loop (second leg)
-      for (int b = 0; b < abdim; b++)
+      for (int b = 0; b < abint::abdim; b++)
 	{
 	  if (cz2[b] >= 1) continue;
 
 	  //H1st non delta terms
-	  th1st += (fx2p[b][j]*cqq_(cz2[b])+fx2p[b][g]*cqg_(cz2[b]))*(-lx2)*fx1[i] * abw[b];
+	  th1st += (fx2p[b][j]*cqq_(cz2[b])+fx2p[b][g]*cqg_(cz2[b]))*(-lx2)*fx1[i] * abint::abw[b];
 	  
 	  //H1st muf dependence, gammaqq and gammaqg:
-	  th1stF += (-lx2*((fx2p[b][j]-fx2[j]*cz2[b])*pqq_(cz2[b])+fx2p[b][g]*dypqg_(cz2[b])))*fx1[i] * abw[b];
+	  th1stF += (-lx2*((fx2p[b][j]-fx2[j]*cz2[b])*pqq_(cz2[b])+fx2p[b][g]*dypqg_(cz2[b])))*fx1[i] * abint::abw[b];
 	}
       th1stF += -pqqintx2*fx1[i]*fx2[j];
 
@@ -710,38 +672,38 @@ void loint::lint(double costh, double m, double y, int mode, double f[2])
       double diff1 = 0;
       double diffc1f = 0;
       double diffc10 = 0;
-      for (int a = 0; a < abdim; a++)
+      for (int a = 0; a < abint::abdim; a++)
 	{
 	  if (cz1[a] >= 1) continue;
 
 	  //h2st qqbar contribution from c1*c1 (without delta term) -> regular-delta
-	  th2st += fx1p[a][i]*cqq_(cz1[a])*(-lx1)*fx2[j]*resconst::C1qqdelta * abw[a];
+	  th2st += fx1p[a][i]*cqq_(cz1[a])*(-lx1)*fx2[j]*resconst::C1qqdelta * abint::abw[a];
 
 	  //h2st qg contribution from c1*c1 ->regular-delta
-	  th2st += fx1p[a][g]*cqg_(cz1[a])*(-lx1)*fx2[j]*resconst::C1qqdelta * abw[a];
+	  th2st += fx1p[a][g]*cqg_(cz1[a])*(-lx1)*fx2[j]*resconst::C1qqdelta * abint::abw[a];
 
 	  //H2st qqbar channel: D0(z), first leg
-	  th2st += 0.5*(-lx1*(fx1p[a][i]-fx1[i]*cz1[a])*resconst::H2qqD0/(1.-cz1[a]))*fx2[j] * abw[a];
-	  th2st += -0.5*resconst::H2qqD0*d0intx1*fx1[i]*fx2[j] * abw[a];
+	  th2st += 0.5*(-lx1*(fx1p[a][i]-fx1[i]*cz1[a])*resconst::H2qqD0/(1.-cz1[a]))*fx2[j] * abint::abw[a];
+	  th2st += -0.5*resconst::H2qqD0*d0intx1*fx1[i]*fx2[j] * abint::abw[a];
 
 	  //C2qq, regular part, first leg
-	  th2st += fx1p[a][i]*c2qqreg_(cz1[a])*(-lx1)*fx2[j] * abw[a];
+	  th2st += fx1p[a][i]*c2qqreg_(cz1[a])*(-lx1)*fx2[j] * abint::abw[a];
 
 	  //C2qg, first leg
-	  th2st += fx1p[a][g]*c2qg_(cz1[a])*(-lx1)*fx2[j] * abw[a];
+	  th2st += fx1p[a][g]*c2qg_(cz1[a])*(-lx1)*fx2[j] * abint::abw[a];
 
 	  //Cqqbar contribution: first leg
-	  th2st += fx1p[a][im]*c2qqb_(cz1[a])*(-lx1)*fx2[j] * abw[a];
+	  th2st += fx1p[a][im]*c2qqb_(cz1[a])*(-lx1)*fx2[j] * abint::abw[a];
 
 	  //Cqqp contribution: first leg
-	  th2st += (sumfx1p[a]-(fx1p[a][i]+fx1p[a][parton::charge_conj(parton::pdgid(i))]))*c2qqp_(cz1[a])*(-lx1)*fx2[j] * abw[a];
+	  th2st += (sumfx1p[a]-(fx1p[a][i]+fx1p[a][parton::charge_conj(parton::pdgid(i))]))*c2qqp_(cz1[a])*(-lx1)*fx2[j] * abint::abw[a];
 
 	  //Terms needed for NNLO scale dependence
 	  //(gamma+gamma)*(gamma+gamma) term
 
 	  //First part: one gamma for each leg
-	  diffg1f += (-lx1*(fx1p[a][i]-fx1[i]*cz1[a])*pqq_(cz1[a]) - pqqintx1*fx1[i]) * abw[a];
-	  diffg10 += -lx1*fx1p[a][g]*dypqg_(cz1[a]) * abw[a];
+	  diffg1f += (-lx1*(fx1p[a][i]-fx1[i]*cz1[a])*pqq_(cz1[a]) - pqqintx1*fx1[i]) * abint::abw[a];
+	  diffg10 += -lx1*fx1p[a][g]*dypqg_(cz1[a]) * abint::abw[a];
 
 	  //Second part: gamma*gamma terms
 	  //Pij * Pjk = D1ijjk (log(1-z)/(1-z))_+ + D0ijjk/(1-z)_+ 
@@ -751,39 +713,39 @@ void loint::lint(double costh, double m, double y, int mode, double f[2])
 			  *(resconst::D0qqqq/(1-cz1[a])+resconst::D1qqqq*lzoz1[a])
 			  +fx1p[a][i]*pqqqq_(cz1[a])+fx1p[a][g]*(pqqqg_(cz1[a])+pqggg_(cz1[a])))
 		    +(resconst::Deltaqqqq-resconst::D0qqqq*d0intx1-resconst::D1qqqq*d1intx1)
-		    *fx1[i]) * abw[a];
+		    *fx1[i]) * abint::abw[a];
 
 	  //Include Pqggq
-	  diff1 += -lx1*sumfx1p[a]*pqggq_(cz1[a]) * abw[a];
+	  diff1 += -lx1*sumfx1p[a]*pqggq_(cz1[a]) * abint::abw[a];
 	  //End of (gamma+gamma)*(gamma+gamma) term
 
 	  //Start  (C+C)*(gamma+gamma) term
 	  //C first leg, gamma second leg
-	  diffc1f += (-lx1*fx1p[a][i]*cqq_(cz1[a])+resconst::C1qqdelta*fx1[i]) * abw[a];
-	  diffc10 += -lx1*fx1p[a][g]*cqg_(cz1[a]) * abw[a];
+	  diffc1f += (-lx1*fx1p[a][i]*cqq_(cz1[a])+resconst::C1qqdelta*fx1[i]) * abint::abw[a];
+	  diffc10 += -lx1*fx1p[a][g]*cqg_(cz1[a]) * abint::abw[a];
       
 	  //C*gamma: first leg (ignore delta term in Cqq: taken into account with th1stF)
-	  tcga += (fx1p[a][i]*cqqpqq_(cz1[a])+fx1p[a][g]*(cqqpqg_(cz1[a])+cqgpgg_(cz1[a])))*(-lx1)*fx2[j] * abw[a];
+	  tcga += (fx1p[a][i]*cqqpqq_(cz1[a])+fx1p[a][g]*(cqqpqg_(cz1[a])+cqgpgg_(cz1[a])))*(-lx1)*fx2[j] * abint::abw[a];
 
 	  //Add Cqg*Pgq contribution
-	  tcga += sumfx1p[a]*cqgpgq_(cz1[a])*(-lx1)*fx2[j] * abw[a];
+	  tcga += sumfx1p[a]*cqgpgq_(cz1[a])*(-lx1)*fx2[j] * abint::abw[a];
 
 	  //Start 2-loop AP
 	  // Gluon + pure singlet
 	  //f == gluon piece
-	  tgamma2 += fx1p[a][g]*p2qg_(cz1[a])*(-lx1)*fx2[j] * abw[a];
+	  tgamma2 += fx1p[a][g]*p2qg_(cz1[a])*(-lx1)*fx2[j] * abint::abw[a];
 
 	  //f != gluon piece
-	  tgamma2 += sumfx1p[a]*p2qqs_(cz1[a])*(-lx1)*fx2[j] * abw[a];
+	  tgamma2 += sumfx1p[a]*p2qqs_(cz1[a])*(-lx1)*fx2[j] * abint::abw[a];
 
 	  //P2qq non-singlet: regular part
-	  tgamma2 += fx1p[a][i]*p2qqv_(cz1[a])*(-lx1)*fx2[j] * abw[a];
+	  tgamma2 += fx1p[a][i]*p2qqv_(cz1[a])*(-lx1)*fx2[j] * abint::abw[a];
 
 	  //P2qq non-singlet: 1/(1-z)_+
-	  tgamma2 += 2./3.*resconst::Kappa*(-lx1*(fx1p[a][i]-fx1[i]*cz1[a])/(1-cz1[a])-d0intx1*fx1[i])*fx2[j] * abw[a];
+	  tgamma2 += 2./3.*resconst::Kappa*(-lx1*(fx1p[a][i]-fx1[i]*cz1[a])/(1-cz1[a])-d0intx1*fx1[i])*fx2[j] * abint::abw[a];
 
 	  //P2qqb non singlet
-	  tgamma2 += fx1p[a][im]*p2qqbv_(cz1[a])*(-lx1)*fx2[j] * abw[a];
+	  tgamma2 += fx1p[a][im]*p2qqbv_(cz1[a])*(-lx1)*fx2[j] * abint::abw[a];
 	}
 	  
       //beta loop
@@ -792,38 +754,38 @@ void loint::lint(double costh, double m, double y, int mode, double f[2])
       double diff2 = 0;
       double diffc2f = 0;
       double diffc20 = 0;
-      for (int b = 0; b < abdim; b++)
+      for (int b = 0; b < abint::abdim; b++)
 	{
 	  if (cz2[b] >= 1) continue;
 	  
 	  //h2st qqbar contribution from c1*c1 (without delta term) -> regular-delta
-	  th2st += fx2p[b][j]*cqq_(cz2[b])*(-lx2)*fx1[i]*resconst::C1qqdelta * abw[b];
+	  th2st += fx2p[b][j]*cqq_(cz2[b])*(-lx2)*fx1[i]*resconst::C1qqdelta * abint::abw[b];
 
 	  //h2st qg contribution from c1*c1 ->regular-delta
-	  th2st += fx2p[b][g]*cqg_(cz2[b])*(-lx2)*fx1[i]*resconst::C1qqdelta * abw[b];
+	  th2st += fx2p[b][g]*cqg_(cz2[b])*(-lx2)*fx1[i]*resconst::C1qqdelta * abint::abw[b];
 
 	  //H2st, qqbar channel: D0(z), second leg
-	  th2st += 0.5*(-lx2*(fx2p[b][j]-fx2[j]*cz2[b])*resconst::H2qqD0/(1.-cz2[b]))*fx1[i] * abw[b];
-	  th2st += -0.5*resconst::H2qqD0*d0intx2*fx1[i]*fx2[j] * abw[b];
+	  th2st += 0.5*(-lx2*(fx2p[b][j]-fx2[j]*cz2[b])*resconst::H2qqD0/(1.-cz2[b]))*fx1[i] * abint::abw[b];
+	  th2st += -0.5*resconst::H2qqD0*d0intx2*fx1[i]*fx2[j] * abint::abw[b];
 
 	  //C2qq, regular part, second leg
-	  th2st += fx2p[b][j]*c2qqreg_(cz2[b])*(-lx2)*fx1[i] * abw[b];
+	  th2st += fx2p[b][j]*c2qqreg_(cz2[b])*(-lx2)*fx1[i] * abint::abw[b];
 
 	  //C2qg, second leg
-	  th2st += fx2p[b][g]*c2qg_(cz2[b])*(-lx2)*fx1[i] * abw[b];
+	  th2st += fx2p[b][g]*c2qg_(cz2[b])*(-lx2)*fx1[i] * abint::abw[b];
 
 	  //Cqqbar contribution: second leg
-	  th2st += fx2p[b][jm]*c2qqb_(cz2[b])*(-lx2)*fx1[i] * abw[b];
+	  th2st += fx2p[b][jm]*c2qqb_(cz2[b])*(-lx2)*fx1[i] * abint::abw[b];
 
 	  //Cqqp contribution: second leg
-	  th2st += (sumfx2p[b]-(fx2p[b][j]+fx2p[b][parton::charge_conj(parton::pdgid(j))]))*c2qqp_(cz2[b])*(-lx2)*fx1[i] * abw[b];
+	  th2st += (sumfx2p[b]-(fx2p[b][j]+fx2p[b][parton::charge_conj(parton::pdgid(j))]))*c2qqp_(cz2[b])*(-lx2)*fx1[i] * abint::abw[b];
 
 	  //Terms needed for NNLO scale dependence
 	  //(gamma+gamma)*(gamma+gamma) term
 
 	  //First part: one gamma for each leg
-	  diffg2f += (-lx2*(fx2p[b][j]-fx2[j]*cz2[b])*pqq_(cz2[b]) - pqqintx2*fx2[j]) * abw[b];
-	  diffg20 += -lx2*fx2p[b][g]*dypqg_(cz2[b]) * abw[b];
+	  diffg2f += (-lx2*(fx2p[b][j]-fx2[j]*cz2[b])*pqq_(cz2[b]) - pqqintx2*fx2[j]) * abint::abw[b];
+	  diffg20 += -lx2*fx2p[b][g]*dypqg_(cz2[b]) * abint::abw[b];
 
 	  //Second part: gamma*gamma terms
 	  //Pij * Pjk = D1ijjk (log(1-z)/(1-z))_+ + D0ijjk/(1-z)_+ 
@@ -833,38 +795,38 @@ void loint::lint(double costh, double m, double y, int mode, double f[2])
 			  *(resconst::D0qqqq/(1-cz2[b])+resconst::D1qqqq*lzoz2[b])
 			  +fx2p[b][j]*pqqqq_(cz2[b])+fx2p[b][g]*(pqqqg_(cz2[b])+pqggg_(cz2[b])))
 		    +(resconst::Deltaqqqq-resconst::D0qqqq*d0intx2-resconst::D1qqqq*d1intx2)
-		    *fx2[j])* abw[b];
+		    *fx2[j])* abint::abw[b];
 	  //Include Pqggq
-	  diff2 += -lx2*sumfx2p[b]*pqggq_(cz2[b]) * abw[b];
+	  diff2 += -lx2*sumfx2p[b]*pqggq_(cz2[b]) * abint::abw[b];
 	  //End of (gamma+gamma)*(gamma+gamma) term
 
 	  //Start  (C+C)*(gamma+gamma) term
 	  //gamma first leg, C second leg
-	  diffc2f += (-lx2*fx2p[b][j]*cqq_(cz2[b])+resconst::C1qqdelta*fx2[j]) * abw[b];
-	  diffc20 += -lx2*fx2p[b][g]*cqg_(cz2[b]) * abw[b];
+	  diffc2f += (-lx2*fx2p[b][j]*cqq_(cz2[b])+resconst::C1qqdelta*fx2[j]) * abint::abw[b];
+	  diffc20 += -lx2*fx2p[b][g]*cqg_(cz2[b]) * abint::abw[b];
 
 	  //C*gamma: second leg (ignore delta term in Cqq: taken into account with th1stF)
-	  tcga += (fx2p[b][j]*cqqpqq_(cz2[b])+fx2p[b][g]*(cqqpqg_(cz2[b])+cqgpgg_(cz2[b])))*(-lx2)*fx1[i] * abw[b];
+	  tcga += (fx2p[b][j]*cqqpqq_(cz2[b])+fx2p[b][g]*(cqqpqg_(cz2[b])+cqgpgg_(cz2[b])))*(-lx2)*fx1[i] * abint::abw[b];
 
 	  //Add Cqg*Pgq contribution
-	  tcga += sumfx2p[b]*cqgpgq_(cz2[b])*(-lx2)*fx1[i] * abw[b];
+	  tcga += sumfx2p[b]*cqgpgq_(cz2[b])*(-lx2)*fx1[i] * abint::abw[b];
 
 	  //Start 2-loop AP
 	  // Gluon + pure singlet
 	  //f == gluon piece
-	  tgamma2 += fx2p[b][g]*p2qg_(cz2[b])*(-lx2)*fx1[i] * abw[b];
+	  tgamma2 += fx2p[b][g]*p2qg_(cz2[b])*(-lx2)*fx1[i] * abint::abw[b];
 
 	  //f != gluon piece
-	  tgamma2 += sumfx2p[b]*p2qqs_(cz2[b])*(-lx2)*fx1[i] * abw[b];
+	  tgamma2 += sumfx2p[b]*p2qqs_(cz2[b])*(-lx2)*fx1[i] * abint::abw[b];
 
 	  //P2qq non-singlet: regular part
-	  tgamma2 += fx2p[b][j]*p2qqv_(cz2[b])*(-lx2)*fx1[i] * abw[b];
+	  tgamma2 += fx2p[b][j]*p2qqv_(cz2[b])*(-lx2)*fx1[i] * abint::abw[b];
 
 	  //P2qq non-singlet: 1/(1-z)_+
-	  tgamma2 += 2./3.*resconst::Kappa*(-lx2*(fx2p[b][j]-fx2[j]*cz2[b])/(1-cz2[b])-d0intx2*fx2[j])*fx1[i] * abw[b];
+	  tgamma2 += 2./3.*resconst::Kappa*(-lx2*(fx2p[b][j]-fx2[j]*cz2[b])/(1-cz2[b])-d0intx2*fx2[j])*fx1[i] * abint::abw[b];
 
 	  //P2qqb non singlet
-	  tgamma2 += fx2p[b][jm]*p2qqbv_(cz2[b])*(-lx2)*fx1[i] * abw[b];
+	  tgamma2 += fx2p[b][jm]*p2qqbv_(cz2[b])*(-lx2)*fx1[i] * abint::abw[b];
 	}
 
       tgaga=tgaga+2*(diffg10*diffg20+diffg1f*diffg2f+diffg10*diffg2f+diffg1f*diffg20);
@@ -875,18 +837,18 @@ void loint::lint(double costh, double m, double y, int mode, double f[2])
       tcga += (diffg10*diffc20+diffg1f*diffc2f+diffg10*diffc2f+diffg1f*diffc20);
 
       //alfa-beta loop
-      for (int a = 0; a < abdim; a++)
-	for (int b = 0; b < abdim; b++)
+      for (int a = 0; a < abint::abdim; a++)
+	for (int b = 0; b < abint::abdim; b++)
 	  {
 	    //h2st gg contribution
-	    th2st += fx1p[a][g]*cqg_(cz1[a])*(-lx1)*fx2p[b][g]*cqg_(cz2[b])*(-lx2) * abw[a]*abw[b];
+	    th2st += fx1p[a][g]*cqg_(cz1[a])*(-lx1)*fx2p[b][g]*cqg_(cz2[b])*(-lx2) * abint::abw[a]*abint::abw[b];
 
 	    //h2st qqbar contribution from c1*c1 (without delta term) -> regular*regular
-	    th2st += fx1p[a][i]*cqq_(cz1[a])*(-lx1)*fx2p[b][j]*cqq_(cz2[b])*(-lx2) * abw[a]*abw[b];
+	    th2st += fx1p[a][i]*cqq_(cz1[a])*(-lx1)*fx2p[b][j]*cqq_(cz2[b])*(-lx2) * abint::abw[a]*abint::abw[b];
 
 	    //h2st qg contribution from c1*c1 -> regular*regular
-	    th2st += fx1p[a][g]*cqg_(cz1[a])*(-lx1)*fx2p[b][j]*cqq_(cz2[b])*(-lx2) * abw[a]*abw[b];
-	    th2st += fx1p[a][i]*cqq_(cz1[a])*(-lx1)*fx2p[b][g]*cqg_(cz2[b])*(-lx2) * abw[a]*abw[b];
+	    th2st += fx1p[a][g]*cqg_(cz1[a])*(-lx1)*fx2p[b][j]*cqq_(cz2[b])*(-lx2) * abint::abw[a]*abint::abw[b];
+	    th2st += fx1p[a][i]*cqq_(cz1[a])*(-lx1)*fx2p[b][g]*cqg_(cz2[b])*(-lx2) * abint::abw[a]*abint::abw[b];
 	  }
 
       //NNLO terms
