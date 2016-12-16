@@ -31,8 +31,11 @@ OPTIONS :
     --pdfset   [CT10nnlo]   {LHAPDFname}           Set LHAPDF set name (can be comma separated list)
     --pdfvar   [0]          {int or all or array}  Set member number or run all
     --order    [1]          {1,2}                  1: NLL+NLO 2: NNLL+NNLO
-    --term     [LO]         {BORN,CT}              Born and counter-term
+    --term     [LO]         {RES,CT}               Monte-Carlo integration with order as above
+                            {RES3D,CT3D}           Cubature 3D integration with order set above
+                            {RES2D,CT2D}           Cubature 2D integration with order set above
                             {VJREAL,VJVIRT,VJLO}   Real, virt and V+J LO  with MC
+                            {VV,FIXCT,FIXCT2D}     Fixed terms
     --seeds                 {int or range or list} MANDATORY: Set range (for batch) or Njobs (grid)
     --griduser              {GRID username}        MANDATORY IF GRID
     --gridvoms              {voms settings}        If you want to run with group privileges.
@@ -88,7 +91,10 @@ parse_input(){
     proclist=z0
     #
     order=1
+    #termlist="LO VV FIXCT"
     termlist=VJLO
+    #order=2
+    #termlist="VJREAL VJVIRT FIXCT VV"
     #
     pdflist="CT10nnlo"
     #pdfvarlist=all
@@ -170,6 +176,13 @@ parse_input(){
                 version=$2
                 shift
                 ;;
+            --gparam)
+                gparam=$2
+                shift
+                ;;
+            --yes)
+                YES=YES
+                ;;
             #  HELP and OTHER
             -h|--help)
                 help
@@ -207,14 +220,13 @@ submit_jobs_wmass(){
         exit 5
     fi
     if [[ $target =~ grid ]]
-    then # grid
-        [[ $seedlist =~ -|, ]]  && echo "Wrong seed '${seedlist}'. Set only number of jobs and seed inside input will be used as offset." && exit 1
+    then
         [[ $cernuser == unset ]] \
             && echo " GRID usernaname is mandatory please set '--griduser NAME'" \
             && echo " You can also specify your voms by '--voms VOMS'" \
             &&   exit 6
     else # not grid
-        ! [[ $seedlist =~ -|, ]]  && seedlist=1-$seedlist
+        [[ $seedlist =~ -|, ]]  || seedlist=1-$seedlist
     fi
     # check order term
     [[ $order == 1 ]] && [[ $termlist =~ VJREAL|VJVIRT ]] && echo "WRONG ORDER $order TO TERM $termlist" && return 3
@@ -251,7 +263,6 @@ dyturbo_project=`pwd -P`
 batch_script_dir=$dyturbo_project/scripts/batch_scripts
 queue=atlasshort
 batch_template=$dyturbo_project/scripts/run_on_batch_tmpl.sh
-collider=lhc7
 
 # this goes away
 in_files_dir=unset
@@ -289,7 +300,8 @@ prepare_script(){
     mkdir -p $result_dir
     #
     sample=${pdfset}_${variation}
-    job_name=${program}_${process}_${collider}_${sample}_${qtregion}_${random_seed}
+    [[ ! $gparam == "" ]] && sample=${sample}_g$gparam
+    job_name=${program}_${process}_${sample}_${qtregion}_${random_seed}
     sh_file=$batch_script_dir/$job_name.sh
     echo $job_name $seedlist
     #
@@ -297,12 +309,17 @@ prepare_script(){
     #[[ $process =~ z0 ]] && mbins=10,66,116
     # arguments
     arguments="input.in --proc $process --mbins $mbins --pdfset $pdfset --pdfvar $variation --order $order --term $terms"
+    [[ ! $gparam == "" ]] && arguments="$arguments --gparam $gparam"
     [[ $target =~ lxbatch|mogon|localrun ]] && arguments=$arguments" --seed \$LSB_JOBINDEX "
     # make sure we make some noise on grid
     [[ $target =~ mogon ]] && arguments=$arguments" --verbose "
     # job queue
     nprocessors=1
-    walltime=5:00
+    cubacores=`grep cubacores $infile | cut -d\# -f1 | cut -d= -f2 | xargs`
+    [[ $cubacores != "" ]] && [ $cubacores -gt 0 ] && nprocessors=$cubacores
+    #walltime=5:00
+    walltime=100:00
+    queue=atlaslong
     if [[ $program =~ dyres ]] || [[ $variation =~ all ]] || [[ $terms =~ [23]P ]]
     then
         walltime=20:00
@@ -385,14 +402,14 @@ prepare_tarbal(){
     if [[ $target =~ compile ]]
     then
         echo "NOT TESTED $target" && exit 6
-        echo "Making tarbal.. please wait"
+        echo "Making a tarbal.. please wait"
         if ! make dist > /dev/null
         then
             echo "Compilation problem.. Try to 'make install'. I am exiting."
             exit 3
         fi
     else
-        echo "Making program.. please wait"
+        echo "Making a executable... please wait"
         if ! make install > /dev/null
         then
             echo "Compilation problem.. Try to 'make install'. I am exiting."
@@ -481,11 +498,16 @@ get_PDF_Nmembers(){
 
 DRYRUN=echo 
 ask_submit(){
-    read -p "Do you want to submit jobs ? " -n 1 -r
-    echo    # (optional) move to a new line
-    if [[ $REPLY =~ ^[Yy]$ ]]
+    if [[ ! $YES == "" ]]
     then
-        DRYRUN=
+            DRYRUN=
+    else
+        read -p "Do you want to submit jobs ? " -n 1 -r
+        echo    # (optional) move to a new line
+        if [[ $REPLY =~ ^[Yy]$ ]]
+        then
+            DRYRUN=
+        fi
     fi
 }
 
