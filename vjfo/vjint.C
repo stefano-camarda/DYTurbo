@@ -13,8 +13,8 @@
 #include <iomanip>
 #include <math.h>
 
-const double vjint::zmin = 1e-13;
-const double vjint::zmax = 1.-1e-10;
+const double vjint::zmin = 1e-8;//1e-13;
+const double vjint::zmax = 1.-1e-8;;//1.-1e-10;
 const double vjint::lz = log(zmax/zmin);
 
 int vjint::z1rule;
@@ -89,12 +89,6 @@ void vjint::init()
   brz = 1./dymasses_.zwidth_*em_.aemmz_/24.*dymasses_.zmass_ *(pow(-1.+2.*ewcouple_.xw_,2)+pow(2.*ewcouple_.xw_,2))/(ewcouple_.xw_*cw2); //=0.033638
   brw = 1./dymasses_.wwidth_*em_.aemmz_*dymasses_.wmass_/(12.*ewcouple_.xw_); //=0.10906 
 
-  if (opts.zerowidth)
-    {
-      sigs_.sigz_ = brz; // /(16.*cw2)
-      sigs_.sigw_ = brw; // /4.
-    }
-  
   //quarks are ordered according to mass:
   //1,2,3,4,5,6
   //u,d,s,c,b,t
@@ -204,22 +198,31 @@ double vjint::vint(double m, double pt, double y)
   
   //calculate propagators
   double cw2 = 1.- ewcouple_.xw_;
-  //sigs_.sigz_ = brz*dymasses_.zwidth_*q2/(M_PI*dymasses_.zmass_) / (pow(q2-pow(dymasses_.zmass_,2),2)+pow(dymasses_.zmass_,2)*pow(dymasses_.zwidth_,2)); // /(16.*cw2)
-  //sigs_.sigw_ = brw*dymasses_.wwidth_*q2/(M_PI*dymasses_.wmass_) / (pow(q2-pow(dymasses_.wmass_,2),2)+pow(dymasses_.wmass_,2)*pow(dymasses_.wwidth_,2)); // !/4.
-  //sigs_.siggamma_ = em_.aemmz_/(3.*M_PI*q2);
-  //sigs_.sigint_ = -em_.aemmz_/(6.*M_PI)*(q2-pow(dymasses_.zmass_,2)) /(pow(q2-pow(dymasses_.zmass_,2),2)+pow(dymasses_.zmass_,2)*pow(dymasses_.zwidth_,2)) * (-1.+4.*ewcouple_.xw_)/(2.*sqrt(ewcouple_.xw_*cw2));  // !sqrt(sw2/cw2)/2.
-
-  mesq::setpropagators(m);
-  if (opts.nproc == 3)
-    sigs_.sigz_ = brz*dymasses_.zwidth_/(M_PI*dymasses_.zmass_)*mesq::propZ;
-  else
-    sigs_.sigw_ = brw*dymasses_.wwidth_/(M_PI*dymasses_.wmass_)*mesq::propW;
-  if (opts.useGamma)
+  if (opts.zerowidth)
     {
-      sigs_.siggamma_ = em_.aemmz_/(3.*M_PI) * mesq::propG;
-      sigs_.sigint_ = -em_.aemmz_/(6.*M_PI)* mesq::propZG * (-1.+4.*ewcouple_.xw_)/(2.*sqrt(ewcouple_.xw_*cw2));
+      sigs_.sigz_ = brz; // /(16.*cw2)
+      sigs_.sigw_ = brw; // /4.
+      sigs_.siggamma_ = 0.;
+      sigs_.sigint_ = 0.;
     }
-  
+  else
+    {
+      //sigs_.sigz_ = brz*dymasses_.zwidth_*q2/(M_PI*dymasses_.zmass_) / (pow(q2-pow(dymasses_.zmass_,2),2)+pow(dymasses_.zmass_,2)*pow(dymasses_.zwidth_,2)); // /(16.*cw2)
+      //sigs_.sigw_ = brw*dymasses_.wwidth_*q2/(M_PI*dymasses_.wmass_) / (pow(q2-pow(dymasses_.wmass_,2),2)+pow(dymasses_.wmass_,2)*pow(dymasses_.wwidth_,2)); // !/4.
+      //sigs_.siggamma_ = em_.aemmz_/(3.*M_PI*q2);
+      //sigs_.sigint_ = -em_.aemmz_/(6.*M_PI)*(q2-pow(dymasses_.zmass_,2)) /(pow(q2-pow(dymasses_.zmass_,2),2)+pow(dymasses_.zmass_,2)*pow(dymasses_.zwidth_,2)) * (-1.+4.*ewcouple_.xw_)/(2.*sqrt(ewcouple_.xw_*cw2)); // !sqrt(sw2/cw2)/2.
+
+      mesq::setpropagators(m);
+      if (opts.nproc == 3)
+	sigs_.sigz_ = brz*dymasses_.zwidth_/(M_PI*dymasses_.zmass_)*mesq::propZ;
+      else
+	sigs_.sigw_ = brw*dymasses_.wwidth_/(M_PI*dymasses_.wmass_)*mesq::propW;
+      if (opts.useGamma)
+	{
+	  sigs_.siggamma_ = em_.aemmz_/(3.*M_PI) * mesq::propG;
+	  sigs_.sigint_ = -em_.aemmz_/(6.*M_PI)* mesq::propZG * (-1.+4.*ewcouple_.xw_)/(2.*sqrt(ewcouple_.xw_*cw2));
+	}
+    }
   //set phase space variables
   internal_.q_ = m;
   internal_.q2_ = pow(m,2);
