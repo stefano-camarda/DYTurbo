@@ -74,6 +74,7 @@ integrand_t vjintegrand(const int &ndim, const double x[], const int &ncomp, dou
   double m = phasespace::m;
   double qt = phasespace::qt;
   double y = phasespace::y;
+  phasespace::calcexpy();
   
   //evaluate the Vj (N)LO cross section
   if (opts.pcubature)
