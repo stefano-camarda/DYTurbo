@@ -104,8 +104,11 @@ qtrule = 64
 abintervals = 1
 abrule = 64
 
-#gaussian rule for the phi integration in the V+J LO term when makecuts is false
+#gaussian rule for the phi integration in the V+J 5d LO term when makecuts is false
 vjphirule = 20
+
+#settings for the z1, z2 integration in the V+J 3d NLO term
+zrule = 64
 
 # resummation damping
 dampk = 0.5

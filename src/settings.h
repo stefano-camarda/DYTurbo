@@ -228,8 +228,11 @@ public:
   int abintervals;
   int abrule;
 
-  //settings for the phi integration in the V+J LO term when makecuts is false
+  //settings for the phi integration in the V+J 5d LO term when makecuts is false
   int vjphirule;
+
+  //settings for the z1, z2 integration in the V+J 3d NLO term
+  int zrule;
   
   //qt-recoil prescriptions
   bool qtrec_naive, qtrec_cs, qtrec_kt0;

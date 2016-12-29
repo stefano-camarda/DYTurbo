@@ -349,6 +349,7 @@ void settings::readfromfile(const string fname){
     abintervals        = in.GetNumber ( "abintervals" );
     abrule             = in.GetNumber ( "abrule" );
     vjphirule          = in.GetNumber ( "vjphirule" );
+    zrule              = in.GetNumber ( "zrule" );
     ptbinwidth         = in.GetBool ( "ptbinwidth" );
     ybinwidth          = in.GetBool ( "ybinwidth" );
     force_binner_mode  = in.GetBool ( "force_binner_mode" );
@@ -662,6 +663,7 @@ void settings::dumpAll(){
         dumpI("abintervals       ", abintervals          );
         dumpI("abrule            ", abrule               );
 	dumpI("vjphirule         ", vjphirule            );
+	dumpI("zrule             ", zrule               );
         dumpB("ptbinwidth        ", ptbinwidth          );
         dumpB("ybinwidth         ", ybinwidth           );
         dumpB("force_binner_mode ", force_binner_mode   );
