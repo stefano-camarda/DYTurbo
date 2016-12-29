@@ -432,6 +432,7 @@ c.....common factor for all the contributions
       factor=gevpb*alpha0*asp*cf/sh
 c.....compute parton luminosity
       call flavour
+      call utilities2(uh,q2)
       call utilities(sh,th,uh,q2,0d0)
 c.....leading order delta(s2) contributions
       xloqg=(factor/(xnc**2-1d0))*(Aqg0(sh,th,uh,q2)+Agq0(sh,th,uh,q2))
@@ -448,6 +449,7 @@ c.....leading order delta(s2) contributions
             
 c.....next to leading order delta(s2) contributions
       if (iord.eq.1) then
+         call utilities_dilog(sh,th,uh,q2)
          xnloqg=(factor/(xnc**2-1d0))*(
      /     Bqg1(sh,th,uh,q2)+Bgq1(sh,th,uh,q2)+
      /     Bqg2(sh,th,uh,q2)+Bgq2(sh,th,uh,q2)+
