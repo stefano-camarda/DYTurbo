@@ -4,26 +4,35 @@
 #include "resconst.h"
 #include "cubature.h"
 #include "gaussrules.h"
-#include <iomanip>
+#include "mesq.h"
+#include "coupling.h"
+#include "phasespace.h"
 
 #include "LHAPDF/LHAPDF.h"
 
+#include <iomanip>
 #include <math.h>
 
-const double zmin = 1e-13;
-const double zmax = 1.-1e-10;
-const double lz = log(zmax/zmin);
+const double vjint::zmin = 1e-13;
+const double vjint::zmax = 1.-1e-10;
+const double vjint::lz = log(zmax/zmin);
 
-const int z1rule = 64;
-const int z2rule = 64;
-double t1[z1rule];
-double t2[z2rule];
+int vjint::z1rule;
+int vjint::z2rule;
+double *vjint::t1;
+double *vjint::t2;
 
 double vjint::brz;
 double vjint::brw;
 
 void vjint::init()
 {
+  z1rule = opts.zrule;
+  z2rule = opts.zrule;
+
+  t1 = new double [z1rule];
+  t2 = new double [z2rule];
+  
   double az = zmin;
   double bz = zmax;
   double cz = 0.5*(az+bz);
@@ -35,8 +44,9 @@ void vjint::init()
     t2[j] = zmin*pow(zmax/zmin, cz+mz*gr::xxx[z2rule-1][j]);
 
   //gevpb_.gevpb_ = 3.8937966e8; //MCFM 6.8 value
-  gevpb_.gevpb_ = 0.389379e9; //dyres value
-
+  //gevpb_.gevpb_ = 0.389379e9; //dyres value
+  gevpb_.gevpb_ = gevfb/1000.;
+  
   flagch_.flagch_ = 0;
 
   vegint_.iter_ = 20;
@@ -74,7 +84,7 @@ void vjint::init()
   ckm_.vtb_ = 0.;
 
   double cw2 = 1.- ewcouple_.xw_;
-  em_.aemmz_ = sqrt(2.)* ewcouple_.Gf_ *pow(dymasses_.wmass_,2)* ewcouple_.xw_ /M_PI;
+  em_.aemmz_ = coupling::aemmz; //sqrt(2.)* ewcouple_.Gf_ *pow(dymasses_.wmass_,2)* ewcouple_.xw_ /M_PI;
 
   brz = 1./dymasses_.zwidth_*em_.aemmz_/24.*dymasses_.zmass_ *(pow(-1.+2.*ewcouple_.xw_,2)+pow(2.*ewcouple_.xw_,2))/(ewcouple_.xw_*cw2); //=0.033638
   brw = 1./dymasses_.wwidth_*em_.aemmz_*dymasses_.wmass_/(12.*ewcouple_.xw_); //=0.10906 
@@ -158,7 +168,7 @@ void vjint::init()
 
   //definition of constants and couplings
   const2_.ca_ = 3.;
-  const2_.xnc_ = 3.;
+  const2_.xnc_ = coupling::NC;
   const2_.cf_ = 4./3.;
   const2_.tr_ = resconst::NF/2.;
   const2_.pi_ = M_PI;
@@ -171,6 +181,8 @@ void vjint::init()
 
 double vjint::vint(double m, double pt, double y)
 {
+  double q2 = m*m;
+
   //set scales and alpha strong
   if (opts.dynamicscale)
     {
@@ -187,21 +199,34 @@ double vjint::vint(double m, double pt, double y)
   scales2_.xmuf2_ = pow(scales2_.xmuf_,2);
   asnew_.as_ = LHAPDF::alphasPDF(scales2_.xmur_)/M_PI;
 
+  //calculate logs of scales
+  utilities3_(q2);
+  
   //calculate propagators
-  double q2 = m*m;
   double cw2 = 1.- ewcouple_.xw_;
-  sigs_.sigz_ = brz*dymasses_.zwidth_*q2/(M_PI*dymasses_.zmass_) / (pow(q2-pow(dymasses_.zmass_,2),2)+pow(dymasses_.zmass_,2)*pow(dymasses_.zwidth_,2)); // /(16.*cw2)
-  sigs_.sigw_ = brw*dymasses_.wwidth_*q2/(M_PI*dymasses_.wmass_) / (pow(q2-pow(dymasses_.wmass_,2),2)+pow(dymasses_.wmass_,2)*pow(dymasses_.wwidth_,2)); // !/4.
-  sigs_.siggamma_ = em_.aemmz_/(3.*M_PI*q2);
-  sigs_.sigint_ = -em_.aemmz_/(6.*M_PI)*(q2-pow(dymasses_.zmass_,2)) /(pow(q2-pow(dymasses_.zmass_,2),2)+pow(dymasses_.zmass_,2)*pow(dymasses_.zwidth_,2)) * (-1.+4.*ewcouple_.xw_)/(2.*sqrt(ewcouple_.xw_*cw2));  // !sqrt(sw2/cw2)/2.
+  //sigs_.sigz_ = brz*dymasses_.zwidth_*q2/(M_PI*dymasses_.zmass_) / (pow(q2-pow(dymasses_.zmass_,2),2)+pow(dymasses_.zmass_,2)*pow(dymasses_.zwidth_,2)); // /(16.*cw2)
+  //sigs_.sigw_ = brw*dymasses_.wwidth_*q2/(M_PI*dymasses_.wmass_) / (pow(q2-pow(dymasses_.wmass_,2),2)+pow(dymasses_.wmass_,2)*pow(dymasses_.wwidth_,2)); // !/4.
+  //sigs_.siggamma_ = em_.aemmz_/(3.*M_PI*q2);
+  //sigs_.sigint_ = -em_.aemmz_/(6.*M_PI)*(q2-pow(dymasses_.zmass_,2)) /(pow(q2-pow(dymasses_.zmass_,2),2)+pow(dymasses_.zmass_,2)*pow(dymasses_.zwidth_,2)) * (-1.+4.*ewcouple_.xw_)/(2.*sqrt(ewcouple_.xw_*cw2));  // !sqrt(sw2/cw2)/2.
 
+  mesq::setpropagators(m);
+  if (opts.nproc == 3)
+    sigs_.sigz_ = brz*dymasses_.zwidth_/(M_PI*dymasses_.zmass_)*mesq::propZ;
+  else
+    sigs_.sigw_ = brw*dymasses_.wwidth_/(M_PI*dymasses_.wmass_)*mesq::propW;
+  if (opts.useGamma)
+    {
+      sigs_.siggamma_ = em_.aemmz_/(3.*M_PI) * mesq::propG;
+      sigs_.sigint_ = -em_.aemmz_/(6.*M_PI)* mesq::propZG * (-1.+4.*ewcouple_.xw_)/(2.*sqrt(ewcouple_.xw_*cw2));
+    }
+  
   //set phase space variables
   internal_.q_ = m;
   internal_.q2_ = pow(m,2);
   internal_.qt_ = pt;
   yv_.yv_ = y;
-  yv_.expyp_ = exp(y);
-  yv_.expym_ = exp(-y);//1./yv_.expyp_;
+  yv_.expyp_ = phasespace::exppy;//exp(y);
+  yv_.expym_ = phasespace::expmy;//exp(-y);//1./yv_.expyp_;
 
   if (opts.zerowidth)
     internal_.q_ = opts.rmass;
@@ -229,11 +254,11 @@ int xdelta_cubature(unsigned ndim, const double x[], void *data, unsigned ncomp,
 int sing_cubature(unsigned ndim, const double x[], void *data, unsigned ncomp, double f[])
 {
   double zz[2];
-  zz[0] = zmin*pow(zmax/zmin,x[0]);
-  double jacz1 = zz[0]*lz;
+  zz[0] = vjint::zmin*pow(vjint::zmax/vjint::zmin,x[0]);
+  double jacz1 = zz[0]*vjint::lz;
 
-  zz[1] = zmin*pow(zmax/zmin,x[1]);
-  double jacz2 = zz[1]*lz;
+  zz[1] = vjint::zmin*pow(vjint::zmax/vjint::zmin,x[1]);
+  double jacz2 = zz[1]*vjint::lz;
   
   f[0] = sing_(zz)*jacz1*jacz2;
   return 0;
@@ -242,6 +267,8 @@ int sing_cubature(unsigned ndim, const double x[], void *data, unsigned ncomp, d
 
 double vjint::calc(double m, double pt, double y)
 {
+  clock_t begin_time, end_time;
+
   double q2 = m*m;
   tm_.tm_ = sqrt(q2+pt*pt);
       
@@ -276,9 +303,16 @@ double vjint::calc(double m, double pt, double y)
   double xmin[1] = {0.};
   double xmax[1] = {1.};
 
+  begin_time = clock();
   pcubature(ncomp, xdelta_cubature, userdata, 
 	    ndimx, xmin, xmax, 
 	    eval, epsabs, epsrel, ERROR_INDIVIDUAL, integral, error);
+  end_time = clock();
+
+  if (opts.timeprofile)
+    cout << setw(10) << "xdelta time" << setw(10) << float( end_time - begin_time ) /  CLOCKS_PER_SEC
+	 << endl;
+  
   double rdelta = integral[0];
   double err = error[0];
 
@@ -287,21 +321,22 @@ double vjint::calc(double m, double pt, double y)
   //initialise
   double rsing = 0.;
 
+  begin_time = clock();
   if (opts.order == 2)
     {
-      //pcubature integration
+      rsing = sing();
       /*
-      const int ndims = 2;     //dimensions of the integral
-      //     boundaries of integration      
-      double zmn[2] = {zmin,zmin};
-      double zmx[2] = {zmax,zmax};
-      pcubature(ncomp, sing_cubature, userdata, 
-		ndims, zmn, zmx, 
-		eval, epsabs, 1e-4, ERROR_INDIVIDUAL, integral, error);
-      rsing = integral[0];
-      err = sqrt(err*err + error[0]*error[0]);
-      */
-      //      cout << m << "  " << pt << "  " << y << "  " << integral[0] << "  " << error[0] << endl;
+      ////pcubature integration
+      //const int ndims = 2;     //dimensions of the integral
+      ////     boundaries of integration      
+      //double zmn[2] = {zmin,zmin};
+      //double zmx[2] = {zmax,zmax};
+      //pcubature(ncomp, sing_cubature, userdata, 
+      //		ndims, zmn, zmx, 
+      //		eval, epsabs, 1e-4, ERROR_INDIVIDUAL, integral, error);
+      //rsing = integral[0];
+      //err = sqrt(err*err + error[0]*error[0]);
+      ////      cout << m << "  " << pt << "  " << y << "  " << integral[0] << "  " << error[0] << endl;
       
       //gaussian quadrature
       double zz[2];
@@ -310,32 +345,38 @@ double vjint::calc(double m, double pt, double y)
       double cz1=0.5*(az1+bz1);
       double mz1=0.5*(bz1-az1);
       for (int j = 0; j < z1rule; j++)
-	{
-	  double z1 = cz1 + mz1*gr::xxx[z1rule-1][j];
-	  double t = t1[j];//zmin*pow(zmax/zmin,z1);
-	  double jacz1=t*lz;
-	  zz[0]=t;
-	  
-	  double az2 = zmin;
-	  double bz2 = zmax;
-	  double cz2 = 0.5*(az2+bz2);
-	  double mz2 = 0.5*(bz2-az2);
-	  for (int jj = 0; jj < z2rule; jj++)
-	    {
-	      double z2 = cz2 + mz2*gr::xxx[z2rule-1][jj];
-	      double t = t2[jj];//zmin*pow(zmax/zmin,z2);
-	      double jacz2 = t*lz;
-	      zz[1] = t;
-	      rsing=rsing+sing_(zz)*gr::www[z1rule-1][j]*gr::www[z2rule-1][jj]
-		*jacz1*jacz2*mz1*mz2;
-	    }
-	}
-      //      cout << m << "  " << pt << "  " << y << "  " << rsing << endl;
-      
+      	{
+      	  double z1 = cz1 + mz1*gr::xxx[z1rule-1][j];
+      	  double t = t1[j];//zmin*pow(zmax/zmin,z1);
+      	  double jacz1=t*lz;
+      	  zz[0]=t;
+      	  
+      	  double az2 = zmin;
+      	  double bz2 = zmax;
+      	  double cz2 = 0.5*(az2+bz2);
+      	  double mz2 = 0.5*(bz2-az2);
+      	  for (int jj = 0; jj < z2rule; jj++)
+      	    {
+      	      double z2 = cz2 + mz2*gr::xxx[z2rule-1][jj];
+      	      double t = t2[jj];//zmin*pow(zmax/zmin,z2);
+      	      double jacz2 = t*lz;
+      	      zz[1] = t;
+      	      rsing=rsing+sing_(zz)*gr::www[z1rule-1][j]*gr::www[z2rule-1][jj]
+      		//rsing=rsing+sing(zz[0],zz[1])*gr::www[z1rule-1][j]*gr::www[z2rule-1][jj]
+      		*jacz1*jacz2*mz1*mz2;
+      	    }
+      	}
+      //cout << m << "  " << pt << "  " << y << "  " << rsing << endl;
+      */
       rsing = rsing*(asp_.asp_/2./M_PI);
     }
   else if (opts.order == 1)
     rsing = 0.;
+  end_time = clock();
+
+  if (opts.timeprofile)
+    cout << setw(10) << "rsing time" << setw(10) << float( end_time - begin_time ) /  CLOCKS_PER_SEC
+	 << endl;
 
   //final result
   double res = rdelta+rsing;
