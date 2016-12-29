@@ -315,6 +315,7 @@ namespace DYTurbo {
             }
         }
         double f[opts.totpdf];
+	costh = 0.; m = opts.rmass; qt = 1; y = 0;
         ctint_(costh,m,qt,y,mode,f);
     }
 
