@@ -7,11 +7,7 @@
 #include "gaussrules.h"
 #include "switch.h"
 #include "dyres_interface.h"
-
-int one = 1;
-int two = 2;
-int three = 3;
-int four = 4;
+#include "numbers.h"
 
 double qtint::LL1_mesqij[12];
 double qtint::LL2_mesqij[12];
