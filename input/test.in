@@ -11,7 +11,7 @@ PDFerrors = false
 intDimRes = 2
 intDimBorn = 6
 intDimCT = 3
-intDimVJ = 3
+intDimVJ = 7
 
 order   = 1
 fixedorder = true
