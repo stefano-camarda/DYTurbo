@@ -3,7 +3,7 @@
 thiswd=`pwd`
 AS_LIST="0.1150 0.1170 0.1180 0.1182 0.1194 0.1200"
 #GPAR_LIST="0.5 0.8 1.1 1.2 1.5"
-GPAR_LIST="0.8 1.1 1.2 1.5"
+GPAR_LIST="0.5 0.8 1.1 1.2 1.5"
 
 rmmkcd(){
     rm -rf $1 && mkdir -p $1 && cd $1 || exit 2

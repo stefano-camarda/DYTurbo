@@ -256,7 +256,7 @@ public:
   bool ptbinwidth, ybinwidth;
 
   // Force to loop over all bins even you have all Vegas integrands
-  bool force_binner_mode = false;
+  bool force_binsampling = false;
 
   // Calculate helicity cross sections
   int helicity;

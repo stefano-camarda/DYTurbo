@@ -200,7 +200,7 @@ ptbinwidth = false
 ybinwidth = false
 
 # Force to loop over all bins even you have all Vegas integrands
-force_binner_mode = false
+force_binsampling = false
 
 # Compute total (-1) or helicity cross sections (0-7)
 helicity = -1
