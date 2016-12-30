@@ -1,16 +1,16 @@
 # Process settings
-sroot        = 7e3            # center-of-mass energy
+sroot        = 13e3           # center-of-mass energy
 ih1          = 1              # hadron 1
 ih2          = 1              # hadron 2
 nproc        = 3              # process: 1) W+; 2)W-; 3)Z(/gamma*)
 g_param      = 1.0            # non perturbative g parameter
-order        = 2              # order: 1) NLO(+NLL), 2) NNLO(+NNLL)
+order        = 1              # order: 1) NLO(+NLL), 2) NNLO(+NNLL)
 fixedorder   = false          # resummation or fixed order switch
 
 #PDF settings
 LHAPDFset    = CT10nnlo       # PDF set from LHAPDF
 LHAPDFmember = 0              # PDF member
-PDFerrors    = false	      # calculate PDF errors
+PDFerrors    = false          # calculate PDF errors
 
 #QCD scale settings
 dynamicscale    = false       # if true, the renormalisation and factorisation scales are proportional to m_ll, if false they are proportional to m_V (V=W,Z)
@@ -27,7 +27,6 @@ C3 = 1.
 kmuc          = 1.        # scale factor for the charm matching scale
 kmub          = 1.        # scale factor for the bottom matching scale
 kmut          = 1.        # scale factor for the top matching scale
-
 
 # EW parameters (Gmu scheme)
 ewscheme = 1
@@ -87,8 +86,8 @@ bintaccuracy = 1.0e-4  #accuracy
 #Settings for the inverse Mellin integrations
 mellinintervals = 1 #number of intervals
 mellinrule = 64     #number of nodes
-zmax = 27.   	    #upper limit of the contour in the imaginary axis
-cpoint = 1.   	    #point of intersection of the contour with the real axis
+zmax = 27.           #upper limit of the contour in the imaginary axis
+cpoint = 1.           #point of intersection of the contour with the real axis
 mellincores = 1     #number of parallel threads for the mellin integration
 mellin1d = false    #use 1d (y-integrated) or 2d (y-dependent) mellin inversion
 
@@ -98,17 +97,14 @@ yrule = 20
 
 #number of intervals and gaussian rule for the qt integration in the 2dim counter term
 qtintervals = 1
-qtrule = 64
+qtrule = 20
 
 #number of intervals and gaussian rule for the alfa beta scaled-PDF integration in the counter term and born fixed order term
 abintervals = 1
 abrule = 64
 
-#gaussian rule for the phi integration in the V+J 5d LO term when makecuts is false
+#gaussian rule for the phi integration in the V+J LO term when makecuts is false
 vjphirule = 20
-
-#settings for the z1, z2 integration in the V+J 3d NLO term
-zrule = 64
 
 # resummation damping
 dampk = 0.5
@@ -124,16 +120,16 @@ qtcut = 0.      # cutoff on qt
 rseed        = 123456         # random seed for MC integration
 
 # type of integration for the resummed cross section
-intDimRes = 4 # can be 2 or 3 for quadrature, or 4 for vegas
+intDimRes = 2 # can be 2 or 3 for quadrature, or 4 for vegas
 
 # type of integration for the born configuration
 intDimBorn = 2 # can be 2 for quadrature, 4 or 6 for vegas
 
 # type of integration for counter term
-intDimCT = 8 # can be 2 or 3 for quadrature, or 6, or 8 for vegas
+intDimCT = 2 # can be 2 or 3 for quadrature, or 6, or 8 for vegas
 
 # type of integration for V+J finite order
-intDimVJ = 7 # can be 3 for quadrature, 5 for quadrature with cuts, or 7 for vegas
+intDimVJ = 5 # can be 3 for quadrature, 5 for quadrature with cuts, or 7 for vegas
 
 # term switches
 doBORN = true
@@ -145,28 +141,28 @@ doVJVIRT = true
 
 # Cuba settings
 cubaverbosity     = 0   # Cuba info messsages, from 0 to 3
-cubacores         = 0   # parallelization ( 0 = turn off)
+cubacores         = 20  # parallelization ( 0 = turn off)
 cubanbatch        = 1000  # the batch size for sampling in Cuba vegas integration
-niterBORN         = 5   # only for 2d and 3d cuhre integration of resummed part
-niterCT           = 5   # only for 2d and 3d cuhre integration of counter term
+niterBORN         = 10   # only for 2d and 3d cuhre integration of resummed part
+niterCT           = 15   # only for 2d and 3d cuhre integration of counter term
 niterVJ           = 10       # only for 3d cuhre integration of V+J
-vegasncallsBORN   = 1000     # only for res 4d vegas integration
-vegasncallsCT     = 100000   # only for 6d and 8d vegas integration of the counter term
-vegasncallsVJLO   = 10000000 # only for lo 7d vegas integration
-vegasncallsVJREAL = 10000000 # only for real 10d vegas integration
-vegasncallsVJVIRT = 1000000  # only for virt 8d vegas integration
+vegasncallsBORN   = 2500000    # only for res 4d vegas integration
+vegasncallsCT     = 10000000  # only for 6d and 8d vegas integration of the counter term
+vegasncallsVJLO   = 100000000 # only for lo 7d vegas integration
+vegasncallsVJREAL = 10000000000 # only for real 10d vegas integration
+vegasncallsVJVIRT = 100000000  # only for virt 8d vegas integration
 
 # cubature settings
-pcubature = true
-pcubaccuracy = 1e-3
+pcubature = false
+pcubaccuracy = 1e-2
 
 # costh CS boundaries
 costhmin = -1
 costhmax = +1
 
 # total or with lepton cuts
-makecuts = false
-lptcut = 20
+makecuts = true
+lptcut = 25
 lycut = 2.5
 l1ptcut = 0
 l1ycut = 1000
@@ -194,7 +190,7 @@ qtrec_kt0   = false
 # debug settings
 timeprofile = false  # debug and time profile resummation integration
 verbose     = false  # debug and time profile costh phi_lep integration
-texttable   = true # dump result table to text file (including pdf variations)
+texttable = false # dump result table to text file (including pdf variations)
 
 # binning
 
@@ -205,16 +201,12 @@ ybinwidth = false
 # Force to loop over all bins even you have all Vegas integrands
 force_binsampling = false
 
-# Compute total (-1) or helicity cross sections (0-7)
-helicity = -1
-
 # pt, y, m bins
-qt_bins = [ 0 2 4 6 8 10 12 14 16 18 22 26 30 34 38 42 46 50 54 60 70 80 100 150 200 300 800 ]
-y_bins = [ -5. 0.  5. ]
-m_bins = [ 50 66. 116.  1000. ]
+# qt_bins = [ 0 2 4 6 8 10 12 14 16 18 22 26 30 34 38 42 46 50 54 60 70 80 100 150 200 300 800 ]
+qt_bins = [ 0.  2. 4.  6.  8.  10.  12.  14.  16.  18.  22.  26. 30.  34.  38.  42.  46.  50.  54.  60.  70.  80.  100.  150.  200. 300.  800. ]
+y_bins = [ -2.5 0. 2.5 ]
+m_bins = [ 66 116. ]
 
-# binning for user testing histogram
-biganswer_bins = [ 41 42 43 ]
 
 #   # z angular
 #   qt_bins = [ 0 2.5 5.0 8.0 11.4 14.9 18.5 22.0 25.5 29.0 32.6 36.4 40.4 44.9 50.2 56.4 63.9 73.4 85.4 105.0 132.0 173.0 253.0 600.0 ]

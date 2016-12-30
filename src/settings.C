@@ -352,7 +352,7 @@ void settings::readfromfile(const string fname){
     zrule              = in.GetNumber ( "zrule" );
     ptbinwidth         = in.GetBool ( "ptbinwidth" );
     ybinwidth          = in.GetBool ( "ybinwidth" );
-    force_binner_mode  = in.GetBool ( "force_binner_mode" );
+    force_binsampling  = in.GetBool ( "force_binsampling" );
     helicity           = in.GetNumber ( "helicity" );
 
     return ;
@@ -453,8 +453,6 @@ void settings::check_consitency(){
         vjint3d = (intDimVJ == 3);
         vjint5d = (intDimVJ == 5);
         vjintvegas7d = false;
-	doVJREAL = false;
-	doVJVIRT = false;
       }
     else
       {
@@ -477,9 +475,9 @@ void settings::check_consitency(){
     
     if (makecuts && vjint3d)
       {
-	cout << "Required cuts on the final state leptons, enforce vegas integration for V+J fixed order cross section" << endl;
+	cout << "Required cuts on the final state leptons, enforce 5D integration for V+J fixed order cross section" << endl;
 	vjint3d = false;
-	vjintvegas7d = true;
+        vjint5d = true;
       }
 
     if (makecuts && helicity >= 0)
@@ -666,7 +664,7 @@ void settings::dumpAll(){
 	dumpI("zrule             ", zrule               );
         dumpB("ptbinwidth        ", ptbinwidth          );
         dumpB("ybinwidth         ", ybinwidth           );
-        dumpB("force_binner_mode ", force_binner_mode   );
+        dumpB("force_binsampling ", force_binsampling   );
         dumpI("helicity ",          helicity   );
     }
 
@@ -938,7 +936,7 @@ void InputParser::trim(string & str){
 
 void InputParser::has_key(const string key){
     if ( data.count(key) == 0 ){
-        string msg = "No setting with name '";
+        string msg = "Missing setting with name '";
         msg += key;
         msg += "'";
         throw invalid_argument(msg.c_str());
