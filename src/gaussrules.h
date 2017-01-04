@@ -1,10 +1,12 @@
 #ifndef gaussrules_h
 #define gaussrules_h
 
+#define GRNMAX 500
+
 namespace gr
 {
-  extern double xxx[64][64];
-  extern double www[64][64];
+  extern double xxx[GRNMAX][GRNMAX];
+  extern double www[GRNMAX][GRNMAX];
 
   extern const double xxx2[2],www2[2];
   extern const double xxx3[3],www3[3];
