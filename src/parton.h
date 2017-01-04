@@ -1,6 +1,8 @@
 #ifndef parton_h
 #define parton_h
 
+#define MAXNF 5
+
 namespace parton
 {
   //DYRES convention
