@@ -214,9 +214,9 @@ double besselint::bint(double b)
   //1d mellin
   if (opts.mellin1d)
     {
-      double q2 = resint::_m*resint::_m;
-      double bjx= q2/pow(opts.sroot,2);
-      double ax = log(bjx);
+      //double q2 = resint::_m*resint::_m;
+      //double bjx= q2/pow(opts.sroot,2);
+      //double ax = log(bjx);
       for (int i = 0; i < mellinint::mdim; i++)
 	{
 	  pdfevol::retrieve(i,i,mesq::positive);
