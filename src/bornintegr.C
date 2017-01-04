@@ -122,6 +122,15 @@ int lointegrand2d_cubature(unsigned ndim, const double x[], void *data, unsigned
   return 0;
 }
 
+double lointegrand2d_smolyak(int ndim, double x[])
+{
+  int ncomp = 1;
+  double f[ncomp];
+  lointegrand2d(ndim, x, ncomp, f);
+  tell_to_grid_we_are_alive();
+  return f[0];
+}
+
 integrand_t lointegrand2d(const int &ndim, const double x[], const int &ncomp, double f[])
 {
   clock_t begin_time, end_time;
