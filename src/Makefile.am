@@ -2,6 +2,8 @@ AUTOMAKE_OPTIONS = foreign
 AM_CPPFLAGS = -fpermissive \
 	-I$(srcdir)/../include \
 	-I$(srcdir)/../dequad \
+	-I$(srcdir)/../sandia \
+	-I$(srcdir)/../smolpack \
 	-I$(srcdir)/../dyres \
 	-I$(srcdir)/../mcfm \
 	-I$(srcdir)/../resum \
@@ -22,7 +24,7 @@ AM_FFLAGS =  -I$(srcdir)/../dyres \
 noinst_LTLIBRARIES = libdyturbobase.la
 libdyturbobase_la_SOURCES = dyturbo.C resintegr.C ctintegr.C finintegr.C bornintegr.C \
 			    omegaintegr.C interface.C settings.C init.C cubacall.C switch.C  \
-			    pdf.C coupling.C clock_real.C banner.C print_table.C abint.C clenshawcurtisrules.C numbers.C #solvew.C
+			    pdf.C coupling.C clock_real.C banner.C print_table.C abint.C clenshawcurtisrules.C gaussrules.C numbers.C #solvew.C
 libdyturbobase_la_SOURCES += flavreduce.f gaussinit.f rescinit.f pdfmoments.f
 libdyturbobase_la_SOURCES += AiMoments.cxx TLVUtils.cxx
 
@@ -43,6 +45,7 @@ libdyturbo_la_LIBADD = libdyturbobase.la \
 		       ../dyqt/libdyqt.la \
 		       ../pegasus/libpegasus.la \
 		       ../dequad/libdequad.la \
+		       ../sandia/libsandia.la \
 		       ../cubature/libcubature.la \
 		       ../cernlib/libcern.la \
 		       -lgfortran \
@@ -66,7 +69,7 @@ endif
 pkginclude_HEADERS = dyturbo.h resintegr.h ctintegr.h finintegr.h bornintegr.h omegaintegr.h \
 		     interface.h settings.h cubacall.h switch.h options.f flred.f \
 		     gauss.f quadrules.f coupling.h pdf.h clock_real.h \
-		     fcomplex.h banner.h cxxopts.hpp isnan.h handy_typdefs.h abint.h clenshawcurtisrules.h numbers.h #solvew.h
+		     fcomplex.h banner.h cxxopts.hpp isnan.h handy_typdefs.h abint.h clenshawcurtisrules.h gaussrules.h numbers.h parton.h #solvew.h
 
 check:
 	./dyturbo ../input/test.in
