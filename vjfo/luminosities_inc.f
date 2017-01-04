@@ -1,9 +1,11 @@
       double precision xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
      /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+     /     xlumqqbddd,
+     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqebb,xlumqqead,
      /     xlumqqLL,xlumqqLR
       common/luminosities/xlumgg,xlumqg,xlumgq,xlumqgtr,xlumgqtr,
      /     xlumqqb,xlumqqbtr,xlumqqbdbb,xlumqqbdbc,xlumqqbdcc,
-     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqead,
+     /     xlumqqbddd,
+     /     xlumqqbLL,xlumqqbLR,xlumqq,xlumqqeaa,xlumqqebb,xlumqqead,
      /     xlumqqLL,xlumqqLR
 !$OMP THREADPRIVATE(/luminosities/)
