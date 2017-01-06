@@ -13,12 +13,14 @@ integrand_t v2jintegrand(const int &ndim, const double x[], const int &ncomp, do
 integrand_t vjintegrand(const int &ndim, const double x[], const int &ncomp, double f[]);
 int vjintegrand_cubature_v(unsigned ndim, long unsigned npts, const double x[], void *data, unsigned ncomp, double f[]);
 int vjintegrand_cubature(unsigned ndim, const double x[], void *data, unsigned ncomp, double f[]);
+double vjintegrand_smolyak(int ndim, double x[]);
 
 //MCFM improved V+j LO integrands
 integrand_t vjlointegrand(const int &ndim, const double x[], const int &ncomp, double f[]);
 integrand_t vjlointegrandMC(const int &ndim, const double x[], const int &ncomp, double f[], void* userdata, const int &nvec, const int &core, double &weight, const int &iter);
 int vjlointegrand_cubature(unsigned ndim, const double x[], void *data, unsigned ncomp, double f[]);
 int vjlointegrand_cubature_v(unsigned ndim, long unsigned npts, const double x[], void *data, unsigned ncomp, double f[]);
+double vjlointegrand_smolyak(int ndim, double x[]);
 
 extern "C" {
   double lowint_(double r[22], double &wgt, double f[]);

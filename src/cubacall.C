@@ -5,6 +5,7 @@
 #include "finintegr.h"
 #include "bornintegr.h"
 #include "cubature.h"
+#include "smolpack.h"
 #include "HistoHandler.h"
 
 #include <cuba.h>
@@ -196,6 +197,14 @@ void vjintegr3d(vector <double> &res, double &err)
 	pcubature_v(ncomp, vjintegrand_cubature_v, userdata, 
 		    ndim, xmin, xmax, 
 		    eval, epsabs, epsrel, ERROR_INDIVIDUAL, integral, error);
+      /*
+      //smolyak
+      int print_stats = 0;
+      int dim = ndim;
+      int l = 10;
+      integral[0] = int_smolyak (ndim, ndim+l, vjintegrand_smolyak, print_stats );
+      error[0] = 0.000000001;
+      */
     }
   res.clear();
   res.push_back(integral[0]);
@@ -338,8 +347,17 @@ void vjlointegr5d(vector <double> &res, double &err)
       else
 	//pcubature_v(ncomp, vjlointegrand_cubature_v, userdata, 
 	hcubature_v(ncomp, vjlointegrand_cubature_v, userdata, 
-		  4, xmin, xmax, 
-		  eval, epsabs, epsrel, ERROR_LINF, integral, error);
+		    4, xmin, xmax, 
+		    eval, epsabs, epsrel, ERROR_LINF, integral, error);
+
+      /*
+      //smolyak
+      int print_stats = 0;
+      int dim = 4;
+      int l = 15;
+      integral[0] = int_smolyak (ndim, ndim+l, vjlointegrand_smolyak, print_stats );
+      error[0] = 0.000001;
+      */
     }
   res.clear();
   if (opts.helicity >= 0)
@@ -560,6 +578,14 @@ void bornintegr2d(vector <double> &res, double &err)
 	pcubature_v(ncomp, lointegrand2d_cubature_v, userdata, 
 		    ndim, xmin, xmax, 
 		    eval, epsabs, epsrel, ERROR_INDIVIDUAL, integral, error);
+      /*
+      //smolyak
+      int print_stats = 0;
+      int dim = 2;
+      int l = 20;
+      integral[0] = int_smolyak (ndim, ndim+l, lointegrand2d_smolyak, print_stats );
+      error[0] = 0.000001;
+      */
     }
   res.clear();
 

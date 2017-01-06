@@ -1,8 +1,10 @@
 #include "gaussrules.h"
+#include "sandia_rules.hpp"
 //nodes and weights for the gaussian quadrature rules
 //from https://pomax.github.io/bezierinfo/legendre-gauss.html
-double gr::xxx[64][64];
-double gr::www[64][64];
+
+double gr::xxx[GRNMAX][GRNMAX];
+double gr::www[GRNMAX][GRNMAX];
 
 const double gr::xxx2[2]={-0.5773502691896257,0.5773502691896257};
 const double gr::www2[2]={1.0000000000000000,1.0000000000000000};
@@ -278,5 +280,50 @@ void gr::init()
       if (i < 40) www[40-1][i] = www40[i];
       if (i < 50) www[50-1][i] = www50[i];
       if (i < 64) www[64-1][i] = www64[i];
+    }
+
+  /*
+  //generation of weights and nodes
+  double eps = 1e-14;
+  int i2;
+  double s;
+
+  for (int n = 1; n <= nmax; n++)
+    {
+      double *x = new double[n+1];
+      double *w1 = new double[n+1];
+      double *w2 = new double[n+1];
+      kronrod (n, eps, x, w1, w2);
+
+      for ( int i = 1; i <= n; i++ )
+	{
+	  int i2;
+	  double s;
+	  if ( 2 * i <= n + 1 )
+	    {
+	      i2 = 2 * i;
+	      s = -1.0;
+	    }
+	  else
+	    {
+	      i2 = 2 * ( n + 1 ) - 2 * i;
+	      s = +1.0;
+	    }
+	  xxx[n-1][i-1] = s * x[i2-1];
+	  www[n-1][i-1] = w2[i2-1];
+	}
+    }
+  */
+  
+  for (int n = 1; n <= GRNMAX; n++)
+    {
+      double *w = new double[n];
+      double *x = new double[n];
+      webbur::legendre_compute(n, x, w);
+      for ( int i = 1; i <= n; i++ )
+	{
+	  xxx[n-1][i-1] = x[i-1];
+	  www[n-1][i-1] = w[i-1];
+	}
     }
 }

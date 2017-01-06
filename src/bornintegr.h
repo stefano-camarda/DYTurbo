@@ -7,6 +7,7 @@ integrand_t lointegrandMC(const int &ndim, const double x[], const int &ncomp, d
 integrand_t lointegrand2d(const int &ndim, const double x[], const int &ncomp, double f[]);
 int lointegrand2d_cubature_v(unsigned ndim, long unsigned npts, const double x[], void *data, unsigned ncomp, double f[]);
 int lointegrand2d_cubature(unsigned ndim, const double x[], void *data, unsigned ncomp, double f[]);
+double lointegrand2d_smolyak(int ndim, double x[]);
 
 extern "C" {
   double lowinthst_dynnlo_(double r[22], double &wgt, double f[]);

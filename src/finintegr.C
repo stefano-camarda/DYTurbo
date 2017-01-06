@@ -47,6 +47,15 @@ int vjintegrand_cubature(unsigned ndim, const double x[], void *data, unsigned n
   return 0;
 }
 
+double vjintegrand_smolyak(int ndim, double x[])
+{
+  int ncomp = 1;
+  double f[ncomp];
+  vjintegrand(ndim, x, ncomp, f);
+  tell_to_grid_we_are_alive();
+  return f[0];
+}
+
 
 integrand_t vjintegrand(const int &ndim, const double x[], const int &ncomp, double f[])
 //Generates the phase space 4 vectors
@@ -396,4 +405,13 @@ int vjlointegrand_cubature_v(unsigned ndim, long unsigned npts, const double x[]
     }
   tell_to_grid_we_are_alive();
   return 0;
+}
+
+double vjlointegrand_smolyak(int ndim, double x[])
+{
+  int ncomp = 1;
+  double f[ncomp];
+  vjlointegrand(ndim, x, ncomp, f);
+  tell_to_grid_we_are_alive();
+  return f[0];
 }

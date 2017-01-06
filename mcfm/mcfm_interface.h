@@ -1,9 +1,8 @@
 #ifndef mcfm_interface_h
 #define mcfm_interface_h
 
+#include "parton.h"
 #include "fcomplex.h"
-
-#define MAXNF 5
 
 extern "C"
 {

@@ -215,6 +215,8 @@ AC_CONFIG_FILES([Makefile
 		 mcfm/Makefile
 		 cernlib/Makefile
 		 dequad/Makefile
+		 sandia/Makefile
+		 smolpack/Makefile
 		 ancont/Makefile
 		 pegasus/Makefile
 		 cubature/Makefile

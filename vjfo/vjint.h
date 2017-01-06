@@ -171,9 +171,31 @@ extern "C"
     double x1_;
     double x2_;
   } fractions_;
+
+  extern struct {
+    double xlumgg_;
+    double xlumqg_;
+    double xlumgq_;
+    double xlumqgtr_;
+    double xlumgqtr_;
+    double xlumqqb_;
+    double xlumqqbtr_;
+    double xlumqqbdbb_;
+    double xlumqqbdbc_;
+    double xlumqqbdcc_;
+    double xlumqqbddd_;
+    double xlumqqbLL_;
+    double xlumqqbLR_;
+    double xlumqq_;
+    double xlumqqeaa_;
+    double xlumqqebb_;
+    double xlumqqead_;
+    double xlumqqLL_;
+    double xlumqqLR_;
+  } luminosities_;
   
 }
-#pragma omp threadprivate(yv_,tm_,scales2_,asnew_,asp_,sigs_,internal_,fractions_)
+#pragma omp threadprivate(yv_,tm_,scales2_,asnew_,asp_,sigs_,internal_,fractions_,luminosities_)
 
 namespace vjint
 {

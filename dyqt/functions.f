@@ -1209,7 +1209,8 @@ c      s2=sh+th+uh-q2
      /     2*fsu/uh*(1-q2/uh)-du*(sh*du-1-th/uh)+2/uh*(th/uh+s2*(1/uh+
      /     1/sh-s2/(sh*uh)))+1/uh*(q2/uh-1)+12*s2*q2/(sh*uh**3)*
      /     (th-s2*q2/uh))
-      Ddd=temp*xlumqqbdcc
+c      Ddd=temp*xlumqqbdcc
+      Ddd=temp*xlumqqbddd !!! -> Bug Fix, (see Formula 2.18 of http://journals.aps.org/prd/pdf/10.1103/PhysRevD.40.2245)
 
       return
       end
@@ -1505,6 +1506,7 @@ c      s2=sh+th+uh-q2
      /     1/sh-s2/(sh*uh)))+1/uh*(q2/uh-1)+12*s2*q2/(sh*uh**3)*
      /     (th-s2*q2/uh))
       Ebb=temp*xlumqqeaa
+c      Ebb=temp*xlumqqebb !!! -> Bug Fix, but this piece is not used (see Formula 2.21 of http://journals.aps.org/prd/pdf/10.1103/PhysRevD.40.2245)
 
       return
       end

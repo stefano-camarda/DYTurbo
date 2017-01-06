@@ -5,6 +5,7 @@
 #include "isnan.h"
 #include "gaussrules.h"
 #include "numbers.h"
+#include "luminosity.h"
 
 #include <iostream>
 #include <iomanip>
@@ -61,7 +62,9 @@ double vjint::sing()
       //.....subtraction of z2=1 term according to plus prescription     
       x1 = x10*(1.+lb);
       x2 = x20/(1.-z1);
-
+      luminosity::pdf1(x1);
+      luminosity::pdf2(x2);
+      
       double tiny = 0.;//1e-7;
       if(x1 > 1.-tiny || x2 > 1.-tiny)
 	return 0.;
@@ -79,7 +82,8 @@ double vjint::sing()
       //.....compute parton luminosity
       fractions_.x1_ = x1;
       fractions_.x2_ = x2;
-      flavour_();
+      //flavour_();
+      luminosity::calc();
       utilities2_(uh,q2);
       utilities_(sh,th,uh,q2,s2);
          
@@ -145,6 +149,7 @@ double vjint::sing()
 	  
 	  //.....first term of the integrand for the plus prescription
 	  x1 = x10/(1.-z2)*(1.+lb);
+	  luminosity::pdf1(x1);
 
 	  //.....definition of partonic Mandelstam invariants --> bug fix in DYqT: th <-> uh
 	  double sh = phasespace::mt2/(1.-z1)/(1.-z2)*(1.+lb);
@@ -180,7 +185,8 @@ double vjint::sing()
 	  //.....compute parton luminosity
 	  fractions_.x1_ = x1;
 	  fractions_.x2_ = x2;
-	  flavour_();
+	  //flavour_();
+	  luminosity::calc();	  
 	  utilities_(sh,th,uh,q2,s2);
 
 	  //.....common factor for all the contributions
@@ -206,14 +212,13 @@ double vjint::sing()
 	    (eac_(sh,th,uh,q2)+ebd_(sh,th,uh,q2)
 	     +ead_(sh,th,uh,q2)+ebc_(sh,th,uh,q2)
 	     // missing pieces in qq
-	     //        + eaa_(sh,th,uh,q2)+ecc_(sh,th,uh,q2) // -> =2*dcc
-	     //        + ebb_(sh,th,uh,q2)+edd_(sh,th,uh,q2) // -> =2*ddd
-	     //        + eabll+eabllx
-	     //        + eablr+eablrx
-	     //        + ecdll+ecdllx //-dcdlr
-	     //        + ecdlr+ecdlrx //-dcdll
+	     //        + eaa_(sh,th,uh,q2)+ecc_(sh,th,uh,q2) // eaa = ecc = dcc -> eaa+ecc=2*dcc (see A28 of http://journals.aps.org/prd/pdf/10.1103/PhysRevD.40.2245)
+	     //        + ebb_(sh,th,uh,q2)+edd_(sh,th,uh,q2) // ebb = edd = ddd -> ebb+edd=2*ddd (see A30 of http://journals.aps.org/prd/pdf/10.1103/PhysRevD.40.2245)
+	     //        + eabll+eabllx //eabll=-dcdlr
+	     //        + eablr+eablrx //
+	     //        + ecdll+ecdllx //ecdll=-dcdlr
+	     //        + ecdlr+ecdlrx //ecdlr=-dcdll
 	     );
-         
 	  double xreg = xrgg+xrqg+xrqqb+xrqq;
 
 	  if (isnan_ofast(xrqg))
