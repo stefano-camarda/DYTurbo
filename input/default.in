@@ -138,7 +138,7 @@ intDimVJ = 7 # can be 3 for quadrature, 5 for quadrature with cuts, or 7 for veg
 # term switches
 doBORN = true
 doCT   = true
-doVJ   = true
+doVJLO = true
 
 doVJREAL = true
 doVJVIRT = true
