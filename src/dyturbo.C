@@ -222,7 +222,7 @@ namespace DYTurbo {
             AddTermIfActive ( opts.ctintvegas8d , ctintegr   , name , isVegas     ) << Col3 ( "vegas 8D"            , "ncalls =" , opts.vegasncallsCT );
         }
         // VJ finite
-        bool vj_finite = opts.doVJ && !opts.doVJREAL && !opts.doVJVIRT;
+        bool vj_finite = opts.doVJLO && !opts.doVJREAL && !opts.doVJVIRT;
         name="V+J LO";
         if (vj_finite || TestAllTerms){
             AddTermIfActive   ( opts.vjint3d                         , vjintegr3d   , name , isNotVegas )  << Col3 ( "cuhre (dm, dpt, dy)" , "iter ="   , opts.niterVJ );

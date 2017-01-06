@@ -159,7 +159,7 @@ public:
   //term switches
   bool doBORN;
   bool doCT;
-  bool doVJ;
+  bool doVJLO;
   
   bool doVJREAL, doVJVIRT;
 

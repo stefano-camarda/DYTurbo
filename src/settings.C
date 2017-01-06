@@ -41,9 +41,11 @@ void settings::parse_options(int argc, char* argv[]){
         ("r,seed"            , "Set random seed [integer]"                           , po::value<int>()    )
         ("s,pdfset"          , "Set PDF set [LHAPDF name]"                           , po::value<string>() )
         ("m,pdfvar"          , "Set PDF member [integer/all]"                        , po::value<string>() )
+        ("g,gparam"          , "Set Sudakov paramter"                                , po::value<double>() )
         ("qtbins"            , "Set equdistan binning for mass [N,lo,hi]"            , po::value<string>() )
         ("ybins"             , "Set equdistan binning for qt [N,lo,hi]"              , po::value<string>() )
         ("mbins"             , "Set equdistan binning for y [N,lo,hi]"               , po::value<string>() )
+
 
     ;
     // Parse
@@ -121,6 +123,11 @@ void settings::parse_options(int argc, char* argv[]){
         }
     }
 
+    //Gpar
+    if (args.count("gparam")) {
+        opts.g_param = args["gparam"].as<double>();
+    }
+
     // Collider
     if (args.count("collider")) {
         string val=args["collider"].as<string>();
@@ -139,15 +146,15 @@ void settings::parse_options(int argc, char* argv[]){
     // term
     if (args.count("term")) {
         // first turn off all terms
-        doBORN = doCT = doVJ = doVJREAL = doVJVIRT = false ;
+        doBORN = doCT = doVJLO = doVJREAL = doVJVIRT = false ;
         string val=args["term"].as<string>();
         ToUpper(val);
         for (auto piece : Tokenize(val)) {
-            if        ( piece == "BORN"    )   { doBORN=true;
-            } else if ( piece == "CT"     )    { doCT=true;
-            } else if ( piece == "VJ"      )   { doVJ=true;
-            } else if ( piece == "VJVIRT"    ) { doVJVIRT=true;
-	    } else if ( piece == "VJREAL"    ) { doVJREAL=true;
+            if        ( piece == "BORN"    ) { doBORN   =true;
+            } else if ( piece == "CT"      ) { doCT     =true;
+            } else if ( piece == "VJLO"    ) { doVJLO   =true;
+            } else if ( piece == "VJVIRT"  ) { doVJVIRT =true;
+	    } else if ( piece == "VJREAL"  ) { doVJREAL =true;
             } else {
                 throw QuitProgram("Unsupported value of term : "+piece);
             }
@@ -287,7 +294,7 @@ void settings::readfromfile(const string fname){
     fixedorder         = in.GetBool   ( "fixedorder"      );
     doBORN             = in.GetBool   ( "doBORN"          );
     doCT               = in.GetBool   ( "doCT"            );
-    doVJ               = in.GetBool   ( "doVJ"            );
+    doVJLO             = in.GetBool   ( "doVJLO"          );
     doVJREAL           = in.GetBool   ( "doVJREAL"        );
     doVJVIRT           = in.GetBool   ( "doVJVIRT"        );
     cubaverbosity      = in.GetNumber ( "cubaverbosity"   );
@@ -369,7 +376,7 @@ void settings::check_consitency(){
     if (order == 0)
       {
 	doCT = false;
-	doVJ = false;
+	doVJLO = false;
       }
     if (order != 2)
       {
@@ -605,7 +612,7 @@ void settings::dumpAll(){
         dumpB("fixedorder        ", fixedorder          );
         dumpB("doBORN            ", doBORN              );
         dumpB("doCT              ", doCT                );
-        dumpB("doVJ              ", doVJ                );
+        dumpB("doVJLO            ", doVJLO              );
         dumpB("doVJREAL          ", doVJREAL            );
         dumpB("doVJVIRT          ", doVJVIRT            );
         dumpI("cubaverbosity     ", cubaverbosity       );
