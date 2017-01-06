@@ -46,16 +46,18 @@ submit_as_scan(){
         pdflist=$pdflist"CT10nnlo_AS_$asstring,"
     done
     pdflist=${pdflist%,}
-    basecommand="./scripts/submit_jobs.sh --mogon --infile input/alphaS_scan.in --proc z0 --mbins 10,66,116 --pdfset $pdflist --seeds 1 --yes"
+    basecommand="./scripts/submit_jobs.sh --mogon --infile input/alphaS_scan.in --proc z0 --mbins 1,66,116 --pdfset $pdflist --seeds 2 --yes"
     # finite order
-    #$DRY_RUN $basecommand --order 1 --term CT,VJLO
-    #$DRY_RUN $basecommand --order 2 --term CT,VJREAL,VJVIRT
-    #$DRY_RUN $basecommand --order 2 --term VJREAL
+    #$DRY_RUN $basecommand --order 1 --term CT
+    #$DRY_RUN $basecommand --order 2 --term CT
+    #$DRY_RUN $basecommand --order 1 --term VJLO
+    #$DRY_RUN $basecommand --order 2 --term VJVIRT
+    $DRY_RUN $basecommand --order 2 --term VJREAL
     #
     #for gparam in $GPAR_LIST
     #do
-        #$DRY_RUN $basecommand --order 1 --term BORN --gparam $gparam
-        #$DRY_RUN $basecommand --order 2 --term BORN --gparam $gparam
+    #    $DRY_RUN $basecommand --order 1 --term BORN --gparam $gparam
+    #    $DRY_RUN $basecommand --order 2 --term BORN --gparam $gparam
     #done
 }
 
@@ -128,6 +130,10 @@ merge_as_scan(){
     done
 }
 
+copy_to_accuracy(){
+    rsync -avP results_z0_CT10* etap-accuracy.physik.uni-mainz.de:/home/cuth/work/unimainz/ATLAS/workarea/LGNtupleMaker/LGAnalysis/Zpt13TeVAnalysis/share/templates/DYTURBO/
+}
+
 DRY_RUN=
 #DRY_RUN="echo "
 main(){
@@ -135,7 +141,8 @@ main(){
     #run_alphaS_scan
     #submit_as_scan
     #check_as_scan
-    merge_as_scan
+    #merge_as_scan
+    copy_to_accuracy
 }
 
 main

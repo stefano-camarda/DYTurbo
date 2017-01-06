@@ -312,14 +312,15 @@ prepare_script(){
     [[ ! $gparam == "" ]] && arguments="$arguments --gparam $gparam"
     [[ $target =~ lxbatch|mogon|localrun ]] && arguments=$arguments" --seed \$LSB_JOBINDEX "
     # make sure we make some noise on grid
-    [[ $target =~ mogon ]] && arguments=$arguments" --verbose "
+    #[[ $target =~ mogon ]] && arguments=$arguments" --verbose "
     # job queue
     nprocessors=1
     cubacores=`grep cubacores $infile | cut -d\# -f1 | cut -d= -f2 | xargs`
     [[ $cubacores != "" ]] && [ $cubacores -gt 0 ] && nprocessors=$cubacores
-    #walltime=5:00
-    walltime=100:00
-    queue=atlaslong
+    #walltime=100:00
+    #queue=atlaslong
+    walltime=5:00
+    queue=atlasshort
     if [[ $program =~ dyres ]] || [[ $variation =~ all ]] || [[ $terms =~ [23]P ]]
     then
         walltime=20:00
