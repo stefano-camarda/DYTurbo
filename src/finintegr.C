@@ -148,6 +148,20 @@ integrand_t realintegrand(const int &ndim, const double x[], const int &ncomp, d
   return 0;
 }
 
+double realintegrand_smolyak(int ndim, double x[])
+{
+  int ncomp = 1;
+  double f[ncomp];
+  void *userdata;
+  const int nvec = 1;
+  int core;
+  double weight;
+  int iter;
+  realintegrand(ndim, x, ncomp, f,
+		userdata, nvec, core, weight, iter);
+  return f[0];
+}
+
 integrand_t virtintegrand(const int &ndim, const double x[], const int &ncomp, double f[],
                         void* userdata, const int &nvec, const int &core,
                         double &weight, const int &iter)
