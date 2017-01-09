@@ -46,6 +46,7 @@ libdyturbo_la_LIBADD = libdyturbobase.la \
 		       ../pegasus/libpegasus.la \
 		       ../dequad/libdequad.la \
 		       ../sandia/libsandia.la \
+		       ../smolpack/libsmolpack.la \
 		       ../cubature/libcubature.la \
 		       ../cernlib/libcern.la \
 		       -lgfortran \
