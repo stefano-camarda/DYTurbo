@@ -111,14 +111,12 @@ int lointegrand2d_cubature_v(unsigned ndim, long unsigned npts, const double x[]
       for (unsigned k = 0; k < ncomp; ++k)
 	f[i*ncomp + k] = fi[k];
     }
-  tell_to_grid_we_are_alive();
   return 0;
 }
 
 int lointegrand2d_cubature(unsigned ndim, const double x[], void *data, unsigned ncomp, double f[])
 {
   lointegrand2d(ndim, x, ncomp, f);
-  tell_to_grid_we_are_alive();
   return 0;
 }
 
@@ -127,7 +125,6 @@ double lointegrand2d_smolyak(int ndim, double x[])
   int ncomp = 1;
   double f[ncomp];
   lointegrand2d(ndim, x, ncomp, f);
-  tell_to_grid_we_are_alive();
   return f[0];
 }
 
