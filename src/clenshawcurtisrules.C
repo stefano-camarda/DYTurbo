@@ -1,6 +1,9 @@
 #include "clenshawcurtisrules.h"
 //nodes and weights for the Clenshaw Curtis quadrature rules
 //from https://people.sc.fsu.edu/~jburkardt/datasets/quadrature_rules_clenshaw_curtis/quadrature_rules_clenshaw_curtis.html
+#include "sandia_rules.hpp"
+
+using namespace std;
 double cc::xxx[65][65];
 double cc::www[65][65];
 
@@ -238,5 +241,18 @@ void cc::init()
       if (i < 9) www[9-1][i] = www9[i];
       if (i < 33) www[33-1][i] = www33[i];
       if (i < 65) www[65-1][i] = www65[i];
+    }
+
+  //generation of weights and nodes
+  for (int n = 1; n <= 65; n++)
+    {
+      double *w = new double[n];
+      double *x = new double[n];
+      webbur::clenshaw_curtis_compute(n, x, w);
+      for ( int i = 1; i <= n; i++ )
+	{
+	  xxx[n-1][i-1] = x[i-1];
+	  www[n-1][i-1] = w[i-1];
+	}
     }
 }
