@@ -46,33 +46,33 @@ void vjint::init()
 
   //gevpb_.gevpb_ = 3.8937966e8; //MCFM 6.8 value
   //gevpb_.gevpb_ = 0.389379e9; //dyres value
-  gevpb_.gevpb_ = gevfb/1000.;
+  //gevpb_.gevpb_ = gevfb/1000.;
   
-  flagch_.flagch_ = 0;
+  //  flagch_.flagch_ = 0;
 
-  vegint_.iter_ = 20;
-  vegint_.locall_ = 10000;
-  vegint_.nlocall_ = 20000;
+  //  vegint_.iter_ = 20;
+  //  vegint_.locall_ = 10000;
+  //  vegint_.nlocall_ = 20000;
 
-  dypara_.ss_ =  opts.sroot;
-  dypara_.s_ = pow(dypara_.ss_,2);
+  //  dypara_.ss_ =  opts.sroot;
+  //  dypara_.s_ = pow(dypara_.ss_,2);
 
-  dypdf_.ih1_ = opts.ih1;
-  dypdf_.ih2_ = opts.ih2;
+  //  dypdf_.ih1_ = opts.ih1;
+  //  dypdf_.ih2_ = opts.ih2;
 
-  vjorder_.iord_ = opts.order - 1;
+  //vjorder_.iord_ = opts.order - 1;
 
-  if (opts.nproc == 3)
-    {
-      if (opts.useGamma && !opts.zerowidth)
-	prodflag_.prodflag_ = 5; 
-      else
-	prodflag_.prodflag_ = 3;
-    }
-  else if (opts.nproc == 1)
-    prodflag_.prodflag_ = 21;
-  else if (opts.nproc == 2)
-    prodflag_.prodflag_ = 22;
+  //  if (opts.nproc == 3)
+  //    {
+  //      if (opts.useGamma && !opts.zerowidth)
+  //	prodflag_.prodflag_ = 5; 
+  //      else
+  //	prodflag_.prodflag_ = 3;
+  //    }
+  //  else if (opts.nproc == 1)
+  //    prodflag_.prodflag_ = 21;
+  //  else if (opts.nproc == 2)
+  //    prodflag_.prodflag_ = 22;
 
   ckm_.vud_ = cabib_.Vud_;
   ckm_.vus_ = cabib_.Vus_;
@@ -85,10 +85,10 @@ void vjint::init()
   ckm_.vtb_ = 0.;
 
   double cw2 = 1.- coupling::xw;
-  em_.aemmz_ = coupling::aemmz; //sqrt(2.)* ewcouple_.Gf_ *pow(coupling::wmass,2)* ewcouple_.xw_ /M_PI;
+  //  em_.aemmz_ = coupling::aemmz; //sqrt(2.)* ewcouple_.Gf_ *pow(coupling::wmass,2)* ewcouple_.xw_ /M_PI;
 
-  brz = 1./dymasses_.zwidth_*em_.aemmz_/24.*coupling::zmass *(pow(-1.+2.*coupling::xw,2)+pow(2.*coupling::xw,2))/(coupling::xw*cw2); //=0.033638
-  brw = 1./dymasses_.wwidth_*em_.aemmz_*coupling::wmass/(12.*coupling::xw); //=0.10906
+  brz = 1./dymasses_.zwidth_*coupling::aemmz/24.*coupling::zmass *(pow(-1.+2.*coupling::xw,2)+pow(2.*coupling::xw,2))/(coupling::xw*cw2); //=0.033638
+  brw = 1./dymasses_.wwidth_*coupling::aemmz*coupling::wmass/(12.*coupling::xw); //=0.10906
 
   //quarks are ordered according to mass:
   //1,2,3,4,5,6
@@ -162,15 +162,23 @@ void vjint::init()
   quarks_.tau3_[4][4] = ewcharge_.tau_[MAXNF+5];
 
   //definition of constants and couplings
-  const2_.ca_ = 3.;
-  const2_.xnc_ = coupling::NC;
-  const2_.cf_ = 4./3.;
-  const2_.tr_ = resconst::NF/2.;
-  const2_.pi_ = M_PI;
-  dycouplings_.alpha0_ = em_.aemmz_;
-  dycouplings_.xw_ = coupling::xw;
-  dycouplings_.sw_ = sqrt(coupling::xw); // sin_w
-  dycouplings_.cw_ = sqrt(1.-coupling::xw); // cos_w
+  //  const2_.ca_ = resconst::CA;
+  //  const2_.xnc_ = coupling::NC;
+  //  const2_.cf_ = resconst::Cf;
+  //  const2_.tr_ = resconst::NF/2.;
+  //  const2_.pi_ = M_PI;
+
+  dyqcd_.pi_ = M_PI;
+  dyqcd_.cf_ = resconst::Cf;
+  dyqcd_.ca_ = resconst::CA;
+  dyqcd_.tr_ = resconst::NF/2.;
+  dyqcd_.xnc_ = coupling::NC;
+  dyqcd_.nf_ = resconst::NF;
+  
+  //  dycouplings_.alpha0_ = coupling::aemmz;
+  //  dycouplings_.xw_ = coupling::xw;
+  //  dycouplings_.sw_ = sqrt(coupling::xw); // sin_w
+  //  dycouplings_.cw_ = sqrt(1.-coupling::xw); // cos_w
 
   luminosity::init();
 }
@@ -201,7 +209,7 @@ double vjint::vint(double m, double pt, double y)
   asnew_.as_ = LHAPDF::alphasPDF(scales2_.xmur_)/M_PI;
 
   //calculate logs of scales
-  utilities3_(q2);
+  utils_scales_(q2);
   
   //calculate propagators
   double cw2 = 1.- coupling::xw;
@@ -226,20 +234,20 @@ double vjint::vint(double m, double pt, double y)
 	sigs_.sigw_ = brw*dymasses_.wwidth_/(M_PI*coupling::wmass)*mesq::propW;
       if (opts.useGamma)
 	{
-	  sigs_.siggamma_ = em_.aemmz_/(3.*M_PI) * mesq::propG;
-	  sigs_.sigint_ = -em_.aemmz_/(6.*M_PI)* mesq::propZG * (-1.+4.*coupling::xw)/(2.*sqrt(coupling::xw*cw2));
+	  sigs_.siggamma_ = coupling::aemmz/(3.*M_PI) * mesq::propG;
+	  sigs_.sigint_ = -coupling::aemmz/(6.*M_PI)* mesq::propZG * (-1.+4.*coupling::xw)/(2.*sqrt(coupling::xw*cw2));
 	}
     }
   //set phase space variables
-  internal_.q_ = m;
-  internal_.q2_ = pow(m,2);
-  internal_.qt_ = pt;
-  yv_.yv_ = y;
-  yv_.expyp_ = phasespace::exppy;//exp(y);
-  yv_.expym_ = phasespace::expmy;//exp(-y);//1./yv_.expyp_;
+  //  internal_.q_ = m;
+  //  internal_.q2_ = pow(m,2);
+  //  internal_.qt_ = pt;
+  //  yv_.yv_ = y;
+  //  yv_.expyp_ = phasespace::exppy;//exp(y);
+  //  yv_.expym_ = phasespace::expmy;//exp(-y);//1./yv_.expyp_;
 
-  if (opts.zerowidth)
-    internal_.q_ = opts.rmass;
+  //  if (opts.zerowidth)
+  //    internal_.q_ = opts.rmass;
   
   //call cross section calculation
   //  int ord = opts.order - 1;
@@ -258,38 +266,40 @@ double vjint::vint(double m, double pt, double y)
 
 int xdelta_cubature(unsigned ndim, const double x[], void *data, unsigned ncomp, double f[])
 {
-  f[0] = xdelta_(x);
+  //f[0] = xdelta_(x);
+  f[0] = vjint::delta(x[0]);
   return 0;
 }
-int sing_cubature(unsigned ndim, const double x[], void *data, unsigned ncomp, double f[])
-{
-  double zz[2];
-  zz[0] = vjint::zmin*pow(vjint::zmax/vjint::zmin,x[0]);
-  double jacz1 = zz[0]*vjint::lz;
 
-  zz[1] = vjint::zmin*pow(vjint::zmax/vjint::zmin,x[1]);
-  double jacz2 = zz[1]*vjint::lz;
-  
-  f[0] = sing_(zz)*jacz1*jacz2;
-  return 0;
-}
+//int sing_cubature(unsigned ndim, const double x[], void *data, unsigned ncomp, double f[])
+//{
+//  double zz[2];
+//  zz[0] = vjint::zmin*pow(vjint::zmax/vjint::zmin,x[0]);
+//  double jacz1 = zz[0]*vjint::lz;
+//
+//  zz[1] = vjint::zmin*pow(vjint::zmax/vjint::zmin,x[1]);
+//  double jacz2 = zz[1]*vjint::lz;
+//  
+//  f[0] = sing_(zz)*jacz1*jacz2;
+//  return 0;
+//}
 
 
 double vjint::calc(double m, double pt, double y)
 {
   clock_t begin_time, end_time;
 
-  double q2 = m*m;
-  tm_.tm_ = sqrt(q2+pt*pt);
+  double q2 = phasespace::m2;
+  //  tm_.tm_ = sqrt(q2+pt*pt);
       
   //kinematical limits on qt (at y = 0) --> possibly not needed, since the phace space is generated within kinematical limits
-  double z = q2/dypara_.s_;
+  double z = q2/pow(opts.sroot,2);
   double xr = pow(1-z,2)-4*z*pow(pt/m,2);
   if (xr < 0)
     return 0.;
 
   //kinematical limits on y including qt
-  double tmpx = (q2+dypara_.s_)/dypara_.ss_/tm_.tm_;
+  double tmpx = (q2+pow(opts.sroot,2))/opts.sroot/phasespace::mt;
   double ymax = log((tmpx+sqrt(max(0.,pow(tmpx,2)-4.)))/2.);
 
   double ay = fabs(y);
@@ -301,7 +311,22 @@ double vjint::calc(double m, double pt, double y)
   asp_.asp_ = asnew_.as_*M_PI;
 
   luminosity::cache();
-  
+
+
+  //integration of the delta term
+  //lower limit of integration for x2
+  double x2min=(q2-opts.sroot*phasespace::mt*phasespace::expmy)/(opts.sroot*phasespace::mt*phasespace::exppy-pow(opts.sroot,2));
+  logx2min = log(x2min);
+  if (x2min > 1. || x2min < 0.)
+    {
+      cout << "error in x2min " << x2min
+	   << " m " << phasespace::m
+	   << " pt " << phasespace::qt
+	   << " y "  << phasespace::y
+	   << endl;
+	      return 0.;
+    }
+
   //pcubature integration
   const int ndimx = 1;     //dimensions of the integral
   const int ncomp = 1;  //components of the integrand
@@ -311,7 +336,7 @@ double vjint::calc(double m, double pt, double y)
   const int eval = 0;
   const double epsrel = min(1e-4,opts.pcubaccuracy);
   const double epsabs = 0.;
-  //     boundaries of integration      
+  //boundaries of integration      
   double xmin[1] = {0.};
   double xmax[1] = {1.};
 
@@ -320,13 +345,35 @@ double vjint::calc(double m, double pt, double y)
 	    ndimx, xmin, xmax, 
 	    eval, epsabs, epsrel, ERROR_INDIVIDUAL, integral, error);
   end_time = clock();
-
-  if (opts.timeprofile)
-    cout << setw(10) << "xdelta time" << setw(10) << float( end_time - begin_time ) /  CLOCKS_PER_SEC
-	 << endl;
-  
   double rdelta = integral[0];
   double err = error[0];
+
+  if (opts.timeprofile)
+    cout << setw(10) << rdelta << " xdelta time" << setw(10) << float( end_time - begin_time ) /  CLOCKS_PER_SEC
+	 << endl;
+  
+  /*
+  begin_time = clock();
+  double rdelta = 0.;
+  int xrule = 40;
+
+  //start integration
+  double ax = 0.;
+  double bx = 1.;
+  double cx = 0.5*(ax+bx);
+  double mx = 0.5*(bx-ax);
+  for (int i = 0; i < xrule; i++)
+    {
+      double x = cx+mx*gr::xxx[xrule-1][i];
+      double jac = mx;
+      rdelta += delta(x) * jac * gr::www[xrule-1][i];
+    }
+  end_time = clock();
+  if (opts.timeprofile)
+    cout << setw(10) << rdelta << " xdelta time" << setw(10) << float( end_time - begin_time ) /  CLOCKS_PER_SEC
+	 << endl;
+  */
+  
 
   //integration of non-delta(s2) terms (only at NLO)
 
