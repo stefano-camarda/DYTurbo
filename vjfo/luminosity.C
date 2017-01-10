@@ -81,6 +81,7 @@ void luminosity::cache()
 		mesq_nointerf[i][j] = 2.*pow(quarks_.eq_[j],2)*quarks_.delta_[j][i]*sigs_.siggamma_+
 		  (pow(1./(2.*sw*cw)*quarks_.tau3_[j][i]-quarks_.delta_[j][i]*quarks_.eq_[j]*sw/cw,2)+
 		   pow(-quarks_.delta_[j][i]*quarks_.eq_[j]*sw/cw,2))*sigs_.sigz_;
+
 	      }
 
 	}
@@ -97,9 +98,6 @@ void luminosity::cache()
     }
 
 
-
-
-  
   sum_mesq = 0.;
   sum_mesq_nointerf = 0.;
   for (int i = 0; i < MAXNF; i++)
@@ -133,39 +131,25 @@ void luminosity::cache()
 	  for (int i = 0; i < MAXNF; i++)
 	    for (int j = 0; j < MAXNF; j++)
 	      {
-		sum_mesq += mesq[i][j];//2.*pow(quarks_.eq_[j],2)*quarks_.delta_[j][i]*sigs_.siggamma_+
-		//(pow(1./(2.*sw*cw)*quarks_.tau3_[j][i]-quarks_.delta_[j][i]*quarks_.eq_[j]*sw/cw,2)+
-		//pow(-quarks_.delta_[j][i]*quarks_.eq_[j]*sw/cw,2))*sigs_.sigz_ +
-		//(((1./(2.*sw*cw)*quarks_.tau3_[j][i]-quarks_.delta_[j][i]*quarks_.eq_[j]*sw/cw)+
-		//(-quarks_.delta_[j][i]*quarks_.eq_[j]*sw/cw))*2.*quarks_.eq_[j])*sigs_.sigint_; // -> equal to sum_ij mesq[i][j] integrated wrt costh?
-	      
-		sum_mesq_nointerf +=  mesq_nointerf[i][j]; //2.*pow(quarks_.eq_[j],2)*quarks_.delta_[j][i]*sigs_.siggamma_+
-		//(pow(1./(2.*sw*cw)*quarks_.tau3_[j][i]-quarks_.delta_[j][i]*quarks_.eq_[j]*sw/cw,2)+
-		//pow(-quarks_.delta_[j][i]*quarks_.eq_[j]*sw/cw,2))*sigs_.sigz_;
+		sum_mesq += mesq[i][j];
+		sum_mesq_nointerf +=  mesq_nointerf[i][j];
 	      }
 	  for (int i = 0; i < MAXNF; i++)
 	    for (int j = 0; j < MAXNF; j++)
-	      flqg[i] +=  mesq[i][j];//2.*pow(quarks_.eq_[j],2)*quarks_.delta_[j][i]*sigs_.siggamma_+
-	  //(pow(1./(2.*sw*cw)*quarks_.tau3_[j][i]-quarks_.delta_[j][i]*quarks_.eq_[j]*sw/cw,2)+
-	  //pow(-quarks_.delta_[j][i]*quarks_.eq_[j]*sw/cw,2))*sigs_.sigz_ +
-	  //(((1./(2.*sw*cw)*quarks_.tau3_[j][i]-quarks_.delta_[j][i]*quarks_.eq_[j]*sw/cw)+
-	  //(-quarks_.delta_[j][i]*quarks_.eq_[j]*sw/cw))*2.*quarks_.eq_[j])*sigs_.sigint_; // -> equal to sum_i mesq[i][j] =  mesq[i][-i] integrated wrt costh? 
-
+	      flqg[i] +=  mesq[i][j];
 	}
       else
 	{
 	  for (int i = 0; i < MAXNF; i++)
 	    for (int j = 0; j < MAXNF; j++)
 	      {
-		sum_mesq +=  mesq[i][j];//(pow(1./(2.*sw*cw)*quarks_.tau3_[j][i]-quarks_.delta_[j][i]*quarks_.eq_[j]*sw/cw,2)+
-		//pow(-quarks_.delta_[j][i]*quarks_.eq_[j]*sw/cw,2))*sigs_.sigz_;
+		sum_mesq +=  mesq[i][j];
 		sum_mesq_nointerf += mesq[i][j];
 	      }
 
 	  for (int i = 0; i < MAXNF; i++)
 	    for (int j = 0; j < MAXNF; j++)
-	      flqg[i] +=  mesq[i][j];//(pow(1./(2.*sw*cw)*quarks_.tau3_[j][i]-quarks_.delta_[j][i]*quarks_.eq_[j]*sw/cw,2)+
-	  //pow(-quarks_.delta_[j][i]*quarks_.eq_[j]*sw/cw,2))*sigs_.sigz_;
+	      flqg[i] +=  mesq[i][j];
 	}
     }
 }
@@ -282,10 +266,10 @@ void luminosity::calc()
       for (int i = 0; i < MAXNF; i++)
 	sumpdf += (fh1[i+MAXNF+1]*fh2[parton::charge_conj(parton::pdgid(i+MAXNF+1))]+fh1[parton::charge_conj(parton::pdgid(i+MAXNF+1))]*fh2[i+MAXNF+1]);
 
-      luminosities_.xlumqqbdbb_ = sumpdf*sum_mesq_nointerf;
+      luminosities_.xlumqqbdbb_ = sumpdf*sum_mesq; //dyqt bug fig, added missing Z/g* interference
 
       for (int i = 0; i < MAXNF; i++)
-	luminosities_.xlumqqbdbc_ += (fh1[i+MAXNF+1]*fh2[parton::charge_conj(parton::pdgid(i+MAXNF+1))]+fh1[parton::charge_conj(parton::pdgid(i+MAXNF+1))]*fh2[i+MAXNF+1]) * sum_mesq_nointerf;
+	luminosities_.xlumqqbdbc_ += (fh1[i+MAXNF+1]*fh2[parton::charge_conj(parton::pdgid(i+MAXNF+1))]+fh1[parton::charge_conj(parton::pdgid(i+MAXNF+1))]*fh2[i+MAXNF+1]) * sum_mesq; //dyqt bug fig, added missing Z/g* interference
 
       double sumpdf1 = 0.;
       double sumpdf2 = 0.;
@@ -338,9 +322,8 @@ void luminosity::calc()
       luminosities_.xlumqqbLR_ += (sumpdf1az*sumpdf2azm+sumpdf1bz*sumpdf2bzm)*sigs_.sigz_;
 
       //qq luminosity
-      //for (int i = 0; i < MAXNF; i++)
-      for (int i = 2; i < 3; i++)
-	luminosities_.xlumqq_ += (fh1[i+MAXNF+1]*fh2[i+MAXNF+1]+fh1[parton::charge_conj(parton::pdgid(i+MAXNF+1))]*fh2[parton::charge_conj(parton::pdgid(i+MAXNF+1))]) *mesq_nointerf[i][i];
+      for (int i = 0; i < MAXNF; i++)
+	luminosities_.xlumqq_ += (fh1[i+MAXNF+1]*fh2[i+MAXNF+1]+fh1[parton::charge_conj(parton::pdgid(i+MAXNF+1))]*fh2[parton::charge_conj(parton::pdgid(i+MAXNF+1))]) *mesq[i][i]; //dyqt bug fig, added missing Z/g* interference
       
       //Ead and Ebc qq luminosity (here q = q')
       luminosities_.xlumqqead_ = luminosities_.xlumqq_;
