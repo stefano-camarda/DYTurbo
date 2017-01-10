@@ -450,9 +450,9 @@ c.....leading order delta(s2) contributions
             
 c.....next to leading order delta(s2) contributions
       if (iord.eq.1) then
-         call utilities2(uh,q2)
-         call utilities(sh,th,uh,q2,0d0)
-         call utilities_dilog(sh,th,uh,q2)
+         call utils_fu(uh,q2)
+         call utils(sh,th,uh,q2,0d0)
+         call utils_dilog(sh,th,uh,q2)
          xnloqg=(factor/(xnc**2-1d0))*(
      /     Bqg1(sh,th,uh,q2)+Bgq1(sh,th,uh,q2)+
      /     Bqg2(sh,th,uh,q2)+Bgq2(sh,th,uh,q2)+
@@ -641,7 +641,7 @@ c         return
 
 c.....compute parton luminosity
          call flavour
-         call utilities(sh,th,uh,q2,s2)
+         call utils(sh,th,uh,q2,s2)
 
 c.....common factor for all the contributions
          factor=gevpb*alpha0*asp*cf/sh
@@ -778,7 +778,7 @@ c.....imposing x1,x2 < 1
 c.....compute parton luminosity
          call flavour
 c     set s2=0d0 explicitly in utilities
-         call utilities(sh,th,uh,q2,0d0)
+         call utils(sh,th,uh,q2,0d0)
          
 c.....common factor for all the contributions
          factor=gevpb*alpha0*asp*cf/sh
