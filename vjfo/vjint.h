@@ -11,7 +11,34 @@ extern "C"
   void utilities_(double & sh, double & th, double & uh, double & q2, double & ss2);
   void utilities2_(double & uh, double & q2);
   void utilities3_(double & q2);
+  void utilities_dilog_(double & sh, double & th, double & uh, double & q2);
 
+  void utils_scales_(double & q2);
+  void utils_fu_(double & uh, double & q2);
+  void utils_dilog_(double & sh, double & th, double & uh, double & q2);
+  void utils_(double & sh, double & th, double & uh, double & q2, double & ss2);
+
+  //functions used in delta
+  double aqg0_(double& sh, double& th, double& uh, double& q2);
+  double agq0_(double& sh, double& th, double& uh, double& q2);
+  double aqqb0_(double& sh, double& th, double& uh, double& q2);
+  double bqg1_(double& sh, double& th, double& uh, double& q2);
+  double bgq1_(double& sh, double& th, double& uh, double& q2);
+  double bqg2_(double& sh, double& th, double& uh, double& q2);
+  double bgq2_(double& sh, double& th, double& uh, double& q2);
+  double cqg1_(double& sh, double& th, double& uh, double& q2);
+  double cgq1_(double& sh, double& th, double& uh, double& q2);
+  double cqg2_(double& sh, double& th, double& uh, double& q2);
+  double cgq2_(double& sh, double& th, double& uh, double& q2);
+  double bqg3_(double& sh, double& th, double& uh, double& q2);
+  double bgq3_(double& sh, double& th, double& uh, double& q2);      
+  double bqqb1_(double& sh, double& th, double& uh, double& q2);
+  double bqqb2_(double& sh, double& th, double& uh, double& q2);
+  double cqqb1_(double& sh, double& th, double& uh, double& q2);
+  double d0aa_(double& sh, double& th, double& uh, double& q2);
+  double bqqb3_(double& sh, double& th, double& uh, double& q2);
+
+  //functions used in sing  
   double cgg1_(double& sh, double& th, double& uh, double& q2);
   double cgg1x_(double& sh, double& th, double& uh, double& q2);
   double cqg3_(double& sh, double& th, double& uh, double& q2, int& flag);
@@ -39,33 +66,41 @@ extern "C"
   double ead_(double& sh, double& th, double& uh, double& q2);
   double ebc_(double& sh, double& th, double& uh, double& q2);
 
+  extern struct {
+    double pi_;
+    double cf_;
+    double ca_;
+    double tr_;
+    int xnc_;
+    int nf_;
+  } dyqcd_;
   
-  extern struct {
-    double gevpb_;
-  } gevpb_;
+  //  extern struct {
+  //    double gevpb_;
+  //  } gevpb_;
 
-  extern struct {
-    int flagch_;
-  } flagch_;
+  //  extern struct {
+  //    int flagch_;
+  //  } flagch_;
 
-  extern struct {
-    int iter_;
-    int locall_;
-    int nlocall_;
-  } vegint_;
+  //  extern struct {
+  //    int iter_;
+  //    int locall_;
+  //    int nlocall_;
+  //  } vegint_;
 
-  extern struct {
-    int ih1_;
-    int ih2_;
-  } dypdf_;
+//  extern struct {
+//    int ih1_;
+//    int ih2_;
+//  } dypdf_;
 
-  extern struct {
-    int iord_;
-  } vjorder_;
+//  extern struct {
+//    int iord_;
+//  } vjorder_;
 
-  extern struct {
-    int prodflag_;
-  } prodflag_;
+//  extern struct {
+//    int prodflag_;
+//  } prodflag_;
 
   extern struct {
     double vud_;
@@ -80,9 +115,9 @@ extern "C"
   } ckm_;
 
   //alpha EM (MZ)
-  extern struct {
-    double aemmz_;
-  } em_;
+  //  extern struct {
+  //    double aemmz_;
+  //  } em_;
 
   extern struct {
     double eq_[5];
@@ -93,25 +128,25 @@ extern "C"
     double tau3_[5][5];
   } quarks_;
 
-  extern struct {
-    double pi_;
-    double cf_;
-    double ca_;
-    double tr_;
-    double xnc_;
-  } const2_;
+  //  extern struct {
+  //    double pi_;
+  //    double cf_;
+  //    double ca_;
+  //    double tr_;
+  //    double xnc_;
+  //  } const2_;
 
-  extern struct {
-    double xw_;
-    double cw_;
-    double sw_;
-    double alpha0_;
-  } dycouplings_;
+  //  extern struct {
+  //    double xw_;
+  //    double cw_;
+  //    double sw_;
+  //    double alpha0_;
+  //  } dycouplings_;
 
-  extern struct {
-    double s_;
-    double ss_;
-  } dypara_;
+  //  extern struct {
+  //    double s_;
+  //    double ss_;
+  //  } dypara_;
 
   //variables
   /*
@@ -129,15 +164,15 @@ extern "C"
   } cdyqt_;
   */
 
-  extern struct {
-    double yv_;
-    double expyp_;
-    double expym_;
-  } yv_;
+  //  extern struct {
+  //    double yv_;
+  //    double expyp_;
+  //    double expym_;
+  //  } yv_;
 
-  extern struct {
-    double tm_;
-  } tm_;
+  //  extern struct {
+  //    double tm_;
+  //  } tm_;
   
   extern struct {
     double xmur_;
@@ -161,16 +196,16 @@ extern "C"
     double sigw_;
   } sigs_;
 
-  extern struct {
-    double qt_;
-    double q_;
-    double q2_;
-  } internal_;
+//  extern struct {
+//    double qt_;
+//    double q_;
+//    double q2_;
+//  } internal_;
 
-  extern struct {
-    double x1_;
-    double x2_;
-  } fractions_;
+//  extern struct {
+//    double x1_;
+//    double x2_;
+//  } fractions_;
 
   extern struct {
     double xlumgg_;
@@ -195,7 +230,7 @@ extern "C"
   } luminosities_;
   
 }
-#pragma omp threadprivate(yv_,tm_,scales2_,asnew_,asp_,sigs_,internal_,fractions_,luminosities_)
+#pragma omp threadprivate(scales2_,asnew_,asp_,sigs_,luminosities_)
 
 namespace vjint
 {
@@ -210,11 +245,14 @@ namespace vjint
 
   extern double brz;
   extern double brw;
+
+  extern double logx2min;
+#pragma omp threadprivate(logx2min)
   
   extern void init();
   extern double vint(double m, double pt, double y);
   extern double calc(double m, double pt, double y);
+  extern double delta(double x);
   extern double sing();
-
 }
 #endif
