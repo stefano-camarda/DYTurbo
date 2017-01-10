@@ -86,11 +86,7 @@ integrand_t vjintegrand(const int &ndim, const double x[], const int &ncomp, dou
   phasespace::calcexpy();
   
   //evaluate the Vj (N)LO cross section
-  if (opts.pcubature)
-    f[0] = vjint::vint(m,qt,y); //C++ interface
-  else
-    f[0] = vjfo_(m,qt,y); //fortran interface
-
+  f[0] = vjint::vint(m,qt,y); //C++ interface
   
   if (isnan_ofast(f[0]))
     {
