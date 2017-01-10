@@ -25,7 +25,7 @@ noinst_LTLIBRARIES = libdyturbobase.la
 libdyturbobase_la_SOURCES = dyturbo.C resintegr.C ctintegr.C finintegr.C bornintegr.C \
 			    omegaintegr.C interface.C settings.C init.C cubacall.C switch.C  \
 			    pdf.C coupling.C clock_real.C banner.C print_table.C abint.C clenshawcurtisrules.C gaussrules.C numbers.C #solvew.C
-libdyturbobase_la_SOURCES += flavreduce.f gaussinit.f rescinit.f pdfmoments.f
+libdyturbobase_la_SOURCES += flavreduce.f gaussinit.f rescinit.f pdfmoments.f chaplin.f
 libdyturbobase_la_SOURCES += AiMoments.cxx TLVUtils.cxx
 
 lib_LTLIBRARIES = libdyturbo.la
@@ -42,7 +42,6 @@ libdyturbo_la_LIBADD = libdyturbobase.la \
 		       ../dynnlo/libdynnlo.la \
 		       ../dyres/libdyres.la \
 		       ../mcfm/libmcfm.la \
-		       ../dyqt/libdyqt.la \
 		       ../pegasus/libpegasus.la \
 		       ../dequad/libdequad.la \
 		       ../sandia/libsandia.la \
@@ -55,7 +54,7 @@ libdyturbo_la_LIBADD = libdyturbobase.la \
 
 bin_PROGRAMS = dyturbo
 dyturbo_SOURCES = main.C
-dyturbo_LDADD = libdyturbo.la $(CUBA_LDFLAGS)
+dyturbo_LDADD = libdyturbo.la $(CUBA_LDFLAGS) $(CHAPLIN_LDFLAGS)
 
 if HAVE_ROOT
 dyturbo_LDADD += $(ROOT_LDFLAGS)
