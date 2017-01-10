@@ -3,7 +3,7 @@ void yline()
 {
   double costh = 0.;
   double m = 91.1958;//opts.rmass;
-  double qt = 1.;//0.850673; //0.01;
+  double qt = 0.01;//0.850673; //0.01;
   double y = 0.;
   int mode = 1;
   double f[opts.totpdf];
@@ -62,9 +62,9 @@ void yline()
 //m line plot
 void mline()
 {
-  double costh = 0.1;
+  double costh = 0.;
   double m = opts.rmass;
-  double qt = 0.1;
+  double qt = 0.01;
   double y =  (phasespace::ymin + phasespace::ymax)/2.;
   int mode = 1;
   double f[opts.totpdf];
@@ -85,13 +85,25 @@ void mline()
       double m = i*hm+m1;
       phasespace::set_mqtyphi(m, qt, y);//set global variables to costh, m, qt, y
       phasespace::set_cth(costh);//set global variables to costh, m, qt, y
+      phasespace::calcexpy();
+      phasespace::calcmt();
       omegaintegr::genV4p();//generate boson 4-momentum, with m, qt, y and phi=0
+      double vj = vjint::vint(m,qt,y);
       //      mf << "gm->SetPoint(gm->GetN(), " << i*hm+m1 << ", " << resumm_(costh,m,qt,y,mode) << ");" << endl;
       //mf << "gm->SetPoint(gm->GetN(), " << i*hm+m1 << ", " << resint::rint(costh,m,qt,y,mode) << ");" << endl;
       //      mf << "gm->SetPoint(gm->GetN(), " << i*hm+m1 << ", " << resint::rint(costh,m,qt,y,mode) << ");" << endl;
-      mf << "gm->SetPoint(gm->GetN(), " << i*hm+m1 << ", " << -ctint_(costh,m,qt,y,mode,f)*2*qt/vjfo_(m,qt,y) << ");" << endl;
-      mf << "gm1->SetPoint(gm1->GetN(), " << i*hm+m1 << ", " << -ctint_(costh,m,qt,y,mode,f)*2*qt << ");" << endl;
-      mf << "gm2->SetPoint(gm2->GetN(), " << i*hm+m1 << ", " << vjfo_(m,qt,y) << ");" << endl;
+      //mf << "gm->SetPoint(gm->GetN(), " << i*hm+m1 << ", " << -ctint_(costh,m,qt,y,mode,f)*2*qt/vjint::vint(m,qt,y) << ");" << endl;
+      //mf << "gm1->SetPoint(gm1->GetN(), " << i*hm+m1 << ", " << -ctint_(costh,m,qt,y,mode,f)*2*qt << ");" << endl;
+      //mf << "gm2->SetPoint(gm2->GetN(), " << i*hm+m1 << ", " << vjint::vint(m,qt,y) << ");" << endl;
+
+      dofill_.doFill_ = 1;
+      qtint::calc(m,qt,0,1);
+      omegaintegr::genV4p();//generate boson 4-momentum, with m, qt, y and phi=0
+      ctint::calc(costh,m,qt,y,mode,f);
+
+      cout << vj << "  " << f[0]*2*qt << endl;
+      
+      mf << "gm->SetPoint(gm->GetN(), " << i*hm+m1 << ", " << (-f[0]*2*qt)/vj << ");" << endl;
     }
   mf << "gm->Draw();" << endl;
   mf << "//gm1->Draw();" << endl;
@@ -231,7 +243,7 @@ void costhline()
 void ptline()
 {
   double costh = 0.;
-  double m = opts.rmass;
+  double m = 60;//opts.rmass;
   double qt = 5.;
   double y = 0.0;
   int mode = 1;
@@ -246,9 +258,9 @@ void ptline()
 	rapint::integrate(phasespace::ymin,phasespace::ymax,m);
       }
 
-  double p1 = 100;
-  double p2 = 500;
-  int np = 199;
+  double p1 = 0.1;
+  double p2 = 10;
+  int np = 99;
 
   ofstream pf("ptline.C");
   pf << "{" << endl;
@@ -262,13 +274,26 @@ void ptline()
       double qt = i*hp+p1;
       phasespace::set_mqtyphi(m, qt, y);//set global variables to costh, m, qt, y
       phasespace::set_cth(costh);//set global variables to costh, m, qt, y
+      phasespace::calcexpy();
+      phasespace::calcmt();
       omegaintegr::genV4p();//generate boson 4-momentum, with m, qt, y and phi=0
+      double vj = vjint::vint(m,qt,y);
+
       //pf << "gp->SetPoint(gp->GetN(), " << i*hp+p1 << ", " << resumm_(costh,m,qt,y,mode) << ");" << endl;
-      pf << "gp->SetPoint(gp->GetN(), " << i*hp+p1 << ", " << resint::rint(costh,m,qt,y,mode) << ");" << endl;
-      //pf << "gp->SetPoint(gp->GetN(), " << i*hp+p1 << ", " << vjint::calc(m,qt,y) << ");" << endl;
+      //pf << "gp->SetPoint(gp->GetN(), " << i*hp+p1 << ", " << resint::rint(costh,m,qt,y,mode) << ");" << endl;
+      //pf << "gp->SetPoint(gp->GetN(), " << i*hp+p1 << ", " << vjint::vint(m,qt,y) << ");" << endl;
       /*      pf << "gp->SetPoint(gp->GetN(), "   << i*hp+p1 << ", " << vjfo_(m,qt,y)+ctint_(costh,m,qt,y,mode,f)*2*qt << ");" << endl;
       pf << "gp1->SetPoint(gp1->GetN(), " << i*hp+p1 << ", " << -ctint_(costh,m,qt,y,mode,f)*2*qt << ");" << endl;
       pf << "gp2->SetPoint(gp2->GetN(), " << i*hp+p1 << ", " << vjfo_(m,qt,y) << ");" << endl;*/
+
+      dofill_.doFill_ = 1;
+      qtint::calc(m,qt,0,1);
+      omegaintegr::genV4p();//generate boson 4-momentum, with m, qt, y and phi=0
+      ctint::calc(costh,m,qt,y,mode,f);
+
+      cout << vj << "  " << f[0]*2*qt << endl;
+
+      pf << "gp->SetPoint(gp->GetN(), " << i*hp+p1 << ", " << (f[0]*2*qt)+vj << ");" << endl;
     }
   pf << "gp->Draw();" << endl;
   pf << "//gp1->Draw();" << endl;

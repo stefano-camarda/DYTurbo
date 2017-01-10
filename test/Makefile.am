@@ -21,7 +21,7 @@ AM_CPPFLAGS = -fpermissive \
 AM_CPPFLAGS += $(GMOCK_CPPFLAGS)
 
 DYTURBOLIBS= ../src/libdyturbo.la ../cernlib/libcern.la \
-	     -lgfortran $(CUBA_LDFLAGS) $(LHAPDF_LDFLAGS)
+	     -lgfortran $(CUBA_LDFLAGS) $(LHAPDF_LDFLAGS) $(CHAPLIN_LDFLAGS)
 
 AM_FFLAGS =  -I$(srcdir)/../dyres -I$(srcdir)/../mcfm -I$(srcdir)/../src
 
@@ -31,7 +31,7 @@ points_SOURCES = points.C finitemapping.C
 points_LDADD = ../src/libdyturbo.la \
 	       ../cernlib/libcern.la ../dequad/libdequad.la \
 	       -lgfortran \
-	       $(CUBA_LDFLAGS) $(LHAPDF_LDFLAGS) -lgsl -lgslcblas $(ROOT_LDFLAGS)
+	       $(CUBA_LDFLAGS) $(LHAPDF_LDFLAGS) $(CHAPLIN_LDFLAGS) -lgsl -lgslcblas $(ROOT_LDFLAGS)
 
 
 # unit tests
