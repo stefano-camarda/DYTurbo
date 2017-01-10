@@ -6,6 +6,8 @@
 #include "gaussrules.h"
 #include "numbers.h"
 #include "luminosity.h"
+#include "mesq.h"
+#include "resconst.h"
 
 #include <iostream>
 #include <iomanip>
@@ -31,7 +33,7 @@ double vjint::sing()
 
   double q2 = phasespace::m2;
   
-  double fac = gevpb_.gevpb_*dycouplings_.alpha0_*asp_.asp_*const2_.cf_;
+  double fac = gevfb/1000.*coupling::aemmz*asp_.asp_*resconst::Cf;
   double xjacz1 = (1.-dcut-x20);
 
   double sh, uh, th, s2;
@@ -80,12 +82,12 @@ double vjint::sing()
       double pre10 = phasespace::mt2*(1.+lb)/pow(1.-z1,2);
 
       //.....compute parton luminosity
-      fractions_.x1_ = x1;
-      fractions_.x2_ = x2;
+      //fractions_.x1_ = x1;
+      //fractions_.x2_ = x2;
       //flavour_();
       luminosity::calc();
-      utilities2_(uh,q2);
-      utilities_(sh,th,uh,q2,s2);
+      utils_fu_(uh,q2);
+      utils_(sh,th,uh,q2,s2);
          
       //.....common factor for all the contributions
       double factor = fac/sh;
@@ -183,11 +185,11 @@ double vjint::sing()
 	    }
 
 	  //.....compute parton luminosity
-	  fractions_.x1_ = x1;
-	  fractions_.x2_ = x2;
+	  //fractions_.x1_ = x1;
+	  //fractions_.x2_ = x2;
 	  //flavour_();
 	  luminosity::calc();	  
-	  utilities_(sh,th,uh,q2,s2);
+	  utils_(sh,th,uh,q2,s2);
 
 	  //.....common factor for all the contributions
 	  double factor = fac/sh;
