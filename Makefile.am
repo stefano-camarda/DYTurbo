@@ -33,6 +33,10 @@ dist_share_DATA = ${srcdir}/input/*.in \
 #libcuba_a_SOURCES =
 #libcuba_a_LIBADD  = Cuba-4.2/libcuba.a
 
+check:
+	${bindir}/dyturbo ${sharedir}/test.in
+	echo 's_qt->Integral()' | root -l -b results.root
+
 distclean-local:
 	rm -rf Cuba-$(CUBA_VERSION)
 	rm -rf lhapdf6

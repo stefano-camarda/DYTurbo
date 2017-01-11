@@ -78,6 +78,10 @@ if test x$lhapdf_config == x; then
    ${srcdir}/install-lhapdf
   #AC_MSG_ERROR([Unable to find lhapdf-config.])
   lhapdf_config=`ls ${PWD}/lhapdf6/bin/lhapdf-config`
+  if test x$lhapdf_config == x; then
+   # if the installation fails, exit
+   AC_MSG_ERROR([Failed to install lhapdf.])
+  fi
  fi
 fi
 
