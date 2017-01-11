@@ -8,6 +8,7 @@ cubaturesrc=`ls cubature/pcubature.c`
 # download if necessary
 if [[ x$cubaturesrc == x ]];
 then
+    mkdir -p cubature
     cd cubature
     wget http://ab-initio.mit.edu/cubature/cubature-${version}.tgz
     tar -xzf cubature-${version}.tgz
