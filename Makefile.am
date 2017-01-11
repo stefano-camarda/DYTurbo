@@ -36,4 +36,5 @@ dist_share_DATA = ${srcdir}/input/*.in \
 distclean-local:
 	rm -rf Cuba-$(CUBA_VERSION)
 	rm -rf lhapdf6
+	rm -rf chaplin-$(CHAPLIN_VERSION)
 	rm -rf origdyres/*.f origdyres/*.h origdyres/DYRes-v1.0
