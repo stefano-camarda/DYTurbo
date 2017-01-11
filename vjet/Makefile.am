@@ -13,9 +13,9 @@ AM_CPPFLAGS = -fpermissive -Wl,Bstatic \
 
 AM_FFLAGS = -I$(srcdir)/../mcfm
 
-noinst_LTLIBRARIES = libvjfo.la
-libvjfo_la_SOURCES = vjint.C vjloint.C sing.C delta.C luminosity.C
+noinst_LTLIBRARIES = libvjet.la
+libvjet_la_SOURCES = vjint.C vjloint.C sing.C delta.C luminosity.C
 
-libvjfo_la_SOURCES += utils.f abcdefunc.f
+libvjet_la_SOURCES += utils.f abcdefunc.f
 
 pkginclude_HEADERS = vjint.h fodyqt_inc.f functions_inc.f luminosities_inc.f scales2_inc.f vjloint.h luminosity.h dyqcd.f
