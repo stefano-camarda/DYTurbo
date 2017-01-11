@@ -8,8 +8,8 @@ AM_CPPFLAGS = -fpermissive \
 	-I$(srcdir)/../mcfm \
 	-I$(srcdir)/../resum \
 	-I$(srcdir)/../counterterm \
-	-I$(srcdir)/../vjfo \
-	-I$(srcdir)/../eba \
+	-I$(srcdir)/../vjet \
+	-I$(srcdir)/../born \
 	-I$(builddir)/../cubature \
 	-I$(srcdir)/../phasespace \
 	-I$(srcdir)/../histo \
@@ -36,9 +36,9 @@ libdyturbo_la_LIBADD = libdyturbobase.la \
 		       ../integrands/libintegrands.la \
 		       ../resum/libresum.la \
 		       ../counterterm/libcounterterm.la \
-		       ../vjfo/libvjfo.la \
+		       ../vjet/libvjet.la \
 		       ../v2j/libv2j.la \
-		       ../eba/libeba.la \
+		       ../born/libborn.la \
 		       ../dynnlo/libdynnlo.la \
 		       ../dyres/libdyres.la \
 		       ../mcfm/libmcfm.la \
