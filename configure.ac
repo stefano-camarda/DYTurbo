@@ -107,6 +107,11 @@ AC_SEARCH_LIBS([vegas],[cuba],[
   	   AC_MSG_RESULT([Install Cuba ${CUBA_VERSION}])
 	   ${srcdir}/install-cuba
 	fi
+	cubalib=`ls ${PWD}/Cuba-${CUBA_VERSION}/libcuba.a`
+	if test x$cubalib == x; then
+  	   AC_MSG_ERROR([Failed to install Cuba ${CUBA_VERSION}.])
+	fi
+	
         CUBA_LDFLAGS="-L${PWD}/Cuba-${CUBA_VERSION} -lcuba"
 	CUBA_CPPFLAGS="-I${PWD}/Cuba-${CUBA_VERSION}"
 	AC_MSG_RESULT([Using -lcuba from local installation ${PWD}/Cuba-${CUBA_VERSION}])
@@ -138,6 +143,11 @@ AC_SEARCH_LIBS([hpl2],[hpl3],[
   	   AC_MSG_RESULT([Install chaplin ${CHAPLIN_VERSION}])
 	   ${srcdir}/install-chaplin
 	fi
+	chaplinlib=`ls ${PWD}/chaplin-${CHAPLIN_VERSION}/lib/libchaplin.a`
+	if test x$chaplinlib == x; then
+  	   AC_MSG_ERROR([Failed to install chaplin ${CHAPLIN_VERSION}.])
+	fi
+	
         CHAPLIN_LDFLAGS="-L${PWD}/chaplin-${CHAPLIN_VERSION}/lib -lchaplin"
 	AC_MSG_RESULT([Using -lchaplin from local installation ${PWD}/chaplin-${CHAPLIN_VERSION}])
         ])
@@ -147,6 +157,11 @@ AC_SUBST(CHAPLIN_LDFLAGS)
 # check for cubature installation, and install it if missing
 AC_MSG_CHECKING([for cubature source code])
 ${srcdir}/install-cubature
+
+cubasrc=`ls ${PWD}/cubature/pcubature.c`
+if test x$cubasrc == x; then
+   AC_MSG_ERROR([Failed to install cubature.])
+fi
 
 # check for DYRES installation
 AC_ARG_ENABLE([dyres], AC_HELP_STRING(--enable-dyres, [Install and link original DYRes code, Available only in git (default=no)]))
