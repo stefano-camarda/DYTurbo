@@ -1,0 +1,17 @@
+#!/bin/bash
+
+
+version=1.0.2
+cubature=cubature-${version}
+cubaturesrc=`ls cubature/pcubature.c`
+
+# download if necessary
+if [[ x$cubaturesrc == x ]];
+then
+    cd cubature
+    wget http://ab-initio.mit.edu/cubature/cubature-${version}.tgz
+    tar -xzf cubature-${version}.tgz
+    rm cubature-${version}.tgz
+    mv cubature-${version}/* .
+    rmdir cubature-${version}
+fi
