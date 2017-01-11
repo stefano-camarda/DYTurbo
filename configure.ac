@@ -248,9 +248,9 @@ AC_CONFIG_FILES([Makefile
 		 histo/Makefile
  	 	 resum/Makefile
 		 counterterm/Makefile
-		 vjfo/Makefile
+		 vjet/Makefile
 		 v2j/Makefile
-		 eba/Makefile
+		 born/Makefile
 		 phasespace/Makefile
 		 integrands/Makefile
 		 dyres/Makefile
