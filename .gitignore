@@ -59,3 +59,10 @@ dyturbo-config
 *.in
 *line.C
 gmock/
+
+cubature/COPYING
+cubature/ChangeLog
+cubature/NEWS
+cubature/README
+cubature/*.h
+cubature/*.c
