@@ -144,6 +144,10 @@ AC_SEARCH_LIBS([hpl2],[hpl3],[
 
 AC_SUBST(CHAPLIN_LDFLAGS)
 
+# check for cubature installation, and install it if missing
+AC_MSG_CHECKING([for cubature source code])
+${srcdir}/install-cubature
+
 # check for DYRES installation
 AC_ARG_ENABLE([dyres], AC_HELP_STRING(--enable-dyres, [Install and link original DYRes code, Available only in git (default=no)]))
 AS_IF([test "x$enable_dyres" = "xyes"], [
