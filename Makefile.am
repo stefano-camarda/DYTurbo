@@ -33,9 +33,11 @@ dist_share_DATA = ${srcdir}/input/*.in \
 #libcuba_a_SOURCES =
 #libcuba_a_LIBADD  = Cuba-4.2/libcuba.a
 
-check:
+installcheck-local:
 	${bindir}/dyturbo ${sharedir}/test.in
 	echo 's_qt->Integral()' | root -l -b results.root
+	rm -rf ./tmp_results_main.dat
+	rm -rf ./results.txt
 
 distclean-local:
 	rm -rf Cuba-$(CUBA_VERSION)
