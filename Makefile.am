@@ -13,7 +13,7 @@ SUBDIRS += origdyres
 endif
 
 
-dist_bin_SCRIPTS = install-cuba install-lhapdf install-chaplin
+dist_bin_SCRIPTS = install-cuba install-lhapdf install-chaplin install-cubature
 EXTRA_DIST = README.md
 
 bin_SCRIPTS = dyturbo-config
@@ -43,4 +43,5 @@ distclean-local:
 	rm -rf Cuba-$(CUBA_VERSION)
 	rm -rf lhapdf6
 	rm -rf chaplin-$(CHAPLIN_VERSION)
+	rm -rf cubature/*.c cubature/*.h cubature/NEWS cubature/COPYING cubature/README cubature/ChangeLog
 	rm -rf origdyres/*.f origdyres/*.h origdyres/DYRes-v1.0
