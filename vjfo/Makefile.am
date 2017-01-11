@@ -3,7 +3,7 @@ AUTOMAKE_OPTIONS = foreign
 AM_CPPFLAGS = -fpermissive -Wl,Bstatic \
 	-I$(srcdir)/../src \
 	-I$(srcdir)/../resum \
-	-I$(srcdir)/../cubature \
+	-I$(builddir)/../cubature \
 	-I$(srcdir)/../mcfm \
 	-I$(srcdir)/../phasespace \
 	-I$(srcdir)/../resum \
