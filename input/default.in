@@ -110,6 +110,9 @@ vjphirule = 20
 #settings for the z1, z2 integration in the V+J 3d NLO term
 zrule = 64
 
+#settings for the x integration in the V+J 3d delta term
+xrule = 200
+
 # resummation damping
 dampk = 0.5
 dampdelta = 0.5

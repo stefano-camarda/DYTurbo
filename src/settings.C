@@ -350,6 +350,7 @@ void settings::readfromfile(const string fname){
     abrule             = in.GetNumber ( "abrule" );
     vjphirule          = in.GetNumber ( "vjphirule" );
     zrule              = in.GetNumber ( "zrule" );
+    xrule              = in.GetNumber ( "xrule" );
     ptbinwidth         = in.GetBool ( "ptbinwidth" );
     ybinwidth          = in.GetBool ( "ybinwidth" );
     force_binner_mode  = in.GetBool ( "force_binner_mode" );
@@ -664,6 +665,7 @@ void settings::dumpAll(){
         dumpI("abrule            ", abrule               );
 	dumpI("vjphirule         ", vjphirule            );
 	dumpI("zrule             ", zrule               );
+	dumpI("xrule             ", xrule               );
         dumpB("ptbinwidth        ", ptbinwidth          );
         dumpB("ybinwidth         ", ybinwidth           );
         dumpB("force_binner_mode ", force_binner_mode   );
