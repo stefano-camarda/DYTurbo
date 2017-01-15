@@ -69,4 +69,5 @@ endif
 pkginclude_HEADERS = dyturbo.h resintegr.h ctintegr.h finintegr.h bornintegr.h omegaintegr.h \
 		     interface.h settings.h cubacall.h switch.h options.f flred.f \
 		     gauss.f quadrules.f coupling.h pdf.h clock_real.h \
-		     fcomplex.h banner.h cxxopts.hpp isnan.h handy_typdefs.h abint.h clenshawcurtisrules.h gaussrules.h numbers.h parton.h #solvew.h
+		     fcomplex.h banner.h cxxopts.hpp isnan.h handy_typdefs.h abint.h \
+		     clenshawcurtisrules.h gaussrules.h numbers.h parton.h AiMoments.h TLVUtils.h #solvew.h
