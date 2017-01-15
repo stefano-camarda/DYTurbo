@@ -15,7 +15,7 @@
 #include <math.h>
 
 const double vjint::zmin = 1e-13;//1e-8;
-const double vjint::zmax = 1.-1e-10;//1.-1e-8;
+const double vjint::zmax = 1.;//1.-1e-10;//1.-1e-8;
 const double vjint::lz = log(zmax/zmin);
 
 int vjint::z1rule;
@@ -34,8 +34,8 @@ void vjint::init()
   t1 = new double [z1rule];
   t2 = new double [z2rule];
   
-  double az = zmin;
-  double bz = zmax;
+  double az = 0.;
+  double bz = 1.;
   double cz = 0.5*(az+bz);
   double mz = 0.5*(bz-az);
   for (int j = 0; j < z1rule; j++)
@@ -303,8 +303,10 @@ double vjint::calc(double m, double pt, double y)
   double ymax = log((tmpx+sqrt(max(0.,pow(tmpx,2)-4.)))/2.);
 
   double ay = fabs(y);
-  if (fabs(y) > ymax ||
-      fabs(*(long*)& ay - *(long*)& ymax) < 2 ) //check also equality
+  if (fabs(y) > ymax)
+    return 0.;
+
+  if (fabs(*(long*)& ay - *(long*)& ymax) < 2 ) //check also equality
     return 0.;
   
   //...compute as at order=nloop
@@ -326,7 +328,7 @@ double vjint::calc(double m, double pt, double y)
 	   << endl;
 	      return 0.;
     }
-
+  /*
   //pcubature integration
   const int ndimx = 1;     //dimensions of the integral
   const int ncomp = 1;  //components of the integrand
@@ -349,13 +351,13 @@ double vjint::calc(double m, double pt, double y)
   double err = error[0];
 
   if (opts.timeprofile)
-    cout << setw(10) << rdelta << " xdelta time" << setw(10) << float( end_time - begin_time ) /  CLOCKS_PER_SEC
+    cout << setw(10) << "xdelta time" << setw(10) << float( end_time - begin_time ) /  CLOCKS_PER_SEC << setw(10) << "result" << setw(10) << rdelta
 	 << endl;
-  
-  /*
+  */
+
   begin_time = clock();
   double rdelta = 0.;
-  int xrule = 40;
+  int xrule = opts.xrule;
 
   //start integration
   double ax = 0.;
@@ -370,9 +372,8 @@ double vjint::calc(double m, double pt, double y)
     }
   end_time = clock();
   if (opts.timeprofile)
-    cout << setw(10) << rdelta << " xdelta time" << setw(10) << float( end_time - begin_time ) /  CLOCKS_PER_SEC
+    cout << setw(10) << "xdelta time" << setw(10) << float( end_time - begin_time ) /  CLOCKS_PER_SEC << setw(10) << "result" << setw(10) << rdelta
 	 << endl;
-  */
   
 
   //integration of non-delta(s2) terms (only at NLO)
@@ -434,11 +435,11 @@ double vjint::calc(double m, double pt, double y)
   end_time = clock();
 
   if (opts.timeprofile)
-    cout << setw(10) << "rsing time" << setw(10) << float( end_time - begin_time ) /  CLOCKS_PER_SEC
+    cout << setw(10) << "rsing time" << setw(10) << float( end_time - begin_time ) /  CLOCKS_PER_SEC << setw(10) << "result" << setw(10) << rsing
 	 << endl;
 
   //final result
   double res = rdelta+rsing;
-  //cout << m << "  " << pt << "  " << y << "  " << res << "  " << err << endl;
+  //cout << m << "  " << pt << "  " << y << "  " << res << endl;
   return res;
 }
