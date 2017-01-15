@@ -8,7 +8,7 @@ AM_CPPFLAGS = -fpermissive \
 	      -I$(srcdir)/../mcfm \
 	      -I$(srcdir)/../dyres \
 	      -I$(srcdir)/../resum \
-	      -I$(srcdir)/../vjfo \
+	      -I$(srcdir)/../vjet \
 	      -I$(srcdir)/../counterterm \
 	      -I$(srcdir)/../eba \
 	      -I$(srcdir)/../cubature \
