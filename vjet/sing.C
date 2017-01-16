@@ -65,7 +65,7 @@ double vjint::sing()
       double tiny = 0.;//1e-7;
       if(x1 > 1.-tiny || x2 > 1.-tiny)
 	{
-	  cout << "x1 " << x1 << " x2 " << x2 << endl;
+	  //cout << "x1 " << x1 << " x2 " << x2 << endl;
 	  continue;
 	}
 
@@ -145,7 +145,7 @@ double vjint::sing()
 	  double tiny = 0.;//1e-7;
 	  if(x1 > 1.-tiny)
 	    {
-	      cout << "x1 " << x1 << " x2 " << x2 << endl;
+	      //cout << "x1 " << x1 << " x2 " << x2 << endl;
 	      continue;
 	    }
 	  luminosity::pdf1(x1);
@@ -162,7 +162,7 @@ double vjint::sing()
 	  //check s2 > 0
 	  if (s2 == 0.)
 	    {
-	      cout << " s2 < 0 ! s2 = " << s2 << endl;
+	      //cout << " s2 == 0 ! s2 = " << s2 << endl;
 	      //continue;
 	      return 0.;
 	    }

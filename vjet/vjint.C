@@ -319,14 +319,10 @@ double vjint::calc(double m, double pt, double y)
   //lower limit of integration for x2
   double x2min=(q2-opts.sroot*phasespace::mt*phasespace::expmy)/(opts.sroot*phasespace::mt*phasespace::exppy-pow(opts.sroot,2));
   logx2min = log(x2min);
-  if (x2min > 1. || x2min < 0.)
+  if (x2min >= 1. || x2min < 0.)
     {
-      cout << "error in x2min " << x2min
-	   << " m " << phasespace::m
-	   << " pt " << phasespace::qt
-	   << " y "  << phasespace::y
-	   << endl;
-	      return 0.;
+      //cout << "error in x2min " << x2min << " m " << phasespace::m << " pt " << phasespace::qt << " y "  << phasespace::y << endl;
+      return 0.;
     }
   /*
   //pcubature integration
