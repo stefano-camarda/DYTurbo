@@ -39,7 +39,7 @@ wwidth = 2.091           # Width of the W boson
 zerowidth = false        # zero-width approximation (not really implemented)
 
 xw = 0.23153                 # weak-mixing angle (not used in the Gmu scheme)
-aemmz = 7.7585538055706d-03  # alpha_EM(MZ) (not used in the Gmu scheme)
+aemmz = 7.7585538055706e-03  # alpha_EM(MZ) (not used in the Gmu scheme)
 
 # CKM matrix
 Vud = 0.97427
