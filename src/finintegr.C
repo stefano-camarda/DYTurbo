@@ -86,11 +86,7 @@ integrand_t vjintegrand(const int &ndim, const double x[], const int &ncomp, dou
   phasespace::calcexpy();
   
   //evaluate the Vj (N)LO cross section
-  if (opts.pcubature)
-    f[0] = vjint::vint(m,qt,y); //C++ interface
-  else
-    f[0] = vjfo_(m,qt,y); //fortran interface
-
+  f[0] = vjint::vint(m,qt,y); //C++ interface
   
   if (isnan_ofast(f[0]))
     {
@@ -146,6 +142,20 @@ integrand_t realintegrand(const int &ndim, const double x[], const int &ncomp, d
 
   tell_to_grid_we_are_alive();
   return 0;
+}
+
+double realintegrand_smolyak(int ndim, double x[])
+{
+  int ncomp = 1;
+  double f[ncomp];
+  void *userdata;
+  const int nvec = 1;
+  int core;
+  double weight;
+  int iter;
+  realintegrand(ndim, x, ncomp, f,
+		userdata, nvec, core, weight, iter);
+  return f[0];
 }
 
 integrand_t virtintegrand(const int &ndim, const double x[], const int &ncomp, double f[],

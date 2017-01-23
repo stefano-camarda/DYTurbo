@@ -1036,7 +1036,3 @@ void init ( int dim )
 
   return;
 }
-double pippo(int a, int b)
-{
-  printf("%s %d %d \n", "sono pippo", a, b);
-}

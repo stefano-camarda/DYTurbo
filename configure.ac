@@ -78,6 +78,10 @@ if test x$lhapdf_config == x; then
    ${srcdir}/install-lhapdf
   #AC_MSG_ERROR([Unable to find lhapdf-config.])
   lhapdf_config=`ls ${PWD}/lhapdf6/bin/lhapdf-config`
+  if test x$lhapdf_config == x; then
+   # if the installation fails, exit
+   AC_MSG_ERROR([Failed to install lhapdf.])
+  fi
  fi
 fi
 
@@ -103,8 +107,13 @@ AC_SEARCH_LIBS([vegas],[cuba],[
   	   AC_MSG_RESULT([Install Cuba ${CUBA_VERSION}])
 	   ${srcdir}/install-cuba
 	fi
+	cubalib=`ls ${PWD}/Cuba-${CUBA_VERSION}/libcuba.a`
+	if test x$cubalib == x; then
+  	   AC_MSG_ERROR([Failed to install Cuba ${CUBA_VERSION}.])
+	fi
+	
         CUBA_LDFLAGS="-L${PWD}/Cuba-${CUBA_VERSION} -lcuba"
-	CUBA_CPPFLAGS="-I${PWD}/Cuba-4.2"
+	CUBA_CPPFLAGS="-I${PWD}/Cuba-${CUBA_VERSION}"
 	AC_MSG_RESULT([Using -lcuba from local installation ${PWD}/Cuba-${CUBA_VERSION}])
         ])
 
@@ -118,6 +127,41 @@ AC_SEARCH_LIBS([vegas],[cuba],[
 
 AC_SUBST(CUBA_CPPFLAGS)
 AC_SUBST(CUBA_LDFLAGS)
+
+# check for Chaplin installation, and install it if missing
+AC_MSG_CHECKING([for chaplin library installation])
+AC_SEARCH_LIBS([hpl2],[hpl3],[
+	AC_MSG_RESULT([Using -lchaplin from system installation])
+        CHAPLIN_LDFLAGS=-lchaplin],
+        [
+	CHAPLIN_VERSION=1.2
+	AC_SUBST(CHAPLIN_VERSION)
+	# search for local istallation of chaplin-1.2
+	chaplinlib=`ls ${PWD}/chaplin-${CHAPLIN_VERSION}/lib/libchaplin.a`
+	if test x$chaplinlib == x; then
+          # if not found, install it
+  	   AC_MSG_RESULT([Install chaplin ${CHAPLIN_VERSION}])
+	   ${srcdir}/install-chaplin
+	fi
+	chaplinlib=`ls ${PWD}/chaplin-${CHAPLIN_VERSION}/lib/libchaplin.a`
+	if test x$chaplinlib == x; then
+  	   AC_MSG_ERROR([Failed to install chaplin ${CHAPLIN_VERSION}.])
+	fi
+	
+        CHAPLIN_LDFLAGS="-L${PWD}/chaplin-${CHAPLIN_VERSION}/lib -lchaplin"
+	AC_MSG_RESULT([Using -lchaplin from local installation ${PWD}/chaplin-${CHAPLIN_VERSION}])
+        ])
+
+AC_SUBST(CHAPLIN_LDFLAGS)
+
+# check for cubature installation, and install it if missing
+AC_MSG_CHECKING([for cubature source code])
+${srcdir}/install-cubature
+
+cubasrc=`ls ${PWD}/cubature/pcubature.c`
+if test x$cubasrc == x; then
+   AC_MSG_ERROR([Failed to install cubature.])
+fi
 
 # check for DYRES installation
 AC_ARG_ENABLE([dyres], AC_HELP_STRING(--enable-dyres, [Install and link original DYRes code, Available only in git (default=no)]))
@@ -204,14 +248,13 @@ AC_CONFIG_FILES([Makefile
 		 histo/Makefile
  	 	 resum/Makefile
 		 counterterm/Makefile
-		 vjfo/Makefile
+		 vjet/Makefile
 		 v2j/Makefile
-		 eba/Makefile
+		 born/Makefile
 		 phasespace/Makefile
 		 integrands/Makefile
 		 dyres/Makefile
 		 dynnlo/Makefile
-		 dyqt/Makefile
 		 mcfm/Makefile
 		 cernlib/Makefile
 		 dequad/Makefile

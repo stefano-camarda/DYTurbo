@@ -336,6 +336,7 @@ void vjlointegr5d(vector <double> &res, double &err)
 		eval, epsabs, epsrel, ERROR_INDIVIDUAL, integral, error);
       */
 
+      //      /*
       //4d integration (phi_lep integrated inside) works better in full phase space, and to calculate moments
       double xmin[4] = {0., 0., tiny,    0.};
       double xmax[4] = {1., 1., 1.-tiny, 1.};
@@ -349,12 +350,13 @@ void vjlointegr5d(vector <double> &res, double &err)
 	hcubature_v(ncomp, vjlointegrand_cubature_v, userdata, 
 		    4, xmin, xmax, 
 		    eval, epsabs, epsrel, ERROR_LINF, integral, error);
+      //      */
 
       /*
       //smolyak
       int print_stats = 0;
       int dim = 4;
-      int l = 15;
+      int l = 20;
       integral[0] = int_smolyak (ndim, ndim+l, vjlointegrand_smolyak, print_stats );
       error[0] = 0.000001;
       */
@@ -399,6 +401,7 @@ void vjrealintegr(vector <double> &res, double &err)
   const int nincrease = max(10, int(opts.vegasncallsVJREAL/10));
   const int nbatch = opts.cubanbatch;
   const int gridno = 0;
+
   Vegas(ndim, ncomp, (integrand_t)realintegrand, userdata, nvec,
 	epsrel, epsabs,
 	flags, seed,
@@ -407,6 +410,16 @@ void vjrealintegr(vector <double> &res, double &err)
 	gridno, statefile, spin,
 	&neval, &fail,
 	integral, error, prob);
+
+  /*
+  //smolyak
+  int print_stats = 0;
+  int dim = 10;
+  int l = 12;
+  integral[0] = int_smolyak (ndim, ndim+l, realintegrand_smolyak, print_stats );
+  error[0] = 0.000001;
+  */
+  
   res.clear();
   for (int i = 0; i < opts.totpdf; i++)
     res.push_back(integral[i]);
@@ -578,11 +591,12 @@ void bornintegr2d(vector <double> &res, double &err)
 	pcubature_v(ncomp, lointegrand2d_cubature_v, userdata, 
 		    ndim, xmin, xmax, 
 		    eval, epsabs, epsrel, ERROR_INDIVIDUAL, integral, error);
+
       /*
       //smolyak
       int print_stats = 0;
       int dim = 2;
-      int l = 20;
+      int l = 10;
       integral[0] = int_smolyak (ndim, ndim+l, lointegrand2d_smolyak, print_stats );
       error[0] = 0.000001;
       */

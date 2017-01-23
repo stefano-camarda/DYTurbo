@@ -3,7 +3,7 @@
       double precision x,qtmin,qtmax,qt,jac
       double precision qtmin2,qtmax2,qt2
       double precision tiny
-      parameter (tiny=1d-5)
+      parameter (tiny=1d-5) !be carefull, if qtmin^2 < tiny the phase space generation is screwed up
       double precision a,b,xx
 
       qtmin2 = qtmin**2

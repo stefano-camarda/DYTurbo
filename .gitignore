@@ -1,5 +1,6 @@
 Cuba-4.2/
 lhapdf6/
+chaplin-1.2/
 origdyres/*.f
 origdyres/*.h
 origdyres/DYRes-v1.0
@@ -58,3 +59,10 @@ dyturbo-config
 *.in
 *line.C
 gmock/
+
+cubature/COPYING
+cubature/ChangeLog
+cubature/NEWS
+cubature/README
+cubature/*.h
+cubature/*.c

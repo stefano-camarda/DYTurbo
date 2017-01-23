@@ -231,8 +231,11 @@ public:
   //settings for the phi integration in the V+J 5d LO term when makecuts is false
   int vjphirule;
 
-  //settings for the z1, z2 integration in the V+J 3d NLO term
+  //settings for the z1, z2 integration in the V+J 3d NLO singular term
   int zrule;
+
+  //settings for the x integration in the V+J 3d delta term
+  int xrule;
   
   //qt-recoil prescriptions
   bool qtrec_naive, qtrec_cs, qtrec_kt0;
