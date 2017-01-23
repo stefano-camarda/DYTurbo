@@ -1,9 +1,11 @@
 #!/bin/bash
 
 thiswd=`pwd`
-AS_LIST="0.1150 0.1170 0.1180 0.1182 0.1194 0.1200"
-#GPAR_LIST="0.5 0.8 1.1 1.2 1.5"
-GPAR_LIST="0.5 0.8 1.1 1.2 1.5"
+#AS_LIST="0.1150 0.1170 0.1173 0.1177 0.1180 0.1183 0.1187 0.1182 0.1194 0.1200"
+#GPAR_LIST="0.2 0.5 0.8 1.0 1.1 1.2 1.5 2.0"
+#
+AS_LIST="0.1171 0.1172"
+GPAR_LIST="1.1 0.88"
 
 rmmkcd(){
     rm -rf $1 && mkdir -p $1 && cd $1 || exit 2
@@ -48,17 +50,17 @@ submit_as_scan(){
     pdflist=${pdflist%,}
     basecommand="./scripts/submit_jobs.sh --mogon --infile input/alphaS_scan.in --proc z0 --mbins 1,66,116 --pdfset $pdflist --seeds 2 --yes"
     # finite order
-    #$DRY_RUN $basecommand --order 1 --term CT
-    #$DRY_RUN $basecommand --order 2 --term CT
-    #$DRY_RUN $basecommand --order 1 --term VJLO
+    $DRY_RUN $basecommand --order 1 --term CT
+    $DRY_RUN $basecommand --order 2 --term CT
+    $DRY_RUN $basecommand --order 1 --term VJLO
     #$DRY_RUN $basecommand --order 2 --term VJVIRT
-    $DRY_RUN $basecommand --order 2 --term VJREAL
+    #$DRY_RUN $basecommand --order 2 --term VJREAL
     #
-    #for gparam in $GPAR_LIST
-    #do
-    #    $DRY_RUN $basecommand --order 1 --term BORN --gparam $gparam
-    #    $DRY_RUN $basecommand --order 2 --term BORN --gparam $gparam
-    #done
+    for gparam in $GPAR_LIST
+    do
+        $DRY_RUN $basecommand --order 1 --term BORN --gparam $gparam
+        $DRY_RUN $basecommand --order 2 --term BORN --gparam $gparam
+    done
 }
 
 check_as_scan_out(){
@@ -85,8 +87,8 @@ check_as_scan(){
         check_as_scan_out 1 CT
         check_as_scan_out 1 VJLO
         check_as_scan_out 2 CT
-        check_as_scan_out 2 VJREAL
-        check_as_scan_out 2 VJVIRT
+        #check_as_scan_out 2 VJREAL
+        #check_as_scan_out 2 VJVIRT
         for gparam in $GPAR_LIST
         do
             filebase="dyturbo_z0_CT10nnlo_AS_*_0_g${gparam}"
