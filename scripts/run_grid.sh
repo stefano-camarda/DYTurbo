@@ -24,7 +24,7 @@ arguments="${arguments} --seed ${jobseed}"
 
 # setup ENV
 export ATLAS_LOCAL_ROOT_BASE=/cvmfs/atlas.cern.ch/repo/ATLASLocalRootBase
-source ${ATLAS_LOCAL_ROOT_BASE}/user/atlasLocalSetup.sh
+source ${ATLAS_LOCAL_ROOT_BASE}/user/atlasLocalSetup.sh " "
 # ROOT
 lsetup "root 6.04.14-x86_64-slc6-gcc49-opt"
 

@@ -464,6 +464,8 @@ finalize_grid_submission(){
         mkdir -p $griddir/LHAPDF
         # copy exec
         $CP bin/* $griddir/bin/
+        $CP chaplin-*/lib/*.so* $griddir/lib/
+        $CP chaplin-*/lib/*.la  $griddir/lib/
         $CP lib/*.so* $griddir/lib/
         $CP lib/*.la  $griddir/lib/
         $CP `lhapdf-config --libdir`/libLHAPDF.so $griddir/lib/
