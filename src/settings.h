@@ -88,6 +88,12 @@ public:
   double kmuren;
   double kmufac;
 
+  double kpt_muren;
+  double kpt_mufac;
+
+  double kmjj_muren;
+  double kmjj_mufac;
+  
   //scale factors for the matching scales
   double kmuc;
   double kmub;
