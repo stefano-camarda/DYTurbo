@@ -94,7 +94,7 @@ void coupling::init()
       xw  = 1.-pow(wmass/zmass,2);
       aemmz  = sqrt(2)*Gf*pow(wmass,2)*xw/M_PI;
     }
-  else if (opts.ewscheme = 2)
+  else if (opts.ewscheme == 2)
     {
       //-------------------------------------------------------------------
       //     option=2 : W and Z mass are derived from couplings
@@ -109,7 +109,7 @@ void coupling::init()
       wmass  = sqrt(aemmz*M_PI/xw/Gf/sqrt(2));
       zmass  = wmass/sqrt(1.-xw);
     }
-  else if (opts.ewscheme = 3)
+  else if (opts.ewscheme == 3)
     {
       //-----------------------------------------------------------------
       //     option=3 : USER choice : you should know what you're doing!!
