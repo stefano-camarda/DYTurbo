@@ -190,8 +190,8 @@ void xline()
       ctintegrand3d(ndim, x, ncomp, f);
       //ctintegrand2d(ndim, x, ncomp, f);
                   x[0] = 0.5;
-                  x[1] = xx;
-                  x[2] = 0.5;
+                  x[1] = 0.5;
+                  x[2] = xx;
       vjintegrand(ndim, x, ncomp, g);
       //lointegrand2d(ndim, x, ncomp, f);
       //lointegrandMC(ndim, x, ncomp, f, userdata, nvec, core, weight, iter);
@@ -200,8 +200,8 @@ void xline()
       //vjlointegrandMC(ndim, x, ncomp, f, userdata, nvec, core, weight, iter);
       //void* userdata; int nvec; int core; double weight; int iter; resintegrand4d(ndim, x, ncomp, f, userdata, nvec, core, weight, iter);
       //xf << "gx->SetPoint(gx->GetN(), " << i*hx+x1 << ", " << f[0]/g[0] << ");" << endl;
-      xf << "gx->SetPoint(gx->GetN(), " << i*hx+x1 << ", " << f[0]+g[0] << ");" << endl;
-      //xf << "gx->SetPoint(gx->GetN(), " << i*hx+x1 << ", " << g[0] << ");" << endl;
+      //xf << "gx->SetPoint(gx->GetN(), " << i*hx+x1 << ", " << f[0]+g[0] << ");" << endl;
+      xf << "gx->SetPoint(gx->GetN(), " << i*hx+x1 << ", " << g[0] << ");" << endl;
 
     }
   xf << "gx->Draw();" << endl;
@@ -244,7 +244,7 @@ void costhline()
 void ptline()
 {
   double costh = 0.;
-  double m = 60;//opts.rmass;
+  double m = opts.rmass;
   double qt = 5.;
   double y = 0.0;
   int mode = 1;
@@ -259,8 +259,8 @@ void ptline()
 	rapint::integrate(phasespace::ymin,phasespace::ymax,m);
       }
 
-  double p1 = 0.1;
-  double p2 = 10;
+  double p1 = 2;
+  double p2 = 200;
   int np = 99;
 
   ofstream pf("ptline.C");
@@ -282,7 +282,7 @@ void ptline()
 
       //pf << "gp->SetPoint(gp->GetN(), " << i*hp+p1 << ", " << resumm_(costh,m,qt,y,mode) << ");" << endl;
       //pf << "gp->SetPoint(gp->GetN(), " << i*hp+p1 << ", " << resint::rint(costh,m,qt,y,mode) << ");" << endl;
-      //pf << "gp->SetPoint(gp->GetN(), " << i*hp+p1 << ", " << vjint::vint(m,qt,y) << ");" << endl;
+      pf << "gp->SetPoint(gp->GetN(), " << i*hp+p1 << ", " << vjint::vint(m,qt,y) << ");" << endl;
       /*      pf << "gp->SetPoint(gp->GetN(), "   << i*hp+p1 << ", " << vjfo_(m,qt,y)+ctint_(costh,m,qt,y,mode,f)*2*qt << ");" << endl;
       pf << "gp1->SetPoint(gp1->GetN(), " << i*hp+p1 << ", " << -ctint_(costh,m,qt,y,mode,f)*2*qt << ");" << endl;
       pf << "gp2->SetPoint(gp2->GetN(), " << i*hp+p1 << ", " << vjfo_(m,qt,y) << ");" << endl;*/
@@ -292,9 +292,9 @@ void ptline()
       omegaintegr::genV4p();//generate boson 4-momentum, with m, qt, y and phi=0
       ctint::calc(costh,m,qt,y,mode,f);
 
-      cout << vj << "  " << f[0]*2*qt << endl;
+      cout << qt << "  " << vj << "  " << f[0]*2*qt << endl;
 
-      pf << "gp->SetPoint(gp->GetN(), " << i*hp+p1 << ", " << (f[0]*2*qt)+vj << ");" << endl;
+      //pf << "gp->SetPoint(gp->GetN(), " << i*hp+p1 << ", " << (f[0]*2*qt)+vj << ");" << endl;
     }
   pf << "gp->Draw();" << endl;
   pf << "//gp1->Draw();" << endl;
