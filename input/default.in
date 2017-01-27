@@ -19,6 +19,12 @@ kmuren          = 1.          # scale factor for the renormalisation scale
 kmufac          = 1.          # scale factor for the factorisation scale
 kmures          = 0.5         # scale factor for the resummation scale
 
+kpt_muren          = 0.          # coefficient for a dynamic renormalisation scale of the form mu_r = sqrt((kmuren*m)^2 + (kpt_muren*pt)^2)
+kpt_mufac          = 0.          # coefficient for a dynamic factorisation scale of the form mu_f = sqrt((kmuren*m)^2 + (kpt_mufac*pt)^2)
+
+kmjj_muren          = 0.         # coefficient for a dynamic renormalisation scale of the form mu_r = sqrt((kmuren*m)^2 + (kpt_muren*pt)^2 + (kmjj_muren*mjj)^2)
+kmjj_mufac          = 0.         # coefficient for a dynamic factorisation scale of the form mu_r = sqrt((kmuren*m)^2 + (kpt_mufac*pt)^2 + (kmjj_mufac*mjj)^2)
+
 #Additional resummation scales
 C1 = 1.
 C3 = 1.
