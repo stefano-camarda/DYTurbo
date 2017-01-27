@@ -331,7 +331,7 @@ c     term proportional to (1/s2), FINITE in the limit s2->0
       elseif (what.eq.4) then
 c     regular term
       temp=fla/la**3*(cf*((3*sh)*(sh+q2-s2)*(uh**2-th**2)*
-     /     (1-uh/th)/(4*la**2)+(uh**2-th**2)*((q2-s2**2)/(4*sh)+
+     /     (1-uh/th)/(4*la**2)+(uh**2-th**2)*((q2-s2)/(4*sh)+ ! bug fix !!! !     /     (1-uh/th)/(4*la**2)+(uh**2-th**2)*((q2-s2**2)/(4*sh)+
      /     11/4d0+s2/th-uh/(2*th))-2*sh*(th+uh**2/th)-
      /     sh/2d0*(sh-s2)*(uh/th-3d0)+4*s2*(th-uh)+5*sh*uh)+
      /     ca*(1-uh/th)*((th+uh)/4d0*(sh+q2-s2)+sh*(sh-s2)))+
@@ -407,7 +407,7 @@ c     term proportional to (1/s2), FINITE in the limit s2->0
       elseif (what.eq.4) then
 c     regular term
       temp=fla/la**3*(cf*((3*sh)*(sh+q2-s2)*(th**2-uh**2)*
-     /     (1-th/uh)/(4*la**2)+(th**2-uh**2)*((q2-s2**2)/(4*sh)+
+     /     (1-th/uh)/(4*la**2)+(th**2-uh**2)*((q2-s2)/(4*sh)+ ! bug fix !!!!     /     (1-th/uh)/(4*la**2)+(th**2-uh**2)*((q2-s2**2)/(4*sh)+
      /     11/4d0+s2/uh-th/(2*uh))-2*sh*(uh+th**2/uh)-
      /     sh/2d0*(sh-s2)*(th/uh-3d0)+4*s2*(uh-th)+5*sh*th)+
      /     ca*(1-th/uh)*((uh+th)/4d0*(sh+q2-s2)+sh*(sh-s2)))+
