@@ -177,15 +177,20 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
 
   if (opts.blim > 0)
     {
+      //dynamic blim
+      /*
       double lambdaqcd         = muren/(exp(1./(2.*aass*resconst::beta0))); //--> corresponds to a divergence in alphas
       double lambdasudakov     = mures/(exp(1./(2.*aass*resconst::beta0))); //--> correspond to a divergence in the Sudakov
 
       //should blim depend or not on a_param? In principle yes because PDFs are evolved to b0/bstar*a
-      //      blim = resconst::b0/lambdasudakov
       blim = min(resconst::b0/lambdaqcd,resconst::b0/lambdasudakov);
       //cout << _m << "  " << resconst::b0/lambdaqcd << "  " << resconst::b0/lambdasudakov << "  " << a_param_.b0p_*(1./q)*exp(1./(2.*aass*resconst::beta0)) << endl;
 
       blim = blim/opts.blim;
+      */
+
+      //fixed blim
+      blim = opts.blim;
     }
 
   //  blim = 100;
