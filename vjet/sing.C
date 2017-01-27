@@ -8,6 +8,7 @@
 #include "luminosity.h"
 #include "mesq.h"
 #include "resconst.h"
+#include "LHAPDF/LHAPDF.h"
 
 #include <iostream>
 #include <iomanip>
@@ -59,9 +60,7 @@ double vjint::sing()
       //subtraction of z2=1 term according to plus prescription     
       double x1 = x10*(1.+lb);
       double x2 = x20/(1.-z1);
-      luminosity::pdf1(x1);
-      luminosity::pdf2(x2);
-      
+
       double tiny = 0.;//1e-7;
       if(x1 > 1.-tiny || x2 > 1.-tiny)
 	{
@@ -76,6 +75,21 @@ double vjint::sing()
       double s2 = 0.; // set s2=0 explicitly in utilities
       //cout << sh << " " << x1*x2*s << " " << th << " " << q2-ss*x1*tm*expym << " " << uh,q2-ss*x2*tm*expyp << endl;
 
+      if (opts.kmjj_muren != 0 || opts.kmjj_mufac != 0)
+	{
+	  scales2_.xmur_ = sqrt(pow(opts.kmuren*opts.rmass,2) + pow(opts.kpt_muren*phasespace::qt,2) + pow(opts.kpt_muren*sqrt(s2),2));
+	  scales2_.xmuf_ = sqrt(pow(opts.kmufac*opts.rmass,2) + pow(opts.kpt_mufac*phasespace::qt,2) + pow(opts.kpt_mufac*sqrt(s2),2));
+	  scales2_.xmur2_ = pow(scales2_.xmur_,2);
+	  scales2_.xmuf2_ = pow(scales2_.xmuf_,2);
+	  asnew_.as_ = LHAPDF::alphasPDF(scales2_.xmur_)/M_PI;
+	  asp_.asp_ = asnew_.as_*M_PI;
+	  fac = gevfb/1000.*coupling::aemmz*asp_.asp_*resconst::Cf;
+	  utils_scales_(q2);
+	}
+
+      luminosity::pdf1(x1);
+      luminosity::pdf2(x2);
+      
       //phase space prefactor
       double pre10 = phasespace::mt2*(1.+lb)/pow(1.-z1,2);
 
@@ -125,7 +139,7 @@ double vjint::sing()
       double z2min = x10*(1.+lb);
       double xmism = -0.5*xs10*pow(log(1.-z2min),2)-(xs10*logaq2+xs20)*log(1.-z2min);
 
-      xmism *= pre10/a;
+      xmism *= pre10/a*asp_.asp_;
       
       //start z2 integration
       for (int jj = 0; jj < z2rule; jj++)
@@ -148,7 +162,6 @@ double vjint::sing()
 	      //cout << "x1 " << x1 << " x2 " << x2 << endl;
 	      continue;
 	    }
-	  luminosity::pdf1(x1);
 
 	  //partonic Mandelstam invariants --> bug fix in DYqT: th <-> uh
 	  sh = phasespace::mt2/(1.-z1)/(1.-z2)*(1.+lb);
@@ -173,7 +186,21 @@ double vjint::sing()
 	      cout << " m " << phasespace::m  << " pt " << phasespace::qt << " y  " << phasespace::y << endl;
 	      return 0.;
 	    }
-	
+
+	  if (opts.kmjj_muren != 0 || opts.kmjj_mufac != 0)
+	    {
+	      scales2_.xmur_ = sqrt(pow(opts.kmuren*opts.rmass,2) + pow(opts.kpt_muren*phasespace::qt,2) + pow(opts.kpt_muren*sqrt(s2),2));
+	      scales2_.xmuf_ = sqrt(pow(opts.kmufac*opts.rmass,2) + pow(opts.kpt_mufac*phasespace::qt,2) + pow(opts.kpt_mufac*sqrt(s2),2));
+	      scales2_.xmur2_ = pow(scales2_.xmur_,2);
+	      scales2_.xmuf2_ = pow(scales2_.xmuf_,2);
+	      asnew_.as_ = LHAPDF::alphasPDF(scales2_.xmur_)/M_PI;
+	      asp_.asp_ = asnew_.as_*M_PI;
+	      fac = gevfb/1000.*coupling::aemmz*asp_.asp_*resconst::Cf;
+	      utils_scales_(q2);
+	    }
+
+	  luminosity::pdf1(x1);
+
 	  //phase space prefactor
 	  double pre1 = phasespace::mt2*(1.+lb)/pow((1.-z1)*(1.-z2),2);
 
@@ -188,8 +215,8 @@ double vjint::sing()
 	  double xrgg=(factor*(coupling::NC/pow(pow(coupling::NC,2)-1.,2)))*
 	    (cgg1_(sh,th,uh,q2)+cgg1x_(sh,th,uh,q2));
 	  double xrqg=(factor/(pow(coupling::NC,2)-1.))*
-	    (cqg3_(sh,th,uh,q2,three)+cgq3_(sh,th,uh,q2,three)+
-	     cqg3_(sh,th,uh,q2,four)+cgq3_(sh,th,uh,q2,four));
+	    (cqg3_(sh,th,uh,q2,three)+cgq3_(sh,th,uh,q2,three)
+	     +cqg3_(sh,th,uh,q2,four)+cgq3_(sh,th,uh,q2,four));
 	  double xrqqb=(factor/coupling::NC)*
 	    (cqqb2_(sh,th,uh,q2,four)+cqqb2x_(sh,th,uh,q2,four)
 	     +daa_(sh,th,uh,q2,four)+daax_(sh,th,uh,q2,four)
@@ -245,7 +272,7 @@ double vjint::sing()
 	  double sing2 = (pre1*(xs1*logaq2+xs2)-pre10*(xs10*logaq2+xs20))/(z2)/a;
 	  double reg = pre1*(xreg+(xs1*(log((1.-z2)/(z2))-(log(1.-z2))/(z2)-logaq2)-xs2)/(a));
       
-	  double sing = (sing1+sing2+reg)/pow(opts.sroot,2);
+	  double sing = (sing1+sing2+reg)/pow(opts.sroot,2)*asp_.asp_;
 
 	  intsing += sing*gr::www[z1rule-1][j]*gr::www[z2rule-1][jj]
 	    *jacz1*jacz2*mz*mz;
