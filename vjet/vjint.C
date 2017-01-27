@@ -191,17 +191,13 @@ double vjint::vint(double m, double pt, double y)
   //set scales and alpha strong
   if (opts.dynamicscale)
     {
-      scales2_.xmur_ = m*opts.kmuren;
-      scales2_.xmuf_ = m*opts.kmufac;
+      scales2_.xmur_ = sqrt(pow(opts.kmuren*m,2) + pow(opts.kpt_muren*pt,2));
+      scales2_.xmuf_ = sqrt(pow(opts.kmufac*m,2) + pow(opts.kpt_mufac*pt,2));
     }
   else
     {
-      scales2_.xmur_ = opts.rmass*opts.kmuren;
-      scales2_.xmuf_ = opts.rmass*opts.kmufac;
-
-      //pt scale
-      //scales2_.xmur_ = opts.kmuren*sqrt(pow(opts.rmass,2) + pow(pt,2));
-      //scales2_.xmuf_ = opts.kmufac*sqrt(pow(opts.rmass,2) + pow(pt,2));
+      scales2_.xmur_ = sqrt(pow(opts.kmuren*opts.rmass,2) + pow(opts.kpt_muren*pt,2));
+      scales2_.xmuf_ = sqrt(pow(opts.kmufac*opts.rmass,2) + pow(opts.kpt_mufac*pt,2));
     }
   
   scales2_.xmur2_ = pow(scales2_.xmur_,2);
@@ -360,10 +356,10 @@ double vjint::calc(double m, double pt, double y)
   double bx = 1.;
   double cx = 0.5*(ax+bx);
   double mx = 0.5*(bx-ax);
+  double jac = mx;
   for (int i = 0; i < xrule; i++)
     {
       double x = cx+mx*gr::xxx[xrule-1][i];
-      double jac = mx;
       rdelta += delta(x) * jac * gr::www[xrule-1][i];
     }
   end_time = clock();
@@ -424,7 +420,7 @@ double vjint::calc(double m, double pt, double y)
       	}
       //cout << m << "  " << pt << "  " << y << "  " << rsing << endl;
       */
-      rsing = rsing*(asp_.asp_/2./M_PI);
+      rsing = rsing/2./M_PI;//*(asp_.asp_/2./M_PI);
     }
   else if (opts.order == 1)
     rsing = 0.;
