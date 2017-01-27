@@ -48,8 +48,8 @@ CXXFLAGS="${CXXFLAGS} -std=c++0x"
 #allows usage of complex numbers as x+yi
 CXXFLAGS="${CXXFLAGS} -fext-numeric-literals"
 
-#allows use of data statements
-FFLAGS="${FFLAGS} -fno-automatic"
+#allows use of save statements (but causes issues with parallelisation)
+#FFLAGS="${FFLAGS} -fno-automatic"
 
 #use intel compilers
 #AC_ARG_ENABLE([ifort],
