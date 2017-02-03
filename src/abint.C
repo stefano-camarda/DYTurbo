@@ -11,24 +11,19 @@ int abint::abdim;
 void abint::init()
 {
   //initialize the points of the gaussian quadrature for the alfa and beta integration
-  int abintervals = 1; //--> make a setting
-  int abrule = 64;     //--> make a setting
   abdim = opts.abintervals*opts.abrule;
 
   abx = new double [abdim];
   abw = new double [abdim];
     
-  double x,t,jac;
-  int i,j;
-
   double min = 1e-7;
   double max = 1.;
   double lmm = log(max/min);
     
   for (int i = 0; i < opts.abintervals; i++)
     {
-      double a = min+(max-min)*i/opts.abintervals;
-      double b = min+(max-min)*(i+1)/opts.abintervals;
+      double a = 0.+(1.-0.)*i/opts.abintervals;     
+      double b = 0.+(1.-0.)*(i+1)/opts.abintervals;
       double c = 0.5*(a+b);
       double m = 0.5*(b-a);
       for (int j = 0; j < opts.abrule; j++)
@@ -38,6 +33,11 @@ void abint::init()
 	  double jac=t*lmm;
 	  abx[j+i*opts.abrule]=t;
 	  abw[j+i*opts.abrule]=gr::www[opts.abrule-1][j]*m*jac;
+	  /*
+	  double x = c+m*gr::xxx[opts.abrule-1][j];
+	  abx[j+i*opts.abrule]=x;
+	  abw[j+i*opts.abrule]=gr::www[opts.abrule-1][j]*m;
+	  */
 	}
     }
 }
