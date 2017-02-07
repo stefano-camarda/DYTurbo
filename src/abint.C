@@ -33,11 +33,14 @@ void abint::init()
 	  double jac=t*lmm;
 	  abx[j+i*opts.abrule]=t;
 	  abw[j+i*opts.abrule]=gr::www[opts.abrule-1][j]*m*jac;
-	  /*
-	  double x = c+m*gr::xxx[opts.abrule-1][j];
-	  abx[j+i*opts.abrule]=x;
-	  abw[j+i*opts.abrule]=gr::www[opts.abrule-1][j]*m;
-	  */
+
+	  ////without change of variable, and without lower cutoff on z1 z2
+	  //double a = 0.+(1.-0.)*i/opts.abintervals;     
+	  //double b = 0.+(1.-0.)*(i+1)/opts.abintervals;
+	  //double c = 0.5*(a+b);
+	  //double m = 0.5*(b-a);
+	  //abx[j+i*opts.abrule]=c+m*gr::xxx[opts.abrule-1][j];
+	  //abw[j+i*opts.abrule]=gr::www[opts.abrule-1][j]*m;
 	}
     }
 }
