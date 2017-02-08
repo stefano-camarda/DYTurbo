@@ -170,6 +170,7 @@ void mesq::init()
 void mesq::setpropagators(double m)
 {
   q2 = pow(m,2);
+  //fixed width propagators
   if (opts.nproc == 3)
     propZ = q2/(pow(q2-mZ2,2)+mZ2*wZ2);
   else
@@ -179,6 +180,8 @@ void mesq::setpropagators(double m)
       propG = 1./q2;
       propZG = (q2-mZ2)/(pow(q2-mZ2,2)+mZ2*wZ2);
     }
+  //running width propagators
+  
   //flat propagators, for tests
   //propZ = 1./m*(8./3.)*pow(opts.sroot,2)/2/(1./9./M_PI*gevfb);
   //propW = 1./m*(8./3.)*pow(opts.sroot,2)/2/(1./9./M_PI*gevfb);
