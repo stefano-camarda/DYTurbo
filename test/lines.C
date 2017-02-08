@@ -172,8 +172,8 @@ void xline()
       const int ndim = 3;
       double x[ndim];
       double f[ncomp],g[ncomp];
-      x[0] = 0.5;
-      x[1] = 0.5;
+      x[0] = 0.;
+      x[1] = 0.9;
       x[2] = xx;
       //x[3] = 0.5;
       //x[4] = 0.5;
@@ -189,10 +189,10 @@ void xline()
       //resintegrand3d(ndim, x, ncomp, f);
       ctintegrand3d(ndim, x, ncomp, f);
       //ctintegrand2d(ndim, x, ncomp, f);
-                  x[0] = 0.5;
-                  x[1] = 0.5;
-                  x[2] = xx;
-      vjintegrand(ndim, x, ncomp, g);
+      //                  x[0] = 0.5;
+      //                  x[1] = 0.5;
+      //                  x[2] = xx;
+      //vjintegrand(ndim, x, ncomp, g);
       //lointegrand2d(ndim, x, ncomp, f);
       //lointegrandMC(ndim, x, ncomp, f, userdata, nvec, core, weight, iter);
       //resintegrandMC(ndim, x, ncomp, f, userdata, nvec, core, weight, iter);
@@ -201,7 +201,8 @@ void xline()
       //void* userdata; int nvec; int core; double weight; int iter; resintegrand4d(ndim, x, ncomp, f, userdata, nvec, core, weight, iter);
       //xf << "gx->SetPoint(gx->GetN(), " << i*hx+x1 << ", " << f[0]/g[0] << ");" << endl;
       //xf << "gx->SetPoint(gx->GetN(), " << i*hx+x1 << ", " << f[0]+g[0] << ");" << endl;
-      xf << "gx->SetPoint(gx->GetN(), " << i*hx+x1 << ", " << g[0] << ");" << endl;
+      //xf << "gx->SetPoint(gx->GetN(), " << i*hx+x1 << ", " << g[0] << ");" << endl;
+      xf << "gx->SetPoint(gx->GetN(), " << i*hx+x1 << ", " << f[0] << ");" << endl;
 
     }
   xf << "gx->Draw();" << endl;

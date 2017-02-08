@@ -73,6 +73,8 @@ int main( int argc , char * argv[])
   cout << "To match the numbers between fortran and C++ set:" << endl;
   cout << "mellinrule = 64     #number of nodes" << endl;
   cout << "zmax = 27.          #upper" << endl;
+  cout << "cpoint = 1          " << endl;
+  cout << "mellin1d = false          " << endl;
   cout << "bintaccuracy = 1.0e-2  #accuracy" << endl;
   cout << endl;
   //  std::cout << std::setprecision(15);
