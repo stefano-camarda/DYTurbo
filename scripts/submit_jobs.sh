@@ -180,6 +180,14 @@ parse_input(){
                 gparam=$2
                 shift
                 ;;
+            --kmuren)
+                kmuren=$2
+                shift
+                ;;
+            --kmufac)
+                kmufac=$2
+                shift
+                ;;
             --yes)
                 YES=YES
                 ;;
@@ -210,7 +218,7 @@ submit_jobs_wmass(){
     # check seed
     if [[ $seedlist == unset ]]
     then
-        echo " Seed argument is mandatory please set '--seeds [integer/range/list]'"
+        echo " Seed argument is mandatory please set '--seeds [range/list]'"
         exit 5
     fi
     # check mass
@@ -225,8 +233,8 @@ submit_jobs_wmass(){
             && echo " GRID usernaname is mandatory please set '--griduser NAME'" \
             && echo " You can also specify your voms by '--voms VOMS'" \
             &&   exit 6
-    else # not grid
-        [[ $seedlist =~ -|, ]]  || seedlist=1-$seedlist
+    #else # not grid
+        #[[ $seedlist =~ -|, ]]  || seedlist=1-$seedlist
     fi
     # check order term
     [[ $order == 1 ]] && [[ $termlist =~ VJREAL|VJVIRT ]] && echo "WRONG ORDER $order TO TERM $termlist" && return 3
@@ -301,6 +309,8 @@ prepare_script(){
     #
     sample=${pdfset}_${variation}
     [[ ! $gparam == "" ]] && sample=${sample}_g$gparam
+    [[ ! $kmuren == "" ]] && qtregion=R${kmuren/./}$qtregion
+    [[ ! $kmufac == "" ]] && qtregion=F${kmufac/./}$qtregion
     job_name=${program}_${process}_${sample}_${qtregion}_${random_seed}
     sh_file=$batch_script_dir/$job_name.sh
     echo $job_name $seedlist

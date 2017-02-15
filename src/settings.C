@@ -42,6 +42,8 @@ void settings::parse_options(int argc, char* argv[]){
         ("s,pdfset"          , "Set PDF set [LHAPDF name]"                           , po::value<string>() )
         ("m,pdfvar"          , "Set PDF member [integer/all]"                        , po::value<string>() )
         ("g,gparam"          , "Set Sudakov paramter"                                , po::value<double>() )
+        ("R,kmuren"          , "Set realative renormalization scale"                 , po::value<double>() )
+        ("F,kmufac"          , "Set realative factorization scale"                   , po::value<double>() )
         ("qtbins"            , "Set equdistan binning for mass [N,lo,hi]"            , po::value<string>() )
         ("ybins"             , "Set equdistan binning for qt [N,lo,hi]"              , po::value<string>() )
         ("mbins"             , "Set equdistan binning for y [N,lo,hi]"               , po::value<string>() )
@@ -126,6 +128,12 @@ void settings::parse_options(int argc, char* argv[]){
     //Gpar
     if (args.count("gparam")) {
         opts.g_param = args["gparam"].as<double>();
+    }
+    if (args.count("kmuren")) {
+        opts.kmuren = args["kmuren"].as<double>();
+    }
+    if (args.count("kmufac")) {
+        opts.kmufac = args["kmufac"].as<double>();
     }
 
     // Collider
