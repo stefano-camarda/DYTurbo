@@ -4,13 +4,16 @@
 #include "src/omegaintegr.h"
 #include "src/settings.h"
 #include "src/interface.h"
-#include "phasespace/phasespace.h"
+#include "phasespace.h"
 #include "resintegr.h"
 #include "ctintegr.h"
 #include "finintegr.h"
 #include "finitemapping.h"
 #include "resint.h"
 #include "rapint.h"
+#include "ctint.h"
+#include "qtint.h"
+#include "vjint.h"
 
 #include <iostream>
 #include <iomanip>

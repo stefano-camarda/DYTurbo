@@ -24,6 +24,7 @@
 #include "src/resintegr.h"
 #include "src/ctintegr.h"
 #include "src/finintegr.h"
+#include "src/bornintegr.h"
 #include "mcfm/mcfm_interface.h"
 
 #include "histo/HistoHandler.h"
@@ -94,7 +95,7 @@ TEST(DYTurbo,BoundIteration){
         counter ++;
     }
     ASSERT_EQ ( expected , counter  ) << " Incorrect number of bins from boundaries.";
-    opts.force_binner_mode=true;
+    opts.force_binsampling=true;
     //if (opts.makecuts) return; // in case of leton cut it automatically changes to Vegas
     // every step
     bins.qtbins = {0., 10., 20., 30.};
@@ -106,7 +107,7 @@ TEST(DYTurbo,BoundIteration){
         counter ++;
     }
     ASSERT_EQ ( expected , counter  ) << " Incorrect number of bins from boundaries.";
-    opts.force_binner_mode=false;
+    opts.force_binsampling=false;
 }
 
 

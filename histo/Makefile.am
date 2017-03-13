@@ -1,5 +1,5 @@
 AUTOMAKE_OPTIONS = foreign
-AM_CPPFLAGS = -fpermissive -Wl,Bstatic -I$(srcdir)/../user
+AM_CPPFLAGS = -fpermissive -Wl,Bstatic -I$(srcdir)/../user -I$(srcdir)/../phasespace -I$(srcdir)/../src
 
 if HAVE_ROOT
 AM_CPPFLAGS +=  $(ROOT_CFLAGS)

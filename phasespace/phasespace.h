@@ -101,7 +101,7 @@ namespace phasespace
   extern void gen_costhphi(const double x[2], double& jac);
   extern void gen_costh(const double x, double& jac);
   extern void gen_phi(const double x, double& jac);
-  extern void gen_x2(const double x, double& jac);
+  extern bool gen_x2(const double x, double& jac);
 
   //generation of particles
   //Vector boson 4-momentum and boost
@@ -137,6 +137,8 @@ namespace phasespace
   extern double xax[3];
   extern double yax[3];
   extern double zax[3];
+#pragma omp threadprivate(kap1,xax,yax,zax)
+
   extern void genRFaxes(restframeid RF);
   
   extern void genl4p();

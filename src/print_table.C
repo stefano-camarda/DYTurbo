@@ -12,9 +12,10 @@
 
 #include "dyturbo.h"
 #include "settings.h"
+#include "dyres_interface.h"
 #include "interface.h"
 #include "coupling.h"
-#include "histo/HistoHandler.h"
+#include "HistoHandler.h"
 #include "clock_real.h"
 
 #include <LHAPDF/LHAPDF.h>

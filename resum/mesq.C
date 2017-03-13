@@ -1,6 +1,6 @@
 #include "mesq.h"
 #include "settings.h"
-#include "interface.h"
+#include "dyres_interface.h"
 #include "coupling.h"
 #include "omegaintegr.h"
 #include "rapint.h"
@@ -66,6 +66,17 @@ double mesq::propZG;
 complex <double> mesq::mesqij[12];
 complex <double>* mesq::mesqij_expy;
 
+//parton mapping for subprocesses
+int mesq::totpch;
+pdgid *mesq::pid1;
+pdgid *mesq::pid2;
+pdgid p1Z[10] = {U,Ub,D,Db,S,Sb,C,Cb,B,Bb};
+pdgid p2Z[10] = {Ub,U,Db,D,Sb,S,Cb,C,Bb,B};
+pdgid p1Wp[12] = {U,Db,U,Sb,U,Bb,C,Sb,C,Db,C,Bb};
+pdgid p2Wp[12] = {Db,U,Sb,U,Bb,U,Sb,C,Db,C,Bb,C};
+pdgid p1Wm[12] = {Ub,D,Ub,S,Ub,B,Cb,S,Cb,D,Cb,B};
+pdgid p2Wm[12] = {D,Ub,S,Ub,B,Ub,S,Cb,D,Cb,B,Cb};
+
 //fortran interface
 void setmesq_expy_(int& mode, double& m, double& costh, double& y)
 {
@@ -74,6 +85,28 @@ void setmesq_expy_(int& mode, double& m, double& costh, double& y)
 
 void mesq::init()
 {
+  //Number of partonic channels
+  if (opts.nproc == 3)
+    totpch = 10; //only 4 partonic channels are actually needed
+  else
+    totpch = 12;
+
+  if (opts.nproc == 3)
+    {
+      pid1 = p1Z;
+      pid2 = p2Z;
+    }
+  else if (opts.nproc == 1)
+    {
+      pid1 = p1Wp;
+      pid2 = p2Wp;
+    }
+  else if (opts.nproc == 2)
+    {
+      pid1 = p1Wm;
+      pid2 = p2Wm;
+    }
+
   mZ2 = pow(coupling::zmass, 2);
   wZ2 = pow(dymasses_.zwidth_,2);
   mW2 = pow(coupling::wmass, 2);
@@ -146,6 +179,10 @@ void mesq::setpropagators(double m)
       propG = 1./q2;
       propZG = (q2-mZ2)/(pow(q2-mZ2,2)+mZ2*wZ2);
     }
+  //flat propagators, for tests
+  //propZ = 1./m*(8./3.)*pow(opts.sroot,2)/2/(1./9./M_PI*gevfb);
+  //propW = 1./m*(8./3.)*pow(opts.sroot,2)/2/(1./9./M_PI*gevfb);
+  //propG = 1./m*(8./3.)*pow(opts.sroot,2)/2/(1./9./M_PI*gevfb);
 }
 
 void mesq::allocate()
@@ -156,25 +193,8 @@ void mesq::allocate()
 
 void mesq::setmesq_expy(int mode, double m, double costh, double y)
 {
-  //Number of partonic channels
-  int totpch;
-  if (opts.nproc == 3)
-    totpch = 10; //only 4 partonic channels are actually needed
-  else
-    totpch = 12;
-
   //mass dependent part
-  q2 = pow(m,2);
-  if (opts.nproc == 3)
-    propZ = q2/(pow(q2-mZ2,2)+mZ2*wZ2);
-  else
-    propW = q2/(pow(q2-mW2,2)+mW2*wW2);
-  if (opts.useGamma)
-    {
-      propG = 1./q2;
-      propZG = (q2-mZ2)/(pow(q2-mZ2,2)+mZ2*wZ2);
-    }
-  //setpropagators(m);
+  setpropagators(m);
   
   if (mode < 2)
     {
@@ -223,27 +243,47 @@ void mesq::setmesq_expy(int mode, double m, double costh, double y)
     }
   else //if mode == 2 -> rapidity integrated mode
     {
-      for (int i1 = 0; i1 < mellinint::mdim; i1++)
-	for (int i2 = 0; i2 < mellinint::mdim; i2++)
-	  {
-	    complex <double> one, costh1, costh2;
-
-	    //retrieve Ithxp Ithxm positive branch integrals of the x1^-z1 * x2^-z2 piece 
-	    one = rapint::Ith0p[mellinint::index(i1,i2)];
-	    costh1 = rapint::Ith1p[mellinint::index(i1,i2)];
-	    costh2 = rapint::Ith2p[mellinint::index(i1,i2)];
-	    setmesq(one, costh1, costh2);
+      //1D mellin
+      if (opts.mellin1d)
+	{
+	  double cthmom0, cthmom1, cthmom2;
+	  cthmoments_(cthmom0, cthmom1, cthmom2);
+	  setmesq(cthmom0, cthmom1, cthmom2);
+	  double bjx= q2/pow(opts.sroot,2);
+	  double ax = log(bjx);
+	  for (int i = 0; i < mellinint::mdim; i++)
 	    for (int pch = 0; pch < totpch; pch++)
-	      mesqij_expy[mesq::index(pch, i1, i2, mesq::positive)] = mesqij[pch];
+	      {
+		complex <double> cexp = exp(-mellinint::Np[i] * ax)/M_PI * mellinint::CCp/complex <double>(0.,1);
+		complex <double> cexm = exp(-mellinint::Nm[i] * ax)/M_PI * mellinint::CCm/complex <double>(0.,1);
+		mesqij_expy[mesq::index(pch, i, i, mesq::positive)] = mesqij[pch] * cexp * mellinint::wn[i];
+		mesqij_expy[mesq::index(pch, i, i, mesq::negative)] = mesqij[pch] * cexm * mellinint::wn[i];
+	      }
+	}
+      else
+	{
+	  for (int i1 = 0; i1 < mellinint::mdim; i1++)
+	    for (int i2 = 0; i2 < mellinint::mdim; i2++)
+	      {
+		complex <double> one, costh1, costh2;
 
-	    //retrieve Ithxp Ithxm positive branch integrals of the x1^-z1 * x2^-z2 piece 
-	    one = rapint::Ith0m[mellinint::index(i1,i2)];
-	    costh1 = rapint::Ith1m[mellinint::index(i1,i2)];
-	    costh2 = rapint::Ith2m[mellinint::index(i1,i2)];
-	    setmesq(one, costh1, costh2);
-	    for (int pch = 0; pch < totpch; pch++)
-	      mesqij_expy[mesq::index(pch, i1, i2, mesq::negative)] = mesqij[pch];
-	  }
+		//retrieve Ithxp Ithxm positive branch integrals of the x1^-z1 * x2^-z2 piece 
+		one = rapint::Ith0p[mellinint::index(i1,i2)];
+		costh1 = rapint::Ith1p[mellinint::index(i1,i2)];
+		costh2 = rapint::Ith2p[mellinint::index(i1,i2)];
+		setmesq(one, costh1, costh2);
+		for (int pch = 0; pch < totpch; pch++)
+		  mesqij_expy[mesq::index(pch, i1, i2, mesq::positive)] = mesqij[pch];
+
+		//retrieve Ithxp Ithxm negative branch integrals of the x1^-z1 * x2^-z2 piece 
+		one = rapint::Ith0m[mellinint::index(i1,i2)];
+		costh1 = rapint::Ith1m[mellinint::index(i1,i2)];
+		costh2 = rapint::Ith2m[mellinint::index(i1,i2)];
+		setmesq(one, costh1, costh2);
+		for (int pch = 0; pch < totpch; pch++)
+		  mesqij_expy[mesq::index(pch, i1, i2, mesq::negative)] = mesqij[pch];
+	      }
+	}
     }
 }
 void mesq::free()

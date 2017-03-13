@@ -15,7 +15,7 @@
 #include <math.h>
 
 
-#include "histo/KinematicCuts.h"
+#include "KinematicCuts.h"
 
 using namespace std;
 
@@ -47,6 +47,15 @@ int vjintegrand_cubature(unsigned ndim, const double x[], void *data, unsigned n
   return 0;
 }
 
+double vjintegrand_smolyak(int ndim, double x[])
+{
+  int ncomp = 1;
+  double f[ncomp];
+  vjintegrand(ndim, x, ncomp, f);
+  tell_to_grid_we_are_alive();
+  return f[0];
+}
+
 
 integrand_t vjintegrand(const int &ndim, const double x[], const int &ncomp, double f[])
 //Generates the phase space 4 vectors
@@ -74,13 +83,10 @@ integrand_t vjintegrand(const int &ndim, const double x[], const int &ncomp, dou
   double m = phasespace::m;
   double qt = phasespace::qt;
   double y = phasespace::y;
+  phasespace::calcexpy();
   
   //evaluate the Vj (N)LO cross section
-  if (opts.pcubature)
-    f[0] = vjint::vint(m,qt,y); //C++ interface
-  else
-    f[0] = vjfo_(m,qt,y); //fortran interface
-
+  f[0] = vjint::vint(m,qt,y); //C++ interface
   
   if (isnan_ofast(f[0]))
     {
@@ -138,6 +144,20 @@ integrand_t realintegrand(const int &ndim, const double x[], const int &ncomp, d
   return 0;
 }
 
+double realintegrand_smolyak(int ndim, double x[])
+{
+  int ncomp = 1;
+  double f[ncomp];
+  void *userdata;
+  const int nvec = 1;
+  int core;
+  double weight;
+  int iter;
+  realintegrand(ndim, x, ncomp, f,
+		userdata, nvec, core, weight, iter);
+  return f[0];
+}
+
 integrand_t virtintegrand(const int &ndim, const double x[], const int &ncomp, double f[],
                         void* userdata, const int &nvec, const int &core,
                         double &weight, const int &iter)
@@ -151,22 +171,6 @@ integrand_t virtintegrand(const int &ndim, const double x[], const int &ncomp, d
   dofill_.doFill_ = int(iter==last_iter);
   f[0] = virtint_(rvi,weight,f);
   
-  tell_to_grid_we_are_alive();
-  return 0;
-}
-
-integrand_t doublevirtintegrand(const int &ndim, const double x[], const int &ncomp, double f[],
-                        void* userdata, const int &nvec, const int &core,
-                        double &weight, const int &iter)
-{
-  
-  double rvv[22];
-  for (int i = 0; i < ndim; i++)
-    rvv[i]=x[i];
-
-  dofill_.doFill_ = int(iter==last_iter);
-  f[0] = lowinthst_dynnlo_(rvv,weight,f);
-
   tell_to_grid_we_are_alive();
   return 0;
 }
@@ -334,129 +338,6 @@ integrand_t v2jintegrand(const int &ndim, const double x[], const int &ncomp, do
   return 0;
 }
 
-integrand_t lointegrandMC(const int &ndim, const double x[], const int &ncomp, double f[],
-			 void* userdata, const int &nvec, const int &core,
-			 double &weight, const int &iter)
-{
-  clock_t begin_time, end_time;
-
-  begin_time = clock();
-
-  if (opts.fixedorder && phasespace::qtmin > 0)
-    {
-      f[0]=0.;
-      return 0;
-    }
-  
-  //Jacobian of the change of variables from the unitary hypercube x[3] to the m, y boundaries
-  double jac = 1.;
-  bool status = true;
-
-  //generate phase space
-  double r1[2] = {x[0], x[1]};
-  status = phasespace::gen_my(r1, jac);
-  if (!status)
-    {
-      f[0] = 0.;
-      return 0;
-    }
-  phasespace::set_qt(0.);
-  phasespace::set_phiV(0.);
-  
-  double r2[2] = {x[2], x[3]};
-  phasespace::gen_costhphi(r2, jac);
-
-  //generate boson and leptons
-  phasespace::calcexpy();
-  phasespace::calcmt();
-  phasespace::genV4p();
-  phasespace::genl4p();
-
-  //apply cuts
-  if (!Kinematics::Cuts::KeepThisEvent(phasespace::p3,phasespace::p4))
-    {
-      f[0] = 0.;
-      return 0;
-    }
-  
-  //calculate integrand
-  f[0] = loint::lint(phasespace::costh,phasespace::m,phasespace::y,0)*jac;
-
-  //fill histograms
-  if (iter==last_iter)
-    {
-      double wt = weight*f[0];
-      hists_fill_(phasespace::p3,phasespace::p4,&wt);
-    }
-  
-  tell_to_grid_we_are_alive();
-  return 0;
-}
-
-int lointegrand2d_cubature_v(unsigned ndim, long unsigned npts, const double x[], void *data, unsigned ncomp, double f[])
-{
-#pragma omp parallel for num_threads(opts.cubacores)
-  for (unsigned i = 0; i < npts; i++)
-    {
-      // evaluate the integrand for npts points
-      double xi[ndim];
-      double fi[ncomp];
-      for (unsigned j = 0; j < ndim; j++)
-	xi[j] = x[i*ndim + j];
-
-      lointegrand2d(ndim, xi, ncomp, fi);
-      
-      for (unsigned k = 0; k < ncomp; ++k)
-	f[i*ncomp + k] = fi[k];
-    }
-  tell_to_grid_we_are_alive();
-  return 0;
-}
-
-int lointegrand2d_cubature(unsigned ndim, const double x[], void *data, unsigned ncomp, double f[])
-{
-  lointegrand2d(ndim, x, ncomp, f);
-  tell_to_grid_we_are_alive();
-  return 0;
-}
-
-integrand_t lointegrand2d(const int &ndim, const double x[], const int &ncomp, double f[])
-{
-  clock_t begin_time, end_time;
-
-  begin_time = clock();
-
-  if (opts.fixedorder && phasespace::qtmin > 0)
-    {
-      f[0]=0.;
-      return 0;
-    }
-
-  //Jacobian of the change of variables from the unitary hypercube x[3] to the m, y boundaries
-  double jac = 1.;
-  bool status = true;
-
-  double r1[2] = {x[0], x[1]};
-  status = phasespace::gen_my(r1, jac);
-  if (!status)
-    {
-      f[0] = 0.;
-      return 0;
-    }
-  phasespace::set_qt(0.);
-
-  double m = phasespace::m;
-  double y = phasespace::y;
-
-  f[0] = loint::lint(0.,phasespace::m,phasespace::y,1)*jac;
-
-  //perform phi integration
-  f[0] = f[0] * 2.*M_PI;
-  
-  tell_to_grid_we_are_alive();
-  return 0;
-}
-
 integrand_t vjlointegrandMC(const int &ndim, const double x[], const int &ncomp, double f[],
 			    void* userdata, const int &nvec, const int &core,
 			    double &weight, const int &iter)
@@ -483,10 +364,19 @@ integrand_t vjlointegrand(const int &ndim, const double x[], const int &ncomp, d
 
   begin_time = clock();
 
-  f[0] = vjloint::calc(x);
+  double ff[2];
+  vjloint::calc(x, ff);
+
+  f[0] = ff[0];
+  if (opts.helicity >= 0)
+    f[1] = ff[1];
 
   if (isnan_ofast(f[0]))
-    f[0] = 0.;  //avoid nans
+    {
+      f[0] = 0.;  //avoid nans
+      if (opts.helicity >= 0)
+	f[1]=0.;
+    }
   
   end_time = clock();
   if (opts.timeprofile)
@@ -505,4 +395,33 @@ int vjlointegrand_cubature(unsigned ndim, const double x[], void *data, unsigned
   vjlointegrand(ndim, x, ncomp, f);
   tell_to_grid_we_are_alive();
   return 0;
+}
+
+int vjlointegrand_cubature_v(unsigned ndim, long unsigned npts, const double x[], void *data, unsigned ncomp, double f[])
+{
+#pragma omp parallel for num_threads(opts.cubacores) copyin(scale_,facscale_,qcdcouple_)
+  for (unsigned i = 0; i < npts; i++)
+    {
+      // evaluate the integrand for npts points
+      double xi[ndim];
+      double fi[ncomp];
+      for (unsigned j = 0; j < ndim; j++)
+	xi[j] = x[i*ndim + j];
+
+      vjlointegrand(ndim, xi, ncomp, fi);
+      
+      for (unsigned k = 0; k < ncomp; ++k)
+	f[i*ncomp + k] = fi[k];
+    }
+  tell_to_grid_we_are_alive();
+  return 0;
+}
+
+double vjlointegrand_smolyak(int ndim, double x[])
+{
+  int ncomp = 1;
+  double f[ncomp];
+  vjlointegrand(ndim, x, ncomp, f);
+  tell_to_grid_we_are_alive();
+  return f[0];
 }

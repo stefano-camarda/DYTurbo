@@ -18,9 +18,9 @@
 #include "interface.h"
 #include "ctintegr.h"
 
-#include "phasespace/phasespace.h"
-#include "resum/rapint.h"
-#include "histo/HistoHandler.h"
+#include "phasespace.h"
+#include "rapint.h"
+#include "HistoHandler.h"
 
 using DYTurbo::PrintTable::Col3;
 using DYTurbo::PrintTable::Col4;
@@ -222,13 +222,13 @@ namespace DYTurbo {
             AddTermIfActive ( opts.ctintvegas8d , ctintegr   , name , isVegas     ) << Col3 ( "vegas 8D"            , "ncalls =" , opts.vegasncallsCT );
         }
         // VJ finite
-        bool vj_finite = opts.doVJ && !opts.doVJREAL && !opts.doVJVIRT;
+        bool vj_finite = opts.doVJLO && !opts.doVJREAL && !opts.doVJVIRT;
         name="V+J LO";
         if (vj_finite || TestAllTerms){
             AddTermIfActive   ( opts.vjint3d                         , vjintegr3d   , name , isNotVegas )  << Col3 ( "cuhre (dm, dpt, dy)" , "iter ="   , opts.niterVJ );
             AddTermIfActive   ( opts.vjint5d && opts.order == 1      , vjlointegr5d , name , isNotVegas )  << Col3 ( "cuhre 5D???"         , "iter ="   , opts.niterVJ );
-            AddTermIfActive   ( opts.vjintvegas7d && opts.order == 1 , vjlointegr7d , name , isVegas    )  << Col3 ( "vegas 7D"            , "ncalls =" , opts.vegasncallsVJLO );
-            //AddTermIfActive ( opts.vjintvegas7d && opts.order == 1 , vjlointegr   , name , isVegas    )  << Col3 ( "vegas 7D"            , "ncalls =" , opts.vegasncallsVJLO );
+            AddTermIfActive   ( opts.vjintvegas7d && opts.order == 1 , vjlointegr7d , name , isVegas    )  << Col3 ( "vegas 7D"            , "ncalls =" , opts.vegasncallsVJLO ); //phase space improved MCFM integration
+            //AddTermIfActive ( opts.vjintvegas7d && opts.order == 1 , vjlointegr   , name , isVegas    )  << Col3 ( "vegas 7D"            , "ncalls =" , opts.vegasncallsVJLO ); //original MCFM integration
         }
         // VJ NLO
         AddTermIfActive ( opts.doVJREAL  , vjrealintegr , "V+J Real"    , isVegas) << Col3 ( "vegas" , "ncalls =" , opts.vegasncallsVJREAL );
@@ -250,7 +250,7 @@ namespace DYTurbo {
     void AddBoundary(size_t ib, string name, VecDbl &bins ){
         ActiveBoundaries[ib].name = name;
         ActiveBoundaries[ib].data.clear();
-        if (HasOnlyVegas && !opts.force_binner_mode){ // simple boundary mode
+        if (HasOnlyVegas && !opts.force_binsampling){ // simple boundary mode
             ActiveBoundaries[ib].data.push_back(bins.front());
             ActiveBoundaries[ib].data.push_back(bins.back());
         } else { // integration mode
@@ -315,6 +315,7 @@ namespace DYTurbo {
             }
         }
         double f[opts.totpdf];
+	costh = 0.; m = opts.rmass; qt = 1; y = 0;
         ctint_(costh,m,qt,y,mode,f);
     }
 

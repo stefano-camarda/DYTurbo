@@ -6,6 +6,7 @@
 #include "mesq.h"
 #include "hcoefficients.h"
 #include "resint.h"
+#include "isnan.h"
 
 #include <LHAPDF/LHAPDF.h>
 
@@ -51,13 +52,14 @@ double besselint::bint(double b)
   double bstar = b / sqrt(1+(b*b)/(blimit_.rblim_*blimit_.rblim_));
   pdfevol::bstarscale = resconst::b0*resint::a/bstar;
 
-  //bstartilde is bstarscale with the modification L -> L~, which freezes the scale at muf
-  pdfevol::bstartilde = pdfevol::bstarscale * resint::mufac / sqrt((pow(pdfevol::bstarscale,2) + resint::mufac2));
-  
-
   //qbstar is used in evolmode 3
   //qbstar = b0/bstar, it corresponds to pdfevol::bsstarcale but without a_param
   pdfevol::qbstar = resconst::b0/bstar*opts.C3;
+
+  //bstartilde is bstarscale (qbstar) with the modification L -> L~, which freezes the scale at muf
+  //bstartilde is used in evolmode 2, for the direct mellin transfrom at each scale
+  //pdfevol::bstartilde = pdfevol::bstarscale * resint::mufac / sqrt((pow(pdfevol::bstarscale,2) + resint::mufac2));
+  pdfevol::bstartilde = pdfevol::qbstar * resint::mures / sqrt((pow(pdfevol::qbstar,2) + resint::mures2));
   
   //  cout << b << "  " << bstar << "  " << blimit_.rblim_ << endl;
   
@@ -86,7 +88,7 @@ double besselint::bint(double b)
   //alphasl gives the LL/NLL evolution of alpha from Qres=Q/a_param to  q2=b0^2/b^2
 
   /********************************************/
-  //pdfevol::alpqf is used as starting scale in pdfevol::evolution
+  //pdfevol::alpqf is used as starting scale of the PDF evolution in pdfevol::evolution
   //according to Eq. 42 of arXiv:hep-ph/0508068 it should be the factorisation scale,
   //but in Eq. 98 in the resummation scale is used
   double alpqf = resint::alpqres;              //alphas at resummation scale   (as in dyres)
@@ -97,7 +99,7 @@ double besselint::bint(double b)
   //alpq is used in hcoefficients::calcb, it is alpq = alphas(b0^2/b^2)
   //it is used only at NLL, at NNLL instead aexp and aexpb are used (aexp is the same as alphasl, but with a different blim)
   complex <double> alpq;
-  alpq = resint::alpqres * cx(alphasl_(fscale2_mub));
+  alpq = resint::alpqres * cx(alphasl_(fscale2_mub)); //--> Attention! in DYRES it is alphas(qres), in DyQT it is alphas(mur)
   if (opts.evolmode == 2 || opts.evolmode == 3)
     //In order to have variable flavour evolution, use here a VFN definition of alpq
     //There is possibly an issue here when the renormalisation scale is (very) different from mll, since aass=alphas(muren) is used in xlambda = beta0*aass*blog
@@ -206,38 +208,61 @@ double besselint::bint(double b)
   
   // Cache the positive and negative branch of coefficients which depend only on one I index
   hcoefficients::calcb(resint::aass,resint::logmuf2q2,resint::loga,alpq,aexp,aexpb); // --> Need to access aass,logmuf2q2,loga,alpq,aexp,aexpb
-  
+
+  double invres = 0.;
   double fun = 0.;
+  //1d mellin
+  if (opts.mellin1d)
+    {
+      //double q2 = resint::_m*resint::_m;
+      //double bjx= q2/pow(opts.sroot,2);
+      //double ax = log(bjx);
+      for (int i = 0; i < mellinint::mdim; i++)
+	{
+	  pdfevol::retrieve(i,i,mesq::positive);
+	  mellinint::pdf_mesq_expy(i,i,mesq::positive);
+	  complex <double> int1 = mellinint::integrand(i,i,mesq::positive);
+	  pdfevol::retrieve(i,i,mesq::negative);
+	  mellinint::pdf_mesq_expy(i,i,mesq::negative);
+	  complex <double> int2 = mellinint::integrand(i,i,mesq::negative);
+	  fun += real(int1-int2);
+	  //cout << "C++ " << setprecision(16) << i1 << "  " << i2 << "  " << int1 << "  " << int2 << endl;
+	}
+      invres = fun*real(factorfin);
+      //invres = real(factorfin)/resint::_m*(8./3.)*pow(opts.sroot,2)/2.; // --> Check unitarity of Sudakov integral
+    }
+  else
+    {
 #pragma omp parallel for reduction(+:fun) num_threads(opts.mellincores) copyin(creno_,mesq::mesqij_expy,hcoefficients::Hqqb,hcoefficients::Hqg_1,hcoefficients::Hqg_2,hcoefficients::Hgg,hcoefficients::Hqq,hcoefficients::Hqq_1,hcoefficients::Hqq_2,hcoefficients::Hqqp_1,hcoefficients::Hqqp_2)
-  for (int i1 = 0; i1 < mellinint::mdim; i1++)
-    for (int i2 = 0; i2 < mellinint::mdim; i2++)
-      {
-	// here scale2 is fixed (b-dependent), and the function is called many times at I1 I2 points       
-	// part of the coefficients calculation is hoisted in the previous i loop
+      for (int i1 = 0; i1 < mellinint::mdim; i1++)
+	for (int i2 = 0; i2 < mellinint::mdim; i2++)
+	  {
+	    // here scale2 is fixed (b-dependent), and the function is called many times at I1 I2 points       
+	    // part of the coefficients calculation is hoisted in the previous i loop
 
-	//  -->   merge positive and negative branch?
+	    //  -->   merge positive and negative branch?
 
-	//     In Rapidity integrated mode:
-	//     sigmaij are fatorised from HCRN and numerical integration in y is performed in rapintegrals
-	//     the full expression is HCRN(I1,I2)_ij * ccex(I1,I2) * sigma_ij
-	//     HCRN(I1,I2)_ij is only b dependent
-	//     ccex(I1,I2) is rapidity and mass dependent
-	//     sigma_ij is costh and mass dependent, but becomes rapidity dependent after integration of the costh moments
-	//     The integrals are solved analitically when no cuts on the leptons are applied
-	pdfevol::retrieve(i1,i2,mesq::positive);
-	mellinint::pdf_mesq_expy(i1,i2,mesq::positive);
-	complex <double> int1 = mellinint::integrand(i1,i2,mesq::positive);
-	pdfevol::retrieve(i1,i2,mesq::negative);
-	mellinint::pdf_mesq_expy(i1,i2,mesq::negative);
-	complex <double> int2 = mellinint::integrand(i1,i2,mesq::negative);
-	//complex <double> FZ=-0.5*(real(int1)-real(int2));
-	fun = fun -real(0.5*(int1-int2));
-	//cout << "C++ " << setprecision(16) << i1 << "  " << i2 << "  " << int1 << "  " << int2 << endl;
-      }
-
-  double invres = fun*real(factorfin);
-  if (invres != invres)
-    //  if (isnan(invres))
+	    //     In Rapidity integrated mode:
+	    //     sigmaij are fatorised from HCRN and numerical integration in y is performed in rapintegrals
+	    //     the full expression is HCRN(I1,I2)_ij * ccex(I1,I2) * sigma_ij
+	    //     HCRN(I1,I2)_ij is only b dependent
+	    //     ccex(I1,I2) is rapidity and mass dependent
+	    //     sigma_ij is costh and mass dependent, but becomes rapidity dependent after integration of the costh moments
+	    //     The integrals are solved analitically when no cuts on the leptons are applied
+	    pdfevol::retrieve(i1,i2,mesq::positive);
+	    mellinint::pdf_mesq_expy(i1,i2,mesq::positive);
+	    complex <double> int1 = mellinint::integrand(i1,i2,mesq::positive);
+	    pdfevol::retrieve(i1,i2,mesq::negative);
+	    mellinint::pdf_mesq_expy(i1,i2,mesq::negative);
+	    complex <double> int2 = mellinint::integrand(i1,i2,mesq::negative);
+	    //complex <double> FZ=-0.5*(real(int1)-real(int2));
+	    fun += -real(0.5*(int1-int2));
+	    //cout << "C++ " << setprecision(16) << i1 << "  " << i2 << "  " << int1 << "  " << int2 << endl;
+	  }
+      invres = fun*real(factorfin);
+    }
+  
+  if (isnan_ofast(invres))
     {
       cout << "Warning, invres = " << invres << ", qt = " << qt << ", b = "  << b << ", pdf*mesq = " << fun << ", S*bj0 = " << factorfin << endl;
       invres = 0;

@@ -19,11 +19,24 @@ kmuren          = 1.          # scale factor for the renormalisation scale
 kmufac          = 1.          # scale factor for the factorisation scale
 kmures          = 0.5         # scale factor for the resummation scale
 
+kpt_muren          = 0.          # coefficient for a dynamic renormalisation scale of the form mu_r = sqrt((kmuren*m)^2 + (kpt_muren*pt)^2)
+kpt_mufac          = 0.          # coefficient for a dynamic factorisation scale of the form mu_f = sqrt((kmuren*m)^2 + (kpt_mufac*pt)^2)
+
+kmjj_muren          = 0.         # coefficient for a dynamic renormalisation scale of the form mu_r = sqrt((kmuren*m)^2 + (kpt_muren*pt)^2 + (kmjj_muren*mjj)^2)
+kmjj_mufac          = 0.         # coefficient for a dynamic factorisation scale of the form mu_r = sqrt((kmuren*m)^2 + (kpt_mufac*pt)^2 + (kmjj_mufac*mjj)^2)
+
 #Additional resummation scales
 C1 = 1.
 C3 = 1.
 
+#PDF matching scales
+kmuc          = 1.        # scale factor for the charm matching scale
+kmub          = 1.        # scale factor for the bottom matching scale
+kmut          = 1.        # scale factor for the top matching scale
+
+
 # EW parameters (Gmu scheme)
+ewscheme = 1
 Gf = 1.1663787e-5        # G-Fermi
 zmass = 91.1876          # Mass of the Z boson
 wmass = 80.385           # Mass of the W boson
@@ -31,11 +44,8 @@ zwidth = 2.4950          # Width of the Z boson
 wwidth = 2.091           # Width of the W boson
 zerowidth = false        # zero-width approximation (not really implemented)
 
-# To use an effective weak-mixing angle, set xw to a non-zero value, otherwise it is calculated according to the Gmu scheme
-xw = 0.   # effective weak-mixing angle
-
-# To use an effective value of alpha_EM(MZ), set aemmz to a non-zero value, otherwise it is calculated according to the Gmu scheme
-aemmz = 0.  #effective value of alpha_EM(MZ)
+xw = 0.23153                 # weak-mixing angle (not used in the Gmu scheme)
+aemmz = 7.7585538055706e-03  # alpha_EM(MZ) (not used in the Gmu scheme)
 
 # CKM matrix
 Vud = 0.97427
@@ -58,6 +68,7 @@ useGamma = true
 
 # Resummation parameters
 resumcpp  = true  # use C++ code for resummation
+ctcpp     = true  # use C++ code for the counter term
 qtcutoff = 0.02   # resummation cutoff
 blim = -1         # scale factor for blim
 
@@ -68,7 +79,12 @@ opts_approxpdf = 0
 # number of intervals for integration of PDF moments (direct Mellin transform), relevant only for opts_approxpdf = 0
 opts_pdfintervals = 100
 
-# Type of PDF evolution (0: DYRES, 1: Pegasus as DYRES, 2: Mellin transform, 3: Pegasus VFN)
+# Type of PDF evolution
+#0: DYRES (backward evolution)
+#1: Pegasus as DYRES (backward evolution)
+#2: Mellin transform (forward evolution)
+#3: Pegasus VFN (forward evolution)
+#4: Pegasus VFN with alphas from DYRES (forward evolution)
 evolmode = 0
 
 #Settings for the Bessel integration
@@ -78,11 +94,30 @@ bintaccuracy = 1.0e-4  #accuracy
 mellinintervals = 1 #number of intervals
 mellinrule = 64     #number of nodes
 zmax = 27.   	    #upper limit of the contour in the imaginary axis
+cpoint = 1.   	    #point of intersection of the contour with the real axis
 mellincores = 1     #number of parallel threads for the mellin integration
+mellin1d = false    #use 1d (y-integrated) or 2d (y-dependent) mellin inversion
 
-#number of intervals and gaussian rule for the rapidity integrations
+#number of intervals and gaussian rule for the rapidity integrations in the 2dim resummed piece
 yintervals = 1
 yrule = 20
+
+#number of intervals and gaussian rule for the qt integration in the 2dim counter term
+qtintervals = 1
+qtrule = 64
+
+#number of intervals and gaussian rule for the alfa beta scaled-PDF integration in the counter term and born fixed order term
+abintervals = 1
+abrule = 64
+
+#gaussian rule for the phi integration in the V+J 5d LO term when makecuts is false
+vjphirule = 20
+
+#settings for the z1, z2 integration in the V+J 3d NLO term
+zrule = 64
+
+#settings for the x integration in the V+J 3d delta term
+xrule = 200
 
 # resummation damping
 dampk = 0.5
@@ -107,12 +142,12 @@ intDimBorn = 2 # can be 2 for quadrature, 4 or 6 for vegas
 intDimCT = 8 # can be 2 or 3 for quadrature, or 6, or 8 for vegas
 
 # type of integration for V+J finite order
-intDimVJ = 5 # can be 3 for quadrature, 5 for quadrature with cuts, or 7 for vegas
+intDimVJ = 7 # can be 3 for quadrature, 5 for quadrature with cuts, or 7 for vegas
 
 # term switches
 doBORN = true
 doCT   = true
-doVJ   = true
+doVJLO = true
 
 doVJREAL = true
 doVJVIRT = true
@@ -131,7 +166,7 @@ vegasncallsVJREAL = 10000000 # only for real 10d vegas integration
 vegasncallsVJVIRT = 1000000  # only for virt 8d vegas integration
 
 # cubature settings
-pcubature = false
+pcubature = true
 pcubaccuracy = 1e-3
 
 # costh CS boundaries
@@ -168,7 +203,7 @@ qtrec_kt0   = false
 # debug settings
 timeprofile = false  # debug and time profile resummation integration
 verbose     = false  # debug and time profile costh phi_lep integration
-texttable = false # dump result table to text file (including pdf variations)
+texttable   = true # dump result table to text file (including pdf variations)
 
 # binning
 
@@ -177,7 +212,10 @@ ptbinwidth = false
 ybinwidth = false
 
 # Force to loop over all bins even you have all Vegas integrands
-force_binner_mode = false
+force_binsampling = false
+
+# Compute total (-1) or helicity cross sections (0-7)
+helicity = -1
 
 # pt, y, m bins
 qt_bins = [ 0 2 4 6 8 10 12 14 16 18 22 26 30 34 38 42 46 50 54 60 70 80 100 150 200 300 800 ]

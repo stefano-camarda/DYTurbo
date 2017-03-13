@@ -1,3 +1,13 @@
+image: docker.cern.ch/linuxsupport/cc7-base:latest
+
+before_script:
+  - yum install -y tar wget make
+  - yum install -y gcc gcc-c++ gcc-gfortran
+  - yum install -y python python-devel
+  - yum install -y boost-devel
+  - yum install -y autoconf automake libtool
+  - yum install -y root root-physics root-multiproc
+
 stages:
     - build
     - deploy
@@ -48,7 +58,7 @@ build-with-root:
         - export BOOST_ROOT=$SFT_HOME_Boost
         - export DYTURBOROOT=`pwd -P`
         - autoreconf -i
-        - ./configure --enable-root --enable-Ofast --enable-test
+        - ./configure --enable-root --enable-test #--enable-Ofast
         - make check
 
 
@@ -56,3 +66,12 @@ build-with-root:
 #    script:
 #        - ./configure --enable-Ofast --enable-test
 #        - make check
+
+testdevel:
+  script:
+    - autoreconf -i
+#    - ./configure --enable-root --enable-Ofast --enable-test
+    - ./configure --enable-test --enable-Ofast
+    - make check
+  only:
+    - devel

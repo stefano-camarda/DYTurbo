@@ -96,7 +96,7 @@ c     cached for invres and cachecoeff
       double precision cqt,cq2,cy
       common/kinematic/cqt,cq2,cy
 C     
-      include 'ewinput.f' 
+c      include 'ewinput.f' 
       include 'masses.f' 
       include 'const.h' 
 c     include 'constants.f' 
@@ -1841,27 +1841,29 @@ c reno2 is cached and looped only on I, before entering the I1 I2 doube loop int
        DOUBLE PRECISION  ALPQF, ALPQR
        COMMON / COUPL  / ALPQF, ALPQR
 
+      INTEGER NMX
+      PARAMETER (NMX = 512)
 
        INTEGER F, nnF, NAORD, I, ISIGN, IBEAM, IFIT, SIG
-         COMPLEX*16 UVP(136,30),DVP(136,30),USP(136,30),DSP(136,30),
-     .         SSP(136,30),GLP(136,30),CHP(136,30),BOP(136,30)
-       COMPLEX*16 UVM(136,30),DVM(136,30),USM(136,30),DSM(136,30),
-     .           SSM(136,30),GLM(136,30),CHM(136,30),BOM(136,30)
-       COMPLEX*16 UVP2(136,30),DVP2(136,30),USP2(136,30),DSP2(136,30),
-     .           SSP2(136,30),GLP2(136,30),CHP2(136,30),BOP2(136,30)
-       COMPLEX*16 UVM2(136,30),DVM2(136,30),USM2(136,30),DSM2(136,30),
-     .           SSM2(136,30),GLM2(136,30),CHM2(136,30),BOM2(136,30)
+         COMPLEX*16 UVP(NMX,30),DVP(NMX,30),USP(NMX,30),DSP(NMX,30),
+     .         SSP(NMX,30),GLP(NMX,30),CHP(NMX,30),BOP(NMX,30)
+       COMPLEX*16 UVM(NMX,30),DVM(NMX,30),USM(NMX,30),DSM(NMX,30),
+     .           SSM(NMX,30),GLM(NMX,30),CHM(NMX,30),BOM(NMX,30)
+       COMPLEX*16 UVP2(NMX,30),DVP2(NMX,30),USP2(NMX,30),DSP2(NMX,30),
+     .           SSP2(NMX,30),GLP2(NMX,30),CHP2(NMX,30),BOP2(NMX,30)
+       COMPLEX*16 UVM2(NMX,30),DVM2(NMX,30),USM2(NMX,30),DSM2(NMX,30),
+     .           SSM2(NMX,30),GLM2(NMX,30),CHM2(NMX,30),BOM2(NMX,30)
           
-       COMPLEX*16 QQIP(136),QGFP(136), GQIP(136), GGIP(136), GGFP(136),
-     1            NS1MIP(136), NS1PIP(136), NS1FP(136),QQ1FP(136), 
-     2       QG1FP(136), GQ1IP(136), GQ1FP(136), GG1IP(136), GG1FP(136) 
-       COMPLEX*16 QQIM(136),QGFM(136), GQIM(136), GGIM(136), GGFM(136),
-     1           NS1MIM(136), NS1PIM(136), NS1FM(136),QQ1FM(136), 
-     2       QG1FM(136), GQ1IM(136), GQ1FM(136), GG1IM(136), GG1FM(136)
-       COMPLEX*16 C2qgMp(136),C2NSqqMp(136),C2SqqbMp(136),
-     .            C2NSqqbMp(136)
-       COMPLEX*16 C2qgMm(136),C2NSqqMm(136),C2SqqbMm(136),
-     .            C2NSqqbMm(136)
+       COMPLEX*16 QQIP(NMX),QGFP(NMX), GQIP(NMX), GGIP(NMX), GGFP(NMX),
+     1            NS1MIP(NMX), NS1PIP(NMX), NS1FP(NMX),QQ1FP(NMX), 
+     2       QG1FP(NMX), GQ1IP(NMX), GQ1FP(NMX), GG1IP(NMX), GG1FP(NMX) 
+       COMPLEX*16 QQIM(NMX),QGFM(NMX), GQIM(NMX), GGIM(NMX), GGFM(NMX),
+     1           NS1MIM(NMX), NS1PIM(NMX), NS1FM(NMX),QQ1FM(NMX), 
+     2       QG1FM(NMX), GQ1IM(NMX), GQ1FM(NMX), GG1IM(NMX), GG1FM(NMX)
+       COMPLEX*16 C2qgMp(NMX),C2NSqqMp(NMX),C2SqqbMp(NMX),
+     .            C2NSqqbMp(NMX)
+       COMPLEX*16 C2qgMm(NMX),C2NSqqMm(NMX),C2SqqbMm(NMX),
+     .            C2NSqqbMm(NMX)
       
        COMMON / ANOMP/QQIp, QGFp, GQIp, GGIp, GGFp, NS1MIp, NS1PIp, 
      1          NS1Fp, QQ1Fp, QG1Fp, GQ1Ip, GQ1Fp, GG1Ip, GG1Fp

@@ -12,7 +12,7 @@
 
 #include "HistoHandler.h"
 #include "Kinematics.h"
-#include "src/settings.h"
+#include "settings.h"
 
 namespace HistoHandler {
     // Base Histogram class: make possible to store in one container

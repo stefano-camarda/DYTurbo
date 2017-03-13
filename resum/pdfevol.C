@@ -100,10 +100,48 @@ void pdfevol::init()
 void pdfevol::evolution(int i) //from reno2
 {
   // i is the index of the complex mellin moment in the z-space for the gaussian quadrature used for the mellin inversion
-  complex <double> alpq, ALPr;
 
   //N flavour dependence
   int nf = resconst::NF;
+
+  //At LL there is no PDF evolution, PDFs are evaluated at the factorisation scale
+  if (opts.order == 0)
+    {
+      //XP[i] are moments of PDFs at the starting scale (factorisation scale)
+      complex <double> fx[11];
+      fx[0+MAXNF] = GLP[i];
+      fx[1+MAXNF] = UVP[i] + USP[i];
+      fx[-1+MAXNF] = USP[i];
+      fx[2+MAXNF] = DVP[i] + DSP[i];
+      fx[-2+MAXNF] = DSP[i];
+      fx[3+MAXNF] = SSP[i];
+      fx[-3+MAXNF] = SSP[i];
+      if (nf >= 4)
+	{
+	  fx[4+MAXNF] = CHP[i];
+	  fx[-4+MAXNF] = CHP[i];
+	}
+      else
+	{
+	  fx[4+MAXNF] = 0.;
+	  fx[-4+MAXNF] = 0.;
+	}
+      if (nf >= 5)
+	{
+	  fx[5+MAXNF] = BOP[i];
+	  fx[-5+MAXNF] = BOP[i];
+	}
+      else
+	{
+	  fx[5+MAXNF] = 0.;
+	  fx[-5+MAXNF] = 0.;
+	}
+
+      storemoments(i, fx);
+      return;
+    }
+
+  complex <double> alpq, ALPr;
 
   //Moments at the factorisation scale
   complex <double> UVI,	DVI, USI, DSI, SSI, GLI, CHI, BOI;
@@ -189,7 +227,8 @@ void pdfevol::evolution(int i) //from reno2
   //  complex <double> XL = 1./cx(alphasl_(fcx(scale2)));
   //  complex <double> XL1 = 1.- XL;
   //  complex <double> SALP = log(XL);
-
+  //--> SALP ~ log[alphas(Q)/alphas(b0/b)]
+  
   complex <double> S = SALP;
   //  cout << S << "  " << <<alpr <<  endl;
   
@@ -204,6 +243,7 @@ void pdfevol::evolution(int i) //from reno2
   //double alpqf = dyalphas_lhapdf_(sqrt(q2s))/4./M_PI; //alphas at the resummation scale
   //complex <double> alpq = alpqf * alphasl(scale2);              //alphas at the resummation scale times alphas at 1/b
   //complex <double> alpr= alpq * 1 *(opts.order-1);
+  //--> alpr = 0 at NLL; alpr = alphas(Q) * alphasl ~ alphas(b0/b) at NNLL
   
   UVN  = UVN  * ENS * (1.+  alpr * XL1 * RMIN);
   DVN  = DVN  * ENS * (1.+  alpr * XL1 * RMIN);
@@ -294,8 +334,9 @@ void pdfevol::calculate(int i)
 
   int hadron = 1;
   //double facscale = fabs(bscale);
-  double facscale = fabs(bstarscale);//better qbstar here? actually better qbstar * resint::mures / sqrt(pow(qbstar,2) + resint::mures2);
+  double facscale = fabs(bstarscale);//better qbstar here? actually better bstartilde = qbstar * resint::mures / sqrt(pow(qbstar,2) + resint::mures2);
   //double facscale = fabs(opts.muf);
+  facscale = fabs(pdfevol::bstartilde);
   fcomplex XN = fcx(mellinint::Np[i]);
   pdfmoments_(hadron,facscale,XN,uval,dval,usea,dsea,s,sbar,glu,charm,bot);
 

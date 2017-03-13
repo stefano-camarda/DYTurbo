@@ -7,19 +7,22 @@
 #include "coupling.h"
 #include "switch.h"
 
-#include "histo/HistoHandler.h"
-#include "mcfm/mcfm_interface.h"
-#include "resum/gaussrules.h"
-#include "resum/pdfevol.h"
-#include "resum/mellinint.h"
-#include "resum/mesq.h"
-#include "resum/rapint.h"
-#include "resum/resint.h"
-#include "resum/pegasus.h"
-#include "resum/anomalous.h"
-#include "resum/resconst.h"
-#include "vjfo/vjint.h"
-#include "vjfo/vjloint.h"
+#include "HistoHandler.h"
+#include "dyres_interface.h"
+#include "mcfm_interface.h"
+#include "gaussrules.h"
+#include "clenshawcurtisrules.h"
+#include "pdfevol.h"
+#include "mellinint.h"
+#include "mesq.h"
+#include "rapint.h"
+#include "resint.h"
+#include "pegasus.h"
+#include "anomalous.h"
+#include "resconst.h"
+#include "vjint.h"
+#include "vjloint.h"
+#include "abint.h"
 
 #include <cuba.h>
 #include <math.h>
@@ -50,16 +53,11 @@ void DYTurbo::Init( int argc, char * argv[]){
 void DYTurbo::init_params(){
     // init filling
     dofill_.doFill_ = 0;
-    //Initialise some DYRES settings
-    g_param_.g_param_ = opts.g_param;
-    nnlo_.order_ = opts.order;            //order (0=LO, 1=NLO, 2=NNLO)
-    opts_.fixedorder_  = opts.fixedorder; //fixed order/resummation switch
-    qtsub_.xqtcut_= opts.xqtcut;          //Cut on qt/Q
-    qtsub_.qtcut_= opts.qtcut;            //Cut on qt
-    //move here the flaq.eq.0 initialisation part of resumm() in main2 instead of using this initialisation flag
+    dyres::init();
     mcfm::init();
     iniflavreduce_(); //need to call this after nproc_.nproc_ is set
     coupling::initscales();
+    cc::init(); //nodes and weights of Clenshaw-Curtis quadrature rules
     //C++ resum
     //initialise all the C modules
     gr::init(); //nodes and weights of gaussian quadrature rules
@@ -76,6 +74,7 @@ void DYTurbo::init_params(){
     vjint::init();
     vjloint::init();
     //
+    abint::init(); //alfa beta integration initialisation
     switching::init(); //switching function initialisation
     rescinit_();
     // cuba init

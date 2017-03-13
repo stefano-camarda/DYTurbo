@@ -29,7 +29,7 @@
        IMPLICIT DOUBLE COMPLEX (A - Z)
        INTEGER NDIM, NFMIN, NFMAX, NUMAX, NUORD, KN, NF, IMODE, 
      1         KO, K1, K2, J1, J2
-       PARAMETER (NDIM = 144, NFMIN = 3, NFMAX = 6, NUMAX = 20)
+       PARAMETER (NDIM = 512, NFMIN = 3, NFMAX = 6, NUMAX = 20)
        DOUBLE PRECISION ASI, ASF, S, ASFO, ASIO
        DIMENSION ESG(2,2), ER(2), L(2,2), UF(2,2), UI(2,2), UM(2,2), 
      1           UM2(2,2)

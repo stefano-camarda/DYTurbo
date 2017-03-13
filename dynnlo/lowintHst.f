@@ -9,7 +9,7 @@ C     March 2015: Bug in muf dependence corrected
       include 'masses.f'
       include 'limits.f'
       include 'npart.f'
-      include 'vegas_common.f'
+      include 'mxdim.f'
       include 'sprods_com.f'
       include 'scale.f'
       include 'facscale.f'

@@ -2,6 +2,7 @@
 #define mesq_h
 
 #include "interface.h"
+#include "parton.h"
 #include "mellinint.h"
 
 //fortran interfaces for ctint
@@ -81,7 +82,7 @@ namespace mesq
   {return i2 + mellinint::mdim*(i1 + mellinint::mdim*(sign + 2*pch));}
 
   //Number of partonic channels
-  //extern int totpch;
+  extern int totpch;
   
   //function that returns the partonic channel index given f1 and f2 (not implemented yet)
   inline int pchindx(int f1, int f2)
@@ -132,6 +133,8 @@ namespace mesq
   inline int index(int f1, int f2, int i1, int i2, bool sign)
   {return i2 + mellinint::mdim*(i1 + mellinint::mdim*(sign + 2*(pchindx(f1,f2))));}
 
+  extern parton::pdgid *pid1;
+  extern parton::pdgid *pid2;
 }
 
 #endif

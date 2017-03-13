@@ -1,0 +1,213 @@
+# Process settings
+sroot        = 13e3           # center-of-mass energy
+ih1          = 1              # hadron 1
+ih2          = 1              # hadron 2
+nproc        = 3              # process: 1) W+; 2)W-; 3)Z(/gamma*)
+g_param      = 1.0            # non perturbative g parameter
+order        = 1              # order: 1) NLO(+NLL), 2) NNLO(+NNLL)
+fixedorder   = false          # resummation or fixed order switch
+
+#PDF settings
+LHAPDFset    = CT10nnlo       # PDF set from LHAPDF
+LHAPDFmember = 0              # PDF member
+PDFerrors    = false          # calculate PDF errors
+
+#QCD scale settings
+dynamicscale    = false       # if true, the renormalisation and factorisation scales are proportional to m_ll, if false they are proportional to m_V (V=W,Z)
+dynamicresscale = true        # if true, the resummation scale is proportional to m_ll, if false it is proportional to m_V (V=W,Z)
+kmuren          = 1.          # scale factor for the renormalisation scale
+kmufac          = 1.          # scale factor for the factorisation scale
+kmures          = 0.5         # scale factor for the resummation scale
+
+#Additional resummation scales
+C1 = 1.
+C3 = 1.
+
+#PDF matching scales
+kmuc          = 1.        # scale factor for the charm matching scale
+kmub          = 1.        # scale factor for the bottom matching scale
+kmut          = 1.        # scale factor for the top matching scale
+
+# EW parameters (Gmu scheme)
+ewscheme = 1
+Gf = 1.1663787e-5        # G-Fermi
+zmass = 91.1876          # Mass of the Z boson
+wmass = 80.385           # Mass of the W boson
+zwidth = 2.4950          # Width of the Z boson
+wwidth = 2.091           # Width of the W boson
+zerowidth = false        # zero-width approximation (not really implemented)
+
+xw = 0.23153                 # weak-mixing angle (not used in the Gmu scheme)
+aemmz = 7.7585538055706d-03  # alpha_EM(MZ) (not used in the Gmu scheme)
+
+# CKM matrix
+Vud = 0.97427
+Vus = 0.2253
+Vub = 0.00351
+Vcd = 0.2252
+Vcs = 0.97344
+Vcb = 0.0412
+
+# Z/gamma* coupling to quarks
+Zuu = 1.0
+Zdd = 1.0
+Zss = 1.0
+Zcc = 1.0
+Zbb = 1.0
+
+# include virtual photon in Z/gamma* production
+useGamma = true
+
+
+# Resummation parameters
+resumcpp  = true  # use C++ code for resummation
+ctcpp     = true  # use C++ code for the counter term
+qtcutoff = 0.02   # resummation cutoff
+blim = -1         # scale factor for blim
+
+# Strategy for the direct Mellin transform of PDFs at the factorization scale
+# Set to 1 to use the dyres approximation of PDFs and integration contour in the complex plane for the Mellin inversion
+# Set to 0 to use exact PDFs and straight line contour in the complex plane for the Mellin inversion
+opts_approxpdf = 0
+# number of intervals for integration of PDF moments (direct Mellin transform), relevant only for opts_approxpdf = 0
+opts_pdfintervals = 100
+
+# Type of PDF evolution
+#0: DYRES (backward evolution)
+#1: Pegasus as DYRES (backward evolution)
+#2: Mellin transform (forward evolution)
+#3: Pegasus VFN (forward evolution)
+#4: Pegasus VFN with alphas from DYRES (forward evolution)
+evolmode = 0
+
+#Settings for the Bessel integration
+bintaccuracy = 1.0e-4  #accuracy
+
+#Settings for the inverse Mellin integrations
+mellinintervals = 1 #number of intervals
+mellinrule = 64     #number of nodes
+zmax = 27.           #upper limit of the contour in the imaginary axis
+cpoint = 1.           #point of intersection of the contour with the real axis
+mellincores = 1     #number of parallel threads for the mellin integration
+mellin1d = false    #use 1d (y-integrated) or 2d (y-dependent) mellin inversion
+
+#number of intervals and gaussian rule for the rapidity integrations in the 2dim resummed piece
+yintervals = 1
+yrule = 20
+
+#number of intervals and gaussian rule for the qt integration in the 2dim counter term
+qtintervals = 1
+qtrule = 20
+
+#number of intervals and gaussian rule for the alfa beta scaled-PDF integration in the counter term and born fixed order term
+abintervals = 1
+abrule = 64
+
+#gaussian rule for the phi integration in the V+J LO term when makecuts is false
+vjphirule = 20
+
+# resummation damping
+dampk = 0.5
+dampdelta = 0.5
+dampmode = 1
+
+
+# qt-subtraction cut-off. Both conditions are applied, at least one between qtcut and xqtcut must be > 0
+xqtcut = 0.008  # cutoff on qt/m
+qtcut = 0.      # cutoff on qt
+
+# integration settings
+rseed        = 123456         # random seed for MC integration
+
+# type of integration for the resummed cross section
+intDimRes = 2 # can be 2 or 3 for quadrature, or 4 for vegas
+
+# type of integration for the born configuration
+intDimBorn = 2 # can be 2 for quadrature, 4 or 6 for vegas
+
+# type of integration for counter term
+intDimCT = 2 # can be 2 or 3 for quadrature, or 6, or 8 for vegas
+
+# type of integration for V+J finite order
+intDimVJ = 5 # can be 3 for quadrature, 5 for quadrature with cuts, or 7 for vegas
+
+# term switches
+doBORN = true
+doCT   = true
+doVJ   = true
+
+doVJREAL = true
+doVJVIRT = true
+
+# Cuba settings
+cubaverbosity     = 0   # Cuba info messsages, from 0 to 3
+cubacores         = 20  # parallelization ( 0 = turn off)
+cubanbatch        = 1000  # the batch size for sampling in Cuba vegas integration
+niterBORN         = 10   # only for 2d and 3d cuhre integration of resummed part
+niterCT           = 15   # only for 2d and 3d cuhre integration of counter term
+niterVJ           = 10       # only for 3d cuhre integration of V+J
+vegasncallsBORN   = 2500000    # only for res 4d vegas integration
+vegasncallsCT     = 10000000  # only for 6d and 8d vegas integration of the counter term
+vegasncallsVJLO   = 100000000 # only for lo 7d vegas integration
+vegasncallsVJREAL = 1e9 # only for real 10d vegas integration
+vegasncallsVJVIRT = 100000000  # only for virt 8d vegas integration
+
+# cubature settings
+pcubature = false
+pcubaccuracy = 1e-2
+
+# costh CS boundaries
+costhmin = -1
+costhmax = +1
+
+# total or with lepton cuts
+makecuts = true
+lptcut = 25
+lycut = 2.5
+l1ptcut = 0
+l1ycut = 1000
+l2ptcut = 0
+l2ycut = 1000
+mtcut = 0
+etmisscut = 0
+
+# integration types and settings for costh phi_lep phase space
+cubaint   = false   # integration with Cuba Suave
+trapezint = false  # trapezoidal rule for the phi_lep integration and semi-analytical for costh
+quadint   = true  # quadrature rule for the phi_lep integration and semi-analytical for costh
+
+suavepoints  = 1000000 # number of points for suave integration, newpoints is set to suavepoints/10;
+nphitrape    = 1000    # number of steps for trapezoidal rule of phi_lep integration
+phirule      = 4       # quadrature rule of phi_lep integration
+phiintervals = 20      # number of segments for quadrature rule of phi_lep integration
+ncstart      = 100     # starting sampling for the costh semi-analytical integration (common settings for the trapezoidal and quadrature rules)
+
+# qt-recoil prescriptions
+qtrec_naive = false
+qtrec_cs    = true
+qtrec_kt0   = false
+
+# debug settings
+timeprofile = false  # debug and time profile resummation integration
+verbose     = false  # debug and time profile costh phi_lep integration
+texttable = false # dump result table to text file (including pdf variations)
+
+# binning
+
+# normalise cross sections by bin width
+ptbinwidth = false
+ybinwidth = false
+
+# Force to loop over all bins even you have all Vegas integrands
+force_binsampling = false
+
+# pt, y, m bins
+# qt_bins = [ 0 2 4 6 8 10 12 14 16 18 22 26 30 34 38 42 46 50 54 60 70 80 100 150 200 300 800 ]
+qt_bins = [ 0.  2. 4.  6.  8.  10.  12.  14.  16.  18.  22.  26. 30.  34.  38.  42.  46.  50.  54.  60.  70.  80.  100.  150.  200. 300.  800. ]
+y_bins = [ -2.5 2.5 ]
+m_bins = [ 66 116. ]
+
+
+#   # z angular
+#   qt_bins = [ 0 2.5 5.0 8.0 11.4 14.9 18.5 22.0 25.5 29.0 32.6 36.4 40.4 44.9 50.2 56.4 63.9 73.4 85.4 105.0 132.0 173.0 253.0 600.0 ]
+#   y_bins = [ -5  5 ]

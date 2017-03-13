@@ -88,6 +88,17 @@ public:
   double kmuren;
   double kmufac;
 
+  double kpt_muren;
+  double kpt_mufac;
+
+  double kmjj_muren;
+  double kmjj_mufac;
+  
+  //scale factors for the matching scales
+  double kmuc;
+  double kmub;
+  double kmut;
+  
   //Additional resummation scales
   double C1,C3;
   
@@ -97,6 +108,7 @@ public:
   double blim;
   
   //EW parameters
+  int ewscheme;
   double Gf, zmass, wmass;
   double xw, aemmz;
   double zwidth, wwidth;
@@ -153,7 +165,7 @@ public:
   //term switches
   bool doBORN;
   bool doCT;
-  bool doVJ;
+  bool doVJLO;
   
   bool doVJREAL, doVJVIRT;
 
@@ -206,11 +218,30 @@ public:
   int mellinintervals;
   int mellinrule;
   double zmax;
+  double cpoint;
   int mellincores;
+  bool mellin1d;
   
-  //settings for rapidity integration
+  //settings for rapidity integration in 2D resummed piece
   int yintervals;
   int yrule;
+
+  //settings for qt integration in 2D counter term
+  int qtintervals;
+  int qtrule;
+
+  //settings for alfa beta scaled-PDF integration in counter term and born fixed order
+  int abintervals;
+  int abrule;
+
+  //settings for the phi integration in the V+J 5d LO term when makecuts is false
+  int vjphirule;
+
+  //settings for the z1, z2 integration in the V+J 3d NLO singular term
+  int zrule;
+
+  //settings for the x integration in the V+J 3d delta term
+  int xrule;
   
   //qt-recoil prescriptions
   bool qtrec_naive, qtrec_cs, qtrec_kt0;
@@ -227,6 +258,9 @@ public:
   //resummed code in C++
   bool resumcpp;
 
+  //counter term code in C++
+  bool ctcpp;
+  
   //dyres or pegasus PDF evolution
   int evolmode;
 
@@ -234,7 +268,10 @@ public:
   bool ptbinwidth, ybinwidth;
 
   // Force to loop over all bins even you have all Vegas integrands
-  bool force_binner_mode = false;
+  bool force_binsampling = false;
+
+  // Calculate helicity cross sections
+  int helicity;
 };
 
 class binning

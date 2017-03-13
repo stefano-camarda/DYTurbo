@@ -50,11 +50,22 @@ void hcoeff_calcb_(double& aass, double& logmuf2q2, double& loga, double& alpq, 
 
 void hcoefficients::allocate()
 {
+  if (opts.order == 0)
+    return;
+
   //allocate memory
+  //LL
   Hqqb = new complex <double> [mellinint::mdim*mellinint::mdim*2];
+
+  //NLL
   Hqg = new complex <double> [mellinint::mdim*2];
   Hqg_1 = new complex <double> [mellinint::mdim*mellinint::mdim*2];
   Hqg_2 = new complex <double> [mellinint::mdim*mellinint::mdim*2];
+
+  H1stqg = new complex <double> [mellinint::mdim*2];
+  H1stqqb = new complex <double> [mellinint::mdim*mellinint::mdim*2];
+
+  //NNLL
   Hqq_nnll = new complex <double> [mellinint::mdim*2];
   Hqq = new complex <double> [mellinint::mdim*mellinint::mdim*2];
   Hqq_1 = new complex <double> [mellinint::mdim*mellinint::mdim*2];
@@ -63,9 +74,6 @@ void hcoefficients::allocate()
   Hqqp_1 = new complex <double> [mellinint::mdim*mellinint::mdim*2];
   Hqqp_2 = new complex <double> [mellinint::mdim*mellinint::mdim*2];
   Hgg = new complex <double> [mellinint::mdim*mellinint::mdim*2];
-
-  H1stqg = new complex <double> [mellinint::mdim*2];
-  H1stqqb = new complex <double> [mellinint::mdim*mellinint::mdim*2];
 
   H2stqq = new complex <double> [mellinint::mdim*2];
   H2stqqp = new complex <double> [mellinint::mdim*2];
@@ -80,6 +88,9 @@ void hcoefficients::allocate()
 
 void hcoefficients::calc(double aass, complex <double> logmuf2q2, complex <double> logq2muf2, complex <double> logq2mur2, complex <double> loga)
 {
+  if (opts.order == 0)
+    return;
+
   // logs of scales are computed in resint
   //  complex <double> logmuf2q2 = resint::logmuf2q2;
   //  complex <double> logq2muf2 = resint::logq2muf2;
@@ -90,12 +101,31 @@ void hcoefficients::calc(double aass, complex <double> logmuf2q2, complex <doubl
   
   //All the following coefficients need to be calculated at each resumm iteration only with fixed factorization and renormalization scale (variable logmuf2q2) or
   //with fixed resummation scale (variable loga: a = q2/mu_res). Otherwise they can be computed at initialization
-  
-  if (opts.order == 1)    
+  if (opts.order == 0)
     for (int sign = mesq::positive; sign <= mesq::negative; sign++)
       for (int i1 = 0; i1 < mellinint::mdim; i1++)
 	for (int i2 = 0; i2 < mellinint::mdim; i2++)
 	  {
+	    Hqqb[index(i1,i2,sign)]=1.;
+	    // channels which do not contribute at LL
+	    Hqg_1[index(i1,i2,sign)] = 0.;
+	    Hqg_2[index(i1,i2,sign)] = 0.;
+	    Hgg[index(i1,i2,sign)] = 0.;//
+	    Hqq[index(i1,i2,sign)] = 0.;//              !  Q Q -> Qb Q  = Qb Qb -> Q Qb
+	    Hqq_1[index(i1,i2,sign)] = 0.;//
+	    Hqq_2[index(i1,i2,sign)] = 0.;//
+	    Hqqp_1[index(i1,i2,sign)] = 0.;//           !  qqp_1  means   Q' Q -> Qb Q  flavor in sigmaQQb determined by "second parton"
+	    Hqqp_2[index(i1,i2,sign)] = 0.;//		!  qqp_2  means   Q Q' -> Q Qb  flavor in sigmaQQb determined by "first parton" 
+	  }
+  
+  if (opts.order == 1)
+    for (int sign = mesq::positive; sign <= mesq::negative; sign++)
+      for (int i1 = 0; i1 < mellinint::mdim; i1++)
+	for (int i2 = 0; i2 < mellinint::mdim; i2++)
+	  {
+	    if (opts.mellin1d && (i1 != i2))
+	      continue;
+
 	    Hqqb[index(i1,i2,sign)]=1.+aass/2.*
 	      (H1q + anomalous::C1QQ[anomalous::index(i1,mesq::positive)] + anomalous::C1QQ[anomalous::index(i2,sign)])
 	      -aass/2.*(anomalous::gamma1qq[anomalous::index(i1,0)]+anomalous::gamma1qq[anomalous::index(i2,sign)])*(logmuf2q2+2.*loga)
@@ -144,6 +174,9 @@ void hcoefficients::calc(double aass, complex <double> logmuf2q2, complex <doubl
 	for (int i1 = 0; i1 < mellinint::mdim; i1++)
 	  for (int i2 = 0; i2 < mellinint::mdim; i2++)
 	    {
+	      if (opts.mellin1d && (i1 != i2))
+		continue;
+	      
 	      H1stqqb[index(i1,i2,sign)]=(H1q+anomalous::C1QQ[anomalous::index(i1,0)]+anomalous::C1QQ[anomalous::index(i2,sign)])
 		-(anomalous::gamma1qq[anomalous::index(i1,0)]+anomalous::gamma1qq[anomalous::index(i2,sign)])*(logmuf2q2+2.*loga)
 		+(-4.*loga)*(resconst::B1q+resconst::A1q*loga);
@@ -202,6 +235,9 @@ void hcoefficients::calc(double aass, complex <double> logmuf2q2, complex <doubl
 //b-dependent coefficients
 void hcoefficients::calcb(double aass, complex <double> logmuf2q2, complex <double> loga, complex <double> alpq, complex <double> aexp, complex <double> aexpb)
 {
+  if (opts.order == 0)
+    return;
+
   // logs of scales are computed in resint
   //  complex <double> logmuf2q2 = resint::logmuf2q2;
   //  complex <double> loga = resint::loga;
@@ -235,6 +271,9 @@ void hcoefficients::calcb(double aass, complex <double> logmuf2q2, complex <doub
 	for (int i1 = 0; i1 < mellinint::mdim; i1++)
 	  for (int i2 = 0; i2 < mellinint::mdim; i2++)
 	    {
+	      if (opts.mellin1d && (i1 != i2))
+		continue;
+
 	      Hqg_1[index(i1,i2,sign)]=Hqg[index(i1,0)];
 	      Hqg_2[index(i1,i2,sign)]=Hqg[index(i2,sign)];
 	    }
@@ -257,6 +296,9 @@ void hcoefficients::calcb(double aass, complex <double> logmuf2q2, complex <doub
 	for (int i1 = 0; i1 < mellinint::mdim; i1++)
 	  for (int i2 = 0; i2 < mellinint::mdim; i2++)
 	    {
+	      if (opts.mellin1d && (i1 != i2))
+		continue;
+	      
 	      int idx12 = index(i1,i2,sign);
 	      int idx1 = index(i1,mesq::positive);
 	      int idx2 = index(i2,sign);
@@ -295,6 +337,9 @@ void hcoefficients::calcb(double aass, complex <double> logmuf2q2, complex <doub
 }
 void hcoefficients::free()
 {
+  if (opts.order == 0)
+    return;
+
   delete[] Hqqb;
   delete[] Hqg;
   delete[] Hqg_1;

@@ -8,6 +8,7 @@
 
 #include "settings.h"
 #include "interface.h"
+#include "dyres_interface.h"
 #include "finintegr.h"
 #include "ctintegr.h"
 #include "phasespace.h"

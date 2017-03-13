@@ -8,11 +8,23 @@
 ## @author cuto <Jakub.Cuth@cern.ch>
 ## @date 2015-10-27
 
+# read job number
+jobseed=$1
+shift
+# read the rest
 arguments=$*
+
+# get random seed from config file (xargs will remove leading and trailing spaces)
+configseed=`grep rseed input.in | cut -d= -f2 | cut -d\# -f1 | xargs`
+jobseed=$((jobseed+configseed))
+# add jobseed
+arguments="${arguments} --seed ${jobseed}"
+
+
 
 # setup ENV
 export ATLAS_LOCAL_ROOT_BASE=/cvmfs/atlas.cern.ch/repo/ATLASLocalRootBase
-source ${ATLAS_LOCAL_ROOT_BASE}/user/atlasLocalSetup.sh
+source ${ATLAS_LOCAL_ROOT_BASE}/user/atlasLocalSetup.sh " "
 # ROOT
 lsetup "root 6.04.14-x86_64-slc6-gcc49-opt"
 

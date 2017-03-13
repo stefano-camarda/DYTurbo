@@ -4,8 +4,9 @@
 #include <stdexcept>
 
 #include "settings.h"
+#include "dyres_interface.h"
 #include "interface.h"
-#include "phasespace/phasespace.h"
+#include "phasespace.h"
 
 // CXX option parser: https://raw.githubusercontent.com/jarro2783/cxxopts/master/src/cxxopts.hpp
 #include "cxxopts.hpp"
@@ -40,9 +41,11 @@ void settings::parse_options(int argc, char* argv[]){
         ("r,seed"            , "Set random seed [integer]"                           , po::value<int>()    )
         ("s,pdfset"          , "Set PDF set [LHAPDF name]"                           , po::value<string>() )
         ("m,pdfvar"          , "Set PDF member [integer/all]"                        , po::value<string>() )
+        ("g,gparam"          , "Set Sudakov paramter"                                , po::value<double>() )
         ("qtbins"            , "Set equdistan binning for mass [N,lo,hi]"            , po::value<string>() )
         ("ybins"             , "Set equdistan binning for qt [N,lo,hi]"              , po::value<string>() )
         ("mbins"             , "Set equdistan binning for y [N,lo,hi]"               , po::value<string>() )
+
 
     ;
     // Parse
@@ -120,6 +123,11 @@ void settings::parse_options(int argc, char* argv[]){
         }
     }
 
+    //Gpar
+    if (args.count("gparam")) {
+        opts.g_param = args["gparam"].as<double>();
+    }
+
     // Collider
     if (args.count("collider")) {
         string val=args["collider"].as<string>();
@@ -138,15 +146,15 @@ void settings::parse_options(int argc, char* argv[]){
     // term
     if (args.count("term")) {
         // first turn off all terms
-        doBORN = doCT = doVJ = doVJREAL = doVJVIRT = false ;
+        doBORN = doCT = doVJLO = doVJREAL = doVJVIRT = false ;
         string val=args["term"].as<string>();
         ToUpper(val);
         for (auto piece : Tokenize(val)) {
-            if        ( piece == "BORN"    )   { doBORN=true;
-            } else if ( piece == "CT"     )    { doCT=true;
-            } else if ( piece == "VJ"      )   { doVJ=true;
-            } else if ( piece == "VJVIRT"    ) { doVJVIRT=true;
-	    } else if ( piece == "VJREAL"    ) { doVJREAL=true;
+            if        ( piece == "BORN"    ) { doBORN   =true;
+            } else if ( piece == "CT"      ) { doCT     =true;
+            } else if ( piece == "VJLO"    ) { doVJLO   =true;
+            } else if ( piece == "VJVIRT"  ) { doVJVIRT =true;
+	    } else if ( piece == "VJREAL"  ) { doVJREAL =true;
             } else {
                 throw QuitProgram("Unsupported value of term : "+piece);
             }
@@ -232,32 +240,39 @@ void addVariable(string name, Tvar& var, InputParser &in){
 void settings::readfromfile(const string fname){
     //read input settings from file
     InputParser in(fname);
-    sroot          = in.GetNumber ( "sroot"          ); //7e3
-    ih1            = in.GetNumber ( "ih1"            ); //1
-    ih2            = in.GetNumber ( "ih2"            ); //1              # ih1,        ih2
-    nproc          = in.GetNumber ( "nproc"          ); //3              # nproc
-    kmuren         = in.GetNumber ( "kmuren"            ); //91.1876e0
-    kmufac         = in.GetNumber ( "kmufac"            ); //91.1876e0      # mur,        muf
-    kmures         = in.GetNumber ( "kmures"            ); //91.1876e0      # mur,        muf
-    C1             = in.GetNumber ( "C1"            ); //91.1876e0      # mur,        muf
-    C3             = in.GetNumber ( "C3"            ); //91.1876e0      # mur,        muf
-    //    a_param        = in.GetNumber ( "a_param"        ); //2.0e0          # a_param
-    g_param        = in.GetNumber ( "g_param"        ); //1.0e0          # g_param
-    order          = in.GetNumber ( "order"          ); //1              # order
+    sroot          = in.GetNumber ( "sroot"      );
+    ih1            = in.GetNumber ( "ih1"        );
+    ih2            = in.GetNumber ( "ih2"        );
+    nproc          = in.GetNumber ( "nproc"      );
+    kmuren         = in.GetNumber ( "kmuren"     );
+    kmufac         = in.GetNumber ( "kmufac"     );
+    kmures         = in.GetNumber ( "kmures"     );
+    kpt_muren      = in.GetNumber ( "kpt_muren"  );
+    kpt_mufac      = in.GetNumber ( "kpt_mufac"  );
+    kmjj_muren     = in.GetNumber ( "kmjj_muren" );
+    kmjj_mufac     = in.GetNumber ( "kmjj_mufac" );
+    C1             = in.GetNumber ( "C1"         );
+    C3             = in.GetNumber ( "C3"         );
+    kmuc           = in.GetNumber ( "kmuc"       );
+    kmub           = in.GetNumber ( "kmub"       );
+    kmut           = in.GetNumber ( "kmut"       );
+    g_param        = in.GetNumber ( "g_param"        );
+    order          = in.GetNumber ( "order"          );
     zerowidth      = in.GetBool   ( "zerowidth"      ); //false          # zerowidth
     dynamicscale   = in.GetBool   ( "dynamicscale"   );
-    dynamicresscale= in.GetBool   ( "dynamicresscale"   );
-    rseed          = in.GetNumber ( "rseed"          ); //123456         # rseed
+    dynamicresscale= in.GetBool   ( "dynamicresscale");
+    rseed          = in.GetNumber ( "rseed"          );
     blim           = in.GetNumber ( "blim"           );
-    LHAPDFset      = in.GetString ( "LHAPDFset"      ); //CT10nlo.LHgrid
-    LHAPDFmember   = in.GetNumber ( "LHAPDFmember"   ); //0              # set,        member   (LHAPDFs)
-    Gf             = in.GetNumber ( "Gf"        );
+    LHAPDFset      = in.GetString ( "LHAPDFset"      );
+    LHAPDFmember   = in.GetNumber ( "LHAPDFmember"   );
+    ewscheme       = in.GetNumber ( "ewscheme"       );
+    Gf             = in.GetNumber ( "Gf"           );
     zmass          = in.GetNumber ( "zmass"        );
     wmass          = in.GetNumber ( "wmass"        );
-    xw             = in.GetNumber ( "xw"        );
+    xw             = in.GetNumber ( "xw"           );
     aemmz          = in.GetNumber ( "aemmz"        );
-    zwidth         = in.GetNumber ( "zwidth"        );
-    wwidth         = in.GetNumber ( "wwidth"        );
+    zwidth         = in.GetNumber ( "zwidth"       );
+    wwidth         = in.GetNumber ( "wwidth"       );
     Vud            = in.GetNumber ( "Vud"        );
     Vus            = in.GetNumber ( "Vus"        );
     Vub            = in.GetNumber ( "Vub"        );
@@ -282,7 +297,7 @@ void settings::readfromfile(const string fname){
     fixedorder         = in.GetBool   ( "fixedorder"      );
     doBORN             = in.GetBool   ( "doBORN"          );
     doCT               = in.GetBool   ( "doCT"            );
-    doVJ               = in.GetBool   ( "doVJ"            );
+    doVJLO             = in.GetBool   ( "doVJLO"          );
     doVJREAL           = in.GetBool   ( "doVJREAL"        );
     doVJVIRT           = in.GetBool   ( "doVJVIRT"        );
     cubaverbosity      = in.GetNumber ( "cubaverbosity"   );
@@ -300,14 +315,14 @@ void settings::readfromfile(const string fname){
     pcubaccuracy       = in.GetNumber ( "pcubaccuracy" );
     costhmin           = in.GetNumber ( "costhmin"     );
     costhmax           = in.GetNumber ( "costhmax"     );
-    makecuts           = in.GetBool   ( "makecuts"     ); //true
-    lptcut             = in.GetNumber ( "lptcut"          );
+    makecuts           = in.GetBool   ( "makecuts"     );
+    lptcut             = in.GetNumber ( "lptcut"         );
     lycut              = in.GetNumber ( "lycut"          );
     mtcut              = in.GetNumber ( "mtcut"          );
-    etmisscut          = in.GetNumber ( "etmisscut"          );
-    l1ptcut            = in.GetNumber ( "l1ptcut"          );
-    l1ycut             = in.GetNumber ( "l1ycut"          );
-    l2ptcut            = in.GetNumber ( "l2ptcut"          );
+    etmisscut          = in.GetNumber ( "etmisscut"      );
+    l1ptcut            = in.GetNumber ( "l1ptcut"        );
+    l1ycut             = in.GetNumber ( "l1ycut"         );
+    l2ptcut            = in.GetNumber ( "l2ptcut"        );
     l2ycut             = in.GetNumber ( "l2ycut"          );
     cubaint            = in.GetBool   ( "cubaint"         ); //true    # integration with     Cuba       Suave
     trapezint          = in.GetBool   ( "trapezint"       ); //false   # trapezoidal rule     for        the     phi_lep     integration     and         semi-analytical for         costh
@@ -324,6 +339,7 @@ void settings::readfromfile(const string fname){
     verbose            = in.GetBool   ( "verbose"         ); //false   # debug       and      time       profile costh       phi_lep         integration
     texttable          = in.GetBool   ( "texttable"       ); //
     resumcpp           = in.GetBool   ( "resumcpp"        );
+    ctcpp              = in.GetBool   ( "ctcpp"        );
     useGamma           = in.GetBool ( "useGamma" );//
     PDFerrors           = in.GetBool ( "PDFerrors" );//
     opts_.approxpdf_    = in.GetNumber ( "opts_approxpdf" ); //0
@@ -333,12 +349,22 @@ void settings::readfromfile(const string fname){
     mellinintervals    = in.GetNumber ( "mellinintervals" );
     mellinrule         = in.GetNumber ( "mellinrule" );
     zmax               = in.GetNumber ( "zmax" );
+    cpoint             = in.GetNumber ( "cpoint" );
     mellincores        = in.GetNumber ( "mellincores" );
+    mellin1d           = in.GetBool   ( "mellin1d" );
     yintervals         = in.GetNumber ( "yintervals" );
     yrule              = in.GetNumber ( "yrule" );
+    qtintervals        = in.GetNumber ( "qtintervals" );
+    qtrule             = in.GetNumber ( "qtrule" );
+    abintervals        = in.GetNumber ( "abintervals" );
+    abrule             = in.GetNumber ( "abrule" );
+    vjphirule          = in.GetNumber ( "vjphirule" );
+    zrule              = in.GetNumber ( "zrule" );
+    xrule              = in.GetNumber ( "xrule" );
     ptbinwidth         = in.GetBool ( "ptbinwidth" );
     ybinwidth          = in.GetBool ( "ybinwidth" );
-    force_binner_mode  = in.GetBool ( "force_binner_mode" );
+    force_binsampling  = in.GetBool ( "force_binsampling" );
+    helicity           = in.GetNumber ( "helicity" );
 
     return ;
 }
@@ -354,7 +380,7 @@ void settings::check_consitency(){
     if (order == 0)
       {
 	doCT = false;
-	doVJ = false;
+	doVJLO = false;
       }
     if (order != 2)
       {
@@ -375,10 +401,10 @@ void settings::check_consitency(){
 	exit (-1);
       }
 
-    if (dynamicscale == true && evolmode < 3)
+    if (dynamicscale == true && evolmode < 3 && order > 0 && fixedorder == false)
       {
 	//cannot use a dynamic muren, mufac, when the PDFs are converted from x-space to N-space at the factorisation scale
-	cout << "dynamicscale possible only with evolmode = 3 or 4" << endl;
+	cout << "At NLL and NNLL dynamicscale is possible only with evolmode = 3 or 4" << endl;
 	exit (-1);
       }
 
@@ -408,15 +434,14 @@ void settings::check_consitency(){
 
 
     // born term integration dimension
-    if (order > 0){
-        printf("Warning: quadratures not yet implemented in orders NLO and NNLO only for order=0.\n");
-        bornint2d      = false;
-        bornintvegas4d = false;
-        bornintvegas6d = true;
+    if (intDimBorn < 4 && intDimBorn>1){
+      bornint2d      = (intDimBorn == 2);
+      bornintvegas4d = false;
+      bornintvegas6d = false;
     } else {
-        bornint2d      = (intDimBorn == 2);
-        bornintvegas4d = (intDimBorn == 4);
-        bornintvegas6d = (intDimBorn >  5);
+      bornint2d      = false;
+      bornintvegas4d = (intDimBorn == 4);
+      bornintvegas6d = (intDimBorn >  5);
     }
 
 
@@ -439,8 +464,6 @@ void settings::check_consitency(){
         vjint3d = (intDimVJ == 3);
         vjint5d = (intDimVJ == 5);
         vjintvegas7d = false;
-	doVJREAL = false;
-	doVJVIRT = false;
       }
     else
       {
@@ -449,13 +472,31 @@ void settings::check_consitency(){
         vjintvegas7d = true;
       }
 
-    if (makecuts && vjint3d)
+    if (mellin1d && (!resint2d || makecuts))
       {
-	cout << "Required cuts on the final state leptons, enforce vegas integration for V+J fixed order cross section" << endl;
-	vjint3d = false;
-	vjintvegas7d = true;
+	cout << "mellin1d option is possible only for 2d integration of resummed piece, no cuts on leptons, and integration between [-ymin,ymax]" << endl;
+	exit (-1);
       }
 
+    if (mellinintervals*mellinrule >= 512)
+      {
+	cout << "mellinintervals*mellinrule  should be less than 512 " << endl;
+	exit(-1);
+      }
+    
+    if (makecuts && vjint3d)
+      {
+	cout << "Required cuts on the final state leptons, enforce 5D integration for V+J fixed order cross section" << endl;
+	vjint3d = false;
+        vjint5d = true;
+      }
+
+    if (makecuts && helicity >= 0)
+      {
+	cout << "Required cuts on the final state leptons, cannot calculate helicity cross sections, enforce helicity = -1" << endl;
+	helicity = -1;
+      }
+    
     if (opts_.approxpdf_ == 1)
       {
 	cout << "DYRES-style approximate PDF requested, enforce vegas integration for the resummed cross section" << endl;
@@ -518,10 +559,14 @@ void settings::dumpAll(){
 	dumpD ( "kmures       ",  kmures   ) ;
 	dumpD ( "C1       ",  C1   ) ;
 	dumpD ( "C3       ",  C3   ) ;
+        dumpD ( "kmuc      ",  kmuc                     ) ;
+        dumpD ( "kmub      ",  kmub                     ) ;
+	dumpD ( "kmut      ",  kmut   ) ;
         dumpD( "blim              ",  blim    ) ;
         dumpS("LHAPDFset          ", LHAPDFset           );
         dumpI("LHAPDFmember       ", LHAPDFmember        );
         dumpI("rseed              ", rseed               );
+	dumpI("ewscheme           ", ewscheme );
 	dumpD("Gf"                 , Gf);
 	dumpD("zmass"              , zmass);
 	dumpD("wmass"              , wmass   );
@@ -571,7 +616,7 @@ void settings::dumpAll(){
         dumpB("fixedorder        ", fixedorder          );
         dumpB("doBORN            ", doBORN              );
         dumpB("doCT              ", doCT                );
-        dumpB("doVJ              ", doVJ                );
+        dumpB("doVJLO            ", doVJLO              );
         dumpB("doVJREAL          ", doVJREAL            );
         dumpB("doVJVIRT          ", doVJVIRT            );
         dumpI("cubaverbosity     ", cubaverbosity       );
@@ -609,6 +654,7 @@ void settings::dumpAll(){
         dumpB("verbose           ", verbose             );
         dumpB("texttable         ", texttable           );
         dumpB("resumcpp          ", resumcpp            );
+	dumpB("ctcpp             ", ctcpp               );
         dumpI("approxpdf         ", opts_.approxpdf_    );
         dumpI("pdfintervals      ", opts_.pdfintervals_ );
         dumpI("evolmode          ", evolmode            );
@@ -616,12 +662,22 @@ void settings::dumpAll(){
         dumpI("mellinintervals   ", mellinintervals     );
         dumpI("mellinrule        ", mellinrule          );
         dumpD("zmax              ", zmax                );
+	dumpD("cpoint            ", cpoint              );
         dumpD("mellincores       ", mellincores         );
+	dumpB("mellin1d          ", mellin1d            );
         dumpI("yintervals        ", yintervals          );
         dumpI("yrule             ", yrule               );
+        dumpI("qtintervals       ", qtintervals          );
+        dumpI("qtrule            ", qtrule               );
+        dumpI("abintervals       ", abintervals          );
+        dumpI("abrule            ", abrule               );
+	dumpI("vjphirule         ", vjphirule            );
+	dumpI("zrule             ", zrule               );
+	dumpI("xrule             ", xrule               );
         dumpB("ptbinwidth        ", ptbinwidth          );
         dumpB("ybinwidth         ", ybinwidth           );
-        dumpB("force_binner_mode ", force_binner_mode   );
+        dumpB("force_binsampling ", force_binsampling   );
+        dumpI("helicity ",          helicity   );
     }
 
     if (print_masses){
@@ -645,12 +701,13 @@ void settings::dumpAll(){
         dumpD ( "mtausq    " , dymasses_   . mtausq_    );
         dumpD ( "mcsq      " , dymasses_   . mcsq_      );
         dumpD ( "mbsq      " , dymasses_   . mbsq_      );
+	/*
         dumpD ( "Gf_inp    " , ewinput_  . Gf_inp_    );
         dumpD ( "aemmz_inp " , ewinput_  . aemmz_inp_ );
         dumpD ( "xw_inp    " , ewinput_  . xw_inp_    );
         dumpD ( "wmass_inp " , ewinput_  . wmass_inp_ );
         dumpD ( "zmass_inp " , ewinput_  . zmass_inp_ );
-        dumpI ( "ewscheme  " , ewscheme_ . ewscheme_  );
+	*/
         dumpD ( "Vud       " , cabib_    . Vud_       );
         dumpD ( "Vus       " , cabib_    . Vus_       );
         dumpD ( "Vub       " , cabib_    . Vub_       );
@@ -891,7 +948,7 @@ void InputParser::trim(string & str){
 
 void InputParser::has_key(const string key){
     if ( data.count(key) == 0 ){
-        string msg = "No setting with name '";
+        string msg = "Missing setting with name '";
         msg += key;
         msg += "'";
         throw invalid_argument(msg.c_str());

@@ -11,8 +11,8 @@
  * @date 2016-09-07
  */
 
-#include "histo/Kinematics.h"
-#include "histo/KinematicCuts.h"
+#include "Kinematics.h"
+#include "KinematicCuts.h"
 #include "user_kinem.h"
 
 namespace Kinematics {

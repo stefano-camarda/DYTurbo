@@ -1,9 +1,8 @@
 #ifndef mcfm_interface_h
 #define mcfm_interface_h
 
-#include "src/fcomplex.h"
-
-#define MAXNF 5
+#include "parton.h"
+#include "fcomplex.h"
 
 extern "C"
 {
@@ -90,6 +89,7 @@ extern "C"
   } dymasses_;
 
   // ewinput
+  /*
   extern struct {
     double Gf_inp_;
     double aemmz_inp_;
@@ -97,11 +97,7 @@ extern "C"
     double wmass_inp_;
     double zmass_inp_;
   } ewinput_;
-
-  //EW scheme
-  extern struct {
-    int ewscheme_;
-  } ewscheme_;
+  */
 
   // ewcouple
   extern struct {
@@ -296,6 +292,7 @@ extern "C"
     double cutoff_;
   } cutoff_;
 }  
+#pragma omp threadprivate(scale_,facscale_,qcdcouple_)
 
 namespace mcfm
 {

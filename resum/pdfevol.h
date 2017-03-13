@@ -12,9 +12,12 @@ extern "C"
 
   //access dyres PDF in N-space
   extern struct {
-    fcomplex cfx1_[136][11];
-    fcomplex cfx2p_[136][11];
-    fcomplex cfx2m_[136][11];
+    //    fcomplex cfx1_[136][11];
+    //    fcomplex cfx2p_[136][11];
+    //    fcomplex cfx2m_[136][11];
+    fcomplex cfx1_[512][11];
+    fcomplex cfx2p_[512][11];
+    fcomplex cfx2m_[512][11];
   } creno_;
 }
 #pragma omp threadprivate(creno_)

@@ -11,8 +11,8 @@
  */
 
 #include "interface.h"
-#include "histo/KinematicCuts.h"
-#include "histo/HistoHandler.h"
+#include "KinematicCuts.h"
+#include "HistoHandler.h"
 
 
 #include <cassert>

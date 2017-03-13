@@ -34,7 +34,7 @@ OPTIONS :
     --term     [LO]         {RES,CT}               Monte-Carlo integration with order as above
                             {RES3D,CT3D}           Cubature 3D integration with order set above
                             {RES2D,CT2D}           Cubature 2D integration with order set above
-                            {REAL,VIRT,LO}         Real, virt and V+J LO  with MC
+                            {VJREAL,VJVIRT,VJLO}   Real, virt and V+J LO  with MC
                             {VV,FIXCT,FIXCT2D}     Fixed terms
     --seeds                 {int or range or list} MANDATORY: Set range (for batch) or Njobs (grid)
     --griduser              {GRID username}        MANDATORY IF GRID
@@ -92,11 +92,11 @@ parse_input(){
     #
     order=1
     #termlist="LO VV FIXCT"
-    termlist=LO
+    termlist=VJLO
     #order=2
-    #termlist="REAL VIRT FIXCT VV"
+    #termlist="VJREAL VJVIRT FIXCT VV"
     #
-    pdflist="CT10nnlo CT10nnlo68clProfiled"
+    pdflist="CT10nnlo"
     #pdfvarlist=all
     #pdfvarlist="0 1 2 3"
     pdfvarlist=0
@@ -176,6 +176,13 @@ parse_input(){
                 version=$2
                 shift
                 ;;
+            --gparam)
+                gparam=$2
+                shift
+                ;;
+            --yes)
+                YES=YES
+                ;;
             #  HELP and OTHER
             -h|--help)
                 help
@@ -222,8 +229,8 @@ submit_jobs_wmass(){
         [[ $seedlist =~ -|, ]]  || seedlist=1-$seedlist
     fi
     # check order term
-    [[ $order == 1 ]] && [[ $termlist =~ REAL|VIRT ]] && echo "WRONG ORDER $order TO TERM $termlist" && return 3
-    [[ $order == 2 ]] && [[ $termlist =~ LO        ]] && echo "WRONG ORDER $order TO TERM $termlist" && return 3 
+    [[ $order == 1 ]] && [[ $termlist =~ VJREAL|VJVIRT ]] && echo "WRONG ORDER $order TO TERM $termlist" && return 3
+    [[ $order == 2 ]] && [[ $termlist =~ VJLO          ]] && echo "WRONG ORDER $order TO TERM $termlist" && return 3 
     # loops, lopps and loops
     for pdfset in $pdflist 
     do
@@ -236,7 +243,9 @@ submit_jobs_wmass(){
         do
             for terms in $termlist
             do
-                for variation in $pdfvarlist
+                variations=$pdfvarlist
+                [[ $pdfvarlist =~ all ]] && variations=`get_PDF_Nmembers $pdfset`
+                for variation in $variations
                 do
                     qtregion=`echo o${order}t${terms} | sed "s/\.//g;s/ //g"`
                     prepare_script
@@ -254,7 +263,6 @@ dyturbo_project=`pwd -P`
 batch_script_dir=$dyturbo_project/scripts/batch_scripts
 queue=atlasshort
 batch_template=$dyturbo_project/scripts/run_on_batch_tmpl.sh
-collider=lhc7
 
 # this goes away
 in_files_dir=unset
@@ -292,7 +300,8 @@ prepare_script(){
     mkdir -p $result_dir
     #
     sample=${pdfset}_${variation}
-    job_name=${program}_${process}_${collider}_${sample}_${qtregion}_${random_seed}
+    [[ ! $gparam == "" ]] && sample=${sample}_g$gparam
+    job_name=${program}_${process}_${sample}_${qtregion}_${random_seed}
     sh_file=$batch_script_dir/$job_name.sh
     echo $job_name $seedlist
     #
@@ -300,12 +309,18 @@ prepare_script(){
     #[[ $process =~ z0 ]] && mbins=10,66,116
     # arguments
     arguments="input.in --proc $process --mbins $mbins --pdfset $pdfset --pdfvar $variation --order $order --term $terms"
+    [[ ! $gparam == "" ]] && arguments="$arguments --gparam $gparam"
     [[ $target =~ lxbatch|mogon|localrun ]] && arguments=$arguments" --seed \$LSB_JOBINDEX "
     # make sure we make some noise on grid
-    [[ $target =~ mogon ]] && arguments=$arguments" --verbose "
+    #[[ $target =~ mogon ]] && arguments=$arguments" --verbose "
     # job queue
     nprocessors=1
+    cubacores=`grep cubacores $infile | cut -d\# -f1 | cut -d= -f2 | xargs`
+    [[ $cubacores != "" ]] && [ $cubacores -gt 0 ] && nprocessors=$cubacores
+    #walltime=100:00
+    #queue=atlaslong
     walltime=5:00
+    queue=atlasshort
     if [[ $program =~ dyres ]] || [[ $variation =~ all ]] || [[ $terms =~ [23]P ]]
     then
         walltime=20:00
@@ -449,6 +464,8 @@ finalize_grid_submission(){
         mkdir -p $griddir/LHAPDF
         # copy exec
         $CP bin/* $griddir/bin/
+        $CP chaplin-*/lib/*.so* $griddir/lib/
+        $CP chaplin-*/lib/*.la  $griddir/lib/
         $CP lib/*.so* $griddir/lib/
         $CP lib/*.la  $griddir/lib/
         $CP `lhapdf-config --libdir`/libLHAPDF.so $griddir/lib/
@@ -473,13 +490,27 @@ finalize_grid_submission(){
     #echo "Go to GRID folder 'cd GRID' edit subm.sh (change user name, role) and run it './subm.sh' "
 }
 
+get_PDF_Nmembers(){
+    pdfname=$1
+    pdfdir=lhapdf6/share/LHAPDF
+    [ -d $pdfdir  ] || pdfdir=`lhapdf-config --datadir`
+    nmem=`ls -1 $pdfdir/$pdfname/$pdfname*.dat | wc -l`
+    nmem=$((nmem-1))
+    seq 0 $nmem
+}
+
 DRYRUN=echo 
 ask_submit(){
-    read -p "Do you want to submit jobs ? " -n 1 -r
-    echo    # (optional) move to a new line
-    if [[ $REPLY =~ ^[Yy]$ ]]
+    if [[ ! $YES == "" ]]
     then
-        DRYRUN=
+            DRYRUN=
+    else
+        read -p "Do you want to submit jobs ? " -n 1 -r
+        echo    # (optional) move to a new line
+        if [[ $REPLY =~ ^[Yy]$ ]]
+        then
+            DRYRUN=
+        fi
     fi
 }
 

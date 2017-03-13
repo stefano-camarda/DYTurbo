@@ -11,6 +11,8 @@
  * @date 2016-08-26
  */
 
+#include "settings.h"
+
 #include <set>
 #include <cmath>
 
@@ -48,6 +50,7 @@ namespace Kinematics {
     extern double p4[4];
     //! The weight of event. This will be used to fill histograms.
     extern double event_weight;
+#pragma omp threadprivate(p3,p4,event_weight)
 
     //! Flag whether using Integration mode.
     extern bool isIntegratorMode;
@@ -98,10 +101,10 @@ namespace Kinematics {
                 /// If available in Integration mode return middle point.
                 if(isIntegratorMode) return IsIntegrableObservable() ? middlePoint() : 666.;
                 /// If not calculated yet it runs \ref calc.
-                if (!isCalculated){
+                if (!isCalculated || (opts.cubacores > 0 && opts.pcubature)){ //--> ugly patch: openmpi parallelisation does not work with flags
                     value=calc();
                     isCalculated=true;
-                }
+		}
                 return value;
             }
 
@@ -135,6 +138,7 @@ namespace Kinematics {
 
             //! Flag saying if its needed to recalculate. Is static => every instance will be updated with first call.
             static bool isCalculated;
+#pragma omp threadprivate(value,isCalculated)
     };
 
     template<class T> double Observable<T>::value = -999.;
