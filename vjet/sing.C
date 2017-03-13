@@ -77,8 +77,8 @@ double vjint::sing()
 
       if (opts.kmjj_muren != 0 || opts.kmjj_mufac != 0)
 	{
-	  scales2_.xmur_ = sqrt(pow(opts.kmuren*opts.rmass,2) + pow(opts.kpt_muren*phasespace::qt,2) + pow(opts.kpt_muren*sqrt(s2),2));
-	  scales2_.xmuf_ = sqrt(pow(opts.kmufac*opts.rmass,2) + pow(opts.kpt_mufac*phasespace::qt,2) + pow(opts.kpt_mufac*sqrt(s2),2));
+	  scales2_.xmur_ = sqrt(pow(opts.kmuren*opts.rmass,2) + pow(opts.kpt_muren*phasespace::qt,2) + pow(opts.kmjj_muren*sqrt(s2),2));
+	  scales2_.xmuf_ = sqrt(pow(opts.kmufac*opts.rmass,2) + pow(opts.kpt_mufac*phasespace::qt,2) + pow(opts.kmjj_mufac*sqrt(s2),2));
 	  scales2_.xmur2_ = pow(scales2_.xmur_,2);
 	  scales2_.xmuf2_ = pow(scales2_.xmuf_,2);
 	  asnew_.as_ = LHAPDF::alphasPDF(scales2_.xmur_)/M_PI;
@@ -189,14 +189,15 @@ double vjint::sing()
 
 	  if (opts.kmjj_muren != 0 || opts.kmjj_mufac != 0)
 	    {
-	      scales2_.xmur_ = sqrt(pow(opts.kmuren*opts.rmass,2) + pow(opts.kpt_muren*phasespace::qt,2) + pow(opts.kpt_muren*sqrt(s2),2));
-	      scales2_.xmuf_ = sqrt(pow(opts.kmufac*opts.rmass,2) + pow(opts.kpt_mufac*phasespace::qt,2) + pow(opts.kpt_mufac*sqrt(s2),2));
+	      scales2_.xmur_ = sqrt(pow(opts.kmuren*opts.rmass,2) + pow(opts.kpt_muren*phasespace::qt,2) + pow(opts.kmjj_muren*sqrt(s2),2));
+	      scales2_.xmuf_ = sqrt(pow(opts.kmufac*opts.rmass,2) + pow(opts.kpt_mufac*phasespace::qt,2) + pow(opts.kmjj_mufac*sqrt(s2),2));
 	      scales2_.xmur2_ = pow(scales2_.xmur_,2);
 	      scales2_.xmuf2_ = pow(scales2_.xmuf_,2);
 	      asnew_.as_ = LHAPDF::alphasPDF(scales2_.xmur_)/M_PI;
 	      asp_.asp_ = asnew_.as_*M_PI;
 	      fac = gevfb/1000.*coupling::aemmz*asp_.asp_*resconst::Cf;
 	      utils_scales_(q2);
+	      //printf ("s2 %f mur %f alphas %f\n", s2, scales2_.xmur_, asnew_.as_);
 	    }
 
 	  luminosity::pdf1(x1);
