@@ -15,7 +15,7 @@
 namespace HistoHandler {
 
     // specialization
-    template<class TX> class Histo1D : public HistoImp<H1> {
+    template<class TX> class Histo1D : public HistWrapper<H1> {
         private:
             TX varX;
 
@@ -48,7 +48,7 @@ namespace HistoHandler {
             }
     };
 
-    template<class TX, class TY> class Histo2D : public HistoImp<H2> {
+    template<class TX, class TY> class Histo2D : public HistWrapper<H2> {
         public :
             Histo2D(const String &bin_name_X, const String &bin_name_Y){
                 // general init
@@ -84,7 +84,7 @@ namespace HistoHandler {
             TY varY;
     };
 
-    template<class TX, class TY, class TZ> class Histo3D : public HistoImp<H3> {
+    template<class TX, class TY, class TZ> class Histo3D : public HistWrapper<H3> {
         public :
             Histo3D(const String &bin_name_X, const String &bin_name_Y, const String &bin_name_Z){
                 // general init
@@ -122,7 +122,7 @@ namespace HistoHandler {
     };
 
 
-    template<class TX, class TY> class HistoProfile : public HistoImp<P1> {
+    template<class TX, class TY> class HistoProfile : public HistWrapper<P1> {
         public :
             HistoProfile(const String &bin_name_X,const String &bin_name_Y){
                 // general init
@@ -163,7 +163,48 @@ namespace HistoHandler {
             TY varY;
     };
 
-    template<class TX, class TY, class TZ> class HistoProfile2D : public HistoImp<P2> {
+    template<class TX, class TY> class HistoWeighted : public HistWrapper<H1> {
+        public :
+            HistoWeighted(const String &bin_name_X,const String &bin_name_Y){
+                // general init
+                Init(bin_name_X);
+                // change name, add axis title
+                title+=";";
+                title+=bin_name_Y;
+                name=bin_name_Y+"_"+name;
+                // create new
+                current = New<H1>(this);
+                isIntegrationSafe = varX.IsIntegrableObservable() && varY.IsIntegrableObservable();
+            }
+
+            virtual void FillEvent(){
+                current->Fill(varX(),varY()*Kinematics::event_weight);
+            };
+
+            virtual void FillDipole(){
+                // Since the Ai moments are actualy weighted mean we need to do
+                // weighted mean per each dipole point. We started by storing
+                // the profiled value times weight.
+                current_point.valX = varX();
+                current_point.valY = varY()*Kinematics::event_weight;
+                AddPoint();
+            };
+
+            virtual int CurrentBin(){
+                return current->FindBin(varX());
+            };
+
+            void FillPoint(DipPt point){
+                if (point.weight!=0) current->Fill(point.valX, point.valY);
+            }
+
+
+        private:
+            TX varX;
+            TY varY;
+    };
+
+    template<class TX, class TY, class TZ> class HistoProfile2D : public HistWrapper<P2> {
         public :
             HistoProfile2D(const String &bin_name_X,const String &bin_name_Y, const String &bin_name_Z){
                 // general init

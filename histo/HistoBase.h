@@ -35,7 +35,7 @@ namespace HistoHandler {
     };
 
 
-    // Object class: covering common functionality
+    // Object class: covering common functionality for all histograms, profiles, 1D, 2D ...
     template <class TH>
     class HistoObject : virtual public HistoBase {
         protected :

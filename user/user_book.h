@@ -19,6 +19,10 @@ namespace HistoHandler {
         Add( new Histo1D <BigAnswer>("biganswer") );
         // For example you can change binning and set different name
         Add( new Histo1D <BosPT>("qt") )->SetName("user_qt");
+
+        //  histograms filled by specific weight: fill(variable1, event_weight*variable2)
+        //  hack create nominator of ai profiles :
+        Add( new HistoWeighted <BosPT,A1>("qt","a1") )->SetName("wgt_a1_qt");
     }
 }
 
