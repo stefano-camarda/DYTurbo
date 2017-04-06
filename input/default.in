@@ -35,17 +35,26 @@ kmub          = 1.        # scale factor for the bottom matching scale
 kmut          = 1.        # scale factor for the top matching scale
 
 
-# EW parameters (Gmu scheme)
+# EW parameters and scheme
+
+# ewscheme choices:
+#0: Input: alpha(mZ), zmass, xw;        derived:wmass, Gf
+#1: Input: Gf, wmass, zmass;            derived: xw, alpha(mZ)    [Gmu scheme]
+#2: Input: Gf, alpha(mZ), xw, Gf;       derived: wmass, zmass
+#3: All masses and couplings determined by inputs
 ewscheme = 1
+
 Gf = 1.1663787e-5        # G-Fermi
 zmass = 91.1876          # Mass of the Z boson
 wmass = 80.385           # Mass of the W boson
-zwidth = 2.4950          # Width of the Z boson
-wwidth = 2.091           # Width of the W boson
-zerowidth = false        # zero-width approximation (not really implemented)
 
 xw = 0.23153                 # weak-mixing angle (not used in the Gmu scheme)
 aemmz = 7.7585538055706e-03  # alpha_EM(MZ) (not used in the Gmu scheme)
+
+#W and Z total widths used in the propagators are determined by the following inputs
+zwidth = 2.4950          # Width of the Z boson
+wwidth = 2.091           # Width of the W boson
+zerowidth = false        # zero-width approximation (not really implemented)
 
 # CKM matrix
 Vud = 0.97427
