@@ -1,11 +1,11 @@
 #!/bin/bash
 
 thiswd=`pwd`
-#AS_LIST="0.1150 0.1170 0.1173 0.1177 0.1180 0.1183 0.1187 0.1182 0.1194 0.1200"
-#GPAR_LIST="0.2 0.5 0.8 1.0 1.1 1.2 1.5 2.0"
+AS_LIST="0.1150 0.1170 0.1173 0.1177 0.1180 0.1183 0.1187 0.1182 0.1194 0.1200"
+GPAR_LIST="0.2 0.5 0.8 1.0 1.1 1.2 1.5 2.0"
 #
-AS_LIST="0.1171 0.1172"
-GPAR_LIST="1.1 0.88"
+#AS_LIST="0.1171 0.1172"
+#GPAR_LIST="1.1 0.88"
 
 rmmkcd(){
     rm -rf $1 && mkdir -p $1 && cd $1 || exit 2
@@ -48,18 +48,25 @@ submit_as_scan(){
         pdflist=$pdflist"CT10nnlo_AS_$asstring,"
     done
     pdflist=${pdflist%,}
-    basecommand="./scripts/submit_jobs.sh --mogon --infile input/alphaS_scan.in --proc z0 --mbins 1,66,116 --pdfset $pdflist --seeds 2 --yes"
+    basecommand="./scripts/submit_jobs.sh --mogon --infile input/alphaS_scan.in --proc z0 --mbins 1,66,116 --pdfset $pdflist --seeds 3 --yes"
     # finite order
-    $DRY_RUN $basecommand --order 1 --term CT
-    $DRY_RUN $basecommand --order 2 --term CT
-    $DRY_RUN $basecommand --order 1 --term VJLO
-    #$DRY_RUN $basecommand --order 2 --term VJVIRT
-    #$DRY_RUN $basecommand --order 2 --term VJREAL
-    #
-    for gparam in $GPAR_LIST
+    for scl in 0.5 1 2
     do
-        $DRY_RUN $basecommand --order 1 --term BORN --gparam $gparam
-        $DRY_RUN $basecommand --order 2 --term BORN --gparam $gparam
+        for kmu in kmuren kmufac
+        do
+            [[ $kmu == kmuren ]] && [[ $scl == 1 ]] && continue
+            $DRY_RUN $basecommand --$kmu $scl --order 1 --term CT
+            $DRY_RUN $basecommand --$kmu $scl --order 1 --term VJLO
+            #$DRY_RUN $basecommand --order 2 --term CT
+            #$DRY_RUN $basecommand --order 2 --term VJVIRT
+            #$DRY_RUN $basecommand --order 2 --term VJREAL
+            #
+            for gparam in $GPAR_LIST
+            do
+                $DRY_RUN $basecommand --$kmu $scl --order 1 --term BORN --gparam $gparam
+                $DRY_RUN $basecommand --$kmu $scl --order 2 --term BORN --gparam $gparam
+            done
+        done
     done
 }
 
@@ -141,10 +148,10 @@ DRY_RUN=
 main(){
     #prepare_lhapdf
     #run_alphaS_scan
-    #submit_as_scan
+    submit_as_scan
     #check_as_scan
     #merge_as_scan
-    copy_to_accuracy
+    #copy_to_accuracy
 }
 
 main

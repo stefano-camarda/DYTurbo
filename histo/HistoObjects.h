@@ -18,9 +18,9 @@
 
 #ifdef USEROOT
 #include "HistoObjectsROOT.h"
-#define HistoImp HistoROOT
+#define HistWrapper HistoROOT
 namespace HistoHandler{
-    // c++11: template<typename T> using HistoImp = HistoROOT<T>;
+    // c++11: template<typename T> using HistWrapper = HistoROOT<T>;
     typedef TH1D        H1;
     typedef TH2D        H2;
     typedef TH3D        H3;
@@ -30,7 +30,7 @@ namespace HistoHandler{
 
 #else // STL
 #include "HistoObjectsSTL.h"
-#define HistoImp HistoSTL
+#define HistWrapper HistoSTL
 namespace HistoHandler{
     typedef TurboHist::H1 H1;
     typedef TurboHist::H2 H2;
