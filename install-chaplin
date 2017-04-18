@@ -8,7 +8,7 @@ chaplinsrc=`ls $chaplin/src`
 if [[ x$chaplinsrc == x ]];
 then
     rm -r chaplin-${version}
-    wget https://chaplin.hepforge.org/code/chaplin-${version}.tar
+    wget https://chaplin.hepforge.org/code/chaplin-${version}.tar --no-check-certificate
     tar -xf chaplin-${version}.tar
     rm chaplin-${version}.tar
 fi
