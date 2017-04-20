@@ -171,8 +171,8 @@ namespace Kinematics{
         ALpCh ch2;
         ALpPT pt2;
         double calc(){
-            if (ch1()) return pt1();
-            if (ch2()) return pt2();
+            if (!ch1()) return pt1();
+            if (!ch2()) return pt2();
             return 0;
         }
     };
