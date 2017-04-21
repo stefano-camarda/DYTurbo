@@ -63,7 +63,7 @@ void vjloint::calc(const double x[5], double f[2])
   if (opts.dynamicscale)
     {
       muf = phasespace::m*opts.kmufac;
-      mur = phasespace::m*opts.kmures;
+      mur = phasespace::m*opts.kmuren;
       double mur2 = mur*mur;
       scaleset_(mur2);
     }
@@ -400,6 +400,10 @@ void vjloint::calc(const double x[5], double f[2])
 
 double vjloint::calcvegas(const double x[7])
 {
+  clock_t begin_time, end_time;
+
+  begin_time = clock();
+
   //generate phase space as m, qt, y, costh, phi_lep, x2
   //Jacobian of the change of variables from the unitary hypercube x[6] to the m, qt, y, costh, phi_lep, x2 boundaries
   double jac = 1.;
@@ -427,7 +431,7 @@ double vjloint::calcvegas(const double x[7])
   if (opts.dynamicscale)
     {
       muf = phasespace::m*opts.kmufac;
-      mur = phasespace::m*opts.kmures;
+      mur = phasespace::m*opts.kmuren;
       double mur2 = mur*mur;
       scaleset_(mur2);
     }
@@ -520,6 +524,13 @@ double vjloint::calcvegas(const double x[7])
       //      cout << "xmsq in vjloint is nan" << endl;
       return 0.;
     }
+
+  end_time = clock();
+  if (opts.timeprofile)
+    cout << setw (3) << "m" << setw(10) << phasespace::m << setw(4) << "qt" << setw(10) <<  phasespace::qt
+	 << setw(8) << "result" << setw(10) << xmsq*jac
+      	 << setw(10) << "tot time" << setw(10) << float( end_time - begin_time ) /  CLOCKS_PER_SEC
+	 << endl;
   
   return xmsq*jac;
 }
