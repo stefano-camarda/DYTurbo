@@ -1,4 +1,3 @@
-
 #include "dyturbo.h"
 #include "banner.h"
 #include "settings.h"
@@ -12,6 +11,7 @@
 #include "mcfm_interface.h"
 #include "gaussrules.h"
 #include "clenshawcurtisrules.h"
+//#include "chebyshev.h"
 #include "pdfevol.h"
 #include "mellinint.h"
 #include "mesq.h"
@@ -58,6 +58,7 @@ void DYTurbo::init_params(){
     iniflavreduce_(); //need to call this after nproc_.nproc_ is set
     coupling::initscales();
     cc::init(); //nodes and weights of Clenshaw-Curtis quadrature rules
+    //cheb::init(); //Chebyshev nodes for Lagrange interpolation
     //C++ resum
     //initialise all the C modules
     gr::init(); //nodes and weights of gaussian quadrature rules
@@ -65,10 +66,13 @@ void DYTurbo::init_params(){
     mesq::init(); //EW couplings for born amplitudes
     rapint::init(); //allocate memory for the rapidity quadrature
     resconst::init(); //calculate beta, A and B coefficients
-    anomalous::init(); //calculate anomalous dimensions, C1, C2 and gamma coefficients
-    pdfevol::init(); //transform the PDF from x- to N-space at the factorisation scale
-    pegasus::init(); //initialise Pegasus QCD and transform the PDF from x- to N-space at the starting scale
-    resint::init(); //initialise dequad integration for the bessel integral
+    if (!opts.fixedorder)
+      {
+	anomalous::init(); //calculate anomalous dimensions, C1, C2 and gamma coefficients
+	pdfevol::init(); //transform the PDF from x- to N-space at the factorisation scale
+	pegasus::init(); //initialise Pegasus QCD and transform the PDF from x- to N-space at the starting scale
+	resint::init(); //initialise dequad integration for the bessel integral
+      }
     //end C++ resum
     //V+j fixed order initialisation
     vjint::init();
