@@ -45,6 +45,7 @@ GRID*
 run_dir
 run_dir2
 share
+*.tar.gz
 
 ar-lib
 config.guess
