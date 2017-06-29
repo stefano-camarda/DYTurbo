@@ -154,13 +154,13 @@ void settings::parse_options(int argc, char* argv[]){
     // term
     if (args.count("term")) {
         // first turn off all terms
-        doBORN = doCT = doVJLO = doVJREAL = doVJVIRT = false ;
+        doBORN = doCT = doVJ = doVJREAL = doVJVIRT = false ;
         string val=args["term"].as<string>();
         ToUpper(val);
         for (auto piece : Tokenize(val)) {
             if        ( piece == "BORN"    ) { doBORN   =true;
             } else if ( piece == "CT"      ) { doCT     =true;
-            } else if ( piece == "VJLO"    ) { doVJLO   =true;
+            } else if ( piece == "VJ"      ) { doVJ     =true;
             } else if ( piece == "VJVIRT"  ) { doVJVIRT =true;
 	    } else if ( piece == "VJREAL"  ) { doVJREAL =true;
             } else {
@@ -305,7 +305,7 @@ void settings::readfromfile(const string fname){
     fixedorder         = in.GetBool   ( "fixedorder"      );
     doBORN             = in.GetBool   ( "doBORN"          );
     doCT               = in.GetBool   ( "doCT"            );
-    doVJLO             = in.GetBool   ( "doVJLO"          );
+    doVJ               = in.GetBool   ( "doVJ"            );
     doVJREAL           = in.GetBool   ( "doVJREAL"        );
     doVJVIRT           = in.GetBool   ( "doVJVIRT"        );
     cubaverbosity      = in.GetNumber ( "cubaverbosity"   );
@@ -388,7 +388,7 @@ void settings::check_consitency(){
     if (order == 0)
       {
 	doCT = false;
-	doVJLO = false;
+	doVJ = false;
       }
     if (order != 2)
       {
@@ -624,7 +624,7 @@ void settings::dumpAll(){
         dumpB("fixedorder        ", fixedorder          );
         dumpB("doBORN            ", doBORN              );
         dumpB("doCT              ", doCT                );
-        dumpB("doVJLO            ", doVJLO              );
+        dumpB("doVJ              ", doVJ                );
         dumpB("doVJREAL          ", doVJREAL            );
         dumpB("doVJVIRT          ", doVJVIRT            );
         dumpI("cubaverbosity     ", cubaverbosity       );
