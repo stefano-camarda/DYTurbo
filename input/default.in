@@ -182,16 +182,31 @@ pcubaccuracy = 1e-3
 costhmin = -1
 costhmax = +1
 
-# total or with lepton cuts
+# Lepton cuts
+# Total cross section or with lepton cuts
 makecuts = false
+
+# charged leptons cuts
 lptcut = 20
 lycut = 2.5
-l1ptcut = 0
-l1ycut = 1000
-l2ptcut = 0
-l2ycut = 1000
-mtcut = 0
+
+# leptons and antileptons cuts
+lepptcut = 0
+lepycut = 1000
+alpptcut = 0
+alpycut = 1000
+
+#absolute-rapidity-ordered leptons (central and forward)
+lcptcut = 25
+lcymin = 0
+lcymax = 2.5
+lfptcut = 25
+lfymin = 2.5
+lfymax = 4.2
+
+# cuts on neutrino and transverse mass
 etmisscut = 0
+mtcut = 0
 
 # integration types and settings for costh phi_lep phase space
 cubaint   = false   # integration with Cuba Suave
@@ -213,6 +228,7 @@ qtrec_kt0   = false
 timeprofile = false  # debug and time profile resummation integration
 verbose     = false  # debug and time profile costh phi_lep integration
 texttable   = true # dump result table to text file (including pdf variations)
+unicode     = false # use unicode characters for the table formatting
 
 # binning
 
