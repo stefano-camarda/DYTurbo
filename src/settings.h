@@ -194,9 +194,10 @@ public:
   
   //lepton fiducial cuts
   bool makecuts;
-  double lptcut, lycut;
+  double lptcut, lycut; //charged leptons
   double mtcut, etmisscut;
-  double l1ptcut, l1ycut, l2ptcut, l2ycut;
+  double lepptcut, lepycut, alpptcut, alpycut; //lepton and antilepton
+  double lcptcut, lcymin, lcymax, lfptcut, lfymin, lfymax; //lc and lf are absolute-rapidity-ordered leptons
 
   //integration types and settings for costh phi_lep phase space
   bool cubaint;
