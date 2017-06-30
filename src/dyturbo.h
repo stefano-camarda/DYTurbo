@@ -79,6 +79,7 @@ namespace DYTurbo {
     void Terminate();
 
     namespace PrintTable {
+        void Init();
         void Settings();
         void Header() ;
         void Bounds(bool use_full_bound=false) ;
