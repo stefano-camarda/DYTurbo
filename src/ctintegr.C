@@ -87,13 +87,21 @@ integrand_t ctintegrandMC(const int &ndim, const double x[], const int &ncomp, d
   else
     {
       //Generate the boson transverse momentum between the integration boundaries
-      phasespace::calcexpy();
-      double cosh2y=pow((phasespace::exppy+phasespace::expmy)*0.5,2);
-      double kinqtlim = 1e10; //There should not be any kinematic limit on qt, since the counterterm is evaluated with born level kinematic
+      double qtcut = max(opts.qtcut,opts.xqtcut*phasespace::m);
+      double qtmn = max(qtcut, phasespace::qtmin);
+      //phasespace::calcexpy();
+      //double cosh2y=pow((phasespace::exppy+phasespace::expmy)*0.5,2);
       //double kinqtlim = sqrt(max(0.,pow(pow(opts.sroot,2)+phasespace::m2,2)/(4*pow(opts.sroot,2)*cosh2y)-phasespace::m2)); //introduced max to avoid neqative argument of sqrt when y=ymax
       //double kinqtlim = sqrt(max(0.,pow(pow(opts.sroot,2)+phasespace::m2,2)/(4*pow(opts.sroot,2))-phasespace::m2)); //introduced max to avoid negative argument of sqrt when y=ymax
+      double kinqtlim = 1e10; //There should not be any kinematic limit on qt, since the counterterm is evaluated with born level kinematic
       double switchqtlim = switching::qtlimit(phasespace::m);
       double qtlim = min(kinqtlim, switchqtlim);
+      double qtmx = min(qtlim, phasespace::qtmax);
+      if (qtmn >= qtmx)
+	{
+	  f[0] = 0.;
+	  return 0;
+	}
       status = phasespace::gen_qt(x[2], jac, qtlim, true);
       if (!status)
 	{
@@ -235,13 +243,21 @@ integrand_t ctintegrand3d(const int &ndim, const double x[], const int &ncomp, d
   else
     {
       //Generate the boson transverse momentum between the integration boundaries
-      phasespace::calcexpy();
-      double cosh2y=pow((phasespace::exppy+phasespace::expmy)*0.5,2);
-      double kinqtlim = 1e10; //There should not be any kinematic limit on qt, since the counterterm is evaluated with born level kinematic
+      double qtcut = max(opts.qtcut,opts.xqtcut*phasespace::m);
+      double qtmn = max(qtcut, phasespace::qtmin);
+      //phasespace::calcexpy();
+      //double cosh2y=pow((phasespace::exppy+phasespace::expmy)*0.5,2);
       //double kinqtlim = sqrt(max(0.,pow(pow(opts.sroot,2)+phasespace::m2,2)/(4*pow(opts.sroot,2)*cosh2y)-phasespace::m2)); //introduced max to avoid neqative argument of sqrt when y=ymax
       //double kinqtlim = sqrt(max(0.,pow(pow(opts.sroot,2)+phasespace::m2,2)/(4*pow(opts.sroot,2))-phasespace::m2)); //introduced max to avoid negative argument of sqrt when y=ymax
+      double kinqtlim = 1e10; //There should not be any kinematic limit on qt, since the counterterm is evaluated with born level kinematic
       double switchqtlim = switching::qtlimit(phasespace::m);
       double qtlim = min(kinqtlim, switchqtlim);
+      double qtmx = min(qtlim, phasespace::qtmax);
+      if (qtmn >= qtmx)
+	{
+	  f[0] = 0.;
+	  return 0;
+	}
       status = phasespace::gen_qt(x[2], jac, qtlim, true);
       if (!status)
 	{
@@ -274,14 +290,12 @@ integrand_t ctintegrand3d(const int &ndim, const double x[], const int &ncomp, d
   int mode = 1;
   dofill_.doFill_ = 1;
 
-  /*
   //No need to check the switching, since the phase space is generated up to the switching qt limit
-  if (swtch < switching::cutoff*switching::tolerance)
-  {
-    f[0]=0.;
-    return 0;
-  }
-  */
+  //if (swtch < switching::cutoff*switching::tolerance)
+  //{
+  //  f[0]=0.;
+  //  return 0;
+  //}
 
   //evaluate the fixed order expansion of the resummed cross section
   if (opts.ctcpp)
@@ -388,11 +402,11 @@ integrand_t ctintegrand2d(const int &ndim, const double x[], const int &ncomp, d
     {
       //Generate the boson transverse momentum between the integration boundaries
       qtmn = max(qtcut, phasespace::qtmin);
-      phasespace::calcexpy();
-      double cosh2y=pow((phasespace::exppy+phasespace::expmy)*0.5,2);
-      double kinqtlim = 1e10; //There should not be any kinematic limit on qt, since the counterterm is evaluated with born level kinematic
+      //phasespace::calcexpy();
+      //double cosh2y=pow((phasespace::exppy+phasespace::expmy)*0.5,2);
       //double kinqtlim = sqrt(max(0.,pow(pow(opts.sroot,2)+phasespace::m2,2)/(4*pow(opts.sroot,2)*cosh2y)-phasespace::m2)); //introduced max to avoid neqative argument of sqrt when y=ymax
       //double kinqtlim = sqrt(max(0.,pow(pow(opts.sroot,2)+phasespace::m2,2)/(4*pow(opts.sroot,2))-phasespace::m2)); //introduced max to avoid negative argument of sqrt when y=ymax
+      double kinqtlim = 1e10; //There should not be any kinematic limit on qt, since the counterterm is evaluated with born level kinematic
       double switchqtlim = switching::qtlimit(phasespace::m);
       double qtlim = min(kinqtlim, switchqtlim);
       qtmx = min(qtlim, phasespace::qtmax);
