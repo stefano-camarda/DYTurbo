@@ -34,9 +34,10 @@ void ctint::calc(double costh, double m, double qt, double y, int mode, double f
   double exppy = exp(y);
   double expmy = 1./exppy;
   double tau = sqrt(m2/pow(opts.sroot,2));
-  
-  mesq::setpropagators(m);
 
+  //amplitudes are set in qtint::calc(), no need to calculate them
+  /*
+  mesq::setpropagators(m);
   double cthmom0, cthmom1, cthmom2;
   if (mode == 0)
     {
@@ -55,6 +56,7 @@ void ctint::calc(double costh, double m, double qt, double y, int mode, double f
 
   mesq::setmesq(cthmom0, cthmom1, cthmom2);
   //cout << cthmom0 << "  " << cthmom1 << "  " << cthmom2 << endl;
+  */
 
   //calculate Bjorken x1 x2
   double x1 = tau*exppy;
@@ -443,16 +445,15 @@ void ctint::calc(double costh, double m, double qt, double y, int mode, double f
       if (isnan_ofast(xmsq))
 	cout << m << " " << y << " " << costh << "  " << xmsq << endl;
   
-      //switching
-      double swtch;
-      if (mode == 0 || mode == 1)
-	swtch = switching::swtch(qt, m);
-      else if (mode == 2)
-	// qt integration already performed
-	swtch=1.;
+      //switching --> switching function is inside qtint, do not apply
+      //double swtch;
+      //if (mode == 0 || mode == 1)
+      //  swtch = switching::swtch(qt, m);
+      //else if (mode == 2)
+      //  swtch=1.; // qt integration already performed
 
       //if (swtch < 0.01) return 0.;// do not apply this cut to avoid discontinuities. Instead the phase space is limited to qt and m switching limits
-      xmsq = xmsq*swtch;
+      xmsq = xmsq;//*swtch; //switching function is inside qtint
 
       f[npdf] = xmsq;
     } //end loop on pdf
