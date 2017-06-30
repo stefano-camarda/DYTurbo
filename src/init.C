@@ -33,6 +33,7 @@ void DYTurbo::Init( int argc, char * argv[]){
     coupling::SMparameters(); //initialisation of unused MCFM parameters
     // parsing options from input file
     opts.parse_options(argc,argv);
+    PrintTable::Init();
     init_params();
     HistoHandler::Init();
     /***********************************/
