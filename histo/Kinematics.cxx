@@ -57,8 +57,14 @@ namespace Kinematics{
             ALpAbsRap  absy2;
             BosMT      mt;
             MET        etmiss;
+	    //absolute-rapidity-ordered leptons
+  	    LepCPT lcpt;
+	    LepFPT lfpt;
+	    LepCAbsEta lcy;
+	    LepFAbsEta lfy;
             // define here cut decision
             bool operator()(){
+	      
                 if (opts.lptcut > 0){
                     if (ch1()!=0 && pt1() < opts.lptcut) return SkipEvent;
                     if (ch2()!=0 && pt2() < opts.lptcut) return SkipEvent;
@@ -69,11 +75,16 @@ namespace Kinematics{
                 }
                 if (opts.mtcut     >0   && mt()     < opts.mtcut     ) return SkipEvent;
                 if (opts.etmisscut >0   && etmiss() < opts.etmisscut ) return SkipEvent;
-                if (opts.l1ptcut   >0   && pt1()    < opts.l1ptcut   ) return SkipEvent;
-                if (opts.l2ptcut   >0   && pt2()    < opts.l2ptcut   ) return SkipEvent;
-                if (opts.l1ycut    <100 && absy1()  > opts.l1ycut    ) return SkipEvent;
-                if (opts.l2ycut    <100 && absy2()  > opts.l2ycut    ) return SkipEvent;
-                return KeepEvent;
+                if (opts.lepptcut   >0   && pt1()    < opts.lepptcut   ) return SkipEvent;
+                if (opts.alpptcut   >0   && pt2()    < opts.alpptcut   ) return SkipEvent;
+                if (opts.lepycut    <100 && absy1()  > opts.lepycut    ) return SkipEvent;
+                if (opts.alpycut    <100 && absy2()  > opts.alpycut    ) return SkipEvent;
+                if ((opts.lcymax    <100 || opts.lcymin    > 0) && (lcy()  > opts.lcymax || lcy()  < opts.lcymin)    ) return SkipEvent;
+                if ((opts.lfymax    <100 || opts.lfymin    > 0) && (lfy()  > opts.lfymax || lfy()  < opts.lfymin)    ) return SkipEvent;
+                if (opts.lcptcut   >0   && lcpt()    < opts.lcptcut   ) return SkipEvent;
+                if (opts.lfptcut   >0   && lfpt()    < opts.lfptcut   ) return SkipEvent;
+
+		return KeepEvent;
             }
         } standard_cuts;
 
