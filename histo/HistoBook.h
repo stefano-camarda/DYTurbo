@@ -19,6 +19,8 @@ namespace HistoHandler{
     void Book() {
         DeleteHists();
         Add( new Histo1D        <BosPT           > ("qt"          ) );
+	Add( new Histo1D        <BosY            > ("y"          ) );
+	Add( new Histo1D        <BosM            > ("m"          ) );
         Add( new Histo2D        <BosPT,BosY      > ("qt","y"      ) );
         Add( new Histo3D        <BosPT,BosY,BosM > ("qt","y","m"  ) );
         Add( new HistoProfile   <BosPT,A1        > ("qt","a1"     ) );
