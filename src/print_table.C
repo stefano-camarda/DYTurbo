@@ -33,37 +33,63 @@ using std::endl;
 namespace DYTurbo {
     namespace PrintTable {
 
-        SStream textfile("empty", std::ios_base::ate);
+      SStream textfile("empty", std::ios_base::ate);
 
-        bool useUnicode=false;
-        String c_hor = useUnicode ? "\u2501" : "-";
-        String c_ver = useUnicode ? "\u2503" : "|";
-        String c_ul = useUnicode  ? "\u250f" : "/";
-        String c_uc = useUnicode  ? "\u2530" : "-";
-        String c_ur = useUnicode  ? "\u2513" : "\\";
-        String c_ml = useUnicode  ? "\u2523" : "|";
-        String c_mc = useUnicode  ? "\u254b" : "+";
-        String c_mr = useUnicode  ? "\u252b" : "|";
-        String c_bl = useUnicode  ? "\u2517" : "\\";
-        String c_bc = useUnicode  ? "\u253b" : "-";
-        String c_br = useUnicode  ? "\u251b" : "/";
+      bool useUnicode;
+      String c_hor;
+      String c_ver;
+      String c_ul;
+      String c_uc;
+      String c_ur;
+      String c_ml;
+      String c_mc;
+      String c_mr;
+      String c_bl;
+      String c_bc;
+      String c_br;
 
-        size_t eoc=2; //!< end of cell length
-        size_t wb=5; //!< bound length
-        size_t wr=8; //!< result length
-        size_t we=6; //!< error length
-        size_t wx=(useUnicode ? 7 : 5 ); //!< exponent length
-        size_t wt=6; //!< time length
-        size_t bound_width = 2*wb+3;
-        size_t time_width = 2+ // parenthesis
-            wt+
-            1; // parenthesis
-        size_t term_width = wr + // result
-            (useUnicode ? 3:4) + // plus minus
-            we + // error
-            wx + // exponenent
-            time_width;
+      size_t eoc;
+      size_t wb;
+      size_t wr;
+      size_t we;
+      size_t wx;
+      size_t wt;
+      size_t bound_width;
+      size_t time_width;
+      size_t term_width;
 
+      void Init()
+      {
+	useUnicode=opts.unicode;
+	c_hor = useUnicode ? "\u2501" : "-";
+	c_ver = useUnicode ? "\u2503" : "|";
+	c_ul = useUnicode  ? "\u250f" : "/";
+	c_uc = useUnicode  ? "\u2530" : "-";
+	c_ur = useUnicode  ? "\u2513" : "\\";
+	c_ml = useUnicode  ? "\u2523" : "|";
+	c_mc = useUnicode  ? "\u254b" : "+";
+	c_mr = useUnicode  ? "\u252b" : "|";
+	c_bl = useUnicode  ? "\u2517" : "\\";
+	c_bc = useUnicode  ? "\u253b" : "-";
+	c_br = useUnicode  ? "\u251b" : "/";
+
+	eoc=2; //!< end of cell length
+	wb=5; //!< bound length
+	wr=8; //!< result length
+	we=6; //!< error length
+	wx=(useUnicode ? 7 : 5 ); //!< exponent length
+	wt=6; //!< time length
+	bound_width = 2*wb+3;
+	time_width = 2+ // parenthesis
+	  wt+
+	  1; // parenthesis
+	term_width = wr + // result
+	  (useUnicode ? 3:4) + // plus minus
+	  we + // error
+	  wx + // exponenent
+	  time_width;
+      }
+      
         inline void EndOfCell()  { std::cout << " " << c_ver << flush; }
         inline void BeginOfRow() { std::cout << c_ver << flush; }
         inline void EndOfRow()   { cout << endl;          }
@@ -273,6 +299,8 @@ namespace DYTurbo {
 
         // Rounding to significant digits
         void round_by_error(double &value, double &error, int nsd = 2 /*number of significant digits*/){
+	  if (value == 0 && error == 0)
+	    return;
             // Decimal order where we round
             //   If no error, take significant digits of value
             int decimal_round = ceil(log10(fabs(  (error==0) ? value : error ))) - nsd;
@@ -290,7 +318,11 @@ namespace DYTurbo {
             // round by significant digits in error
             round_by_error(value,error);
             // Highest decimal part from value
-            int decimal_max = floor(log10(fabs(  (value==0 ? error : value )  )));
+            int decimal_max;
+	    if (value == 0 && error == 0)
+	      decimal_max = 0;
+	    else
+	      decimal_max = floor(log10(fabs(  (value==0 ? error : value )  )));
             //
             VecStr result;
             result.push_back(engineering_base(value,decimal_max,false)); // value
@@ -496,10 +528,10 @@ namespace DYTurbo {
             if (opts.makecuts){
                 cout << Col4("" , "pt_l > "         , opts.lptcut  , "" );
                 cout << Col4("" , "|eta_l| < "      , opts.lycut   , "" );
-                cout << Col4("" , "pt_l(1st) > "    , opts.l1ptcut , "" );
-                cout << Col4("" , "|eta_l|(1st) < " , opts.l1ycut  , "" );
-                cout << Col4("" , "pt_l(2nd) > "    , opts.l1ptcut , "" );
-                cout << Col4("" , "|eta_l|(2nd) < " , opts.l1ycut  , "" );
+                cout << Col4("" , "pt_lep > "       , opts.lepptcut , "" );
+                cout << Col4("" , "|eta_lep| < "    , opts.lepycut  , "" );
+                cout << Col4("" , "pt_alep > "      , opts.alpptcut , "" );
+                cout << Col4("" , "|eta_alep| < "   , opts.alpycut  , "" );
                 cout << Col4("" , "user cuts: "     , "true"       , "" );
             }
         }
