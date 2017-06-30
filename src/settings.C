@@ -352,6 +352,7 @@ void settings::readfromfile(const string fname){
     timeprofile        = in.GetBool   ( "timeprofile"     ); //false   # debug       and      time       profile resummation integration
     verbose            = in.GetBool   ( "verbose"         ); //false   # debug       and      time       profile costh       phi_lep         integration
     texttable          = in.GetBool   ( "texttable"       ); //
+    unicode            = in.GetBool   ( "unicode"         ); //
     resumcpp           = in.GetBool   ( "resumcpp"        );
     ctcpp              = in.GetBool   ( "ctcpp"        );
     useGamma           = in.GetBool ( "useGamma" );//

@@ -256,6 +256,8 @@ public:
   bool verbose;
   bool texttable;
 
+  bool unicode;
+  
   //resummed code in C++
   bool resumcpp;
 
