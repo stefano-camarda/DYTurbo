@@ -57,6 +57,62 @@ namespace Kinematics{
     /// @}
 
 
+    /// @defgroup absolute-rapidity-ordered lepton related observables.
+    /// @{
+    NEWKIN( LepCPT  )
+    {
+      LepAbsEta eta1;
+      ALpAbsEta eta2;
+      LepPT pt1;
+      ALpPT pt2;
+      double calc()
+      {
+	if(eta2() > eta1())
+	  return pt1();
+	else
+	  return pt2();
+      }
+    };
+    NEWKIN( LepCAbsEta  )
+    {
+      LepAbsEta eta1;
+      ALpAbsEta eta2;
+      double calc()
+      {
+	if(eta2() > eta1())
+	  return eta1();
+	else
+	  return eta2();
+      }
+    };
+    NEWKIN( LepFPT  )
+    {
+      LepAbsEta eta1;
+      ALpAbsEta eta2;
+      LepPT pt1;
+      ALpPT pt2;
+      double calc()
+      {
+	if(eta1() > eta2())
+	  return pt1();
+	else
+	  return pt2();
+      }
+    };
+    NEWKIN( LepFAbsEta  )
+    {
+      LepAbsEta eta1;
+      ALpAbsEta eta2;
+      double calc()
+      {
+	if(eta1() > eta2())
+	  return eta1();
+	else
+	  return eta2();
+      }
+    };
+    
+    
     /// @defgroup BosVar Vector boson related observables.
     /// @{
     NEWKIN( BosPX ) { double calc(){ return p3[0]+p4[0]; } };
