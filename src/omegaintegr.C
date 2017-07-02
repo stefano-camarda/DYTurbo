@@ -549,7 +549,6 @@ void omegaintegr::cthmoments(double &cthmom0, double &cthmom1, double &cthmom2)
   if (opts.quadint)
     {
       begin_time = clock();
-      double phi = 0.;
       double phi1 = 0.;
       double phi2 = 2. * M_PI;
       double hphi=(phi2-phi1)/opts.phiintervals;
