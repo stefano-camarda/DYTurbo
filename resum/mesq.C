@@ -74,8 +74,8 @@ pdgid p1Z[10] = {U,Ub,D,Db,S,Sb,C,Cb,B,Bb};
 pdgid p2Z[10] = {Ub,U,Db,D,Sb,S,Cb,C,Bb,B};
 pdgid p1Wp[12] = {U,Db,U,Sb,U,Bb,C,Sb,C,Db,C,Bb};
 pdgid p2Wp[12] = {Db,U,Sb,U,Bb,U,Sb,C,Db,C,Bb,C};
-pdgid p1Wm[12] = {Ub,D,Ub,S,Ub,B,Cb,S,Cb,D,Cb,B};
-pdgid p2Wm[12] = {D,Ub,S,Ub,B,Ub,S,Cb,D,Cb,B,Cb};
+pdgid p1Wm[12] = {D,Ub,S,Ub,B,Ub,S,Cb,D,Cb,B,Cb};
+pdgid p2Wm[12] = {Ub,D,Ub,S,Ub,B,Cb,S,Cb,D,Cb,B};
 
 //fortran interface
 void setmesq_expy_(int& mode, double& m, double& costh, double& y)
