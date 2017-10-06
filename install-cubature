@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-version=1.0.2
+version=1.0.3
 cubature=cubature-${version}
 cubaturesrc=`ls cubature/pcubature.c`
 
@@ -10,9 +10,9 @@ if [[ x$cubaturesrc == x ]];
 then
     mkdir -p cubature
     cd cubature
-    wget http://ab-initio.mit.edu/cubature/cubature-${version}.tgz
-    tar -xzf cubature-${version}.tgz
-    rm cubature-${version}.tgz
+    wget https://github.com/stevengj/cubature/archive/v${version}.tar.gz
+    tar -xzf v${version}.tar.gz
+    rm v${version}.tar.gz
     mv cubature-${version}/* .
-    rmdir cubature-${version}
+    rm -rf cubature-${version}
 fi

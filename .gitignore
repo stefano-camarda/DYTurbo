@@ -63,7 +63,8 @@ gmock/
 
 cubature/COPYING
 cubature/ChangeLog
-cubature/NEWS
-cubature/README
+cubature/NEWS.md
+cubature/README.md
+cubature/doc
 cubature/*.h
 cubature/*.c
