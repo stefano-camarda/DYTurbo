@@ -360,7 +360,6 @@ void vjloint::calc(const double x[5], double f[2])
   //cout << muf << "  " << x1 << "  " << x2 << endl;
   // calculate PDFs
   double fx1[2*MAXNF+1],fx2[2*MAXNF+1];
-  muf = opts.rmass*opts.kmufac;
   fdist_(opts.ih1,phasespace::x1,muf,fx1);
   fdist_(opts.ih2,phasespace::x2,muf,fx2);
 
@@ -433,7 +432,7 @@ double vjloint::calcvegas(const double x[7])
       muf = phasespace::m*opts.kmufac;
       mur = phasespace::m*opts.kmuren;
       double mur2 = mur*mur;
-      scaleset_(mur2);
+      scaleset_(mur2); //set renormalization and factorization scales, and calculate ason2pi and ason4pi
     }
 
   //Generate the boson 4-momentum
@@ -502,7 +501,6 @@ double vjloint::calcvegas(const double x[7])
   //cout << muf << "  " << x1 << "  " << x2 << endl;
   // calculate PDFs
   double fx1[2*MAXNF+1],fx2[2*MAXNF+1];
-  muf = opts.rmass*opts.kmufac;
   fdist_(opts.ih1,phasespace::x1,muf,fx1);
   fdist_(opts.ih2,phasespace::x2,muf,fx2);
 
