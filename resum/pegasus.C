@@ -587,6 +587,12 @@ void pegasus::evolve()
   int nhigh = mellinint::mdim;
   int IPSTD = 1;
   fcomplex PDFN[13][ndim];
+
+  //Do not allow the PDFs to evolve below q0 --> freeze the PDF evolution at q0
+  //cout << " alphas " << ASF << " qbstar " << pdfevol::qbstar << endl;
+  //if (real(ASF) > real(ASI) || fabs(pdfevol::qbstar) < sqrt(asinp_.m20_))
+  //ASF = ASI;
+
   if (ivfns == 0)
     dyevnffn_(PDFN, ASI, ASF, NF, nlow, nhigh, IPSTD); //modified ffn evolution with charm and bottom at the starting scale
   else
