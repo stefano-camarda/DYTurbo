@@ -71,6 +71,8 @@ void ctint::calc(double costh, double m, double qt, double y, int mode, double f
     {
       muf = m*opts.kmufac;
       mur = m*opts.kmuren;
+      double mur2 = mur*mur;
+      scaleset_(mur2); //set renormalization and factorization scales, and calculate ason2pi and ason4pi
     }
   else
     {
