@@ -183,6 +183,8 @@ void loint::lint(double costh, double m, double y, int mode, double f[2])
     {
       muf = m*opts.kmufac;
       mur = m*opts.kmuren;
+      double mur2 = mur*mur;
+      scaleset_(mur2);
     }
   else
     {
