@@ -131,6 +131,7 @@ void fdist_(int& ih, double& x, double& xmu, double fx[2*MAXNF+1])
     for (int i = -MAXNF; i <= MAXNF; i++)
       fx[MAXNF+i]=fPDF[6-i]/x;
 
+  //switch off flavours
   //fx[MAXNF-5]=0.;
   //fx[MAXNF-4]=0.;
   //fx[MAXNF-3]=0.;
@@ -142,4 +143,21 @@ void fdist_(int& ih, double& x, double& xmu, double fx[2*MAXNF+1])
   //fx[MAXNF+3]=0.;
   //fx[MAXNF+4]=0.;
   //fx[MAXNF+5]=0.;
+
+  //impose positivity
+  //fx[MAXNF-5]=max(0.,fx[MAXNF-5]);
+  //fx[MAXNF-4]=max(0.,fx[MAXNF-4]);
+  //fx[MAXNF-3]=max(0.,fx[MAXNF-3]);
+  //fx[MAXNF-2]=max(0.,fx[MAXNF-2]);
+  //fx[MAXNF-1]=max(0.,fx[MAXNF-1]);
+  //fx[MAXNF+0]=max(0.,fx[MAXNF+0]);
+  //fx[MAXNF+1]=max(0.,fx[MAXNF+1]);
+  //fx[MAXNF+2]=max(0.,fx[MAXNF+2]);
+  //fx[MAXNF+3]=max(0.,fx[MAXNF+3]);
+  //fx[MAXNF+4]=max(0.,fx[MAXNF+4]);
+  //fx[MAXNF+5]=max(0.,fx[MAXNF+5]);
+
+  //make u = d and ubar = dbar
+  //fx[MAXNF-1]=fx[MAXNF-2];
+  //fx[MAXNF+1]=fx[MAXNF+2];
 }
