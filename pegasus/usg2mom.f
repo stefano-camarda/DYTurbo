@@ -27,8 +27,8 @@
        INTEGER NMAX, NDIM, NFMIN, NFMAX, NFLOW, NFHIGH, KN, NF, 
      1         J1, J2, K1, K2
        PARAMETER (NDIM = 512, NFMIN = 3, NFMAX = 6)
-       DOUBLE PRECISION BETA0 (NFMIN:NFMAX), BETA1 (NFMIN:NFMAX),
-     1                  BETA2 (NFMIN:NFMAX), BETA3 (NFMIN:NFMAX)
+       DOUBLE PRECISION PGBETA0 (NFMIN:NFMAX), PGBETA1 (NFMIN:NFMAX),
+     1                  PGBETA2 (NFMIN:NFMAX), PGBETA3 (NFMIN:NFMAX)
        DOUBLE PRECISION B0, B1, B0I, B10, B20, LOGFR
        DIMENSION  R0(2,2), R1(2,2), RT2(2,2), EM(2,2), EP(2,2)
 *
@@ -38,7 +38,7 @@
 *
        COMMON / NNUSED / NMAX
        COMMON / NFUSED / NFLOW, NFHIGH
-       COMMON / BETA   / BETA0, BETA1, BETA2, BETA3
+       COMMON / PGBETA   / PGBETA0, PGBETA1, PGBETA2, PGBETA3
        COMMON / PSG0   / P0SG (NDIM, NFMIN:NFMAX, 2, 2)
        COMMON / PSG1   / P1SG (NDIM, NFMIN:NFMAX, 2, 2)
        COMMON / PSG2   / P2SG (NDIM, NFMIN:NFMAX, 2, 2)
@@ -62,11 +62,11 @@
 * ..Some abbreviations and the elements of R1 and R2
 *   (including the contributions from mu_r unequal mu_f)
 *
-       B0  = BETA0(NF)
+       B0  = PGBETA0(NF)
        B0I = 1./B0 
-       B1  = BETA1(NF) 
+       B1  = PGBETA1(NF) 
        B10 = B1 * B0I 
-       B20 = BETA2(NF) * B0I
+       B20 = PGBETA2(NF) * B0I
        RDIFF = R(KN,NF,1) - R(KN,NF,2)
 *
        DO 11 J1 = 1, 2

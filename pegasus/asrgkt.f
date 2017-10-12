@@ -32,16 +32,16 @@
 * ..Input common-blocks 
 *
        COMMON / ASPAR  / NAORD, NASTPS
-       COMMON / BETA   / BETA0 (NFMIN:NFMAX), BETA1 (NFMIN:NFMAX),
-     ,                   BETA2 (NFMIN:NFMAX), BETA3 (NFMIN:NFMAX)
+       COMMON / PGBETA   / PGBETA0 (NFMIN:NFMAX), PGBETA1 (NFMIN:NFMAX),
+     ,                   PGBETA2 (NFMIN:NFMAX), PGBETA3 (NFMIN:NFMAX)
 *
 * ..The beta functions FBETAn at N^nLO for n = 1, 2, and 3
 *
-       FBETA1(A) = - A**2 * ( BETA0(NF) + A *   BETA1(NF) )
-       FBETA2(A) = - A**2 * ( BETA0(NF) + A * ( BETA1(NF)
-     ,                        + A * BETA2(NF) ) )
-       FBETA3(A) = - A**2 * ( BETA0(NF) + A * ( BETA1(NF)
-     ,                        + A * (BETA2(NF) + A * BETA3(NF)) ) )
+       FBETA1(A) = - A**2 * ( PGBETA0(NF) + A *   PGBETA1(NF) )
+       FBETA2(A) = - A**2 * ( PGBETA0(NF) + A * ( PGBETA1(NF)
+     ,                        + A * PGBETA2(NF) ) )
+       FBETA3(A) = - A**2 * ( PGBETA0(NF) + A * ( PGBETA1(NF)
+     ,                        + A * (PGBETA2(NF) + A * PGBETA3(NF)) ) )
 *
 * ---------------------------------------------------------------------
 *
@@ -56,7 +56,7 @@
 *
        IF (NAORD .EQ. 0) THEN
 *
-         AS = AS0 / (1.+ BETA0(NF) * AS0 * LRRAT)
+         AS = AS0 / (1.+ PGBETA0(NF) * AS0 * LRRAT)
 *
        ELSE IF (NAORD .EQ. 1) THEN
 *

@@ -21,8 +21,8 @@
        IMPLICIT DOUBLE COMPLEX (A - Z)
        INTEGER NMAX, NDIM, NFMIN, NFMAX, NFLOW, NFHIGH, KN, NF
        PARAMETER (NDIM = 512, NFMIN = 3, NFMAX = 6)
-       DOUBLE PRECISION BETA0 (NFMIN:NFMAX), BETA1 (NFMIN:NFMAX),
-     1                  BETA2 (NFMIN:NFMAX), BETA3 (NFMIN:NFMAX)
+       DOUBLE PRECISION PGBETA0 (NFMIN:NFMAX), PGBETA1 (NFMIN:NFMAX),
+     1                  PGBETA2 (NFMIN:NFMAX), PGBETA3 (NFMIN:NFMAX)
 *
 * ---------------------------------------------------------------------
 *
@@ -31,7 +31,7 @@
        COMMON / NNUSED / NMAX
        COMMON / NFUSED / NFLOW, NFHIGH
        COMMON / PSG0   / P0SG (NDIM, NFMIN:NFMAX, 2, 2)
-       COMMON / BETA   / BETA0, BETA1, BETA2, BETA3
+       COMMON / PGBETA   / PGBETA0, PGBETA1, PGBETA2, PGBETA3
 *
 * ..Output common-block
 *
@@ -47,7 +47,7 @@
 *
 * ..The elements of R0
 *
-       B0I = 1./ BETA0(NF)
+       B0I = 1./ PGBETA0(NF)
 *
        RQQ = P0SG(KN,NF,1,1) * B0I
        RQG = P0SG(KN,NF,1,2) * B0I   

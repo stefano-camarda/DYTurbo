@@ -33,8 +33,8 @@
 *
 * ..Output common-block
 *
-       COMMON / BETA   / BETA0 (NFMIN:NFMAX), BETA1 (NFMIN:NFMAX),
-     1                   BETA2 (NFMIN:NFMAX), BETA3 (NFMIN:NFMAX)
+       COMMON / PGBETA   / PGBETA0 (NFMIN:NFMAX), PGBETA1 (NFMIN:NFMAX),
+     1                   PGBETA2 (NFMIN:NFMAX), PGBETA3 (NFMIN:NFMAX)
 *
 * ---------------------------------------------------------------------
 *
@@ -49,11 +49,11 @@
 *
        DO 1 NF = NFMIN, NFMAX
 *
-       BETA0(NF) = B00 + B01 * NF
-       BETA1(NF) = B10 + B11 * NF
+       PGBETA0(NF) = B00 + B01 * NF
+       PGBETA1(NF) = B10 + B11 * NF
 *
-       BETA2(NF) = 1428.50 - 279.611 * NF + 6.01852 * NF**2
-       BETA3(NF) = 29243.0 - 6946.30 * NF + 405.089 * NF**2 
+       PGBETA2(NF) = 1428.50 - 279.611 * NF + 6.01852 * NF**2
+       PGBETA3(NF) = 29243.0 - 6946.30 * NF + 405.089 * NF**2 
      1             + 1.49931 * NF**3
 *
 * ---------------------------------------------------------------------

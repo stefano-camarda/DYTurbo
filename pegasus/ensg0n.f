@@ -23,8 +23,8 @@
        IMPLICIT DOUBLE COMPLEX (A - Z)
        INTEGER NDIM, NFMIN, NFMAX, KN, NF, K1, K2
        PARAMETER (NDIM = 512, NFMIN = 3, NFMAX = 6)
-       DOUBLE PRECISION BETA0 (NFMIN:NFMAX), BETA1 (NFMIN:NFMAX),
-     1                  BETA2 (NFMIN:NFMAX), BETA3 (NFMIN:NFMAX)
+       DOUBLE PRECISION PGBETA0 (NFMIN:NFMAX), PGBETA1 (NFMIN:NFMAX),
+     1                  PGBETA2 (NFMIN:NFMAX), PGBETA3 (NFMIN:NFMAX)
        DOUBLE PRECISION ASI, ASF, S
        DIMENSION ENS(3), ESG(2,2), ER(2)
 *
@@ -32,7 +32,7 @@
 *
 * ..Input common-blocks 
 *
-       COMMON / BETA   / BETA0, BETA1, BETA2, BETA3
+       COMMON / PGBETA   / PGBETA0, PGBETA1, PGBETA2, PGBETA3
        COMMON / PNS0   / P0NS (NDIM, NFMIN:NFMAX)
        COMMON / LSG    / R(NDIM, NFMIN:NFMAX, 2),
      1                   E(NDIM, NFMIN:NFMAX, 2, 2, 2)
@@ -42,7 +42,7 @@
 * ..The non-singlet evolution kernel
 *   (second and third entries for technical reasons only) 
 *
-       ENS(1) = EXP (S * P0NS(KN,NF) / BETA0(NF))
+       ENS(1) = EXP (S * P0NS(KN,NF) / PGBETA0(NF))
        ENS(2) = ENS(1)
        ENS(3) = ENS(1)
 *
