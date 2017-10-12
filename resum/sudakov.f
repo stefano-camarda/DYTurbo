@@ -1,6 +1,9 @@
       function alphasl(nq2)
 c.....reference scale is factorization scale: muf2=muf**2
-      implicit real*8(a-h,o-z)
+      implicit none
+c     implicit real*8(a-h,o-z)
+      double precision blim
+      integer xlp
       double complex xlambda,aa1,all,alphasl,qq,t,xlt,bstar,b,blog
       double complex log1xlambda
       double complex nq2,aa2
