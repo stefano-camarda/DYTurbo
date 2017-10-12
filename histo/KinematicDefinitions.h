@@ -233,6 +233,10 @@ namespace Kinematics{
         }
     };
 
+    //! Redefine pointers to global arrays (thread safe).
+#define lm p3
+#define lp p4
+
     /// @defgroup AngulVar Final state kinematic observables.
     /// @{
 
@@ -248,9 +252,6 @@ namespace Kinematics{
         //! You can define additional functions within this class.
         double Vplus  (double p[4]) { return (p[3]+p[2]); };
         double Vminus (double p[4]) { return (p[3]-p[2]); };
-        //! Pointers to global arrays -- stays updated.
-        double * lm = p3;
-        double * lp = p4;
         /**
          * @brief Observable objects are updated automatically.
          *
@@ -288,8 +289,6 @@ namespace Kinematics{
 
     //! Azimuthal angle phi in Collin-Soper frame.
     NEWKIN(PhiCS){
-        double * lm = p3;
-        double * lp = p4;
         BosPX px;
         BosPY py;
         BosPZ pz;
