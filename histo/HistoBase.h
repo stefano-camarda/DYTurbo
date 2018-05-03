@@ -163,6 +163,7 @@ namespace HistoHandler {
                 double valY;
                 double valZ;
                 double weight;
+  	        double weight_prof;
             } current_point;
             std::vector<DipPt> dipole_points;
 
@@ -171,7 +172,6 @@ namespace HistoHandler {
 
             virtual void AddPoint(){
                 current_point.ibin = CurrentBin();
-                current_point.weight = Kinematics::event_weight;
                 dipole_points.push_back(current_point);
             }
 
@@ -189,6 +189,7 @@ namespace HistoHandler {
                         if (point.ibin == ipoint->ibin){
                             // found same bin: remove from list and sum weight
                             point.weight+=ipoint->weight;
+			    point.weight_prof+=ipoint->weight_prof;
                             ipoint = dipole_points.erase(ipoint);
                         } else ++ipoint; // bin index not same, skip it
                     }

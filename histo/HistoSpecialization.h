@@ -36,6 +36,8 @@ namespace HistoHandler {
 
             virtual void FillDipole(){
                 current_point.valX = varX();
+                current_point.weight = Kinematics::event_weight;
+		current_point.weight_prof = 0;
                 AddPoint();
             };
 
@@ -67,6 +69,8 @@ namespace HistoHandler {
             virtual void FillDipole(){
                 current_point.valX = varX();
                 current_point.valY = varY();
+                current_point.weight = Kinematics::event_weight;
+		current_point.weight_prof = 0;
                 AddPoint();
             };
 
@@ -103,6 +107,8 @@ namespace HistoHandler {
                 current_point.valX = varX();
                 current_point.valY = varY();
                 current_point.valZ = varZ();
+                current_point.weight = Kinematics::event_weight;
+		current_point.weight_prof = 0;
                 AddPoint();
             };
 
@@ -145,7 +151,8 @@ namespace HistoHandler {
                 // weighted mean per each dipole point. We started by storing
                 // the profiled value times weight.
                 current_point.valX = varX();
-                current_point.valY = varY()*Kinematics::event_weight;
+                current_point.weight = Kinematics::event_weight;
+		current_point.weight_prof = varY()*Kinematics::event_weight;
                 AddPoint();
             };
 
@@ -154,7 +161,7 @@ namespace HistoHandler {
             };
 
             void FillPoint(DipPt point){
-                if (point.weight!=0) current->Fill(point.valX, point.valY/point.weight ,point.weight);
+	      if (point.weight!=0) current->Fill(point.valX, point.weight_prof/point.weight, point.weight);
             }
 
 
@@ -186,7 +193,8 @@ namespace HistoHandler {
                 // weighted mean per each dipole point. We started by storing
                 // the profiled value times weight.
                 current_point.valX = varX();
-                current_point.valY = varY()*Kinematics::event_weight;
+		current_point.weight = varY()*Kinematics::event_weight;
+		current_point.weight_prof = 0;
                 AddPoint();
             };
 
@@ -195,7 +203,7 @@ namespace HistoHandler {
             };
 
             void FillPoint(DipPt point){
-                if (point.weight!=0) current->Fill(point.valX, point.valY);
+                if (point.weight!=0) current->Fill(point.valX, point.weight);
             }
 
 
@@ -225,7 +233,8 @@ namespace HistoHandler {
             virtual void FillDipole(){
                 current_point.valX = varX();
                 current_point.valY = varY();
-                current_point.valZ = varZ()*Kinematics::event_weight;
+		current_point.weight = Kinematics::event_weight;
+		current_point.weight_prof = varZ()*Kinematics::event_weight;
                 AddPoint();
             };
 
@@ -234,7 +243,7 @@ namespace HistoHandler {
             };
 
             void FillPoint(DipPt point){
-                if (point.weight!=0) current->Fill(point.valX, point.valY, point.valZ/point.weight ,point.weight);
+ 	        if (point.weight!=0) current->Fill(point.valX, point.weight_prof/point.weight ,point.weight);
             }
 
 
