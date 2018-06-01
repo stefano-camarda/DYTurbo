@@ -134,11 +134,13 @@ void coupling::init()
   //Now set up the other derived parameters
 
   //W coupling
-  ewcouple_.gwsq_= 4 * M_PI * aemmz/xw; //= 4*sqrt(2)*Gf*pow(wmass,2);
+  //ewcouple_.gwsq_ = 4 * M_PI * aemmz/xw;     //--> Original MCFM
+  ewcouple_.gwsq_ = 4*sqrt(2)*Gf*pow(wmass,2); //--> W coupling depending only on Gf and wmass (equal to the above only in gauge invariant schemes)
   ewcouple_.gw_=sqrt(ewcouple_.gwsq_);
 
   //photon coupling (used also for Z)
-  ewcouple_.esq_= ewcouple_.gwsq_* xw; //= 4 * M_PI * aemmz;
+  //ewcouple_.esq_ = ewcouple_.gwsq_* xw; //--> Original MCFM
+  ewcouple_.esq_ = 4 * M_PI * aemmz;      //--> Photon coupling depending only on alpha EM (equal to the above only in gauge invariant schemes)
 
   //The Z coupling are evaluated as esq/(sin2w)^2 => Gf * mw^2 / cw^2 = Gf * mz^2
 
@@ -146,7 +148,9 @@ void coupling::init()
   //Modified to notation of DKS (ie divided by 2*sw*cw)
   //xw=sin^2 theta_w
   
-  zcouple_.sin2w_=2.*sqrt(xw*(1.-xw)); //!!!Important, this xw must be the on-shell xw = 1 - mW^2/mZ^2
+  //zcouple_.sin2w_=2.*sqrt(xw*(1.-xw)); //--> Original MCFM (this xw must be the on-shell xw = 1 - mW^2/mZ^2, works only for gauge invariant schemes)
+  zcouple_.sin2w_=sqrt(2*sqrt(2)*M_PI*aemmz/(Gf*pow(zmass,2))); //This expression should work in all cases
+
   for (int j=0; j < MAXNF; j++)
     {
       zcouple_.l_[j]=(ewcharge_.tau_[j+MAXNF+1]-2.*ewcharge_.Q_[j+MAXNF+1]*xw)/zcouple_.sin2w_;
