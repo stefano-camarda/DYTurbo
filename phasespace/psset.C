@@ -1,4 +1,5 @@
 #include "phasespace.h"
+#include "mcfm_interface.h"
 
 #include <iostream>
 
@@ -40,6 +41,9 @@ void phasespace::setbounds(double m1, double m2, double qt1, double qt2, double 
       cout << "Error on integration boundaries" << endl;
       exit(-1);
     }
+
+  //update mass bounds in MCFM
+  mcfm::set_mass_bounds();
 }
 
 void phasespace::setcthbounds(double cth1, double cth2)
