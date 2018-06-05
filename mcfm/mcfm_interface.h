@@ -297,5 +297,6 @@ extern "C"
 namespace mcfm
 {
   void init();
+  void set_mass_bounds();
 }
 #endif
