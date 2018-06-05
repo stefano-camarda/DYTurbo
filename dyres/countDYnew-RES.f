@@ -96,7 +96,7 @@ C
       common/nmin/nmin
       common/incldip/incldip
       common/outputflags/creatent,dswhisto
-      data p/48*0d0/
+      data p/pdim*0d0/
       data first/.true./
       save first,rscalestart,fscalestart
 
