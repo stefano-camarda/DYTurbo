@@ -48,7 +48,7 @@
 
       double precision xmsq_as,xmsq_as2
       
-      data p/48*0d0/
+      data p/pdim*0d0/
       external hists_setpdf
       external hists_fill
 C      external hists_fill_PDF
@@ -64,7 +64,8 @@ C      external hists_fill_PDF
       W=sqrts**2
 
       npart=3   
-      call gen3(r,p,pswt,*999)
+c     call gen3(r,p,pswt,*999)
+      call dygen3(r,p,pswt,*999)
 c      print*,'phase space in virtual'
 c      print*,p(3,1),p(3,2),p(3,3),p(3,4)
 c      print*,p(4,1),p(4,2),p(4,3),p(4,4)
