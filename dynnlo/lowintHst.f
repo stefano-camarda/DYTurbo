@@ -65,7 +65,7 @@ CC
       common/BrnRat/BrnRat
      
 
-      data p/48*0d0/
+      data p/pdim*0d0/
 
       logical binner
       external binner
