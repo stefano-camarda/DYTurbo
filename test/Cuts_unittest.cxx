@@ -23,10 +23,10 @@ TEST(CutInterface,StandardCuts){
     opts.makecuts = true;
     opts.lptcut = 20;
     opts.lycut = 1000;
-    opts.l1ptcut = 10;
-    opts.l2ptcut = 10;
-    opts.l1ycut = 1000;
-    opts.l2ycut = 1000;
+    opts.lepptcut = 10;
+    opts.alpptcut = 10;
+    opts.lepycut = 1000;
+    opts.alpycut = 1000;
     ASSERT_EQ(Kinematics::Cuts::SkipEvent, Kinematics::Cuts::KeepThisEvent(l1,l1));
     double l2[] = {100., 100., 100., 100.*sqrt(3)};
     ASSERT_EQ(Kinematics::Cuts::KeepEvent, Kinematics::Cuts::KeepThisEvent(l2,l2));
