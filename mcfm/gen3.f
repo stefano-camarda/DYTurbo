@@ -50,8 +50,8 @@ c---if x's out of normal range alternative return
       p(3,nu)=p3(nu)
       p(4,nu)=p4(nu)
       p(5,nu)=p5(nu)
-      p(6,nu)=p6(nu)
-      p(7,nu)=p7(nu)
+c      p(6,nu)=p6(nu)
+c      p(7,nu)=p7(nu)
       enddo 
       wt3=xjac*pswt
 
