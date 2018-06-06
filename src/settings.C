@@ -380,7 +380,7 @@ void settings::readfromfile(const string fname){
     ybinwidth          = in.GetBool ( "ybinwidth" );
     force_binsampling  = in.GetBool ( "force_binsampling" );
     helicity           = in.GetNumber ( "helicity" );
-
+    output_filename    = in.GetString ( "output_filename" );
     return ;
 }
 
@@ -693,6 +693,7 @@ void settings::dumpAll(){
         dumpB("ybinwidth         ", ybinwidth           );
         dumpB("force_binsampling ", force_binsampling   );
         dumpI("helicity ",          helicity   );
+        dumpS("output_filename ",   output_filename   );
     }
 
     if (print_masses){
