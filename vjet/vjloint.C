@@ -110,7 +110,7 @@ void vjloint::calc(const double x[5], double f[2])
   phasespace::gen_costhphi(r2, jac);
   phasespace::genl4p();
   //calculate V+j matrix elements
-  double p[4][12];
+  double p[4][mxpart];
   fillp(p);
   
   double msq[11][11];
@@ -160,7 +160,7 @@ void vjloint::calc(const double x[5], double f[2])
 	  phasespace::genl4p();
 
 	  //calculate V+j matrix elements
-	  double p[4][12];
+	  double p[4][mxpart];
 	  fillp(p);
 
 	  double msq[11][11];
@@ -286,15 +286,15 @@ void vjloint::calc(const double x[5], double f[2])
 		  phasespace::genl4p();
 
 		  //calculate V+j matrix elements
-		  double p[4][12];
+		  double p[4][mxpart];
 		  fillp(p);
 
 		  double msq[11][11];
 		  if(opts.nproc == 3)
-		    qqb_z_g_(p,msq);
+		    //qqb_z_g_(p,msq);
+		    qqb_z1jet_(p,msq);
 		  else
 		    qqb_w_g_(p,msq);
-
 		  double cth, sth, s2th;
 		  if (opts.helicity >= 0)
 		    {
@@ -474,12 +474,13 @@ double vjloint::calcvegas(const double x[7])
     return 0.;
 
   //calculate V+j matrix elements
-  double p[4][12];
+  double p[4][mxpart];
   fillp(p);
   
   double msq[11][11];
   if(opts.nproc == 3)
-    qqb_z_g_(p,msq);
+    //qqb_z_g_(p,msq);
+    qqb_z1jet_(p,msq);
   else
     qqb_w_g_(p,msq);
 
@@ -533,7 +534,7 @@ double vjloint::calcvegas(const double x[7])
   return xmsq*jac;
 }
 
-void vjloint::fillp(double p[4][12])
+void vjloint::fillp(double p[4][mxpart])
 {
   p[0][0] = phasespace::p1[0];
   p[1][0] = phasespace::p1[1];
