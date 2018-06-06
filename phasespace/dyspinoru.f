@@ -108,14 +108,13 @@ c     do not calculate sij, avoid if conditions, do not set diagonal elements to
 c     This is the fastest method
       
       do j=1,N
-         
          sig=int(sign(1d0,p(j,4)))
          f(j)=sqrt(dcmplx(sig))
          
          kp(j)=sig*p(j,4)+sig*p(j,1)
          rt(j)=sqrt(kp(j))
-         k1(j)=sig*p(j,2)
-         k2(j)=-sig*p(j,3)
+         k1(j)=sig*p(j,3)
+         k2(j)=-sig*p(j,2)
       enddo
       
       do i=2,N
@@ -138,8 +137,8 @@ cC     choice of axis
 c!     y -> x  
 c!     z -> -y 
 c!     x -> z  
-c      x = 2 
-c      y = 3 
+c      x = 3 
+c      y = 2 
 c      z = 1 
 c      sigx = 1
 c      sigy = -1
