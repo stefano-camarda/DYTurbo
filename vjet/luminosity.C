@@ -45,11 +45,11 @@ void luminosity::init()
   //sumckm[3]=pow(quarks_.ckm_[2][0],2)+pow(quarks_.ckm_[2][3],2);                           //sum sx -> apply to c
   //sumckm[4]=pow(quarks_.ckm_[1][5],2)+pow(quarks_.ckm_[2][5],2)+pow(quarks_.ckm_[4][5],2); //sum tx -> apply to b
 
-  sumckm[1]=pow(quarks_.ckm_[1][0],2)+pow(quarks_.ckm_[1][3],2);                           //sum dx -> apply to d
-  sumckm[0]=pow(quarks_.ckm_[1][0],2)+pow(quarks_.ckm_[2][0],2)+pow(quarks_.ckm_[4][0],2); //sum ux -> apply to u
-  sumckm[3]=pow(quarks_.ckm_[1][3],2)+pow(quarks_.ckm_[2][3],2)+pow(quarks_.ckm_[4][3],2); //sum cx -> apply to c
-  sumckm[2]=pow(quarks_.ckm_[2][0],2)+pow(quarks_.ckm_[2][3],2);                           //sum sx -> apply to s
-  sumckm[4]=pow(quarks_.ckm_[4][0],2)+pow(quarks_.ckm_[4][3],2);                           //sum bx -> apply to b
+  sumckm[1]=pow(quarks_.ckm_[1][0],2)+pow(quarks_.ckm_[1][3],2);                           //sum xd -> apply to d (Vud^2 + Vcd^2)
+  sumckm[0]=pow(quarks_.ckm_[1][0],2)+pow(quarks_.ckm_[2][0],2)+pow(quarks_.ckm_[4][0],2); //sum ux -> apply to u (Vud^2 + Vus^2 + Vub^2)
+  sumckm[3]=pow(quarks_.ckm_[1][3],2)+pow(quarks_.ckm_[2][3],2)+pow(quarks_.ckm_[4][3],2); //sum cx -> apply to c (Vcd^2 + Vcs^2 + Vcb^2)
+  sumckm[2]=pow(quarks_.ckm_[2][0],2)+pow(quarks_.ckm_[2][3],2);                           //sum xs -> apply to s (Vus^2 + Vcs^2)
+  sumckm[4]=pow(quarks_.ckm_[4][0],2)+pow(quarks_.ckm_[4][3],2);                           //sum xb -> apply to b (Vub^2 + Vcb^2)
   //sumckm[5]=pow(quarks_.ckm_[1][5],2)+pow(quarks_.ckm_[2][5],2)+pow(quarks_.ckm_[4][5],2); //sum tx -> apply to t
   
   sw = sqrt(coupling::xw); // sin_w
