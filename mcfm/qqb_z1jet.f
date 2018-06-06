@@ -18,7 +18,8 @@ c---
       double precision msq(-nf:nf,-nf:nf),p(mxpart,4),fac
       double complex prop
       double precision AqqbZg2(2,2),AqbqZg2(2,2),AqgZq2(2,2),
-     .               AqbgZqb2(2,2),AgqbZqb2(2,2),AgqZq2(2,2)
+     .     AqbgZqb2(2,2),AgqbZqb2(2,2),AgqZq2(2,2)
+      double precision dot
       data swap/2,1/
       save swap
 
@@ -29,6 +30,8 @@ c      msq(j,k)=0d0
 c      enddo
 c      enddo
       
+c      call dotem(5,p,s)
+      s(3,4)=2*dot(p,3,4)
       call spinoru(5,p,za,zb)
       
 c---protect from soft and collinear singularities
