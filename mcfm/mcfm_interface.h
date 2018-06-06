@@ -4,6 +4,7 @@
 #include "parton.h"
 #include "fcomplex.h"
 
+const int mxpart=6;
 extern "C"
 {
   //interface to MCFM fortran functions and common blocks
@@ -13,11 +14,12 @@ extern "C"
   void branch_(double& brwen, double& brzee, double& brtau, double& brtop);
   void ckmfill_(int& nwz);
   void scaleset_(double& q2);
-  void qqb_z_(double p[4][12], double msqc[11][11]);
-  void qqb_w_(double p[4][12], double msqc[11][11]);
-  void qqb_z_g_(double p[4][12], double msqc[11][11]);
-  void qqb_w_g_(double p[4][12], double msqc[11][11]);
-  void spinoru_(int &N, double p[4][12], fcomplex za[12][12], fcomplex zb[12][12]);
+  void qqb_z_(double p[4][mxpart], double msqc[11][11]);
+  void qqb_w_(double p[4][mxpart], double msqc[11][11]);
+  void qqb_z_g_(double p[4][mxpart], double msqc[11][11]);
+  void qqb_z1jet_(double p[4][mxpart], double msqc[11][11]);
+  void qqb_w_g_(double p[4][mxpart], double msqc[11][11]);
+  void spinoru_(int &N, double p[4][mxpart], fcomplex za[mxpart][mxpart], fcomplex zb[mxpart][mxpart]);
   
   //Catani-Seymour subtraction cut-offs for initial-initial, initial-final, final-initial, and final-final dipoles
   extern struct {
