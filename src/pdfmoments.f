@@ -1,5 +1,6 @@
 C     Computes the complex N Mellin moments of pdfs
-      subroutine pdfmoments(hadron,scale,N,UV,DV,US,DS,SP,SM,GL,CH,BO)
+      subroutine pdfmoments(hadron,scale,N,
+     .     UV,DV,US,DS,SP,SM,GL,CH,BO,xmin)
       implicit none
       complex(8) N
       integer hadron
@@ -12,7 +13,7 @@ C     Computes the complex N Mellin moments of pdfs
 
       real(8) fx(-5:5)
       real(8) fxtemp(-2:2)
-      real (8) mu
+      real(8) mu
 
       integer i,j
       double precision muf
@@ -24,8 +25,9 @@ c     factorization scale
 c     muf=facscale
 c     muf=2D0
 
-c     boundaries of integration      
-      xmin = 1D-8
+c     boundaries of integration
+c     xmin = 66d0/13000d0**2 ! xmin could be restricted to (mmin/sqrt(s))^2
+c     xmin = 1D-8
       xmax = 1
 
 c     initialise
@@ -181,10 +183,14 @@ c     Gaussian nodes of the integration contour in the complex plane
       integer ih1,ih2
       common/collider/ih1,ih2
 
+      double precision xmin
+      
       common/NFITMAX/NFITMAX
       include 'facscale.f'
       include 'quadrules.f'
 
+      xmin = 1D-8
+      
       Write(6,'(A)', advance='no')
      / 'Initialise PDF moments with numerical integration... '
       NFITMAX = 14
@@ -194,7 +200,7 @@ c     Beam 1
 C     positive branch
          XN=Np(k)  
          call pdfmoments(ih1,facscale,XN,
-     .        uval,dval,usea,dsea,splus,ssea,glu,charm,bot)
+     .        uval,dval,usea,dsea,splus,ssea,glu,charm,bot,xmin)
 c         print *,'beam 1 positive'
 c         print *,'moment',k,XN
 c         print *,'uval  ',uval
@@ -217,7 +223,7 @@ c         print *,'bottom',bot
 c     negative branch
          XN=Nm(k)
          call pdfmoments(ih1,facscale,XN,
-     .        uval,dval,usea,dsea,splus,ssea,glu,charm,bot)
+     .        uval,dval,usea,dsea,splus,ssea,glu,charm,bot,xmin)
          do ik=1,NFITMAX
             UVm(k,ik)= uval
             DVm(k,ik)= dval
@@ -238,7 +244,7 @@ c     Beam 2
 c     positive branch
          XN=Np(k)  
          call pdfmoments(ih2,facscale,XN,
-     .        uval,dval,usea,dsea,splus,ssea,glu,charm,bot)
+     .        uval,dval,usea,dsea,splus,ssea,glu,charm,bot,xmin)
          do ik=1,NFITMAX
             UVp2(k,ik)= uval 
             DVp2(k,ik)= dval 
@@ -252,7 +258,7 @@ c     positive branch
 c     negative branch
          XN=Nm(k)
          call pdfmoments(ih2,facscale,XN,
-     .        uval,dval,usea,dsea,splus,ssea,glu,charm,bot)
+     .        uval,dval,usea,dsea,splus,ssea,glu,charm,bot,xmin)
          do ik=1,NFITMAX
             UVm2(k,ik)= uval 
             DVm2(k,ik)= dval 
