@@ -225,7 +225,7 @@ void ctint::calc(double costh, double m, double qt, double y, int mode, double f
 	  double tdelta = fx1[i]*fx2[j];
 
 	  //NLO terms
-	  double th1st = 0;
+	  double th1st = 0; //this piece is used only at NNLO?
 	  double th1stF = 0;
 	  double th1stQ = 0; //this piece is used only at NNLO
 	  //H1st delta term
@@ -404,15 +404,19 @@ void ctint::calc(double costh, double m, double qt, double y, int mode, double f
 	    -0.5*(resconst::B1q+resconst::A1q*LQ-resconst::beta0)*sig11[sp]
 	    +0.5*(resconst::B1q+resconst::A1q*LQ)*th1stF
 	    +0.5*tgaga;
-	  sig21[sp] = -resconst::beta0*(LR-LQ)*sig11[sp]
+	  sig21[sp] =
+	    -resconst::beta0*(LR-LQ)*sig11[sp]
 	    -(resconst::B1q+resconst::A1q*LQ)*(th1st+th1stQ+(LF-LQ)*th1stF)
-	    -(LF-LQ)*tgaga-(resconst::B2q+resconst::A2q*LQ)*tdelta+resconst::beta0*th1st-tcga-tgamma2
-	    +(resconst::B1q+0.5*resconst::A1q*LQ)*LQ*th1stF;
+	    -(LF-LQ)*tgaga
+	    -(resconst::B2q+resconst::A2q*LQ)*tdelta
+	    +resconst::beta0*th1st
+	    +(resconst::B1q+0.5*resconst::A1q*LQ)*LQ*th1stF
+	    -tcga-tgamma2;
+	    
 	  //include missing delta term from C*gamma (no factor 2 here)
 	  sig21[sp] += -resconst::C1qqdelta*th1stF;
 	  //include missing term from contact term in 2 loop AP
 	  sig21[sp] += -2*resconst::Delta2qq*tdelta;
-
 	}
 
       double xmsq = 0.;
