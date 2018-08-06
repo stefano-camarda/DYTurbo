@@ -330,7 +330,7 @@ void omegaintegr::genl4p(double costh, double phi_lep)
 //costh for any general kt prescription
 double omegaintegr::costhCS()
 {
-  //change this to p3
+  //change this to p3  !!! should use p3 here instead of p4 !!!
   return (1.-4.*(kap1[3]*phasespace::p4[3]-kap1[2]*phasespace::p4[2]-kap1[1]*phasespace::p4[1]-kap1[0]*phasespace::p4[0])/(phasespace::m*phasespace::m));
 }
 
