@@ -16,5 +16,6 @@ namespace parton
   enum pdgid {Bb=0, Cb=1, Sb=2, Ub=3, Db=4, G=5, D=6, U=7, S=8, C=9, B=10};
 
   inline pdgid charge_conj(pdgid i)  {return pdgid(int((i-G))*(-1)+G);}
+  inline partid charge_conjn(partid i)  {return partid(int((i-g))*(-1)+g);}
 }
 #endif
