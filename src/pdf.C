@@ -160,4 +160,22 @@ void fdist_(int& ih, double& x, double& xmu, double fx[2*MAXNF+1])
   //make u = d and ubar = dbar
   //fx[MAXNF-1]=fx[MAXNF-2];
   //fx[MAXNF+1]=fx[MAXNF+2];
+
+  /*
+  if (x < 90./13000.*exp(-1.))
+    {
+      fx[MAXNF-5]=0.;
+      fx[MAXNF-4]=0.;
+      fx[MAXNF-3]=0.;
+      fx[MAXNF-2]=0.;
+      fx[MAXNF-1]=0.;
+      fx[MAXNF+0]=0.;
+      fx[MAXNF+1]=0.;
+      fx[MAXNF+2]=0.;
+      fx[MAXNF+3]=0.;
+      fx[MAXNF+4]=0.;
+      fx[MAXNF+5]=0.;
+    }
+  */
+
 }
