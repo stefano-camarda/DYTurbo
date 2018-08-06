@@ -1,4 +1,5 @@
 #include "vjint.h"
+#include "codata.h"
 #include "phasespace.h"
 #include "settings.h"
 #include "coupling.h"

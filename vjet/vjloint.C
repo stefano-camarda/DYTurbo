@@ -1,6 +1,7 @@
 #include "vjloint.h"
 
 #include "settings.h"
+#include "codata.h"
 #include "mcfm_interface.h"
 #include "mesq.h"
 #include "pdf.h"
@@ -264,7 +265,7 @@ void vjloint::calc(const double x[5], double f[2])
 	  //start costh integration
 	  vector <double> cthmin;
 	  vector <double> cthmax;
-	  phasespace::setcthbounds(phasespace::getcthmin(), phasespace::getcthmax());
+	  phasespace::setcthbounds(phasespace::getcthmin(), phasespace::getcthmax()); //Allows for switching integration boundaries between positive and negative rapidity (currently not thread safe!!!)
 	  omegaintegr::costhbound(phasespace::phi_lep, cthmin, cthmax); //!be carefull, this way costh is integrated according to a given boson rest frame (CS or others)
 	  vector<double>::iterator itmn;
 	  vector<double>::iterator itmx;
