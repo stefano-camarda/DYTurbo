@@ -5,6 +5,7 @@
 #include "interface.h"
 #include "coupling.h"
 #include "switch.h"
+#include "itilde.h"
 
 #include "HistoHandler.h"
 #include "dyres_interface.h"
@@ -67,10 +68,12 @@ void DYTurbo::init_params(){
     mesq::init(); //EW couplings for born amplitudes
     rapint::init(); //allocate memory for the rapidity quadrature
     resconst::init(); //calculate beta, A and B coefficients
+    //    if (!opts.fixedorder)
+    //      {
+    anomalous::init(); //calculate anomalous dimensions, C1, C2 and gamma coefficients
+    pdfevol::init(); //transform the PDF from x- to N-space at the factorisation scale
     if (!opts.fixedorder)
       {
-	anomalous::init(); //calculate anomalous dimensions, C1, C2 and gamma coefficients
-	pdfevol::init(); //transform the PDF from x- to N-space at the factorisation scale
 	pegasus::init(); //initialise Pegasus QCD and transform the PDF from x- to N-space at the starting scale
 	resint::init(); //initialise dequad integration for the bessel integral
       }
@@ -81,6 +84,7 @@ void DYTurbo::init_params(){
     //
     abint::init(); //alfa beta integration initialisation
     switching::init(); //switching function initialisation
+    itilde::init(); //itilde dequad initialisation
     rescinit_();
     // cuba init
     cubacores(opts.cubacores,1000000);   //< set number of cores (move this to cubainit)
