@@ -10,6 +10,7 @@
 #include "isnan.h"
 #include "qtint.h"
 #include "ctint.h"
+#include "ctmellin.h"
 
 #include "KinematicCuts.h"
 
@@ -18,6 +19,8 @@
 #include <ctime>
 #include <math.h>
 
+//Upper limit of integration in qt (in dynnlo it is set to qtcut**2*exp(49) ~ 1e21)
+const double ctlimit = 1e10;
 
 using namespace std;
 
@@ -93,7 +96,7 @@ integrand_t ctintegrandMC(const int &ndim, const double x[], const int &ncomp, d
       //double cosh2y=pow((phasespace::exppy+phasespace::expmy)*0.5,2);
       //double kinqtlim = sqrt(max(0.,pow(pow(opts.sroot,2)+phasespace::m2,2)/(4*pow(opts.sroot,2)*cosh2y)-phasespace::m2)); //introduced max to avoid neqative argument of sqrt when y=ymax
       //double kinqtlim = sqrt(max(0.,pow(pow(opts.sroot,2)+phasespace::m2,2)/(4*pow(opts.sroot,2))-phasespace::m2)); //introduced max to avoid negative argument of sqrt when y=ymax
-      double kinqtlim = 1e10; //There should not be any kinematic limit on qt, since the counterterm is evaluated with born level kinematic
+      double kinqtlim = ctlimit; //There should not be any kinematic limit on qt, since the counterterm is evaluated with born level kinematic
       double switchqtlim = switching::qtlimit(phasespace::m);
       double qtlim = min(kinqtlim, switchqtlim);
       double qtmx = min(qtlim, phasespace::qtmax);
@@ -249,7 +252,7 @@ integrand_t ctintegrand3d(const int &ndim, const double x[], const int &ncomp, d
       //double cosh2y=pow((phasespace::exppy+phasespace::expmy)*0.5,2);
       //double kinqtlim = sqrt(max(0.,pow(pow(opts.sroot,2)+phasespace::m2,2)/(4*pow(opts.sroot,2)*cosh2y)-phasespace::m2)); //introduced max to avoid neqative argument of sqrt when y=ymax
       //double kinqtlim = sqrt(max(0.,pow(pow(opts.sroot,2)+phasespace::m2,2)/(4*pow(opts.sroot,2))-phasespace::m2)); //introduced max to avoid negative argument of sqrt when y=ymax
-      double kinqtlim = 1e10; //There should not be any kinematic limit on qt, since the counterterm is evaluated with born level kinematic
+      double kinqtlim = ctlimit; //There should not be any kinematic limit on qt, since the counterterm is evaluated with born level kinematic
       double switchqtlim = switching::qtlimit(phasespace::m);
       double qtlim = min(kinqtlim, switchqtlim);
       double qtmx = min(qtlim, phasespace::qtmax);
@@ -395,7 +398,7 @@ integrand_t ctintegrand2d(const int &ndim, const double x[], const int &ncomp, d
   if (opts.fixedorder)
     {
       qtmn = qtcut;
-      qtmx = 1e10;
+      qtmx = ctlimit;
       phasespace::set_qt(0.); //In the fixed order calculation evaluate kinematic cuts with qt=0
     }
   else
@@ -406,7 +409,7 @@ integrand_t ctintegrand2d(const int &ndim, const double x[], const int &ncomp, d
       //double cosh2y=pow((phasespace::exppy+phasespace::expmy)*0.5,2);
       //double kinqtlim = sqrt(max(0.,pow(pow(opts.sroot,2)+phasespace::m2,2)/(4*pow(opts.sroot,2)*cosh2y)-phasespace::m2)); //introduced max to avoid neqative argument of sqrt when y=ymax
       //double kinqtlim = sqrt(max(0.,pow(pow(opts.sroot,2)+phasespace::m2,2)/(4*pow(opts.sroot,2))-phasespace::m2)); //introduced max to avoid negative argument of sqrt when y=ymax
-      double kinqtlim = 1e10; //There should not be any kinematic limit on qt, since the counterterm is evaluated with born level kinematic
+      double kinqtlim = ctlimit; //There should not be any kinematic limit on qt, since the counterterm is evaluated with born level kinematic
       double switchqtlim = switching::qtlimit(phasespace::m);
       double qtlim = min(kinqtlim, switchqtlim);
       qtmx = min(qtlim, phasespace::qtmax);
@@ -468,6 +471,153 @@ integrand_t ctintegrand2d(const int &ndim, const double x[], const int &ncomp, d
   end_time = clock();
   if (opts.timeprofile)
     cout << setw (3) << "m" << setw(10) << m << setw(4) << "y" << setw(10) <<  y
+	 << setw(8) << "result" << setw(10) << f[0]
+	 << setw(10) << "tot time" << setw(10) << float( end_time - begin_time ) /  CLOCKS_PER_SEC
+      	 << setw(10) << "qtint"  << setw(10) << float( qtet - qtbt ) /  CLOCKS_PER_SEC
+	 << setw(10) << "ctint"  << setw(10) << float( cet - cbt ) /  CLOCKS_PER_SEC
+	 << endl;
+  return 0;
+}
+
+int ctintegrand1d_cubature_v(unsigned ndim, long unsigned npts, const double x[], void *data, unsigned ncomp, double f[])
+{
+  tell_to_grid_we_are_alive();
+  //  cout << "parallel " << npts << endl;
+#pragma omp parallel for num_threads(opts.cubacores) copyin(a_param_,scale_,facscale_,qcdcouple_)
+  for (unsigned i = 0; i < npts; i++)
+    {
+      // evaluate the integrand for npts points
+      double xi[ndim];
+      double fi[ncomp];
+      for (unsigned j = 0; j < ndim; j++)
+	xi[j] = x[i*ndim + j];
+
+      ctintegrand1d(ndim, xi, ncomp, fi);
+      
+      for (unsigned k = 0; k < ncomp; ++k)
+	f[i*ncomp + k] = fi[k];
+    }
+  return 0;
+}
+
+int ctintegrand1d_cubature(unsigned ndim, const double x[], void *data, unsigned ncomp, double f[])
+{
+  tell_to_grid_we_are_alive();
+  ctintegrand1d(ndim, x, ncomp, f);
+  return 0;
+}
+
+integrand_t ctintegrand1d(const int &ndim, const double x[], const int &ncomp, double f[])
+//Calculates the ct integrand as a function of m,
+//The integration in qt is factorised in LL1, LL2, LL3 and LL4 large logs
+//dOmega integration is factorised in the costh moments
+//The y integration is achieved by means of a single Mellin inversion
+{
+  tell_to_grid_we_are_alive();
+  clock_t begin_time, end_time;
+
+  begin_time = clock();
+
+  if (opts.fixedorder && phasespace::qtmin > 0)
+    {
+      f[0]=0.;
+      return 0;
+    }
+  
+  if (opts.PDFerrors)
+    for (int i = 1; i < opts.totpdf; i++)
+      f[i] = 0.;
+
+  //Jacobian of the change of variables from the unitary segment x[0] to the m boundaries
+  double jac = 1.;
+  bool status = true;
+
+  //This integration currently works only for the full y range, so the mass limit is sqrt(s)
+  double mlim = opts.sroot;
+  double r1 = {x[0]};
+  status = phasespace::gen_m(r1, jac, mlim, true, true); //qtcut = true, qtswitching = true
+  if (!status)
+    {
+      f[0] = 0.;
+      return 0;
+    }
+  
+  double qtcut = max(opts.qtcut,opts.xqtcut*phasespace::m);
+  double qtmn, qtmx;
+  //In the fixed order calculation, integrate from qtcut to infinity
+  if (opts.fixedorder)
+    {
+      qtmn = qtcut;
+      qtmx = ctlimit;
+      phasespace::set_qt(0.); //In the fixed order calculation evaluate kinematic cuts with qt=0
+    }
+  else
+    {
+      //Generate the boson transverse momentum between the integration boundaries
+      qtmn = max(qtcut, phasespace::qtmin);
+      //phasespace::calcexpy();
+      //double cosh2y=pow((phasespace::exppy+phasespace::expmy)*0.5,2);
+      //double kinqtlim = sqrt(max(0.,pow(pow(opts.sroot,2)+phasespace::m2,2)/(4*pow(opts.sroot,2)*cosh2y)-phasespace::m2)); //introduced max to avoid neqative argument of sqrt when y=ymax
+      //double kinqtlim = sqrt(max(0.,pow(pow(opts.sroot,2)+phasespace::m2,2)/(4*pow(opts.sroot,2))-phasespace::m2)); //introduced max to avoid negative argument of sqrt when y=ymax
+      double kinqtlim = ctlimit; //There should not be any kinematic limit on qt, since the counterterm is evaluated with born level kinematic
+      double switchqtlim = switching::qtlimit(phasespace::m);
+      double qtlim = min(kinqtlim, switchqtlim);
+      qtmx = min(qtlim, phasespace::qtmax);
+      if (qtmn >= qtmx)
+	{
+	  f[0] = 0.;
+	  return 0;
+	}
+      phasespace::set_qt((qtmn+qtmx)/2.); //Is this actually needed?
+    }
+  phasespace::set_phiV(0.);
+  phasespace::set_y(0.);
+  double m = phasespace::m;
+  //double y = phasespace::y;
+
+  clock_t qtbt, qtet;
+  qtbt = clock();
+  qtint::calc(m,qtmn,qtmx,2);
+  qtet = clock();
+  
+  //generate boson 4-momentum, with m, qt, y and phi=0 (not actually needed)
+  omegaintegr::genV4p();
+
+  //In this point of phase space (m, qt, y) the costh integration is performed by 
+  //calculating the 0, 1 and 2 moments of costh
+  //that are the integrals int(dcosth dphi1 dphi2), int(costh dcosth dphi1 dphi2), and int(costh^2 dcosth dphi1 dphi2) convoluted with cuts
+  //Then the epxressions 1, costh and costh^2 in sigmaij are substituted by these costh moments
+  double costh = 0;
+  int mode = 2;
+  dofill_.doFill_ = 1;
+
+  //evaluate the fixed order expansion of the resummed cross section
+  double qt = (qtmn+qtmx)/2.;
+  clock_t cbt = clock();
+  ctmellin::calc(m,f);
+  clock_t cet = clock();
+
+  //avoid nans
+  if (isnan_ofast(f[0]))
+    {
+      cout << "nan in ctintegr 2d " << endl;
+      f[0]=0.;
+      if (opts.PDFerrors)
+	for (int i = 1; i < opts.totpdf; i++)
+	  f[i] = 0.;
+      return 0;
+    }
+
+  //  cout << "counterterm " << f[0] << " m " << m << " jac " << jac << endl;
+	   
+  f[0] = f[0]*jac;
+  if (opts.PDFerrors)
+    for (int i = 1; i < opts.totpdf; i++)
+      f[i] = f[i]*jac;
+
+  end_time = clock();
+  if (opts.timeprofile)
+    cout << setw (3) << "m" << setw(10) << m 
 	 << setw(8) << "result" << setw(10) << f[0]
 	 << setw(10) << "tot time" << setw(10) << float( end_time - begin_time ) /  CLOCKS_PER_SEC
       	 << setw(10) << "qtint"  << setw(10) << float( qtet - qtbt ) /  CLOCKS_PER_SEC
