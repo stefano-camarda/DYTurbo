@@ -205,6 +205,10 @@ namespace DYTurbo {
         bool resum_born = opts.doBORN && !opts.fixedorder;
         if (resum_born || TestAllTerms) {
             name="Resummation";
+            AddTermIfActive ( opts.resint1d    , resintegr1d  , name , isNotVegas ) << Col3 ( "cuhre (dpt)"         , "iter ="      , opts.niterBORN       )
+                                                                                    << Col4 ( "","gauss (dy)"       , "nodes ="     , opts.yrule           )
+                                                                                    << Col4 ( "",""                 , "intervals =" , opts.yintervals      )
+										    << Col3 ( "","analytical (dpt)","" );
             AddTermIfActive ( opts.resint2d    , resintegr2d  , name , isNotVegas ) << Col3 ( "cuhre (dm, dpt)"     , "iter ="      , opts.niterBORN       )
                                                                                     << Col4 ( "","gauss (dy)"       , "nodes ="     , opts.yrule           )
                                                                                     << Col4 ( "",""                 , "intervals =" , opts.yintervals      );
@@ -214,6 +218,9 @@ namespace DYTurbo {
         // CT
         if (opts.doCT || TestAllTerms) {
             name="Counter term";
+            AddTermIfActive ( opts.ctint1d      , ctintegr1d , name , isNotVegas  ) << Col3 ( "cuhre (dm)"      , "iter ="      , opts.niterCT )
+                                                                                    << Col4 ( "","gauss (dpt)"  , "nodes ="     , opts.qtrule  )
+                                                                                    << Col4 ( "",""             , "intervals =" , opts.qtintervals );
             AddTermIfActive ( opts.ctint2d      , ctintegr2d , name , isNotVegas  ) << Col3 ( "cuhre (dm, dy)"  , "iter ="      , opts.niterCT )
                                                                                     << Col4 ( "","gauss (dpt)"  , "nodes ="     , 20           )
                                                                                     << Col4 ( "",""             , "intervals =" , 5            );
