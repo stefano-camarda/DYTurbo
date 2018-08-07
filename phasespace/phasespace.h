@@ -22,6 +22,7 @@ extern "C" {
   void rotate_(double vin[3], double& c, double& s, double ax[3], double vout[3]);
   void genp_(double& costh, double& phi, double& m, double p[4]);
   void qtweight_(double& x,double& qtmin,double& qtmax,double& qt,double& jac);
+  void qtweight_lo_(double& x,double& qtmin,double& qtmax,double& q2,double& qt,double& jac);
   void qtweight_res_(double& x,double& qtmin,double& qtmax,double& qt,double& jac);
   void qt2weight_(double& x,double& qt2min,double& qt2max,double& qt2,double& jac);
   void qtweight_flat_(double& x,double& qtmin,double& qtmax,double& qt,double& jac);

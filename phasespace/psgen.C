@@ -52,13 +52,48 @@ bool phasespace::gen_y(double x, double& jac, double ylim)
 {
   //Generate the boson rapidity between the integration boundaries,
   //jac gets multiplied by the Jacobian of the change of variable from the unitary interval to the y boundaries
+
   double ymn = min(max(-ylim, phasespace::ymin),ylim);
   double ymx = max(min(ylim, phasespace::ymax),-ylim);
   if (ymn >= ymx)
     return false;
+
+  //Uniform weight
   y = ymn+(ymx-ymn)*x;
   jac = jac*(ymx-ymn);
   return true;
+
+  //Unweight assuming all PDFs have the form x^a*(1-x)^b, with a = 1 and b = 1
+  // --> s(y) = tau^2*(1+tau^2-2*tau*cosh(y)) with tau = m/sqrt(s)
+  // change of variable x = int_y0^y s(y) / int_y0^y1 s(y)
+  // --> x = ((y*(1+tau^2)-2*tau*sinh(y))-a)/(b-a)
+  // with a = y0*(1+tau^2)-2*tau*sinh(y0);
+  // and  b = y1*(1+tau^2)-2*tau*sinh(y1);
+  double tau = phasespace::m/opts.sroot;
+  double tau2 = pow(tau,2);
+  double a = ymn*(1+tau2)-2*tau*sinh(ymn);
+  double b = ymx*(1+tau2)-2*tau*sinh(ymx);
+
+  //need to find y by newton method: x_n+1 =  x_n - f(x_n)/f'(x_n)
+  //f(y) = ((y*(1+tau^2)-2*tau*sinh(y))-a)/(b-a) - x = 0
+  //f'(y) = ((1+tau^2)-2*tau*cosh(y))/(b-a)
+
+  //cout << x << "  ";
+  double yn = (x*(b-a)+a)/(1+tau2);
+  for (int n = 0; n < 5; n++)
+    {
+      //cout << yn << "  ";
+      double ynp1 = yn - ((yn*(1+tau2)-2*tau*sinh(yn)-a)/(b-a)-x) / (((1+tau2)-2*tau*cosh(yn))/(b-a));
+      //ynp1 = min(max(ymn, ynp1),ymx);
+      //ynp1 = max(min(ymx, ynp1),ymn);
+      yn = ynp1;
+    }
+  //cout << yn << endl;
+  y = yn;
+  
+  jac = jac*((b-a)/(1+tau2-2*tau*cosh(y)));
+  return true;
+  
 }
 
 bool phasespace::gen_qt(double x, double& jac, double qtlim, bool qtcut)
@@ -73,6 +108,8 @@ bool phasespace::gen_qt(double x, double& jac, double qtlim, bool qtcut)
     return false;
   if (qtcut) //phase space generation for counterterm and V+j fixed order
     qtweight_(x,qtmn,qtmx,qt,jac);
+    //qtweight_lo_(x,qtmn,qtmx,m2,qt,jac);
+    //qtweight_flat_(x,qtmn,qtmx,qt,jac);
   else       //phase space generation for resummed cross section
     if (qtmx > 5)
       qtweight_res_(x,qtmn,qtmx,qt,jac);
