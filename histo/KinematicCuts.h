@@ -38,6 +38,8 @@ namespace Kinematics {
             virtual bool operator()()=0;
         };
 
+	//        extern StandardCuts standard_cuts;
+	
         //! Cut decission function.
         bool KeepThisEvent(double p3[4], double p4[4]);
     }
