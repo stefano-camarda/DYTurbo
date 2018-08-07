@@ -67,7 +67,7 @@ namespace Kinematics {
     typedef std::set<bool *> ObservableFlags;
     typedef ObservableFlags::iterator ObservableFlagsItr;
     extern ObservableFlags flags; ///< Storing pointers to all Observable flags.
-
+    //#pragma omp threadprivate(flags)
     
     /** @brief Main class of Kinematics. All observables are inherited from this.
      *
@@ -101,7 +101,8 @@ namespace Kinematics {
                 /// If available in Integration mode return middle point.
                 if(isIntegratorMode) return IsIntegrableObservable() ? middlePoint() : 666.;
                 /// If not calculated yet it runs \ref calc.
-                if (!isCalculated || (opts.cubacores > 0 && opts.pcubature)){ //--> ugly patch: openmpi parallelisation does not work with flags
+                //if (!isCalculated || (opts.cubacores > 0 && opts.pcubature)){ //--> ugly patch: openmp parallelisation does not work with flags
+		if ((opts.cubacores > 0 && opts.pcubature) || !isCalculated){ //--> ugly patch: openmp parallelisation does not work with flags
                     value=calc();
                     isCalculated=true;
 		}
