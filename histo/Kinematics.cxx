@@ -62,7 +62,12 @@ namespace Kinematics{
 	    LepFPT lfpt;
 	    LepCAbsEta lcy;
 	    LepFAbsEta lfy;
+  	    //CS frame
+	    CosThCS cthCS;
+	  //PhiCS phiCS;
+	  
             // define here cut decision
+
             bool operator()(){
 	      
                 if (opts.lptcut > 0){
@@ -84,6 +89,9 @@ namespace Kinematics{
                 if (opts.lcptcut   >0   && lcpt()    < opts.lcptcut   ) return SkipEvent;
                 if (opts.lfptcut   >0   && lfpt()    < opts.lfptcut   ) return SkipEvent;
 
+                if ((opts.cthCSmin  > -1 || opts.cthCSmax  < 1) && (cthCS() < opts.cthCSmin || cthCS() > opts.cthCSmax)) return SkipEvent;
+
+		
 		return KeepEvent;
             }
         } standard_cuts;
