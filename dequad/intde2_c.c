@@ -1,3 +1,4 @@
+#include "intde2_c.h"
 /*
 DE-Quadrature
 Numerical Automatic Integrator for Improper Integral
