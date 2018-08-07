@@ -26,7 +26,17 @@ void ctint::calc(double costh, double m, double qt, double y, int mode, double f
 
   for (int npdf = 0; npdf < opts.totpdf; npdf++)
     f[npdf] = 0.;
-      
+
+  /*
+  //limit the integration to qt = m
+  double jac = 1;
+  double qtp = qt;
+  if (qtp >= m*0.999)
+    return 0.;
+  else
+    qt = qtp/sqrt(1-pow(qtp/m,2));
+  jac = pow(m/sqrt(m*m-qtp*qtp),3);
+  */
 
   ///////////////////////////////////////////////////////
   double m2 = m*m;
@@ -461,6 +471,8 @@ void ctint::calc(double costh, double m, double qt, double y, int mode, double f
       //if (swtch < 0.01) return 0.;// do not apply this cut to avoid discontinuities. Instead the phase space is limited to qt and m switching limits
       xmsq = xmsq;//*swtch; //switching function is inside qtint
 
+      //xmsq = xmsq*jac;//jacobian for the change of variable qt=qtp/sqrt(1-qtp^2/m^2)
+      
       f[npdf] = xmsq;
     } //end loop on pdf
 
