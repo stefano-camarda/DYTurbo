@@ -33,6 +33,14 @@ void qtint::calc(double m, double qtmin, double qtmax, int mode)
     {
       double qt = qtmin;
 
+      /*
+      //limit the integration to qt = m
+      double qtp = qt;
+      qt = qtp/sqrt(1-pow(qtp/m,2));
+      if (qtp >= m*0.999)
+        LL1=LL2=LL3=LL4=0;
+      */
+      
       phasespace::set_qt(qt);
       omegaintegr::genV4p();
       double cthmom0,cthmom1,cthmom2;
@@ -65,6 +73,7 @@ void qtint::calc(double m, double qtmin, double qtmax, int mode)
       double LL2 = itilde_(two)/pow(q2,2)*pow(a_param_.a_param_,2)*swtch;
       double LL3 = itilde_(three)/pow(q2,2)*pow(a_param_.a_param_,2)*swtch;
       double LL4 = itilde_(four)/pow(q2,2)*pow(a_param_.a_param_,2)*swtch;
+
       for (int sp = 0; sp < mesq::totpch; sp++)
 	{
 	  LL1_mesqij[sp] = LL1*real(mesq::mesqij[sp]);
