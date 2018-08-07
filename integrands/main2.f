@@ -44,8 +44,8 @@ c     alphas(Mz) from lhapdf
       COMMON/etalimite/etalim
       double precision etam
       COMMON / NAORD / NAORD
-      double precision v
-      COMMON/v/v
+c      double precision v
+c      COMMON/v/v
       COMMON/NFLAVORS/nnF
       COMMON/morder/mord
       COMMON/flag1/flag1
@@ -164,7 +164,7 @@ c     narrow width, no branching ratio, always 0
          brflag=0
 
 c     choose real axis (complex plane) integration of bstar (b) (always 0)
-         flagrealcomplex=0
+c         flagrealcomplex=0
 
 c     set flag5 = 3 for Z, 21 for W+, 22 for W- (if phot is on (-1) flag5 is 5)
          if(nproc.eq.3) then
