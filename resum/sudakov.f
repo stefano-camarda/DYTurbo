@@ -164,9 +164,9 @@ c.....Now we have mu_r dependence!
      \     (y)/(1-y)+log1y/(1-y)) -
      \     (A2q/(beta0**2))*(log1y+(y)/(1-y)) + 
      \     (B1q/beta0)*log1y +
-     \     (A1q/beta0)*(y/(1-y)+log1y)*rlogq2mur2 !!! should be rlogq2mur2 -> log(mures^2/mur^2) = (logmur2q2-2.*loga) (is this a bug in DYRES?)
+     \     (A1q/beta0)*(y/(1-y)+log1y)*rlogq2mur2 !!! should be rlogq2mur2 -> log(mures^2/mur^2) = (logq2mur2-2.*loga) (is this a bug in DYRES?) (--> no see a dependence below)
 c    a dependence      
-      f1=f1-2*rloga*A1q/beta0*y/(1-y)
+      f1=f1-2*rloga*A1q/beta0*y/(1-y) !!! (Here is missing the term log1y in (y/(1-y)+log1y) ???)
       return
       end
 
