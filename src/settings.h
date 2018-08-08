@@ -104,9 +104,6 @@ public:
   
   //  double a_param;
   
-  //IR cut-off
-  double blim;
-  
   //EW parameters
   int ewscheme;
   double Gf, zmass, wmass;
@@ -148,7 +145,7 @@ public:
 
   //dimension of integration for the resummed part
   int intDimRes;
-  bool resint2d, resint3d, resintvegas;
+  bool resint1d, resint2d, resint3d, resintvegas;
 
   //dimension of integration for the born configuration
   int intDimBorn;
@@ -156,7 +153,7 @@ public:
   
   //type of integration for the counterterm
   int intDimCT;
-  bool ctint2d, ctint3d, ctintvegas6d, ctintvegas8d;
+  bool ctint1d, ctint2d, ctint3d, ctintvegas6d, ctintvegas8d;
 
   //  //type of integration for the V+j at LO
   int intDimVJ;
@@ -198,6 +195,7 @@ public:
   double mtcut, etmisscut;
   double lepptcut, lepycut, alpptcut, alpycut; //lepton and antilepton
   double lcptcut, lcymin, lcymax, lfptcut, lfymin, lfymax; //lc and lf are absolute-rapidity-ordered leptons
+  double cthCSmin, cthCSmax;
 
   //integration types and settings for costh phi_lep phase space
   bool cubaint;
@@ -215,6 +213,17 @@ public:
   //settings for Bessel integration
   double bintaccuracy;
 
+  //b-space prescription
+  int bprescription;
+  
+  //blim parameter of the bstar prescription (acts as an IR cut-off)
+  double blim;
+
+  //arg(z) in the complex plane for the minimal prescription
+  double phibr;
+  //select the point bc, where the integration contour is bended in the complex plane, as a fraction of b_L = ... (Landau singularity)
+  double bcf;
+  
   //settings for Mellin integration
   int mellinintervals;
   int mellinrule;
@@ -266,6 +275,9 @@ public:
   
   //dyres or pegasus PDF evolution
   int evolmode;
+
+  //VFN settings
+  bool vfnsudakov;
 
   //bin width normalisation
   bool ptbinwidth, ybinwidth;

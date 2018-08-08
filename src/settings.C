@@ -338,6 +338,8 @@ void settings::readfromfile(const string fname){
     lfptcut            = in.GetNumber ( "lfptcut"        );
     lfymin             = in.GetNumber ( "lfymin"         );
     lfymax             = in.GetNumber ( "lfymax"         );
+    cthCSmin           = in.GetNumber ( "cthCSmin"         );
+    cthCSmax           = in.GetNumber ( "cthCSmax"         );
     cubaint            = in.GetBool   ( "cubaint"         ); //true    # integration with     Cuba       Suave
     trapezint          = in.GetBool   ( "trapezint"       ); //false   # trapezoidal rule     for        the     phi_lep     integration     and         semi-analytical for         costh
     quadint            = in.GetBool   ( "quadint"         ); //false   # quadrature  rule     for        the     phi_lep     integration     and         semi-analytical for         costh
@@ -360,7 +362,11 @@ void settings::readfromfile(const string fname){
     opts_.approxpdf_    = in.GetNumber ( "opts_approxpdf" ); //0
     opts_.pdfintervals_ = in.GetNumber ( "opts_pdfintervals" ); //100
     evolmode           = in.GetNumber  ("evolmode");
+    vfnsudakov         = in.GetBool   ("vfnsudakov");
+    bprescription      = in.GetNumber   ("bprescription");
     bintaccuracy       = in.GetNumber ( "bintaccuracy" );
+    phibr              = in.GetNumber ( "phibr" );
+    bcf                = in.GetNumber ( "bcf" );
     mellinintervals    = in.GetNumber ( "mellinintervals" );
     mellinrule         = in.GetNumber ( "mellinrule" );
     zmax               = in.GetNumber ( "zmax" );
@@ -436,7 +442,8 @@ void settings::check_consitency(){
       }
 
     // resummation term integration dimension
-    if (intDimRes<4 && intDimRes>1){
+    if (intDimRes<4 && intDimRes>0){
+        resint1d = (intDimRes == 1);
         resint2d = (intDimRes == 2);
         resint3d = (intDimRes == 3);
         resintvegas = false;
@@ -461,7 +468,8 @@ void settings::check_consitency(){
 
 
     // counter term integration dimension
-    if (intDimCT<4 && intDimCT>1){
+    if (intDimCT<4 && intDimCT>0){
+        ctint1d = (intDimCT == 1);
         ctint2d = (intDimCT == 2);
         ctint3d = (intDimCT == 3);
         ctintvegas6d = false;
@@ -487,9 +495,9 @@ void settings::check_consitency(){
         vjintvegas7d = true;
       }
 
-    if (mellin1d && (!resint2d || makecuts))
+    if (mellin1d && (!(resint2d || resint1d) || makecuts))
       {
-	cout << "mellin1d option is possible only for 2d integration of resummed piece, no cuts on leptons, and integration between [-ymin,ymax]" << endl;
+	cout << "mellin1d option is possible only for 1d or 2d integration of resummed piece, no cuts on leptons, and integration between [-ymin,ymax]" << endl;
 	exit (-1);
       }
 
@@ -653,6 +661,8 @@ void settings::dumpAll(){
         dumpD("lptcut            ", lptcut              );
         dumpD("lycut             ", lycut               );
         dumpD("mtcut             ", mtcut               );
+	dumpD("cthCSmin          ", cthCSmin            );
+	dumpD("cthCSmax          ", cthCSmax            );
         dumpD("etmisscut         ", etmisscut           );
         dumpB("cubaint           ", cubaint             );
         dumpB("trapezint         ", trapezint           );
@@ -673,6 +683,10 @@ void settings::dumpAll(){
         dumpI("approxpdf         ", opts_.approxpdf_    );
         dumpI("pdfintervals      ", opts_.pdfintervals_ );
         dumpI("evolmode          ", evolmode            );
+	dumpB("vfnsudakov        ", vfnsudakov          );
+	dumpI("bprescription     ", bprescription       );
+	dumpB("phibr             ", phibr       );
+	dumpB("bcf               ", bcf       );
         dumpB("PDFerrors         ", PDFerrors           );
         dumpI("mellinintervals   ", mellinintervals     );
         dumpI("mellinrule        ", mellinrule          );
