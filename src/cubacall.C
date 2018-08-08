@@ -18,6 +18,60 @@
 
 /***************************************************************/
 //resummation
+void resintegr1d(vector <double> &res, double &err)
+{
+  const int ndim = 1;     //dimensions of the integral
+  const int ncomp = 1;  //components of the integrand
+  void *userdata = NULL;
+  const int nvec = 1;
+  const double epsrel = 0.;
+  const double epsabs = 0.;
+  const char *statefile = "";
+  void *spin=NULL;
+  int neval;
+  int fail;
+  double integral[ncomp];
+  double error[ncomp];
+  double prob[ncomp];
+  const int flags = 0+opts.cubaverbosity;
+  const int mineval = 65+2*65*opts.niterBORN;
+  const int maxeval = 65+2*65*opts.niterBORN;
+  const int key = 13;
+  int nregions;
+
+  if (!opts.pcubature)
+    Cuhre(ndim, ncomp,
+	  (integrand_t) resintegrand2d, userdata, nvec,
+	  epsrel, epsabs,
+	  flags,
+	  mineval, maxeval,
+	  key, statefile, NULL,
+	  &nregions, &neval, &fail,
+	  integral, error, prob);
+  else
+    {
+      const int eval = 0;
+      const double epsrel = opts.pcubaccuracy;
+      const double epsabs = 0.;
+      double xmin[1] = {0};
+      double xmax[1] = {1};
+      if (opts.cubacores == 0)
+	pcubature(ncomp, resintegrand1d_cubature, userdata,
+		  ndim, xmin, xmax,
+		  eval, epsabs, epsrel, ERROR_INDIVIDUAL, integral, error);
+      else
+	pcubature_v(ncomp, resintegrand1d_cubature_v, userdata,
+		    ndim, xmin, xmax,
+		    eval, epsabs, epsrel, ERROR_INDIVIDUAL, integral, error);
+    }
+  res.clear();
+  res.push_back(integral[0]);
+  for (int i = 1; i < opts.totpdf; i++)
+    res.push_back(0);
+  err = error[0];
+  return;
+}
+
 void resintegr2d(vector <double> &res, double &err)
 {
   const int ndim = 2;     //dimensions of the integral
@@ -831,6 +885,61 @@ void ctintegr2d(vector <double> &res, double &err)
       else
 	pcubature_v(ncomp, ctintegrand2d_cubature_v, userdata, 
 		    ndim, xmin, xmax, 
+		    eval, epsabs, epsrel, ERROR_INDIVIDUAL, integral, error);
+    }
+
+  res.clear();
+  for (int i = 0; i < opts.totpdf; i++)
+    res.push_back(integral[i]);
+  err = error[0];
+
+  //hists.FillQuadrature(res[0],err);
+  return;
+}
+
+void ctintegr1d(vector <double> &res, double &err)
+{
+  const int ndim = 1;     //dimensions of the integral
+  const int ncomp = opts.totpdf;  //components of the integrand
+  void *userdata = NULL;
+  const int nvec = 1;
+  const double epsrel = 0.;
+  const double epsabs = 0.;
+  const char *statefile = "";
+  void *spin=NULL;
+  int neval;
+  int fail;
+  double integral[ncomp];
+  double error[ncomp];
+  double prob[ncomp];
+  const int flags = 0+opts.cubaverbosity;
+  const int mineval = 65+2*65*opts.niterCT;
+  const int maxeval = 65+2*65*opts.niterCT;
+  const int key = 13;
+  int nregions;
+  if (!opts.pcubature)
+    Cuhre(ndim, ncomp,
+	  (integrand_t) ctintegrand1d, userdata, nvec,
+	  epsrel, epsabs,
+	  flags,
+	  mineval, maxeval,
+	  key, statefile, NULL,
+	  &nregions, &neval, &fail,
+	  integral, error, prob);
+  else
+    {
+      const int eval = 0;
+      const double epsrel = opts.pcubaccuracy;
+      const double epsabs = 0.;
+      double xmin[1] = {0.};
+      double xmax[1] = {1.};
+      if (opts.cubacores == 0)
+	pcubature(ncomp, ctintegrand1d_cubature, userdata,
+		  ndim, xmin, xmax,
+		  eval, epsabs, epsrel, ERROR_INDIVIDUAL, integral, error);
+      else
+	pcubature_v(ncomp, ctintegrand1d_cubature_v, userdata,
+		    ndim, xmin, xmax,
 		    eval, epsabs, epsrel, ERROR_INDIVIDUAL, integral, error);
     }
 

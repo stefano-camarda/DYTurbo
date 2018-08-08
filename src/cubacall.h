@@ -9,6 +9,7 @@ void tell_to_grid_we_are_alive();
 using namespace std;
 
 //resummation
+void resintegr1d(vector <double> &res, double &err); //missing Ai
 void resintegr2d(vector <double> &res, double &err); //missing Ai
 void resintegr3d(vector <double> &res, double &err); //(missing Ai)
 void resintegrMC(vector <double> &res, double &err); //missing PDF variations
@@ -33,6 +34,7 @@ void ctintegr(vector <double> &res, double &err);
 void ctintegrMC(vector <double> &res, double &err);
 void ctintegr3d(vector <double> &res, double &err);
 void ctintegr2d(vector <double> &res, double &err); //PDF variations, swicth to Ai
+void ctintegr1d(vector <double> &res, double &err);
 
 void initfun(void * input, const int &core);
 void exitfun(void * input, const int &core);
