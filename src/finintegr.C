@@ -399,7 +399,7 @@ int vjlointegrand_cubature(unsigned ndim, const double x[], void *data, unsigned
 
 int vjlointegrand_cubature_v(unsigned ndim, long unsigned npts, const double x[], void *data, unsigned ncomp, double f[])
 {
-#pragma omp parallel for num_threads(opts.cubacores) copyin(scale_,facscale_,qcdcouple_)
+#pragma omp parallel for num_threads(opts.cubacores) copyin(scale_,facscale_,qcdcouple_,vjloint::mur,vjloint::muf)
   for (unsigned i = 0; i < npts; i++)
     {
       // evaluate the integrand for npts points
