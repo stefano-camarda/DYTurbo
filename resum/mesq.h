@@ -13,10 +13,10 @@ extern "C"
 
 extern const double eequ;
 extern const double eeqd;
-extern const double gevfb;
+//extern const double gevfb;
 
-//Born level amplitudes for the resummed integrand multiplied by the x1^-z1 * x2^-z2 piece of the Mellin inverse transform
-//(1/(2pi*i))^2 * x1^-z1 * x2^-z2 = (CCp/pi)^2 * (M/s)^(-(z1+z2)) * exp(-y(z1-z2))
+//Born level amplitudes for the resummed integrand multiplied by the x1^-N1 * x2^-N2 piece of the Mellin inverse transform
+//(1/(2pi*i))^2 * x1^-N1 * x2^-N2 = (CCp/pi)^2 * (m/sqrt(s))^(-(N1+N2)) * exp(-y(N1-N2))
 namespace mesq
 {
   //constants
@@ -135,6 +135,8 @@ namespace mesq
 
   extern parton::pdgid *pid1;
   extern parton::pdgid *pid2;
+  extern parton::partid *pidn1;
+  extern parton::partid *pidn2;
 }
 
 #endif
