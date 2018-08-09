@@ -23,7 +23,9 @@ namespace mellinint
   extern void initgauss();
 
   extern void pdf_mesq_expy(int i1, int i2, int sign);
-  extern complex <double> integrand(int i1, int i2, int sign);
+  extern complex <double> integrand2d(int i1, int i2, int sign);
+  extern complex <double> integrand1d(int i);
+  //  extern complex <double> integrand();
 
   inline int index(int i1, int i2)
   {return i2 + mellinint::mdim*i1;}

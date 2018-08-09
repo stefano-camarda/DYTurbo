@@ -4,6 +4,7 @@
 #include "gaussrules.h"
 #include "clenshawcurtisrules.h"
 #include "hcoefficients.h"
+#include "hcoeff.h"
 #include "pdfevol.h"
 #include "interface.h"
 #include "anomalous.h"
@@ -40,7 +41,7 @@ void mellinint_pdf_mesq_expy_(int& i1, int& i2, int& sign)
 };
 fcomplex mellinint_integrand_(int& i1, int& i2, int& sign)
 {
-  return fcx(mellinint::integrand(i1-1, i2-1, sign-1));
+  return fcx(mellinint::integrand2d(i1-1, i2-1, sign-1));
 };
 
 void mellinint::initgauss()
@@ -87,10 +88,12 @@ void mellinint::initgauss()
       for (int j=0; j < opts.mellinrule; j++)
 	{
 	  double x = c+m*gr::xxx[opts.mellinrule-1][j];
+	  //double x = c+m*cc::xxx[opts.mellinrule-1][j];
 	  double t = zmin+(zmax-zmin)*x;
 	  double jac = zmax-zmin;
 	  Np[j+i*opts.mellinrule]=complex <double> (cpoint+cos(phi)*t+1.,sin(phi)*t);
 	  wn[j+i*opts.mellinrule]=gr::www[opts.mellinrule-1][j]*m*jac;
+	  //wn[j+i*opts.mellinrule]=cc::www[opts.mellinrule-1][j]*m*jac;
 	  //	  cout << setprecision(16) <<  t << " " << Np[j+i*opts.mellinrule] << "  " << wn[j+i*opts.mellinrule] << endl;
 	}
     }      
@@ -105,6 +108,7 @@ void mellinint::initgauss()
       for (int j=0; j < opts.mellinrule; j ++)
 	{
 	  double x = c+m*gr::xxx[opts.mellinrule-1][j];
+	  //double x = c+m*cc::xxx[opts.mellinrule-1][j];
 	  double t = zmin+(zmax-zmin)*x;
 	  Nm[j+i*opts.mellinrule]=complex <double> (cpoint+cos(phi)*t+1.,-sin(phi)*t);
 	}
@@ -866,7 +870,7 @@ void mellinint::pdf_mesq_expy(int i1, int i2, int sign)
     }
 }
 
-complex <double> mellinint::integrand(int i1, int i2, int sign)
+complex <double> mellinint::integrand2d(int i1, int i2, int sign)
 {
   if (opts.order == 0)
     return QQBN;
@@ -880,11 +884,54 @@ complex <double> mellinint::integrand(int i1, int i2, int sign)
 
     //contribution starting at NLL
     + QGN_1*hcoefficients::Hqg_1[i] + QGN_2*hcoefficients::Hqg_2[i]
-
+    
     //contributions starting at NNLL
     + GGN*hcoefficients::Hgg[i]
     + QQN*hcoefficients::Hqq[i]
     //    + QQN_1*hcoefficients::Hqq_1[i] + QQN_2*hcoefficients::Hqq_2[i] //I believe this is more correct, since it accounts for which leg undergoes the q -> qb or qb -> q transformation
     + QQPN_1*hcoefficients::Hqqp_1[i] + QQPN_2*hcoefficients::Hqqp_2[i];
+  
 }
 
+complex <double> mellinint::integrand1d(int i)
+{
+  //  cout << i << "  " << QQBN << endl;
+  if (opts.order == 0)
+    return QQBN;
+
+  return
+    //contribution starting at LL
+    QQBN*hcoeff::Hqqb[i]
+
+    //contribution starting at NLL
+    + (QGN_1+QGN_2)*hcoeff::Hqg[i]
+    
+    //contributions starting at NNLL
+    + GGN*hcoeff::Hgg[i]
+    + QQN*hcoeff::Hqq[i]
+    //+ (QQN_1+QQN_2)*hcoeff::Hqq[i] //I believe this is more correct, since it accounts for which leg undergoes the q -> qb or qb -> q transformation
+    + (QQPN_1+QQPN_2)*hcoeff::Hqqp[i];
+}
+
+//Failed attempt to perform N to z Mellin inversion before PDF convolution
+/*
+complex <double> mellinint::integrand()
+{
+  if (opts.order == 0)
+    return QQBN;
+
+  //  cout << "mellinint:integrand()" << QQBN << "  " << hcoeff::Hqqbz << endl;
+  return
+    //contribution starting at LL
+    QQBN*hcoeff::Hqqbz
+
+    //contribution starting at NLL
+    + (QGN_1+QGN_2)*hcoeff::Hqgz
+    
+    //contributions starting at NNLL
+    + GGN*hcoeff::Hggz
+    + QQN*hcoeff::Hqqz
+    //+ (QQN_1+QQN_2)*hcoeff::Hqqz //I believe this is more correct, since it accounts for which leg undergoes the q -> qb or qb -> q transformation
+    + (QQPN_1+QQPN_2)*hcoeff::Hqqpz;  
+}
+*/
