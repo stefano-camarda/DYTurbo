@@ -5,6 +5,8 @@
 #include "omegaintegr.h"
 #include "rapint.h"
 #include "parton.h"
+#include "codata.h"
+#include "clenshawcurtisrules.h"
 #include <iostream>
 #include <cmath>
 
@@ -14,14 +16,6 @@ using namespace parton;
 const double eequ =2./3.;
 const double eeqd = -1./3.;
 //const double gevfb = 3.8937966e11;
-
-//evaluate (h/2pi)^2
-//values from CODATA 2014 (arXiv:1507.07956)
-double cc = 299792458; // speed of light [m*s^-1]
-double e = 1.6021766208e-19; //elementary charge [C]
-double h = 6.626070040e-34; //planck constant [j*s^-1]
-const double gevfb = pow(cc*h/e/2./M_PI,2) * 1e-18 * 1e43; //[GeV^-2 * fb]
-//const double gevfb = 3.893793656596451e+11;
 
 double mesq::fac;
 //Z couplings
@@ -68,6 +62,8 @@ complex <double>* mesq::mesqij_expy;
 
 //parton mapping for subprocesses
 int mesq::totpch;
+
+//parton id in x space (PDG convention)
 pdgid *mesq::pid1;
 pdgid *mesq::pid2;
 pdgid p1Z[10] = {U,Ub,D,Db,S,Sb,C,Cb,B,Bb};
@@ -76,6 +72,16 @@ pdgid p1Wp[12] = {U,Db,U,Sb,U,Bb,C,Sb,C,Db,C,Bb};
 pdgid p2Wp[12] = {Db,U,Sb,U,Bb,U,Sb,C,Db,C,Bb,C};
 pdgid p1Wm[12] = {D,Ub,S,Ub,B,Ub,S,Cb,D,Cb,B,Cb};
 pdgid p2Wm[12] = {Ub,D,Ub,S,Ub,B,Cb,S,Cb,D,Cb,B};
+
+//parton id in N space (DYRES convention)
+partid *mesq::pidn1;
+partid *mesq::pidn2;
+partid p1Zn[10] = {u,ub,d,db,s,sb,c,cb,b,bb};
+partid p2Zn[10] = {ub,u,db,d,sb,s,cb,c,bb,b};
+partid p1Wpn[12] = {u,db,u,sb,u,bb,c,sb,c,db,c,bb};
+partid p2Wpn[12] = {db,u,sb,u,bb,u,sb,c,db,c,bb,c};
+partid p1Wmn[12] = {d,ub,s,ub,b,ub,s,cb,d,cb,b,cb};
+partid p2Wmn[12] = {ub,d,ub,s,ub,b,cb,s,cb,d,cb,b};
 
 //fortran interface
 void setmesq_expy_(int& mode, double& m, double& costh, double& y)
@@ -95,16 +101,22 @@ void mesq::init()
     {
       pid1 = p1Z;
       pid2 = p2Z;
+      pidn1 = p1Zn;
+      pidn2 = p2Zn;
     }
   else if (opts.nproc == 1)
     {
       pid1 = p1Wp;
       pid2 = p2Wp;
+      pidn1 = p1Wpn;
+      pidn2 = p2Wpn;
     }
   else if (opts.nproc == 2)
     {
       pid1 = p1Wm;
       pid2 = p2Wm;
+      pidn1 = p1Wmn;
+      pidn2 = p2Wmn;
     }
 
   mZ2 = pow(coupling::zmass, 2);
@@ -244,16 +256,17 @@ void mesq::setmesq_expy(int mode, double m, double costh, double y)
 	      mesqij_expy[mesq::index(pch, i1, i2, mesq::negative)] = mesqij[pch] * cex1[i1] * cex2m[i2] * mellinint::wn[i1] * mellinint::wn[i2];
 	    }
     }
-  else //if mode == 2 -> rapidity integrated mode
+  else //if mode == 2 or mode == 3 -> rapidity integrated mode
     {
       //1D mellin
       if (opts.mellin1d)
 	{
 	  double cthmom0, cthmom1, cthmom2;
-	  cthmoments_(cthmom0, cthmom1, cthmom2);
+	  omegaintegr::cthmoments(cthmom0,cthmom1,cthmom2);
 	  setmesq(cthmom0, cthmom1, cthmom2);
 	  double bjx= q2/pow(opts.sroot,2);
 	  double ax = log(bjx);
+
 	  for (int i = 0; i < mellinint::mdim; i++)
 	    for (int pch = 0; pch < totpch; pch++)
 	      {
@@ -262,6 +275,23 @@ void mesq::setmesq_expy(int mode, double m, double costh, double y)
 		mesqij_expy[mesq::index(pch, i, i, mesq::positive)] = mesqij[pch] * cexp * mellinint::wn[i];
 		mesqij_expy[mesq::index(pch, i, i, mesq::negative)] = mesqij[pch] * cexm * mellinint::wn[i];
 	      }
+
+	  /*
+	  //clenshaw-curtis with weight functions
+	  double m = 0.5;
+	  double jac = opts.zmax;
+	  cc::setw(ax*jac*m);
+	  for (int i = 0; i < mellinint::mdim; i++)
+	    for (int pch = 0; pch < totpch; pch++)
+	      {
+		complex <double> cexp = exp(-ax*(opts.cpoint+1.+complex <double>(0.,1)*jac*m))/M_PI * mellinint::CCp/complex <double>(0.,1);
+		complex <double> cexm = exp(-ax*(opts.cpoint+1.+complex <double>(0.,1)*jac*m))/M_PI * mellinint::CCm/complex <double>(0.,1);
+		mesqij_expy[mesq::index(pch, i, i, mesq::positive)] = mesqij[pch] * cexp * (cc::cosw[opts.mellinrule-1][i] - complex<double>(0.,1)*cc::sinw[opts.mellinrule-1][i])*m*jac;
+		mesqij_expy[mesq::index(pch, i, i, mesq::negative)] = mesqij[pch] * cexm * (cc::cosw[opts.mellinrule-1][i] + complex<double>(0.,1)*cc::sinw[opts.mellinrule-1][i])*m*jac;
+	      }
+	  */
+
+	  
 	}
       else
 	{
