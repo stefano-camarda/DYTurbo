@@ -123,13 +123,20 @@ void hcoefficients::calc(double aass, complex <double> logmuf2q2, complex <doubl
       for (int i1 = 0; i1 < mellinint::mdim; i1++)
 	for (int i2 = 0; i2 < mellinint::mdim; i2++)
 	  {
-	    if (opts.mellin1d && (i1 != i2))
-	      continue;
-
 	    Hqqb[index(i1,i2,sign)]=1.+aass/2.*
 	      (H1q + anomalous::C1QQ[anomalous::index(i1,mesq::positive)] + anomalous::C1QQ[anomalous::index(i2,sign)])
 	      -aass/2.*(anomalous::gamma1qq[anomalous::index(i1,0)]+anomalous::gamma1qq[anomalous::index(i2,sign)])*(logmuf2q2+2.*loga)
 	      +aass/2.*(-4.*loga)*(resconst::B1q+resconst::A1q*loga);
+	    
+	    /*
+	    H1stqqb[index(i1,i2,sign)]=
+	      (H1q+anomalous::C1QQ[anomalous::index(i1,mesq::positive)]+anomalous::C1QQ[anomalous::index(i2,sign)])
+	      -(anomalous::gamma1qq[anomalous::index(i1,mesq::positive)]+anomalous::gamma1qq[anomalous::index(i2,sign)])*(logmuf2q2+2.*loga)
+	      +(-4.*loga)*(resconst::B1q+resconst::A1q*loga);
+
+	    Hqqb[index(i1,i2,sign)]=1.+aass/2.*H1stqqb[index(i1,i2,sign)];
+	    */
+	    
 	    // channels which do not contribute at NLL
 	    Hgg[index(i1,i2,sign)] = 0.;//
 	    Hqq[index(i1,i2,sign)] = 0.;//              !  Q Q -> Qb Q  = Qb Qb -> Q Qb
@@ -174,9 +181,6 @@ void hcoefficients::calc(double aass, complex <double> logmuf2q2, complex <doubl
 	for (int i1 = 0; i1 < mellinint::mdim; i1++)
 	  for (int i2 = 0; i2 < mellinint::mdim; i2++)
 	    {
-	      if (opts.mellin1d && (i1 != i2))
-		continue;
-	      
 	      H1stqqb[index(i1,i2,sign)]=(H1q+anomalous::C1QQ[anomalous::index(i1,0)]+anomalous::C1QQ[anomalous::index(i2,sign)])
 		-(anomalous::gamma1qq[anomalous::index(i1,0)]+anomalous::gamma1qq[anomalous::index(i2,sign)])*(logmuf2q2+2.*loga)
 		+(-4.*loga)*(resconst::B1q+resconst::A1q*loga);
@@ -271,9 +275,6 @@ void hcoefficients::calcb(double aass, complex <double> logmuf2q2, complex <doub
 	for (int i1 = 0; i1 < mellinint::mdim; i1++)
 	  for (int i2 = 0; i2 < mellinint::mdim; i2++)
 	    {
-	      if (opts.mellin1d && (i1 != i2))
-		continue;
-
 	      Hqg_1[index(i1,i2,sign)]=Hqg[index(i1,0)];
 	      Hqg_2[index(i1,i2,sign)]=Hqg[index(i2,sign)];
 	    }
@@ -296,9 +297,6 @@ void hcoefficients::calcb(double aass, complex <double> logmuf2q2, complex <doub
 	for (int i1 = 0; i1 < mellinint::mdim; i1++)
 	  for (int i2 = 0; i2 < mellinint::mdim; i2++)
 	    {
-	      if (opts.mellin1d && (i1 != i2))
-		continue;
-	      
 	      int idx12 = index(i1,i2,sign);
 	      int idx1 = index(i1,mesq::positive);
 	      int idx2 = index(i2,sign);
