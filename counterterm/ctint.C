@@ -239,10 +239,10 @@ void ctint::calc(double costh, double m, double qt, double y, int mode, double f
 	  double th1stF = 0;
 	  double th1stQ = 0; //this piece is used only at NNLO
 	  //H1st delta term
-	  th1st += 2*resconst::C1qqdelta*fx1[i]*fx2[j];
+	  th1st += 2*resconst::C1qqdelta*tdelta;
       
 	  //add resummation scale dependence
-	  th1stQ += -(resconst::B1q+resconst::A1q/2.*LQ)*LQ*fx1[i]*fx2[j]; //this piece is used only at NNLO
+	  th1stQ += -(resconst::B1q+resconst::A1q/2.*LQ)*LQ*tdelta; //this piece is used only at NNLO
       
 	  //alfa loop (first leg)
 	  for (int a = 0; a < abint::abdim; a++)
@@ -255,7 +255,7 @@ void ctint::calc(double costh, double m, double qt, double y, int mode, double f
 	      //H1st muf dependence, gammaqq and gammaqg:
 	      th1stF += (-lx1*((fx1p[a][i]-fx1[i]*cz1[a])*pqq_(cz1[a])+fx1p[a][g]*dypqg_(cz1[a])))*fx2[j] * abint::abw[a];
 	    }
-	  th1stF += -pqqintx1*fx1[i]*fx2[j];
+	  th1stF += -pqqintx1*tdelta;
       
 	  //beta loop (second leg)
 	  for (int b = 0; b < abint::abdim; b++)
@@ -268,7 +268,7 @@ void ctint::calc(double costh, double m, double qt, double y, int mode, double f
 	      //H1st muf dependence, gammaqq and gammaqg:
 	      th1stF += (-lx2*((fx2p[b][j]-fx2[j]*cz2[b])*pqq_(cz2[b])+fx2p[b][g]*dypqg_(cz2[b])))*fx1[i] * abint::abw[b];
 	    }
-	  th1stF += -pqqintx2*fx1[i]*fx2[j];
+	  th1stF += -pqqintx2*tdelta;
       
 
 	  sig12[sp] = -0.5*resconst::A1q*tdelta;
