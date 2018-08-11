@@ -53,7 +53,7 @@ double vjint::delta(double x)
   //leading order delta(s2) contributions
   double xloqg=(factor/(pow(coupling::NC,2)-1.))*(aqg0_(sh,th,uh,q2)+agq0_(sh,th,uh,q2));
   double xloqqb=(factor/coupling::NC)*aqqb0_(sh,th,uh,q2);
-  double xlo=xloqg+xloqqb ;
+  double xlo=xloqg+xloqqb;
             
   //next to leading order delta(s2) contributions
   double xnlo = 0.;
