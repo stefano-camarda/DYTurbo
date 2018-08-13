@@ -32,6 +32,7 @@ namespace HistoHandler{
         Book();
         SetVariation(0); // always start from 0
         parent_pid=getpid();
+		if (opts.output_filename!="") result_filename = opts.output_filename;
     }
 
     void DeleteNonIntegrableHists(){
@@ -138,6 +139,8 @@ namespace HistoHandler{
      * @param iworker Worker id from cuba.
      */
     void OpenOutputFile(int iworker){
+		if (opts.output_filename!="")	result_filename = opts.output_filename;
+
         SStream outfname;
         outfname << "tmp_";
         outfname << result_filename;
@@ -170,6 +173,8 @@ namespace HistoHandler{
      */
     void Merge(int iworker){
         // Merging of files in the end.
+		if (opts.output_filename!="")	result_filename = opts.output_filename;
+
         if (getpid()==parent_pid || iworker==PARENT_PROC){ // only in main thread
             SStream tmp;
             // merge it with parent file

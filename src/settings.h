@@ -287,6 +287,9 @@ public:
 
   // Calculate helicity cross sections
   int helicity;
+
+  // Output Filenames
+  std::string output_filename;
 };
 
 class binning

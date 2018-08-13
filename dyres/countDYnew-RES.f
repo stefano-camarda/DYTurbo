@@ -153,8 +153,7 @@ CC  Now compute effective qtc from qtcut and xqtcut
        qt2=qtc**2*dexp(1d0/xth-1)
 
 CC   Set qtmax (kinematical limit)
-       if(qt2.gt.((sqrts**2+q2)**2/(4d0*sqrts**2)-q2)) goto 999
-
+c     if(qt2.gt.((sqrts**2+q2)**2/(4d0*sqrts**2)-q2)) goto 999
 
 !  SWITCHING FUNCTIONS
 c      switch=1d0
@@ -184,7 +183,6 @@ c      if(dynamicresscale) then
 c      else
 c      a_param=m/resscale
 c      endif
-
       
       xmioOLD=dsqrt(qt2/q2)
       xmio=dsqrt(qt2/(q2/a_param**2))
@@ -248,12 +246,12 @@ C Scaled momentum fractions
            
 CC    Generate event to be binned
 
-      y34=0.5d0*dlog(xx10/xx20)
-      cosh2y34=((dexp(y34)+dexp(-y34))*0.5d0)**2
+c      y34=0.5d0*dlog(xx10/xx20)
+c      cosh2y34=((dexp(y34)+dexp(-y34))*0.5d0)**2
 
 CC   Set qtmax (kinematical limit)
-      if(qt2.gt.((sqrts**2+q2)**2/(4d0*sqrts**2*(cosh2y34)-q2)))goto 999
-
+c     if(qt2.gt.((sqrts**2+q2)**2/(4d0*sqrts**2*(cosh2y34)-q2)))goto 999
+      
 !      write(*,*) qt,m,y34
 !      write(*,*) "p1",p(1,4)**2-p(1,1)**2-p(1,2)**2-p(1,3)**2
 !      write(*,*) "p2",p(2,4)**2-p(2,1)**2-p(2,2)**2-p(2,3)**2

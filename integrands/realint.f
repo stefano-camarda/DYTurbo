@@ -257,11 +257,12 @@ C---  Fill only if it's last iteration
 c     this call to getptildejet can be removed, because pjet and ptildejet are both equal to ptrans,
 c     which is the transformation of p into the dipole kinematic
 c     ptrans is stored in ptilde(nd), which should be used for filling
-               call getptildejet(nd,pjet)
+c     !!! be careful, ptilde(0) is empty, should use ptildejet instead !!!
+               call getptildejet(nd,pjet) !copy ptildejet(nd) into pjet
                val=xmsq(nd)*wgt
 C---        store information per each dipole
               call hists_real_dipole(pjet(3,:),pjet(4,:),val,nd)
-C             call hists_fill(ptilde(nd,3,:),ptilde(nd,4,:),val)
+C               call hists_fill(ptildejet(nd,3,:),ptildejet(nd,4,:),val)
             endif
          enddo                  !End loop on real+dipoles contributions
 

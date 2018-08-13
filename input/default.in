@@ -1,3 +1,6 @@
+# Output filename
+output_filename = results
+
 # Process settings
 sroot        = 7e3            # center-of-mass energy
 ih1          = 1              # hadron 1
