@@ -4,7 +4,7 @@ ih1          = 1              # hadron 1
 ih2          = 1              # hadron 2
 nproc        = 3              # process: 1) W+; 2)W-; 3)Z(/gamma*)
 g_param      = 1.0            # non perturbative g parameter
-order        = 2              # order: 1) NLO(+NLL), 2) NNLO(+NNLL)
+order        = 2              # order: 0) LO(+LL) 1) NLO(+NLL), 2) NNLO(+NNLL)
 fixedorder   = false          # resummation or fixed order switch
 
 #PDF settings
@@ -79,7 +79,18 @@ useGamma = true
 resumcpp  = true  # use C++ code for resummation
 ctcpp     = true  # use C++ code for the counter term
 qtcutoff = 0.02   # resummation cutoff
-blim = -1         # scale factor for blim
+
+# Prescription to avoid the Landau pole in the Bessel inverse transform
+# 0: bstar prescription, which freezes b at blim: b -> bstar = b/sqrt(1+b^2/blim^2)
+# 1: Integrate all the way up to the Landau singularity b_L = b0/Q * exp(1/(2*beta0*alphas))
+# 2: Minimal prescription (complex plane)
+# 3: Minimal prescription (real axis)
+bprescription = 0
+
+blim = -1         #blim for the bstar prescription (if -1 use the Landau singularity b_L). Applies to bprescription = 0
+
+phibr = 4.        #set arg(z) as phib = pi/phibr  for the integration contour in the complex plane for bprescription = 2 (should be set phibr > 4. )
+bcf = 0.5         #select the point bc = bcf * b_L, where the integration contour is bended in the complex plane, as a fraction of the Landau singularity b_L. Applies to bprescription = 2 or 3
 
 # Strategy for the direct Mellin transform of PDFs at the factorization scale
 # Set to 1 to use the dyres approximation of PDFs and integration contour in the complex plane for the Mellin inversion
@@ -95,6 +106,10 @@ opts_pdfintervals = 100
 #3: Pegasus VFN (forward evolution)
 #4: Pegasus VFN with alphas from DYRES (forward evolution)
 evolmode = 0
+
+# Split the Bessel inverse transform in 3 pieces corresponding to NF=3,4,5
+# and compute a NF-dependent Sudakov form factor
+vfnsudakov = false
 
 #Settings for the Bessel integration
 bintaccuracy = 1.0e-4  #accuracy
@@ -142,16 +157,16 @@ qtcut = 0.      # cutoff on qt
 rseed        = 123456         # random seed for MC integration
 
 # type of integration for the resummed cross section
-intDimRes = 4 # can be 2 or 3 for quadrature, or 4 for vegas
+intDimRes = 4 # can be 1, 2 or 3 for quadrature, or 4 for vegas
 
 # type of integration for the born configuration
 intDimBorn = 2 # can be 2 for quadrature, 4 or 6 for vegas
 
 # type of integration for counter term
-intDimCT = 8 # can be 2 or 3 for quadrature, or 6, or 8 for vegas
+intDimCT = 2 # can be 1, 2 or 3 for quadrature, or 6, or 8 for vegas
 
 # type of integration for V+J finite order
-intDimVJ = 7 # can be 3 for quadrature, 5 for quadrature with cuts, or 7 for vegas
+intDimVJ = 3 # can be 3 for quadrature, 5 for quadrature with cuts, or 7 for vegas
 
 # term switches
 doBORN = true
@@ -197,16 +212,20 @@ alpptcut = 0
 alpycut = 1000
 
 #absolute-rapidity-ordered leptons (central and forward)
-lcptcut = 25
+lcptcut = 0
 lcymin = 0
-lcymax = 2.5
-lfptcut = 25
-lfymin = 2.5
-lfymax = 4.2
+lcymax = 1000
+lfptcut = 0
+lfymin = 0
+lfymax = 1000
 
 # cuts on neutrino and transverse mass
 etmisscut = 0
 mtcut = 0
+
+#costh CS
+cthCSmin = -1
+cthCSmax = +1
 
 # integration types and settings for costh phi_lep phase space
 cubaint   = false   # integration with Cuba Suave
