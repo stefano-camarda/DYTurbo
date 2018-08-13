@@ -1,8 +1,9 @@
 #ifndef intde2_c_h
 #define intde2_c_h
 
-extern "C"
-{
+#ifdef __cplusplus
+extern "C" {
+#endif
  void intdeini(int lenaw, double tiny, double eps, double *aw);
  void intde(double (*f)(double), double a, double b, double *aw, 
 	   double *i, double *err);
@@ -12,5 +13,8 @@ extern "C"
  void intdeoini(int lenaw, double tiny, double eps, double *aw);
  void intdeo(double (*f)(double), double a, double omega, double *aw, 
 	    double *i, double *err);
+#ifdef __cplusplus
 }
+#endif
+
 #endif
