@@ -154,7 +154,7 @@ void xline()
   int nocuts = (int)true;
   double x1 = 0.;
   double x2 = 1.;
-  int nx = 100;
+  int nx = 1000;
   phasespace::setbounds(phasespace::mmin, phasespace::mmax, phasespace::qtmin, phasespace::qtmax, phasespace::ymin, phasespace::ymax);
 
   ofstream xf("xline.C");
@@ -169,16 +169,19 @@ void xline()
       //    rapintegrals_(ymin,ymax,m,nocuts);
       const int ncomp = 1;
       //const int ndim = 4; //3; //2;
-      const int ndim = 3;
+      const int ndim = 10;
       double x[ndim];
       double f[ncomp],g[ncomp];
-      x[0] = 0.;
-      x[1] = 0.9;
-      x[2] = xx;
-      //x[3] = 0.5;
-      //x[4] = 0.5;
-      //x[5] = 0.5;
-      //x[6] = 0.5;
+      x[0] = xx;
+      x[1] = 0.5;
+      x[2] = 0.5;
+      x[3] = 0.5;
+      x[4] = 0.5;
+      x[5] = 0.5;
+      x[6] = 0.5;
+      x[7] = 0.5;
+      x[8] = 0.5;
+      x[9] = 0.5;
       void* userdata = 0;
       const int nvec = 1;
       const int core = 0;
@@ -199,6 +202,7 @@ void xline()
       //ctintegrandMC(ndim, x, ncomp, f, userdata, nvec, core, weight, iter);
       //vjlointegrandMC(ndim, x, ncomp, f, userdata, nvec, core, weight, iter);
       //void* userdata; int nvec; int core; double weight; int iter; resintegrand4d(ndim, x, ncomp, f, userdata, nvec, core, weight, iter);
+      realintegrand(ndim, x, ncomp, f, userdata, nvec, core, weight, iter);
       //xf << "gx->SetPoint(gx->GetN(), " << i*hx+x1 << ", " << f[0]/g[0] << ");" << endl;
       //xf << "gx->SetPoint(gx->GetN(), " << i*hx+x1 << ", " << f[0]+g[0] << ");" << endl;
       //xf << "gx->SetPoint(gx->GetN(), " << i*hx+x1 << ", " << g[0] << ");" << endl;

@@ -32,7 +32,7 @@
       external hists_fill
       external hists_setpdf
 
-      data p/48*0d0/
+      data p/pdim*0d0/
 
       integer npdf,maxpdf
       double precision gsqcentral

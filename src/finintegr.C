@@ -133,6 +133,9 @@ integrand_t realintegrand(const int &ndim, const double x[], const int &ncomp, d
                         void* userdata, const int &nvec, const int &core,
                         double &weight, const int &iter)
 {
+  clock_t begin_time, end_time;
+
+  begin_time = clock();
   double rre[22];
   for (int i = 0; i < ndim; i++)
     rre[i]=x[i];
@@ -140,6 +143,14 @@ integrand_t realintegrand(const int &ndim, const double x[], const int &ncomp, d
   dofill_.doFill_ = int(iter==last_iter);
   f[0] = realint_(rre,weight,f);
 
+  end_time = clock();
+  if (opts.timeprofile)
+    cout
+      //<< setw (3) << "m" << setw(10) << m << setw(4) << "qt" << setw(10) <<  qt << setw(4) << "y" << setw(10) <<  y
+      << setw(8) << "result" << setw(12) << f[0]
+      << setw(10) << "tot time" << setw(10) << double( end_time - begin_time ) /  CLOCKS_PER_SEC
+      << endl;
+  
   tell_to_grid_we_are_alive();
   return 0;
 }
