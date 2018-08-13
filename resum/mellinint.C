@@ -213,7 +213,8 @@ void mellinint::pdf_mesq_expy(int i1, int i2, int sign)
             
 	  //I suspect a mistake here: there are different costh couplings for u-ubar and ubar-u,
 	  //the contribution u u -> ub u and u u -> u ub should be separated (need to split hqq_1 and hqq_2)
-	  
+
+	  /*
 	  QQN = fn1[u]*fn2[u]*mesq_uub
 	    +fn1[c]*fn2[c]*mesq_ccb
 	    +fn1[d]*fn2[d]*mesq_ddb
@@ -224,8 +225,9 @@ void mellinint::pdf_mesq_expy(int i1, int i2, int sign)
 	    +fn1[db]*fn2[db]*mesq_dbd
 	    +fn1[sb]*fn2[sb]*mesq_sbs
 	    +fn1[bb]*fn2[bb]*mesq_brb;
+	  */
 
-	  /*	  QQN_1 = fn1[u]*fn2[u]*mesq_ubu
+	  QQN_1 = fn1[u]*fn2[u]*mesq_ubu
 	    +fn1[c]*fn2[c]*mesq_cbc
 	    +fn1[d]*fn2[d]*mesq_dbd
 	    +fn1[s]*fn2[s]*mesq_sbs
@@ -245,7 +247,7 @@ void mellinint::pdf_mesq_expy(int i1, int i2, int sign)
 	    +fn1[cb]*fn2[cb]*mesq_cbc
 	    +fn1[db]*fn2[db]*mesq_dbd
 	    +fn1[sb]*fn2[sb]*mesq_sbs
-	    +fn1[bb]*fn2[bb]*mesq_brb;*/
+	    +fn1[bb]*fn2[bb]*mesq_brb;
 
 	  QQPN_1 = fn1[u]*(fn2[db]*mesq_ddb
 			   +fn2[sb]*mesq_ssb
@@ -489,6 +491,7 @@ void mellinint::pdf_mesq_expy(int i1, int i2, int sign)
              +   mesq_bbu
 	     +   mesq_bbc);
 
+	  /*
 	  QQN = fn1[u]*fn2[d]*mesq_udb
 	    + fn1[u]*fn2[s]*mesq_usb
 	    + fn1[u]*fn2[b]*mesq_ubb
@@ -501,8 +504,9 @@ void mellinint::pdf_mesq_expy(int i1, int i2, int sign)
 	    + fn1[sb]*fn2[cb]*mesq_sbc
 	    + fn1[bb]*fn2[ub]*mesq_bbu
 	    + fn1[bb]*fn2[cb]*mesq_bbc;
+	  */
 
-	  /*	  QQN_1 = fn1[ub]*fn2[db]*mesq_udb
+	  QQN_1 = fn1[ub]*fn2[db]*mesq_udb
 	    + fn1[ub]*fn2[sb]*mesq_usb
 	    + fn1[ub]*fn2[bb]*mesq_ubb
 	    + fn1[cb]*fn2[db]*mesq_cdb
@@ -718,6 +722,7 @@ void mellinint::pdf_mesq_expy(int i1, int i2, int sign)
              +   mesq_bub
 	     +   mesq_bcb);
 
+	  /*
 	  QQN = fn1[ub]*fn2[db]*mesq_ubd
 	    + fn1[ub]*fn2[sb]*mesq_ubs
 	    + fn1[ub]*fn2[bb]*mesq_ubb
@@ -730,8 +735,9 @@ void mellinint::pdf_mesq_expy(int i1, int i2, int sign)
 	    + fn1[s]*fn2[c]*mesq_scb
 	    + fn1[b]*fn2[u]*mesq_bub
 	    + fn1[b]*fn2[c]*mesq_bcb;
+	  */
 
-	  /*	  QQN_1 = fn1[u]*fn2[d]*mesq_ubd
+	  QQN_1 = fn1[u]*fn2[d]*mesq_ubd
 	    + fn1[u]*fn2[s]*mesq_ubs
 	    + fn1[u]*fn2[b]*mesq_ubb
 	    + fn1[c]*fn2[d]*mesq_cbd
@@ -755,7 +761,7 @@ void mellinint::pdf_mesq_expy(int i1, int i2, int sign)
 	    + fn1[s]*fn2[u]*mesq_sub
 	    + fn1[s]*fn2[c]*mesq_scb
 	    + fn1[b]*fn2[u]*mesq_bub
-	    + fn1[b]*fn2[c]*mesq_bcb;*/
+	    + fn1[b]*fn2[c]*mesq_bcb;
 
 	  QQPN_1 =
 	    (fn1[ub]+fn1[u])*
@@ -887,8 +893,8 @@ complex <double> mellinint::integrand2d(int i1, int i2, int sign)
     
     //contributions starting at NNLL
     + GGN*hcoefficients::Hgg[i]
-    + QQN*hcoefficients::Hqq[i]
-    //    + QQN_1*hcoefficients::Hqq_1[i] + QQN_2*hcoefficients::Hqq_2[i] //I believe this is more correct, since it accounts for which leg undergoes the q -> qb or qb -> q transformation
+    //+ QQN*hcoefficients::Hqq[i]
+    + QQN_1*hcoefficients::Hqq_1[i] + QQN_2*hcoefficients::Hqq_2[i] //Bug fix in DYRES (I believe this is more correct, since it accounts for which leg undergoes the q -> qb or qb -> q transformation)
     + QQPN_1*hcoefficients::Hqqp_1[i] + QQPN_2*hcoefficients::Hqqp_2[i];
   
 }
@@ -908,8 +914,8 @@ complex <double> mellinint::integrand1d(int i)
     
     //contributions starting at NNLL
     + GGN*hcoeff::Hgg[i]
-    + QQN*hcoeff::Hqq[i]
-    //+ (QQN_1+QQN_2)*hcoeff::Hqq[i] //I believe this is more correct, since it accounts for which leg undergoes the q -> qb or qb -> q transformation
+    //+ QQN*hcoeff::Hqq[i]
+    + (QQN_1+QQN_2)*hcoeff::Hqq[i] //Bug fix in DYRES (I believe this is more correct, since it accounts for which leg undergoes the q -> qb or qb -> q transformation)
     + (QQPN_1+QQPN_2)*hcoeff::Hqqp[i];
 }
 
