@@ -267,7 +267,11 @@ void hcoefficients::calcb(double aass, complex <double> logmuf2q2, complex <doub
       for (int sign = mesq::positive; sign <= mesq::negative; sign++)
 	for (int i = 0; i < mellinint::mdim; i++)
 	  {         
-	    Hqg[index(i,sign)] = alpq*2.*anomalous::C1QG[anomalous::index(i,sign)]
+	    //Hqg[index(i,sign)] = alpq*2.*anomalous::C1QG[anomalous::index(i,sign)]
+	    //  +(aass/2.)*(-anomalous::gamma1qg[anomalous::index(i,sign)])*(logmuf2q2+2.*loga);
+
+	    //Bug fix in DYRES (compare lines 659-660 of DYRes-v1.0/src/Res/main2.f and line 894 of DYqT-v1.0/enew.f)
+	    Hqg[index(i,sign)] = aexp*(aass/2.)*anomalous::C1QG[anomalous::index(i,sign)]
 	      +(aass/2.)*(-anomalous::gamma1qg[anomalous::index(i,sign)])*(logmuf2q2+2.*loga);
 	  }
 
