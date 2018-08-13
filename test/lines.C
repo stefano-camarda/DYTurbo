@@ -64,9 +64,9 @@ void mline()
 {
   double costh = 0.;
   double m = opts.rmass;
-  double qt = 0.01;
+  double qt = (phasespace::qtmin + phasespace::qtmax)/2.;
   double y =  (phasespace::ymin + phasespace::ymax)/2.;
-  int mode = 1;
+  int mode = 3;
   double f[opts.totpdf];
 
   double m1 = phasespace::mmin;
@@ -88,22 +88,27 @@ void mline()
       phasespace::calcexpy();
       phasespace::calcmt();
       omegaintegr::genV4p();//generate boson 4-momentum, with m, qt, y and phi=0
-      double vj = vjint::vint(m,qt,y);
+      //      double vj = vjint::vint(m,qt,y);
       //      mf << "gm->SetPoint(gm->GetN(), " << i*hm+m1 << ", " << resumm_(costh,m,qt,y,mode) << ");" << endl;
-      //mf << "gm->SetPoint(gm->GetN(), " << i*hm+m1 << ", " << resint::rint(costh,m,qt,y,mode) << ");" << endl;
+
+      rapint::cache(phasespace::ymin, phasespace::ymax);
+      rapint::allocate();
+      rapint::integrate(phasespace::ymin,phasespace::ymax,(phasespace::mmin+phasespace::mmax)/2.);
+      mf << "gm->SetPoint(gm->GetN(), " << i*hm+m1 << ", " << resint::rint(costh,m,qt,y,mode) << ");" << endl;
       //      mf << "gm->SetPoint(gm->GetN(), " << i*hm+m1 << ", " << resint::rint(costh,m,qt,y,mode) << ");" << endl;
       //mf << "gm->SetPoint(gm->GetN(), " << i*hm+m1 << ", " << -ctint_(costh,m,qt,y,mode,f)*2*qt/vjint::vint(m,qt,y) << ");" << endl;
       //mf << "gm1->SetPoint(gm1->GetN(), " << i*hm+m1 << ", " << -ctint_(costh,m,qt,y,mode,f)*2*qt << ");" << endl;
       //mf << "gm2->SetPoint(gm2->GetN(), " << i*hm+m1 << ", " << vjint::vint(m,qt,y) << ");" << endl;
 
       dofill_.doFill_ = 1;
-      qtint::calc(m,qt,0,1);
-      omegaintegr::genV4p();//generate boson 4-momentum, with m, qt, y and phi=0
-      ctint::calc(costh,m,qt,y,mode,f);
-
-      cout << vj << "  " << f[0]*2*qt << endl;
       
-      mf << "gm->SetPoint(gm->GetN(), " << i*hm+m1 << ", " << (-f[0]*2*qt)/vj << ");" << endl;
+      //      qtint::calc(m,qt,0,1);
+      //      omegaintegr::genV4p();//generate boson 4-momentum, with m, qt, y and phi=0
+      //      ctint::calc(costh,m,qt,y,mode,f);
+
+      //      cout << vj << "  " << f[0]*2*qt << endl;
+      
+      //      mf << "gm->SetPoint(gm->GetN(), " << i*hm+m1 << ", " << (-f[0]*2*qt)/vj << ");" << endl;
     }
   mf << "gm->Draw();" << endl;
   mf << "//gm1->Draw();" << endl;
@@ -168,13 +173,13 @@ void xline()
       double ymax = 1.;
       //    rapintegrals_(ymin,ymax,m,nocuts);
       const int ncomp = 1;
-      //const int ndim = 4; //3; //2;
-      const int ndim = 3;
+      //const int ndim = 4; //3; //2; //1;
+      const int ndim = 1;
       double x[ndim];
       double f[ncomp],g[ncomp];
-      x[0] = 0.;
-      x[1] = 0.9;
-      x[2] = xx;
+      x[0] = xx;
+      //x[1] = 0.5;
+      //x[2] = 0.5;
       //x[3] = 0.5;
       //x[4] = 0.5;
       //x[5] = 0.5;
@@ -184,10 +189,16 @@ void xline()
       const int core = 0;
       double weight;
       const int iter = 0;
+
+      rapint::cache(phasespace::ymin, phasespace::ymax);
+      rapint::allocate();
+      rapint::integrate(phasespace::ymin,phasespace::ymax,(phasespace::mmin+phasespace::mmax)/2.);
+
+      resintegrand1d(ndim, x, ncomp, f);
       //resintegrand2d(ndim, x, ncomp, f);
       //vjlointegrand(ndim, x, ncomp, f);
       //resintegrand3d(ndim, x, ncomp, f);
-      ctintegrand3d(ndim, x, ncomp, f);
+      //ctintegrand3d(ndim, x, ncomp, f);
       //ctintegrand2d(ndim, x, ncomp, f);
       //                  x[0] = 0.5;
       //                  x[1] = 0.5;
@@ -245,26 +256,30 @@ void costhline()
 void ptline()
 {
   double costh = 0.;
+  //double m = (phasespace::mmin + phasespace::mmax)/2.;
   double m = opts.rmass;
   double qt = 5.;
   double y = 0.0;
-  int mode = 1;
+  int mode = 3;
   double f[opts.totpdf];
+  /*
   phasespace::setbounds(phasespace::mmin, phasespace::mmax, 0, 100, phasespace::ymin, phasespace::ymax);
   cacheyrapint_(phasespace::ymin, phasespace::ymax);
-  if (opts.resint2d)
+  if (mode >= 2)
     if (opts.resumcpp)
       {
 	rapint::cache(phasespace::ymin, phasespace::ymax);
 	rapint::allocate();
 	rapint::integrate(phasespace::ymin,phasespace::ymax,m);
       }
+  */
 
-  double p1 = 2;
-  double p2 = 200;
+  double p1 = 0.01;
+  double p2 = 1;
   int np = 99;
 
   ofstream pf("ptline.C");
+  pf << std::setprecision(15);
   pf << "{" << endl;
   pf << "TGraph *gp = new TGraph();" << endl;
   pf << "TGraph *gp1 = new TGraph();" << endl;
@@ -282,8 +297,9 @@ void ptline()
       double vj = vjint::vint(m,qt,y);
 
       //pf << "gp->SetPoint(gp->GetN(), " << i*hp+p1 << ", " << resumm_(costh,m,qt,y,mode) << ");" << endl;
+      //phasespace::setbounds(phasespace::mmin, phasespace::mmax, 0, qt, phasespace::ymin, phasespace::ymax);
       //pf << "gp->SetPoint(gp->GetN(), " << i*hp+p1 << ", " << resint::rint(costh,m,qt,y,mode) << ");" << endl;
-      pf << "gp->SetPoint(gp->GetN(), " << i*hp+p1 << ", " << vjint::vint(m,qt,y) << ");" << endl;
+      //pf << "gp->SetPoint(gp->GetN(), " << i*hp+p1 << ", " << vjint::vint(m,qt,y) << ");" << endl;
       /*      pf << "gp->SetPoint(gp->GetN(), "   << i*hp+p1 << ", " << vjfo_(m,qt,y)+ctint_(costh,m,qt,y,mode,f)*2*qt << ");" << endl;
       pf << "gp1->SetPoint(gp1->GetN(), " << i*hp+p1 << ", " << -ctint_(costh,m,qt,y,mode,f)*2*qt << ");" << endl;
       pf << "gp2->SetPoint(gp2->GetN(), " << i*hp+p1 << ", " << vjfo_(m,qt,y) << ");" << endl;*/
@@ -291,11 +307,12 @@ void ptline()
       dofill_.doFill_ = 1;
       qtint::calc(m,qt,0,1);
       omegaintegr::genV4p();//generate boson 4-momentum, with m, qt, y and phi=0
+      mode = 1;
       ctint::calc(costh,m,qt,y,mode,f);
 
       cout << qt << "  " << vj << "  " << f[0]*2*qt << endl;
-
       //pf << "gp->SetPoint(gp->GetN(), " << i*hp+p1 << ", " << (f[0]*2*qt)+vj << ");" << endl;
+      pf << "gp->SetPoint(gp->GetN(), " << i*hp+p1 << ", " << (f[0]*2*qt)/vj << ");" << endl;
     }
   pf << "gp->Draw();" << endl;
   pf << "//gp1->Draw();" << endl;

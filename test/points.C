@@ -8,6 +8,7 @@
 #include "resintegr.h"
 #include "ctintegr.h"
 #include "finintegr.h"
+#include "bornintegr.h"
 #include "finitemapping.h"
 #include "resint.h"
 #include "rapint.h"
@@ -104,11 +105,11 @@ int main( int argc , char * argv[])
   test_ct_speed(costh,m,qt,y,mode);
 
   //costhline();
-  //ptline();
+  ptline();
   //yline();
   //mline();
   //mlinebw();
-  xline();
+  //xline();
   //ptavar();
   //ptgvar();
 
