@@ -76,8 +76,9 @@ namespace resint
 {
   //point in phase space
   extern double _qt, _y, _m, _costh;
+  extern double x1, x2;
   extern int _mode;
-#pragma omp threadprivate(_qt,_m,_y,_costh,_mode)
+#pragma omp threadprivate(_qt,_m,_y,_costh,_mode,x1,x2)
 
   //scales
   extern double muren, mufac, mures;
@@ -103,6 +104,10 @@ namespace resint
   extern double alpqren;
   extern double alpqres;
 #pragma omp threadprivate(alpqr,alpqf,aass,alpqfac,alpqren,alpqres)
+
+  //integration contour
+  extern double bc;
+#pragma omp threadprivate(bc)
   
   extern void init();
   extern double rint(double costh, double m, double qt, double y, int mode);
