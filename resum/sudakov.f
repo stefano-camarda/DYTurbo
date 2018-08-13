@@ -150,6 +150,7 @@ c.....Soft-gluon-Resummation of LL (Eq.22 of arXiv:hep-ph/0508068)
       include 'const.h'
       include 'sudakov_inc.f'
       f0=(A1q/beta0)*(y+log1y)/(y)
+!      f0 = 0d0
       return
       end
       
@@ -167,6 +168,8 @@ c.....Now we have mu_r dependence!
      \     (A1q/beta0)*(y/(1-y)+log1y)*rlogq2mur2 !!! should be rlogq2mur2 -> log(mures^2/mur^2) = (logq2mur2-2.*loga) (is this a bug in DYRES?) (--> no see a dependence below)
 c    a dependence      
       f1=f1-2*rloga*A1q/beta0*y/(1-y) !!! (Here is missing the term log1y in (y/(1-y)+log1y) ???)
+!     \     (A1q/beta0)*(y/(1-y)+log1y)*(rlogq2mur2-2.*rloga)
+!      f1 = 0d0
       return
       end
 
