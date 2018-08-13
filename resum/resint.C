@@ -511,10 +511,7 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
       */
 
       //double qtmn = max(opts.qtcutoff,phasespace::qtmin);
-
-      double qtmn;
-      if (phasespace::qtmin < opts.qtcutoff)
-	qtmn = 0.;
+      double qtmn = phasespace::qtmin;
 
       //double kinqtlim = sqrt(max(0.,pow(pow(opts.sroot,2)+phasespace::m2,2)/(4*pow(opts.sroot,2))-phasespace::m2)); //introduced max to avoid neqative argument of sqrt
       double kinqtlim = 1e10;
@@ -522,7 +519,7 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
       double qtlim = min(kinqtlim, switchqtlim);
       double qtmx = min(qtlim, phasespace::qtmax);
 
-      if (qtmn >= qtmx)
+      if (qtmn >= qtmx || qtmx < opts.qtcutoff)
 	res = 0;
       else
 	{
