@@ -52,8 +52,8 @@ libdyturbo_la_LIBADD = libdyturbobase.la \
 		       ../specialfunctions/libspecialfunctions.la \
 		       ../cubature/libcubature.la \
 		       ../cernlib/libcern.la \
-		       -lgfortran -lblas \
-		       $(LHAPDF_LDFLAGS) #-lgsl -lgslcblas -lifcore -limf -lifport -lintlc -lquadmath
+		       -lgfortran \
+		       $(LHAPDF_LDFLAGS) #-lgsl -lgslcblas -lifcore -limf -lifport -lintlc -lquadmath -lblas
 
 
 bin_PROGRAMS = dyturbo
