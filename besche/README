@@ -1,0 +1,9 @@
+- besche.f: Robert Piessens, Maria Branders, Algorithm for the computation of Bessel function integrals,
+  In Journal of Computational and Applied Mathematics, Volume 11, Issue 1, 1984, Pages 119-137, ISSN 0377-0427,
+  https://doi.org/10.1016/0377-0427(84)90037-2.
+
+- fft.f: Carl de Boor, FFT as Nested Multiplication, with a Twist,
+  SIAM J. Sci. and Stat. Comput., 1(1), 173-178. (6 pages),
+  https://doi.org/10.1137/0901009
+
+- dgbfa.f dgbsl.f: LINPACK http://www.netlib.org/linpack/
