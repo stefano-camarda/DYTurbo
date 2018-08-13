@@ -25,7 +25,7 @@ DYTURBOLIBS= ../src/libdyturbo.la ../cernlib/libcern.la \
 
 AM_FFLAGS =  -I$(srcdir)/../dyres -I$(srcdir)/../mcfm -I$(srcdir)/../src
 
-bin_PROGRAMS = points TurboHist_unittest Kinematics_unittest  HistoHandler_unittest Cuts_unittest DYTurbo_unittest
+bin_PROGRAMS = points #TurboHist_unittest Kinematics_unittest  HistoHandler_unittest Cuts_unittest DYTurbo_unittest
 
 points_SOURCES = points.C finitemapping.C
 points_LDADD = ../src/libdyturbo.la \
@@ -34,29 +34,29 @@ points_LDADD = ../src/libdyturbo.la \
 	       $(CUBA_LDFLAGS) $(LHAPDF_LDFLAGS) $(CHAPLIN_LDFLAGS) -lgsl -lgslcblas $(ROOT_LDFLAGS)
 
 
-# unit tests
-TurboHist_unittest_SOURCES = TurboHist_unittest.cxx
-TurboHist_unittest_LDADD   = $(GMOCK_LDFLAGS) ../histo/libhisto.la
-
-Kinematics_unittest_SOURCES = Kinematics_unittest.cxx
-Kinematics_unittest_LDADD   = $(GMOCK_LDFLAGS) $(DYTURBOLIBS)
-
-HistoHandler_unittest_SOURCES = HistoHandler_unittest.cxx
-HistoHandler_unittest_LDADD   = $(GMOCK_LDFLAGS) $(DYTURBOLIBS)
-
-Cuts_unittest_SOURCES = Cuts_unittest.cxx
-Cuts_unittest_LDADD   = $(GMOCK_LDFLAGS) $(DYTURBOLIBS)
-
-DYTurbo_unittest_SOURCES = DYTurbo_unittest.cxx
-DYTurbo_unittest_LDADD   = $(GMOCK_LDFLAGS) $(DYTURBOLIBS)
+### # unit tests
+### TurboHist_unittest_SOURCES = TurboHist_unittest.cxx
+### TurboHist_unittest_LDADD   = $(GMOCK_LDFLAGS) ../histo/libhisto.la
+### 
+### Kinematics_unittest_SOURCES = Kinematics_unittest.cxx
+### Kinematics_unittest_LDADD   = $(GMOCK_LDFLAGS) $(DYTURBOLIBS)
+### 
+### HistoHandler_unittest_SOURCES = HistoHandler_unittest.cxx
+### HistoHandler_unittest_LDADD   = $(GMOCK_LDFLAGS) $(DYTURBOLIBS)
+### 
+### Cuts_unittest_SOURCES = Cuts_unittest.cxx
+### Cuts_unittest_LDADD   = $(GMOCK_LDFLAGS) $(DYTURBOLIBS)
+### 
+### DYTurbo_unittest_SOURCES = DYTurbo_unittest.cxx
+### DYTurbo_unittest_LDADD   = $(GMOCK_LDFLAGS) $(DYTURBOLIBS)
 
 if HAVE_ROOT
 AM_CPPFLAGS += $(ROOT_CFLAGS)
-Kinematics_unittest_LDADD += $(ROOT_LDFLAGS)
-TurboHist_unittest_LDADD += $(ROOT_LDFLAGS)
-HistoHandler_unittest_LDADD += $(ROOT_LDFLAGS)
-DYTurbo_unittest_LDADD += $(ROOT_LDFLAGS)
-Cuts_unittest_LDADD   += $(ROOT_LDFLAGS)
+### Kinematics_unittest_LDADD += $(ROOT_LDFLAGS)
+### TurboHist_unittest_LDADD += $(ROOT_LDFLAGS)
+### HistoHandler_unittest_LDADD += $(ROOT_LDFLAGS)
+### DYTurbo_unittest_LDADD += $(ROOT_LDFLAGS)
+### Cuts_unittest_LDADD   += $(ROOT_LDFLAGS)
 endif #ROOT
 
 
