@@ -143,7 +143,7 @@ double hankel::filldpsi()
     {
       //double a = (M_PI*h*zeros[i]*cosh(h*zeros[i]) + sinh(M_PI*sinh(h*zeros[i])))/(1.0 + cosh(M_PI*sinh(h*zeros[i])));
       double a = dpsi(h*zeros[i]);
-      if (isnan(a))
+      if (std::isnan(a))
 	a = 1.0;
       dp[i] = a;
     }

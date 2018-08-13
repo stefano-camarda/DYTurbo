@@ -7,3 +7,5 @@
   https://doi.org/10.1137/0901009
 
 - dgbfa.f dgbsl.f: LINPACK http://www.netlib.org/linpack/
+
+- daxpy.f idamax.f dscal.f ddot.f: BLAS 3.8.0 http://www.netlib.org/blas/

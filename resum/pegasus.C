@@ -311,7 +311,8 @@ void pegasus::init()
       int hadron = 1; //opts.ih1;
       fcomplex N = fcx(mellinint::Np[i]); //compute positive branch only, the negative branch is obtained by complex conjugation
       double facscale = sqrt(asinp_.m20_);
-      pdfmoments_(hadron,facscale,N,uval,dval,ubar,dbar,s,sbar,glu,charm,bot);
+      double xmin = 1e-8;
+      pdfmoments_(hadron,facscale,N,uval,dval,ubar,dbar,s,sbar,glu,charm,bot,xmin);
 //      cout << "pegasus init " << facscale << "  "
 //	   << i << "  " << mellinint::Np[i] << "  "
 //	   << cx(glu) << "  "
