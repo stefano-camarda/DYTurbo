@@ -8,7 +8,7 @@ using namespace std;
 
 extern "C"
 {
-  void pdfmoments_(int &beam, double &scale, fcomplex &N, fcomplex &UV, fcomplex &DV, fcomplex &US, fcomplex &DS, fcomplex &SP, fcomplex &SM, fcomplex &GL, fcomplex &CH, fcomplex &BO);
+  void pdfmoments_(int &beam, double &scale, fcomplex &N, fcomplex &UV, fcomplex &DV, fcomplex &US, fcomplex &DS, fcomplex &SP, fcomplex &SM, fcomplex &GL, fcomplex &CH, fcomplex &BO, double &xmin);
 
   //access dyres PDF in N-space
   extern struct {
@@ -46,6 +46,7 @@ namespace pdfevol
   extern complex <double> bstarscale;
   extern complex <double> bstartilde;
   extern complex <double> qbstar;
+  extern complex <double> bcomplex;
   extern complex <double> XL;
   extern complex <double> XL1;
   extern complex <double> SALP;
@@ -62,6 +63,13 @@ namespace pdfevol
   extern void storemoments(int i, complex <double> fx[11]);
   //retrieve moments corresponding to i1, i2, and sign from the Fortran common block and store them in fn1 and fn2
   extern void retrieve(int i1, int i2, int sign);
+  //retrieve moments corresponding to i, and sign from the Fortran common block and store them in fn1 and fn2, to be used with the mellin1d option
+  extern void retrieve1d(int i, int sign);
+
+  extern void retrievemuf(int i, int sign);
+
+  extern void truncate();
+  
 }
 
 #endif
