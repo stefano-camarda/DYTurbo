@@ -200,6 +200,7 @@ void hcoeff::calcb(double aass, complex <double> logmuf2q2, complex <double> log
 
   //b-dependent quantities to be computed in invres(b)
   // complex <double> alpq = pdfevol::alpq; //(alpqf * alphasl(scale2))
+  //--> alpq = alphas(b0^2/b^2)
 
   double aassh=aass/2.;
   double aasshsq = pow(aassh,2);
@@ -212,8 +213,12 @@ void hcoeff::calcb(double aass, complex <double> logmuf2q2, complex <double> log
       for (int i = 0; i < mellinint::mdim; i++)
 	{         
 	  int idx = anomalous::index(i,mesq::positive);
-	    
-	  Hqg[i] = alpq*2.*C1QG[idx]
+	  
+	  //Hqg[i] = alpq*2.*C1QG[idx]
+	  //  +(aass/2.)*(-gamma1qg[idx])*(logmuf2q2+2.*loga);
+
+	  //Bug fix in DYRES (compare lines 659-660 of DYRes-v1.0/src/Res/main2.f and line 894 of DYqT-v1.0/enew.f)
+	  Hqg[i] = aexp*(aass/2.)*C1QG[idx]
 	    +(aass/2.)*(-gamma1qg[idx])*(logmuf2q2+2.*loga);
 	}
     }
