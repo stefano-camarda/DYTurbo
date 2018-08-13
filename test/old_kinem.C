@@ -102,14 +102,14 @@ void kinematic::calcPhiCS()
   else // if qt > 0, use the boson direction in the transverse plane as x axis in the boson rest frame
     {
       /*******************************************************************/
-      //Mirkes definition as in Nucl.Phys. B387 (1992) 385 Eq.(22)
+      //Mirkes definition as in Nucl.Phys. B387 (1992) 3-85 Eq.(22)
       //first needs to rotate the lab frame so that the x axis lies in the event plane defined by the boson and proton directions
       double c = v[0]/qt;//cos(-phiZ);
       double s = -v[1]/qt;//sin(-phiZ);
       double plx = c*lm[0] - s*lm[1];
       double ply = s*lm[0] + c*lm[1];
 
-      //Now apply formulas (22) of Nucl.Phys. B387 (1992) 385
+      //Now apply formulas (22) of Nucl.Phys. B387 (1992) 3-85
       plxCS = 0.5 * m / sqrt(m2+qt2) * (2.*plx - qt);
       plyCS = ply;
   
