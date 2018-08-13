@@ -530,7 +530,7 @@ void mellinint::pdf_mesq_expy(int i1, int i2, int sign)
 	    + fn1[sb]*fn2[ub]*mesq_sbu
 	    + fn1[sb]*fn2[cb]*mesq_sbc
 	    + fn1[bb]*fn2[ub]*mesq_bbu
-	    + fn1[bb]*fn2[cb]*mesq_bbc;*/
+	    + fn1[bb]*fn2[cb]*mesq_bbc;
 
 	  QQPN_1 =
 	    (fn1[u]+fn1[ub])*
