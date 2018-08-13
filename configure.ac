@@ -1,4 +1,4 @@
-AC_INIT([dyturbo], [1.0beta], [stefano.camarda@cern.ch,jakub.cuth@cern.ch])
+AC_INIT([dyturbo], [1.0.1beta], [stefano.camarda@cern.ch,jakub.cuth@cern.ch])
 AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE([foreign -Wall -Werror])
 
@@ -265,6 +265,10 @@ AC_CONFIG_FILES([Makefile
 		 dequad/Makefile
 		 sandia/Makefile
 		 smolpack/Makefile
+		 besche/Makefile
+		 bessel/Makefile
+		 minprescription/Makefile
+		 specialfunctions/Makefile
 		 ancont/Makefile
 		 pegasus/Makefile
 		 cubature/Makefile
