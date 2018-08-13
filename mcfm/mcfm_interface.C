@@ -39,7 +39,6 @@ void mcfm::init()
   strncpy(part_.part_ , part.c_str(), part.size());
 
   colc_.colourchoice_=0;
-  double rtsmin = 40;
   cutoff_.cutoff_=0.001; //add to settings (this is a cut off in mcfm on invariant mass pairs between emitted and radiator)
 
   flags_.qflag_=true;
@@ -163,7 +162,9 @@ void mcfm::init()
   ckmfill_(nwz_.nwz_);
 
   // Set-up PS integration cut-offs
-  rtsmin = min (rtsmin, sqrt(limits_.wsqmin_ + cutoff_.cutoff_));
+  //double rtsmin = 40;
+  //rtsmin = min (rtsmin, sqrt(limits_.wsqmin_ + cutoff_.cutoff_));
+  double rtsmin = max (sqrt(limits_.wsqmin_), cutoff_.cutoff_);
 
   if (zerowidth_.zerowidth_)
     {
@@ -188,4 +189,24 @@ void mcfm::init()
 
   //set NF to 5 (it is used in H2calc)
   nf_.nf_ = resconst::NF;
+}
+
+void mcfm::set_mass_bounds()
+{
+  //Reset limits on invariant mass of vector boson decay products
+  limits_.wsqmin_=pow(phasespace::mmin,2);
+  limits_.wsqmax_=pow(phasespace::mmax,2);
+
+  //update all variables that depends on the mass boundaries
+  double rtsmin = max (sqrt(limits_.wsqmin_), cutoff_.cutoff_);
+
+  if (zerowidth_.zerowidth_)
+    {
+      rtsmin = dymasses_.wmass_;
+      if (nproc_.nproc_ == 3) rtsmin = dymasses_.zmass_;
+    }
+
+  taumin_.taumin_=pow((rtsmin/energy_.sroot_),2);
+  taumin_.logtaumin_=log(taumin_.taumin_);
+  xmin_.xmin_=taumin_.taumin_;
 }

@@ -159,8 +159,8 @@ bool cuts::decide_fiducial( double p3[4], double p4[4] ){
                                    if (getEtMiss(p3, p4) < opts.etmisscut)
                                        return false;
 
-                               if (opts.l1ptcut > 0 || opts.l2ptcut > 0
-                                       || opts.l1ycut < 100 || opts.l2ycut < 100)
+                               if (opts.lepptcut > 0 || opts.alpptcut > 0
+                                       || opts.lepycut < 100 || opts.alpycut < 100)
                                {
                                    float pt3 = sqrt((float)pow(p3[0],2)+(float)pow(p3[1],2));
                                    float pt4 = sqrt((float)pow(p4[0],2)+(float)pow(p4[1],2));
@@ -179,13 +179,13 @@ bool cuts::decide_fiducial( double p3[4], double p4[4] ){
                                        pt2 = pt3; y2 = y3;
                                    }
 
-                                   if (pt1 < opts.l1ptcut)
+                                   if (pt1 < opts.lepptcut)
                                        return false;
-                                   if (pt2 < opts.l2ptcut)
+                                   if (pt2 < opts.alpptcut)
                                        return false;
-                                   if (fabs(y1) > opts.l1ycut)
+                                   if (fabs(y1) > opts.lepycut)
                                        return false;
-                                   if (fabs(y2) > opts.l2ycut)
+                                   if (fabs(y2) > opts.alpycut)
                                        return false;
                                }
 

@@ -30,7 +30,7 @@ CC    Used to compute Higgs or W(Z) cross section at NLO only
       common/x1x2/xx
       common/BrnRat/BrnRat
       common/nproc/nproc
-      data p/48*0d0/
+      data p/pdim*0d0/
 
       external hists_fill
 

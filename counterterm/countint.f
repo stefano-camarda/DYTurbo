@@ -86,7 +86,7 @@ c      double precision x1,x2
       double precision sqrts
       common/energy/sqrts
       common/BrnRat/BrnRat
-      data p/48*0d0/
+      data p/pdim*0d0/
       
       logical first
       data first/.true./

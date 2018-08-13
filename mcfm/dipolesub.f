@@ -29,6 +29,7 @@ CC    Modification in final-initial dipoles
 c      include 'initialscales.f'                                                                                                                            
       include 'dipolescale.f'
       include 'facscale.f'
+c      include 'sprods_com.f'
       double precision p(mxpart,4),ptrans(mxpart,4),sub(4),subv,vecsq
       double precision x,omx,z,omz,y,omy,u,omu,sij,sik,sjk,dot,vec(4)
       double precision msq(-nf:nf,-nf:nf),msqv(-nf:nf,-nf:nf),vtilde,q2d
@@ -48,13 +49,14 @@ C     Added for Drell-Yan
       ndec=2
       
 C---Initialize the dipoles to zero
-      do j=1,4
-      sub(j)=0d0
-      enddo
+      sub=0d0
+c      do j=1,4
+c      sub(j)=0d0
+c      enddo
       subv=0d0
-      call zeromsq(msq,msqv)
+c      call zeromsq(msq,msqv)
       if (incldip(nd) .eqv. .false.) return
-      
+
       sij=two*dot(p,ip,jp)
       sik=two*dot(p,ip,kp)
       sjk=two*dot(p,jp,kp)
