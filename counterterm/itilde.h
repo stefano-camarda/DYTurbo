@@ -10,6 +10,7 @@ namespace itilde
 
   extern double iqt,iq2,ib02;
   extern int in;
+#pragma omp threadprivate(iqt,iq2,ib02,in)
   
   void init();
   double calc(double qt, double q, int n);
