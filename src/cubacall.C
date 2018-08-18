@@ -178,7 +178,7 @@ void resintegrMC(vector <double> &res, double &err)
   double integral[ncomp];
   double error[ncomp];
   double prob[ncomp];
-  const int flags = 4+opts.cubaverbosity;
+  const int flags = (4*!opts.vegascollect)+opts.cubaverbosity;
   const int seed = opts.rseed;
   const int mineval = opts.vegasncallsBORN;
   const int maxeval = opts.vegasncallsBORN;
@@ -284,7 +284,7 @@ void vjlointegr(vector <double> &res, double &err)
   double integral[ncomp];
   double error[ncomp];
   double prob[ncomp];
-  const int flags = 8+4+opts.cubaverbosity;
+  const int flags = 8+(4*!opts.vegascollect)+opts.cubaverbosity;
   const int seed = opts.rseed;
   const int mineval   = opts.vegasncallsVJLO;
   const int maxeval   = opts.vegasncallsVJLO;
@@ -322,7 +322,7 @@ void vjlointegr7d(vector <double> &res, double &err)
   double integral[ncomp];
   double error[ncomp];
   double prob[ncomp];
-  const int flags = 8+4+opts.cubaverbosity;
+  const int flags = 8+(4*!opts.vegascollect)+opts.cubaverbosity;
   const int seed = opts.rseed;
   const int mineval   = opts.vegasncallsVJLO;
   const int maxeval   = opts.vegasncallsVJLO;
@@ -447,7 +447,7 @@ void vjrealintegr(vector <double> &res, double &err)
   double integral[ncomp];
   double error[ncomp];
   double prob[ncomp];
-  const int flags = 8+4+opts.cubaverbosity;
+  const int flags = 8+(4*!opts.vegascollect)+opts.cubaverbosity;
   const int seed = opts.rseed;
   const int mineval = opts.vegasncallsVJREAL;
   const int maxeval = opts.vegasncallsVJREAL;
@@ -497,7 +497,7 @@ void vjvirtintegr(vector <double> &res, double &err)
   double integral[ncomp];
   double error[ncomp];
   double prob[ncomp];
-  const int flags = 8+4+opts.cubaverbosity;
+  const int flags = 8+(4*!opts.vegascollect)+opts.cubaverbosity;
   const int seed = opts.rseed;
   const int mineval = opts.vegasncallsVJVIRT;
   const int maxeval = opts.vegasncallsVJVIRT;
@@ -536,7 +536,7 @@ void bornintegrMC6d(vector <double> &res, double &err)
   double integral[ncomp];
   double error[ncomp];
   double prob[ncomp];
-  const int flags = 8+4+opts.cubaverbosity;
+  const int flags = 8+(4*!opts.vegascollect)+opts.cubaverbosity;
   const int seed = opts.rseed;
   const int mineval   = opts.vegasncallsBORN;
   const int maxeval   = opts.vegasncallsBORN;
@@ -575,7 +575,7 @@ void bornintegrMC4d(vector <double> &res, double &err)
   double integral[ncomp];
   double error[ncomp];
   double prob[ncomp];
-  const int flags = 8+4+opts.cubaverbosity;
+  const int flags = 8+(4*!opts.vegascollect)+opts.cubaverbosity;
   const int seed = opts.rseed;
   const int mineval   = opts.vegasncallsBORN;
   const int maxeval   = opts.vegasncallsBORN;
@@ -697,7 +697,7 @@ void v2jintegr(vector <double> &res, double &err)
   double integral[ncomp];
   double error[ncomp];
   double prob[ncomp];
-  const int flags = 8+4+opts.cubaverbosity;
+  const int flags = 8+(4*!opts.vegascollect)+opts.cubaverbosity;
   const int seed = opts.rseed;
   const int mineval = opts.vegasncallsVJREAL;
   const int maxeval = opts.vegasncallsVJREAL;
@@ -741,7 +741,7 @@ void ctintegr(vector <double> &res, double &err)
   double integral[ncomp];
   double error[ncomp];
   double prob[ncomp];
-  const int flags = 8+4+opts.cubaverbosity;
+  const int flags = 8+(4*!opts.vegascollect)+opts.cubaverbosity;
   const int seed = opts.rseed;
   const int mineval = opts.vegasncallsCT;
   const int maxeval = opts.vegasncallsCT;
@@ -781,7 +781,7 @@ void ctintegrMC(vector <double> &res, double &err)
   double integral[ncomp];
   double error[ncomp];
   double prob[ncomp];
-  const int flags = 8+4+opts.cubaverbosity;
+  const int flags = 8+(4*!opts.vegascollect)+opts.cubaverbosity;
   const int seed = opts.rseed;
   const int mineval = opts.vegasncallsCT;
   const int maxeval = opts.vegasncallsCT;

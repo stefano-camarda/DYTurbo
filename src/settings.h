@@ -181,7 +181,8 @@ public:
   int vegasncallsVJLO   ;
   int vegasncallsVJREAL ;
   int vegasncallsVJVIRT ;
-
+  bool vegascollect;
+  
   //cubature settings
   bool pcubature;
   double pcubaccuracy;

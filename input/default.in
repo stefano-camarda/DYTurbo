@@ -191,6 +191,7 @@ vegasncallsCT     = 100000   # only for 6d and 8d vegas integration of the count
 vegasncallsVJLO   = 10000000 # only for lo 7d vegas integration
 vegasncallsVJREAL = 10000000 # only for real 10d vegas integration
 vegasncallsVJVIRT = 1000000  # only for virt 8d vegas integration
+vegascollect      = false    # collect points from all the vegas iterations (true) or only from the last iteration (false)
 
 # cubature settings
 pcubature = true

@@ -319,6 +319,7 @@ void settings::readfromfile(const string fname){
     vegasncallsVJLO    = in.GetNumber ( "vegasncallsVJLO"   );
     vegasncallsVJREAL  = in.GetNumber ( "vegasncallsVJREAL" );
     vegasncallsVJVIRT  = in.GetNumber ( "vegasncallsVJVIRT" );
+    vegascollect       = in.GetBool ( "vegascollect" );
     pcubature          = in.GetBool   ( "pcubature" );
     pcubaccuracy       = in.GetNumber ( "pcubaccuracy" );
     costhmin           = in.GetNumber ( "costhmin"     );
@@ -653,6 +654,7 @@ void settings::dumpAll(){
         dumpD("vegasncallsVJLO   ", vegasncallsVJLO     );
         dumpD("vegasncallsVJREAL ", vegasncallsVJREAL   );
         dumpD("vegasncallsVJVIRT ", vegasncallsVJVIRT   );
+	dumpB("vegascollect      ", vegascollect        );
         dumpB("pcubature         ", pcubature           );
         dumpD("pcubaccuracy      ", pcubaccuracy        );
         dumpD("costhmin          ", costhmin            );
