@@ -179,15 +179,13 @@ void coupling::init()
   b0_.b0_=(NC*11.-2.*MAXNF)/6.;
 
   //initialize the pdf set
-  pdfini_();
-
+  //pdfini_();
+  //read g from the PDF
+  //setg();
   //take the cmass and b mass from the PDF
   //      cmass=dsqrt(mcsq)
   //      bmass=dsqrt(mbsq)
-  scale_.musq_ = pow(scale_.scale_,2);
- 
-  //read g from the PDF
-  setg();
+  //  scale_.musq_ = pow(scale_.scale_,2);
 }      
 
 void coupling::SMparameters()
@@ -268,5 +266,5 @@ void coupling::initscales()
   scaleopts_.kmures_ = opts.kmures;
   
   //initialize alpha_s
-  setalphas();
+  pdf::setalphas();
 }
