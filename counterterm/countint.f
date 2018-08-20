@@ -136,12 +136,12 @@ c     cached variables for fast integration
       integer npdf,maxpdf
 
 
-      if(first)  then           !! ONE TIME INITIALIZATION
-         write (*,'(A)', advance='no') 'First call to ctint... '
-         call ctquadinit
-         first = .false.
-         print *, 'Done'
-      end if
+!      if(first)  then           !! ONE TIME INITIALIZATION
+!         write (*,'(A)', advance='no') 'First call to ctint... '
+!         call ctquadinit
+!         first = .false.
+!         print *, 'Done'
+!      end if
 
       ctint=0d0 
       do npdf=0,totpdf-1
