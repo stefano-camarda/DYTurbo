@@ -36,6 +36,7 @@ extern "C" {
   void cacheyrapint_(double &ymin,double &ymax);
 
   void ctqtint_(double &m, double &y, double &qtmin, double &qtmax);
+  void ctquadinit_();
 
   void initmoments_();
   // fortran common spaces
