@@ -4,6 +4,7 @@
 #include "cubacall.h"
 #include "interface.h"
 #include "coupling.h"
+#include "pdf.h"
 #include "switch.h"
 #include "itilde.h"
 
@@ -57,9 +58,10 @@ void DYTurbo::init_params()
   // init filling
   dofill_.doFill_ = 0;
   dyres::init();
-  mcfm::init();                          //This functions calls coupling::init(), which in turns call pdfini_() which sets up PDFs from LHAPDF
+  mcfm::init();                          //This functions calls coupling::init()
+  pdf::init();                           //Set up PDFs from LHAPDF, set alphas, and read g from the PDF
   iniflavreduce_();                      //need to call this after nproc_.nproc_ is set
-  coupling::initscales();
+  coupling::initscales();                //Set up QCD scales in the fortran common blocks and recompute alphas(mu)
   cc::init();                            //nodes and weights of Clenshaw-Curtis quadrature rules
   //cheb::init();                        //Chebyshev nodes for Lagrange interpolation
   //C++ resum: initialise all the C modules
@@ -81,9 +83,12 @@ void DYTurbo::init_params()
   vjloint::init();
   //
   abint::init();                         //alfa beta integration initialisation
+  ctquadinit_();                         //alfa beta integration initialisation (fortran CT)
   switching::init();                     //switching function initialisation
   itilde::init();                        //itilde dequad initialisation
-  rescinit_();
+  rescinit_();                           //Resummation coefficients (fortran common blocks)
+
+  
   // cuba init
   cubacores(opts.cubacores,1000000);     //< set number of cores (move this to cubainit)
   cubainit((void (*)()) initfun,NULL);   //< merge at the end of the run
