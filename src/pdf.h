@@ -3,8 +3,12 @@
 
 #include "mcfm_interface.h"
 
-extern void setalphas();
-extern void setg();
+namespace pdf
+{
+  extern void init();
+  extern void setalphas();
+  extern void setg();
+}
 
 extern "C" {
   void fdist_(int& ih, double& x, double& xmu, double fx[2*MAXNF+1]);

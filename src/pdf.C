@@ -7,7 +7,7 @@
 #include <LHAPDF/LHAGlue.h>
 #include <math.h>
 
-void pdfini_()
+void pdf::init()
 {
   //printf(" ==Initialize PDF set from LHAPDF==\n\n");
   //printf("\n");
@@ -30,8 +30,7 @@ void pdfini_()
   LHAPDF::initPDFSet(opts.LHAPDFset);
   //LHAPDF::initPDFSetByName(opts.LHAPDFset);
   LHAPDF::initPDF(opts.LHAPDFmember);
-  // initialization of alphas
-  couple_.amz_=LHAPDF::alphasPDF(dymasses_.zmass_) ;
+
   if (opts.PDFerrors && LHAPDF::numberPDF() > 1)
     {
       opts.totpdf = LHAPDF::numberPDF()+1;
@@ -45,41 +44,19 @@ void pdfini_()
       pdferropts_.totpdf_ = 1;
     }
 
-  //setalphas();
-  //setg();
-}
-
-void dysetpdf_(int& member)
-{
-  if (member == 0)
-    {
-      if (opts.PDFerrors && opts.totpdf > 1)
-	LHAPDF::initPDF(0);
-      else
-	LHAPDF::initPDF(opts.LHAPDFmember);
-    }
-  else
-    LHAPDF::initPDF(member);
-  
+  // initialization of alphas
   setalphas();
-  //  setg(); //set g separately when setting a different PDF in the resummed part
-}
 
+  // read g from the PDF
+  setg();
 
-void setmellinpdf_(int &member){
-    // if member is still same than dont do anything
-    //if (lastMember==member) return;
-    //if (v_mellinpdf.size()<member) v_mellinpdf.
-    // test current flag
-    //if (v_mellinpdf[lastMember].isInitialized)
-    // weights
-    // moms
-    // set init flag
-    //lastMember=member;
+  //take the cmass and b mass from the PDF
+  //      cmass=dsqrt(mcsq)
+  //      bmass=dsqrt(mbsq)
 }
 
 //set value of alphas
-void setalphas()
+void pdf::setalphas()
 {
   couple_.amz_=LHAPDF::alphasPDF(dymasses_.zmass_);
   double scale = fabs(scale_.scale_);
@@ -98,7 +75,7 @@ void setalphas()
 }
 
 //set the value of the g-parameter of the non perturbative form factor
-void setg()
+void pdf::setg()
 {
   LHAPDF::PDFInfo info(opts.LHAPDFset, opts.LHAPDFmember);
   double gformfactor = info.get_entry_as<double>("g", -1);
@@ -109,6 +86,36 @@ void setg()
       g_param_.g_param_ = gformfactor;
       np_.g_ = opts.g_param;
     }
+}
+
+
+void dysetpdf_(int& member)
+{
+  if (member == 0)
+    {
+      if (opts.PDFerrors && opts.totpdf > 1)
+	LHAPDF::initPDF(0);
+      else
+	LHAPDF::initPDF(opts.LHAPDFmember);
+    }
+  else
+    LHAPDF::initPDF(member);
+  
+  pdf::setalphas();
+  //  setg(); //set g separately when setting a different PDF in the resummed part
+}
+
+
+void setmellinpdf_(int &member){
+    // if member is still same than dont do anything
+    //if (lastMember==member) return;
+    //if (v_mellinpdf.size()<member) v_mellinpdf.
+    // test current flag
+    //if (v_mellinpdf[lastMember].isInitialized)
+    // weights
+    // moms
+    // set init flag
+    //lastMember=member;
 }
 
 void fdist_(int& ih, double& x, double& xmu, double fx[2*MAXNF+1])
