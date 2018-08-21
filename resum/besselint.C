@@ -191,7 +191,7 @@ complex <double> besselint::bint(complex <double> b)
   // SELECT ORDER FOR EVOLUTION LO/NLO
   pdfevol::alpr = alpqf * cx(alphasl_(fscale2_mufb))*(double)(opts.order-1);
   //force LO evolution
-  //pdfevol::alpr = alpqf * cx(alphasl_(fscale2))*(double)(0);
+  //pdfevol::alpr = alpqf * cx(alphasl_(fscale2_mufb))*(double)(0);
   //cout << b << "  " << scale2 << "  " << pdfevol::SALP << "  " << log(1./cx(alphasl_(fscale2))) << "  " << pdfevol::alpr << "  " << alpq <<  endl;
   //**************************************
 
