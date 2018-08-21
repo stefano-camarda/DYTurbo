@@ -131,7 +131,7 @@ c mass dependence in f0(y), f1(y), f2(y)
          S=exp(blog*f0(y)+f1(y)+aass*f2(y))
       endif
 !
-      if(DBLE(S).gt.1d2) then
+      if ((flagrealcomplex.eq.0).and.(DBLE(S).gt.1d2)) then
       write(*,*) "WARNING! LARGE SUDAKOV, S(b)=",S,"; for bstar=",bstar
       S=cmplx(0d0,0d0)
       endif
@@ -202,5 +202,6 @@ c    a dependence (now without constant term)
      \ -2*A1q*beta1/beta0**2*y*log1y/(1-y)**2)
 !
      \ + A1q*rloga*rlogq2mur2*y*2d0/(1-y)**2   
+!      f2 = 0d0
       return
       end
