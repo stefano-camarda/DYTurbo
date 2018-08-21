@@ -667,9 +667,9 @@ double resint::bintegral(double qt)
       
       //Minimal prescription to avoid Landau singularity (see hep-ph/9604351 and hep-ph/0002078)
       else if (opts.bprescription == 2)
-      {
-	  cout << endl;
-	  cout << "pt " << _qt << " m " << _m << endl;
+	{
+	  //cout << endl;
+	  //cout << "pt " << _qt << " m " << _m << endl;
 	  bc =  opts.bcf*blimit_.rblim_;
 	  
 	  //besche from 0 to bc
@@ -683,7 +683,7 @@ double resint::bintegral(double qt)
 	  besche_(besselint_besche_,C,ALFA,NUM,NU,N,RESULT,INFO);
 	  res = RESULT[0];
 	  err = 0;
-	  cout << "besche result up to bc " << res << " status " << INFO[0] << endl;
+	  //cout << "besche result up to bc " << res << " status " << INFO[0] << endl;
 
 	  /*
 	  double min = 0.;
@@ -730,10 +730,10 @@ double resint::bintegral(double qt)
 	  */
 
 	  intdeo(besselint_mp_complex_dequad, 0, qt*cos(M_PI/opts.phibr), awinf, &resdequad, &errdequad);
-	  cout << "Complex dequad result " << resdequad << " error " << errdequad << endl;
+	  //cout << "Complex dequad result " << resdequad << " error " << errdequad << endl;
 	  res += resdequad;
 
-	  cout << "Total bp = 2 " << res << endl;
+	  //cout << "Total bp = 2 " << res << endl;
 	}
       //Minimal prescription along the real axis, crossing the Landau singularity
       else if (opts.bprescription == 3)
