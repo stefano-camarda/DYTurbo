@@ -437,26 +437,26 @@ void vjrealintegr(vector <double> &res, double &err)
   const int ndim = 10;   //dimensions of the integral
   const int ncomp = opts.totpdf;  //components of the integrand
   void *userdata;
-  const int nvec = 1;
+  const long long int nvec = 1;
   const double epsrel = 0.;
   const double epsabs = 0.;
   const char *statefile = "";
   void *spin=NULL;
-  int neval;
+  long long int neval;
   int fail;
   double integral[ncomp];
   double error[ncomp];
   double prob[ncomp];
   const int flags = 8+(4*!opts.vegascollect)+opts.cubaverbosity;
   const int seed = opts.rseed;
-  const int mineval = opts.vegasncallsVJREAL;
-  const int maxeval = opts.vegasncallsVJREAL;
-  const int nstart = max(10, int(opts.vegasncallsVJREAL/10));
-  const int nincrease = max(10, int(opts.vegasncallsVJREAL/10));
-  const int nbatch = opts.cubanbatch;
+  const long long int mineval = opts.vegasncallsVJREAL;
+  const long long int maxeval = opts.vegasncallsVJREAL;
+  const long long int nstart = max(10, int(opts.vegasncallsVJREAL/10));
+  const long long int nincrease = max(10, int(opts.vegasncallsVJREAL/10));
+  const long long int nbatch = opts.cubanbatch;
   const int gridno = 0;
 
-  Vegas(ndim, ncomp, (integrand_t)realintegrand, userdata, nvec,
+  llVegas(ndim, ncomp, (integrand_t)realintegrand, userdata, nvec,
 	epsrel, epsabs,
 	flags, seed,
 	mineval, maxeval,

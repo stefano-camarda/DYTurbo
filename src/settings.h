@@ -179,7 +179,7 @@ public:
   int vegasncallsBORN  ;
   int vegasncallsCT   ;
   int vegasncallsVJLO   ;
-  int vegasncallsVJREAL ;
+  long long int vegasncallsVJREAL ;
   int vegasncallsVJVIRT ;
   bool vegascollect;
   
