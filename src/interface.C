@@ -18,7 +18,7 @@
 #include <cassert>
 
 
-int cuts_(double p[4][12], int &njet){
+int cuts_(double p[4][mxpart], int &njet){
     double p3[4];
     double p4[4];
     for (int i=0; i<4; i++){

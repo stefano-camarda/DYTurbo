@@ -18,8 +18,8 @@ extern "C" {
   void gaussinit_();
   double dyalphas_mcfm_(double &q, double &amz, int &nloop);
   double dyalphas_lhapdf_(double &q);
-  int cuts_(double p[4][12], int &njet);
-  //int cutsold_(double p[4][12], int &njet);
+  int cuts_(double p[4][mxpart], int &njet);
+  //int cutsold_(double p[4][mxpart], int &njet);
   void rescinit_();
 
   //fortran interface for C++ rewritten resummation
