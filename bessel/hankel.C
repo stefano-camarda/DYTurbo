@@ -126,7 +126,7 @@ double hankel::jn(double x)
     return fort_besjn_(nu, x);
 }
 
-double hankel::fillj()
+void hankel::fillj()
 {
   j = new double[n];
 
@@ -135,7 +135,7 @@ double hankel::fillj()
 }      
 
 
-double hankel::filldpsi()
+void hankel::filldpsi()
 {
   dp = new double[n];
   
@@ -172,7 +172,7 @@ double hankel::yn(double x)
     return fort_besyn_(nu, x);
 }
 
-double hankel::weight()
+void hankel::weight()
 {
   w = new double[n];
 
@@ -181,7 +181,7 @@ double hankel::weight()
 }
 
 
-double hankel::get_series(double (*f)(double), double k)
+void hankel::get_series(double (*f)(double), double k)
 {
   series = new double[n];
   //formula (5.2) of http://www.kurims.kyoto-u.ac.jp/~okamoto/paper/Publ_RIMS_DE/41-4-40.pdf

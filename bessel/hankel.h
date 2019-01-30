@@ -25,12 +25,12 @@ namespace hankel
   extern double dpsi(double t);
   extern void fillx();
   extern double jn(double x);
-  extern double fillj();
-  extern double filldpsi();
+  extern void fillj();
+  extern void filldpsi();
   extern double jn1(double x);
   extern double yn(double x);
-  extern double weight();
-  extern double get_series(double (*f)(double), double k);
+  extern void weight();
+  extern void get_series(double (*f)(double), double k);
   extern void transform(double (*f)(double), double k, double &res, double &err);
   extern void free();
 }
