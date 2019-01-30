@@ -380,4 +380,5 @@ bool phasespace::gen_x2(const double x, double& jac)
   //Jacobian from the change of variable in delta(p1+p2-p3-p4-p5)
   double xjj=fabs(x2*s-ss*mt*expmy);
   jac = jac/xjj;
+  return true;
 }
