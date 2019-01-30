@@ -7,6 +7,7 @@
 #include "parton.h"
 #include "codata.h"
 #include "clenshawcurtisrules.h"
+#include "propagator.h"
 #include <iostream>
 #include <cmath>
 
@@ -45,6 +46,7 @@ double mesq::gLmgR[MAXNF];
 double mesq::mW2;
 double mesq::wW2;
 double mesq::gLWfLW;
+
 //gamma* coupling
 double mesq::aem2pi;
 double mesq::aem2pi2;
@@ -120,9 +122,9 @@ void mesq::init()
     }
 
   mZ2 = pow(coupling::zmass, 2);
-  wZ2 = pow(dymasses_.zwidth_,2);
   mW2 = pow(coupling::wmass, 2);
-  wW2 = pow(dymasses_.wwidth_,2);
+  wZ2 = pow(coupling::zwidth,2);
+  wW2 = pow(coupling::wwidth,2);
 
   double gZ=sqrt(sqrt(2.)*coupling::Gf*mZ2);
   double gW=sqrt(4.*sqrt(2.)*coupling::Gf*mW2);
@@ -171,7 +173,7 @@ void mesq::init()
   aem2pi2 = pow(aem2pi,2);
   for (int j = 0; j < MAXNF; j++)
     Q[j] = ewcharge_.Q_[j+MAXNF+1];
-      
+
   q2 = 0;
   propZ = 0;
   propW = 0;
@@ -182,6 +184,16 @@ void mesq::init()
 void mesq::setpropagators(double m)
 {
   q2 = pow(m,2);
+
+  prop::set(q2);
+  //prop::set_real(q2);
+  //prop::set_offset(q2);
+  propW = prop::W;
+  propZ = prop::Z;
+  propG = prop::G;
+  propZG = prop::ZG;
+  
+  /*
   //fixed width propagators
   if (opts.nproc == 3)
     propZ = q2/(pow(q2-mZ2,2)+mZ2*wZ2);
@@ -192,8 +204,8 @@ void mesq::setpropagators(double m)
       propG = 1./q2;
       propZG = (q2-mZ2)/(pow(q2-mZ2,2)+mZ2*wZ2);
     }
-  //running width propagators
-  
+  */
+
   //flat propagators, for tests
   //propZ = 1./m*(8./3.)*pow(opts.sroot,2)/2/(1./9./M_PI*gevfb);
   //propW = 1./m*(8./3.)*pow(opts.sroot,2)/2/(1./9./M_PI*gevfb);
