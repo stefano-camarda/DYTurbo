@@ -4,6 +4,7 @@
 #include "cubacall.h"
 #include "interface.h"
 #include "coupling.h"
+#include "propagator.h"
 #include "pdf.h"
 #include "switch.h"
 #include "itilde.h"
@@ -64,6 +65,7 @@ void DYTurbo::init_params()
   coupling::initscales();                //Set up QCD scales in the fortran common blocks and recompute alphas(mu)
   cc::init();                            //nodes and weights of Clenshaw-Curtis quadrature rules
   //cheb::init();                        //Chebyshev nodes for Lagrange interpolation
+  prop::init();                          //Initialise mass and width used in the propagator
   //C++ resum: initialise all the C modules
   gr::init();                            //nodes and weights of gaussian quadrature rules
   mellinint::initgauss();                //gaussian quadrature for mellin inversion
