@@ -96,5 +96,5 @@ double switching::mlimit(double qt)
 
 double switching_(double &qt, double &m)
 {
-  switching::swtch(qt, m);
+  return switching::swtch(qt, m);
 }
