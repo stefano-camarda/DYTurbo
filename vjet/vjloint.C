@@ -443,8 +443,8 @@ double vjloint::calcvegas(const double x[7])
 
   //move dx2 integration here
   //Calculate Bjorken x1 and x2 (integration is performed in dx2)
-  phasespace::gen_x2(x[5], jac);
-  if (jac == 0.)
+  status = phasespace::gen_x2(x[5], jac);
+  if (!status)
     {
       //cout << "x2 with jac = 0 " << phasespace::x2 << endl;
       return 0.;
