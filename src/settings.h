@@ -111,6 +111,9 @@ public:
   double zwidth, wwidth;
   bool zerowidth;
 
+  //Fixed width to running width translation
+  bool runningwidth;
+  
   //CKM matrix
   double Vud, Vus, Vub;
   double Vcd, Vcs, Vcb;

@@ -58,6 +58,7 @@ aemmz = 7.7585538055706e-03  # alpha_EM(MZ) (not used in the Gmu scheme)
 zwidth = 2.4950          # Width of the Z boson
 wwidth = 2.091           # Width of the W boson
 zerowidth = false        # zero-width approximation (not really implemented)
+runningwidth = false     # Perform running width to fixed width translation (implemented only at LO)
 
 # CKM matrix
 Vud = 0.97427

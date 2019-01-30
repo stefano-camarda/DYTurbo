@@ -267,6 +267,7 @@ void settings::readfromfile(const string fname){
     g_param        = in.GetNumber ( "g_param"        );
     order          = in.GetNumber ( "order"          );
     zerowidth      = in.GetBool   ( "zerowidth"      ); //false          # zerowidth
+    runningwidth   = in.GetBool   ( "runningwidth"   );
     dynamicscale   = in.GetBool   ( "dynamicscale"   );
     dynamicresscale= in.GetBool   ( "dynamicresscale");
     rseed          = in.GetNumber ( "rseed"          );
@@ -598,6 +599,7 @@ void settings::dumpAll(){
 	dumpD("aemmz"              , aemmz);
 	dumpD("zwidth"             , zwidth);
 	dumpD("wwidth"             , wwidth);
+	dumpB("runningwidth"       , runningwidth);
 	dumpD( "Vud",        Vud);
 	dumpD( "Vus",        Vus);
 	dumpD( "Vub",        Vub);
