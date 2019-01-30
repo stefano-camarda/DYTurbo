@@ -14,6 +14,8 @@ double coupling::Gf;
 double coupling::xw;
 double coupling::zmass;
 double coupling::wmass;
+double coupling::zwidth;
+double coupling::wwidth;
 
 //Number of colours in QCD
 const double coupling::NC = 3.;
@@ -130,6 +132,10 @@ void coupling::init()
   ewcouple_.xw_ = xw;
   dymasses_.wmass_ = wmass;
   dymasses_.zmass_ = zmass;
+
+  //width values
+  zwidth = opts.zwidth;
+  wwidth = opts.wwidth;
 
   //Now set up the other derived parameters
 
