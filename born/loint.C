@@ -4,6 +4,7 @@
 #include "settings.h"
 #include "omegaintegr.h"
 #include "pdf.h"
+#include "scales.h"
 #include "phasespace.h"
 #include "abint.h"
 #include "resconst.h"
@@ -177,6 +178,13 @@ void loint::lint(double costh, double m, double y, int mode, double f[2])
   //*******************************************************
   */
   
+  //Set scales
+  scales::set(m);
+  scales::mcfm();
+  double muf = scales::fac;
+  double mur = scales::ren;
+
+  /*
   //Set factorization scale
   double muf, mur;
   if (opts.dynamicscale)
@@ -191,6 +199,7 @@ void loint::lint(double costh, double m, double y, int mode, double f[2])
       muf = opts.rmass*opts.kmufac;
       mur = opts.rmass*opts.kmuren;
     }
+  */
 
   //PDFs
   double fx1[2*MAXNF+1],fx2[2*MAXNF+1];
