@@ -59,10 +59,13 @@ c     +     (p(4,4)+p(3,4) - (p(4,3)+p(3,3))))
 c      print*,'pt',sqrt((p(4,1)+p(3,1))**2 + (p(4,2)+p(3,2))**2)
 
 C     Dynamic scale
-      if(dynamicscale) then
-         qq2=2*dot(p,3,4)
-         call scaleset(qq2)
-      endif
+c      if(dynamicscale) then
+c         qq2=2*dot(p,3,4)
+c         call scaleset(qq2)
+c      endif
+      call scaleset_mcfm(sqrt(qq2),
+     .     sqrt((p(4,1)+p(3,1))**2 + (p(4,2)+p(3,2))**2),
+     .     0d0)
 
       nvec=npart+2
       call dotem(nvec,p,s)

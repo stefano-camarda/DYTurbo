@@ -56,6 +56,9 @@ C      external hists_fill_PDF
       integer npdf,maxpdf
       double precision gsqcentral
 
+      double precision pt
+      external pt
+      
       virtint=0d0
       do npdf=0,totpdf-1
          f(npdf+1)=0d0
@@ -84,7 +87,9 @@ c      qt2=p(5,1)**2+p(5,2)**2
       nvec=npart+2
 
 C     Dynamic scale
-      if(dynamicscale) call scaleset(qq2)
+c      if(dynamicscale) call scaleset(qq2)
+      call scaleset_mcfm(sqrt(qq2),
+     .     pt(p(4,:),p(3,:)),0d0)
 
       call dotem(nvec,p,s)
 

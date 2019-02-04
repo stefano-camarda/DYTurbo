@@ -49,6 +49,12 @@ C      external hists_fill
       integer npdf,maxpdf
       double precision gsqcentral
 
+      logical dynamic_fac
+      external dynamic_fac
+
+      double precision pt,mjj
+      external pt,mjj
+      
       pswt=0d0
       realint=0d0      
       do npdf=0,totpdf-1
@@ -158,11 +164,17 @@ c     If the real and all the dipoles fail cuts, then exit
       endif
       
 CC   Dynamic scale for real contribution (nd = 0): set it only if point passes cuts 
-      if(dynamicscale.and.includereal) then
-       call scaleset(q2)
-       dipscale(0)=facscale
+c      if(dynamicscale.and.includereal) then
+c       call scaleset(q2)
+c       dipscale(0)=facscale
+c      endif
+      if(includereal) then
+         call scaleset_mcfm(sqrt(q2),
+     .        pt(p(4,:),p(3,:)),
+     .        mjj(p(5,:),p(6,:)))
+         dipscale(0)=facscale
       endif
-
+      
 c----calculate the x's for the incoming partons from generated momenta
       W=sqrts**2
       xx1=two*(p(1,4)*p2ext(4)-p(1,3)*p2ext(3))/W
@@ -201,7 +213,8 @@ c     intitialise xmsq to 0 for the real and all dipoles
          enddo
 
 c     evaluate PDFs
-         if (dynamicscale) then
+c     if (dynamicscale) then
+         if (dynamic_fac()) then
             do nd=0,6
                if (incldip(nd)) then
                   call fdist(ih1,xx1,dipscale(nd),dipfx1(nd,:))
