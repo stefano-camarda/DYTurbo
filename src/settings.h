@@ -80,20 +80,16 @@ public:
   string LHAPDFset    ;
   int    LHAPDFmember ;
 
-  //fixed or dynamic QCD scales
-  bool dynamicscale, dynamicresscale;
+  //functional forms of the QCD scales
+  int fmures;
+  int fmuren;
+  int fmufac;
   
   //scale factors for the QCD scales
   double kmures;
   double kmuren;
   double kmufac;
 
-  double kpt_muren;
-  double kpt_mufac;
-
-  double kmjj_muren;
-  double kmjj_mufac;
-  
   //scale factors for the matching scales
   double kmuc;
   double kmub;

@@ -16,17 +16,21 @@ LHAPDFmember = 0              # PDF member
 PDFerrors    = false	      # calculate PDF errors
 
 #QCD scale settings
-dynamicscale    = false       # if true, the renormalisation and factorisation scales are proportional to m_ll, if false they are proportional to m_V (V=W,Z)
-dynamicresscale = true        # if true, the resummation scale is proportional to m_ll, if false it is proportional to m_V (V=W,Z)
-kmuren          = 1.          # scale factor for the renormalisation scale
-kmufac          = 1.          # scale factor for the factorisation scale
-kmures          = 0.5         # scale factor for the resummation scale
 
-kpt_muren          = 0.          # coefficient for a dynamic renormalisation scale of the form mu_r = sqrt((kmuren*m)^2 + (kpt_muren*pt)^2)
-kpt_mufac          = 0.          # coefficient for a dynamic factorisation scale of the form mu_f = sqrt((kmuren*m)^2 + (kpt_mufac*pt)^2)
+#Functional form of QCD scales
+#0: mu^2 = mV^2
+#1: mu^2 = mll^2
+#2: mu^2 = mll^2+pT^2
+#3: mu^2 = mll^2+pT^2+mjj^2
 
-kmjj_muren          = 0.         # coefficient for a dynamic renormalisation scale of the form mu_r = sqrt((kmuren*m)^2 + (kpt_muren*pt)^2 + (kmjj_muren*mjj)^2)
-kmjj_mufac          = 0.         # coefficient for a dynamic factorisation scale of the form mu_r = sqrt((kmuren*m)^2 + (kpt_mufac*pt)^2 + (kmjj_mufac*mjj)^2)
+#---> probably need just one of these options...
+fmuren = 0     # Functional form of the renormalisation scale
+fmufac = 0     # Functional form of the factorisation scale
+fmures = 1     # Functional form of the resummation scale (forms 2 and 3 are equivalent to 1)
+
+kmuren = 1.          # scale factor for the renormalisation scale
+kmufac = 1.          # scale factor for the factorisation scale
+kmures = 0.5         # scale factor for the resummation scale
 
 #Additional resummation scales
 C1 = 1.

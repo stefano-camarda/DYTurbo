@@ -255,10 +255,9 @@ void settings::readfromfile(const string fname){
     kmuren         = in.GetNumber ( "kmuren"     );
     kmufac         = in.GetNumber ( "kmufac"     );
     kmures         = in.GetNumber ( "kmures"     );
-    kpt_muren      = in.GetNumber ( "kpt_muren"  );
-    kpt_mufac      = in.GetNumber ( "kpt_mufac"  );
-    kmjj_muren     = in.GetNumber ( "kmjj_muren" );
-    kmjj_mufac     = in.GetNumber ( "kmjj_mufac" );
+    fmuren         = in.GetNumber ( "fmuren"     );
+    fmufac         = in.GetNumber ( "fmufac"     );
+    fmures         = in.GetNumber ( "fmures"     );
     C1             = in.GetNumber ( "C1"         );
     C3             = in.GetNumber ( "C3"         );
     kmuc           = in.GetNumber ( "kmuc"       );
@@ -268,8 +267,6 @@ void settings::readfromfile(const string fname){
     order          = in.GetNumber ( "order"          );
     zerowidth      = in.GetBool   ( "zerowidth"      ); //false          # zerowidth
     runningwidth   = in.GetBool   ( "runningwidth"   );
-    dynamicscale   = in.GetBool   ( "dynamicscale"   );
-    dynamicresscale= in.GetBool   ( "dynamicresscale");
     rseed          = in.GetNumber ( "rseed"          );
     blim           = in.GetNumber ( "blim"           );
     LHAPDFset      = in.GetString ( "LHAPDFset"      );
@@ -424,10 +421,10 @@ void settings::check_consitency(){
 	exit (-1);
       }
 
-    if (dynamicscale == true && evolmode < 3 && order > 0 && fixedorder == false)
+    if (fmufac > 0 && evolmode < 3 && order > 0 && fixedorder == false)
       {
 	//cannot use a dynamic muren, mufac, when the PDFs are converted from x-space to N-space at the factorisation scale
-	cout << "At NLL and NNLL dynamicscale is possible only with evolmode = 3 or 4" << endl;
+	cout << "At NLL and NNLL mufac = mll is possible only with evolmode = 3 or 4" << endl;
 	exit (-1);
       }
 
@@ -577,11 +574,12 @@ void settings::dumpAll(){
 
     if (print_inputs) {
         printf("Input settings:\n");
-	dumpB ( "dynamicscale"      , dynamicscale        );
-	dumpB ( "dynamicresscale"      , dynamicresscale        );
         dumpD ( "kmuren      ",  kmuren                     ) ;
         dumpD ( "kmufac      ",  kmufac                     ) ;
 	dumpD ( "kmures       ",  kmures   ) ;
+        dumpI ( "fmuren      ",  kmuren                     ) ;
+        dumpI ( "fmufac      ",  kmufac                     ) ;
+	dumpI ( "fmures       ",  kmures   ) ;
 	dumpD ( "C1       ",  C1   ) ;
 	dumpD ( "C3       ",  C3   ) ;
         dumpD ( "kmuc      ",  kmuc                     ) ;
