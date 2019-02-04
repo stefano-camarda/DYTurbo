@@ -10,6 +10,7 @@
 #include "besselint.h"
 #include "cubature.h"
 #include "pdf.h"
+#include "scales.h"
 #include "sudakovff.h"
 #include "besche_interface.h"
 #include "hankel.h"
@@ -288,7 +289,7 @@ void resint::init()
   np_.g_ = opts.g_param;
 
   //a-parameter of the resummation scale, set it for the dynamic case
-  if (opts.dynamicresscale)
+  if (opts.fmures > 0)
     {
       a = 1./opts.kmures;
       a_param_.a_param_ = a;
@@ -350,6 +351,22 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
     return 0;
   
   //move the scale setting to an independent namelist, so it can be called by all the calculations
+  scales::set(m);
+  muren = scales::ren;
+  mufac = scales::fac;
+  mures = scales::res;
+  //for fixed resummation scale need to recompute a_param
+  if (opts.fmures == 0)
+    {
+      a = m/mures;
+      loga = log(a);
+      rloga = log(a);
+      a_param_.a_param_ = a;
+      a_param_.b0p_ = resconst::b0*a;
+      rlogs_.rloga_ = rloga;
+    }
+
+  /*
   //Set factorization and renormalization scales (set dynamic scale here)
   if (opts.dynamicscale)
     {
@@ -375,6 +392,7 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
       a_param_.b0p_ = resconst::b0*a;
       rlogs_.rloga_ = rloga;
     }
+  */
 
   muren2=pow(muren,2);
   mufac2=pow(mufac,2);
@@ -413,15 +431,16 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
   aass_.aass_ = aass; 
   double q = m;
   double blim;
-  //if (opts.order == 2 && q2 > 2.2*muren2) //avoid large values of b in f2(y) when q2>mur2
-  if (q2 > 2.2*muren2) //avoid large values of b in f2(y) when q2>mur2 
-    blim = a_param_.b0p_*(1./q)*exp(1./(2.*aass*resconst::beta0))*sqrt(muren2/q2);
-  else
-    blim = a_param_.b0p_*(1./q)*exp(1./(2.*aass*resconst::beta0)); // avoid Landau pole
 
-  if (opts.blim > 0)
+  //dynamic blim
+  if (opts.blim < 0)
     {
-      //dynamic blim
+      //if (opts.order == 2 && q2 > 2.2*muren2) //avoid large values of b in f2(y) when q2>mur2
+      if (q2 > 2.2*muren2) //avoid large values of b in f2(y) when q2>mur2 
+	blim = a_param_.b0p_*(1./q)*exp(1./(2.*aass*resconst::beta0))*sqrt(muren2/q2);
+      else
+	blim = a_param_.b0p_*(1./q)*exp(1./(2.*aass*resconst::beta0)); // avoid Landau pole
+      
       /*
       double lambdaqcd         = muren/(exp(1./(2.*aass*resconst::beta0))); //--> corresponds to a divergence in alphas
       double lambdasudakov     = mures/(exp(1./(2.*aass*resconst::beta0))); //--> correspond to a divergence in the Sudakov
@@ -429,13 +448,14 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
       //should blim depend or not on a_param? In principle yes because PDFs are evolved to b0/bstar*a
       blim = min(resconst::b0/lambdaqcd,resconst::b0/lambdasudakov);
       //cout << _m << "  " << resconst::b0/lambdaqcd << "  " << resconst::b0/lambdasudakov << "  " << a_param_.b0p_*(1./q)*exp(1./(2.*aass*resconst::beta0)) << endl;
-
-      blim = blim/opts.blim;
       */
 
-      //fixed blim
-      blim = opts.blim;
+      blim = blim/(opts.blim*(-1));
     }
+
+  //fixed blim
+  if (opts.blim > 0)
+    blim = opts.blim;
 
   //  blim = 100;
   //  blim = 4.0;
