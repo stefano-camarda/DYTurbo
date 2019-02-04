@@ -152,8 +152,10 @@ c     cached variables for fast integration
       q2=mm*mm
 
 CC   Dynamic scale
-      if(dynamicscale) call scaleset(q2)
+c      if(dynamicscale) call scaleset(q2)
 
+      call scaleset_mcfm(m, 0d0, 0d0)
+      
 !bug bug bug -> missing dynamic resummation scale
 c      if(dynamicresscale) then
 c      else

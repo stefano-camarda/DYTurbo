@@ -8,6 +8,7 @@
 #include "settings.h"
 #include "omegaintegr.h"
 #include "pdf.h"
+#include "scales.h"
 #include "phasespace.h"
 #include "abint.h"
 #include "resconst.h"
@@ -38,6 +39,13 @@ void ctmellin::calc(double m, double f[])
   //  double exppy = exp(y);
   //  double expmy = 1./exppy;
 
+  //Set scales
+  scales::set(m);
+  scales::mcfm();
+  double muf = scales::fac;
+  double mur = scales::ren;
+
+  /*
   //Set factorization scale
   double muf, mur;
   if (opts.dynamicscale)
@@ -53,11 +61,15 @@ void ctmellin::calc(double m, double f[])
       muf = opts.rmass*opts.kmufac;
       mur = opts.rmass*opts.kmuren;
     }
+  */
 
   //a-parameter of the resummation scale, set it for the dynamic case
-  if (opts.dynamicresscale)
+  if (opts.fmures > 0)
     a_param_.a_param_ = 1./opts.kmures;
   
+  //for fixed resummation scale need to recompute a_param
+  else
+    a_param_.a_param_ = m/scales::res;
   //////////////////////////////////////////////////////////
 
   double LR, LF, LQ;
