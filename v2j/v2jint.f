@@ -41,6 +41,9 @@
       common/makecuts/makecuts
       logical binner
       external binner
+
+      double precision pt,mjj
+      external pt,mjj
       
       pswt=0d0
       v2jint=0d0      
@@ -98,10 +101,14 @@ c     If cuts fail, then exit
       endif
       
 CC   Dynamic scale: set it only if point passes cuts 
-      if (dynamicscale) then
-         call scaleset(q2)
-      endif
+c      if (dynamicscale) then
+c         call scaleset(q2)
+c      endif
 
+      call scaleset_mcfm(sqrt(q2),
+     .     pt(p(4,:),p(3,:)),
+     .     mjj(p(5,:),p(6,:)))
+      
 c----calculate the x's for the incoming partons from generated momenta
       xx1=two*(p(1,4)*p2ext(4)-p(1,3)*p2ext(3))/W
       xx2=two*(p(2,4)*p1ext(4)-p(2,3)*p1ext(3))/W
