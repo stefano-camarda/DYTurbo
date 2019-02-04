@@ -119,7 +119,8 @@ C     Compute Q2
 
 C     Dynamic scale
 
-      if(dynamicscale) call scaleset(q2)
+      call scaleset_mcfm(sqrt(q2), 0d0, 0d0)
+c      if(dynamicscale) call scaleset(q2)
 
       LF=dlog(q2/facscale**2)
       LR=dlog(q2/scale**2)

@@ -183,6 +183,8 @@ c      if(dynamicresscale) then
 c      else
 c      a_param=m/resscale
 c      endif
+
+      call scaleset_mcfm(m, 0d0, 0d0)
       
       xmioOLD=dsqrt(qt2/q2)
       xmio=dsqrt(qt2/(q2/a_param**2))
@@ -196,7 +198,7 @@ c      endif
 
 CC   Dynamic scale
 
-      if(dynamicscale) call scaleset(q2)
+c     if(dynamicscale) call scaleset(q2)
 
 CC   LR,LF,LQ
 
