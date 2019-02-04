@@ -15,6 +15,7 @@
 #include "dyres_interface.h"
 #include "interface.h"
 #include "coupling.h"
+#include "scales.h"
 #include "HistoHandler.h"
 #include "clock_real.h"
 
@@ -488,10 +489,14 @@ namespace DYTurbo {
             cout << Col4(  "Factorization scale:"   , "muf ="    , facscale_.facscale_ , "GeV" );
             cout << Col4(  "Resummation scale:"     , "m_ll/Q =" , a_param_.a_param_   ,  ""   );
 
-            cout << Col4(  "Renormalization scale:" , String(opts.dynamicscale    ? "dynamic" : "fixed") + " muren =" , opts.kmuren , String("* ") + (opts.dynamicscale ? "m_ll" : to_string(opts.rmass)) );
-            cout << Col4(  "Factorization scale:"   , String(opts.dynamicscale    ? "dynamic" : "fixed") + " mufac =" , opts.kmufac , String("* ") + (opts.dynamicscale ? "m_ll" : to_string(opts.rmass)) );
-            cout << Col4(  "Resummation scale:"     , String(opts.dynamicresscale ? "dynamic" : "fixed") + " mures =" , opts.kmures , String("* ") + (opts.dynamicscale ? "m_ll" : to_string(opts.rmass)) );
+	    //            cout << Col4(  "Renormalization scale:" , String(opts.fmuren    ? "dynamic" : "fixed") + " muren =" , opts.kmuren , String("* ") + (opts.dynamicscale ? "m_ll" : to_string(opts.rmass)) );
+	    //            cout << Col4(  "Factorization scale:"   , String(opts.fmufac    ? "dynamic" : "fixed") + " mufac =" , opts.kmufac , String("* ") + (opts.dynamicscale ? "m_ll" : to_string(opts.rmass)) );
+	    //            cout << Col4(  "Resummation scale:"     , String(opts.fmures    ? "dynamic" : "fixed") + " mures =" , opts.kmures , String("* ") + (opts.dynamicscale ? "m_ll" : to_string(opts.rmass)) );
 
+            cout << Col4(  "Renormalization scale:" , String(opts.fmuren    ? "dynamic" : "fixed") + " muren =" , opts.kmuren , String("* ") + scales::func(opts.fmuren) );
+            cout << Col4(  "Factorization scale:"   , String(opts.fmufac    ? "dynamic" : "fixed") + " mufac =" , opts.kmufac , String("* ") + scales::func(opts.fmufac) );
+            cout << Col4(  "Resummation scale:"     , String(opts.fmures    ? "dynamic" : "fixed") + " mures =" , opts.kmures , String("* ") + scales::func(opts.fmures) );
+	    
             cout << Col4( "Strong coupling"  , "alpha_s(MZ) ="   , couple_.amz_                 , ""      );
             cout << Col4( ""                 , "alpha_s(mur) ="  , qcdcouple_.as_               , ""      );
             cout << Col4( ""                 , "running order =" , (LHAPDF::getOrderAlphaS()+1) , "-loop" );

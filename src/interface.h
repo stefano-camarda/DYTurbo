@@ -16,8 +16,8 @@ extern "C" {
   void pdfini_();
   void iniflavreduce_();
   void gaussinit_();
-  double dyalphas_mcfm_(double &q, double &amz, int &nloop);
-  double dyalphas_lhapdf_(double &q);
+  //  double dyalphas_mcfm_(double &q, double &amz, int &nloop);
+  //  double dyalphas_lhapdf_(double &q);
   int cuts_(double p[4][mxpart], int &njet);
   //int cutsold_(double p[4][mxpart], int &njet);
   void rescinit_();

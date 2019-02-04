@@ -1,6 +1,7 @@
 #include "pdf.h"
 #include "dyres_interface.h"
 #include "interface.h"
+#include "scales.h"
 #include "settings.h"
 
 #include <LHAPDF/LHAPDF.h>
@@ -67,7 +68,8 @@ void pdf::setalphas()
       qcdcouple_.as_=dyalphas_mcfm_(scale,couple_.amz_,nloop);
     }
   else
-    qcdcouple_.as_=dyalphas_lhapdf_(scale);
+    //qcdcouple_.as_=dyalphas_lhapdf_(scale);
+    qcdcouple_.as_=LHAPDF::alphasPDF(scale);
   
   qcdcouple_.ason2pi_=qcdcouple_.as_/(2*M_PI);
   qcdcouple_.ason4pi_=qcdcouple_.as_/(4*M_PI);

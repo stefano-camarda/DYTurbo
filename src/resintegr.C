@@ -9,6 +9,7 @@
 #include "rapint.h"
 #include "cubacall.h"
 #include "isnan.h"
+#include "scales.h"
 
 #include <math.h>
 #include <iomanip>
@@ -84,8 +85,10 @@ integrand_t resintegrand1d(const int &ndim, const double x[], const int &ncomp, 
   phasespace::set_phiV(0);
 
   //Dynamic scale --> is this still needed? probably it is for the fortran version of the code
-  if (opts.dynamicscale)
-    scaleset_(phasespace::m2);
+  //if (opts.dynamicscale)
+  //scaleset_(phasespace::m2);
+  scales::set(phasespace::m);
+  scales::mcfm();
 
   clock_t ybt, yet;
   ybt = clock();
@@ -196,8 +199,10 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
   phasespace::set_phiV(0);
 
   //Dynamic scale --> is this still needed? probably it is for the fortran version of the code
-  if (opts.dynamicscale)
-    scaleset_(phasespace::m2);
+  //if (opts.dynamicscale)
+  //scaleset_(phasespace::m2);
+  scales::set(phasespace::m);
+  scales::mcfm();
 
   //Perform quadrature rule integration in rapidity and semi-analitical costh, phi_lep integration
   int nocuts = !opts.makecuts;
@@ -339,8 +344,11 @@ integrand_t resintegrand3d(const int &ndim, const double x[], const int &ncomp, 
   */
 
   //Dynamic scale
-  if (opts.dynamicscale)
-    scaleset_(phasespace::m2);
+  //if (opts.dynamicscale)
+  //scaleset_(phasespace::m2);
+  scales::set(phasespace::m);
+  scales::mcfm();
+
 
   //evaluate the resummed cross section
   if (opts.resumcpp)
@@ -428,8 +436,10 @@ integrand_t resintegrandMC(const int &ndim, const double x[], const int &ncomp, 
   double y = phasespace::y;
 
   //Dynamic scale
-  if (opts.dynamicscale)
-    scaleset_(phasespace::m2);
+  //if (opts.dynamicscale)
+  //scaleset_(phasespace::m2);
+  scales::set(phasespace::m);
+  scales::mcfm();
   
   double psfac = 3./8./2./M_PI;
   
