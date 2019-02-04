@@ -199,9 +199,9 @@ extern "C"
     int nproc_;
   }  nproc_;
 
-  extern struct {
-    int dynamicscale_;
-  } dynamicscale_;
+  //  extern struct {
+  //    int dynamicscale_;
+  //  } dynamicscale_;
 
   extern struct {
     double scale_;

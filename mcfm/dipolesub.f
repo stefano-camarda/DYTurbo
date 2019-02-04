@@ -39,6 +39,8 @@ c      include 'sprods_com.f'
       logical incldip(0:maxd)
       common/incldip/incldip
       external subr_born,subr_corr
+      double precision pt,mjj
+      external pt,mjj
 
 C     Added for Drell-Yan
 
@@ -95,11 +97,18 @@ c        if (incldip(nd) .eqv. .false.) return
 
 c--- if using a dynamic scale, set that scale with dipole kinematics  
         q2d=2*dot(ptrans,3,4)
-        if (dynamicscale) then
-          call scaleset(q2d)
-          dipscale(nd)=facscale
-        endif
-
+c        if (dynamicscale) then
+c          call scaleset(q2d)
+c          dipscale(nd)=facscale
+c        endif
+        call scaleset_mcfm(sqrt(q2d), pt(ptrans(3,:),ptrans(4,:)),0d0)
+c     .       mjj(ptilde(nd,5,:),ptilde(nd,6,:)))
+      dipscale(nd)=facscale
+      print *
+      print *,ptilde(nd,:,:)
+      print *,sqrt(q2d), pt(ptrans(3,:),ptrans(4,:)),
+     .       mjj(ptilde(nd,5,:),ptilde(nd,6,:))
+        
         call subr_born(ptrans,msq)
         call subr_corr(ptrans,vec,ip,msqv)
 
@@ -135,10 +144,13 @@ c        if (incldip(nd) .eqv. .false.) return
 
 c--- if using a dynamic scale, set that scale with dipole kinematics                                                                                        
         q2d=2*dot(ptrans,3,4)
-        if (dynamicscale) then
-          call scaleset(q2d)
-          dipscale(nd)=facscale
-        endif
+c        if (dynamicscale) then
+c          call scaleset(q2d)
+c          dipscale(nd)=facscale
+c        endif
+        call scaleset_mcfm(sqrt(q2d), pt(ptrans(3,:),ptrans(4,:)),0d0)
+c     .       mjj(ptilde(nd,5,:),ptilde(nd,6,:)))
+      dipscale(nd)=facscale
 
 c--- Calculate the matrix element now because it might be needed
 c--- in the final-initial segment, regardless of whether or not the
@@ -189,10 +201,13 @@ C---call msqv again because vec has changed
 
 c--- if using a dynamic scale, set that scale with dipole kinematics
         q2d=2*dot(ptrans,3,4)
-        if (dynamicscale) then
-          call scaleset(q2d)
-          dipscale(nd)=facscale
-        endif
+c        if (dynamicscale) then
+c          call scaleset(q2d)
+c          dipscale(nd)=facscale
+c        endif
+        call scaleset_mcfm(sqrt(q2d), pt(ptrans(3,:),ptrans(4,:)),0d0)
+c     .       mjj(ptilde(nd,5,:),ptilde(nd,6,:)))
+      dipscale(nd)=facscale
 
 C ie for cases 57_i,67_i
         call subr_corr(ptrans,vec,ip,msqv)
@@ -233,10 +248,13 @@ c        if (incldip(nd) .eqv. .false.) return
 
 c--- if using a dynamic scale, set that scale with dipole kinematics
         q2d=2*dot(ptrans,3,4)
-        if (dynamicscale) then
-          call scaleset(q2d)
-          dipscale(nd)=facscale
-        endif
+c        if (dynamicscale) then
+c          call scaleset(q2d)
+c          dipscale(nd)=facscale
+c        endif
+        call scaleset_mcfm(sqrt(q2d), pt(ptrans(3,:),ptrans(4,:)),0d0)
+c     .       mjj(ptilde(nd,5,:),ptilde(nd,6,:)))
+      dipscale(nd)=facscale
 
        call subr_born(ptrans,msq)
        if (ip .lt. kp) then

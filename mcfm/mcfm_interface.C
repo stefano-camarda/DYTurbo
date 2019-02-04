@@ -17,7 +17,7 @@ void mcfm::init()
   density_.ih2_               = opts.ih2;
   nproc_.nproc_               = opts.nproc;
   zerowidth_.zerowidth_       = opts.zerowidth;
-  dynamicscale_.dynamicscale_ = opts.dynamicscale;   // Dynamic scale (if true mufac=muren=q)
+  //  dynamicscale_.dynamicscale_ = opts.dynamicscale;   // Dynamic scale (if true mufac=muren=q)
 
   //    CKM matrix entries
   cabib_.Vud_ = opts.Vud;
