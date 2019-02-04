@@ -8,6 +8,7 @@
 #include "numbers.h"
 #include "luminosity.h"
 #include "mesq.h"
+#include "scales.h"
 #include "resconst.h"
 #include "LHAPDF/LHAPDF.h"
 
@@ -76,6 +77,15 @@ double vjint::sing()
       double s2 = 0.; // set s2=0 explicitly in utilities
       //cout << sh << " " << x1*x2*s << " " << th << " " << q2-ss*x1*tm*expym << " " << uh,q2-ss*x2*tm*expyp << endl;
 
+      if (opts.fmuren > 2 || opts.fmufac > 2)
+	{
+	  scales::set(phasespace::m, phasespace::qt);
+	  scales::vjet();
+	  fac = gevfb/1000.*coupling::aemmz*asp_.asp_*resconst::Cf;
+	  utils_scales_(q2);
+	}
+
+      /*      
       if (opts.kmjj_muren != 0 || opts.kmjj_mufac != 0)
 	{
 	  scales2_.xmur_ = sqrt(pow(opts.kmuren*opts.rmass,2) + pow(opts.kpt_muren*phasespace::qt,2) + pow(opts.kmjj_muren*sqrt(s2),2));
@@ -87,6 +97,7 @@ double vjint::sing()
 	  fac = gevfb/1000.*coupling::aemmz*asp_.asp_*resconst::Cf;
 	  utils_scales_(q2);
 	}
+      */
 
       luminosity::pdf1(x1);
       luminosity::pdf2(x2);
@@ -188,6 +199,14 @@ double vjint::sing()
 	      return 0.;
 	    }
 
+	  if (opts.fmuren > 2 || opts.fmufac > 2)
+	    {
+	      scales::set(phasespace::m, phasespace::qt, sqrt(s2));
+	      scales::vjet();
+	      fac = gevfb/1000.*coupling::aemmz*asp_.asp_*resconst::Cf;
+	      utils_scales_(q2);
+	    }
+	  /*
 	  if (opts.kmjj_muren != 0 || opts.kmjj_mufac != 0)
 	    {
 	      scales2_.xmur_ = sqrt(pow(opts.kmuren*opts.rmass,2) + pow(opts.kpt_muren*phasespace::qt,2) + pow(opts.kmjj_muren*sqrt(s2),2));
@@ -200,7 +219,7 @@ double vjint::sing()
 	      utils_scales_(q2);
 	      //printf ("s2 %f mur %f alphas %f\n", s2, scales2_.xmur_, asnew_.as_);
 	    }
-
+	  */
 	  luminosity::pdf1(x1);
 
 	  //phase space prefactor

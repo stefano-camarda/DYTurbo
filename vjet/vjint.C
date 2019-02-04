@@ -6,6 +6,7 @@
 #include "gaussrules.h"
 #include "mesq.h"
 #include "coupling.h"
+#include "scales.h"
 #include "phasespace.h"
 #include "luminosity.h"
 
@@ -189,6 +190,10 @@ double vjint::vint(double m, double pt, double y)
   double q2 = m*m;
 
   //set scales and alpha strong
+  scales::set(m, pt);
+  scales::vjet();
+
+  /*
   if (opts.dynamicscale)
     {
       scales2_.xmur_ = sqrt(pow(opts.kmuren*m,2) + pow(opts.kpt_muren*pt,2));
@@ -203,6 +208,7 @@ double vjint::vint(double m, double pt, double y)
   scales2_.xmur2_ = pow(scales2_.xmur_,2);
   scales2_.xmuf2_ = pow(scales2_.xmuf_,2);
   asnew_.as_ = LHAPDF::alphasPDF(scales2_.xmur_)/M_PI;
+  */
 
   //calculate logs of scales
   utils_scales_(q2);

@@ -5,6 +5,7 @@
 #include "mcfm_interface.h"
 #include "mesq.h"
 #include "pdf.h"
+#include "scales.h"
 #include "phasespace.h"
 #include "omegaintegr.h"
 #include "cubature.h"
@@ -61,6 +62,13 @@ void vjloint::calc(const double x[5], double f[2])
   jac = jac *2.*phasespace::qt;
 
   //Set factorization and renormalization scales
+  scales::set(phasespace::m, phasespace::qt);
+  scales::mcfm();
+  muf = scales::fac;
+  mur = scales::ren;
+  
+  /*
+  //Set factorization and renormalization scales
   if (opts.dynamicscale)
     {
       muf = phasespace::m*opts.kmufac;
@@ -68,6 +76,7 @@ void vjloint::calc(const double x[5], double f[2])
       double mur2 = mur*mur;
       scaleset_(mur2);
     }
+  */
 
   //Generate the boson 4-momentum
   phasespace::set_phiV(0.);
@@ -428,6 +437,13 @@ double vjloint::calcvegas(const double x[7])
   jac = jac *2.*phasespace::qt;
 
   //Set factorization and renormalization scales
+  scales::set(phasespace::m, phasespace::qt);
+  scales::mcfm();
+  muf = scales::fac;
+  mur = scales::ren;
+  
+  /*  
+  //Set factorization and renormalization scales
   if (opts.dynamicscale)
     {
       muf = phasespace::m*opts.kmufac;
@@ -435,6 +451,7 @@ double vjloint::calcvegas(const double x[7])
       double mur2 = mur*mur;
       scaleset_(mur2); //set renormalization and factorization scales, and calculate ason2pi and ason4pi
     }
+  */
 
   //Generate the boson 4-momentum
   phasespace::set_phiV(-M_PI+2.*M_PI*x[6]);
