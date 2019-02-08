@@ -104,10 +104,6 @@ c        endif
         call scaleset_mcfm(sqrt(q2d), pt(ptrans(3,:),ptrans(4,:)),0d0)
 c     .       mjj(ptilde(nd,5,:),ptilde(nd,6,:)))
       dipscale(nd)=facscale
-      print *
-      print *,ptilde(nd,:,:)
-      print *,sqrt(q2d), pt(ptrans(3,:),ptrans(4,:)),
-     .       mjj(ptilde(nd,5,:),ptilde(nd,6,:))
         
         call subr_born(ptrans,msq)
         call subr_corr(ptrans,vec,ip,msqv)
