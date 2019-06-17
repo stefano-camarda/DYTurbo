@@ -262,9 +262,13 @@ void hcoeff::calcb(double aass, complex <double> logmuf2q2, complex <double> log
 void hcoeff::truncate()
 {
   //Calculate truncated moments
-  //  double x = phasespace::m/opts.sroot;
+  //double x = phasespace::m/opts.sroot;
 
   double x = 1e-8;//pow(phasespace::m/opts.sroot,2);
+
+  //double x = phasespace::m/opts.sroot*exp(phasespace::ymin);
+
+  //double x = pow(phasespace::m/opts.sroot,2);
 
   double lx = log(x);
   
