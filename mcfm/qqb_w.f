@@ -14,6 +14,9 @@ c---
       integer j,k
       double precision msq(-nf:nf,-nf:nf),p(mxpart,4),fac,qqb,qbq,s
      
+      double complex bosprop
+      external bosprop
+      
 c--statement function 
       s(j,k)=2d0*(p(j,4)*p(k,4)-p(j,1)*p(k,1)
      .           -p(j,2)*p(k,2)-p(j,3)*p(k,3))
@@ -21,7 +24,10 @@ c--statement function
 
       fac=gw**4*xn
 c--   calculate propagator
-      fac=aveqq*fac/((s(3,4)-wmass**2)**2+(wmass*wwidth)**2)
+c      fac=aveqq*fac/((s(3,4)-wmass**2)**2+(wmass*wwidth)**2)
+
+      fac=aveqq*fac*cdabs(bosprop(s(3,4)))**2/s(3,4)**2
+
 c---case dbar-u or ubar-d
       qqb=fac*s(1,4)**2
       qbq=fac*s(2,4)**2

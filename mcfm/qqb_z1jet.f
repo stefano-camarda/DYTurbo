@@ -23,6 +23,9 @@ c---
       data swap/2,1/
       save swap
 
+      double complex bosprop
+      external bosprop
+      
       msq=0d0
 c      do j=-nf,nf
 c      do k=-nf,nf
@@ -40,7 +43,8 @@ c      if  ((-s(1,5) .lt. cutoff) .or. (-s(2,5) .lt. cutoff)) return
 C-----Protect from photon pole by cutting off at some value about 10 GeV
 c      if (s(3,4) .lt. 4d0*mbsq) return
 
-      prop=s(3,4)/Dcmplx((s(3,4)-zmass**2),zmass*zwidth)
+c     prop=s(3,4)/Dcmplx((s(3,4)-zmass**2),zmass*zwidth)
+      prop=bosprop(s(3,4))
       fac=4d0*V*esq**2*gsq
 
 c      qqbZg= +aveqq*s(3,4)**2*fac*z1jet(1,2,3,4,5)

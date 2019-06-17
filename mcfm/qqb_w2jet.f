@@ -49,6 +49,9 @@ c--- and by type of contribution qqb(1) ... qqb(n)
       data first/.true./
       save first
 
+      double complex bosprop
+      external bosprop
+      
       if (first) then
       first=.false.
         if (Gflag) then
@@ -94,7 +97,8 @@ c--- initialize matrix elements
 
 c--- set up spinors
       call spinoru(6,p,za,zb)
-      prop=s(3,4)**2/((s(3,4)-wmass**2)**2+wmass**2*wwidth**2)
+c      prop=s(3,4)**2/((s(3,4)-wmass**2)**2+wmass**2*wwidth**2)
+      prop=cdabs(bosprop(s(3,4)))**2
       facqq=4d0*V*gsq**2*(gwsq/2d0)**2*aveqq*prop
       facgg=V*xn/four*(gwsq/2d0)**2*gsq**2*prop
       

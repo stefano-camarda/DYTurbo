@@ -68,6 +68,9 @@ c    .   qbqZgg2(2,2),qbgZqbg2(2,2),gqbZqbg2(2,2),
       data swap1/0,2,1/
       save swap1
 
+      double complex bosprop
+      external bosprop
+
       msq=0d0
 c      do j=-nf,nf
 c      do k=-nf,nf
@@ -77,7 +80,8 @@ c      enddo
 
 
       call spinoru(6,p,za,zb)
-      prop=s(3,4)/dcmplx((s(3,4)-zmass**2),zmass*zwidth)
+c      prop=s(3,4)/dcmplx((s(3,4)-zmass**2),zmass*zwidth)
+      prop=bosprop(s(3,4))
 
 c--- calculate 2-quark, 2-gluon amplitudes
       if (Gflag) then

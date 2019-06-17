@@ -21,6 +21,9 @@ C--in is the label of the parton dotted with n
       double precision z1jetn,fac,p1p2(-1:1,-1:1),n(4)
       double complex prop
 
+      double complex bosprop
+      external bosprop
+      
       msq=0d0
 c      do j=-nf,nf
 c      do k=-nf,nf
@@ -34,7 +37,8 @@ C-----Protect from photon pole by cutting off at some value about 10 GeV
 c      if (s(3,4) .lt. 4d0*mbsq) return
 
       fac=16d0*cf*xn*esq**2*gsq
-      prop=s(3,4)/dcmplx((s(3,4)-zmass**2),zmass*zwidth)
+c      prop=s(3,4)/dcmplx((s(3,4)-zmass**2),zmass*zwidth)
+      prop=bosprop(s(3,4))
 
 c      do j=-1,1
 c      do k=-1,1
