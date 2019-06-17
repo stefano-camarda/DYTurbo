@@ -4,6 +4,8 @@
 #include "dyres_interface.h"
 #include "resconst.h"
 #include "mesq.h"
+#include "omegaintegr.h"
+#include "gaussrules.h"
 #include "hcoefficients.h"
 #include "hcoeff.h"
 #include "pdfevol.h"
@@ -33,6 +35,7 @@ double resint::_m;
 double resint::_y;
 double resint::_costh;
 
+double resint::tau;
 double resint::x1;
 double resint::x2;
 
@@ -274,8 +277,11 @@ void resint::init()
   //Set values in the common block for the sudakov
   flag1_.flag1_ = opts.order;              //order for the sudakov
   iorder_.iord_ = opts.order - 1;          //order for LL/NLL running of alphas
-  modified_.imod_ = 1;                     // normal (imod=0) or modified (imod=1) sudakov
+  //modified_.imod_ = 1;                     // normal (imod=0) or modified (imod=1) sudakov
+  modified_.imod_ = opts.modlog;           // canonical (imod=0) or modified (imod=1) logarithms in the Sudakov
 
+  cout << "init " << modified_.imod_ << endl;
+  
   // choose real axis (complex plane) integration of bstar (b) (always 0)
   if (opts.bprescription == 2 || opts.bprescription == 3)
     flagrealcomplex_.flagrealcomplex_ = 1;
@@ -322,16 +328,16 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
   jac = pow(m/sqrt(m*m-qtp*qtp),3);
   */
   
-  //point in phase space
+  //point in phase space (should use the phasespace namespace instead of storing them in resint)
   _qt = qt;
   _y = y;
   _m = m;
   _costh = costh;
 
   //compute x1 and x2 for the NP ff
-  double exppy = exp(resint::_y);
+  double exppy = exp(y);
   double expmy = 1./exppy;
-  double tau = resint::_m/opts.sroot;
+  tau = m/opts.sroot;
       
   x1 = tau*exppy;
   x2 = tau*expmy;
@@ -487,8 +493,24 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
   //     are convoluted with the rapidity depent expression
   //      and they depend also on rapidity
 
-  mesq::allocate();
-  mesq::setmesq_expy(mode, m, costh, y);
+  if (!(opts.order == 0 && opts.xspace))
+    {
+      mesq::allocate();
+      mesq::setmesq_expy(mode, m, costh, y);
+    }
+  else //No Mellin transform case
+    {
+      mesq::setpropagators(m);
+      
+      if (mode == 0) //costh differential
+	mesq::setmesq(1., costh, pow(costh,2));
+      else //costh integrated
+	{
+	  double cthmom0, cthmom1, cthmom2;
+	  omegaintegr::cthmoments(cthmom0, cthmom1, cthmom2);
+	  mesq::setmesq(cthmom0, cthmom1, cthmom2);
+	}
+    }
   //******************************************
 
   //*****************************************
@@ -569,40 +591,61 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
       res = bintegral(qt);
       //  cout << "phase space point in resumm" << "  " << _qt << "  " <<  _y << "  " <<  _m << "  " << _costh << "  " << res << endl;
       //*****************************************
-      
+
       // Normalization
       res *= qt/2./pow(opts.sroot,2);
 
-   //  double res = 0;
-//  if (opts.order == 0)
-//    {
-//      //mesq::setmesq_expy(1, m, costh, y);
-//	//No need Mellin transform for the LL case
-//      //double muf = fabs(pdfevol::bstartilde);
-//      //double muf = fabs(pdfevol::qbstar);
-//      double muf = fabs(resint::mufac);
-//
-//      double exppy = exp(resint::_y);
-//      double expmy = 1./exppy;
-//      double tau = resint::_m/sqrt(pow(opts.sroot,2));
-//      
-//      double x1 = tau*exppy;
-//      double x2 = tau*expmy;
-//      
-//      //PDFs
-//      double fx1[2*MAXNF+1],fx2[2*MAXNF+1];
-//      fdist_(opts.ih1,x1,muf,fx1);
-//      fdist_(opts.ih2,x2,muf,fx2);
-//      
-//      for (int sp = 0; sp < mesq::totpch; sp++)
-//	res += fx1[mesq::pid1[sp]]*fx2[mesq::pid2[sp]]*real(mesq::mesqij[sp]);
-//      
-//      double shad = pow(opts.sroot,2);
-//      res = res*exp(-qt);
+//      //if (opts.fast) {
+//      //Fast function
+//      res = exp(-qt);
 //
 //      // Normalization
-//      res *= qt/pow(opts.sroot,2);
-//    }
+//      double shad = pow(opts.sroot,2);
+//      res *= qt/shad;
+//      //}
+    }
+  
+  //Do not need the Mellin transform for the LL case, because the HN coefficient is 1 --> Use PDFs in x space
+  if (opts.order == 0 && opts.xspace && (opts.evolmode == 0 || opts.evolmode == 1))
+    {
+      double fun = 0.;
+      if (mode < 2) //rapidity differential
+	{
+	  //PDFs
+	  double fx1[2*MAXNF+1],fx2[2*MAXNF+1];
+	  fdist_(opts.ih1,x1,mufac,fx1);
+	  fdist_(opts.ih2,x2,mufac,fx2);
+	  
+	  for (int sp = 0; sp < mesq::totpch; sp++)
+	    fun += fx1[mesq::pid1[sp]]*fx2[mesq::pid2[sp]]*real(mesq::mesqij[sp]);
+	}
+      else //rapidity integration
+	{
+	  for (int i=0; i < opts.yintervals; i++)
+	    {
+	      double ya = phasespace::ymin+(phasespace::ymax-phasespace::ymin)*i/opts.yintervals;
+	      double yb = phasespace::ymin+(phasespace::ymax-phasespace::ymin)*(i+1)/opts.yintervals;
+	      double xc = 0.5*(ya+yb);
+	      double xm = 0.5*(yb-ya);
+	      for (int j=0; j < opts.yrule; j++)
+		{
+		  double y = xc+xm*gr::xxx[opts.yrule-1][j];
+		  double exppy = exp(y);
+		  double expmy = 1./exppy;
+		  x1 = tau*exppy;
+		  x2 = tau*expmy;
+		      
+		  //PDFs
+		  double fx1[2*MAXNF+1],fx2[2*MAXNF+1];
+		  fdist_(opts.ih1,x1,mufac,fx1);
+		  fdist_(opts.ih2,x2,mufac,fx2);
+		      
+		  for (int sp = 0; sp < mesq::totpch; sp++)
+		    fun += fx1[mesq::pid1[sp]]*fx2[mesq::pid2[sp]]*real(mesq::mesqij[sp])*gr::www[opts.yrule-1][j]*xm;;
+		}
+	    }
+	}
+      res *= fun;
     }
   
   //free allocated Local Thread Storage (LTS) memory
@@ -610,7 +653,9 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
     hcoeff::free();
   else
     hcoefficients::free();
-  mesq::free();
+
+  if (!(opts.order == 0 && opts.xspace))
+    mesq::free();
 
   //res *= jac;//jacobian for the change of variable qt=qtp/sqrt(1-qtp^2/m^2)
   
