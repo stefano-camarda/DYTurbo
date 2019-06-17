@@ -180,7 +180,7 @@ c     narrow width approximation (never used)
          endif
 
 c     normal (imod=0) or modified (imod=1) sudakov      
-         imod=1
+c         imod=1
 
          nnf=nf                 !number of flavours (why duplicated?)
          b0p=b0*a_param
