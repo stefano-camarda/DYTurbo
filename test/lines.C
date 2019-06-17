@@ -1,3 +1,10 @@
+#include "dyres_interface.h"
+#include "mcfm_interface.h"
+#include "propagator.h"
+#include "mesq.h"
+#include "vjint.h"
+#include "vjloint.h"
+
 //y line plot
 void yline()
 {
@@ -264,7 +271,7 @@ void ptline()
   double m = opts.rmass;
   double qt = 5.;
   double y = 0.0;
-  int mode = 3;
+  int mode = 1;
   double f[opts.totpdf];
   /*
   phasespace::setbounds(phasespace::mmin, phasespace::mmax, 0, 100, phasespace::ymin, phasespace::ymax);
@@ -278,8 +285,8 @@ void ptline()
       }
   */
 
-  double p1 = 0.01;
-  double p2 = 1;
+  double p1 = 1;
+  double p2 = 100;
   int np = 99;
 
   ofstream pf("ptline.C");
@@ -298,25 +305,116 @@ void ptline()
       phasespace::calcexpy();
       phasespace::calcmt();
       omegaintegr::genV4p();//generate boson 4-momentum, with m, qt, y and phi=0
-      double vj = vjint::vint(m,qt,y);
+      //      double vj = vjint::vint(m,qt,y);
 
       //pf << "gp->SetPoint(gp->GetN(), " << i*hp+p1 << ", " << resumm_(costh,m,qt,y,mode) << ");" << endl;
       //phasespace::setbounds(phasespace::mmin, phasespace::mmax, 0, qt, phasespace::ymin, phasespace::ymax);
-      //pf << "gp->SetPoint(gp->GetN(), " << i*hp+p1 << ", " << resint::rint(costh,m,qt,y,mode) << ");" << endl;
+      pf << "gp->SetPoint(gp->GetN(), " << i*hp+p1 << ", " << resint::rint(costh,m,qt,y,mode) << ");" << endl;
       //pf << "gp->SetPoint(gp->GetN(), " << i*hp+p1 << ", " << vjint::vint(m,qt,y) << ");" << endl;
       /*      pf << "gp->SetPoint(gp->GetN(), "   << i*hp+p1 << ", " << vjfo_(m,qt,y)+ctint_(costh,m,qt,y,mode,f)*2*qt << ");" << endl;
       pf << "gp1->SetPoint(gp1->GetN(), " << i*hp+p1 << ", " << -ctint_(costh,m,qt,y,mode,f)*2*qt << ");" << endl;
       pf << "gp2->SetPoint(gp2->GetN(), " << i*hp+p1 << ", " << vjfo_(m,qt,y) << ");" << endl;*/
 
-      dofill_.doFill_ = 1;
-      qtint::calc(m,qt,0,1);
-      omegaintegr::genV4p();//generate boson 4-momentum, with m, qt, y and phi=0
-      mode = 1;
-      ctint::calc(costh,m,qt,y,mode,f);
+//      dofill_.doFill_ = 1;
+//      qtint::calc(m,qt,0,1);
+//      omegaintegr::genV4p();//generate boson 4-momentum, with m, qt, y and phi=0
+//      mode = 1;
+//      ctint::calc(costh,m,qt,y,mode,f);
 
-      cout << qt << "  " << vj << "  " << f[0]*2*qt << endl;
+//      cout << qt << "  " << vj << "  " << f[0]*2*qt << endl;
       //pf << "gp->SetPoint(gp->GetN(), " << i*hp+p1 << ", " << (f[0]*2*qt)+vj << ");" << endl;
-      pf << "gp->SetPoint(gp->GetN(), " << i*hp+p1 << ", " << (f[0]*2*qt)/vj << ");" << endl;
+      //      pf << "gp->SetPoint(gp->GetN(), " << i*hp+p1 << ", " << (f[0]*2*qt)/vj << ");" << endl;
+    }
+  pf << "gp->Draw();" << endl;
+  pf << "//gp1->Draw();" << endl;
+  pf << "//gp2->Draw(\"same\");" << endl;
+  pf << "}" << endl;
+}
+
+void ptomline()
+{
+  double costh = 0.;
+  //double m = (phasespace::mmin + phasespace::mmax)/2.;
+  double m = opts.rmass;
+  double qt = 5.;
+  double y = 0.0;
+  int mode = 2;
+  double f[opts.totpdf];
+
+  double p1 = 0.01;
+  double p2 = 0.5;
+  int np = 49;
+
+  ofstream pf("ptomline.C");
+  pf << std::setprecision(15);
+  pf << "{" << endl;
+  pf << "TGraph *gp = new TGraph();" << endl;
+  pf << "TGraph *gp1 = new TGraph();" << endl;
+  pf << "TGraph *gp2 = new TGraph();" << endl;
+  double hp=(p2-p1)/np;
+
+  for(int i=0;i<=np;i++)
+    {
+      double qt;
+
+      //phasespace::setbounds(phasespace::mmin, phasespace::mmax, 0, qt, phasespace::ymin, phasespace::ymax);
+      opts.nproc = 3;
+      dyres::init();
+      mcfm::init();
+      iniflavreduce_();                      //need to call this after nproc_.nproc_ is set
+      prop::init();                          //Initialise mass and width used in the propagator
+      mesq::init();                          //EW couplings for born amplitudes
+      vjint::init();
+      vjloint::init();
+      m = opts.rmass;
+      qt = (i*hp+p1)*m;
+      phasespace::set_mqtyphi(m, qt, y);//set global variables to costh, m, qt, y
+      phasespace::set_cth(costh);//set global variables to costh, m, qt, y
+      phasespace::calcexpy();
+      phasespace::calcmt();
+      omegaintegr::genV4p();//generate boson 4-momentum, with m, qt, y and phi=0
+      phasespace::setbounds(phasespace::mmin, phasespace::mmax, 0, 100, phasespace::ymin, phasespace::ymax);
+      cacheyrapint_(phasespace::ymin, phasespace::ymax);
+      if (mode >= 2)
+	if (opts.resumcpp)
+	  {
+	    rapint::cache(phasespace::ymin, phasespace::ymax);
+	    rapint::allocate();
+	    rapint::integrate(phasespace::ymin,phasespace::ymax,m);
+	  }
+      double z = resint::rint(costh,m,qt,y,mode);
+      //double z = vjint::vint(m,qt,y);
+      
+      opts.nproc = 1;
+      dyres::init();
+      mcfm::init();
+      iniflavreduce_();                      //need to call this after nproc_.nproc_ is set
+      prop::init();                          //Initialise mass and width used in the propagator
+      mesq::init();                          //EW couplings for born amplitudes
+      vjint::init();
+      vjloint::init();
+      m = opts.rmass;
+      qt = (i*hp+p1)*m;
+      phasespace::set_mqtyphi(m, qt, y);//set global variables to costh, m, qt, y
+      phasespace::set_cth(costh);//set global variables to costh, m, qt, y
+      phasespace::calcexpy();
+      phasespace::calcmt();
+      omegaintegr::genV4p();//generate boson 4-momentum, with m, qt, y and phi=0
+      phasespace::setbounds(phasespace::mmin, phasespace::mmax, 0, 100, phasespace::ymin, phasespace::ymax);
+      cacheyrapint_(phasespace::ymin, phasespace::ymax);
+      if (mode >= 2)
+	if (opts.resumcpp)
+	  {
+	    rapint::cache(phasespace::ymin, phasespace::ymax);
+	    rapint::allocate();
+	    rapint::integrate(phasespace::ymin,phasespace::ymax,m);
+	  }
+      double wp = resint::rint(costh,m,qt,y,mode);
+      //double wp = vjint::vint(m,qt,y);
+
+      cout << i*hp+p1 << " " << wp << "  " << z << endl;
+      pf << "gp->SetPoint(gp->GetN(), " << i*hp+p1 << ", " << wp/z << ");" << endl;
+
     }
   pf << "gp->Draw();" << endl;
   pf << "//gp1->Draw();" << endl;

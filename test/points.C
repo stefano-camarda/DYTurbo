@@ -105,7 +105,8 @@ int main( int argc , char * argv[])
   test_ct_speed(costh,m,qt,y,mode);
 
   //costhline();
-  ptline();
+  //ptline();
+  ptomline();
   //yline();
   //mline();
   //mlinebw();
