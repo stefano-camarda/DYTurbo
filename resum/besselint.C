@@ -6,7 +6,8 @@
 #include "mesq.h"
 #include "hcoefficients.h"
 #include "hcoeff.h"
-//#include "phasespace.h"
+#include "phasespace.h"
+#include "gaussrules.h"
 #include "resint.h"
 #include "isnan.h"
 #include "pdf.h"
@@ -115,6 +116,11 @@ complex <double> besselint::bint(complex <double> b)
   complex <double> factorfin = bb*xj0*sudak;
   //********************
 
+  //Do not need the Mellin transform for the LL case, because the HN coefficient is 1 --> Use PDFs in x space
+  if (opts.order == 0 && opts.xspace && (opts.evolmode == 0 || opts.evolmode == 1))
+    return real(factorfin);
+  
+  
   //**************************************
   //b-dependence
   // Set scales for evolution in pdfevol
@@ -222,8 +228,9 @@ complex <double> besselint::bint(complex <double> b)
     pegasus::evolve();
 
   //Truncate moments from xmin to 1, with xmin = m/sqrt(s) e^-y0 (currently works only at LL where the HN coefficient is 1)
-  //  if (opts.mellin1d)
-  //    pdfevol::truncate();
+  //if (opts.mellin1d)
+    //  pdfevol::truncate();
+  //pdfevol::uppertruncate();
   
   //  for (int i = 0; i < mellinint::mdim; i++)
   //    cout << "C++ " << b << "  " << i << "  " << cx(creno_.cfx1_[i][5]) << endl;
@@ -245,7 +252,7 @@ complex <double> besselint::bint(complex <double> b)
 
   //In case of truncation of hcoeff, need to recalculate the original coefficients before truncation
   //if (opts.mellin1d)
-  //  hcoeff::calc(resint::aass,resint::logmuf2q2,resint::logq2muf2,resint::logq2mur2,resint::loga);
+  //hcoeff::calc(resint::aass,resint::logmuf2q2,resint::logq2muf2,resint::logq2mur2,resint::loga);
   
   // Cache the positive and negative branch of coefficients which depend only on one I index
   if (opts.mellin1d)
@@ -259,37 +266,79 @@ complex <double> besselint::bint(complex <double> b)
   //hcoeff::invert(q2);
 
   //Truncate HN coefficients, to implement mellin1d also for rapdity intervals (currently not working, not sure if it is eventually possible. Need to figure out how to truncate the moments)
-  //  if (opts.mellin1d)
-  //    hcoeff::truncate();
+  //if (opts.mellin1d)
+  //hcoeff::truncate();
   
   complex <double> invres = 0.;
   double fun = 0.;
-  /*
-  //Do not need the Mellin transform for the LL case, because the HN coefficient is 1 --> Use PDFs in x space
-  if (opts.order == 0)
-    {
-      double muf =0;
-      if (opts.evolmode == 2 || opts.evolmode == 3 || opts.evolmode == 4)
-	muf = fabs(pdfevol::bstartilde);
-	//muf = fabs(pdfevol::qbstar);
-	//muf = resconst::b0/b;
-      else
-	muf = fabs(resint::mufac);
-     
-      //PDFs
-      double fx1[2*MAXNF+1],fx2[2*MAXNF+1];
-      fdist_(opts.ih1,resint::x1,muf,fx1);
-      fdist_(opts.ih2,resint::x2,muf,fx2);
-      
-      //mesq::setmesq_expy(1, resint::_m, resint::_costh, resint::_y);
-      for (int sp = 0; sp < mesq::totpch; sp++)
-	fun += fx1[mesq::pid1[sp]]*fx2[mesq::pid2[sp]]*real(mesq::mesqij[sp]);
 
-      double shad = pow(opts.sroot,2);
+  //Do not need the Mellin transform for the LL case, because the HN coefficient is 1 --> Use PDFs in x space
+  if (opts.order == 0 && opts.xspace) // && (opts.evolmode == 2 || opts.evolmode == 3 || opts.evolmode == 4))
+    {
+      double muf;
+      
+      //double muf = fabs(pdfevol::bstartilde);
+      //double muf = resconst::b0/b;
+
+      if (opts.evolmode == 2)
+	muf = fabs(pdfevol::qbstar);
+      if (opts.evolmode == 4)
+	muf = fabs(pdfevol::qbstar);
+      //muf = fabs(pdfevol::bscale);
+      //muf = fabs(pdfevol::bstartilde);
+      
+      
+      //      //PDFs
+      //      double fx1[2*MAXNF+1],fx2[2*MAXNF+1];
+      //      fdist_(opts.ih1,resint::x1,muf,fx1);
+      //      fdist_(opts.ih2,resint::x2,muf,fx2);
+      //      
+      //      //mesq::setmesq_expy(1, resint::_m, resint::_costh, resint::_y);
+      //      for (int sp = 0; sp < mesq::totpch; sp++)
+      //	fun += fx1[mesq::pid1[sp]]*fx2[mesq::pid2[sp]]*real(mesq::mesqij[sp]);
+
+      if (resint::_mode < 2) //rapidity differential
+	{
+	  //PDFs
+	  double fx1[2*MAXNF+1],fx2[2*MAXNF+1];
+	  fdist_(opts.ih1,resint::x1,muf,fx1);
+	  fdist_(opts.ih2,resint::x2,muf,fx2);
+	  
+	  for (int sp = 0; sp < mesq::totpch; sp++)
+	    fun += fx1[mesq::pid1[sp]]*fx2[mesq::pid2[sp]]*real(mesq::mesqij[sp]);
+	}
+      else //rapidity integration
+	{
+	  for (int i=0; i < opts.yintervals; i++)
+	    {
+	      double ya = phasespace::ymin+(phasespace::ymax-phasespace::ymin)*i/opts.yintervals;
+	      double yb = phasespace::ymin+(phasespace::ymax-phasespace::ymin)*(i+1)/opts.yintervals;
+	      double xc = 0.5*(ya+yb);
+	      double xm = 0.5*(yb-ya);
+	      for (int j=0; j < opts.yrule; j++)
+		{
+		  double y = xc+xm*gr::xxx[opts.yrule-1][j];
+		  double exppy = exp(y);
+		  double expmy = 1./exppy;
+		  double x1 = resint::tau*exppy;
+		  double x2 = resint::tau*expmy;
+		      
+		  //PDFs
+		  double fx1[2*MAXNF+1],fx2[2*MAXNF+1];
+		  fdist_(opts.ih1,x1,muf,fx1);
+		  fdist_(opts.ih2,x2,muf,fx2);
+		      
+		  for (int sp = 0; sp < mesq::totpch; sp++)
+		    fun += fx1[mesq::pid1[sp]]*fx2[mesq::pid2[sp]]*real(mesq::mesqij[sp])*gr::www[opts.yrule-1][j]*xm;;
+		}
+	    }
+	}
+
+      
       invres = fun*real(factorfin);
     }
   else
-  */
+
 
   //1d mellin
   if (opts.mellin1d)
