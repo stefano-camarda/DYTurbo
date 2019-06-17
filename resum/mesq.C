@@ -238,6 +238,7 @@ void mesq::setmesq_expy(int mode, double m, double costh, double y)
 	  //retrieve cos theta moments
 	  double cthmom0, cthmom1, cthmom2;
 	  cthmoments_(cthmom0, cthmom1, cthmom2);
+	  //omegaintegr::cthmoments(cthmom0, cthmom1, cthmom2);
 	  one = cthmom0;
 	  costh1 = cthmom1;
 	  costh2 = cthmom2;
