@@ -69,6 +69,7 @@ namespace pdfevol
   extern void retrievemuf(int i, int sign);
 
   extern void truncate();
+  extern void uppertruncate();
   
 }
 

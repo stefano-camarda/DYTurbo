@@ -793,6 +793,121 @@ void pdfevol::truncate()
   //storemoments(n, fx1[n], fx2[n]);
 }
 
+
+void pdfevol::uppertruncate()
+{
+  //Calculate truncated moments
+  double xmin1 = pow(phasespace::m/opts.sroot,2);
+  double xmin2 = pow(phasespace::m/opts.sroot,2);
+
+  double xmax1 = phasespace::m/opts.sroot*exp(phasespace::ymax);
+  double xmax2 = phasespace::m/opts.sroot*exp(-phasespace::ymin);
+
+  double lx1 = log(xmin1/xmax1);
+  double lx2 = log(xmin2/xmax2);
+  
+  //truncated moments (output)
+  complex <double> fx1[mellinint::mdim][2*MAXNF+1] = {0.};
+  complex <double> fx2[mellinint::mdim][2*MAXNF+1] = {0.};
+
+  //cache x^(N) values
+  complex <double> xmin1n[mellinint::mdim];
+  complex <double> xmin2n[mellinint::mdim];
+  complex <double> xmax1n[mellinint::mdim];
+  complex <double> xmax2n[mellinint::mdim];
+  for (int n = 0; n < mellinint::mdim; n++)
+    {
+      xmin1n[n] = pow(xmin1,mellinint::Np[n]);
+      xmin2n[n] = pow(xmin2,mellinint::Np[n]);
+      xmax1n[n] = pow(xmax1,mellinint::Np[n]);
+      xmax2n[n] = pow(xmax2,mellinint::Np[n]);
+    }
+
+  //Normalisation times Jacobian
+  complex <double> facp = mellinint::CCp/2./M_PI/complex <double>(0.,1);
+  complex <double> facm = mellinint::CCm/2./M_PI/complex <double>(0.,1);
+  
+  //original moments times prefactor and weight
+  complex <double> fm1p[mellinint::mdim][2*MAXNF+1];
+  complex <double> fm2p[mellinint::mdim][2*MAXNF+1];
+  complex <double> fm1m[mellinint::mdim][2*MAXNF+1];
+  complex <double> fm2m[mellinint::mdim][2*MAXNF+1];
+  for (int m = 0; m < mellinint::mdim; m++)
+    for (int f = 0; f < 2*MAXNF+1; f++)
+      {
+	fm1p[m][f] = facp * cx(creno_.cfx1_[m][f] ) * mellinint::wn[m];
+	fm2p[m][f] = facp * cx(creno_.cfx2p_[m][f]) * mellinint::wn[m];
+	fm1m[m][f] = facm * conj(cx(creno_.cfx1_[m][f]) ) * mellinint::wn[m];
+	fm2m[m][f] = facm * conj(cx(creno_.cfx2p_[m][f])) * mellinint::wn[m];
+      }
+
+  //cache factor (xmax^(N-M)-xmin^(N-M))/(N-M) which limit is ln(xmin/xmax) when N-M -> 0
+  complex <double> llx1p[mellinint::mdim][mellinint::mdim];
+  complex <double> llx2p[mellinint::mdim][mellinint::mdim];
+  complex <double> llx1m[mellinint::mdim][mellinint::mdim];
+  complex <double> llx2m[mellinint::mdim][mellinint::mdim];
+  for (int n = 0; n < mellinint::mdim; n++)
+    for (int m = 0; m < mellinint::mdim; m++)
+      {
+	llx1p[n][m] = (xmax1n[n]/xmax1n[m]-xmin1n[n]/xmin1n[m])/(mellinint::Np[n]-mellinint::Np[m]);
+	llx2p[n][m] = (xmax2n[n]/xmax2n[m]-xmin2n[n]/xmin2n[m])/(mellinint::Np[n]-mellinint::Np[m]);
+	llx1m[n][m] = (xmax1n[n]/conj(xmax1n[m])-xmin1n[n]/conj(xmin1n[m]))/(mellinint::Np[n]-mellinint::Nm[m]);
+	llx2m[n][m] = (xmax2n[n]/conj(xmax2n[m])-xmin2n[n]/conj(xmin2n[m]))/(mellinint::Np[n]-mellinint::Nm[m]);
+      }
+
+  //overwrite divergent diagonal part
+  for (int n = 0; n < mellinint::mdim; n++)
+    {
+      llx1p[n][n] = -lx1;
+      llx2p[n][n] = -lx2;
+    }
+  
+  for (int n = 0; n < mellinint::mdim; n++)
+    {
+      //positive branch
+      for (int m = 0; m < mellinint::mdim; m++)
+	for (int f = 0; f < 2*MAXNF+1; f++)
+	  {
+	    /*
+	    if (m == n)
+	      {
+		fx1[n][f] += fm1p[m][f] * (-lx1);
+		fx2[n][f] += fm2p[m][f] * (-lx2);
+	      }
+	    else
+	      {
+		fx1[n][f] += fm1p[m][f] * (1.-x1n[n]/x1n[m])/(mellinint::Np[n]-mellinint::Np[m]);
+		fx2[n][f] += fm2p[m][f] * (1.-x2n[n]/x2n[m])/(mellinint::Np[n]-mellinint::Np[m]);
+	      }
+	    */
+	    //	    fx1[n][f] += fm1p[m][f]*llx1p[n][m]; 
+	    //	    fx2[n][f] += fm2p[m][f]*llx2p[n][m];
+	    fx1[n][f] += fm1p[m][f]*llx1p[n][m] - fm1m[m][f]*llx1m[n][m]; 
+	    fx2[n][f] += fm2p[m][f]*llx2p[n][m] - fm2m[m][f]*llx2m[n][m];
+	  }
+
+      /*
+      //negative branch
+      for (int m = 0; m < mellinint::mdim; m++)
+	for (int f = 0; f < 2*MAXNF+1; f++)
+	  {
+	    //	    fx1[n][f] -= fm1m[m][f]*(1.-x1n[n]/conj(x1n[m]))/(mellinint::Np[n]-mellinint::Nm[m]);
+	    //	    fx2[n][f] -= fm2m[m][f]*(1.-x2n[n]/conj(x2n[m]))/(mellinint::Np[n]-mellinint::Nm[m]);
+	    fx1[n][f] -= fm1m[m][f]*llx1m[n][m];
+	    fx2[n][f] -= fm2m[m][f]*llx2m[n][m];
+	  }
+      */
+
+  
+      //cout << "truncated " << n << fx1[5] << endl;
+    }
+
+  //replace moments
+  for (int n = 0; n < mellinint::mdim; n++)
+    storemoments(n, fx1[n]);
+    //storemoments(n, fx1[n], fx2[n]);
+}
+
 /*
 void pdfevol::invert(double x, double fx[2*MAXNF+1])
 {
