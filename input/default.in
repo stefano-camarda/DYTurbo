@@ -62,7 +62,7 @@ aemmz = 7.7585538055706e-03  # alpha_EM(MZ) (not used in the Gmu scheme)
 zwidth = 2.4950          # Width of the Z boson
 wwidth = 2.091           # Width of the W boson
 zerowidth = false        # zero-width approximation (not really implemented)
-runningwidth = false     # Perform running width to fixed width translation (implemented only at LO)
+runningwidth = false     # Use Z and W propagators including energy-dependent width effects
 
 # CKM matrix
 Vud = 0.97427
@@ -87,6 +87,10 @@ useGamma = true
 resumcpp  = true  # use C++ code for resummation
 ctcpp     = true  # use C++ code for the counter term
 qtcutoff = 0.02   # resummation cutoff
+
+# modlog = true: modified logarithms in the Sudakov L~ = log( (Q*b/b0)^2 + 1)
+# modlog = false: canonical logarithms in the Sudakov L = log( (Q*b/b0)^2 )
+modlog = true
 
 # Prescription to avoid the Landau pole in the Bessel inverse transform
 # 0: bstar prescription, which freezes b at bmax: b -> bstar = b/sqrt(1+b^2/bmax^2)
@@ -129,6 +133,7 @@ zmax = 27.   	    #upper limit of the contour in the imaginary axis
 cpoint = 1.   	    #point of intersection of the contour with the real axis
 mellincores = 1     #number of parallel threads for the mellin integration
 mellin1d = false    #use 1d (y-integrated) or 2d (y-dependent) mellin inversion
+xspace = false      #access PDFs in Bjorken-x space, without Mellin inversion (option available only in the LL case where the convolution is trivial)
 
 #number of intervals and gaussian rule for the rapidity integrations in the 2dim resummed piece
 yintervals = 1
