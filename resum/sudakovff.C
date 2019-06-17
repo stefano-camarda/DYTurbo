@@ -70,7 +70,7 @@ complex <double> sudakov::sff(complex <double> b)
   complex <double> blog;
   if (modified_.imod_ == 1) blog = log(pow(scaleh_.q_*bstar/a_param_.b0p_,2)+1.); //modified sudakov
   if (modified_.imod_ == 0) blog = log(pow(scaleh_.q_*bstar/a_param_.b0p_,2));   //normal sudakov
-  
+  //cout << modified_.imod_ << endl;
   //cout << "blog " << blog << endl;
   
   //mass dependence in f0(y), f1(y), f2(y)
