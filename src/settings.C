@@ -294,6 +294,7 @@ void settings::readfromfile(const string fname){
     dampdelta      = in.GetNumber ( "dampdelta"      );
     dampmode       = in.GetNumber ( "dampmode"       );
     qtcutoff       = in.GetNumber ( "qtcutoff"       );
+    modlog         = in.GetBool   ( "modlog"       );
     xqtcut         = in.GetNumber ( "xqtcut"         );
     qtcut          = in.GetNumber ( "qtcut"          );
     intDimRes      = in.GetNumber ( "intDimRes"      );
@@ -372,6 +373,7 @@ void settings::readfromfile(const string fname){
     cpoint             = in.GetNumber ( "cpoint" );
     mellincores        = in.GetNumber ( "mellincores" );
     mellin1d           = in.GetBool   ( "mellin1d" );
+    xspace             = in.GetBool   ( "xspace" );
     yintervals         = in.GetNumber ( "yintervals" );
     yrule              = in.GetNumber ( "yrule" );
     qtintervals        = in.GetNumber ( "qtintervals" );
@@ -617,6 +619,7 @@ void settings::dumpAll(){
         dumpD("dampdelta",     dampdelta      );
         dumpI("dampmode",       dampmode     );
 	dumpD("qtcutoff",       qtcutoff     );
+	dumpB("modlog",         modlog     );
 	dumpD("xqtcut",       xqtcut     );
 	dumpD("qtcut",       qtcut     );
         dumpB("useGamma          ", useGamma            );
@@ -696,6 +699,7 @@ void settings::dumpAll(){
 	dumpD("cpoint            ", cpoint              );
         dumpD("mellincores       ", mellincores         );
 	dumpB("mellin1d          ", mellin1d            );
+	dumpB("xspace            ", xspace              );
         dumpI("yintervals        ", yintervals          );
         dumpI("yrule             ", yrule               );
         dumpI("qtintervals       ", qtintervals          );

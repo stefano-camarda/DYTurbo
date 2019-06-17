@@ -136,6 +136,9 @@ public:
   //Resummation cutoff
   double qtcutoff;
 
+  //Modified logarithms
+  bool modlog;
+  
   //qtcut
   double xqtcut, qtcut;
 
@@ -231,6 +234,7 @@ public:
   double cpoint;
   int mellincores;
   bool mellin1d;
+  bool xspace;
   
   //settings for rapidity integration in 2D resummed piece
   int yintervals;
