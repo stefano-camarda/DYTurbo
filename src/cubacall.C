@@ -6,6 +6,7 @@
 #include "bornintegr.h"
 #include "cubature.h"
 #include "smolpack.h"
+#include "phasespace.h"
 #include "HistoHandler.h"
 
 #include <cuba.h>
@@ -20,6 +21,13 @@
 //resummation
 void resintegr1d(vector <double> &res, double &err)
 {
+  //Force qt differential mode when crossing the value of qt where the switching start
+  if (phasespace::qtmax > phasespace::mmin*opts.dampk)
+    {
+      resintegr2d(res, err);
+      return;
+    }
+
   const int ndim = 1;     //dimensions of the integral
   const int ncomp = 1;  //components of the integrand
   void *userdata = NULL;
