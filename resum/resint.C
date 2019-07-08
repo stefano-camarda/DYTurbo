@@ -280,8 +280,6 @@ void resint::init()
   //modified_.imod_ = 1;                     // normal (imod=0) or modified (imod=1) sudakov
   modified_.imod_ = opts.modlog;           // canonical (imod=0) or modified (imod=1) logarithms in the Sudakov
 
-  cout << "init " << modified_.imod_ << endl;
-  
   // choose real axis (complex plane) integration of bstar (b) (always 0)
   if (opts.bprescription == 2 || opts.bprescription == 3)
     flagrealcomplex_.flagrealcomplex_ = 1;
@@ -550,6 +548,7 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
 	See http://fisica.ciens.ucv.ve/~svincenz/TISPISGIMR.pdf and http://web.eah-jena.de/~rsh/Forschung/Stoer/besint.pdf (1.1.1)
 	!!! The problem with this is the switching function, which depends on qt !!!
 	--> The approach would be valid only for qt < m*k
+	Now the integration call will automatically switch to mode = 2 for bins where qtmax > mmin*k
       */
 
       //double qtmn = max(opts.qtcutoff,phasespace::qtmin);
