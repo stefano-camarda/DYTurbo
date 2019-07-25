@@ -833,14 +833,31 @@ void ctintegr3d(vector <double> &res, double &err)
   const int maxeval = 127+2*127*opts.niterCT;
   const int key = 13;
   int nregions;
-  Cuhre(ndim, ncomp,
-	(integrand_t) ctintegrand3d, userdata, nvec,
-	epsrel, epsabs,
-	flags,
-	mineval, maxeval,
-	key, statefile, NULL,
-	&nregions, &neval, &fail,
-  	integral, error, prob);
+  if (!opts.pcubature)
+    Cuhre(ndim, ncomp,
+	  (integrand_t) ctintegrand3d, userdata, nvec,
+	  epsrel, epsabs,
+	  flags,
+	  mineval, maxeval,
+	  key, statefile, NULL,
+	  &nregions, &neval, &fail,
+	  integral, error, prob);
+  else
+    {
+      const int eval = 0;
+      const double epsrel = opts.pcubaccuracy;
+      const double epsabs = 0.;
+      double xmin[3] = {0, 0., 0.};
+      double xmax[3] = {1, 1., 1.};
+      if (opts.cubacores == 0)
+	pcubature(ncomp, ctintegrand3d_cubature, userdata, 
+		  ndim, xmin, xmax, 
+		  eval, epsabs, epsrel, ERROR_INDIVIDUAL, integral, error);
+      else
+	pcubature_v(ncomp, ctintegrand3d_cubature_v, userdata, 
+		    ndim, xmin, xmax, 
+		    eval, epsabs, epsrel, ERROR_INDIVIDUAL, integral, error);
+    }
   res.clear();
   for (int i = 0; i < opts.totpdf; i++)
     res.push_back(integral[i]);

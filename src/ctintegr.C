@@ -202,6 +202,34 @@ integrand_t ctintegrandMC(const int &ndim, const double x[], const int &ncomp, d
   return 0;
 }
 
+int ctintegrand3d_cubature_v(unsigned ndim, long unsigned npts, const double x[], void *data, unsigned ncomp, double f[])
+{
+  tell_to_grid_we_are_alive();
+  //  cout << "parallel " << npts << endl;
+#pragma omp parallel for num_threads(opts.cubacores) copyin(a_param_,scale_,facscale_,qcdcouple_)
+  for (unsigned i = 0; i < npts; i++)
+    {
+      // evaluate the integrand for npts points
+      double xi[ndim];
+      double fi[ncomp];
+      for (unsigned j = 0; j < ndim; j++)
+	xi[j] = x[i*ndim + j];
+
+      ctintegrand3d(ndim, xi, ncomp, fi);
+      
+      for (unsigned k = 0; k < ncomp; ++k)
+	f[i*ncomp + k] = fi[k];
+    }
+  return 0;
+}
+
+int ctintegrand3d_cubature(unsigned ndim, const double x[], void *data, unsigned ncomp, double f[])
+{
+  tell_to_grid_we_are_alive();
+  ctintegrand3d(ndim, x, ncomp, f);
+  return 0;
+}
+
 integrand_t ctintegrand3d(const int &ndim, const double x[], const int &ncomp, double f[])
 //Generates the phase space 4 vectors
 //Calculates the ct integrand as a function of m, qt, y
