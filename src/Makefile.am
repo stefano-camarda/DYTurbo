@@ -26,7 +26,7 @@ libdyturbobase_la_SOURCES = dyturbo.C resintegr.C ctintegr.C finintegr.C bornint
 			    omegaintegr.C interface.C settings.C init.C cubacall.C switch.C  \
 			    pdf.C coupling.C clock_real.C banner.C print_table.C abint.C clenshawcurtisrules.C gaussrules.C \
 			    propagator.C numbers.C chebyshev.C codata.C scales.C mellinpdf.C #solvew.C
-libdyturbobase_la_SOURCES += flavreduce.f gaussinit.f rescinit.f pdfmoments.f chaplin.f ddilog.g mjj.f
+libdyturbobase_la_SOURCES += flavreduce.f gaussinit.f rescinit.f pdfmoments.f ddilog.g mjj.f
 libdyturbobase_la_SOURCES += AiMoments.cxx TLVUtils.cxx
 
 lib_LTLIBRARIES = libdyturbo.la

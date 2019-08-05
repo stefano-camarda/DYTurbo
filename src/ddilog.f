@@ -1,3 +1,16 @@
+c     dilog function called from vjet/utils.f
+      function Li2(x)
+      implicit none
+      double precision x,li2,ddilog,fli2
+      external ddilog,fli2
+
+      print *,x
+c      Li2 = ddilog(x)
+      Li2 = fli2(x)
+      
+      return
+      end
+      
 c     dilog function from ancont of J. Bluemlein
       
       DOUBLE PRECISION FUNCTION FR1(X)
