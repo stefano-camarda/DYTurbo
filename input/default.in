@@ -110,6 +110,7 @@ bcf = 0.5         #select the point bc = bcf * b_L, where the integration contou
 opts_approxpdf = 0
 # number of intervals for integration of PDF moments (direct Mellin transform), relevant only for opts_approxpdf = 0
 opts_pdfintervals = 100
+pdfrule = 100     #Gaussian rule for the x-to-N Mellin transform
 
 # Type of PDF evolution
 #0: DYRES (backward evolution)
@@ -127,10 +128,15 @@ vfnsudakov = false
 bintaccuracy = 1.0e-4  #accuracy
 
 #Settings for the inverse Mellin integrations
+mellininv = 0       #Strategy for the mellin inverstion (0 Gauss-Legendre, 1 Talbot)
 mellinintervals = 1 #number of intervals
 mellinrule = 64     #number of nodes
+
+#options for the Mellin inversion with Gauss-Legendre integration
 zmax = 27.   	    #upper limit of the contour in the imaginary axis
 cpoint = 1.   	    #point of intersection of the contour with the real axis
+phi = 0.5           #angle between the real axis and the linear contour in units of pi
+
 mellincores = 1     #number of parallel threads for the mellin integration
 mellin1d = false    #use 1d (y-integrated) or 2d (y-dependent) mellin inversion
 xspace = false      #access PDFs in Bjorken-x space, without Mellin inversion (option available only in the LL case where the convolution is trivial)
