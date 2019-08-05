@@ -267,6 +267,7 @@ void mesq::setmesq_expy(int mode, double m, double costh, double y)
 	    {
 	      mesqij_expy[mesq::index(pch, i1, i2, mesq::positive)] = mesqij[pch] * cex1[i1] * cex2p[i2] * mellinint::wn[i1] * mellinint::wn[i2];
 	      mesqij_expy[mesq::index(pch, i1, i2, mesq::negative)] = mesqij[pch] * cex1[i1] * cex2m[i2] * mellinint::wn[i1] * mellinint::wn[i2];
+	      //cout << i1 << "  " << i2 << "  " << mesqij[pch] << "  " <<  cex1[i1] << "  " <<  cex2m[i2] << "  " <<  mellinint::wn[i1] << "  " <<  mellinint::wn[i2] << endl;
 	    }
     }
   else //if mode == 2 or mode == 3 -> rapidity integrated mode
