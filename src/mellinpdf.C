@@ -7,6 +7,7 @@
 #include <complex>
 #include <cmath>
 #include <iostream>
+#include <string.h>
 
 using namespace parton;
 
@@ -147,7 +148,7 @@ void mellinpdf::gauss_quad()
       CH[m] = 0.;
       BO[m] = 0.;
     }
-
+  
   //Calculate Mellin moments as:
   //integral_0^1{ x^(N-1) fx dx}
   for (int i = 0; i < opts.pdfrule; i++)
@@ -184,8 +185,11 @@ void laguerre(int n, double x, double *L)
 //Computes the complex N Mellin moments of pdfs by means of Laguerre interpolation and Laplace transform
 void mellinpdf::laguerre_ipol(double xmin)
 {
-  //order of the Laguerre approximation
-  int N = 200;
+  //order of the Laguerre approximation --> make this an option
+  int N = 150;
+
+  //scaling x -> x^p
+  double p = 2.;
 
   //Calculate Laguerre projection
   double luv[N+1] = {0.};
@@ -236,6 +240,7 @@ void mellinpdf::laguerre_ipol(double xmin)
 	}
     }
 
+  //This is used to regularise the PDFs with the same x^alpha behaviour at low x
   double alpha = 2;
   double powuv = alpha - fnuv[1]*(fnuv[2]-fnuv[1])/(fnuv[1]*fnuv[1]-fnuv[0]*fnuv[2]);
   double powdv = alpha - fndv[1]*(fndv[2]-fndv[1])/(fndv[1]*fndv[1]-fndv[0]*fndv[2]);
@@ -247,16 +252,17 @@ void mellinpdf::laguerre_ipol(double xmin)
   double powch = alpha - fnch[1]*(fnch[2]-fnch[1])/(fnch[1]*fnch[1]-fnch[0]*fnch[2]);
   double powbo = alpha - fnbo[1]*(fnbo[2]-fnbo[1])/(fnbo[1]*fnbo[1]-fnbo[0]*fnbo[2]);
 
-//  cout << alpha - powuv << "  "
-//       << alpha - powdv << "  "
-//       << alpha - powus << "  "
-//       << alpha - powds << "  "
-//       << alpha - powsp << "  "
-//       << alpha - powsm << "  "
-//       << alpha - powgl << "  "
-//       << alpha - powch << "  "
-//       << alpha - powbo << endl;
-  
+  //The largest poles of the Mellin transform are at these values of z:
+  //cout << powuv << "  "
+  //     << powdv << "  "
+  //     << powus << "  "
+  //     << powds << "  "
+  //     << powsp << "  "
+  //     << powsm << "  "
+  //     << powgl << "  "
+  //     << powch << "  "
+  //     << powbo << endl;
+
   
   //double alpha = 2;
   for (int i = 0; i < opts.pdfrule; i++)
@@ -267,21 +273,21 @@ void mellinpdf::laguerre_ipol(double xmin)
 
       double L[N+1];
       //double u = -log(t[i]); //cache this
-      double u = -log(t);
+      double u = -log(t)/p;
       laguerre(N, u, L);// --> cache it as L[n][i]
       //      cout << endl << i << "  " << u << endl;
       //double po = pow(t,alpha);
       for (int n = 0; n <= N; n++)
 	{
-	  luv[n] += fuv[i] * L[n] * pow(t,powuv);
-	  ldv[n] += fdv[i] * L[n] * pow(t,powdv);
-	  lus[n] += fus[i] * L[n] * pow(t,powus);
-	  lds[n] += fds[i] * L[n] * pow(t,powds);
-	  lsp[n] += fsp[i] * L[n] * pow(t,powsp);
-	  lsm[n] += fsm[i] * L[n] * pow(t,powsm);
-	  lgl[n] += fgl[i] * L[n] * pow(t,powgl);
-	  lch[n] += fch[i] * L[n] * pow(t,powch);
-	  lbo[n] += fbo[i] * L[n] * pow(t,powbo);
+	  luv[n] += fuv[i] * L[n] * pow(t,1./p-1.+powuv);
+	  ldv[n] += fdv[i] * L[n] * pow(t,1./p-1.+powdv);
+	  lus[n] += fus[i] * L[n] * pow(t,1./p-1.+powus);
+	  lds[n] += fds[i] * L[n] * pow(t,1./p-1.+powds);
+	  lsp[n] += fsp[i] * L[n] * pow(t,1./p-1.+powsp);
+	  lsm[n] += fsm[i] * L[n] * pow(t,1./p-1.+powsm);
+	  lgl[n] += fgl[i] * L[n] * pow(t,1./p-1.+powgl);
+	  lch[n] += fch[i] * L[n] * pow(t,1./p-1.+powch);
+	  lbo[n] += fbo[i] * L[n] * pow(t,1./p-1.+powbo);
 
 //	  cout << i << "  " << n << "  " << L[n] << "  " << jac << endl;
 	}
@@ -306,16 +312,16 @@ void mellinpdf::laguerre_ipol(double xmin)
   //Mellin transform of Laguerre polynomials
   for (int m = 0; m < mellinint::mdim; m++)
     {
-      //complex <double> z = mellinint::Np[m] - alpha;
-      complex <double> zuv = mellinint::Np[m] - powuv;
-      complex <double> zdv = mellinint::Np[m] - powdv;
-      complex <double> zus = mellinint::Np[m] - powus;
-      complex <double> zds = mellinint::Np[m] - powds;
-      complex <double> zsp = mellinint::Np[m] - powsp;
-      complex <double> zsm = mellinint::Np[m] - powsm;
-      complex <double> zgl = mellinint::Np[m] - powgl;
-      complex <double> zch = mellinint::Np[m] - powch;
-      complex <double> zbo = mellinint::Np[m] - powbo;
+      //complex <double> z = (mellinint::Np[m] - alpha)*p;
+      complex <double> zuv = (mellinint::Np[m] - powuv)*p;
+      complex <double> zdv = (mellinint::Np[m] - powdv)*p;
+      complex <double> zus = (mellinint::Np[m] - powus)*p;
+      complex <double> zds = (mellinint::Np[m] - powds)*p;
+      complex <double> zsp = (mellinint::Np[m] - powsp)*p;
+      complex <double> zsm = (mellinint::Np[m] - powsm)*p;
+      complex <double> zgl = (mellinint::Np[m] - powgl)*p;
+      complex <double> zch = (mellinint::Np[m] - powch)*p;
+      complex <double> zbo = (mellinint::Np[m] - powbo)*p;
       for (int n = 0; n <= N; n++)
 	{
 	  //complex <double> lapl = 1./z * pow(((z-1.)/z),n);
