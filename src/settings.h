@@ -228,13 +228,18 @@ public:
   double bcf;
   
   //settings for Mellin integration
+  int mellininv;
   int mellinintervals;
   int mellinrule;
   double zmax;
   double cpoint;
+  double phi;
   int mellincores;
   bool mellin1d;
   bool xspace;
+
+  //settings for x-to-N Mellin transform
+  int pdfrule;
   
   //settings for rapidity integration in 2D resummed piece
   int yintervals;

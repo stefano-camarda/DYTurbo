@@ -361,16 +361,19 @@ void settings::readfromfile(const string fname){
     PDFerrors           = in.GetBool ( "PDFerrors" );//
     opts_.approxpdf_    = in.GetNumber ( "opts_approxpdf" ); //0
     opts_.pdfintervals_ = in.GetNumber ( "opts_pdfintervals" ); //100
+    pdfrule            = in.GetNumber ( "pdfrule" );
     evolmode           = in.GetNumber  ("evolmode");
     vfnsudakov         = in.GetBool   ("vfnsudakov");
     bprescription      = in.GetNumber   ("bprescription");
     bintaccuracy       = in.GetNumber ( "bintaccuracy" );
     phibr              = in.GetNumber ( "phibr" );
     bcf                = in.GetNumber ( "bcf" );
+    mellininv          = in.GetNumber ( "mellininv" );
     mellinintervals    = in.GetNumber ( "mellinintervals" );
     mellinrule         = in.GetNumber ( "mellinrule" );
     zmax               = in.GetNumber ( "zmax" );
     cpoint             = in.GetNumber ( "cpoint" );
+    phi                = in.GetNumber ( "phi" );
     mellincores        = in.GetNumber ( "mellincores" );
     mellin1d           = in.GetBool   ( "mellin1d" );
     xspace             = in.GetBool   ( "xspace" );
@@ -693,10 +696,12 @@ void settings::dumpAll(){
 	dumpB("phibr             ", phibr       );
 	dumpB("bcf               ", bcf       );
         dumpB("PDFerrors         ", PDFerrors           );
-        dumpI("mellinintervals   ", mellinintervals     );
+        dumpI("mellininv         ", mellininv     );
+	dumpI("mellinintervals   ", mellinintervals     );
         dumpI("mellinrule        ", mellinrule          );
         dumpD("zmax              ", zmax                );
 	dumpD("cpoint            ", cpoint              );
+	dumpD("phi               ", phi              );
         dumpD("mellincores       ", mellincores         );
 	dumpB("mellin1d          ", mellin1d            );
 	dumpB("xspace            ", xspace              );
