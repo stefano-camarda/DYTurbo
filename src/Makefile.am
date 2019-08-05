@@ -25,7 +25,7 @@ noinst_LTLIBRARIES = libdyturbobase.la
 libdyturbobase_la_SOURCES = dyturbo.C resintegr.C ctintegr.C finintegr.C bornintegr.C \
 			    omegaintegr.C interface.C settings.C init.C cubacall.C switch.C  \
 			    pdf.C coupling.C clock_real.C banner.C print_table.C abint.C clenshawcurtisrules.C gaussrules.C \
-			    propagator.C numbers.C chebyshev.C codata.C scales.C #solvew.C
+			    propagator.C numbers.C chebyshev.C codata.C scales.C mellinpdf.C #solvew.C
 libdyturbobase_la_SOURCES += flavreduce.f gaussinit.f rescinit.f pdfmoments.f chaplin.f mjj.f
 libdyturbobase_la_SOURCES += AiMoments.cxx TLVUtils.cxx
 
@@ -76,4 +76,4 @@ pkginclude_HEADERS = dyturbo.h resintegr.h ctintegr.h finintegr.h bornintegr.h o
 		     gauss.f quadrules.f coupling.h pdf.h clock_real.h \
 		     fcomplex.h banner.h cxxopts.hpp isnan.h handy_typdefs.h abint.h \
 		     clenshawcurtisrules.h gaussrules.h numbers.h parton.h AiMoments.h TLVUtils.h chebyshev.h codata.h \
-		     propagator.h scales.h #solvew.h
+		     propagator.h scales.h mellinpdf.h #solvew.h
