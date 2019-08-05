@@ -472,7 +472,7 @@ c All these constants must be initialised only once
 c      include 'ewcouple.f' 
       double precision gGf,ggw,xw,gwsq,esq,vevsq
       common/ewcouple/gGf,ggw,xw,gwsq,esq,vevsq
-cc******************************************
+ccc******************************************
       pi=dacos(-1d0)!Expensive way of calculating pi?
       pisq329=2d0*pi**2/3d0-16/3d0
       nf=5
@@ -508,7 +508,7 @@ c.....quark coefficients
      /        CA*Cf*(11*pi**2/36d0-193/48d0+3*Z3/2d0)+
      /        Cf*nf*(17/24d0-pi**2/18d0)
        C1qqn=Cf/2d0*(pi**2/2d0-4d0)! Only delta(1-z) part, i.e. N independent part
-c**************************************
+cc**************************************
 
 
 c******************************************

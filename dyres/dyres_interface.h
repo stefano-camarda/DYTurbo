@@ -27,6 +27,8 @@ extern "C"
 
   double itilde_(int& m);
 
+  void resummconst_();
+  
   extern struct {
     double amz_;
   } couple_;
