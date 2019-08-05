@@ -16,7 +16,8 @@
 
 using namespace parton;
 
-double *mellinint::wn;
+//double *mellinint::wn;
+complex <double> *mellinint::wn;
 complex <double> *mellinint::Np;
 complex <double> *mellinint::Nm;
 complex <double> mellinint::CCp;
@@ -51,7 +52,9 @@ void mellinint::initgauss()
   //phi is the angle in the complex plane of the positive part of the integration path
        
   double cpoint = opts.cpoint;
-  double phi = M_PI * 1./2.;
+  //double phi = M_PI * 1./2.;
+  //double phi = M_PI * 3./4.;
+  double phi = M_PI * opts.phi;
 
   double zmin = 0;
   //upper limit for the mellin integration in the complex plane (z)
@@ -65,7 +68,8 @@ void mellinint::initgauss()
   mdim = opts.mellinintervals*opts.mellinrule;
   
   //allocate memory
-  wn = new double [mdim];
+  //wn = new double [mdim];
+  wn = new complex <double> [mdim];
   Np = new complex <double> [mdim];
   Nm = new complex <double> [mdim];
   
@@ -77,41 +81,182 @@ void mellinint::initgauss()
       wn[i]=0;
     }
 
-  // positive branch      
-  CCp = complex <double> (cos(phi), sin(phi));
-  for (int i=0; i < opts.mellinintervals; i++)
+  //imaginary unit
+  complex <double> ii = complex <double>(0.,1.);
+  
+  //Gauss-Legendre quadrature along a linear contour
+  if (opts.mellininv == 0)
     {
-      double a = 0.+(1.-0.)*i/opts.mellinintervals;
-      double b = 0.+(1.-0.)*(i+1)/opts.mellinintervals;
-      double c = 0.5*(a+b);
-      double m = 0.5*(b-a);
+      // positive branch      
+      CCp = complex <double> (cos(phi), sin(phi));
+      for (int i=0; i < opts.mellinintervals; i++)
+	{
+	  double a = 0.+(1.-0.)*i/opts.mellinintervals;
+	  double b = 0.+(1.-0.)*(i+1)/opts.mellinintervals;
+	  double c = 0.5*(a+b);
+	  double m = 0.5*(b-a);
+	  for (int j=0; j < opts.mellinrule; j++)
+	    {
+	      double x = c+m*gr::xxx[opts.mellinrule-1][j];
+	      //double x = c+m*cc::xxx[opts.mellinrule-1][j];
+	      double t = zmin+(zmax-zmin)*x;
+	      double jac = zmax-zmin;
+	      Np[j+i*opts.mellinrule]=complex <double> (cpoint+cos(phi)*t+1.,sin(phi)*t);
+	      wn[j+i*opts.mellinrule]=gr::www[opts.mellinrule-1][j]*m*jac;
+	      //wn[j+i*opts.mellinrule]=cc::www[opts.mellinrule-1][j]*m*jac;
+	      //cout << setprecision(16) <<  t << " " << Np[j+i*opts.mellinrule] << "  " << wn[j+i*opts.mellinrule] << endl;
+	    }
+	}      
+      // negative branch
+      CCm = complex <double> (cos(phi), -sin(phi));
+      for (int i=0; i < opts.mellinintervals; i++)
+	{
+	  double a = 0.+(1.-0.)*i/opts.mellinintervals;
+	  double b = 0.+(1.-0.)*(i+1)/opts.mellinintervals;
+	  double c = 0.5*(a+b);
+	  double m = 0.5*(b-a);
+	  for (int j=0; j < opts.mellinrule; j ++)
+	    {
+	      double x = c+m*gr::xxx[opts.mellinrule-1][j];
+	      //double x = c+m*cc::xxx[opts.mellinrule-1][j];
+	      double t = zmin+(zmax-zmin)*x;
+	      Nm[j+i*opts.mellinrule]=complex <double> (cpoint+cos(phi)*t+1.,-sin(phi)*t);
+	      //cout << setprecision(16) <<  t << " " << Nm[j+i*opts.mellinrule] << endl;
+	    }
+	}
+    }
+
+  //Talbot contour
+  else if (opts.mellininv == 1)
+    {
+      //calculate the range of the corresponding Laplace transform
+      double xmin, xmax;
+      double t0, t1;
+
+      //could restrict xmin and xmax further for limited y range
+      xmin = pow(bins.mbins.front()/opts.sroot,2);
+      xmax = 1;
+
+      t0 = -log(xmax);
+      t1 = -log(xmin);
+
+      double tmid = (t0+t1)/2.;
+
+      
+      double Not, sigma, lambda, nu, alpha, mu;
+
+      //fixed talbot of Peter Valko'
+      //lambda = 2*opts.mellinrule/(5*tmid);
+      //nu = 1.;
+
+      //Modified Talbot of Rizzardi
+      //lambda = 4.8/tmid;
+      //nu = 1.;
+
+      //Empirically good for Talbot
+      sigma = 0.6;
+      lambda = 0.6;
+      nu = 2.5;
+
+      //Weideman
+      //Not    = opts.mellinrule/tmid;
+      //sigma  = -0.6122;
+      //mu     = 0.5017;
+      //alpha  = 0.6407;
+      //nu     = 0.2645;
+
+      //Empirically good for Weideman
+      //Not = 1.;
+      //sigma = 0.6;
+      //mu = 0.8;
+      //alpha = 1.;
+      //nu = 2.;
+
+      bool midpoint = false;
+      bool weideman = false;
+      
+      CCp = 1;
       for (int j=0; j < opts.mellinrule; j++)
 	{
-	  double x = c+m*gr::xxx[opts.mellinrule-1][j];
-	  //double x = c+m*cc::xxx[opts.mellinrule-1][j];
+	  double x;
+	  if (midpoint)
+	    x = (double(j)+0.5)/opts.mellinrule;   //midpoint
+	  else
+	    x = double(j)/opts.mellinrule;         //trapezoidal
+
+	  double thmax = M_PI;
+	  double theta = thmax*x;
+
+	  complex <double> s, jac;
+	  if (weideman)
+	    {
+	      //Weideman contour
+	      s = Not*(sigma+(theta==0?mu/alpha:mu*theta/tan(alpha*theta)+theta*nu*ii));
+	      jac = thmax * Not * (ii * nu + (theta==0?0 : mu * (1./tan(alpha*theta) - alpha*theta*(1. + 1./tan(alpha*theta)/tan(alpha*theta)))));
+	    }
+	  else
+	    {
+	      //Talbot contour
+	      s = sigma+(theta==0?lambda:lambda*theta*(1./tan(theta)+nu*ii));
+	      jac = thmax * (theta==0? ii*lambda*nu : ii * lambda *( nu + ii * (theta + (theta /tan(theta) - 1.) / tan(theta))));
+	    }
+
+
+	  
+	  Np[j] = s+1.;
+	  if (midpoint)
+	    wn[j] = jac/double(opts.mellinrule);                                //midpoint
+	  else
+	    wn[j] = (j==0 ? jac/2.:jac)/double(opts.mellinrule);                //trapezoidal
+	  
+	  //cout << setprecision(16) <<  theta << " " << Np[j] << "  " << wn[j] << endl;
+
+	  /*
+	  double x = 0.5+0.5*gr::xxx[opts.mellinrule-1][j];
 	  double t = zmin+(zmax-zmin)*x;
-	  double jac = zmax-zmin;
-	  Np[j+i*opts.mellinrule]=complex <double> (cpoint+cos(phi)*t+1.,sin(phi)*t);
-	  wn[j+i*opts.mellinrule]=gr::www[opts.mellinrule-1][j]*m*jac;
-	  //wn[j+i*opts.mellinrule]=cc::www[opts.mellinrule-1][j]*m*jac;
-	  //	  cout << setprecision(16) <<  t << " " << Np[j+i*opts.mellinrule] << "  " << wn[j+i*opts.mellinrule] << endl;
+	  complex <double> jac = (zmax-zmin) * (cos(phi)+ii*sin(phi));
+	  complex <double> s = cpoint + t * (cos(phi)+ii*sin(phi));
+	  Np[j] = s + 1.;
+	  wn[j] = gr::www[opts.mellinrule-1][j]*0.5*jac;
+	  cout << setprecision(16) <<  t << " " << Np[j] << "  " << wn[j] << endl;
+	  */
 	}
-    }      
-  // negative branch
-  CCm = complex <double> (cos(phi), -sin(phi));
-  for (int i=0; i < opts.mellinintervals; i++)
-    {
-      double a = 0.+(1.-0.)*i/opts.mellinintervals;
-      double b = 0.+(1.-0.)*(i+1)/opts.mellinintervals;
-      double c = 0.5*(a+b);
-      double m = 0.5*(b-a);
+      // negative branch
+      CCm = 1;
       for (int j=0; j < opts.mellinrule; j ++)
 	{
-	  double x = c+m*gr::xxx[opts.mellinrule-1][j];
-	  //double x = c+m*cc::xxx[opts.mellinrule-1][j];
+	  double x;
+	  if (midpoint)
+	    x = (double(j)+0.5)/opts.mellinrule;     //midpoint
+	  else
+	    x = double(j)/opts.mellinrule;           //trapezoidal
+	  
+	  double thmax = -M_PI;
+	  double theta = thmax*x;
+	  
+	  complex <double> s;
+	  if (weideman) //Weideman contour
+	    s = Not*(sigma+(theta==0?mu/alpha:mu*theta/tan(alpha*theta)+theta*nu*ii));
+	  else//Talbot contour
+	    s = sigma+(theta==0?lambda:lambda*theta*(1./tan(theta)+nu*ii));
+
+	  Nm[j] = s+1.;
+	  //cout << setprecision(16) <<  theta << " " << Nm[j] << "  " << wn[j] << endl;
+
+	  /*
+	  double x = 0.5+0.5*gr::xxx[opts.mellinrule-1][j];
 	  double t = zmin+(zmax-zmin)*x;
-	  Nm[j+i*opts.mellinrule]=complex <double> (cpoint+cos(phi)*t+1.,-sin(phi)*t);
+	  complex <double> s = cpoint + t * (cos(phi)-ii*sin(phi));
+	  Nm[j] = s + 1.;
+	  cout << setprecision(16) <<  t << " " << Nm[j]  << endl;
+	  */
 	}
+    }
+  else
+    {
+      //Implement here other mellin inversions
+      cout << "Not valid option for mellininv (should be 0 or 1) " << endl;
+      exit (-1);
     }
 }
 
@@ -164,6 +309,7 @@ void mellinint::pdf_mesq_expy(int i1, int i2, int sign)
       complex <double> mesq_bbr = mesq::mesqij_expy[mesq::index(8,i1,i2,sign)];
       complex <double> mesq_brb = mesq::mesqij_expy[mesq::index(9,i1,i2,sign)];
       
+      //      cout << "pdf_mesq_expy " << i1 << "  " << i2 << "  " << mesq_uub << "  " << fn1[u] << "  " << fn2[ub]  << endl;
       //LL part
       QQBN = fn1[u]*fn2[ub]*mesq_uub
 	+fn1[c]*fn2[cb]*mesq_ccb
@@ -878,11 +1024,12 @@ void mellinint::pdf_mesq_expy(int i1, int i2, int sign)
 
 complex <double> mellinint::integrand2d(int i1, int i2, int sign)
 {
+  //cout << "C++ " << i1 << "  " << i2 << "  " << QQBN << endl;
   if (opts.order == 0)
     return QQBN;
 
   int i = hcoefficients::index(i1,i2,sign);
-  //cout << "C++" << i1 << "  " << i2 << "  " << GGN << "  " << hcoefficients::Hgg[i] << endl;
+  //cout << "C++ " << i1 << "  " << i2 << "  " << GGN << "  " << hcoefficients::Hgg[i] << endl;
 
   return
     //contribution starting at LL

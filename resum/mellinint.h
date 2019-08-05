@@ -16,7 +16,8 @@ using namespace std;
 namespace mellinint
 {
   extern int mdim;
-  extern double *wn; //weights of the gaussian quadrature rule
+  //extern double *wn; //weights of the gaussian quadrature rule
+  extern complex <double> *wn; //weights of the gaussian quadrature rule
   extern complex <double> *Np; //nodes on the positive branch of the contour
   extern complex <double> *Nm; //nodes on the negative branch of the contour
   extern complex <double> CCp,CCm; //angles of the positive and negative branches in the unitary complex circle
