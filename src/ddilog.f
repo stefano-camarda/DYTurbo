@@ -4,9 +4,13 @@ c     dilog function called from vjet/utils.f
       double precision x,li2,ddilog,fli2
       external ddilog,fli2
 
-      print *,x
-c      Li2 = ddilog(x)
       Li2 = fli2(x)
+
+c      if (x.gt.-1.0d0.and.x.lt.1.0d0) then
+c         li2 = fli2(x)
+c         return
+c      endif
+c      Li2 = ddilog(x)
       
       return
       end
@@ -133,9 +137,8 @@ c     dilog function from algorithm C332 of CERNLIB
       DATA C(17) / 0.00000 00000 00000 9D0/
       DATA C(18) /-0.00000 00000 00000 1D0/
 
-      double precision fli2
-      external fli2
-
+!      double precision fli2
+!      external fli2
       
       IF(X .EQ. ONE) THEN
        DDILOG=PI6
@@ -145,10 +148,10 @@ c     dilog function from algorithm C332 of CERNLIB
        RETURN
       END IF
 
-      if (x.gt.-1.0d0.and.x.lt.1.0d0) then
-         ddilog = fli2(x)
-         return
-      endif
+!      if (x.gt.-1.0d0.and.x.lt.1.0d0) then
+!         ddilog = fli2(x)
+!         return
+!      endif
       
       T=-X
       IF(T .LE. MTWO) THEN
