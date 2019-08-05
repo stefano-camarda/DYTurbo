@@ -37,7 +37,7 @@ void settings::parse_options(int argc, char* argv[]){
         ("o,order"           , "Set order [0:LO, 1:NLL+NLO, 2:NNLL+NNLO]"            , po::value<int>() )
         ("f,fixedorder"      , "Set fixed order"                )
         ("e,resummation"     , "Set resummation"                )
-        ("t,term"            , "Set term [BORN,CT,VJ,VJREAL,VJVIRT]"                 , po::value<string>() )
+        ("t,term"            , "Set term [BORN,CT,VJ,VJREAL,VJVIRT,ALL]"             , po::value<string>() )
         ("r,seed"            , "Set random seed [integer]"                           , po::value<int>()    )
         ("s,pdfset"          , "Set PDF set [LHAPDF name]"                           , po::value<string>() )
         ("m,pdfvar"          , "Set PDF member [integer/all]"                        , po::value<string>() )
@@ -163,6 +163,7 @@ void settings::parse_options(int argc, char* argv[]){
             } else if ( piece == "VJ"      ) { doVJ     =true;
             } else if ( piece == "VJVIRT"  ) { doVJVIRT =true;
 	    } else if ( piece == "VJREAL"  ) { doVJREAL =true;
+	    } else if ( piece == "ALL"     ) { doBORN = doCT = doVJ = doVJREAL = doVJVIRT = true;
             } else {
                 throw QuitProgram("Unsupported value of term : "+piece);
             }
