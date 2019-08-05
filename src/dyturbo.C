@@ -320,12 +320,13 @@ namespace DYTurbo {
                 }
             }
             else {
-                costh = 0.; m = opts.rmass; qt = 1; y = 0;
-                for (int ipdf=0; ipdf<opts.totpdf; ipdf++){
-                    //setpdf_(&ipdf);
-                    //setmellinpdf_(&ipdf);
-                    resumm_(costh,m,qt,y,mode);
-                }
+	      //Do we need this???
+              //  costh = 0.; m = opts.rmass; qt = 1; y = 0;
+              //  for (int ipdf=0; ipdf<opts.totpdf; ipdf++){
+              //      //setpdf_(&ipdf);
+              //      //setmellinpdf_(&ipdf);
+              //      resumm_(costh,m,qt,y,mode);
+              //  }
             }
         }
         double f[opts.totpdf];
