@@ -78,7 +78,7 @@ void mline()
 
   double m1 = phasespace::mmin;
   double m2 =  phasespace::mmax;
-  int nm = 200;
+  int nm = 500;
 
   ofstream mf("mline.C");
   mf << std::setprecision(15);
@@ -98,20 +98,22 @@ void mline()
       //      double vj = vjint::vint(m,qt,y);
       //      mf << "gm->SetPoint(gm->GetN(), " << i*hm+m1 << ", " << resumm_(costh,m,qt,y,mode) << ");" << endl;
 
-      rapint::cache(phasespace::ymin, phasespace::ymax);
-      rapint::allocate();
-      rapint::integrate(phasespace::ymin,phasespace::ymax,(phasespace::mmin+phasespace::mmax)/2.);
-      mf << "gm->SetPoint(gm->GetN(), " << i*hm+m1 << ", " << resint::rint(costh,m,qt,y,mode) << ");" << endl;
+//      rapint::cache(phasespace::ymin, phasespace::ymax);
+//      rapint::allocate();
+//      rapint::integrate(phasespace::ymin,phasespace::ymax,(phasespace::mmin+phasespace::mmax)/2.);
+//      mf << "gm->SetPoint(gm->GetN(), " << i*hm+m1 << ", " << resint::rint(costh,m,qt,y,mode) << ");" << endl;
       //      mf << "gm->SetPoint(gm->GetN(), " << i*hm+m1 << ", " << resint::rint(costh,m,qt,y,mode) << ");" << endl;
       //mf << "gm->SetPoint(gm->GetN(), " << i*hm+m1 << ", " << -ctint_(costh,m,qt,y,mode,f)*2*qt/vjint::vint(m,qt,y) << ");" << endl;
       //mf << "gm1->SetPoint(gm1->GetN(), " << i*hm+m1 << ", " << -ctint_(costh,m,qt,y,mode,f)*2*qt << ");" << endl;
       //mf << "gm2->SetPoint(gm2->GetN(), " << i*hm+m1 << ", " << vjint::vint(m,qt,y) << ");" << endl;
 
       dofill_.doFill_ = 1;
-      
-      //      qtint::calc(m,qt,0,1);
-      //      omegaintegr::genV4p();//generate boson 4-momentum, with m, qt, y and phi=0
-      //      ctint::calc(costh,m,qt,y,mode,f);
+
+      mode = 2;
+      qtint::calc(m,max(opts.qtcut,opts.xqtcut*phasespace::m),1e10,mode);
+      omegaintegr::genV4p();//generate boson 4-momentum, with m, qt, y and phi=0
+      ctint::calc(costh,m,qt,y,mode,f);
+      mf << "gm->SetPoint(gm->GetN(), " << i*hm+m1 << ", " << f[0]*2*qt << ");" << endl;
 
       //      cout << vj << "  " << f[0]*2*qt << endl;
       

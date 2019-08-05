@@ -106,9 +106,9 @@ int main( int argc , char * argv[])
 
   //costhline();
   //ptline();
-  ptomline();
+  //ptomline();
   //yline();
-  //mline();
+  mline();
   //mlinebw();
   //xline();
   //ptavar();
@@ -138,6 +138,7 @@ int main( int argc , char * argv[])
   beta = 0.1;
   alpha = 0.1;
 
+  return 0;
   //call function wrappers, which map the variables into the unity hypercube of the vegas integration
   cout << " check phase space mapping " << endl;
   dyreal(m, y, qt, phicm, phiZ, costh, zcth, mjj, costhjj, phijj);
