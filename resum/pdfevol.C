@@ -6,6 +6,9 @@
 #include "resconst.h"
 #include "chebyshev.h"
 #include "phasespace.h"
+#include "mellinpdf.h"
+#include "scales.h"
+#include "clock_real.h"
 
 #include <LHAPDF/LHAPDF.h>
 
@@ -56,12 +59,17 @@ void pdfevol::init()
   BOP = new complex <double>[mellinint::mdim];
 
   //calculate Mellin moments of PDFs
-  cout << "Initialise PDF moments with numerical integration (C++)... " << flush;
+  cout << "Initialise PDF moments with numerical integration... " << flush;
   
   //double xmin = 1e-8;
   double xmin = pow(bins.mbins.front()/opts.sroot,2); //Restrict the integration of moments to xmin = m/sqrt(s)*exp(-ymax) = (m/sqrt(s))^2
 
+  clock_t begin_time, end_time;
+
+  //Old Fortran code for the moments
+  /*
   fcomplex uval,dval,usea,dsea,splus,ssea,glu,charm,bot;
+  begin_time = clock();
   for (int k = 0; k < mellinint::mdim; k++)
     {
       int hadron = 1; //opts.ih1;
@@ -80,12 +88,14 @@ void pdfevol::init()
       DVP[k] = cx(dval);
       USP[k] = cx(usea);
       DSP[k] = cx(dsea);
-      SSP[k] = cx(ssea);
+      SSP[k] = cx(ssea);//SSP[k] = cx(splus); !! issue for PDFs with s-sbar asymmetry !!
       GLP[k] = cx(glu);
       CHP[k] = cx(charm);
       BOP[k] = cx(bot);
     }
-
+  end_time = clock();
+  cout << "Done " << float(end_time - begin_time)/CLOCKS_PER_SEC << endl;
+  */
   /*
   //polynomial interpolation for analytical continuation
   int order = 500;
@@ -133,7 +143,38 @@ void pdfevol::init()
     }
   */
   
-  cout << "Done" << endl;
+  mellinpdf::init(xmin);
+  mellinpdf::allocate();
+  scales::set(opts.rmass, 0, 0);
+  begin_time = clock();  
+  mellinpdf::evalpdfs(scales::fac);
+  if (opts.mellininv == 1 || opts.phi > 0.5)
+    mellinpdf::laguerre_ipol(xmin);
+  else
+    mellinpdf::gauss_quad();
+  end_time = clock();  
+  cout << "Done in "  << float(end_time - begin_time)/CLOCKS_PER_SEC*1000. << "ms" << endl;
+
+  for (int k = 0; k < mellinint::mdim; k++)
+    {
+      UVP[k] = mellinpdf::UV[k];
+      DVP[k] = mellinpdf::DV[k];
+      USP[k] = mellinpdf::US[k];
+      DSP[k] = mellinpdf::DS[k];
+      SSP[k] = mellinpdf::SM[k];
+      GLP[k] = mellinpdf::GL[k];
+      CHP[k] = mellinpdf::CH[k];
+      BOP[k] = mellinpdf::BO[k];
+      //cout << "moment " << k << "  " << mellinint::Np[k] << "  ";
+      //cout << "uval  " << mellinpdf::UV[k] << endl;
+      //cout << "dval  " << mellinpdf::DV[k] << endl;
+      //cout << "usea  " << mellinpdf::US[k] << endl;
+      //cout << "dsea  " << mellinpdf::DS[k] << endl;
+      //cout << "ssea  " << mellinpdf::SM[k] << endl;
+      //cout << "gluon " << mellinpdf::GL[k] << endl;
+      //cout << "charm " << mellinpdf::CH[k] << endl;
+      //cout << "bottom" << mellinpdf::BO[k] << endl;
+    }
 }
 
 // PROVIDES MOMENTS OF DENSITIES AT A GIVEN SCALE (INCLUDES EVOLUTION)
@@ -545,6 +586,7 @@ void pdfevol::retrieve(int i1, int i2, int sign)
       fn2[ 4+MAXNF] = cx(creno_.cfx2m_[i2][ 4+MAXNF]);
       fn2[ 5+MAXNF] = cx(creno_.cfx2m_[i2][ 5+MAXNF]);
     }
+
   //set b to 0
   //  fn2[-5+MAXNF] = 0;  fn1[-5+MAXNF] = 0;
   //  fn2[5+MAXNF]  = 0;  fn1[5+MAXNF]  = 0;
