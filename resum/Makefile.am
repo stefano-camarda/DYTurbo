@@ -17,7 +17,7 @@ AM_CPPFLAGS = -fpermissive -Wl,Bstatic \
 		$(LHAPDF_CPPFLAGS) $(CUBA_CPPFLAGS)
 
 AM_FFLAGS =  -I$(srcdir)/../dyres \
-	     -I$(srcdir)/../phasespace #-I$(srcdir)/../mcfm #-I$(srcdir)/../src
+	     -I$(srcdir)/../phasespace -I$(srcdir)/../mcfm -I$(srcdir)/../src
 
 noinst_LTLIBRARIES = libresum.la
 libresum_la_SOURCES = mellinint.C mesq.C rapint.C anomalous.C resconst.C hcoefficients.C hcoeff.C pdfevol.C besselint.C bessel.f resint.C pegasus.C sudakov.f sudakovff.C npff.C
