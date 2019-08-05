@@ -8,6 +8,8 @@
 #include <LHAPDF/LHAGlue.h>
 #include <math.h>
 
+LHAPDF::PDF* pdf::lhapdf = 0;
+
 void pdf::init()
 {
   //printf(" ==Initialize PDF set from LHAPDF==\n\n");
@@ -28,10 +30,13 @@ void pdf::init()
   cfg.set_entry("MTop"                  , 172.9          );
   cfg.set_entry("Pythia6LambdaV5Compat" , true           );
 
-  LHAPDF::initPDFSet(opts.LHAPDFset);
-  //LHAPDF::initPDFSetByName(opts.LHAPDFset);
+  //Old interface
+  LHAPDF::initPDFSet(opts.LHAPDFset); //LHAPDF::initPDFSetByName(opts.LHAPDFset);
   LHAPDF::initPDF(opts.LHAPDFmember);
 
+  //New interface
+  lhapdf = LHAPDF::mkPDF(opts.LHAPDFset, opts.LHAPDFmember);
+  
   if (opts.PDFerrors && LHAPDF::numberPDF() > 1)
     {
       opts.totpdf = LHAPDF::numberPDF()+1;
@@ -59,7 +64,8 @@ void pdf::init()
 //set value of alphas
 void pdf::setalphas()
 {
-  couple_.amz_=LHAPDF::alphasPDF(dymasses_.zmass_);
+  //couple_.amz_=LHAPDF::alphasPDF(dymasses_.zmass_);
+  couple_.amz_ = lhapdf->alphasQ(dymasses_.zmass_);
   double scale = fabs(scale_.scale_);
 
   if (opts_.approxpdf_ == 1)
@@ -69,7 +75,8 @@ void pdf::setalphas()
     }
   else
     //qcdcouple_.as_=dyalphas_lhapdf_(scale);
-    qcdcouple_.as_=LHAPDF::alphasPDF(scale);
+    //qcdcouple_.as_=LHAPDF::alphasPDF(scale);
+    qcdcouple_.as_=lhapdf->alphasQ(scale);
   
   qcdcouple_.ason2pi_=qcdcouple_.as_/(2*M_PI);
   qcdcouple_.ason4pi_=qcdcouple_.as_/(4*M_PI);
@@ -122,7 +129,6 @@ void setmellinpdf_(int &member){
 
 void fdist_(int& ih, double& x, double& xmu, double fx[2*MAXNF+1])
 {
-  double fPDF[13];
 
   //set to zero if x out of range
   if (x > 1. || x <= 0.)
@@ -132,7 +138,40 @@ void fdist_(int& ih, double& x, double& xmu, double fx[2*MAXNF+1])
       return;
     }
   
-  LHAPDF::xfx(x,xmu,fPDF);
+  //double fPDF[13];
+  //LHAPDF::xfx(x,xmu,fPDF);
+
+  vector <double> fPDF; fPDF.resize(13);
+  pdf::lhapdf->xfxQ(x,xmu,fPDF);
+
+  //vector<int> pids = pdf::lhapdf->flavors();
+  //for (int i = 0; i < pids.size(); i++)
+  //cout << pids[i] << endl;
+
+  //  cout << endl;
+  //  for (int i = -MAXNF; i <= MAXNF; i++)
+  //    cout << fPDF[6+i]/x << "  ";
+  //  cout << endl;
+
+  
+  //xmu *= xmu;
+  //fPDF[6-5] = pdf::lhapdf->xfxQ(-5,x,xmu);
+  //fPDF[6-4] = pdf::lhapdf->xfxQ(-4,x,xmu);
+  //fPDF[6-3] = pdf::lhapdf->xfxQ(-3,x,xmu);
+  //fPDF[6-2] = pdf::lhapdf->xfxQ(-2,x,xmu);
+  //fPDF[6-1] = pdf::lhapdf->xfxQ(-1,x,xmu);
+  //fPDF[6+0] = pdf::lhapdf->xfxQ(21,x,xmu);
+  //fPDF[6+1] = pdf::lhapdf->xfxQ(1 ,x,xmu);
+  //fPDF[6+2] = pdf::lhapdf->xfxQ(2 ,x,xmu);
+  //fPDF[6+3] = pdf::lhapdf->xfxQ(3 ,x,xmu);
+  //fPDF[6+4] = pdf::lhapdf->xfxQ(4 ,x,xmu);
+  //fPDF[6+5] = pdf::lhapdf->xfxQ(5 ,x,xmu);
+
+  //  for (int i = -MAXNF; i <= MAXNF; i++)
+  //    cout << fPDF[6+i]/x << "  ";
+  //  cout << endl;
+  
+
   if (ih == 1) //proton
     for (int i = -MAXNF; i <= MAXNF; i++)
       fx[MAXNF+i]=fPDF[6+i]/x;

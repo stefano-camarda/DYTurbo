@@ -1,10 +1,14 @@
 #ifndef pdf_h
 #define pdf_h
 
+#include <LHAPDF/LHAPDF.h>
+
 #include "mcfm_interface.h"
 
 namespace pdf
 {
+  extern LHAPDF::PDF* lhapdf;
+
   extern void init();
   extern void setalphas();
   extern void setg();
