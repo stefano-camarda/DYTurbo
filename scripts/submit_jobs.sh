@@ -14,7 +14,7 @@ help(){
     #echo " Help is on TODO list :), But you can read parse_input function to check possibilities"
 
     echo "
-USAGE: ./scripts/submit_jobs_wmass.sh TARGET OPTIONS --seeds N [--griduser USER --gridvoms VOMS]
+USAGE: ./scripts/submit_jobs.sh TARGET OPTIONS --seeds N [--griduser USER --gridvoms VOMS]
 
 TARGETS : (Need to specify one of those)
     --local         Prepare for run locally.
@@ -30,16 +30,13 @@ OPTIONS :
     --proc     [z0]         {z0,wp,wm}             Set the process and mass integration (can be comma separated list)
     --pdfset   [CT10nnlo]   {LHAPDFname}           Set LHAPDF set name (can be comma separated list)
     --pdfvar   [0]          {int or all or array}  Set member number or run all
-    --order    [1]          {1,2}                  1: NLL+NLO 2: NNLL+NNLO
-    --term     [LO]         {RES,CT}               Monte-Carlo integration with order as above
-                            {RES3D,CT3D}           Cubature 3D integration with order set above
-                            {RES2D,CT2D}           Cubature 2D integration with order set above
-                            {VJREAL,VJVIRT,VJLO}   Real, virt and V+J LO  with MC
-                            {VV,FIXCT,FIXCT2D}     Fixed terms
+    --order    [1]          {0,1,2}                0:LL+LO 1: NLL+NLO 2: NNLL+NNLO
+    --term     [ALL]        {ALL,BORN,CT,VJ}       Terms of the calculation
+                            {VJREAL,VJVIRT}        Real, virt V+J with MC
     --seeds                 {int or range or list} MANDATORY: Set range (for batch) or Njobs (grid)
     --griduser              {GRID username}        MANDATORY IF GRID
     --gridvoms              {voms settings}        If you want to run with group privileges.
-    --mtbins   [1]          {1,2}                  1: NLL+NLO 2: NNLL+NNLO
+    --mbins   [1]           {1,2}                  1: NLL+NLO 2: NNLL+NNLO
 
     "
 
@@ -92,7 +89,7 @@ parse_input(){
     #
     order=1
     #termlist="LO VV FIXCT"
-    termlist=VJLO
+    termlist=ALL
     #order=2
     #termlist="VJREAL VJVIRT FIXCT VV"
     #
@@ -238,7 +235,6 @@ submit_jobs_wmass(){
     fi
     # check order term
     [[ $order == 1 ]] && [[ $termlist =~ VJREAL|VJVIRT ]] && echo "WRONG ORDER $order TO TERM $termlist" && return 3
-    [[ $order == 2 ]] && [[ $termlist =~ VJLO          ]] && echo "WRONG ORDER $order TO TERM $termlist" && return 3 
     # loops, lopps and loops
     for pdfset in $pdflist 
     do
@@ -474,8 +470,8 @@ finalize_grid_submission(){
         mkdir -p $griddir/LHAPDF
         # copy exec
         $CP bin/* $griddir/bin/
-        $CP chaplin-*/lib/*.so* $griddir/lib/
-        $CP chaplin-*/lib/*.la  $griddir/lib/
+#        $CP chaplin-*/lib/*.so* $griddir/lib/
+#        $CP chaplin-*/lib/*.la  $griddir/lib/
         $CP lib/*.so* $griddir/lib/
         $CP lib/*.la  $griddir/lib/
         $CP `lhapdf-config --libdir`/libLHAPDF.so $griddir/lib/
