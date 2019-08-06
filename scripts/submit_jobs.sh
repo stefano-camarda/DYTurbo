@@ -39,7 +39,7 @@ OPTIONS :
     --seeds                       {int or range or list} Mandatory: Set range (for batch) or Njobs (grid)
     --griduser                    {GRID username}        Mandatory if the target is grid
     --gridvoms                    {voms settings}        To run with group privileges.
-    --mbins    [1,66,116]         {bins,mlow,mhigh}      Invariant mass bins and range
+    --mbins    			  {bins,mlow,mhigh}      Invariant mass bins and range
     --yes      			  			 Submit jobs without asking confirmation
 
     "
@@ -108,7 +108,7 @@ parse_input(){
     voms=unset
     cernuser=unset
 
-    mbins=1,66,116
+    mbins=unset
     version=unset
 
     while [[ $# > 0 ]]
@@ -219,11 +219,11 @@ submit_jobs(){
         exit 5
     fi
     # check mass
-    if [[ $mbins == unset ]]
-    then
-        echo " mbins argument is mandatory please set '--mbins N,min,max'"
-        exit 5
-    fi
+    #if [[ $mbins == unset ]]
+    #then
+    #    echo " mbins argument is mandatory please set '--mbins N,min,max'"
+    #    exit 5
+    #fi
     if [[ $target =~ grid ]]
     then
         [[ $cernuser == unset ]] \
@@ -314,8 +314,9 @@ prepare_script(){
     #mbins=32,40,200
     #[[ $process =~ z0 ]] && mbins=10,66,116
     # arguments
-    arguments="input.in --proc $process --mbins $mbins --pdfset $pdfset --pdfvar $variation --order $order --term $terms"
+    arguments="input.in --proc $process --pdfset $pdfset --pdfvar $variation --order $order --term $terms"
     [[ ! $gparam == "" ]] && arguments="$arguments --gparam $gparam"
+    [[ ! $mbins == "" ]] && arguments="$arguments  --mbins $mbins"
     [[ $target =~ lxbatch|mogon|localrun ]] && arguments=$arguments" --seed \$LSB_JOBINDEX "
     # make sure we make some noise on grid
     #[[ $target =~ mogon ]] && arguments=$arguments" --verbose "
