@@ -160,7 +160,7 @@ void settings::parse_options(int argc, char* argv[]){
         for (auto piece : Tokenize(val)) {
             if        ( piece == "BORN"    ) { doBORN   =true;
             } else if ( piece == "CT"      ) { doCT     =true;
-            } else if ( piece == "VJ"      ) { doVJ     =true;
+            } else if ( piece == "VJ"      ) { doVJ     =true; doVJVIRT =true; doVJREAL =true;
             } else if ( piece == "VJVIRT"  ) { doVJ = true; doVJVIRT =true;
 	    } else if ( piece == "VJREAL"  ) { doVJ = true; doVJREAL =true;
 	    } else if ( piece == "ALL"     ) { doBORN = doCT = doVJ = doVJREAL = doVJVIRT = true;

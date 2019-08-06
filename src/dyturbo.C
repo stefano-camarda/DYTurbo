@@ -233,7 +233,7 @@ namespace DYTurbo {
         name="V+J";
         if (vj_finite || TestAllTerms){
             AddTermIfActive   ( opts.vjint3d                         , vjintegr3d   , name , isNotVegas )  << Col3 ( "cuhre (dm, dpt, dy)" , "iter ="   , opts.niterVJ );
-	    // VJ NLO
+	    // VJ LO
 	    if (opts.order == 1)
 	      {
 		AddTermIfActive   ( opts.vjint5d && opts.order == 1      , vjlointegr5d , name , isNotVegas )  << Col3 ( "cuhre 5D???"         , "iter ="   , opts.niterVJ );
