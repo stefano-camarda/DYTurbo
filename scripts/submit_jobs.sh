@@ -108,7 +108,6 @@ parse_input(){
     voms=unset
     cernuser=unset
 
-    mbins=unset
     version=unset
 
     while [[ $# > 0 ]]
@@ -287,7 +286,6 @@ program=unset
 fiducial=unset
 detfiducial=0
 makelepcuts=false
-gpar=1
 tarbalfile=unset
 seedlist=unset
 
