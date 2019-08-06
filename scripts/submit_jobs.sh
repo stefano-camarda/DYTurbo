@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##
-## @file submit_jobs_wmass.sh
+## @file submit_jobs.sh
 ##
 ## Description of the script file
 ##
@@ -24,19 +24,23 @@ TARGETS : (Need to specify one of those)
     --help          Print this help and die.
 
 OPTIONS :
-               [default]    {available}            Description
+               [default]          {available options}    Description
 
-    --infile   [wmass.in]   {input file path}      Common input file with all settings.
-    --proc     [z0]         {z0,wp,wm}             Set the process and mass integration (can be comma separated list)
-    --pdfset   [CT10nnlo]   {LHAPDFname}           Set LHAPDF set name (can be comma separated list)
-    --pdfvar   [0]          {int or all or array}  Set member number or run all
-    --order    [1]          {0,1,2}                0:LL+LO 1: NLL+NLO 2: NNLL+NNLO
-    --term     [ALL]        {ALL,BORN,CT,VJ}       Terms of the calculation
-                            {VJREAL,VJVIRT}        Real, virt V+J with MC
-    --seeds                 {int or range or list} MANDATORY: Set range (for batch) or Njobs (grid)
-    --griduser              {GRID username}        MANDATORY IF GRID
-    --gridvoms              {voms settings}        If you want to run with group privileges.
-    --mbins   [1]           {1,2}                  1: NLL+NLO 2: NNLL+NNLO
+    --infile   [input/default.in] {input file path}      Common input file with all settings.
+    --proc     [z0]               {z0,wp,wm}             Set the process (can be a comma separated list)
+    --pdfset   [CT10nnlo]         {LHAPDFname}           PDF set from LHAPDF (can be a comma separated list)
+    --pdfvar   [0]                {int or all or array}  Set member number or run all
+    --order    [2]                {0,1,2}                Set order of the calculation 0:LL+LO 1: NLL+NLO 2: NNLL+NNLO
+    --term     [ALL]              {ALL,BORN,CT,VJ,       Terms of the calculation
+                                   VJREAL,VJVIRT}        
+    --gparam   
+    --kmuren   
+    --kmufac   
+    --seeds                       {int or range or list} Mandatory: Set range (for batch) or Njobs (grid)
+    --griduser                    {GRID username}        Mandatory if the target is grid
+    --gridvoms                    {voms settings}        To run with group privileges.
+    --mbins    [1,66,116]         {bins,mlow,mhigh}      Invariant mass bins and range
+    --yes      			  			 Submit jobs without asking confirmation
 
     "
 
@@ -47,12 +51,12 @@ main(){
     parse_input $*
     clear_files
     #
-    submit_jobs_wmass
+    submit_jobs
     #
     if [[ $target =~ lxplus|mogon|localrun  ]]
     then
         ask_submit
-        $DRYRUN submit_jobs_wmass
+        $DRYRUN submit_jobs
     elif [[ $target =~ grid  ]]
     then
         echo
@@ -86,29 +90,25 @@ main(){
 parse_input(){
     target=unset
     proclist=z0
-    #
-    order=1
-    #termlist="LO VV FIXCT"
+    order=2
     termlist=ALL
-    #order=2
-    #termlist="VJREAL VJVIRT FIXCT VV"
-    #
     pdflist="CT10nnlo"
+
     #pdfvarlist=all
     #pdfvarlist="0 1 2 3"
     pdfvarlist=0
-    #
-    infile=input/wmass.in
-    #
+
+    infile=input/default.in
+
     #seedlist=100,201 # run 100 and 201
     #seedlist=100-201 # run form 100 to 201
     #seedlist=800    # run from 1 to 800
     seedlist=unset
-    #
+
     voms=unset
     cernuser=unset
-    #
-    mbins=unset
+
+    mbins=1,66,116
     version=unset
 
     while [[ $# > 0 ]]
@@ -203,7 +203,7 @@ parse_input(){
     done
 }
 
-submit_jobs_wmass(){
+submit_jobs(){
     program=dyturbo
     random_seed=seed
     # check infile
