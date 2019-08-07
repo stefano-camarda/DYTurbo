@@ -89,7 +89,8 @@ main(){
 
 parse_input(){
     target=unset
-    proclist=z0
+    #proclist=z0
+    proclist=unset
     order=2
     termlist=ALL
     pdflist="CT10nnlo"
@@ -217,12 +218,6 @@ submit_jobs(){
         echo " Seed argument is mandatory please set '--seeds [range/list]'"
         exit 5
     fi
-    # check mass
-    #if [[ $mbins == unset ]]
-    #then
-    #    echo " mbins argument is mandatory please set '--mbins N,min,max'"
-    #    exit 5
-    #fi
     if [[ $target =~ grid ]]
     then
         [[ $cernuser == unset ]] \
@@ -235,6 +230,19 @@ submit_jobs(){
     # check order term
     [[ $order == 1 ]] && [[ $termlist =~ VJREAL|VJVIRT ]] && echo "WRONG ORDER $order TO TERM $termlist" && return 3
     # loops, lopps and loops
+    if [[ $proclist == unset ]]
+    then
+	procid=`grep proc $infile | cut -d\# -f1 | cut -d= -f2 | xargs`
+	if [[ $procid == 1 ]]
+	then proclist=wp
+	elif [[ $procid == 2 ]]
+	then proclist=wm
+	elif [[ $procid == 3 ]]
+	then proclist=z0
+	fi
+    fi
+    echo $proclist
+	
     for pdfset in $pdflist 
     do
         if [[ $target =~ grid ]]
