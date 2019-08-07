@@ -27,7 +27,7 @@ OPTIONS :
                [default]          {available options}    Description
 
     --infile   [input/default.in] {input file path}      Common input file with all settings.
-    --proc     [z0]               {z0,wp,wm}             Set the process (can be a comma separated list)
+    --proc     			  {z0,wp,wm}             Set the process (can be a comma separated list)
     --pdfset   [CT10nnlo]         {LHAPDFname}           PDF set from LHAPDF (can be a comma separated list)
     --pdfvar   [0]                {int or all or array}  Set member number or run all
     --order    [2]                {0,1,2}                Set order of the calculation 0:LL+LO 1: NLL+NLO 2: NNLL+NNLO
@@ -89,11 +89,10 @@ main(){
 
 parse_input(){
     target=unset
-    #proclist=z0
     proclist=unset
     order=2
     termlist=ALL
-    pdflist="CT10nnlo"
+    pdflist=unset
 
     #pdfvarlist=all
     #pdfvarlist="0 1 2 3"
@@ -241,8 +240,12 @@ submit_jobs(){
 	then proclist=z0
 	fi
     fi
-    echo $proclist
 	
+    if [[ $pdflist == unset ]]
+    then
+	pdflist=`grep LHAPDFset $infile | cut -d\# -f1 | cut -d= -f2 | xargs`
+    fi
+
     for pdfset in $pdflist 
     do
         if [[ $target =~ grid ]]
