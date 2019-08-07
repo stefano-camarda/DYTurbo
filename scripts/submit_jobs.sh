@@ -28,9 +28,9 @@ OPTIONS :
 
     --infile   [input/default.in] {input file path}      Common input file with all settings.
     --proc     			  {z0,wp,wm}             Set the process (can be a comma separated list)
-    --pdfset   [CT10nnlo]         {LHAPDFname}           PDF set from LHAPDF (can be a comma separated list)
+    --pdfset   			  {LHAPDFname}           PDF set from LHAPDF (can be a comma separated list)
+    --order    			  {0,1,2}                Set order of the calculation 0:LL+LO 1: NLL+NLO 2: NNLL+NNLO
     --pdfvar   [0]                {int or all or array}  Set member number or run all
-    --order    [2]                {0,1,2}                Set order of the calculation 0:LL+LO 1: NLL+NLO 2: NNLL+NNLO
     --term     [ALL]              {ALL,BORN,CT,VJ,       Terms of the calculation
                                    VJREAL,VJVIRT}        
     --gparam   
@@ -90,7 +90,7 @@ main(){
 parse_input(){
     target=unset
     proclist=unset
-    order=2
+    order=unset
     termlist=ALL
     pdflist=unset
 
@@ -226,9 +226,13 @@ submit_jobs(){
     #else # not grid
         #[[ $seedlist =~ -|, ]]  || seedlist=1-$seedlist
     fi
+    if [[ $order == unset ]]
+    then
+	order=`grep order $infile | cut -d\# -f1 | cut -d= -f2 | xargs`
+    fi
     # check order term
     [[ $order == 1 ]] && [[ $termlist =~ VJREAL|VJVIRT ]] && echo "WRONG ORDER $order TO TERM $termlist" && return 3
-    # loops, lopps and loops
+
     if [[ $proclist == unset ]]
     then
 	procid=`grep proc $infile | cut -d\# -f1 | cut -d= -f2 | xargs`
@@ -246,6 +250,7 @@ submit_jobs(){
 	pdflist=`grep LHAPDFset $infile | cut -d\# -f1 | cut -d= -f2 | xargs`
     fi
 
+    # loops, loops and loops
     for pdfset in $pdflist 
     do
         if [[ $target =~ grid ]]
