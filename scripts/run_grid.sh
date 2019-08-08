@@ -24,7 +24,7 @@ arguments="${arguments} --seed ${jobseed}"
 arguments="${arguments} --grid"
 
 # setup ENV
-source scripts/setup.sh
+source ./setup.sh
 
 # LHAPDF
 if [[ SETTARGET =~ compile ]]
@@ -36,11 +36,11 @@ then
     export LHAPDF_DATA_PATH=/cvmfs/sft.cern.ch/lcg/external/lhapdfsets/current/
 else
     # own lhapdf set
-    export LHAPDF_DATA_PATH=./LHAPDF
+    export LHAPDF_DATA_PATH=$LHAPDF_DATA_PATH:./LHAPDF
 fi
-export LHAPATH=$LHAPDF_DATA_PATH
+#export LHAPATH=$LHAPDF_DATA_PATH
 # dyturbo libs
-#export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:./lib
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:./lib
 #export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/cvmfs/sft.cern.ch/lcg/external/gcc/4.8.1/x86_64-slc6-gcc48-opt/lib/../lib64
 
 echo

@@ -503,6 +503,7 @@ finalize_grid_submission(){
     # on-site scripts
     sed "s|SETTARGET|$target|g" scripts/compile_grid.sh > $griddir/compile_grid.sh
     sed "s|SETTARGET|$target|g" scripts/run_grid.sh     > $griddir/run_grid.sh
+    $CP scripts/setup.sh $griddir/setup.sh
     # add inputfile
     $CP input/default.in $griddir/
     $CP $infile $griddir/input.in
