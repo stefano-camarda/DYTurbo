@@ -492,7 +492,7 @@ finalize_grid_submission(){
         $CP lib/*.la  $griddir/lib/
         $CP `lhapdf-config --libdir`/libLHAPDF.so $griddir/lib/
         # copy pdfset
-        lhapdfdir=`lhapdf-config --datadir`
+        lhapdfdir=$LHAPDF_DATA_PATH #`lhapdf-config --datadir`
         $CP $lhapdfdir/$pdfset $griddir/LHAPDF
         $CP $lhapdfdir/lhapdf.conf $griddir/LHAPDF
         $CP $lhapdfdir/pdfsets.index $griddir/LHAPDF
