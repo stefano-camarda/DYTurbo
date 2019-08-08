@@ -10,6 +10,7 @@ if [[ x$cubaturesrc == x ]];
 then
     mkdir -p cubature
     cd cubature
+    rm -f v${version}.tar.gz
     wget https://github.com/stevengj/cubature/archive/v${version}.tar.gz
     tar -xzf v${version}.tar.gz
     rm v${version}.tar.gz
