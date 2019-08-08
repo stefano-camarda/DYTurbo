@@ -359,8 +359,8 @@ prepare_script(){
     sed -i "s|DYTURBOINPUTFILE|$dyturbo_project/$infile|g       " tmp
     sed -i "s|SETNPROCESSORS|$nprocessors|g     " tmp
     sed -i "s|SETPROGARGUMETS|$arguments|g     " tmp
-    sed -i "s|SETLHAPDFLIB|`lhapdf-config --prefix`/lib|g           " tmp
-    sed -i "s|SETLHAPDFDATA|`lhapdf-config --prefix`/share/LHAPDF|g " tmp
+    sed -i "s|SETLHAPDFLIB|`lhapdf-config --libdir`/lib|g           " tmp
+    sed -i "s|SETLHAPDFDATA|`lhapdf-config --datadir`|g " tmp
     [[ $target =~ lxbatch ]] && sed -i "s|^#BSUB -R.*$||g      "  tmp
     [[ $target =~ lxbatch ]] && sed -i "s|^#BSUB -app.*$|#BSUB -M 2000000|g " tmp
     [[ $target =~ lxbatch ]] && sed -i "s|/jobdir/|/pool/|g      "  tmp
