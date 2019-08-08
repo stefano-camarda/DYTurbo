@@ -988,7 +988,7 @@ void exitfun(void * input, const int &core){
 }
 
 void tell_to_grid_we_are_alive(){
-  if(opts.verbose && ICALL % 100000==0) 
+  if(opts.gridverbose && ICALL % 100000==0) 
       printf (" Hi Grid, we are sitll alive! Look, our event is %d\n",ICALL);
   ICALL++;
 }

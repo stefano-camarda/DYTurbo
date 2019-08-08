@@ -272,6 +272,7 @@ public:
   //debug settings
   bool timeprofile;
   bool verbose;
+  bool gridverbose;
   bool texttable;
 
   bool unicode;

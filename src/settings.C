@@ -47,6 +47,7 @@ void settings::parse_options(int argc, char* argv[]){
         ("qtbins"            , "Set equdistan binning for mass [N,lo,hi]"            , po::value<string>() )
         ("ybins"             , "Set equdistan binning for qt [N,lo,hi]"              , po::value<string>() )
         ("mbins"             , "Set equdistan binning for y [N,lo,hi]"               , po::value<string>() )
+        ("grid"              , "Be verbose to avoid jobs being killed")
 
 
     ;
@@ -73,6 +74,10 @@ void settings::parse_options(int argc, char* argv[]){
     // verbose
     if (args.count("verbose")) {
         verbose=true;
+        cubaverbosity=3;
+    }
+    if (args.count("grid")) {
+        gridverbose=true;
         cubaverbosity=3;
     }
     // rseed
@@ -354,6 +359,7 @@ void settings::readfromfile(const string fname){
     qtrec_kt0          = in.GetBool   ( "qtrec_kt0"       ); //true
     timeprofile        = in.GetBool   ( "timeprofile"     ); //false   # debug       and      time       profile resummation integration
     verbose            = in.GetBool   ( "verbose"         ); //false   # debug       and      time       profile costh       phi_lep         integration
+    verbose            = in.GetBool   ( "gridverbose"     ); //false   # debug       and      time       profile costh       phi_lep         integration
     texttable          = in.GetBool   ( "texttable"       ); //
     unicode            = in.GetBool   ( "unicode"         ); //
     resumcpp           = in.GetBool   ( "resumcpp"        );
@@ -686,6 +692,7 @@ void settings::dumpAll(){
         dumpB("qtrec_kt0         ", qtrec_kt0           );
         dumpB("timeprofile       ", timeprofile         );
         dumpB("verbose           ", verbose             );
+        dumpB("gridverbose       ", verbose             );	
         dumpB("texttable         ", texttable           );
         dumpB("resumcpp          ", resumcpp            );
 	dumpB("ctcpp             ", ctcpp               );
