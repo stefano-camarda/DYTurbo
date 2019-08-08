@@ -19,4 +19,6 @@ lsetup "root 6.04.14-x86_64-slc6-gcc49-opt"
 
 #export PATH=/cvmfs/sft.cern.ch/lcg/releases/MCGenerators/lhapdf/6.2.3-7c75b/x86_64-centos7-gcc8-opt/bin:$PATH
 
-#export PATH=/cvmfs/sft.cern.ch/lcg/releases/MCGenerators/lhapdf/6.2.3-0ff65/x86_64-slc6-gcc49-opt/bin:$PATH
+export PATH=/cvmfs/sft.cern.ch/lcg/releases/MCGenerators/lhapdf/6.2.3-0ff65/x86_64-slc6-gcc49-opt/bin:$PATH
+export LHAPDF_DATA_PATH=/cvmfs/sft.cern.ch/lcg/external/lhapdfsets/current/
+export LHAPATH=/cvmfs/sft.cern.ch/lcg/external/lhapdfsets/current/
