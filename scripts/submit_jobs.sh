@@ -411,6 +411,7 @@ prepare_tarbal(){
     DYTURBOVERSION=`grep PACKAGE_VERSION config.h | cut -d\" -f2`
     # check you have cvmfs rootconfig
     rootprefix=`root-config --prefix`
+    #if [[ $rootprefix =~ /cvmfs/*.cern.ch/.*/[56].[0-9][0-9].[0-9][0-9]-(x86_64|i686)-*-gcc ]]
     if [[ $rootprefix =~ /cvmfs/atlas.cern.ch/.*/[56].[0-9][0-9].[0-9][0-9]-(x86_64|i686)-slc[56]-gcc ]]
     then
         ROOTVERSION=`basename $rootprefix | cut -d- -f1`

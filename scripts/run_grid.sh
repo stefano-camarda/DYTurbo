@@ -20,13 +20,11 @@ jobseed=$((jobseed+configseed))
 # add jobseed
 arguments="${arguments} --seed ${jobseed}"
 
-
+# grid verbosity
+arguments="${arguments} --grid"
 
 # setup ENV
-export ATLAS_LOCAL_ROOT_BASE=/cvmfs/atlas.cern.ch/repo/ATLASLocalRootBase
-source ${ATLAS_LOCAL_ROOT_BASE}/user/atlasLocalSetup.sh " "
-# ROOT
-lsetup "root 6.04.14-x86_64-slc6-gcc49-opt"
+source scripts/setup.sh
 
 # LHAPDF
 if [[ SETTARGET =~ compile ]]
@@ -42,8 +40,8 @@ else
 fi
 export LHAPATH=$LHAPDF_DATA_PATH
 # dyturbo libs
-export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:./lib
-export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/cvmfs/sft.cern.ch/lcg/external/gcc/4.8.1/x86_64-slc6-gcc48-opt/lib/../lib64
+#export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:./lib
+#export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/cvmfs/sft.cern.ch/lcg/external/gcc/4.8.1/x86_64-slc6-gcc48-opt/lib/../lib64
 
 echo
 echo LD_LIBRARY_PATH
