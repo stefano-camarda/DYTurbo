@@ -47,7 +47,7 @@ void pdfevol_(int& i1, int& i2, int& sign)
   pdfevol::retrieve(i1-1, i2-1, sign-1);
 };
 
-void pdfevol::init()
+void pdfevol::allocate()
 {
   UVP = new complex <double>[mellinint::mdim];
   DVP = new complex <double>[mellinint::mdim];
@@ -57,12 +57,29 @@ void pdfevol::init()
   GLP = new complex <double>[mellinint::mdim];
   CHP = new complex <double>[mellinint::mdim];
   BOP = new complex <double>[mellinint::mdim];
+}
 
+void pdfevol::free()
+{
+  delete[] UVP;
+  delete[] DVP;
+  delete[] USP;
+  delete[] DSP;
+  delete[] SSP;
+  delete[] GLP;
+  delete[] CHP;
+  delete[] BOP;
+}
+
+void pdfevol::init()
+{
   //calculate Mellin moments of PDFs
-  cout << "Initialise PDF moments with numerical integration... " << flush;
+  if (opts.fmufac == 0)
+    cout << "Initialise PDF moments with numerical integration... " << flush;
   
   //double xmin = 1e-8;
   double xmin = pow(bins.mbins.front()/opts.sroot,2); //Restrict the integration of moments to xmin = m/sqrt(s)*exp(-ymax) = (m/sqrt(s))^2
+  mellinpdf::init(xmin);
 
   clock_t begin_time, end_time;
 
@@ -143,17 +160,36 @@ void pdfevol::init()
     }
   */
   
-  mellinpdf::init(xmin);
+  if (opts.fmufac == 0)
+    {
+      allocate();
+      scales::set(opts.rmass);
+      begin_time = clock();  
+      update();
+      end_time = clock();  
+      cout << "Done in "  << float(end_time - begin_time)/CLOCKS_PER_SEC*1000. << "ms" << endl;
+    }
+}
+
+void pdfevol::update()
+{
+  clock_t begin_time, end_time;
+
+  //Restrict the integration of moments to xmin = m/sqrt(s)*exp(-ymax) = (m/sqrt(s))^2
+  //double xmin = pow(phasepace::m/opts.sroot,2);
+  //mellinpdf::init(xmin);
+  
+  //scales::set(phasespace::m); //assume scales were already set
+  
   mellinpdf::allocate();
-  scales::set(opts.rmass, 0, 0);
   begin_time = clock();  
   mellinpdf::evalpdfs(scales::fac);
   if (opts.mellininv == 1 || opts.phi > 0.5)
-    mellinpdf::laguerre_ipol(xmin);
+    mellinpdf::laguerre_ipol();
   else
     mellinpdf::gauss_quad();
   end_time = clock();  
-  cout << "Done in "  << float(end_time - begin_time)/CLOCKS_PER_SEC*1000. << "ms" << endl;
+  //cout << "mll is " << scales::fac << " x to N done in "  << float(end_time - begin_time)/CLOCKS_PER_SEC*1000. << "ms" << endl;
 
   for (int k = 0; k < mellinint::mdim; k++)
     {
@@ -175,6 +211,7 @@ void pdfevol::init()
       //cout << "charm " << mellinpdf::CH[k] << endl;
       //cout << "bottom" << mellinpdf::BO[k] << endl;
     }
+  mellinpdf::free();
 }
 
 // PROVIDES MOMENTS OF DENSITIES AT A GIVEN SCALE (INCLUDES EVOLUTION)
@@ -428,9 +465,9 @@ void pdfevol::calculate(int i)
 
   int hadron = 1;
   //double facscale = fabs(bscale);
-  double facscale = fabs(bstarscale);//better qbstar here? actually better bstartilde = qbstar * resint::mures / sqrt(pow(qbstar,2) + resint::mures2);
+  //double facscale = fabs(bstarscale);
   //double facscale = fabs(opts.muf);
-  facscale = fabs(pdfevol::bstartilde);
+  double facscale = fabs(pdfevol::bstartilde); //bstartilde = qbstar * resint::mures / sqrt(pow(qbstar,2) + resint::mures2);
   fcomplex XN = fcx(mellinint::Np[i]);
   double xmin = 1e-8;
   pdfmoments_(hadron,facscale,XN,uval,dval,usea,dsea,s,sbar,glu,charm,bot,xmin);

@@ -402,6 +402,14 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
   mufac2=pow(mufac,2);
   mures2=pow(mures,2);
 
+  //update PDFs in Mellin space at the starting scale, if the factorisation scale is proportional to mll
+  if (opts.fmufac > 0)
+    {
+      pdfevol::allocate();
+      pdfevol::update();
+    }
+
+  
   //alphas at various scales (alphas convention is alphas/4/pi)
   alpqren=LHAPDF::alphasPDF(muren)/4./M_PI;
   alpqfac=LHAPDF::alphasPDF(mufac)/4./M_PI;
@@ -656,6 +664,9 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
   if (!(opts.order == 0 && opts.xspace))
     mesq::free();
 
+  if (opts.fmufac > 0)
+    pdfevol::free();
+  
   //res *= jac;//jacobian for the change of variable qt=qtp/sqrt(1-qtp^2/m^2)
   
   return res;

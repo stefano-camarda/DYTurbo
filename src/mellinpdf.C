@@ -183,7 +183,7 @@ void laguerre(int n, double x, double *L)
 }
 
 //Computes the complex N Mellin moments of pdfs by means of Laguerre interpolation and Laplace transform
-void mellinpdf::laguerre_ipol(double xmin)
+void mellinpdf::laguerre_ipol()
 {
   //order of the Laguerre approximation --> make this an option
   int N = 150;
@@ -267,29 +267,24 @@ void mellinpdf::laguerre_ipol(double xmin)
   //double alpha = 2;
   for (int i = 0; i < opts.pdfrule; i++)
     {
-      double x = cx+mx*gr::xxx[opts.pdfrule-1][i];
-      double t = xmin*pow(1./xmin,x);
-      double jac = 0.5* t * log(1./xmin);
-
       double L[N+1];
-      //double u = -log(t[i]); //cache this
-      double u = -log(t)/p;
+      double u = -log(t[i])/p;
       laguerre(N, u, L);// --> cache it as L[n][i]
       //      cout << endl << i << "  " << u << endl;
       //double po = pow(t,alpha);
       for (int n = 0; n <= N; n++)
 	{
-	  luv[n] += fuv[i] * L[n] * pow(t,1./p-1.+powuv);
-	  ldv[n] += fdv[i] * L[n] * pow(t,1./p-1.+powdv);
-	  lus[n] += fus[i] * L[n] * pow(t,1./p-1.+powus);
-	  lds[n] += fds[i] * L[n] * pow(t,1./p-1.+powds);
-	  lsp[n] += fsp[i] * L[n] * pow(t,1./p-1.+powsp);
-	  lsm[n] += fsm[i] * L[n] * pow(t,1./p-1.+powsm);
-	  lgl[n] += fgl[i] * L[n] * pow(t,1./p-1.+powgl);
-	  lch[n] += fch[i] * L[n] * pow(t,1./p-1.+powch);
-	  lbo[n] += fbo[i] * L[n] * pow(t,1./p-1.+powbo);
+	  luv[n] += fuv[i] * L[n] * pow(t[i],1./p-1.+powuv);
+	  ldv[n] += fdv[i] * L[n] * pow(t[i],1./p-1.+powdv);
+	  lus[n] += fus[i] * L[n] * pow(t[i],1./p-1.+powus);
+	  lds[n] += fds[i] * L[n] * pow(t[i],1./p-1.+powds);
+	  lsp[n] += fsp[i] * L[n] * pow(t[i],1./p-1.+powsp);
+	  lsm[n] += fsm[i] * L[n] * pow(t[i],1./p-1.+powsm);
+	  lgl[n] += fgl[i] * L[n] * pow(t[i],1./p-1.+powgl);
+	  lch[n] += fch[i] * L[n] * pow(t[i],1./p-1.+powch);
+	  lbo[n] += fbo[i] * L[n] * pow(t[i],1./p-1.+powbo);
 
-//	  cout << i << "  " << n << "  " << L[n] << "  " << jac << endl;
+//	  cout << i << "  " << n << "  " << L[n] << endl;
 	}
     }
   //for (int n = 0; n <= N; n++)

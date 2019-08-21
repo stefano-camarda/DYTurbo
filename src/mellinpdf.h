@@ -12,7 +12,7 @@ namespace mellinpdf
   void init(double xmin);
   void evalpdfs(double scale);
   void gauss_quad();
-  void laguerre_ipol(double xmin);
+  void laguerre_ipol();
 
   extern complex <double> *UV;
   extern complex <double> *DV;
@@ -23,7 +23,8 @@ namespace mellinpdf
   extern complex <double> *GL;
   extern complex <double> *CH;
   extern complex <double> *BO;
-
+#pragma omp threadprivate(UV,DV,US,DS,SP,SM,GL,CH,BO)
+  
   extern double *fuv;
   extern double *fdv;
   extern double *fus;
@@ -33,5 +34,6 @@ namespace mellinpdf
   extern double *fgl;
   extern double *fch;
   extern double *fbo;
+#pragma omp threadprivate(fuv,fdv,fus,fds,fsp,fsm,fgl,fch,fbo)
 }
 #endif
