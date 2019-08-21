@@ -163,6 +163,7 @@ zrule = 64
 xrule = 200
 
 # resummation damping
+damp = true
 dampk = 0.5
 dampdelta = 0.5
 dampmode = 1

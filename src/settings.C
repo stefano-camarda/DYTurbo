@@ -296,6 +296,7 @@ void settings::readfromfile(const string fname){
     Zcc            = in.GetNumber ( "Zcc"        );
     Zss            = in.GetNumber ( "Zss"        );
     Zbb            = in.GetNumber ( "Zbb"        );
+    damp           = in.GetBool   ( "damp"          );
     dampk          = in.GetNumber ( "dampk"          );
     dampdelta      = in.GetNumber ( "dampdelta"      );
     dampmode       = in.GetNumber ( "dampmode"       );
@@ -433,12 +434,12 @@ void settings::check_consitency(){
 	exit (-1);
       }
 
-    if (fmufac > 0 && evolmode < 3 && order > 0 && fixedorder == false)
-      {
-	//cannot use a dynamic muren, mufac, when the PDFs are converted from x-space to N-space at the factorisation scale
-	cout << "At NLL and NNLL mufac = mll is possible only with evolmode = 3 or 4" << endl;
-	exit (-1);
-      }
+    //if (fmufac > 0 && evolmode < 3 && order > 0 && fixedorder == false)
+    //  {
+    //	//cannot use a dynamic muren, mufac, when the PDFs are converted from x-space to N-space at the factorisation scale
+    //	cout << "At NLL and NNLL mufac = mll is possible only with evolmode = 3 or 4" << endl;
+    //	exit (-1);
+    //  }
 
     if (PDFerrors == true && LHAPDFmember != 0)
       {
@@ -625,7 +626,8 @@ void settings::dumpAll(){
         //dumpD("yhigh              ", yhigh               );
         //dumpD("mlow               ", mlow                );
         //dumpD("mhigh              ", mhigh               );
-        dumpD("dampk",             dampk       );
+        dumpB("damp",             damp       );
+	dumpD("dampk",             dampk       );
         dumpD("dampdelta",     dampdelta      );
         dumpI("dampmode",       dampmode     );
 	dumpD("qtcutoff",       qtcutoff     );

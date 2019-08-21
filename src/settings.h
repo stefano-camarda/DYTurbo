@@ -130,6 +130,7 @@ public:
   //double mhigh;
 
   //Resummation damping
+  bool damp;
   double dampk, dampdelta;
   int dampmode;
 

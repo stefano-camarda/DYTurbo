@@ -30,6 +30,9 @@ double switching::swtch(double qt, double m)
   if (opts.fixedorder)
     return swtch;
 
+  if (!opts.damp)
+    return swtch;
+  
   if (qt < m*k)
     return swtch;
   
