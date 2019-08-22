@@ -47,6 +47,8 @@ AC_ARG_ENABLE([Ofast],
 CXXFLAGS="${CXXFLAGS} -std=c++0x"
 #allows usage of complex numbers as x+yi
 CXXFLAGS="${CXXFLAGS} -fext-numeric-literals"
+#obsolete fortran do statements
+#FFLAGS="${FFLAGS} -std=legacy"
 
 #allows use of save statements (but causes issues with parallelisation)
 #FFLAGS="${FFLAGS} -fno-automatic"
