@@ -11,6 +11,7 @@ namespace pegasus
  
   extern void init();
   extern void evolve();
+  extern double alphas(double M2, double R2, double &ASI, int &NF);
 
   extern int nff;
   extern int ivfns;

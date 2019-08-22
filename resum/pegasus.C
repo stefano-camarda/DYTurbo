@@ -22,7 +22,8 @@ int pegasus::ivfns;
 void pegasus::init()
 {
   //No need to initialise if pegasus is not used
-  if (opts.evolmode != 1 && opts.evolmode != 3 && opts.evolmode != 4)
+  //if (opts.evolmode != 1 && opts.evolmode != 3 && opts.evolmode != 4)
+  if (opts.evolmode == 0)
     return;
   
   // From:
@@ -222,7 +223,7 @@ void pegasus::init()
     asinp_.m20_ = pow(opts.kmufac*opts.rmass,2);
 
   //input values from LHAPDF and forward evolution
-  else if (opts.evolmode == 3 || opts.evolmode == 4)
+  else if (opts.evolmode == 2 || opts.evolmode == 3 || opts.evolmode == 4)
     {
       LHAPDF::PDFInfo info(opts.LHAPDFset, opts.LHAPDFmember);
       double qmin = info.get_entry_as<double>("QMin", -1);
@@ -479,44 +480,9 @@ void pegasus::evolve()
       //use the modification alphas(mures) -> alphas(muren)
       //M2 = M2prime;
       //R2 = R2prime;
-      
-      if (M2 > asfthr_.m2t_) //If M2 = M2tilde than the scale is frozen at muf, and never goes above the top
-	{
-	  NF = 6;
-	  double R2T = asfthr_.m2t_ * R2/M2;
-	  ASI = asfthr_.ast_;
-	  //ASF = LHAPDF::alphasPDF(sqrt(M2)) / (4.* M_PI);
-	  ASF = as_(R2, R2T, asfthr_.ast_, NF);
-	}
-      else if (M2 > asfthr_.m2b_)
-	{
-	  NF = 5;
-	  double R2B = asfthr_.m2b_ * R2/M2;
-	  ASI = asfthr_.asb_;
 
-	  //above the bottom mass, calculate alphas at the final scale with DYRES (which has the modification L -> L~)
-	  //	  fcomplex fscale2 = fcx(pow(pdfevol::bscale,2));
-	  //	  ASF = fabs(cx(alphasl_(fscale2))) * resint::alpqres; //DYRES LL(NLL) running of alphas.
-	  
-	  //ASF =  LHAPDF::alphasPDF(sqrt(M2)) / (4.* M_PI);
-	  ASF =  as_(R2, R2B, asfthr_.asb_, NF);
-	}
-      else if (M2 > asfthr_.m2c_)
-	{
-	  NF = 4;
-	  double R2C = asfthr_.m2c_ * R2/M2;
-	  ASI = asfthr_.asc_;
-	  //ASF =  LHAPDF::alphasPDF(sqrt(M2)) / (4.* M_PI);
-	  ASF =  as_(R2, R2C, asfthr_.asc_, NF);
-	}
-      else
-	{
-	  NF = 3;
-	  double R20 = asinp_.m20_ * R2/M2;
-	  ASI = asinp_.as0_;
-	  //ASF =  LHAPDF::alphasPDF(sqrt(M2)) / (4.* M_PI);
-	  ASF =  as_(R2, R20, asinp_.as0_, NF);
-	}
+      ASF = alphas(M2, R2, ASI, NF);
+
       //      ASF = ASF/resint::alpqren * resint::alpqfac; //--> this is very crude
       
       //In the forward evolution need to rescale the final alphas ASF to account for the fact that the backward PDF evolution
@@ -638,4 +604,46 @@ void pegasus::evolve()
        	   << cx(PDFN[5+6][i]) << endl;
     }
   */
+}
+
+//interface to the VFN alphas of pegasus
+double pegasus::alphas(double M2, double R2, double &ASI, int &NF)
+{
+  double ASF = 0.;
+
+  if (M2 > asfthr_.m2t_) //If M2 = M2tilde than the scale is frozen at muf, and never goes above the top
+    {
+      NF = 6;
+      double R2T = asfthr_.m2t_ * R2/M2;
+      ASI = asfthr_.ast_;
+      ASF = as_(R2, R2T, asfthr_.ast_, NF);
+    }
+  else if (M2 > asfthr_.m2b_)
+    {
+      NF = 5;
+      double R2B = asfthr_.m2b_ * R2/M2;
+      ASI = asfthr_.asb_;
+      ASF =  as_(R2, R2B, asfthr_.asb_, NF);
+    }
+  else if (M2 > asfthr_.m2c_)
+    {
+      NF = 4;
+      double R2C = asfthr_.m2c_ * R2/M2;
+      ASI = asfthr_.asc_;
+      ASF =  as_(R2, R2C, asfthr_.asc_, NF);
+    }
+  else
+    {
+      NF = 3;
+      double R20 = asinp_.m20_ * R2/M2;
+      ASI = asinp_.as0_;
+      ASF =  as_(R2, R20, asinp_.as0_, NF);
+    }
+  
+  //above the bottom mass, calculate alphas at the final scale with DYRES (which has the modification L -> L~)
+  //	  fcomplex fscale2 = fcx(pow(pdfevol::bscale,2));
+  //	  ASF = fabs(cx(alphasl_(fscale2))) * resint::alpqres; //DYRES LL(NLL) running of alphas.
+
+  //ASF = LHAPDF::alphasPDF(sqrt(M2)) / (4.* M_PI);
+  return ASF;
 }
