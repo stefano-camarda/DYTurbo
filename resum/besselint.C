@@ -29,7 +29,7 @@ complex <double> besselint::bint(complex <double> b)
     return 1.; //Should be correct, since J_0(0) = 1, and S(0) = 1 (Sudakov). May be different in the case that the L~ = L+1 matching is not used.
   
   complex <double> bb = b;
-  double qt = resint::_qt;
+  double qt = resint::_qt; //better take this from phasespace::qt
 
   //pdfevol::bscale is used for
   //alpq (C1)
@@ -144,45 +144,27 @@ complex <double> besselint::bint(complex <double> b)
     //There is possibly an issue here when the renormalisation scale is (very) different from mll, since aass=alphas(muren) is used in xlambda = beta0*aass*blog
     {
       //      double M2 = pow(fabs(pdfevol::bstartilde),2);
-
-      double M2 = pow(fabs(pdfevol::qbstar),2);   //qbstar = b0/bstar (without a_param)
-      double M2tilde = M2 * resint::mures2 / (M2 + resint::mures2);
-      double M2prime = M2tilde * resint::muren2/resint::mures2; //scale for differences between muren and mures
+      double M2 = pow(fabs(pdfevol::qbstar),2);                     //qbstar = b0/bstar (without a_param)
+      double M2tilde = M2 * resint::mures2 / (M2 + resint::mures2); //modified logs L -> L~
+      double M2prime = M2tilde * resint::muren2/resint::mures2;     //scale for differences between muren and mures
       M2 = M2prime;
+      double R2 = M2;
+      double ASI;
+      int NF;
+      alpq = pegasus::alphas(M2, R2, ASI, NF);
 
-      if (M2 > asfthr_.m2t_) //The scale is frozen at muf, and never goes above the top
-	{
-	  int NF = 6;
-	  double R2T = asfthr_.m2t_;
-	  alpq = as_(M2, R2T, asfthr_.ast_, NF);
-	}
-      else if (M2 > asfthr_.m2b_)
-	{
-	  int NF = 5;
-	  double R2B = asfthr_.m2b_;
-	  alpq = as_(M2, R2B, asfthr_.asb_, NF);
+      //alpq = LHAPDF::alphasPDF(sqrt(M2)) / (4.* M_PI);
 
-	  /*
-	  //tweak this to look as in dyres, where alphas(muren) is used:
-	  double R20 = resint::_m;
-	  alpq = as_(M2, R20, resint::alpqren, NF);
-	  alpq = alpq/resint::alpqren*resint::alpqres;
-	  */
-	}
-      else if (M2 > asfthr_.m2c_)
-	{
-	  int NF = 4;
-	  double R2C = asfthr_.m2c_;
-	  alpq = as_(M2, R2C, asfthr_.asc_, NF);
-	}
-      else
-	{
-	  int NF = 3;
-	  double R20 = asinp_.m20_;
-	  alpq = as_(M2, R20, asinp_.as0_, NF);
-	}
+      /*
+      //tweak this to look as in dyres, where alphas(muren) is used:
+      double R20 = resint::_m;
+      alpq = as_(M2, R20, resint::alpqren, NF);
+      alpq = alpq/resint::alpqren*resint::alpqres;
+      */
+      
       //Based on the definition of aexp, may be need to rescale alpq for as(qres)/as(muren)?
       //alpq = alpq/resint::alpqren*resint::alpqres;
+      //cout << "alpq " << alpq << " M2 " << M2 << endl;
     }
 
   //  complex <double> alpq = LHAPDF::alphasPDF(fabs(pdfevol::bstartilde))/4./M_PI;        //alpq = alphas(b0^2/b^2)
@@ -215,10 +197,13 @@ complex <double> besselint::bint(complex <double> b)
     pegasus::evolve();
 
   //Calculate PDF moments by direct Mellin transformation at each value of bstarscale = b0p/bstar
-  else if (opts.evolmode == 2)
-    for (int i = 0; i < mellinint::mdim; i++)
-      pdfevol::calculate (i);
+  //else if (opts.evolmode == 2)
+  //for (int i = 0; i < mellinint::mdim; i++)
+  //pdfevol::calculate(i);
 
+  else if (opts.evolmode == 2)
+    pdfevol::calculate();
+  
   //PDF evolution with Pegasus QCD from the starting scale Q20, in VFN
   else if (opts.evolmode == 3)
     pegasus::evolve();
@@ -240,14 +225,14 @@ complex <double> besselint::bint(complex <double> b)
   alphasl_(fscale2_mub);
   complex <double> aexp = cx(exponent_.aexp_); //aexp is actually the ratio alphas(a*b0/b)/alphas(muren)
   
-  //In order to have variable flavour evolution, use here a VFN definition of aexp (aexpB instead, should be independent from NF)
-  //It seems that the pt-integrated cross section is invariant for variations of a_param if aexp is the ratio of alpq/as(muren) (and not alpq/as(Qres))
-  //Indeed, aexp is always multiplied by aass, which is alphas at the renormalisation scale
-  if (opts.evolmode == 2 || opts.evolmode == 3) //account for VFN evolution
-    aexp = alpq / resint::alpqren;
-    //aexp = alpq / resint::alpqres;
+//  //In order to have variable flavour evolution, use here a VFN definition of aexp (aexpB instead, should be independent from NF)
+//  //It seems that the pt-integrated cross section is invariant for variations of a_param if aexp is the ratio of alpq/as(muren) (and not alpq/as(Qres))
+//  //Indeed, aexp is always multiplied by aass, which is alphas at the renormalisation scale
+//  if (opts.evolmode == 2 || opts.evolmode == 3) //account for VFN evolution
+//    aexp = alpq / resint::alpqren;
+//    //aexp = alpq / resint::alpqres;
   
-  //  cout << pdfevol::bstartilde << "  " << cx(exponent_.aexp_) << "  " << alpq / resint::alpqres << "  " << alpq / resint::alpqren << endl;
+  //cout << pdfevol::bstartilde << "  " << cx(exponent_.aexp_) << "  " << alpq / resint::alpqres << "  " << alpq / resint::alpqren << endl;
   complex <double> aexpb = cx(exponent_.aexpb_);
 
   //In case of truncation of hcoeff, need to recalculate the original coefficients before truncation
@@ -273,19 +258,19 @@ complex <double> besselint::bint(complex <double> b)
   double fun = 0.;
 
   //Do not need the Mellin transform for the LL case, because the HN coefficient is 1 --> Use PDFs in x space
-  if (opts.order == 0 && opts.xspace) // && (opts.evolmode == 2 || opts.evolmode == 3 || opts.evolmode == 4))
+  if (opts.order == 0 && opts.xspace && (opts.evolmode == 2 || opts.evolmode == 3 || opts.evolmode == 4))
     {
       double muf;
       
       //double muf = fabs(pdfevol::bstartilde);
       //double muf = resconst::b0/b;
 
-      if (opts.evolmode == 2)
-	muf = fabs(pdfevol::qbstar);
-      if (opts.evolmode == 4)
-	muf = fabs(pdfevol::qbstar);
+//      if (opts.evolmode == 2)
+//	muf = fabs(pdfevol::qbstar);
+//      if (opts.evolmode == 4)
+//	muf = fabs(pdfevol::qbstar);
       //muf = fabs(pdfevol::bscale);
-      //muf = fabs(pdfevol::bstartilde);
+      muf = fabs(pdfevol::bstartilde);
       
       
       //      //PDFs
@@ -363,6 +348,7 @@ complex <double> besselint::bint(complex <double> b)
 	  //do not actually need the negative branch, because it is equal to the complex conjugate of the positive branch
 	  //so the sum of the two branches is equal to the real part of the positive branch: 1/2(a+conj(a)) = real(a)
 	  fun += real(int1);
+	  //cout << "mellin 1d " << setprecision(16) << i << "  " << int1 << endl;
 	  
 	}
       //cout << "besselint 1d inversion " << fun << endl;
