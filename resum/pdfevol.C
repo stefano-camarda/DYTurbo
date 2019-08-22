@@ -8,6 +8,7 @@
 #include "phasespace.h"
 #include "mellinpdf.h"
 #include "scales.h"
+#include "parton.h"
 #include "clock_real.h"
 
 #include <LHAPDF/LHAPDF.h>
@@ -40,6 +41,8 @@ complex <double> pdfevol::XL1;
 complex <double> pdfevol::SALP;
 
 complex <double> pdfevol::alpr;
+
+using namespace parton;
 
 //fortran interface
 void pdfevol_(int& i1, int& i2, int& sign)
@@ -456,12 +459,11 @@ void pdfevol::evolution(int i) //from reno2
 }
 
 
+//Old fortran code
 void pdfevol::calculate(int i)
 {
   //N flavour dependence
   int nf = resconst::NF;
-
-  fcomplex uval,dval,usea,dsea,s,sbar,glu,charm,bot;
 
   int hadron = 1;
   //double facscale = fabs(bscale);
@@ -470,9 +472,12 @@ void pdfevol::calculate(int i)
   double facscale = fabs(pdfevol::bstartilde); //bstartilde = qbstar * resint::mures / sqrt(pow(qbstar,2) + resint::mures2);
   fcomplex XN = fcx(mellinint::Np[i]);
   double xmin = 1e-8;
-  pdfmoments_(hadron,facscale,XN,uval,dval,usea,dsea,s,sbar,glu,charm,bot,xmin);
 
   complex <double> fx[11];
+  
+  fcomplex uval,dval,usea,dsea,s,sbar,glu,charm,bot;
+  pdfmoments_(hadron,facscale,XN,uval,dval,usea,dsea,s,sbar,glu,charm,bot,xmin);
+
   fx[0+MAXNF] = cx(glu);
   fx[1+MAXNF] = cx(uval) + cx(usea);
   fx[-1+MAXNF] = cx(usea);
@@ -505,6 +510,64 @@ void pdfevol::calculate(int i)
   storemoments(i, fx);
 }
 
+
+void pdfevol::calculate()
+{
+  clock_t begin_time, end_time;
+
+  //double facscale = fabs(bscale);
+  //double facscale = fabs(bstarscale);
+  //double facscale = fabs(opts.muf);
+  double facscale = fabs(pdfevol::bstartilde); //bstartilde = qbstar * resint::mures / sqrt(pow(qbstar,2) + resint::mures2);
+
+  //cout << facscale << endl;
+  
+  complex <double> fx[11];
+  
+  mellinpdf::allocate();
+  begin_time = clock();  
+  mellinpdf::evalpdfs(facscale);
+  if (opts.mellininv == 1 || opts.phi > 0.5)
+    mellinpdf::laguerre_ipol();
+  else
+    mellinpdf::gauss_quad();
+  end_time = clock();  
+  //cout << "facscale is " << facscale << " x to N done in "  << float(end_time - begin_time)/CLOCKS_PER_SEC*1000. << "ms" << endl;
+
+  for (int k = 0; k < mellinint::mdim; k++)
+    {
+      fx[g]  = mellinpdf::GL[k];
+      fx[u]  = mellinpdf::UV[k]+mellinpdf::US[k];
+      fx[ub] = mellinpdf::US[k];
+      fx[d]  = mellinpdf::DV[k]+mellinpdf::DS[k];
+      fx[db] = mellinpdf::DS[k];
+      fx[s]  = mellinpdf::SP[k];
+      fx[sb] = mellinpdf::SM[k];
+      if (resconst::NF >= 4)
+	{
+	  fx[c]  = mellinpdf::CH[k];
+	  fx[cb] = mellinpdf::CH[k];
+	}
+      else
+	{
+	  fx[c]  = 0.;
+	  fx[cb] = 0.;
+	}
+      if (resconst::NF >= 5)
+	{
+	  fx[b]  = mellinpdf::BO[k];
+	  fx[bb] = mellinpdf::BO[k];
+	}
+      else
+	{
+	  fx[b]  = 0.;
+	  fx[bb] = 0.;
+	}
+      //cout << k << "  " << fx[g] << endl;
+      storemoments(k, fx);
+    }
+  mellinpdf::free();
+}
 
 void pdfevol::storemoments(int i, complex <double> fx[11])
 {
@@ -644,8 +707,8 @@ void pdfevol::retrieve(int i1, int i2, int sign)
 
 void pdfevol::retrieve1d(int i, int sign)
 {
-  //  cout << i1 << endl;
-  //  cout << creno_.cfx1_[i1][5].real << "  " << creno_.cfx1_[i1][5].imag << endl;
+  //cout << i << endl;
+  //cout << creno_.cfx1_[i][5].real << "  " << creno_.cfx1_[i][5].imag << endl;
   if (sign == mesq::positive)
     {
       fn1[-5+MAXNF] = cx(creno_.cfx1_[i][-5+MAXNF]);
@@ -717,6 +780,9 @@ void pdfevol::retrieve1d(int i, int sign)
   //  fn2[-1+MAXNF] = 0; fn1[-1+MAXNF] = 0;
   //  fn2[1+MAXNF]  = 0; fn1[1+MAXNF]  = 0;
   //  fn2[2+MAXNF]  = 0; fn1[2+MAXNF]  = 0;
+
+  //set gluon to 0
+  //  fn2[0+MAXNF] = 0;  fn1[0+MAXNF] = 0;
 }
 
 //Retrieve PDFs at the starting scale (muf)

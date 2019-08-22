@@ -64,6 +64,7 @@ namespace pdfevol
   extern void evolution(int i);
   //calculate Mellin moments of PDFs at all scales by direct Mellin transform
   extern void calculate(int i);
+  extern void calculate();
   //store the moments in the Fortran common block
   extern void storemoments(int i, complex <double> fx[11]);
   //retrieve moments corresponding to i1, i2, and sign from the Fortran common block and store them in fn1 and fn2
