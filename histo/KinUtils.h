@@ -28,12 +28,14 @@ namespace Kinematics {
         }
 
         inline double rap( double e, double z){
-            return 0.5 *log((e+z) / (e-z));
+	  return 0.5 *log((e+z) / (e-z));
+	  //return atanh(z/e);
         }
 
         inline double eta( double x,  double y,  double z){
-            double p = mom(x,y,z);
-            return rap(p,z);
+	  double p = mom(x,y,z);
+	  return rap(p,z);
+	  
         }
 
         inline double mass2( double x,  double y,  double z, double e){
