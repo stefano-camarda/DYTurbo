@@ -10,6 +10,7 @@
 #include "itilde.h"
 
 #include "HistoHandler.h"
+#include "Kinematics.h"
 #include "dyres_interface.h"
 #include "mcfm_interface.h"
 #include "gaussrules.h"
@@ -39,6 +40,7 @@ void DYTurbo::Init( int argc, char * argv[]){
     PrintTable::Init();
     init_params();
     HistoHandler::Init();
+    Kinematics::init();
     /***********************************/
     //print out EW and QCD parameters and other settings
     if (opts.verbose) opts.dumpAll();
