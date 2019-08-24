@@ -27,6 +27,13 @@
  */
 namespace Kinematics {
 
+  extern double exp2lepycut;
+  extern double leppt2cut;
+  extern double mt2cut;
+  extern double et2misscut;
+  
+  void init();
+  
     /** 
      * @brief Call this to set new kinematic values.
      *
@@ -102,10 +109,11 @@ namespace Kinematics {
                 if(isIntegratorMode) return IsIntegrableObservable() ? middlePoint() : 666.;
                 /// If not calculated yet it runs \ref calc.
                 //if (!isCalculated || (opts.cubacores > 0 && opts.pcubature)){ //--> ugly patch: openmp parallelisation does not work with flags
-		if ((opts.cubacores > 0 && opts.pcubature) || !isCalculated){ //--> ugly patch: openmp parallelisation does not work with flags
+
+		//		if ((opts.cubacores > 0 && opts.pcubature) || !isCalculated){ //--> ugly patch: openmp parallelisation does not work with flags
                     value=calc();
-                    isCalculated=true;
-		}
+		    //                    isCalculated=true;
+		    //		}
                 return value;
             }
 
