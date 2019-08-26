@@ -259,6 +259,7 @@ void vjloint::calc(const double x[5], double f[2])
 	{
 	  double xphi = phic+phim*gr::xxx[phirule-1][iphi];
 	  phasespace::set_philep(xphi);
+	  phasespace::calcphilep();
 
 	  double phi, cphi, c2phi;
 	  //double sphi, s2phi;
