@@ -10,6 +10,10 @@ double phasespace::xax[3];
 double phasespace::yax[3];
 double phasespace::zax[3];
 
+//cached phi_lep rotation
+double phasespace::rot1[3];
+double phasespace::r2ax[3];
+
 phasespace::restframeid CurrentRF;
 #pragma omp threadprivate(CurrentRF)
 
@@ -39,6 +43,64 @@ void phasespace::genV4p()
   boostv_(m,pV,gam,beta);
 }
 
+//double p3cm[4];
+//double rot1[3];
+//double rot2[3];
+//double c,s;
+//#pragma omp threadprivate(p3cm,rot1,rot2,c,s)
+
+//perform the phi_lep rotation
+void phasespace::genl4p_phirot()
+{
+
+  //Start from the x axis, and rotate by angle phi_lep with respect to z axis
+  double c, s;
+  c = phasespace::cosphi_lep;
+  s = phasespace::sinphi_lep;
+  phasespace::rotate(xax, c, s, zax, rot1);
+
+  //define the axis r2ax = rot1 x zax for the second rotation
+  r2ax[0] = rot1[1]*zax[2] - rot1[2]*zax[1];
+  r2ax[1] = rot1[2]*zax[0] - rot1[0]*zax[2];
+  r2ax[2] = rot1[0]*zax[1] - rot1[1]*zax[0];
+}
+
+//Version in which the phi_lep rotation is cached
+void phasespace::genl4p_phifix()
+{
+  //Generate the 4-momentum of the first lepton in the boson rest frame, using costh and phi_lep
+  double p3cm[4];
+  
+  //if (qt == 0. || CurrentRF == naive)
+  if (opts.fixedorder || CurrentRF == naive) //can use opts.fixedorder instead of qt == 0.?
+    genp_(costh, phi_lep, m, p3cm);
+  else
+    {
+      //rotate by angle theta with respect to r2ax axis
+      double rot2[3];
+      double c, s;
+      s = phasespace::costh;
+      c = sqrt(max(0.,1.-pow(s,2)));
+      phasespace::rotate(rot1, c, s, r2ax, rot2);
+
+      p3cm[3]=phasespace::m/2.; //E
+      p3cm[0]=p3cm[3]*rot2[0];  //px
+      p3cm[1]=p3cm[3]*rot2[1];  //py
+      p3cm[2]=p3cm[3]*rot2[2];  //pz
+    }
+  //Boost to go in the lab frame
+  //dyboost_(gam, beta, p3cm, p3);
+  phasespace::boost(gam, beta, p3cm, p3);
+  
+  //momentum of the second lepton
+  p4[0]=pV[0]-p3[0];      //px
+  p4[1]=pV[1]-p3[1];      //py
+  p4[2]=pV[2]-p3[2];      //pz
+  p4[3]=pV[3]-p3[3];      //E
+  //ensure energy is calculated with enough precision
+  //p4[3]=sqrt(p4[0]*p4[0]+p4[1]*p4[1]+p4[2]*p4[2]);
+}
+
 void phasespace::genl4p()
 {
   //simple phase space generation in the naive dilepton rest frame
@@ -47,21 +109,27 @@ void phasespace::genl4p()
 
   //Generate the 4-momentum of the first lepton in the boson rest frame, using costh and phi_lep
   double p3cm[4];
-  if (qt == 0. || CurrentRF == naive)
+  
+  if (qt == 0. || CurrentRF == naive)  //can use if (opts.fixedorder || CurrentRF == naive) ?
     genp_(costh, phi_lep, m, p3cm);
   else
     {
       //Start from the z axis, and rotate by angle theta with respect to y axis
       double rot1[3];
-      double c = phasespace::costh;
-      double s = sqrt(max(0.,1.-pow(c,2)));
+      double c, s;
+      c = phasespace::costh;
+      s = sqrt(max(0.,1.-pow(c,2)));
       phasespace::rotate(zax, c, s, yax, rot1);
+      //rotate_(zax, c, s, yax, rot1);
 
       //rotate by angle phi_lep with respect to z axis
       double rot2[3];
-      c = cos(phasespace::phi_lep-M_PI);      //Use the same M_PI rotation convention as in kinematic
-      s = sqrt(max(0.,1.-pow(c,2)))*((phasespace::phi_lep-M_PI)>0 ? 1 : -1);
+      //c = cos(phasespace::phi_lep-M_PI);      //Use the same M_PI rotation convention as in kinematic
+      //s = sqrt(max(0.,1.-pow(c,2)))*((phasespace::phi_lep-M_PI)>0 ? 1 : -1);
+      c = phasespace::cosphi_lep;
+      s = phasespace::sinphi_lep;
       phasespace::rotate(rot1, c, s, zax, rot2);
+      //rotate_(rot1, c, s, zax, rot2);
 
       p3cm[3]=phasespace::m/2.; //E
       p3cm[0]=p3cm[3]*rot2[0];  //px
@@ -69,15 +137,16 @@ void phasespace::genl4p()
       p3cm[2]=p3cm[3]*rot2[2];  //pz
     }
   //Boost to go in the lab frame
-  dyboost_(gam, beta, p3cm, p3);
+  //dyboost_(gam, beta, p3cm, p3);
+  phasespace::boost(gam, beta, p3cm, p3);
   
   //momentum of the second lepton
   p4[0]=pV[0]-p3[0];      //px
   p4[1]=pV[1]-p3[1];      //py
   p4[2]=pV[2]-p3[2];      //pz
-  //p4[3]=pV[3]-p3[3];      //E
+  p4[3]=pV[3]-p3[3];      //E
   //ensure energy is calculated with enough precision
-  p4[3]=sqrt(p4[0]*p4[0]+p4[1]*p4[1]+p4[2]*p4[2]);
+  //p4[3]=sqrt(p4[0]*p4[0]+p4[1]*p4[1]+p4[2]*p4[2]);
 }
 
 void phasespace::genp12()
