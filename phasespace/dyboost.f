@@ -5,7 +5,6 @@ c     boost 4-momentum pin into 4-momentum pout
       double precision gamma,beta(3),bdotp
       double precision one
       parameter(one=1d0)
-      integer j,k
       bdotp=pin(1)*beta(1)+pin(2)*beta(2)+pin(3)*beta(3);
       pout(4)=gamma*(pin(4)-bdotp)
       pout(1)=pin(1)+gamma*beta(1)*(gamma/(gamma+one)*bdotp-pin(4))
