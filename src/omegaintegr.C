@@ -232,6 +232,7 @@ void omegaintegr::genl4p(double costh, double phi_lep)
   
   phasespace::set_cth(costh);
   phasespace::set_philep(phi_lep);
+  phasespace::calcphilep();
   phasespace::genl4p();
   return;
     
@@ -344,10 +345,25 @@ void omegaintegr::costhbound(double phi_lep, vector<double> &min, vector<double>
       return;
     }
 
-  bool status;
+  //determine costh range
   double c1 = phasespace::getcthmin();
   double c2 = phasespace::getcthmax();
-  genl4p(c1, phi_lep);
+
+  //set intial costh
+  phasespace::set_cth(c1);
+  
+  //set phi_lep once and for all costh iterations
+  phasespace::set_philep(phi_lep);
+  phasespace::calcphilep();
+
+ //perform the phi_lep rotation only once and for all costh iterations
+  phasespace::genl4p_phirot();
+  phasespace::genl4p_phifix();
+
+  //genl4p(c1, phi_lep);
+
+  //determine initial status (Keep or Skip event)
+  bool status;
   if (Kinematics::Cuts::KeepThisEvent(phasespace::p3, phasespace::p4))
     {
       min.push_back(c1);
@@ -368,7 +384,9 @@ void omegaintegr::costhbound(double phi_lep, vector<double> &min, vector<double>
 	      for(int i=0;i<=nc;i++)
 		{
 		  double costh = i*hc+c1;
-		  genl4p(costh, phi_lep);
+		  phasespace::set_cth(costh);
+		  phasespace::genl4p_phifix();
+		  //genl4p(costh, phi_lep);
 		  if (!Kinematics::Cuts::KeepThisEvent(phasespace::p3, phasespace::p4))
 		    {
 		      tempmax = costh; //tempmax = costh_CS;
@@ -401,7 +419,9 @@ void omegaintegr::costhbound(double phi_lep, vector<double> &min, vector<double>
 	      for(int i=0;i<=nc;i++)
 		{
 		  double costh = i*hc+c1;
-		  genl4p(costh, phi_lep);
+		  phasespace::set_cth(costh);
+		  phasespace::genl4p_phifix();
+		  //genl4p(costh, phi_lep);
 		  if (Kinematics::Cuts::KeepThisEvent(phasespace::p3, phasespace::p4))
 		    {
 		      tempmin = costh; //tempmin = costh_CS;
@@ -561,7 +581,7 @@ void omegaintegr::cthmoments(double &cthmom0, double &cthmom1, double &cthmom2)
       vector<double>::iterator itmx;
 
       //for qt == 0 there is no phi dependence and the integration is reduced by one dimension, to only dcosth
-      if (phasespace::qt == 0.)
+      if (phasespace::qt == 0.) //can use if (opts.fixedorder) ?
 	{
 	  costhbound(0., cthmin, cthmax);
 	  itmn = cthmin.begin();
