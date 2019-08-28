@@ -9,6 +9,7 @@
 #include "interface.h"
 #include "anomalous.h"
 #include "parton.h"
+#include "string.h"
 
 #include <complex>
 #include <iostream>
@@ -276,21 +277,60 @@ void mellinint::initgauss()
 
 //input : pdfevol::fn1, pdfevol::fn2, mesq::mesqij_expy
 //output: qqbn, qgn, ggn
+
+//#define fn1(x) pdfevol::fx1[i1*11+x]
+//#define fn2(x) pdfevol::fx2[i2*11+x]
+
 void mellinint::pdf_mesq_expy(int i1, int i2, int sign)
 {
-  QQBN=0;
-  QGN_1=0;
-  QGN_2=0;
-  GGN=0;
-  QQN=0;
-  QQN_1=0;
-  QQN_2=0;
-  QQPN_1=0;
-  QQPN_2=0;
+  //QQBN=0;
+  if (opts.order < 1)
+    {
+      QGN_1=0;
+      QGN_2=0;
+    }
+      
+  if (opts.order < 2)
+    {
+      GGN=0;
+      //QQN=0;
+      QQN_1=0;
+      QQN_2=0;
+      QQPN_1=0;
+      QQPN_2=0;
+    }
 
   complex<double>* fn1 = pdfevol::fn1;
   complex<double>* fn2 = pdfevol::fn2;
 
+  //complex<double> fn1[11];
+  //complex<double> fn2[11];
+  //memcpy(fn1, &(pdfevol::fx1[i1*11]), 11*sizeof(complex<double>));
+  //if (sign == mesq::positive)
+  //memcpy(fn2, &(pdfevol::fx2[i2*11]), 11*sizeof(complex<double>));
+  //else
+  //memcpy(fn2, &(pdfevol::fx2[mellinint::mdim*11+i2*11]), 11*sizeof(complex<double>));
+
+
+  //set b to 0
+  //  fn2[bb] = 0;  fn1[bb] = 0;
+  //  fn2[b ] = 0;  fn1[b ]  = 0;
+  
+  //set s and c to 0
+  //  fn2[cb] = 0;  fn1[cb] = 0;
+  //  fn2[sb] = 0;  fn1[sb] = 0;
+  //  fn2[s ] = 0;  fn1[s ]  = 0;
+  //  fn2[c ] = 0;  fn1[c ]  = 0;
+
+  //set u and d to 0
+  //  fn2[db] = 0; fn1[db] = 0;
+  //  fn2[ub] = 0; fn1[ub] = 0;
+  //  fn2[u ] = 0; fn1[u ]  = 0;
+  //  fn2[d ] = 0; fn1[d ]  = 0;
+
+  //set gluon to 0
+  //  fn2[g] = 0;  fn1[g] = 0;
+  
   //DYRES convention
   // bb cb sb db ub g u d s c b
   // -5 -4 -3 -2 -1 0 1 2 3 4 5
@@ -311,16 +351,16 @@ void mellinint::pdf_mesq_expy(int i1, int i2, int sign)
       
       //      cout << "pdf_mesq_expy " << i1 << "  " << i2 << "  " << mesq_uub << "  " << fn1[u] << "  " << fn2[ub]  << endl;
       //LL part
-      QQBN = fn1[u]*fn2[ub]*mesq_uub
-	+fn1[c]*fn2[cb]*mesq_ccb
-	+fn1[d]*fn2[db]*mesq_ddb
-	+fn1[s]*fn2[sb]*mesq_ssb
-	+fn1[b]*fn2[bb]*mesq_bbr
-	+fn1[ub]*fn2[u]*mesq_ubu
-	+fn1[cb]*fn2[c]*mesq_cbc
-	+fn1[db]*fn2[d]*mesq_dbd
-	+fn1[sb]*fn2[s]*mesq_sbs
-	+fn1[bb]*fn2[b]*mesq_brb;
+      QQBN = fn1[u ]*fn2[ub]*mesq_uub
+	    +fn1[c ]*fn2[cb]*mesq_ccb
+	    +fn1[d ]*fn2[db]*mesq_ddb
+	    +fn1[s ]*fn2[sb]*mesq_ssb
+	    +fn1[b ]*fn2[bb]*mesq_bbr
+	    +fn1[ub]*fn2[u ]*mesq_ubu
+	    +fn1[cb]*fn2[c ]*mesq_cbc
+	    +fn1[db]*fn2[d ]*mesq_dbd
+	    +fn1[sb]*fn2[s ]*mesq_sbs
+	    +fn1[bb]*fn2[b ]*mesq_brb;
 
       //NLL part
       if(opts.order >= 1)
@@ -577,18 +617,18 @@ void mellinint::pdf_mesq_expy(int i1, int i2, int sign)
       complex <double> mesq_bbc = mesq::mesqij_expy[mesq::index(11,i1,i2,sign)];
 
       //LL part
-      QQBN = fn1[u]*fn2[db]*mesq_udb
-	+ fn1[u]*fn2[sb]*mesq_usb
-	+ fn1[u]*fn2[bb]*mesq_ubb
-	+ fn1[c]*fn2[db]*mesq_cdb
-	+ fn1[c]*fn2[sb]*mesq_csb
-	+ fn1[c]*fn2[bb]*mesq_cbb
-	+ fn1[db]*fn2[u]*mesq_dbu
-	+ fn1[db]*fn2[c]*mesq_dbc
-	+ fn1[sb]*fn2[u]*mesq_sbu
-	+ fn1[sb]*fn2[c]*mesq_sbc
-	+ fn1[bb]*fn2[u]*mesq_bbu
-	+ fn1[bb]*fn2[c]*mesq_bbc;
+      QQBN = fn1[u ]*fn2[db]*mesq_udb
+	   + fn1[u ]*fn2[sb]*mesq_usb
+	   + fn1[u ]*fn2[bb]*mesq_ubb
+	   + fn1[c ]*fn2[db]*mesq_cdb
+	   + fn1[c ]*fn2[sb]*mesq_csb
+	   + fn1[c ]*fn2[bb]*mesq_cbb
+	   + fn1[db]*fn2[u ]*mesq_dbu
+	   + fn1[db]*fn2[c ]*mesq_dbc
+	   + fn1[sb]*fn2[u ]*mesq_sbu
+	   + fn1[sb]*fn2[c ]*mesq_sbc
+	   + fn1[bb]*fn2[u ]*mesq_bbu
+	   + fn1[bb]*fn2[c ]*mesq_bbc;
 
       // NLL part
       if(opts.order >= 1)
@@ -1022,48 +1062,48 @@ void mellinint::pdf_mesq_expy(int i1, int i2, int sign)
     }
 }
 
-complex <double> mellinint::integrand2d(int i1, int i2, int sign)
+double mellinint::integrand2d(int i1, int i2, int sign)
 {
   //cout << "C++ " << i1 << "  " << i2 << "  " << QQBN << endl;
   if (opts.order == 0)
-    return QQBN;
+    return real(QQBN);
 
   int i = hcoefficients::index(i1,i2,sign);
   //cout << "C++ " << i1 << "  " << i2 << "  " << GGN << "  " << hcoefficients::Hgg[i] << endl;
-
+  
   return
     //contribution starting at LL
-    QQBN*hcoefficients::Hqqb[i]
+    real(QQBN*hcoefficients::Hqqb[i])
 
     //contribution starting at NLL
-    + QGN_1*hcoefficients::Hqg_1[i] + QGN_2*hcoefficients::Hqg_2[i]
+    + real(QGN_1*hcoefficients::Hqg_1[i]) + real(QGN_2*hcoefficients::Hqg_2[i])
     
     //contributions starting at NNLL
-    + GGN*hcoefficients::Hgg[i]
+    + real(GGN*hcoefficients::Hgg[i])
     //+ QQN*hcoefficients::Hqq[i]
-    + QQN_1*hcoefficients::Hqq_1[i] + QQN_2*hcoefficients::Hqq_2[i] //Bug fix in DYRES (I believe this is more correct, since it accounts for which leg undergoes the q -> qb or qb -> q transformation)
-    + QQPN_1*hcoefficients::Hqqp_1[i] + QQPN_2*hcoefficients::Hqqp_2[i];
+    + real(QQN_1*hcoefficients::Hqq_1[i]) + real(QQN_2*hcoefficients::Hqq_2[i]) //Bug fix in DYRES (I believe this is more correct, since it accounts for which leg undergoes the q -> qb or qb -> q transformation)
+    + real(QQPN_1*hcoefficients::Hqqp_1[i]) + real(QQPN_2*hcoefficients::Hqqp_2[i]);
   
 }
 
-complex <double> mellinint::integrand1d(int i)
+double mellinint::integrand1d(int i)
 {
   //  cout << i << "  " << QQBN << endl;
   if (opts.order == 0)
-    return QQBN;
+    return real(QQBN);
 
   return
     //contribution starting at LL
-    QQBN*hcoeff::Hqqb[i]
+    real(QQBN*hcoeff::Hqqb[i])
 
     //contribution starting at NLL
-    + (QGN_1+QGN_2)*hcoeff::Hqg[i]
+    + real((QGN_1+QGN_2)*hcoeff::Hqg[i])
     
     //contributions starting at NNLL
-    + GGN*hcoeff::Hgg[i]
+    + real(GGN*hcoeff::Hgg[i])
     //+ QQN*hcoeff::Hqq[i]
-    + (QQN_1+QQN_2)*hcoeff::Hqq[i] //Bug fix in DYRES (I believe this is more correct, since it accounts for which leg undergoes the q -> qb or qb -> q transformation)
-    + (QQPN_1+QQPN_2)*hcoeff::Hqqp[i];
+    + real((QQN_1+QQN_2)*hcoeff::Hqq[i]) //Bug fix in DYRES (I believe this is more correct, since it accounts for which leg undergoes the q -> qb or qb -> q transformation)
+    + real((QQPN_1+QQPN_2)*hcoeff::Hqqp[i]);
 }
 
 //Failed attempt to perform N to z Mellin inversion before PDF convolution
