@@ -541,6 +541,8 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
       hcoefficients::allocate();
       hcoefficients::calc(aass,logmuf2q2,logq2muf2,logq2mur2,loga);
     }
+
+  pdfevol::allocate_fx();
   //*****************************************
 
   double res;
@@ -667,6 +669,7 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
   if (opts.fmufac > 0)
     pdfevol::free();
   
+  pdfevol::free_fx();
   //res *= jac;//jacobian for the change of variable qt=qtp/sqrt(1-qtp^2/m^2)
   
   return res;
