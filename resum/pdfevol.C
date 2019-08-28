@@ -9,6 +9,7 @@
 #include "mellinpdf.h"
 #include "scales.h"
 #include "parton.h"
+#include "string.h"
 #include "clock_real.h"
 
 #include <LHAPDF/LHAPDF.h>
@@ -25,6 +26,9 @@ complex <double> *pdfevol::SSP;
 complex <double> *pdfevol::GLP;
 complex <double> *pdfevol::CHP;
 complex <double> *pdfevol::BOP;
+
+complex <double> *pdfevol::fx1;
+complex <double> *pdfevol::fx2;
 
 complex <double> pdfevol::fn1[2*MAXNF+1];
 complex <double> pdfevol::fn2[2*MAXNF+1];
@@ -50,6 +54,7 @@ void pdfevol_(int& i1, int& i2, int& sign)
   pdfevol::retrieve(i1-1, i2-1, sign-1);
 };
 
+//moments at the starting scale
 void pdfevol::allocate()
 {
   UVP = new complex <double>[mellinint::mdim];
@@ -72,6 +77,18 @@ void pdfevol::free()
   delete[] GLP;
   delete[] CHP;
   delete[] BOP;
+}
+
+//evolved moments
+void pdfevol::allocate_fx()
+{
+  fx1 = new complex <double>[mellinint::mdim*(2*MAXNF+1)*2];
+  fx2 = new complex <double>[mellinint::mdim*(2*MAXNF+1)*2];
+}
+void pdfevol::free_fx()
+{
+  delete[] fx1;
+  delete[] fx2;
 }
 
 void pdfevol::init()
@@ -571,8 +588,106 @@ void pdfevol::calculate()
 
 void pdfevol::storemoments(int i, complex <double> fx[11])
 {
-  //Save the evolved PDFs into the fortran common block (can actually use a C++ data format since it is only accessed in C++)
+  //Save the evolved PDFs into the fx1 and fx2 arrays
+  int negidx = mellinint::mdim*11;
+  int nf = 2*MAXNF+1;
 
+  //beam 1 positive
+  fx1[i*nf+bb] = fx[bb];
+  fx1[i*nf+cb] = fx[cb];
+  fx1[i*nf+sb] = fx[sb];
+  fx1[i*nf+g ] = fx[g ];
+  fx1[i*nf+s ] = fx[s ];
+  fx1[i*nf+c ] = fx[c ];
+  fx1[i*nf+b ] = fx[b ];
+  if (opts.ih1 == 1)
+    {
+      fx1[i*nf+db] = fx[db];
+      fx1[i*nf+ub] = fx[ub];
+      fx1[i*nf+u ] = fx[u ];
+      fx1[i*nf+d ] = fx[d ];
+    }
+  else if (opts.ih1 == -1)
+    {
+      fx1[i*nf+db] = fx[d ];
+      fx1[i*nf+ub] = fx[u ];
+      fx1[i*nf+u ] = fx[ub];
+      fx1[i*nf+d ] = fx[db];
+    }
+
+  //beam 1 negative (never used)
+  fx1[negidx+i*nf+bb] = conj(fx[bb]);
+  fx1[negidx+i*nf+cb] = conj(fx[cb]);
+  fx1[negidx+i*nf+sb] = conj(fx[sb]);
+  fx1[negidx+i*nf+g ] = conj(fx[g ]);
+  fx1[negidx+i*nf+s ] = conj(fx[s ]);
+  fx1[negidx+i*nf+c ] = conj(fx[c ]);
+  fx1[negidx+i*nf+b ] = conj(fx[b ]);
+  if (opts.ih1 == 1)
+    {
+      fx1[negidx+i*nf+db] = conj(fx[db]);
+      fx1[negidx+i*nf+ub] = conj(fx[ub]);
+      fx1[negidx+i*nf+u ] = conj(fx[u ]);
+      fx1[negidx+i*nf+d ] = conj(fx[d ]);
+    }
+  else if (opts.ih1 == -1)
+    {
+      fx1[negidx+i*nf+db] = conj(fx[d ]);
+      fx1[negidx+i*nf+ub] = conj(fx[u ]);
+      fx1[negidx+i*nf+u ] = conj(fx[ub]);
+      fx1[negidx+i*nf+d ] = conj(fx[db]);
+    }
+
+  //beam 2 positive
+  fx2[i*nf+bb] = fx[bb];
+  fx2[i*nf+cb] = fx[cb];
+  fx2[i*nf+sb] = fx[sb];
+  fx2[i*nf+g ] = fx[g ];
+  fx2[i*nf+s ] = fx[s ];
+  fx2[i*nf+c ] = fx[c ];
+  fx2[i*nf+b ] = fx[b ];
+  if (opts.ih2 == 1)
+    {
+      fx2[i*nf+db] = fx[db];
+      fx2[i*nf+ub] = fx[ub];
+      fx2[i*nf+u ] = fx[u ];
+      fx2[i*nf+d ] = fx[d ];
+    }
+  else if (opts.ih2 == -1)
+    {
+      fx2[i*nf+db] = fx[d ];
+      fx2[i*nf+ub] = fx[u ];
+      fx2[i*nf+u ] = fx[ub];
+      fx2[i*nf+d ] = fx[db];
+    }
+
+  //beam 2 negative
+  fx2[negidx+i*nf+bb] = conj(fx[bb]);
+  fx2[negidx+i*nf+cb] = conj(fx[cb]);
+  fx2[negidx+i*nf+sb] = conj(fx[sb]);
+  fx2[negidx+i*nf+g ] = conj(fx[g ]);
+  fx2[negidx+i*nf+s ] = conj(fx[s ]);
+  fx2[negidx+i*nf+c ] = conj(fx[c ]);
+  fx2[negidx+i*nf+b ] = conj(fx[b ]);
+  if (opts.ih2 == 1)
+    {
+      fx2[negidx+i*nf+db] = conj(fx[db]);
+      fx2[negidx+i*nf+ub] = conj(fx[ub]);
+      fx2[negidx+i*nf+u ] = conj(fx[u ]);
+      fx2[negidx+i*nf+d ] = conj(fx[d ]);
+    }
+  else if (opts.ih2 == -1)
+    {
+      fx2[negidx+i*nf+db] = conj(fx[d ]);
+      fx2[negidx+i*nf+ub] = conj(fx[u ]);
+      fx2[negidx+i*nf+u ] = conj(fx[ub]);
+      fx2[negidx+i*nf+d ] = conj(fx[db]);
+    }
+}  
+
+void pdfevol::storemoments_fortran(int i, complex <double> fx[11])
+{
+  //Save the evolved PDFs into the fortran common block
   //beam 1
   creno_.cfx1_[i][-5+MAXNF] = fcx(fx[-5+MAXNF]);
   creno_.cfx1_[i][-4+MAXNF] = fcx(fx[-4+MAXNF]);
@@ -645,6 +760,52 @@ void pdfevol::storemoments(int i, complex <double> fx[11])
 
 void pdfevol::retrieve(int i1, int i2, int sign)
 {
+  int nf = 2*MAXNF+1;
+  int negidx = mellinint::mdim*nf;
+
+  fn1[bb] = fx1[i1*nf+bb];
+  fn1[cb] = fx1[i1*nf+cb];
+  fn1[sb] = fx1[i1*nf+sb];
+  fn1[db] = fx1[i1*nf+db];
+  fn1[ub] = fx1[i1*nf+ub];
+  fn1[g ] = fx1[i1*nf+g ];
+  fn1[u ] = fx1[i1*nf+u ];
+  fn1[d ] = fx1[i1*nf+d ];
+  fn1[s ] = fx1[i1*nf+s ];
+  fn1[c ] = fx1[i1*nf+c ];
+  fn1[b ] = fx1[i1*nf+b ];
+  if (sign == mesq::positive)
+    {
+      fn2[bb] = fx2[i2*nf+bb];
+      fn2[cb] = fx2[i2*nf+cb];
+      fn2[sb] = fx2[i2*nf+sb];
+      fn2[db] = fx2[i2*nf+db];
+      fn2[ub] = fx2[i2*nf+ub];
+      fn2[g ] = fx2[i2*nf+g ];
+      fn2[u ] = fx2[i2*nf+u ];
+      fn2[d ] = fx2[i2*nf+d ];
+      fn2[s ] = fx2[i2*nf+s ];
+      fn2[c ] = fx2[i2*nf+c ];
+      fn2[b ] = fx2[i2*nf+b ];
+    }
+  else if (sign == mesq::negative)
+    {
+      fn2[bb] = fx2[negidx+i2*nf+bb];
+      fn2[cb] = fx2[negidx+i2*nf+cb];
+      fn2[sb] = fx2[negidx+i2*nf+sb];
+      fn2[db] = fx2[negidx+i2*nf+db];
+      fn2[ub] = fx2[negidx+i2*nf+ub];
+      fn2[g ] = fx2[negidx+i2*nf+g ];
+      fn2[u ] = fx2[negidx+i2*nf+u ];
+      fn2[d ] = fx2[negidx+i2*nf+d ];
+      fn2[s ] = fx2[negidx+i2*nf+s ];
+      fn2[c ] = fx2[negidx+i2*nf+c ];
+      fn2[b ] = fx2[negidx+i2*nf+b ];
+    }
+}  
+
+void pdfevol::retrieve_fortran(int i1, int i2, int sign)
+{
   //  cout << i1 << endl;
   //  cout << creno_.cfx1_[i1][5].real << "  " << creno_.cfx1_[i1][5].imag << endl;
   fn1[-5+MAXNF] = cx(creno_.cfx1_[i1][-5+MAXNF]);
@@ -686,26 +847,101 @@ void pdfevol::retrieve(int i1, int i2, int sign)
       fn2[ 4+MAXNF] = cx(creno_.cfx2m_[i2][ 4+MAXNF]);
       fn2[ 5+MAXNF] = cx(creno_.cfx2m_[i2][ 5+MAXNF]);
     }
+}
 
-  //set b to 0
-  //  fn2[-5+MAXNF] = 0;  fn1[-5+MAXNF] = 0;
-  //  fn2[5+MAXNF]  = 0;  fn1[5+MAXNF]  = 0;
-  
-  //set s and c to 0
-  //  fn2[-4+MAXNF] = 0;  fn1[-4+MAXNF] = 0;
-  //  fn2[-3+MAXNF] = 0;  fn1[-3+MAXNF] = 0;
-  //  fn2[3+MAXNF]  = 0;  fn1[3+MAXNF]  = 0;
-  //  fn2[4+MAXNF]  = 0;  fn1[4+MAXNF]  = 0;
+void pdfevol::retrieve_beam1(int i1)
+{
+  int nf = 2*MAXNF+1;
+  memcpy(fn1, &(fx1[i1*nf]), nf*sizeof(complex<double>));
+}
 
-  //set u and d to 0
-  //  fn2[-2+MAXNF] = 0; fn1[-2+MAXNF] = 0;
-  //  fn2[-1+MAXNF] = 0; fn1[-1+MAXNF] = 0;
-  //  fn2[1+MAXNF]  = 0; fn1[1+MAXNF]  = 0;
-  //  fn2[2+MAXNF]  = 0; fn1[2+MAXNF]  = 0;
+void pdfevol::retrieve_beam2_pos(int i2)
+{
+  int nf = 2*MAXNF+1;
+  memcpy(fn2, &(fx2[i2*nf]), nf*sizeof(complex<double>));
+}
+
+void pdfevol::retrieve_beam2_neg()
+{
+
+  fn2[bb] = conj(fn2[bb]);
+  fn2[cb] = conj(fn2[cb]);
+  fn2[sb] = conj(fn2[sb]);
+  fn2[db] = conj(fn2[db]);
+  fn2[ub] = conj(fn2[ub]);
+  fn2[g ] = conj(fn2[g ]);
+  fn2[u ] = conj(fn2[u ]);
+  fn2[d ] = conj(fn2[d ]);
+  fn2[s ] = conj(fn2[s ]);
+  fn2[c ] = conj(fn2[c ]);
+  fn2[b ] = conj(fn2[b ]);
 }
 
 
 void pdfevol::retrieve1d(int i, int sign)
+{
+  int nf = 2*MAXNF+1;
+  int negidx = mellinint::mdim*nf;
+
+  if (sign == mesq::positive)
+    {
+      fn1[bb] = fx1[i*nf+bb];
+      fn1[cb] = fx1[i*nf+cb];
+      fn1[sb] = fx1[i*nf+sb];
+      fn1[db] = fx1[i*nf+db];
+      fn1[ub] = fx1[i*nf+ub];
+      fn1[g ] = fx1[i*nf+g ];
+      fn1[u ] = fx1[i*nf+u ];
+      fn1[d ] = fx1[i*nf+d ];
+      fn1[s ] = fx1[i*nf+s ];
+      fn1[c ] = fx1[i*nf+c ];
+      fn1[b ] = fx1[i*nf+b ];
+    }
+  else if (sign == mesq::negative)
+    {
+      fn1[bb] = fx1[negidx+i*nf+bb];
+      fn1[cb] = fx1[negidx+i*nf+cb];
+      fn1[sb] = fx1[negidx+i*nf+sb];
+      fn1[db] = fx1[negidx+i*nf+db];
+      fn1[ub] = fx1[negidx+i*nf+ub];
+      fn1[g ] = fx1[negidx+i*nf+g ];
+      fn1[u ] = fx1[negidx+i*nf+u ];
+      fn1[d ] = fx1[negidx+i*nf+d ];
+      fn1[s ] = fx1[negidx+i*nf+s ];
+      fn1[c ] = fx1[negidx+i*nf+c ];
+      fn1[b ] = fx1[negidx+i*nf+b ];
+    }
+  if (sign == mesq::positive)
+    {
+      fn2[bb] = fx2[i*nf+bb];
+      fn2[cb] = fx2[i*nf+cb];
+      fn2[sb] = fx2[i*nf+sb];
+      fn2[db] = fx2[i*nf+db];
+      fn2[ub] = fx2[i*nf+ub];
+      fn2[g ] = fx2[i*nf+g ];
+      fn2[u ] = fx2[i*nf+u ];
+      fn2[d ] = fx2[i*nf+d ];
+      fn2[s ] = fx2[i*nf+s ];
+      fn2[c ] = fx2[i*nf+c ];
+      fn2[b ] = fx2[i*nf+b ];
+    }
+  else if (sign == mesq::negative)
+    {
+      fn2[bb] = fx2[negidx+i*nf+bb];
+      fn2[cb] = fx2[negidx+i*nf+cb];
+      fn2[sb] = fx2[negidx+i*nf+sb];
+      fn2[db] = fx2[negidx+i*nf+db];
+      fn2[ub] = fx2[negidx+i*nf+ub];
+      fn2[g ] = fx2[negidx+i*nf+g ];
+      fn2[u ] = fx2[negidx+i*nf+u ];
+      fn2[d ] = fx2[negidx+i*nf+d ];
+      fn2[s ] = fx2[negidx+i*nf+s ];
+      fn2[c ] = fx2[negidx+i*nf+c ];
+      fn2[b ] = fx2[negidx+i*nf+b ];
+    }
+}
+  
+void pdfevol::retrieve1d_fortran(int i, int sign)
 {
   //cout << i << endl;
   //cout << creno_.cfx1_[i][5].real << "  " << creno_.cfx1_[i][5].imag << endl;
@@ -765,24 +1001,6 @@ void pdfevol::retrieve1d(int i, int sign)
       fn2[ 4+MAXNF] = cx(creno_.cfx2m_[i][ 4+MAXNF]);
       fn2[ 5+MAXNF] = cx(creno_.cfx2m_[i][ 5+MAXNF]);
     }
-  //set b to 0
-  //  fn2[-5+MAXNF] = 0;  fn1[-5+MAXNF] = 0;
-  //  fn2[5+MAXNF]  = 0;  fn1[5+MAXNF]  = 0;
-  
-  //set s and c to 0
-  //  fn2[-4+MAXNF] = 0;  fn1[-4+MAXNF] = 0;
-  //  fn2[-3+MAXNF] = 0;  fn1[-3+MAXNF] = 0;
-  //  fn2[3+MAXNF]  = 0;  fn1[3+MAXNF]  = 0;
-  //  fn2[4+MAXNF]  = 0;  fn1[4+MAXNF]  = 0;
-
-  //set u and d to 0
-  //  fn2[-2+MAXNF] = 0; fn1[-2+MAXNF] = 0;
-  //  fn2[-1+MAXNF] = 0; fn1[-1+MAXNF] = 0;
-  //  fn2[1+MAXNF]  = 0; fn1[1+MAXNF]  = 0;
-  //  fn2[2+MAXNF]  = 0; fn1[2+MAXNF]  = 0;
-
-  //set gluon to 0
-  //  fn2[0+MAXNF] = 0;  fn1[0+MAXNF] = 0;
 }
 
 //Retrieve PDFs at the starting scale (muf)
