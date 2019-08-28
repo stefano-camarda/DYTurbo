@@ -50,7 +50,7 @@ namespace hcoefficients
   {return i + mellinint::mdim*sign;}
 
   inline int index(int i1, int i2, int sign)
-  {return i1 + mellinint::mdim*(i2 + mellinint::mdim*sign);}
+  {return i2 + mellinint::mdim*(i1 + mellinint::mdim*sign);}
 
 }
 
