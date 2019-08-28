@@ -108,9 +108,9 @@ int main( int argc , char * argv[])
   //ptline();
   //ptomline();
   //yline();
-  mline();
+  //mline();
   //mlinebw();
-  //xline();
+  xline();
   //ptavar();
   //ptgvar();
 

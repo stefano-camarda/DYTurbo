@@ -9,8 +9,8 @@
 void yline()
 {
   double costh = 0.;
-  double m = 91.1958;//opts.rmass;
-  double qt = 0.01;//0.850673; //0.01;
+  double m = opts.rmass;
+  double qt = (phasespace::qtmin + phasespace::qtmax)/2.; //0.01;//0.850673; //0.01;
   double y = 0.;
   int mode = 1;
   double f[opts.totpdf];
@@ -46,22 +46,24 @@ void yline()
       // yf << "gy1->SetPoint(gy1->GetN(), " << i*hy+y1 << ", " << -ctint_(costh,m,qt,y,mode,f)*2*qt+ctint_(costh,m,qt,ym,mode,f)*2*qt << ");" << endl;
       // yf << "gy2->SetPoint(gy2->GetN(), " << i*hy+y1 << ", " << vjfo_(m,qt,y)-vjfo_(m,qt,ym) << ");" << endl;
 
-      double vj = vjint::vint(m,qt,y);
+      //      double vj = vjint::vint(m,qt,y);
       
       dofill_.doFill_ = 1;
-      qtint::calc(m,qt,0,1);
-      omegaintegr::genV4p();//generate boson 4-momentum, with m, qt, y and phi=0
+      //qtint::calc(m,qt,0,1);
+      //omegaintegr::genV4p();//generate boson 4-momentum, with m, qt, y and phi=0
+      mode = 2;
+      qtint::calc(m,max(opts.qtcut,opts.xqtcut*phasespace::m),1e10,mode);
       ctint::calc(costh,m,qt,y,mode,f);
 
-      cout << vj << "  " << f[0] << endl;
+      //      cout << vj << "  " << f[0] << endl;
 
-      yf << "gy->SetPoint(gy->GetN(), " << i*hy+y1 << ", " << (-f[0]*2*qt)/vj << ");" << endl;
-      //yf << "gy1->SetPoint(gy1->GetN(), " << i*hy+y1 << ", " << -ff[0]*2*qt << ");" << endl;
+      //yf << "gy->SetPoint(gy->GetN(), " << i*hy+y1 << ", " << (-f[0]*2*qt)/vj << ");" << endl;
+      yf << "gy1->SetPoint(gy1->GetN(), " << i*hy+y1 << ", " << f[0]*2*qt << ");" << endl;
       //yf << "gy->SetPoint(gy->GetN(), " << i*hy+y1 << ", " << vjint::vint(m,qt,y) << ");" << endl;
       
     }
-  yf << "gy->Draw();" << endl;
-  yf << "//gy1->Draw();" << endl;
+  yf << "//gy->Draw();" << endl;
+  yf << "gy1->Draw();" << endl;
   yf << "//gy2->Draw(\"same\");" << endl;
   yf << "}" << endl;
 }
@@ -78,7 +80,7 @@ void mline()
 
   double m1 = phasespace::mmin;
   double m2 =  phasespace::mmax;
-  int nm = 500;
+  int nm = 150;
 
   ofstream mf("mline.C");
   mf << std::setprecision(15);
@@ -168,7 +170,7 @@ void xline()
   int nocuts = (int)true;
   double x1 = 0.;
   double x2 = 1.;
-  int nx = 1000;
+  int nx = 100;
   phasespace::setbounds(phasespace::mmin, phasespace::mmax, phasespace::qtmin, phasespace::qtmax, phasespace::ymin, phasespace::ymax);
 
   ofstream xf("xline.C");
@@ -182,36 +184,35 @@ void xline()
       double ymax = 1.;
       //    rapintegrals_(ymin,ymax,m,nocuts);
       const int ncomp = 1;
-      //const int ndim = 4; //3; //2;
-      const int ndim = 10;
+      const int ndim = 2; //4; //3; //10;
       double x[ndim];
       double f[ncomp],g[ncomp];
-      x[0] = xx;
-      x[1] = 0.5;
-      x[2] = 0.5;
-      x[3] = 0.5;
-      x[4] = 0.5;
-      x[5] = 0.5;
-      x[6] = 0.5;
-      x[7] = 0.5;
-      x[8] = 0.5;
-      x[9] = 0.5;
+      x[0] = 0.5;
+      x[1] = xx;
+      //x[2] = 0.5;
+      //x[3] = 0.5;
+      //x[4] = 0.5;
+      //x[5] = 0.5;
+      //x[6] = 0.5;
+      //x[7] = 0.5;
+      //x[8] = 0.5;
+      //x[9] = 0.5;
       void* userdata = 0;
       const int nvec = 1;
       const int core = 0;
       double weight;
       const int iter = 0;
 
-      rapint::cache(phasespace::ymin, phasespace::ymax);
-      rapint::allocate();
-      rapint::integrate(phasespace::ymin,phasespace::ymax,(phasespace::mmin+phasespace::mmax)/2.);
+      //rapint::cache(phasespace::ymin, phasespace::ymax);
+      //rapint::allocate();
+      //rapint::integrate(phasespace::ymin,phasespace::ymax,(phasespace::mmin+phasespace::mmax)/2.);
 
-      resintegrand1d(ndim, x, ncomp, f);
+      //resintegrand1d(ndim, x, ncomp, f);
       //resintegrand2d(ndim, x, ncomp, f);
       //vjlointegrand(ndim, x, ncomp, f);
       //resintegrand3d(ndim, x, ncomp, f);
       //ctintegrand3d(ndim, x, ncomp, f);
-      //ctintegrand2d(ndim, x, ncomp, f);
+      ctintegrand2d(ndim, x, ncomp, f);
       //                  x[0] = 0.5;
       //                  x[1] = 0.5;
       //                  x[2] = xx;
@@ -222,7 +223,7 @@ void xline()
       //ctintegrandMC(ndim, x, ncomp, f, userdata, nvec, core, weight, iter);
       //vjlointegrandMC(ndim, x, ncomp, f, userdata, nvec, core, weight, iter);
       //void* userdata; int nvec; int core; double weight; int iter; resintegrand4d(ndim, x, ncomp, f, userdata, nvec, core, weight, iter);
-      realintegrand(ndim, x, ncomp, f, userdata, nvec, core, weight, iter);
+      //realintegrand(ndim, x, ncomp, f, userdata, nvec, core, weight, iter);
       //xf << "gx->SetPoint(gx->GetN(), " << i*hx+x1 << ", " << f[0]/g[0] << ");" << endl;
       //xf << "gx->SetPoint(gx->GetN(), " << i*hx+x1 << ", " << f[0]+g[0] << ");" << endl;
       //xf << "gx->SetPoint(gx->GetN(), " << i*hx+x1 << ", " << g[0] << ");" << endl;
