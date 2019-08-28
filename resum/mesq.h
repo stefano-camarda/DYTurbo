@@ -77,13 +77,14 @@ namespace mesq
 
   enum sign {positive=0, negative=1};
 
-  //Return index in the array based on partonic channel, i1 and i2 indexes in the z Mellin space, and sign of the branch
-  inline int index(int pch, int i1, int i2, bool sign)
-  {return i2 + mellinint::mdim*(i1 + mellinint::mdim*(sign + 2*pch));}
-
   //Number of partonic channels
   extern int totpch;
   
+  //Return index in the array based on partonic channel, i1 and i2 indexes in the z Mellin space, and sign of the branch
+  inline int index(int pch, int i1, int i2, bool sign)
+  //{return i2 + mellinint::mdim*(i1 + mellinint::mdim*(sign + 2*pch));}
+  {return pch + totpch*(i2 + mellinint::mdim*(i1 + mellinint::mdim*sign));};
+
   //function that returns the partonic channel index given f1 and f2 (not implemented yet)
   inline int pchindx(int f1, int f2)
   {
