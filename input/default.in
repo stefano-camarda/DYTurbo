@@ -110,7 +110,7 @@ bcf = 0.5         #select the point bc = bcf * b_L, where the integration contou
 opts_approxpdf = 0
 # number of intervals for integration of PDF moments (direct Mellin transform), relevant only for opts_approxpdf = 0
 opts_pdfintervals = 100
-pdfrule = 100     #Gaussian rule for the x-to-N Mellin transform
+pdfrule = 200     #Gaussian rule for the x-to-N Mellin transform
 
 # Type of PDF evolution
 #0: DYRES (backward evolution)
