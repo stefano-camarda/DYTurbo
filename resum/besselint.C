@@ -335,7 +335,7 @@ complex <double> besselint::bint(complex <double> b)
 	{
 	  pdfevol::retrieve1d(i,mesq::positive);
 	  mellinint::pdf_mesq_expy(i,i,mesq::positive);
-	  complex <double> int1 = mellinint::integrand1d(i);
+	  double int1 = mellinint::integrand1d(i);
 
 	  //	  pdfevol::retrieve1d(i,mesq::negative); //--> both branches are negative
 	  //	  mellinint::pdf_mesq_expy(i,i,mesq::negative);
@@ -347,7 +347,7 @@ complex <double> besselint::bint(complex <double> b)
 
 	  //do not actually need the negative branch, because it is equal to the complex conjugate of the positive branch
 	  //so the sum of the two branches is equal to the real part of the positive branch: 1/2(a+conj(a)) = real(a)
-	  fun += real(int1);
+	  fun += int1;
 	  //cout << "mellin 1d " << setprecision(16) << i << "  " << int1 << endl;
 	  
 	}
@@ -360,33 +360,38 @@ complex <double> besselint::bint(complex <double> b)
     {
 #pragma omp parallel for reduction(+:fun) num_threads(opts.mellincores) copyin(creno_,mesq::mesqij_expy,hcoefficients::Hqqb,hcoefficients::Hqg_1,hcoefficients::Hqg_2,hcoefficients::Hgg,hcoefficients::Hqq,hcoefficients::Hqq_1,hcoefficients::Hqq_2,hcoefficients::Hqqp_1,hcoefficients::Hqqp_2)
       for (int i1 = 0; i1 < mellinint::mdim; i1++)
-	for (int i2 = 0; i2 < mellinint::mdim; i2++)
-	  {
-	    // here scale2 is fixed (b-dependent), and the function is called many times at I1 I2 points       
-	    // part of the coefficients calculation is hoisted in the previous i loop
+	{
+	  pdfevol::retrieve_beam1(i1);
+	  for (int i2 = 0; i2 < mellinint::mdim; i2++)
+	    {
+	      // here scale2 is fixed (b-dependent), and the function is called many times at I1 I2 points       
+	      // part of the coefficients calculation is hoisted in the previous i loop
+	      
+	      //  -->   merge positive and negative branch?
+	      
+	      //     In Rapidity integrated mode:
+	      //     sigmaij are fatorised from HCRN and numerical integration in y is performed in rapintegrals
+	      //     the full expression is HCRN(I1,I2)_ij * ccex(I1,I2) * sigma_ij
+	      //     HCRN(I1,I2)_ij is only b dependent
+	      //     ccex(I1,I2) is rapidity and mass dependent
+	      //     sigma_ij is costh and mass dependent, but becomes rapidity dependent after integration of the costh moments
+	      //     The integrals are solved analitically when no cuts on the leptons are applied
+	      
+	      //pdfevol::retrieve(i1,i2,mesq::positive);
+	      pdfevol::retrieve_beam2_pos(i2);
+	      mellinint::pdf_mesq_expy(i1,i2,mesq::positive);
+	      double int1 = real(mellinint::integrand2d(i1,i2,mesq::positive));
+	      
+	      //pdfevol::retrieve(i1,i2,mesq::negative);
+	      pdfevol::retrieve_beam2_neg();
+	      mellinint::pdf_mesq_expy(i1,i2,mesq::negative);
+	      double int2 = real(mellinint::integrand2d(i1,i2,mesq::negative));
 
-	    //  -->   merge positive and negative branch?
-
-	    //     In Rapidity integrated mode:
-	    //     sigmaij are fatorised from HCRN and numerical integration in y is performed in rapintegrals
-	    //     the full expression is HCRN(I1,I2)_ij * ccex(I1,I2) * sigma_ij
-	    //     HCRN(I1,I2)_ij is only b dependent
-	    //     ccex(I1,I2) is rapidity and mass dependent
-	    //     sigma_ij is costh and mass dependent, but becomes rapidity dependent after integration of the costh moments
-	    //     The integrals are solved analitically when no cuts on the leptons are applied
-	    pdfevol::retrieve(i1,i2,mesq::positive);
-	    mellinint::pdf_mesq_expy(i1,i2,mesq::positive);
-	    complex <double> int1 = mellinint::integrand2d(i1,i2,mesq::positive);
-	    //complex <double> int1 = mellinint::integrand();
-	    pdfevol::retrieve(i1,i2,mesq::negative);
-	    mellinint::pdf_mesq_expy(i1,i2,mesq::negative);
-	    complex <double> int2 = mellinint::integrand2d(i1,i2,mesq::negative);
-	    //complex <double> int2 = mellinint::integrand();
-	    //complex <double> FZ=-0.5*(real(int1)-real(int2));
-	    fun += -real(0.5*(int1-int2));
-	    //fun += -0.5*(int1-int2);
-	    //cout << "C++ " << setprecision(16) << i1 << "  " << i2 << "  " << int1 << "  " << int2 << endl;
-	  }
+	      //fun += -real(0.5*(int1-int2));
+	      fun += -0.5*(int1-int2);
+	      //cout << "C++ " << setprecision(16) << i1 << "  " << i2 << "  " << int1 << "  " << int2 << endl;
+	    }
+	}
       //invres = fun*real(factorfin);
       invres = fun*factorfin;
     }
