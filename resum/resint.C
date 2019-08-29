@@ -594,6 +594,18 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
     }
   else
     {
+
+//      //if (opts.fast && opts.xspace) {
+//      //Fast function
+//      res = exp(-qt);
+//
+//      // Normalization
+//      double shad = pow(opts.sroot,2);
+//      res *= qt/shad;
+//      //}
+//      //else
+//      //{
+      
       //*****************************************
       //dependence on qt, m, also y, and costh unless integrated
       //perform b integration (int_0^inf db)
@@ -603,15 +615,6 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
 
       // Normalization
       res *= qt/2./pow(opts.sroot,2);
-
-//      //if (opts.fast) {
-//      //Fast function
-//      res = exp(-qt);
-//
-//      // Normalization
-//      double shad = pow(opts.sroot,2);
-//      res *= qt/shad;
-//      //}
     }
   
   //Do not need the Mellin transform for the LL case, because the HN coefficient is 1 --> Use PDFs in x space
