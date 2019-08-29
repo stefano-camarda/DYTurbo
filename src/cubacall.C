@@ -59,8 +59,8 @@ void resintegr1d(vector <double> &res, double &err)
   else
     {
       const int eval = 0;
-      const double epsrel = opts.pcubaccuracy;
-      const double epsabs = 0.;
+      const double epsrel = opts.relaccuracy;
+      const double epsabs = opts.absaccuracy;
       double xmin[1] = {0};
       double xmax[1] = {1};
       if (opts.cubacores == 0)
@@ -113,8 +113,8 @@ void resintegr2d(vector <double> &res, double &err)
   else
     {
       const int eval = 0;
-      const double epsrel = opts.pcubaccuracy;
-      const double epsabs = 0.;
+      const double epsrel = opts.relaccuracy;
+      const double epsabs = opts.absaccuracy;
       double xmin[2] = {0, 0};
       double xmax[2] = {1, 1};
       if (opts.cubacores == 0)
@@ -246,8 +246,8 @@ void vjintegr3d(vector <double> &res, double &err)
   else
     {
       const int eval = 0;
-      const double epsrel = opts.pcubaccuracy;
-      const double epsabs = 0.;
+      const double epsrel = opts.relaccuracy;
+      const double epsabs = opts.absaccuracy;
       double xmin[3] = {0, 0., 0.};
       double xmax[3] = {1, 1., 1.};
       if (opts.cubacores == 0)
@@ -385,8 +385,8 @@ void vjlointegr5d(vector <double> &res, double &err)
   else
     {
       const int eval = 0;
-      const double epsrel = opts.pcubaccuracy;
-      const double epsabs = 0.;
+      const double epsrel = opts.relaccuracy;
+      const double epsabs = opts.absaccuracy;
       double tiny = 0.;//1e-6;
       /*
       double xmin[5] = {0., 0., tiny,    0., 0.};
@@ -641,8 +641,8 @@ void bornintegr2d(vector <double> &res, double &err)
   else
     {
       const int eval = 0;
-      const double epsrel = opts.pcubaccuracy;
-      const double epsabs = 0.;
+      const double epsrel = opts.relaccuracy;
+      const double epsabs = opts.absaccuracy;
       double xmin[2] = {0, 0};
       double xmax[2] = {1, 1};
       if (opts.cubacores == 0)
@@ -845,8 +845,8 @@ void ctintegr3d(vector <double> &res, double &err)
   else
     {
       const int eval = 0;
-      const double epsrel = opts.pcubaccuracy;
-      const double epsabs = 0.;
+      const double epsrel = opts.relaccuracy;
+      const double epsabs = opts.absaccuracy;
       double xmin[3] = {0, 0., 0.};
       double xmax[3] = {1, 1., 1.};
       if (opts.cubacores == 0)
@@ -899,8 +899,8 @@ void ctintegr2d(vector <double> &res, double &err)
   else
     {
       const int eval = 0;
-      const double epsrel = opts.pcubaccuracy;
-      const double epsabs = 0.;
+      const double epsrel = opts.relaccuracy;
+      const double epsabs = opts.absaccuracy;
       double xmin[2] = {0, 0.};
       double xmax[2] = {1, 1.};
       if (opts.cubacores == 0)
@@ -954,8 +954,8 @@ void ctintegr1d(vector <double> &res, double &err)
   else
     {
       const int eval = 0;
-      const double epsrel = opts.pcubaccuracy;
-      const double epsabs = 0.;
+      const double epsrel = opts.relaccuracy;
+      const double epsabs = opts.absaccuracy;
       double xmin[1] = {0.};
       double xmax[1] = {1.};
       if (opts.cubacores == 0)

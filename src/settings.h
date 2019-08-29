@@ -188,7 +188,8 @@ public:
   
   //cubature settings
   bool pcubature;
-  double pcubaccuracy;
+  double relaccuracy;
+  double absaccuracy;
 
   //costh boundaries
   double costhmin, costhmax;

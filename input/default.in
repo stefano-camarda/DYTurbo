@@ -212,7 +212,8 @@ vegascollect      = false    # collect points from all the vegas iterations (tru
 
 # cubature settings
 pcubature = true
-pcubaccuracy = 1e-3
+relaccuracy = 1e-3 #target relative uncertainty of each term
+absaccuracy = 0    #target absolute uncertainty of each term in fb
 
 # costh CS boundaries
 costhmin = -1

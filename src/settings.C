@@ -100,7 +100,7 @@ void settings::parse_options(int argc, char* argv[]){
         vegasncallsVJLO    = 1e5;
         vegasncallsVJREAL  = 1e5;
         vegasncallsVJVIRT  = 1e5;
-        pcubaccuracy       = 0.1;
+        relaccuracy       = 0.1;
     }
 
     // proc
@@ -327,7 +327,8 @@ void settings::readfromfile(const string fname){
     vegasncallsVJVIRT  = in.GetNumber ( "vegasncallsVJVIRT" );
     vegascollect       = in.GetBool ( "vegascollect" );
     pcubature          = in.GetBool   ( "pcubature" );
-    pcubaccuracy       = in.GetNumber ( "pcubaccuracy" );
+    relaccuracy        = in.GetNumber ( "relaccuracy" );
+    absaccuracy        = in.GetNumber ( "absaccuracy" );
     costhmin           = in.GetNumber ( "costhmin"     );
     costhmax           = in.GetNumber ( "costhmax"     );
     makecuts           = in.GetBool   ( "makecuts"     );
@@ -671,7 +672,8 @@ void settings::dumpAll(){
         dumpD("vegasncallsVJVIRT ", vegasncallsVJVIRT   );
 	dumpB("vegascollect      ", vegascollect        );
         dumpB("pcubature         ", pcubature           );
-        dumpD("pcubaccuracy      ", pcubaccuracy        );
+        dumpD("relaccuracy       ", relaccuracy         );
+        dumpD("absaccuracy       ", absaccuracy         );	
         dumpD("costhmin          ", costhmin            );
         dumpD("costhmax          ", costhmax            );
         dumpB("makecuts          ", makecuts            );
