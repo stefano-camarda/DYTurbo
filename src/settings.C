@@ -361,7 +361,7 @@ void settings::readfromfile(const string fname){
     qtrec_kt0          = in.GetBool   ( "qtrec_kt0"       ); //true
     timeprofile        = in.GetBool   ( "timeprofile"     ); //false   # debug       and      time       profile resummation integration
     verbose            = in.GetBool   ( "verbose"         ); //false   # debug       and      time       profile costh       phi_lep         integration
-    verbose            = in.GetBool   ( "gridverbose"     ); //false   # debug       and      time       profile costh       phi_lep         integration
+    gridverbose        = in.GetBool   ( "gridverbose"     ); //false   # debug       and      time       profile costh       phi_lep         integration
     texttable          = in.GetBool   ( "texttable"       ); //
     unicode            = in.GetBool   ( "unicode"         ); //
     resumcpp           = in.GetBool   ( "resumcpp"        );
@@ -696,7 +696,7 @@ void settings::dumpAll(){
         dumpB("qtrec_kt0         ", qtrec_kt0           );
         dumpB("timeprofile       ", timeprofile         );
         dumpB("verbose           ", verbose             );
-        dumpB("gridverbose       ", verbose             );	
+        dumpB("gridverbose       ", gridverbose         );	
         dumpB("texttable         ", texttable           );
         dumpB("resumcpp          ", resumcpp            );
 	dumpB("ctcpp             ", ctcpp               );
