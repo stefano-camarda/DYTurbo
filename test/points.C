@@ -1,9 +1,9 @@
 #include "config.h"
 
-#include "src/dyturbo.h"
-#include "src/omegaintegr.h"
-#include "src/settings.h"
-#include "src/interface.h"
+#include "dyturbo.h"
+#include "omegaintegr.h"
+#include "settings.h"
+#include "interface.h"
 #include "phasespace.h"
 #include "resintegr.h"
 #include "ctintegr.h"
@@ -15,6 +15,7 @@
 #include "ctint.h"
 #include "qtint.h"
 #include "vjint.h"
+#include "loint.h"
 
 #include <iostream>
 #include <iomanip>
@@ -104,13 +105,26 @@ int main( int argc , char * argv[])
   costh = 0.1; m = 91; qt = 5; y = 0.2;
   test_ct_speed(costh,m,qt,y,mode);
 
+  double f[2];
+  costh = 0.; m = opts.rmass; qt = 0; y = 0.; mode = 1;
+  loint::lint(costh, m, y, mode, f);
+  cout << "born cross section at m = " << m << " y = " << y << ": " << setprecision(12) << f[0]*2*M_PI*2*m/1000. << " pb" << endl;
+
+  costh = 0.; m = opts.rmass; qt = 0; y = 2.4; mode = 1;
+  loint::lint(costh, m, y, mode, f);
+  cout << "born cross section at m = " << m << " y = " << y << ": " << setprecision(12) << f[0]*2*M_PI*2*m/1000. << " pb" << endl;
+
+  costh = 0.; m = opts.rmass; qt = 0; y = 0; mode = 3;
+  f[0] = resint::rint(costh, m, qt, y, mode);
+  cout << "born cross section at m = " << m << ": " << f[0]/(8./3.)*2*m/1000. << endl;
+  
   //costhline();
   //ptline();
   //ptomline();
   //yline();
   //mline();
   //mlinebw();
-  xline();
+  //xline();
   //ptavar();
   //ptgvar();
 
