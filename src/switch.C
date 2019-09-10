@@ -65,6 +65,9 @@ double switching::qtlimit(double m)
   if (opts.fixedorder)
     return limit;
   
+  if (!opts.damp)
+    return limit;
+
   if (mode == 1)
     limit = m*(k+delta*sqrt(log(1./cutoff)));
 
@@ -85,6 +88,9 @@ double switching::mlimit(double qt)
   if (opts.fixedorder)
     return limit;
   
+  if (!opts.damp)
+    return limit;
+
   if (mode == 1)
     limit = qt/(k+delta*sqrt(log(1./cutoff)));
 
