@@ -124,7 +124,8 @@ namespace Kinematics{
 	  //SetKinematics(_p3,_p4);
 
 	  isIntegratorMode=false;
-	  //event_weight=1.;
+	  if (!opts.makecuts) return KeepEvent;
+	  event_weight=1.;
 
 	  //rewritten cuts in plain form since they are faster
 	  p3[0]=_p3[0];
