@@ -70,7 +70,10 @@ complex <double> besselint::bint(complex <double> b)
   //bstartilde is bstarscale (qbstar) with the modification L -> L~, which freezes the scale at muf
   //bstartilde is used in evolmode 2, for the direct mellin transfrom at each scale
   //pdfevol::bstartilde = pdfevol::bstarscale * resint::mufac / sqrt((pow(pdfevol::bstarscale,2) + resint::mufac2));
-  pdfevol::bstartilde = pdfevol::qbstar * resint::mures / sqrt((pow(pdfevol::qbstar,2) + resint::mures2));
+  if (opts.modlog)
+    pdfevol::bstartilde = pdfevol::qbstar * resint::mures / sqrt((pow(pdfevol::qbstar,2) + resint::mures2));
+  else
+    pdfevol::bstartilde = pdfevol::qbstar;
 
 
   //complex PDF scale to be used for the minimal prescription
@@ -145,7 +148,11 @@ complex <double> besselint::bint(complex <double> b)
     {
       //      double M2 = pow(fabs(pdfevol::bstartilde),2);
       double M2 = pow(fabs(pdfevol::qbstar),2);                     //qbstar = b0/bstar (without a_param)
-      double M2tilde = M2 * resint::mures2 / (M2 + resint::mures2); //modified logs L -> L~
+      double M2tilde;
+      if (opts.modlog)
+	M2tilde = M2 * resint::mures2 / (M2 + resint::mures2); //modified logs L -> L~
+      else
+	M2tilde = M2;
       double M2prime = M2tilde * resint::muren2/resint::mures2;     //scale for differences between muren and mures
       M2 = M2prime;
       double R2 = M2;
@@ -224,6 +231,9 @@ complex <double> besselint::bint(complex <double> b)
   //aexp and aexpb are calculated in alphasl, they are used in hcoefficients::calcb only for the NNLL cross section
   alphasl_(fscale2_mub);
   complex <double> aexp = cx(exponent_.aexp_); //aexp is actually the ratio alphas(a*b0/b)/alphas(muren)
+
+  //calculate aexp = alphas(a*b0/b)/alphas(muren) using LHAPDF
+  //aexp = LHAPDF::alphasPDF(real(pdfevol::bstartilde))/LHAPDF::alphasPDF(resint::muren);
   
 //  //In order to have variable flavour evolution, use here a VFN definition of aexp (aexpB instead, should be independent from NF)
 //  //It seems that the pt-integrated cross section is invariant for variations of a_param if aexp is the ratio of alpq/as(muren) (and not alpq/as(Qres))
