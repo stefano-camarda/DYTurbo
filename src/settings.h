@@ -74,6 +74,7 @@ public:
   int    ih2;
   int    nproc;
   double g_param;
+  bool flavour_kt;
   int    order;
 
   //PDF settings

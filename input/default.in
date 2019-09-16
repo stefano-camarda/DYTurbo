@@ -10,6 +10,9 @@ g_param      = 1.0            # non perturbative g parameter
 order        = 2              # order: 0) LO(+LL) 1) NLO(+NLL), 2) NNLO(+NNLL)
 fixedorder   = false          # resummation or fixed order switch
 
+#Non-perturbative form factors
+flavour_kt = false
+
 #PDF settings
 LHAPDFset    = CT10nnlo       # PDF set from LHAPDF
 LHAPDFmember = 0              # PDF member

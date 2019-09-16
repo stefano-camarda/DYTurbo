@@ -136,7 +136,7 @@ c mass dependence in f0(y), f1(y), f2(y)
       S=cmplx(0d0,0d0)
       endif
 !
-      S=S*exp(-g*b**2)
+c      S=S*exp(-g*b**2)
 
       return
 c****************************

@@ -103,7 +103,7 @@ complex <double> sudakov::sff(complex <double> b)
   //cout << "C++ " << b << "  " << bstar << "  " << y << "  " << f0(y) << "  " << S << endl;
   
   //S = S*exp(-opts.g_param*pow(b,2));
-  S = S * npff::S(b,resint::_m,resint::x1,resint::x2);
+  //S = S * npff::S(b,resint::_m,resint::x1,resint::x2);
 
   return S;
 }

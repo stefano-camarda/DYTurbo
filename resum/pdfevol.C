@@ -9,6 +9,7 @@
 #include "mellinpdf.h"
 #include "scales.h"
 #include "parton.h"
+#include "npff.h"
 #include "string.h"
 #include "clock_real.h"
 
@@ -755,6 +756,78 @@ void pdfevol::storemoments_fortran(int i, complex <double> fx[11])
       creno_.cfx2m_[i][-1+MAXNF] = fcx(conj(fx[ 1+MAXNF]));
       creno_.cfx2m_[i][ 1+MAXNF] = fcx(conj(fx[-1+MAXNF]));
       creno_.cfx2m_[i][ 2+MAXNF] = fcx(conj(fx[-2+MAXNF]));
+    }
+}
+
+//Apply the flavour dependent form factors
+void pdfevol::flavour_kt()
+{
+  int negidx = mellinint::mdim*11;
+  int nf = 2*MAXNF+1;
+  complex <double> uv, dv, us, ds;
+  for (int i = 0; i < mellinint::mdim; i++)
+    {
+      //beam 1 positive
+      fx1[i*nf+bb] *= npff::boff;
+      fx1[i*nf+cb] *= npff::chff;
+      fx1[i*nf+sb] *= npff::ssff;
+      fx1[i*nf+g ] *= npff::glff;
+      fx1[i*nf+s ] *= npff::ssff;
+      fx1[i*nf+c ] *= npff::chff;
+      fx1[i*nf+b ] *= npff::boff;
+      if (opts.ih1 == 1)
+	{
+	  uv = (fx1[i*nf+u] - fx1[i*nf+ub]);
+	  dv = (fx1[i*nf+d] - fx1[i*nf+db]);
+	  us = fx1[i*nf+ub];
+	  ds = fx1[i*nf+db];
+	  fx1[i*nf+u] = uv * npff::uvff + us * npff::usff;
+	  fx1[i*nf+d] = dv * npff::dvff + ds * npff::dsff;
+	  fx1[i*nf+ub] = us * npff::usff;
+	  fx1[i*nf+db] = ds * npff::dsff;
+	}
+      else if (opts.ih1 == -1)
+	{      
+	  uv = (fx1[i*nf+ub] - fx1[i*nf+u]);
+	  dv = (fx1[i*nf+db] - fx1[i*nf+d]);
+	  us = fx1[i*nf+u];
+	  ds = fx1[i*nf+d];
+	  fx1[i*nf+ub] = uv * npff::uvff + us * npff::usff;
+	  fx1[i*nf+db] = dv * npff::dvff + ds * npff::dsff;
+	  fx1[i*nf+u] = us * npff::usff;
+	  fx1[i*nf+d] = ds * npff::dsff;
+	}
+
+      //beam 2 positive
+      fx2[i*nf+bb] *= npff::boff;
+      fx2[i*nf+cb] *= npff::chff;
+      fx2[i*nf+sb] *= npff::ssff;
+      fx2[i*nf+g ] *= npff::glff;
+      fx2[i*nf+s ] *= npff::ssff;
+      fx2[i*nf+c ] *= npff::chff;
+      fx2[i*nf+b ] *= npff::boff;
+      if (opts.ih2 == 1)
+	{
+	  uv = (fx2[i*nf+u] - fx2[i*nf+ub]);
+	  dv = (fx2[i*nf+d] - fx2[i*nf+db]);
+	  us = fx2[i*nf+ub];
+	  ds = fx2[i*nf+db];
+	  fx2[i*nf+u] = uv * npff::uvff + us * npff::usff;
+	  fx2[i*nf+d] = dv * npff::dvff + ds * npff::dsff;
+	  fx2[i*nf+ub] = us * npff::usff;
+	  fx2[i*nf+db] = ds * npff::dsff;
+	}
+      else if (opts.ih2 == -1)
+	{      
+	  uv = (fx2[i*nf+ub] - fx2[i*nf+u]);
+	  dv = (fx2[i*nf+db] - fx2[i*nf+d]);
+	  us = fx2[i*nf+u];
+	  ds = fx2[i*nf+d];
+	  fx2[i*nf+ub] = uv * npff::uvff + us * npff::usff;
+	  fx2[i*nf+db] = dv * npff::dvff + ds * npff::dsff;
+	  fx2[i*nf+u] = us * npff::usff;
+	  fx2[i*nf+d] = ds * npff::dsff;
+	}
     }
 }
 

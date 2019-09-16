@@ -88,6 +88,9 @@ namespace pdfevol
   //retrieve only fn2 negative
   extern void retrieve_beam2_neg();
 
+  //flavour dependent form factors
+  extern void flavour_kt();
+  
   //retrieve moments corresponding to i, and sign from fx1 and fx2 and store them in fn1 and fn2, to be used with the mellin1d option
   extern void retrieve1d(int i, int sign);
   //retrieve moments corresponding to i, and sign from the Fortran common block and store them in fn1 and fn2, to be used with the mellin1d option

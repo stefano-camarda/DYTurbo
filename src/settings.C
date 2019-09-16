@@ -270,6 +270,7 @@ void settings::readfromfile(const string fname){
     kmub           = in.GetNumber ( "kmub"       );
     kmut           = in.GetNumber ( "kmut"       );
     g_param        = in.GetNumber ( "g_param"        );
+    flavour_kt     = in.GetBool   ( "flavour_kt"     );
     order          = in.GetNumber ( "order"          );
     zerowidth      = in.GetBool   ( "zerowidth"      ); //false          # zerowidth
     runningwidth   = in.GetBool   ( "runningwidth"   );
@@ -599,6 +600,7 @@ void settings::dumpAll(){
         dumpD ( "kmuc      ",  kmuc                     ) ;
         dumpD ( "kmub      ",  kmub                     ) ;
 	dumpD ( "kmut      ",  kmut   ) ;
+	dumpB ( "flavour_kt", flavour_kt );
         dumpD( "blim              ",  blim    ) ;
         dumpS("LHAPDFset          ", LHAPDFset           );
         dumpI("LHAPDFmember       ", LHAPDFmember        );

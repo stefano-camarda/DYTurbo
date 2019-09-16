@@ -12,6 +12,7 @@
 #include "isnan.h"
 #include "pdf.h"
 #include "sudakovff.h"
+#include "npff.h"
 
 #include <LHAPDF/LHAPDF.h>
 
@@ -113,6 +114,12 @@ complex <double> besselint::bint(complex <double> b)
   //complex <double> sudak=sudakov::sff(bb);
   if (sudak == 0.)
     return 0.;
+
+  //non-perturbative form factor
+  //sudak *= exp(-opts.g_param*pow(b,2));
+  complex <double> ff = npff::S(b,resint::_m,resint::x1,resint::x2);
+  if (!opts.flavour_kt)
+    sudak *= ff;
 
   //********************
   //b, qt and mass dependence
@@ -263,7 +270,12 @@ complex <double> besselint::bint(complex <double> b)
   //Truncate HN coefficients, to implement mellin1d also for rapdity intervals (currently not working, not sure if it is eventually possible. Need to figure out how to truncate the moments)
   //if (opts.mellin1d)
   //hcoeff::truncate();
-  
+
+  //Apply flavour dependent non-perturbative form factors
+  if (opts.flavour_kt)
+    pdfevol::flavour_kt();
+
+      
   complex <double> invres = 0.;
   double fun = 0.;
 
