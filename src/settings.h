@@ -276,6 +276,7 @@ public:
   bool verbose;
   bool gridverbose;
   bool texttable;
+  bool redirect;
 
   bool unicode;
   

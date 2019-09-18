@@ -70,6 +70,12 @@ void settings::parse_options(int argc, char* argv[]){
     readfromfile      ( args["conf_file"].as<string>() );
     bins.readfromfile ( args["conf_file"].as<string>() );
 
+    if (opts.redirect)
+      {
+	string logfile = output_filename + ".log";
+	freopen(logfile.c_str(),"w",stdout);
+      }
+    
     // NOTE: Command line options are overiding the default and config file settings.
     // verbose
     if (args.count("verbose")) {
@@ -363,6 +369,7 @@ void settings::readfromfile(const string fname){
     verbose            = in.GetBool   ( "verbose"         ); //false   # debug       and      time       profile costh       phi_lep         integration
     gridverbose        = in.GetBool   ( "gridverbose"     ); //false   # debug       and      time       profile costh       phi_lep         integration
     texttable          = in.GetBool   ( "texttable"       ); //
+    redirect           = in.GetBool   ( "redirect"       ); //
     unicode            = in.GetBool   ( "unicode"         ); //
     resumcpp           = in.GetBool   ( "resumcpp"        );
     ctcpp              = in.GetBool   ( "ctcpp"        );
