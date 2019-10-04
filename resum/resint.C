@@ -566,7 +566,7 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
 
       //double kinqtlim = sqrt(max(0.,pow(pow(opts.sroot,2)+phasespace::m2,2)/(4*pow(opts.sroot,2))-phasespace::m2)); //introduced max to avoid neqative argument of sqrt
       double kinqtlim = 1e10;
-      double switchqtlim = phasespace::m*opts.dampk; //here use the value of qt where the switching start
+      double switchqtlim = opts.damp?phasespace::m*opts.dampk:1e10; //here use the value of qt where the switching start
       double qtlim = min(kinqtlim, switchqtlim);
       double qtmx = min(qtlim, phasespace::qtmax);
 

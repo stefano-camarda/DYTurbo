@@ -21,9 +21,11 @@ namespace mellinpdf
   extern complex <double> *SP;
   extern complex <double> *SM;
   extern complex <double> *GL;
-  extern complex <double> *CH;
-  extern complex <double> *BO;
-#pragma omp threadprivate(UV,DV,US,DS,SP,SM,GL,CH,BO)
+  extern complex <double> *CP;
+  extern complex <double> *CM;
+  extern complex <double> *BP;
+  extern complex <double> *BM;
+#pragma omp threadprivate(UV,DV,US,DS,SP,SM,GL,CP,CM,BP,BM)
   
   extern double *fuv;
   extern double *fdv;
@@ -32,8 +34,10 @@ namespace mellinpdf
   extern double *fsp;
   extern double *fsm;
   extern double *fgl;
-  extern double *fch;
-  extern double *fbo;
-#pragma omp threadprivate(fuv,fdv,fus,fds,fsp,fsm,fgl,fch,fbo)
+  extern double *fcp;
+  extern double *fcm;
+  extern double *fbp;
+  extern double *fbm;
+#pragma omp threadprivate(fuv,fdv,fus,fds,fsp,fsm,fgl,fcp,fcm,fbp,fbm)
 }
 #endif

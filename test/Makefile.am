@@ -11,6 +11,7 @@ AM_CPPFLAGS = -fpermissive \
 	      -I$(srcdir)/../vjet \
 	      -I$(srcdir)/../counterterm \
 	      -I$(srcdir)/../eba \
+	      -I$(srcdir)/../born \
 	      -I$(srcdir)/../cubature \
 	      -I$(srcdir)/../phasespace \
 	      -I$(srcdir)/../histo \

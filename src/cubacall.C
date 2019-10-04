@@ -22,7 +22,7 @@
 void resintegr1d(vector <double> &res, double &err)
 {
   //Force qt differential mode when crossing the value of qt where the switching start
-  if (phasespace::qtmax > phasespace::mmin*opts.dampk)
+  if (opts.damp && (phasespace::qtmax > phasespace::mmin*opts.dampk))
     {
       resintegr2d(res, err);
       return;

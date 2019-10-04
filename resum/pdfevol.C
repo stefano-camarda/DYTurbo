@@ -219,8 +219,8 @@ void pdfevol::update()
       DSP[k] = mellinpdf::DS[k];
       SSP[k] = mellinpdf::SM[k];
       GLP[k] = mellinpdf::GL[k];
-      CHP[k] = mellinpdf::CH[k];
-      BOP[k] = mellinpdf::BO[k];
+      CHP[k] = mellinpdf::CP[k];
+      BOP[k] = mellinpdf::BP[k];
       //cout << "moment " << k << "  " << mellinint::Np[k] << "  ";
       //cout << "uval  " << mellinpdf::UV[k] << endl;
       //cout << "dval  " << mellinpdf::DV[k] << endl;
@@ -228,8 +228,8 @@ void pdfevol::update()
       //cout << "dsea  " << mellinpdf::DS[k] << endl;
       //cout << "ssea  " << mellinpdf::SM[k] << endl;
       //cout << "gluon " << mellinpdf::GL[k] << endl;
-      //cout << "charm " << mellinpdf::CH[k] << endl;
-      //cout << "bottom" << mellinpdf::BO[k] << endl;
+      //cout << "charm " << mellinpdf::CP[k] << endl;
+      //cout << "bottom" << mellinpdf::BP[k] << endl;
     }
   mellinpdf::free();
 }
@@ -562,8 +562,8 @@ void pdfevol::calculate()
       fx[sb] = mellinpdf::SM[k];
       if (resconst::NF >= 4)
 	{
-	  fx[c]  = mellinpdf::CH[k];
-	  fx[cb] = mellinpdf::CH[k];
+	  fx[c]  = mellinpdf::CP[k];
+	  fx[cb] = mellinpdf::CM[k];
 	}
       else
 	{
@@ -572,8 +572,8 @@ void pdfevol::calculate()
 	}
       if (resconst::NF >= 5)
 	{
-	  fx[b]  = mellinpdf::BO[k];
-	  fx[bb] = mellinpdf::BO[k];
+	  fx[b]  = mellinpdf::BP[k];
+	  fx[bb] = mellinpdf::BM[k];
 	}
       else
 	{

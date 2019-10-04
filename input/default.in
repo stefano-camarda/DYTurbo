@@ -269,8 +269,9 @@ qtrec_kt0   = false
 timeprofile = false  # debug and time profile resummation integration
 verbose     = false  # debug and time profile costh phi_lep integration
 gridverbose = false  # printout events to keep job alive when running on grid
-texttable   = true # dump result table to text file (including pdf variations)
-unicode     = false # use unicode characters for the table formatting
+texttable   = true   # dump result table to text file (including pdf variations)
+redirect    = false  # redirect stdout and stderr to log file
+unicode     = false  # use unicode characters for the table formatting
 
 # binning
 

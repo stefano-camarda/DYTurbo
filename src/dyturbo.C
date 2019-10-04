@@ -376,6 +376,8 @@ namespace DYTurbo {
         ActiveBoundaries.clear();
         subtotal.last_reset();
         HistoHandler::Terminate();
+	if (opts.redirect)
+	  fclose (stdout);
     }
 
 };

@@ -305,6 +305,21 @@ void pegasus::init()
   //    is set to '1' at the end of this routine.
   //
 
+  // --> change to the new code for the mellin moments (which allows asymmetric charm and bottom)
+  // --> Need to figure out possible memory issues with allocate and free
+  //  mellinpdf::allocate();
+  //  double facscale = sqrt(asinp_.m20_);
+  //  mellinpdf::evalpdfs(facscale);
+  //  if (opts.mellininv == 1 || opts.phi > 0.5)
+  //    mellinpdf::laguerre_ipol();
+  //  else
+  //    mellinpdf::gauss_quad();
+  //
+  //for (int i = 0; i < mellinint::mdim; i++)
+  // ....
+  //
+  //  mellinpdf::free();
+  
   //Begin of the Mellin-N loop 
   fcomplex uval,dval,ubar,dbar,s,sbar,glu,charm,bot;
   for (int i = 0; i < mellinint::mdim; i++)

@@ -19,8 +19,10 @@ complex <double> *mellinpdf::DS;
 complex <double> *mellinpdf::SP;
 complex <double> *mellinpdf::SM;
 complex <double> *mellinpdf::GL;
-complex <double> *mellinpdf::CH;
-complex <double> *mellinpdf::BO;
+complex <double> *mellinpdf::CP;
+complex <double> *mellinpdf::CM;
+complex <double> *mellinpdf::BP;
+complex <double> *mellinpdf::BM;
 
 //Values of the PDFs at the nodes of the Gauss rule
 double *mellinpdf::fuv;
@@ -30,8 +32,10 @@ double *mellinpdf::fds;
 double *mellinpdf::fsp;
 double *mellinpdf::fsm;
 double *mellinpdf::fgl;
-double *mellinpdf::fch;
-double *mellinpdf::fbo;
+double *mellinpdf::fcp;
+double *mellinpdf::fcm;
+double *mellinpdf::fbp;
+double *mellinpdf::fbm;
 
 void mellinpdf::allocate()
 {
@@ -42,8 +46,10 @@ void mellinpdf::allocate()
   SP = new complex <double> [mellinint::mdim];
   SM = new complex <double> [mellinint::mdim];
   GL = new complex <double> [mellinint::mdim];
-  CH = new complex <double> [mellinint::mdim];
-  BO = new complex <double> [mellinint::mdim];
+  CP = new complex <double> [mellinint::mdim];
+  CM = new complex <double> [mellinint::mdim];
+  BP = new complex <double> [mellinint::mdim];
+  BM = new complex <double> [mellinint::mdim];
 
   fuv = new double [opts.pdfrule];
   fdv = new double [opts.pdfrule];
@@ -52,8 +58,10 @@ void mellinpdf::allocate()
   fsp = new double [opts.pdfrule];
   fsm = new double [opts.pdfrule];
   fgl = new double [opts.pdfrule];
-  fch = new double [opts.pdfrule];
-  fbo = new double [opts.pdfrule];
+  fcp = new double [opts.pdfrule];
+  fcm = new double [opts.pdfrule];
+  fbp = new double [opts.pdfrule];
+  fbm = new double [opts.pdfrule];
 }
 
 void mellinpdf::free()
@@ -65,8 +73,10 @@ void mellinpdf::free()
   delete [] SP;
   delete [] SM;
   delete [] GL;
-  delete [] CH;
-  delete [] BO;
+  delete [] CP;
+  delete [] CM;
+  delete [] BP;
+  delete [] BM;
 
   delete [] fuv;
   delete [] fdv;
@@ -75,8 +85,10 @@ void mellinpdf::free()
   delete [] fsp;
   delete [] fsm;
   delete [] fgl;
-  delete [] fch;
-  delete [] fbo;
+  delete [] fcp;
+  delete [] fcm;
+  delete [] fbp;
+  delete [] fbm;
 }
 
 //Cache PDFs, t values, jacobian, kernels
@@ -126,8 +138,10 @@ void mellinpdf::evalpdfs(double scale)
       fsp[i] = fac[i] * fx[S];
       fsm[i] = fac[i] * fx[Sb];
       fgl[i] = fac[i] * fx[G];
-      fch[i] = fac[i] * fx[C];
-      fbo[i] = fac[i] * fx[B];
+      fcp[i] = fac[i] * fx[C];
+      fcm[i] = fac[i] * fx[Cb];
+      fbp[i] = fac[i] * fx[B];
+      fbm[i] = fac[i] * fx[Bb];
       //cout << i << "  " << t[i] << "  " << fac[i] << "  " << fx[G] << endl;
     }
 }
@@ -145,8 +159,10 @@ void mellinpdf::gauss_quad()
       SP[m] = 0.;
       SM[m] = 0.;
       GL[m] = 0.;
-      CH[m] = 0.;
-      BO[m] = 0.;
+      CP[m] = 0.;
+      CM[m] = 0.;
+      BP[m] = 0.;
+      BM[m] = 0.;
     }
   
   //Calculate Mellin moments as:
@@ -161,8 +177,10 @@ void mellinpdf::gauss_quad()
 	SP[m] += fsp[i] * kern[i*mellinint::mdim+m];
 	SM[m] += fsm[i] * kern[i*mellinint::mdim+m];
 	GL[m] += fgl[i] * kern[i*mellinint::mdim+m];
-	CH[m] += fch[i] * kern[i*mellinint::mdim+m];
-	BO[m] += fbo[i] * kern[i*mellinint::mdim+m];
+	CP[m] += fcp[i] * kern[i*mellinint::mdim+m];
+	CM[m] += fcm[i] * kern[i*mellinint::mdim+m];
+	BP[m] += fbp[i] * kern[i*mellinint::mdim+m];
+	BM[m] += fbm[i] * kern[i*mellinint::mdim+m];
 	//cout << i << "  " << kern[i*mellinint::mdim+m] << endl;
 	//if (m == 0) cout << m << "  " << i << "  " << GL[m] << endl;
       }
@@ -199,8 +217,10 @@ void mellinpdf::laguerre_ipol()
   double lsp[N+1] = {0.};
   double lsm[N+1] = {0.};
   double lgl[N+1] = {0.};
-  double lch[N+1] = {0.};
-  double lbo[N+1] = {0.};
+  double lcp[N+1] = {0.};
+  double lcm[N+1] = {0.};
+  double lbp[N+1] = {0.};
+  double lbm[N+1] = {0.};
   
   double cx = 0.5;
   double mx = 0.5;
@@ -214,8 +234,10 @@ void mellinpdf::laguerre_ipol()
   double fnsp[3] = {0.};
   double fnsm[3] = {0.};
   double fngl[3] = {0.};
-  double fnch[3] = {0.};
-  double fnbo[3] = {0.};
+  double fncp[3] = {0.};
+  double fncm[3] = {0.};
+  double fnbp[3] = {0.};
+  double fnbm[3] = {0.};
 
 
   for (int i = 0; i < opts.pdfrule; i++)
@@ -235,8 +257,10 @@ void mellinpdf::laguerre_ipol()
 	  fnsp[n] += fsp[i] * pow(t[i],n) *fac[i];
 	  fnsm[n] += fsm[i] * pow(t[i],n) *fac[i];
 	  fngl[n] += fgl[i] * pow(t[i],n) *fac[i];
-	  fnch[n] += fch[i] * pow(t[i],n) *fac[i];
-	  fnbo[n] += fbo[i] * pow(t[i],n) *fac[i];
+	  fncp[n] += fcp[i] * pow(t[i],n) *fac[i];
+	  fncm[n] += fcm[i] * pow(t[i],n) *fac[i];
+	  fnbp[n] += fbp[i] * pow(t[i],n) *fac[i];
+	  fnbm[n] += fbm[i] * pow(t[i],n) *fac[i];
 	}
     }
 
@@ -249,8 +273,10 @@ void mellinpdf::laguerre_ipol()
   double powsp = alpha - fnsp[1]*(fnsp[2]-fnsp[1])/(fnsp[1]*fnsp[1]-fnsp[0]*fnsp[2]);
   double powsm = alpha - fnsm[1]*(fnsm[2]-fnsm[1])/(fnsm[1]*fnsm[1]-fnsm[0]*fnsm[2]);
   double powgl = alpha - fngl[1]*(fngl[2]-fngl[1])/(fngl[1]*fngl[1]-fngl[0]*fngl[2]);
-  double powch = alpha - fnch[1]*(fnch[2]-fnch[1])/(fnch[1]*fnch[1]-fnch[0]*fnch[2]);
-  double powbo = alpha - fnbo[1]*(fnbo[2]-fnbo[1])/(fnbo[1]*fnbo[1]-fnbo[0]*fnbo[2]);
+  double powcp = alpha - fncp[1]*(fncp[2]-fncp[1])/(fncp[1]*fncp[1]-fncp[0]*fncp[2]);
+  double powcm = alpha - fncm[1]*(fncm[2]-fncm[1])/(fncm[1]*fncm[1]-fncm[0]*fncm[2]);
+  double powbp = alpha - fnbp[1]*(fnbp[2]-fnbp[1])/(fnbp[1]*fnbp[1]-fnbp[0]*fnbp[2]);
+  double powbm = alpha - fnbm[1]*(fnbm[2]-fnbm[1])/(fnbm[1]*fnbm[1]-fnbm[0]*fnbm[2]);
 
   //The largest poles of the Mellin transform are at these values of z:
   //cout << powuv << "  "
@@ -281,8 +307,10 @@ void mellinpdf::laguerre_ipol()
 	  lsp[n] += fsp[i] * L[n] * pow(t[i],1./p-1.+powsp);
 	  lsm[n] += fsm[i] * L[n] * pow(t[i],1./p-1.+powsm);
 	  lgl[n] += fgl[i] * L[n] * pow(t[i],1./p-1.+powgl);
-	  lch[n] += fch[i] * L[n] * pow(t[i],1./p-1.+powch);
-	  lbo[n] += fbo[i] * L[n] * pow(t[i],1./p-1.+powbo);
+	  lcp[n] += fcp[i] * L[n] * pow(t[i],1./p-1.+powcp);
+	  lcm[n] += fcm[i] * L[n] * pow(t[i],1./p-1.+powcm);
+	  lbp[n] += fbp[i] * L[n] * pow(t[i],1./p-1.+powbp);
+	  lbm[n] += fbm[i] * L[n] * pow(t[i],1./p-1.+powbm);
 
 //	  cout << i << "  " << n << "  " << L[n] << endl;
 	}
@@ -300,8 +328,10 @@ void mellinpdf::laguerre_ipol()
       SP[m] = 0.;
       SM[m] = 0.;
       GL[m] = 0.;
-      CH[m] = 0.;
-      BO[m] = 0.;
+      CP[m] = 0.;
+      CM[m] = 0.;
+      BP[m] = 0.;
+      BM[m] = 0.;
     }
   //Calculate Mellin moments from the
   //Mellin transform of Laguerre polynomials
@@ -315,8 +345,10 @@ void mellinpdf::laguerre_ipol()
       complex <double> zsp = (mellinint::Np[m] - powsp)*p;
       complex <double> zsm = (mellinint::Np[m] - powsm)*p;
       complex <double> zgl = (mellinint::Np[m] - powgl)*p;
-      complex <double> zch = (mellinint::Np[m] - powch)*p;
-      complex <double> zbo = (mellinint::Np[m] - powbo)*p;
+      complex <double> zcp = (mellinint::Np[m] - powcp)*p;
+      complex <double> zcm = (mellinint::Np[m] - powcm)*p;
+      complex <double> zbp = (mellinint::Np[m] - powbp)*p;
+      complex <double> zbm = (mellinint::Np[m] - powbm)*p;
       for (int n = 0; n <= N; n++)
 	{
 	  //complex <double> lapl = 1./z * pow(((z-1.)/z),n);
@@ -329,8 +361,10 @@ void mellinpdf::laguerre_ipol()
 	  complex <double> laplsp = 1./zsp * pow(1.-1./zsp,n); //cache this as laplsp[m][n]
 	  complex <double> laplsm = 1./zsm * pow(1.-1./zsm,n); //cache this as laplsm[m][n]
 	  complex <double> laplgl = 1./zgl * pow(1.-1./zgl,n); //cache this as laplgl[m][n]
-	  complex <double> laplch = 1./zch * pow(1.-1./zch,n); //cache this as laplch[m][n]
-	  complex <double> laplbo = 1./zbo * pow(1.-1./zbo,n); //cache this as laplbo[m][n]
+	  complex <double> laplcp = 1./zcp * pow(1.-1./zcp,n); //cache this as laplcp[m][n]
+	  complex <double> laplcm = 1./zcm * pow(1.-1./zcm,n); //cache this as laplcm[m][n]
+	  complex <double> laplbp = 1./zbp * pow(1.-1./zbp,n); //cache this as laplbp[m][n]
+	  complex <double> laplbm = 1./zbm * pow(1.-1./zbm,n); //cache this as laplbm[m][n]
 
 	  UV[m] += luv[n] * lapluv;
 	  DV[m] += ldv[n] * lapldv;
@@ -339,8 +373,10 @@ void mellinpdf::laguerre_ipol()
 	  SP[m] += lsp[n] * laplsp;
 	  SM[m] += lsm[n] * laplsm;
 	  GL[m] += lgl[n] * laplgl;
-	  CH[m] += lch[n] * laplch;
-	  BO[m] += lbo[n] * laplbo;
+	  CP[m] += lcp[n] * laplcp;
+	  CM[m] += lcm[n] * laplcm;
+	  BP[m] += lbp[n] * laplbp;
+	  BM[m] += lbm[n] * laplbm;
 	  //cout << m << "  " << n << "  " << real(fli[n] * lapl) << "  " << z << "  " << lapl << endl;
 	}
     }
