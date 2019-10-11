@@ -325,5 +325,7 @@ void gr::init()
 	  xxx[n-1][i-1] = x[i-1];
 	  www[n-1][i-1] = w[i-1];
 	}
+      delete[] w;
+      delete[] x;
     }
 }
