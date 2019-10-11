@@ -7,9 +7,9 @@
 
 extern "C"
 {
-  fcomplex f0_(fcomplex y);
-  fcomplex f1_(fcomplex y);
-  fcomplex f2_(fcomplex y);
+  fcomplex f0_(fcomplex &y);
+  fcomplex f1_(fcomplex &y);
+  fcomplex f2_(fcomplex &y);
 
   extern struct {
     fcomplex log1y_;
@@ -22,14 +22,17 @@ extern "C"
 
 namespace sudakov
 {
-  extern int nf;
-  extern double beta0,beta1,beta2;
-#pragma omp threadprivate(nf,beta0,beta1,beta2)
+  //extern int nf;
+  //extern double beta0,beta1,beta2;
+  //#pragma omp threadprivate(nf,beta0,beta1,beta2,log1y)
+  extern complex <double> log1y;
+#pragma omp threadprivate(log1y)
 
-  void setnf(int nff);
+  //  void setnf(int nff);
 
   complex <double> f0(complex <double> y);
   complex <double> f1(complex <double> y);
+  complex <double> f2(complex <double> y);
   complex <double> sff(complex <double> b);
 };
 
