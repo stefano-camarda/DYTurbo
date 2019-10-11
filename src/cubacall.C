@@ -925,7 +925,7 @@ void ctintegr2d(vector <double> &res, double &err)
 void ctintegr1d(vector <double> &res, double &err)
 {
   const int ndim = 1;     //dimensions of the integral
-  const int ncomp = opts.totpdf;  //components of the integrand
+  const int ncomp = 1;  //components of the integrand
   void *userdata = NULL;
   const int nvec = 1;
   const double epsrel = 0.;
@@ -977,18 +977,32 @@ void ctintegr1d(vector <double> &res, double &err)
   return;
 }
 /***************************************************************/
+void tell_to_grid_we_are_alive(){
+  if(opts.gridverbose && ICALL % 100000==0)
+    {
+      if (opts.redirect) fclose (stdout);
+      printf (" Hi Grid, we are sitll alive! Look, our event is %d\n",ICALL);
+      if (opts.redirect)
+	{
+	  string logfile = opts.output_filename + ".log";
+	  freopen(logfile.c_str(),"w",stdout);
+	}
+    }
+  ICALL++;
+}
 
-void initfun(void * input, const int &core){
+void cuba::initfun(void * input, const int &core){
     if(core != PARENT_PROC) HistoHandler::Reset();
 }
 
 
-void exitfun(void * input, const int &core){
+void cuba::exitfun(void * input, const int &core){
     HistoHandler::Save(core);
 }
 
-void tell_to_grid_we_are_alive(){
-  if(opts.gridverbose && ICALL % 100000==0) 
-      printf (" Hi Grid, we are sitll alive! Look, our event is %d\n",ICALL);
-  ICALL++;
+void cuba::init()
+{
+  cubacores(opts.cubacores,1000000);     //< set number of cores
+  cubainit((void (*)()) initfun,NULL);   //< merge at the end of the run
+  cubaexit((void (*)()) exitfun,NULL);   //< merge at the end of the run
 }
