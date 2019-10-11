@@ -46,6 +46,13 @@ fcomplex mellinint_integrand_(int& i1, int& i2, int& sign)
   return fcx(mellinint::integrand2d(i1-1, i2-1, sign-1));
 };
 
+void mellinint::release()
+{
+  delete[] wn;
+  delete[] Np;
+  delete[] Nm;
+}
+
 void mellinint::initgauss()
 {
   //set up weights and nodes for gaussian quadrature

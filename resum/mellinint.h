@@ -22,6 +22,7 @@ namespace mellinint
   extern complex <double> *Nm; //nodes on the negative branch of the contour
   extern complex <double> CCp,CCm; //angles of the positive and negative branches in the unitary complex circle
   extern void initgauss();
+  extern void release();
 
   extern void pdf_mesq_expy(int i1, int i2, int sign);
   extern double integrand2d(int i1, int i2, int sign);
