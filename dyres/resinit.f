@@ -499,7 +499,7 @@ C
 c.....quark coefficients
       A1q=Cf
       A2q=Cf/2d0*(67/6d0-(pi**2)/2d0-5/9d0*nf)
-      A3q=Cf*(13.81-2.15*nf-nf**2/108d0)            ! 
+      A3q=Cf*(13.81d0-2.15d0*nf-nf**2/108d0)            ! 
      /+Cf*(CA*(29.9259d0-28d0*Z3)-8.2963d0*nf/2d0)  ! 
      /*2d0*(beta0*4d0)/64d0                         ! A3 from Becher & Neubert
       B1q=-(3d0*Cf)/2d0
