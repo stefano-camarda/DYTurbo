@@ -9,6 +9,7 @@
  */
 
 #include "dyturbo.h"
+#include "settings.h"
 
  /**
   * @brief Main program.
@@ -17,19 +18,27 @@
   */
 int main(int argc, char *argv[])
 {
-    DYTurbo::Init(argc,argv);
-    DYTurbo::WarmUp();
-    DYTurbo::PrintTable::Header();
-    for ( DYTurbo::BoundIterator bounds; !bounds.IsEnd(); ++bounds) {
+  DYTurbo::Init(argc,argv);              //Init, read config file
+  DYTurbo::WarmUp();                     //Set up integration terms and bins boundaries
+  if (!opts.silent) DYTurbo::PrintTable::Header();
+
+    //Loop on phase space bins
+    for ( DYTurbo::BoundIterator bounds; !bounds.IsEnd(); ++bounds)
+      {
         DYTurbo::SetBounds(bounds);
-        DYTurbo::PrintTable::Bounds();
-        for (DYTurbo::TermIterator term; !term.IsEnd(); ++term){
+	if (!opts.silent) DYTurbo::PrintTable::Bounds();
+
+	//Loop on active terms
+        for (DYTurbo::TermIterator term; !term.IsEnd(); ++term)
+	  {
             (*term).RunIntegration();
-            DYTurbo::PrintTable::Result((*term));
-        }
-        DYTurbo::PrintTable::ResultSubTotal();
-    }
-    DYTurbo::PrintTable::ResultGrandTotal();
+	    if (!opts.silent) DYTurbo::PrintTable::Result((*term));
+	  }
+	
+	if (!opts.silent) DYTurbo::PrintTable::ResultSubTotal();
+      }
+    
+    if (!opts.silent) DYTurbo::PrintTable::ResultGrandTotal();
     DYTurbo::Terminate();
     return 0;
 }
