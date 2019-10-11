@@ -10,38 +10,65 @@
 
 LHAPDF::PDF* pdf::lhapdf = 0;
 
+void (*pdf::xfxq)(const double &x, const double &Q, double *fPDF) = 0;
+double (*pdf::alphas)(const double &Q) = 0;
+
+void pdf::lhaxfxq(const double &x, const double &Q, double *r)
+{
+  vector <double> fPDF; fPDF.resize(13);
+  lhapdf->xfxQ(x,Q,fPDF);
+  copy(fPDF.begin(),fPDF.end(),r);
+}
+
+double pdf::lhaalphas(const double &Q)
+{
+  return lhapdf->alphasQ(Q);
+}
+
 void pdf::init()
 {
-  //printf(" ==Initialize PDF set from LHAPDF==\n\n");
-  //printf("\n");
-  LHAPDF::Info& cfg = LHAPDF::getConfig();
-
-  cfg.set_entry("Verbosity"             , 0              );
-  cfg.set_entry("Interpolator"          , "logcubic"     );
-  cfg.set_entry("Extrapolator"          , "continuation" );
-  cfg.set_entry("ForcePositive"         , 0              );
-  cfg.set_entry("AlphaS_Type"           , "analytic"     );
-  cfg.set_entry("MZ"                    , 91.1876        );
-  cfg.set_entry("MUp"                   , 0.002          );
-  cfg.set_entry("MDown"                 , 0.005          );
-  cfg.set_entry("MStrange"              , 0.10           );
-  cfg.set_entry("MCharm"                , 1.29           );
-  cfg.set_entry("MBottom"               , 4.19           );
-  cfg.set_entry("MTop"                  , 172.9          );
-  cfg.set_entry("Pythia6LambdaV5Compat" , true           );
-
-  //Old interface
-  LHAPDF::initPDFSet(opts.LHAPDFset); //LHAPDF::initPDFSetByName(opts.LHAPDFset);
-  LHAPDF::initPDF(opts.LHAPDFmember);
-
-  //New interface
-  lhapdf = LHAPDF::mkPDF(opts.LHAPDFset, opts.LHAPDFmember);
-  
-  if (opts.PDFerrors && LHAPDF::numberPDF() > 1)
+  if (!opts.externalpdf)
     {
-      opts.totpdf = LHAPDF::numberPDF()+1;
-      pdferropts_.pdferr_ = true;
-      pdferropts_.totpdf_ = LHAPDF::numberPDF()+1;
+      //printf(" ==Initialize PDF set from LHAPDF==\n\n");
+      //printf("\n");
+      LHAPDF::Info& cfg = LHAPDF::getConfig();
+
+      cfg.set_entry("Verbosity"             , 0              );
+      cfg.set_entry("Interpolator"          , "logcubic"     );
+      cfg.set_entry("Extrapolator"          , "continuation" );
+      cfg.set_entry("ForcePositive"         , 0              );
+      cfg.set_entry("AlphaS_Type"           , "analytic"     );
+      cfg.set_entry("MZ"                    , 91.1876        );
+      cfg.set_entry("MUp"                   , 0.002          );
+      cfg.set_entry("MDown"                 , 0.005          );
+      cfg.set_entry("MStrange"              , 0.10           );
+      cfg.set_entry("MCharm"                , 1.29           );
+      cfg.set_entry("MBottom"               , 4.19           );
+      cfg.set_entry("MTop"                  , 172.9          );
+      cfg.set_entry("Pythia6LambdaV5Compat" , true           );
+
+      //Old interface
+      LHAPDF::initPDFSet(opts.LHAPDFset); //LHAPDF::initPDFSetByName(opts.LHAPDFset);
+      LHAPDF::initPDF(opts.LHAPDFmember);
+
+      //New interface
+      lhapdf = LHAPDF::mkPDF(opts.LHAPDFset, opts.LHAPDFmember);
+
+      xfxq = lhaxfxq;
+      alphas = lhaalphas;
+  
+      if (opts.PDFerrors && LHAPDF::numberPDF() > 1)
+	{
+	  opts.totpdf = LHAPDF::numberPDF()+1;
+	  pdferropts_.pdferr_ = true;
+	  pdferropts_.totpdf_ = LHAPDF::numberPDF()+1;
+	}
+      else
+	{
+	  opts.totpdf = 1;
+	  pdferropts_.pdferr_ = false;
+	  pdferropts_.totpdf_ = 1;
+	}
     }
   else
     {
@@ -64,8 +91,15 @@ void pdf::init()
 //set value of alphas
 void pdf::setalphas()
 {
+  //Old LHAPDF interface
   //couple_.amz_=LHAPDF::alphasPDF(dymasses_.zmass_);
-  couple_.amz_ = lhapdf->alphasQ(dymasses_.zmass_);
+
+  //New LHAPDF interface
+  //couple_.amz_ = lhapdf->alphasQ(dymasses_.zmass_);
+
+  //Allows external alphas
+  couple_.amz_ = alphas(dymasses_.zmass_);
+
   double scale = fabs(scale_.scale_);
 
   if (opts_.approxpdf_ == 1)
@@ -75,8 +109,9 @@ void pdf::setalphas()
     }
   else
     //qcdcouple_.as_=dyalphas_lhapdf_(scale);
-    //qcdcouple_.as_=LHAPDF::alphasPDF(scale);
-    qcdcouple_.as_=lhapdf->alphasQ(scale);
+    //qcdcouple_.as_=LHAPDF::alphasPDF(scale); //Old LHAPDF interface
+    //qcdcouple_.as_=lhapdf->alphasQ(scale);   //New LHAPDF interface
+    qcdcouple_.as_=alphas(scale);              //Allows external alphas
   
   qcdcouple_.ason2pi_=qcdcouple_.as_/(2*M_PI);
   qcdcouple_.ason4pi_=qcdcouple_.as_/(4*M_PI);
@@ -100,6 +135,8 @@ void pdf::setg()
 
 void dysetpdf_(int& member)
 {
+  if (opts.externalpdf) return;
+  
   if (member == 0)
     {
       if (opts.PDFerrors && opts.totpdf > 1)
@@ -137,13 +174,20 @@ void fdist_(int& ih, double& x, double& xmu, double fx[2*MAXNF+1])
 	fx[MAXNF+i]=0.;
       return;
     }
-  
+
+  //Old LHAPDF interface
   //double fPDF[13];
   //LHAPDF::xfx(x,xmu,fPDF);
 
-  vector <double> fPDF; fPDF.resize(13);
-  pdf::lhapdf->xfxQ(x,xmu,fPDF);
+  //New LHAPDF interface
+  //vector <double> fPDF; fPDF.resize(13);
+  //pdf::lhapdf->xfxQ(x,xmu,fPDF);
 
+  //Allows external PDF
+  double fPDF[13];
+  pdf::xfxq(x,xmu,fPDF);
+
+  
   //vector<int> pids = pdf::lhapdf->flavors();
   //for (int i = 0; i < pids.size(); i++)
   //cout << pids[i] << endl;
