@@ -411,10 +411,14 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
 
   
   //alphas at various scales (alphas convention is alphas/4/pi)
-  alpqren=LHAPDF::alphasPDF(muren)/4./M_PI;
-  alpqfac=LHAPDF::alphasPDF(mufac)/4./M_PI;
-  alpqres=LHAPDF::alphasPDF(mures)/4./M_PI;
+  //alpqren=LHAPDF::alphasPDF(muren)/4./M_PI;
+  //alpqfac=LHAPDF::alphasPDF(mufac)/4./M_PI;
+  //alpqres=LHAPDF::alphasPDF(mures)/4./M_PI;
 
+  alpqren=pdf::alphas(muren)/4./M_PI;
+  alpqfac=pdf::alphas(mufac)/4./M_PI;
+  alpqres=pdf::alphas(mures)/4./M_PI;
+  
   //alpqr is alphas at the renormalization scale
   if (opts_.approxpdf_ == 1)
     {
@@ -682,219 +686,56 @@ double resint::bintegral(double qt)
 {
   double res, err;
 
-  if (!opts.vfnsudakov)
+  //Warning!!! when evolmode = 4, the integrand of bessel transform is discontinous at mb and mc
+  //--> Need to split the integral in this case
+      
+  // Compute integral using double exponential quadratures for oscillatory fuctions (intde2.c)
+  sudakov::setnf(5);
+
+  //bstar prescription
+  if (opts.bprescription == 0)
     {
-      //Warning!!! even if the sudakov is not VFN, when evolmode = 4, the integrand of bessel transform is discontinous at mb and mc
-      //--> Need to split the integral in this case
-      
-      // Compute integral using double exponential quadratures for oscillatory fuctions (intde2.c)
-      sudakov::setnf(5);
+      //intdeo(besselint::bint, 0.0, qt, awinf, &res, &err);
+      intdeo(besselint_dequad, 0.0, qt, awinf, &res, &err);
+      if (err < 0)
+	cout << "warning: dequad abnormal termination, pt=" << _qt << " m=" << _m << " y=" << _y << " bint: " << res << " err " << err << endl;
 
-      //bstar prescription
-      if (opts.bprescription == 0)
-         {
-	   //intdeo(besselint::bint, 0.0, qt, awinf, &res, &err);
-	   intdeo(besselint_dequad, 0.0, qt, awinf, &res, &err);
-	   if (err < 0)
-	     cout << "warning: dequad abnormal termination, pt=" << _qt << " m=" << _m << " y=" << _y << " bint: " << res << " err " << err << endl;
-
-	   /*
-	   //test alternative integrations
-	   cout << endl;
-	   cout << "dequad result of inverse bessel transform, pt=" << _qt << " m=" << _m << " y=" << _y << " : " << setprecision(16) << res << " +- " << err << endl;
-	   hankel::init(0,0,0.1);
-	   hankel::transform(besselint_hankel, qt, res, err);
-	   hankel::free();
-	   cout << "hankel result " << res << " +- " << err << endl;
-	   cout.precision(6); cout.unsetf(ios_base::floatfield);
-
-	   //input
-	   int nb = 1; //lagged convolutions
-	   int nrel = 1; //related convolutions
-	   int ntol = 1; 
-	   int nord[1] = {0}; //order of the transform
-	   int ijrel[2*1]; //exponents of the related convolutions (not used)
-	   double dwork [1*801]; //work array
-	   //output
-	   double dans[1*1]; //result
-	   double arg[1]; //arguments of the lagged convolutions
-	   int nofun1; //number of function evalutions
-	   int ierr; //error code
-	   dhankl_(qt, nb, nrel, opts.bintaccuracy, ntol, nord, besselint_588, ijrel, dwork, dans, arg, nofun1, ierr);
-	   res = dans[0];
-	   err = 0.;
-	   cout << "588 result " << res << " +- " << err << "  " << nofun1 << endl;
-	   cout.precision(6); cout.unsetf(ios_base::floatfield);
-	   */
-	   
-	 }
-      //Integrate up to blim with besche
-      else if (opts.bprescription == 1)
-	{
-	  //cout << endl;
-	  //cout << "pt " << _qt << " m " << _m << endl;
-	  double C = blimit_.rblim_; //upper limit of integration
-	  double ALFA[1] = {_qt};    //oscillation frequency
-	  int NUM = 1;               //number of integrals to be computed
-	  int NU = 0;                //order of the bessel function
-	  int N = 30;                //degree of the chebyshev approximation
-	  double RESULT[1];          //output result
-	  int INFO[1];               //output status code
-	  besche_(besselint_besche_,C,ALFA,NUM,NU,N,RESULT,INFO);
-	  res = RESULT[0];
-	  err = 0;
-	  //cout << "besche result " << res << " status " << INFO[0] << endl;
-	}
-      
-      //Minimal prescription to avoid Landau singularity (see hep-ph/9604351 and hep-ph/0002078)
-      else if (opts.bprescription == 2)
-	{
-	  //cout << endl;
-	  //cout << "pt " << _qt << " m " << _m << endl;
-	  bc =  opts.bcf*blimit_.rblim_;
-	  
-	  //besche from 0 to bc
-	  double C = bc;             //upper limit of integration
-	  double ALFA[1] = {_qt};    //oscillation frequency
-	  int NUM = 1;               //number of integrals to be computed
-	  int NU = 0;                //order of the bessel function
-	  int N = 30;                //degree of the chebyshev approximation
-	  double RESULT[1];          //output result
-	  int INFO[1];               //output status code
-	  besche_(besselint_besche_,C,ALFA,NUM,NU,N,RESULT,INFO);
-	  res = RESULT[0];
-	  err = 0;
-	  //cout << "besche result up to bc " << res << " status " << INFO[0] << endl;
-
-	  /*
-	  double min = 0.;
-	  double max = bc+blimit_.rblim_/_qt;
-	  //adzint settings
-	  double abserr = 1e-10;
-	  double relerr = 1e-6;
-	  double errest;
-	  double ier;
-	  double iacta = 0;
-	  double iactb = 0;
-
-	  //res = 0.;
-	  complex <double> r = 0.;
-	  complex <double> i(0.,1.);
-	  
-	  //upper real integral
-	  //r += adzint_(fureal_,min,max,abserr,relerr,errest,ier,iacta,iactb);
-  
-	  //lower real integral
-	  //r += adzint_(fdreal_,min,max,abserr,relerr,errest,ier,iacta,iactb);
-
-	  r += adzint_(freal_,min,max,abserr,relerr,errest,ier,iacta,iactb);
-
-	  //res += real(r)/2.;
-	  cout << "adzint result " << real(r)/2. << " error " << errest << endl;
-	  */
-	  
-	  double resdequad;
-	  double errdequad;
-
-	  /*
-	  complex <double> r = 0.;
-	  intdeo(frealu_dequad, 0, qt*cos(M_PI/opts.phibr), awinf, &resdequad, &errdequad);
-	  r += resdequad;	  
-	  cout << "dequad up result " << resdequad << " error " << errdequad << endl;
-
-	  intdeo(freald_dequad, 0, qt*cos(M_PI/opts.phibr), awinf, &resdequad, &errdequad);
-	  r += resdequad;	  
-	  cout << "dequad dn result " << resdequad << " error " << errdequad << endl;
-
-	  res += real(r)/2.;
-	  cout << "Split dequad result " << real(r)/2. << " error " << errdequad << endl;
-	  */
-
-	  intdeo(besselint_mp_complex_dequad, 0, qt*cos(M_PI/opts.phibr), awinf, &resdequad, &errdequad);
-	  //cout << "Complex dequad result " << resdequad << " error " << errdequad << endl;
-	  res += resdequad;
-
-	  //cout << "Total bp = 2 " << res << endl;
-	}
-      //Minimal prescription along the real axis, crossing the Landau singularity
-      else if (opts.bprescription == 3)
-	{
-	  //minimal prescription with real b integration (not always more efficient, but save the calculation of PDFs at complex scales)
-	  
-	  bc =  opts.bcf*blimit_.rblim_;
-	  
-	  //besche from 0 to bc
-	  double C = bc;             //upper limit of integration
-	  double ALFA[1] = {_qt};    //oscillation frequency
-	  int NUM = 1;               //number of integrals to be computed
-	  int NU = 0;                //order of the bessel function
-	  int N = 30;                //degree of the chebyshev approximation
-	  double RESULT[1];          //output result
-	  int INFO[1];               //output status code
-	  besche_(besselint_besche_,C,ALFA,NUM,NU,N,RESULT,INFO);
-	  res = RESULT[0];
-	  err = 0;
-
-	  double resdequad;
-	  double errdequad;
-	  intdeo(besselint_mp_real_dequad, 0, qt, awinf, &resdequad, &errdequad);
-	  cout << "Real dequad result " << resdequad << " error " << errdequad << endl;
-	  res += resdequad;
-	  
-	  cout << "Total bp = 3 " << res << endl;
-	}
-      
-    }
-  else
-    {
-      //split the integral above and below the b and c masses
-
-      //scale b0/b without a_param
-      double bstar_mb = resconst::b0/(LHAPDF::getThreshold(5)*opts.kmub);
-      //convert bstar to b
-      double b_mb = bstar_mb / sqrt(1-(bstar_mb*bstar_mb)/(blimit_.rblim_*blimit_.rblim_));
-
-      //same for charm mass
-      double bstar_mc = resconst::b0/(LHAPDF::getThreshold(4)*opts.kmuc);
-      double b_mc = bstar_mc / sqrt(1-(bstar_mc*bstar_mc)/(blimit_.rblim_*blimit_.rblim_));
-  
-      //Integrate from pt=0 to pt=mc (from b_mc to infinity)
-      //Set NF = 3
-      sudakov::setnf(3);
-      double res1, err1;
-      //intdeo(besselint::bint, b_mc, qt, awinf, &res1, &err1);
-      intdeo(besselint_dequad, b_mc, qt, awinf, &res1, &err1);
-
-
-      //Integrate from pt=mb to pt=infinity (from 0 to b_mb)
-      //Set NF = 5
-      sudakov::setnf(5);
-      double res2, err2;
-      //dequad seems not to be appropriate for this integral 
-      //  intde(besselint::bint, 0.0, b_mb, awfin, &res2, &err2);
-
-      //try simple pcubature
-      const int ndim = 1;     //dimensions of the integral
-      const int ncomp = 1;  //components of the integrand
-      void *userdata = NULL;
-      double integral[1];
-      double error[1];
-      const int eval = 0;
-      const double epsrel = 1e-2;//opts.bintaccuracy;
-      const double epsabs = 0.;
-      double xmin[1] = {0.000001};
-      double xmax[1] = {b_mb};
       /*
-      pcubature(ncomp, besselint_cubature, userdata, 
-		ndim, xmin, xmax, 
-		eval, epsabs, epsrel, ERROR_INDIVIDUAL, integral, error);
-      res2 = integral[0];
-      err2 = error[0];
+      //test alternative integrations
       cout << endl;
-      cout << "pcubature result " << res2 << " error " << err2 << endl;
-      */
+      cout << "dequad result of inverse bessel transform, pt=" << _qt << " m=" << _m << " y=" << _y << " : " << setprecision(16) << res << " +- " << err << endl;
+      hankel::init(0,0,0.1);
+      hankel::transform(besselint_hankel, qt, res, err);
+      hankel::free();
+      cout << "hankel result " << res << " +- " << err << endl;
+      cout.precision(6); cout.unsetf(ios_base::floatfield);
 
-      double C = b_mb;           //upper limit of integration
+      //input
+      int nb = 1; //lagged convolutions
+      int nrel = 1; //related convolutions
+      int ntol = 1; 
+      int nord[1] = {0}; //order of the transform
+      int ijrel[2*1]; //exponents of the related convolutions (not used)
+      double dwork [1*801]; //work array
+      //output
+      double dans[1*1]; //result
+      double arg[1]; //arguments of the lagged convolutions
+      int nofun1; //number of function evalutions
+      int ierr; //error code
+      dhankl_(qt, nb, nrel, opts.bintaccuracy, ntol, nord, besselint_588, ijrel, dwork, dans, arg, nofun1, ierr);
+      res = dans[0];
+      err = 0.;
+      cout << "588 result " << res << " +- " << err << "  " << nofun1 << endl;
+      cout.precision(6); cout.unsetf(ios_base::floatfield);
+      */
+	   
+    }
+  //Integrate up to blim with besche
+  else if (opts.bprescription == 1)
+    {
+      //cout << endl;
+      //cout << "pt " << _qt << " m " << _m << endl;
+      double C = blimit_.rblim_; //upper limit of integration
       double ALFA[1] = {_qt};    //oscillation frequency
       int NUM = 1;               //number of integrals to be computed
       int NU = 0;                //order of the bessel function
@@ -902,40 +743,198 @@ double resint::bintegral(double qt)
       double RESULT[1];          //output result
       int INFO[1];               //output status code
       besche_(besselint_besche_,C,ALFA,NUM,NU,N,RESULT,INFO);
-      res2 = RESULT[0];
-      err2 = 0;
+      res = RESULT[0];
+      err = 0;
+      //cout << "besche result " << res << " status " << INFO[0] << endl;
+    }
+      
+  //Minimal prescription to avoid Landau singularity (see hep-ph/9604351 and hep-ph/0002078)
+  else if (opts.bprescription == 2)
+    {
+      //cout << endl;
+      //cout << "pt " << _qt << " m " << _m << endl;
+      bc =  opts.bcf*blimit_.rblim_;
+	  
+      //besche from 0 to bc
+      double C = bc;             //upper limit of integration
+      double ALFA[1] = {_qt};    //oscillation frequency
+      int NUM = 1;               //number of integrals to be computed
+      int NU = 0;                //order of the bessel function
+      int N = 30;                //degree of the chebyshev approximation
+      double RESULT[1];          //output result
+      int INFO[1];               //output status code
+      besche_(besselint_besche_,C,ALFA,NUM,NU,N,RESULT,INFO);
+      res = RESULT[0];
+      err = 0;
+      //cout << "besche result up to bc " << res << " status " << INFO[0] << endl;
+      
+      /*
+	double min = 0.;
+	double max = bc+blimit_.rblim_/_qt;
+	//adzint settings
+	double abserr = 1e-10;
+	double relerr = 1e-6;
+	double errest;
+	double ier;
+	double iacta = 0;
+	double iactb = 0;
 
-      //cout << "besche result " << res2 << " status " << INFO[0] << endl;
-      
-      //Integrate from pt=mc to pt=mb (from b_mb to b_mc)
-      //Set NF = 4
-      sudakov::setnf(4);
-      double res3, err3;
-      xmin[0] = {b_mb};
-      xmax[0] = {b_mc};
-      pcubature(ncomp, besselint_cubature, userdata, 
-		ndim, xmin, xmax, 
-		eval, epsabs, epsrel, ERROR_INDIVIDUAL, integral, error);
-      res3 = integral[0];
-      err3 = error[0];
-      
-      res = res1+res2+res3;
+	//res = 0.;
+	complex <double> r = 0.;
+	complex <double> i(0.,1.);
+	  
+	//upper real integral
+	//r += adzint_(fureal_,min,max,abserr,relerr,errest,ier,iacta,iactb);
+  
+	//lower real integral
+	//r += adzint_(fdreal_,min,max,abserr,relerr,errest,ier,iacta,iactb);
+
+	r += adzint_(freal_,min,max,abserr,relerr,errest,ier,iacta,iactb);
+
+	//res += real(r)/2.;
+	cout << "adzint result " << real(r)/2. << " error " << errest << endl;
+      */
+	  
+      double resdequad;
+      double errdequad;
 
       /*
-	cout << "split: dequad result of inverse bessel transform, " << endl;
-	cout << "total: "
-	//<< setprecision(16)
-	     << res << "  " << (err1+err2+err3)/res*100 << endl;
-	cout << " b(mc)-inf: " << res1 << "  " << err1/res1*100 << "%"
-	     << " 0-b(mb): "  << res2 << "  " << err2/res2*100 << "%"
-	     << " b(mb)-b(mc): "  << res3 << "  " << err3/res3*100 << "%"
-	     << endl;
-	//cout.precision(6); cout.unsetf(ios_base::floatfield);
-	//cout << "b_mb " << b_mb << " b_mc " << b_mc << " blim " << blimit_.rblim_ << endl;
-	cout << endl;
+	complex <double> r = 0.;
+	intdeo(frealu_dequad, 0, qt*cos(M_PI/opts.phibr), awinf, &resdequad, &errdequad);
+	r += resdequad;	  
+	cout << "dequad up result " << resdequad << " error " << errdequad << endl;
+	
+	intdeo(freald_dequad, 0, qt*cos(M_PI/opts.phibr), awinf, &resdequad, &errdequad);
+	r += resdequad;	  
+	cout << "dequad dn result " << resdequad << " error " << errdequad << endl;
+	
+	res += real(r)/2.;
+	cout << "Split dequad result " << real(r)/2. << " error " << errdequad << endl;
       */
-
+      
+      intdeo(besselint_mp_complex_dequad, 0, qt*cos(M_PI/opts.phibr), awinf, &resdequad, &errdequad);
+      //cout << "Complex dequad result " << resdequad << " error " << errdequad << endl;
+      res += resdequad;
+      
+      //cout << "Total bp = 2 " << res << endl;
     }
+  //Minimal prescription along the real axis, crossing the Landau singularity
+  else if (opts.bprescription == 3)
+    {
+      //minimal prescription with real b integration (not always more efficient, but save the calculation of PDFs at complex scales)
+	  
+      bc =  opts.bcf*blimit_.rblim_;
+	  
+      //besche from 0 to bc
+      double C = bc;             //upper limit of integration
+      double ALFA[1] = {_qt};    //oscillation frequency
+      int NUM = 1;               //number of integrals to be computed
+      int NU = 0;                //order of the bessel function
+      int N = 30;                //degree of the chebyshev approximation
+      double RESULT[1];          //output result
+      int INFO[1];               //output status code
+      besche_(besselint_besche_,C,ALFA,NUM,NU,N,RESULT,INFO);
+      res = RESULT[0];
+      err = 0;
+
+      double resdequad;
+      double errdequad;
+      intdeo(besselint_mp_real_dequad, 0, qt, awinf, &resdequad, &errdequad);
+      cout << "Real dequad result " << resdequad << " error " << errdequad << endl;
+      res += resdequad;
+      
+      cout << "Total bp = 3 " << res << endl;
+    }
+      
+  //  //vfn integration --> Not correct!!!
+  //  //split the integral above and below the b and c masses
+  //
+  //  //scale b0/b without a_param
+  //  double bstar_mb = resconst::b0/(LHAPDF::getThreshold(5)*opts.kmub);
+  //  //convert bstar to b
+  //  double b_mb = bstar_mb / sqrt(1-(bstar_mb*bstar_mb)/(blimit_.rblim_*blimit_.rblim_));
+  //
+  //  //same for charm mass
+  //  double bstar_mc = resconst::b0/(LHAPDF::getThreshold(4)*opts.kmuc);
+  //  double b_mc = bstar_mc / sqrt(1-(bstar_mc*bstar_mc)/(blimit_.rblim_*blimit_.rblim_));
+  //  
+  //  //Integrate from pt=0 to pt=mc (from b_mc to infinity)
+  //  //Set NF = 3
+  //  sudakov::setnf(3);
+  //  double res1, err1;
+  //  //intdeo(besselint::bint, b_mc, qt, awinf, &res1, &err1);
+  //  intdeo(besselint_dequad, b_mc, qt, awinf, &res1, &err1);
+  //
+  //
+  //  //Integrate from pt=mb to pt=infinity (from 0 to b_mb)
+  //  //Set NF = 5
+  //  sudakov::setnf(5);
+  //  double res2, err2;
+  //  //dequad seems not to be appropriate for this integral 
+  //  //  intde(besselint::bint, 0.0, b_mb, awfin, &res2, &err2);
+  //
+  //  //try simple pcubature
+  //  const int ndim = 1;     //dimensions of the integral
+  //  const int ncomp = 1;  //components of the integrand
+  //  void *userdata = NULL;
+  //  double integral[1];
+  //  double error[1];
+  //  const int eval = 0;
+  //  const double epsrel = 1e-2;//opts.bintaccuracy;
+  //  const double epsabs = 0.;
+  //  double xmin[1] = {0.000001};
+  //  double xmax[1] = {b_mb};
+  //  /*
+  //    pcubature(ncomp, besselint_cubature, userdata, 
+  //    ndim, xmin, xmax, 
+  //    eval, epsabs, epsrel, ERROR_INDIVIDUAL, integral, error);
+  //    res2 = integral[0];
+  //    err2 = error[0];
+  //    cout << endl;
+  //    cout << "pcubature result " << res2 << " error " << err2 << endl;
+  //  */
+  //
+  //  double C = b_mb;           //upper limit of integration
+  //  double ALFA[1] = {_qt};    //oscillation frequency
+  //  int NUM = 1;               //number of integrals to be computed
+  //  int NU = 0;                //order of the bessel function
+  //  int N = 30;                //degree of the chebyshev approximation
+  //  double RESULT[1];          //output result
+  //  int INFO[1];               //output status code
+  //  besche_(besselint_besche_,C,ALFA,NUM,NU,N,RESULT,INFO);
+  //  res2 = RESULT[0];
+  //  err2 = 0;
+  //
+  //  //cout << "besche result " << res2 << " status " << INFO[0] << endl;
+  //      
+  //  //Integrate from pt=mc to pt=mb (from b_mb to b_mc)
+  //  //Set NF = 4
+  //  sudakov::setnf(4);
+  //  double res3, err3;
+  //  xmin[0] = {b_mb};
+  //  xmax[0] = {b_mc};
+  //  pcubature(ncomp, besselint_cubature, userdata, 
+  //	    ndim, xmin, xmax, 
+  //	    eval, epsabs, epsrel, ERROR_INDIVIDUAL, integral, error);
+  //  res3 = integral[0];
+  //  err3 = error[0];
+  //      
+  //  res = res1+res2+res3;
+  //
+  //  /*
+  //    cout << "split: dequad result of inverse bessel transform, " << endl;
+  //    cout << "total: "
+  //    //<< setprecision(16)
+  //    << res << "  " << (err1+err2+err3)/res*100 << endl;
+  //    cout << " b(mc)-inf: " << res1 << "  " << err1/res1*100 << "%"
+  //    << " 0-b(mb): "  << res2 << "  " << err2/res2*100 << "%"
+  //    << " b(mb)-b(mc): "  << res3 << "  " << err3/res3*100 << "%"
+  //    << endl;
+  //    //cout.precision(6); cout.unsetf(ios_base::floatfield);
+  //    //cout << "b_mb " << b_mb << " b_mc " << b_mc << " blim " << blimit_.rblim_ << endl;
+  //    cout << endl;
+  //  */
+
 
   /*
   //plot the b-integrand

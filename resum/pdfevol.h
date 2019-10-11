@@ -66,6 +66,8 @@ namespace pdfevol
   
   //initialise and compute Mellin moments of PDFs at the starting scale (factorisation scale)
   extern void init();
+  //release memory if fmufac = 0
+  extern void release();
   //update Mellin moments of PDFs at the starting scale with a dynamic factorisation scale
   extern void update();
   //evolve Mellin moments of PDFs from the factorisation scale to the scale ~1/b, set in bscale

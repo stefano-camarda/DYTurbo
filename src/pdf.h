@@ -12,6 +12,12 @@ namespace pdf
   extern void init();
   extern void setalphas();
   extern void setg();
+
+  extern void (*xfxq)(const double &x, const double &Q, double *fPDF);
+  extern void lhaxfxq(const double &x, const double &Q, double *fPDF);
+
+  extern double (*alphas)(const double &Q);
+  extern double lhaalphas(const double &Q);
 }
 
 extern "C" {

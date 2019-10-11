@@ -5,7 +5,7 @@
 #include "dyres_interface.h"
 #include "vjint.h"
 #include "pdf.h"
-#include <LHAPDF/LHAPDF.h>
+//#include <LHAPDF/LHAPDF.h>
 
 double scales::ren;
 double scales::fac;
@@ -18,8 +18,9 @@ double scales::alphas;
 
 void scales::init()
 {
-  //alphasmz = LHAPDF::alphasPDF(coupling::zmass);
-  alphasmz = pdf::lhapdf->alphasQ(coupling::zmass);
+  //alphasmz = LHAPDF::alphasPDF(coupling::zmass);    //Old LHAPDF interface
+  //alphasmz = pdf::lhapdf->alphasQ(coupling::zmass); //New LHAPDF interface
+  alphasmz = pdf::alphas(coupling::zmass);            //Allows external alphas
 }
 
 string scales::func(int ff)
@@ -92,8 +93,9 @@ void scales::set(double m, double pt, double mjj)
       alphas = dyalphas_mcfm_(ren,alphasmz,loop);
     }
   else
-    //alphas = LHAPDF::alphasPDF(ren);
-    alphas = pdf::lhapdf->alphasQ(ren);
+    //alphas = LHAPDF::alphasPDF(ren);    //Old LHAPDF interface  
+    //alphas = pdf::lhapdf->alphasQ(ren); //New LHAPDF interface  
+    alphas = pdf::alphas(ren);		  //Allows external alphas
 }
 
 //set mcfm scales and couplings

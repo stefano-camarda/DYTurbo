@@ -1,5 +1,4 @@
 #include "resconst.h"
-#include "interface.h"
 #include <math.h>
 
 // constants.f

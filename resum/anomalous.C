@@ -229,3 +229,58 @@ void anomalous::init()
 	C2NSqqbM[index(i,sign)] = cx(C2NSqqb);
       }
 }
+
+void anomalous::release()
+{
+  delete[] ans;
+  delete[] am;
+  delete[] ap;
+  delete[] al;
+  delete[] be;
+  delete[] ab;
+  delete[] rmin;
+  delete[] rplus;
+  delete[] rqq;
+  delete[] rqg;
+  delete[] rgq;
+  delete[] rgg;
+
+  delete[] RMMQQ;
+  delete[] RMMQG;
+  delete[] RMMGQ;
+  delete[] RMMGG;
+  delete[] RMPQQ;
+  delete[] RMPQG;
+  delete[] RMPGQ;
+  delete[] RMPGG;
+  delete[] RPMQQ;
+  delete[] RPMQG;
+  delete[] RPMGQ;
+  delete[] RPMGG;
+  delete[] RPPQQ;
+  delete[] RPPQG;
+  delete[] RPPGQ;
+  delete[] RPPGG;
+
+  delete[] C1QQ;
+  delete[] C1QG;
+  delete[] C1GQ;
+
+  delete[] gamma1qq;
+  delete[] gamma1qg;
+  delete[] gamma1gq;
+  delete[] gamma1gg;
+  delete[] gamma2qq;
+  delete[] gamma2qqV;
+  delete[] gamma2qqbV;
+  delete[] gamma2qqS;
+  delete[] gamma2qqbS;
+  delete[] gamma2qg;
+  delete[] gamma2gq;
+  delete[] gamma2gg;
+
+  delete[] C2qgM;
+  delete[] C2NSqqM;
+  delete[] C2SqqbM;
+  delete[] C2NSqqbM;
+}

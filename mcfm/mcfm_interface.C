@@ -16,8 +16,8 @@ void mcfm::init()
   density_.ih1_               = opts.ih1;
   density_.ih2_               = opts.ih2;
   nproc_.nproc_               = opts.nproc;
-  zerowidth_.zerowidth_       = opts.zerowidth;
-  //  dynamicscale_.dynamicscale_ = opts.dynamicscale;   // Dynamic scale (if true mufac=muren=q)
+  zerowidth_.zerowidth_       = false;                 //Could drop everywhere from the mcfm code
+  //dynamicscale_.dynamicscale_ = opts.dynamicscale;   //not used anymore, should drop
 
   //    CKM matrix entries
   cabib_.Vud_ = opts.Vud;

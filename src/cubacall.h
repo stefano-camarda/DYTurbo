@@ -1,6 +1,9 @@
 #ifndef cubacall_h
 #define cubacall_h
 
+//--> Make this a namelist, with a different name (f.i. integration)
+//--> Wrap into general methods which can handle different integration routines (Cuba, cubature, Smolyak, Sparse grids, etc...)
+
 const int last_iter=4;
 static int ICALL=0; // number of integrand calls
 void tell_to_grid_we_are_alive();
@@ -36,7 +39,12 @@ void ctintegr3d(vector <double> &res, double &err);
 void ctintegr2d(vector <double> &res, double &err); //PDF variations, swicth to Ai
 void ctintegr1d(vector <double> &res, double &err);
 
-void initfun(void * input, const int &core);
-void exitfun(void * input, const int &core);
+//Cuba initialisation
+namespace cuba
+{
+  void init();
+  void initfun(void * input, const int &core);
+  void exitfun(void * input, const int &core);
+}
 
 #endif

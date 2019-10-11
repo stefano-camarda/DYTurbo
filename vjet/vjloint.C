@@ -487,6 +487,7 @@ double vjloint::calcvegas(const double x[7])
   //perform dOmega integration (start loop on phi_lep, costh)
   double r2[2] = {x[3], x[4]};
   phasespace::gen_costhphi(r2, jac);
+  phasespace::calcphilep();
   phasespace::genl4p();
 
   if (!Kinematics::Cuts::KeepThisEvent(phasespace::p3, phasespace::p4))

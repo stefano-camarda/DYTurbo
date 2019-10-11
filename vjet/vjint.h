@@ -250,6 +250,7 @@ namespace vjint
 #pragma omp threadprivate(logx2min)
   
   extern void init();
+  extern void release();
   extern double vint(double m, double pt, double y);
   extern double calc(double m, double pt, double y);
   extern double delta(double x);

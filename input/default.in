@@ -1,70 +1,61 @@
-# Output filename
-output_filename = results
-
 # Process settings
-sroot        = 7e3            # center-of-mass energy
-ih1          = 1              # hadron 1
-ih2          = 1              # hadron 2
-nproc        = 3              # process: 1) W+; 2)W-; 3)Z(/gamma*)
-g_param      = 1.0            # non perturbative g parameter
-order        = 2              # order: 0) LO(+LL) 1) NLO(+NLL), 2) NNLO(+NNLL)
-fixedorder   = false          # resummation or fixed order switch
+sroot        = 7e3  # Center-of-mass energy
+ih1          = 1    # Hadron 1: 1 for proton, -1 for antiproton
+ih2          = 1    # Hadron 2: 1 for proton, -1 for antiproton
+nproc        = 3    # Process: 1) W+; 2) W-; 3) Z/gamma*
 
-#Non-perturbative form factors
-flavour_kt = false
+# Perturbative order
+# fixedorder_only = true   # Evaluate predictions at fixed order
+# fixedorder_only = false  # Evaluate predictions including qt-resummation
+fixedorder_only = false
+order           = 2        # QCD order: 0) LO(+LL), 1) NLO(+NLL), 2) NNLO(+NNLL)
 
-#PDF settings
+# Non-perturbative form factor
+# Add selector for non perturbative form factor functions
+g_param      = 1.0         # Non-perturbative g parameter --> rename to g
+flavour_kt   = false       # Flavour-dependent g parameters
+
+# PDF settings
 LHAPDFset    = CT10nnlo       # PDF set from LHAPDF
 LHAPDFmember = 0              # PDF member
-PDFerrors    = false	      # calculate PDF errors
+PDFerrors    = false	      # Calculate PDF errors
 
-#QCD scale settings
-
-#Functional form of QCD scales
+# Functional form of QCD scales (mV: wmass or zmass, pT: boson transverse momentum, mjj: dijet invariant mass)
 #0: mu^2 = mV^2
 #1: mu^2 = mll^2
 #2: mu^2 = mll^2+pT^2
 #3: mu^2 = mll^2+pT^2+mjj^2
-
-#---> probably need just one of these options...
-fmuren = 0     # Functional form of the renormalisation scale
-fmufac = 0     # Functional form of the factorisation scale
+fmuren = 1     # Functional form of the renormalisation scale
+fmufac = 1     # Functional form of the factorisation scale
 fmures = 1     # Functional form of the resummation scale (forms 2 and 3 are equivalent to 1)
 
-kmuren = 1.          # scale factor for the renormalisation scale
-kmufac = 1.          # scale factor for the factorisation scale
-kmures = 0.5         # scale factor for the resummation scale
-
-#Additional resummation scales
-C1 = 1.
-C3 = 1.
+# QCD scale settings
+kmuren = 0.5         # Scale factor for the renormalisation scale
+kmufac = 0.5         # Scale factor for the factorisation scale
+kmures = 0.5         # Scale factor for the resummation scale
 
 #PDF matching scales
-kmuc          = 1.        # scale factor for the charm matching scale
-kmub          = 1.        # scale factor for the bottom matching scale
-kmut          = 1.        # scale factor for the top matching scale
+kmuc          = 1.        # Scale factor for the charm matching scale
+kmub          = 1.        # Scale factor for the bottom matching scale
+kmut          = 1.        # Scale factor for the top matching scale
 
-
-# EW parameters and scheme
-
-# ewscheme choices:
-#0: Input: alpha(mZ), zmass, xw;        derived:wmass, Gf
-#1: Input: Gf, wmass, zmass;            derived: xw, alpha(mZ)    [Gmu scheme]
-#2: Input: Gf, alpha(mZ), xw, Gf;       derived: wmass, zmass
+# EW scheme
+#0: Input: alpha(mZ), zmass, xw;     Derived: wmass, Gf
+#1: Input: Gf, wmass, zmass;         Derived: xw, alpha(mZ)    [Gmu scheme]
+#2: Input: Gf, alpha(mZ), xw, Gf;    Derived: wmass, zmass
 #3: All masses and couplings determined by inputs
 ewscheme = 1
 
-Gf = 1.1663787e-5        # G-Fermi
-zmass = 91.1876          # Mass of the Z boson
-wmass = 80.385           # Mass of the W boson
+# EW parameters
+Gf = 1.1663787e-5            # G-Fermi
+zmass = 91.1876              # Mass of the Z boson
+wmass = 80.385               # Mass of the W boson
+xw = 0.23153                 # Weak-mixing angle    (not used in the Gmu scheme)
+aemmz = 7.7585538055706e-03  # alpha_EM(MZ)         (not used in the Gmu scheme)
 
-xw = 0.23153                 # weak-mixing angle (not used in the Gmu scheme)
-aemmz = 7.7585538055706e-03  # alpha_EM(MZ) (not used in the Gmu scheme)
-
-#W and Z total widths used in the propagators are determined by the following inputs
+# W and Z total widths used in the propagator are determined by the following inputs
 zwidth = 2.4950          # Width of the Z boson
 wwidth = 2.091           # Width of the W boson
-zerowidth = false        # zero-width approximation (not really implemented)
 runningwidth = false     # Use Z and W propagators including energy-dependent width effects
 
 # CKM matrix
@@ -82,17 +73,14 @@ Zss = 1.0
 Zcc = 1.0
 Zbb = 1.0
 
-# include virtual photon in Z/gamma* production
+# Include virtual photon and interference in Z/gamma* production
 useGamma = true
 
-
 # Resummation parameters
-resumcpp  = true  # use C++ code for resummation
-ctcpp     = true  # use C++ code for the counter term
-qtcutoff = 0.02   # resummation cutoff
+qtcutoff = 0.02   # Resummation cutoff in GeV
 
-# modlog = true: modified logarithms in the Sudakov L~ = log( (Q*b/b0)^2 + 1)
-# modlog = false: canonical logarithms in the Sudakov L = log( (Q*b/b0)^2 )
+# modlog = true  # Modified logarithms in the Sudakov L~ = log( (Q*b/b0)^2 + 1)
+# modlog = false # Canonical logarithms in the Sudakov L = log( (Q*b/b0)^2 )
 modlog = true
 
 # Prescription to avoid the Landau pole in the Bessel inverse transform
@@ -111,9 +99,10 @@ bcf = 0.5         #select the point bc = bcf * b_L, where the integration contou
 # Set to 1 to use the dyres approximation of PDFs and integration contour in the complex plane for the Mellin inversion
 # Set to 0 to use exact PDFs and straight line contour in the complex plane for the Mellin inversion
 opts_approxpdf = 0
-# number of intervals for integration of PDF moments (direct Mellin transform), relevant only for opts_approxpdf = 0
-opts_pdfintervals = 100
-pdfrule = 200     #Gaussian rule for the x-to-N Mellin transform
+
+# x-to-N direct Mellin transform of PDFs
+opts_pdfintervals = 100   # Number of intervals for integration of PDF moments
+pdfrule = 200             # Gaussian rule for the x-to-N Mellin transform
 
 # Type of PDF evolution
 #0: DYRES (backward evolution)
@@ -123,75 +112,42 @@ pdfrule = 200     #Gaussian rule for the x-to-N Mellin transform
 #4: Pegasus VFN with alphas from DYRES (forward evolution)
 evolmode = 0
 
-# Split the Bessel inverse transform in 3 pieces corresponding to NF=3,4,5
-# and compute a NF-dependent Sudakov form factor
-vfnsudakov = false
+# Settings for the inverse Hankel transform
+bintaccuracy = 1.0e-4  # Accuracy of the integration
 
-#Settings for the Bessel integration
-bintaccuracy = 1.0e-4  #accuracy
+# Settings for the inverse Mellin integrations
+mellininv = 0       # Strategy for the Mellin inversion (0 Gauss-Legendre, 1 Talbot)
+mellinintervals = 1 # Number of intervals
+mellinrule = 64     # Number of nodes
 
-#Settings for the inverse Mellin integrations
-mellininv = 0       #Strategy for the mellin inverstion (0 Gauss-Legendre, 1 Talbot)
-mellinintervals = 1 #number of intervals
-mellinrule = 64     #number of nodes
+# Options for the Mellin inversion with Gauss-Legendre integration
+zmax = 27.   	    # Upper limit of the contour in the imaginary axis
+cpoint = 1.   	    # Point of intersection of the contour with the real axis
+phi = 0.5           # Angle between the real axis and the linear contour in units of pi
 
-#options for the Mellin inversion with Gauss-Legendre integration
-zmax = 27.   	    #upper limit of the contour in the imaginary axis
-cpoint = 1.   	    #point of intersection of the contour with the real axis
-phi = 0.5           #angle between the real axis and the linear contour in units of pi
+mellincores = 1     # Number of parallel threads for the Mellin integration
+mellin1d = false    # Use 1d (y-integrated) or 2d (y-dependent) Mellin inversion
+xspace = false      # Access PDFs in Bjorken-x space, without Mellin inversion (option available only in the LL case where the convolution is trivial)
 
-mellincores = 1     #number of parallel threads for the mellin integration
-mellin1d = false    #use 1d (y-integrated) or 2d (y-dependent) mellin inversion
-xspace = false      #access PDFs in Bjorken-x space, without Mellin inversion (option available only in the LL case where the convolution is trivial)
-
-#number of intervals and gaussian rule for the rapidity integrations in the 2dim resummed piece
-yintervals = 1
-yrule = 20
-
-#number of intervals and gaussian rule for the qt integration in the 2dim counter term
-qtintervals = 1
-qtrule = 64
-
-#number of intervals and gaussian rule for the alfa beta scaled-PDF integration in the counter term and born fixed order term
-abintervals = 1
-abrule = 64
-
-#gaussian rule for the phi integration in the V+J 5d LO term when makecuts is false
-vjphirule = 20
-
-#settings for the z1, z2 integration in the V+J 3d NLO term
-zrule = 64
-
-#settings for the x integration in the V+J 3d delta term
-xrule = 200
-
-# resummation damping
+# Resummation damping
 damp = true
+
+# Resummation damping function
+# 1: Gaussian:    exp(-(k*mll-qt)^2)/(delta*mll)^2
+# 2: Exponential: exp((k*mll)^-qt^2)/(delta*mll)^2
+# 3: Cosine:      cos(PI/(delta*mll)*(qt-k*mll))+1)/2
+dampmode = 1
 dampk = 0.5
 dampdelta = 0.5
-dampmode = 1
-
 
 # qt-subtraction cut-off. Both conditions are applied, at least one between qtcut and xqtcut must be > 0
 xqtcut = 0.008  # cutoff on qt/m
 qtcut = 0.      # cutoff on qt
 
-# integration settings
-rseed        = 123456         # random seed for MC integration
+# Integration settings
+rseed        = 123456         # Random seed for MC integration
 
-# type of integration for the resummed cross section
-intDimRes = 4 # can be 1, 2 or 3 for quadrature, or 4 for vegas
-
-# type of integration for the born configuration
-intDimBorn = 2 # can be 2 for quadrature, 4 or 6 for vegas
-
-# type of integration for counter term
-intDimCT = 2 # can be 1, 2 or 3 for quadrature, or 6, or 8 for vegas
-
-# type of integration for V+J finite order
-intDimVJ = 3 # can be 3 for quadrature, 5 for quadrature with cuts, or 7 for vegas
-
-# term switches
+# Term switches
 doBORN = true
 doCT   = true
 doVJ   = true
@@ -199,14 +155,30 @@ doVJ   = true
 doVJREAL = true
 doVJVIRT = true
 
+# Integration type: true -> quadrature, false -> vegas
+BORNquad = true
+CTquad   = true
+VJquad   = true
+
+# Integration type (advanced settings, override BORNquad, CTquad, VJquad options if set > -1)
+intDimRes = -1  # Resummed term (1, 2 or 3 for quadrature, or 4 for vegas)
+intDimBorn = -1 # Born term (2 for quadrature, 4 or 6 for vegas)
+intDimCT = -1   # Counter term (1, 2 or 3 for quadrature, or 6, or 8 for vegas)
+intDimVJ = -1   # V+jet term (3 for quadrature, 5 for quadrature with cuts, or 7 for vegas)
+
+# Multithreading parallelisation
+cores         = 0   # Number of parallel threads (0 for turning off parallelisation)
+
 # Cuba settings
-cubaverbosity     = 0   # Cuba info messsages, from 0 to 3
-cubacores         = 0   # parallelization ( 0 = turn off)
-cubanbatch        = 1000  # the batch size for sampling in Cuba vegas integration
-niterBORN         = 5   # only for 2d and 3d cuhre integration of resummed part
-niterCT           = 5   # only for 2d and 3d cuhre integration of counter term
-niterVJ           = 10       # only for 3d cuhre integration of V+J
+cubaverbosity     = 0     # Cuba info messsages, from 0 to 3
+cubanbatch        = 1000  # The batch size for sampling in Cuba vegas integration
+niterBORN         = 5     # Only for 2d and 3d cuhre integration of resummed part
+niterCT           = 5     # Only for 2d and 3d cuhre integration of counter term
+niterVJ           = 10    # Only for 3d cuhre integration of V+J
+
+#Vegas settings
 vegasncallsBORN   = 1000     # only for res 4d vegas integration
+#vegasncallsRES    = 1000     # only for res 4d vegas integration
 vegasncallsCT     = 100000   # only for 6d and 8d vegas integration of the counter term
 vegasncallsVJLO   = 10000000 # only for lo 7d vegas integration
 vegasncallsVJREAL = 10000000 # only for real 10d vegas integration
@@ -214,9 +186,32 @@ vegasncallsVJVIRT = 1000000  # only for virt 8d vegas integration
 vegascollect      = false    # collect points from all the vegas iterations (true) or only from the last iteration (false)
 
 # cubature settings
-pcubature = true
-relaccuracy = 1e-3 #target relative uncertainty of each term
-absaccuracy = 0    #target absolute uncertainty of each term in fb
+pcubature = true   # Use Cuhre (false ) or pcubature (true) integration in quadrature mode
+relaccuracy = 1e-3 # target relative uncertainty of each term
+absaccuracy = 0    # target absolute uncertainty of each term in fb
+
+# Advanced integration settings
+
+# Number of intervals and gaussian rule for the rapidity integrations in the 2dim resummed piece
+yintervals = 1
+yrule = 64
+
+# Number of intervals and gaussian rule for the qt integration in the 2dim counter term
+qtintervals = 1
+qtrule = 64
+
+# Number of intervals and gaussian rule for the alfa beta scaled-PDF integration in the counter term and born fixed order term
+abintervals = 1
+abrule = 64
+
+# Gaussian rule for the phi integration in the V+J 5d LO term when makecuts is false
+vjphirule = 20
+
+# Settings for the z1, z2 integration in the V+J 3d NLO term
+zrule = 64
+
+# Settings for the x integration in the V+J 3d delta term
+xrule = 200
 
 # costh CS boundaries
 costhmin = -1
@@ -228,7 +223,8 @@ makecuts = false
 
 # charged leptons cuts
 lptcut = 20
-lycut = 2.5
+lycut = 2.5 # absolute rapidity cut
+lycutmin
 
 # leptons and antileptons cuts
 lepptcut = 0
@@ -268,33 +264,36 @@ qtrec_naive = false
 qtrec_cs    = true
 qtrec_kt0   = false
 
-# debug settings
+# Debug settings
 timeprofile = false  # debug and time profile resummation integration
 verbose     = false  # debug and time profile costh phi_lep integration
-gridverbose = false  # printout events to keep job alive when running on grid
-texttable   = true # dump result table to text file (including pdf variations)
-unicode     = false # use unicode characters for the table formatting
+
+# Output settings
+output_filename = results  # output filename
+texttable   = true         # dump result table to text file (including pdf variations)
+redirect    = false        # redirect stdout and stderr to log file (except for gridverbose output)
+unicode     = false        # use unicode characters for the table formatting
+silent      = false        # no output on screen (except for gridverbose output)
+makehistos  = true         # fill histograms
+gridverbose = false        # printout number of events to keep job alive when running on grid
+
+# Compute total (-1) or helicity cross sections (0-7)
+helicity = -1
 
 # binning
 
 # normalise cross sections by bin width
 ptbinwidth = false
 ybinwidth = false
+mbinwidth = false
 
 # Force to loop over all bins even you have all Vegas integrands
 force_binsampling = false
 
-# Compute total (-1) or helicity cross sections (0-7)
-helicity = -1
-
-# pt, y, m bins
+# qt, y, m bins
 qt_bins = [ 0 2 4 6 8 10 12 14 16 18 22 26 30 34 38 42 46 50 54 60 70 80 100 150 200 300 800 ]
-y_bins = [ -5. 0.  5. ]
-m_bins = [ 50 66. 116.  1000. ]
+y_bins = [ -5 5 ]
+m_bins = [ 66 116 ]
 
 # binning for user testing histogram
 biganswer_bins = [ 41 42 43 ]
-
-#   # z angular
-#   qt_bins = [ 0 2.5 5.0 8.0 11.4 14.9 18.5 22.0 25.5 29.0 32.6 36.4 40.4 44.9 50.2 56.4 63.9 73.4 85.4 105.0 132.0 173.0 253.0 600.0 ]
-#   y_bins = [ -5  5 ]

@@ -260,6 +260,8 @@ void cc::init()
 	  xxx[n-1][i-1] = x[i-1];
 	  www[n-1][i-1] = w[i-1];
 	}
+      delete[] w;
+      delete[] x;      
     }
 
   /*
@@ -353,9 +355,9 @@ void cc::setw(double omega)
   int n = opts.mellinrule;
   int N = n-1;
     {
-      double *w = new double[n];
-      double *x = new double[n];
-      webbur::clenshaw_curtis_compute(n, x, w);
+      //double *w = new double[n];
+      //double *x = new double[n];
+      //webbur::clenshaw_curtis_compute(n, x, w);
       for ( int j = 0; j <= N; j++ )
 	{
 	  //	  cout << "cc   nodes and weights: " << j << "  " << x[j] << "  " << w[j] << endl;
@@ -389,6 +391,8 @@ void cc::setw(double omega)
 	  
 	  //	  cout << "calc nodes and weights: " << j << "  " << x[j] << "  " << cosw[N][j] << "  " << sinw[N][j] << endl;
 	}
+      //delete[] w;
+      //delete[] x;      
     }
 
 }

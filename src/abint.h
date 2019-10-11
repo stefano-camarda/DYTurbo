@@ -8,6 +8,7 @@ namespace abint
   extern int abdim;
   
   void init();
+  void release();
 }
 
 #endif

@@ -414,6 +414,7 @@ integrand_t resintegrandMC(const int &ndim, const double x[], const int &ncomp, 
   
   double r2[2] = {x[3], x[4]};
   phasespace::gen_costhphi(r2, jac);
+  phasespace::calcphilep();
   phasespace::genl4p();
 
   //apply lepton cuts
