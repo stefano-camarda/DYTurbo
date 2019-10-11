@@ -45,6 +45,14 @@ void ctmellin::calc(double m, double f[])
   double muf = scales::fac;
   double mur = scales::ren;
 
+  //update PDFs in Mellin space at the starting scale, if the factorisation scale is proportional to mll
+  if (opts.fmufac > 0)
+    {
+      pdfevol::allocate();
+      pdfevol::update();
+    }
+  pdfevol::allocate_fx();
+  
   /*
   //Set factorization scale
   double muf, mur;
@@ -254,6 +262,10 @@ void ctmellin::calc(double m, double f[])
   f[0] = xmsq;
 
   //cout << "xmsq " << xmsq << endl;
+  if (opts.fmufac > 0)
+    pdfevol::free();
   
+  pdfevol::free_fx();
+
   return;
 }
