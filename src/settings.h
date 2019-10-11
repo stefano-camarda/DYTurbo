@@ -73,10 +73,29 @@ public:
   int    ih1;
   int    ih2;
   int    nproc;
-  double g_param;
-  bool flavour_kt;
+
+  //resummation or fixed order switch
+  bool fixedorder;
   int    order;
 
+  //Non-perturbative form factor
+  int npff;
+  double g1,g2,g3; //Gaussian
+  double e;        //Exponential
+  double g0;       //Collins-Rogers
+  double Q0;       //reference mass
+
+  //Flavour dependent g1
+  bool flavour_kt;
+  double g1_uv = 0.5;
+  double g1_us = 0.5;
+  double g1_dv = 0.5;
+  double g1_ds = 0.5;
+  double g1_ss = 0.5;
+  double g1_ch = 0.5;
+  double g1_bo = 0.5;
+  double g1_gl = 0.5;
+  
   //PDF settings
   string LHAPDFset    ;
   int    LHAPDFmember ;
@@ -169,9 +188,6 @@ public:
   bool doVJ;
   
   bool doVJREAL, doVJVIRT;
-
-  //resummation or fixed order switch
-  bool fixedorder;
 
   //Cuba settings
   int cubaverbosity;

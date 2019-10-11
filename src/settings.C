@@ -41,7 +41,7 @@ void settings::parse_options(int argc, char* argv[]){
         ("r,seed"            , "Set random seed [integer]"                           , po::value<int>()    )
         ("s,pdfset"          , "Set PDF set [LHAPDF name]"                           , po::value<string>() )
         ("m,pdfvar"          , "Set PDF member [integer/all]"                        , po::value<string>() )
-        ("g,gparam"          , "Set Sudakov paramter"                                , po::value<double>() )
+        ("g,gpar"            , "Set non-perturbative Sudakov parameter"              , po::value<double>() )
         ("R,kmuren"          , "Set realative renormalization scale"                 , po::value<double>() )
         ("F,kmufac"          , "Set realative factorization scale"                   , po::value<double>() )
         ("qtbins"            , "Set equdistan binning for mass [N,lo,hi]"            , po::value<string>() )
@@ -139,8 +139,8 @@ void settings::parse_options(int argc, char* argv[]){
     }
 
     //Gpar
-    if (args.count("gparam")) {
-        opts.g_param = args["gparam"].as<double>();
+    if (args.count("gpar")) {
+        opts.g1 = args["gpar"].as<double>();
     }
     if (args.count("kmuren")) {
         opts.kmuren = args["kmuren"].as<double>();
@@ -276,8 +276,22 @@ void settings::readfromfile(const string fname){
     kmuc           = in.GetNumber ( "kmuc"       );
     kmub           = in.GetNumber ( "kmub"       );
     kmut           = in.GetNumber ( "kmut"       );
-    g_param        = in.GetNumber ( "g_param"        );
+    npff           = in.GetNumber ( "npff"        );
+    g1             = in.GetNumber ( "g1"          );
+    g2             = in.GetNumber ( "g2"          );
+    g3             = in.GetNumber ( "g3"          );
+    e              = in.GetNumber ( "e"          );
+    g0             = in.GetNumber ( "g0"          );
+    Q0             = in.GetNumber ( "Q0"          );
     flavour_kt     = in.GetBool   ( "flavour_kt"     );
+    g1_uv          = in.GetNumber ( "g1_uv"          );
+    g1_us          = in.GetNumber ( "g1_us"          );
+    g1_dv          = in.GetNumber ( "g1_dv"          );
+    g1_ds          = in.GetNumber ( "g1_ds"          );
+    g1_ss          = in.GetNumber ( "g1_ss"          );
+    g1_ch          = in.GetNumber ( "g1_ch"          );
+    g1_bo          = in.GetNumber ( "g1_bo"          );
+    g1_gl          = in.GetNumber ( "g1_gl"          );
     order          = in.GetNumber ( "order"          );
     runningwidth   = in.GetBool   ( "runningwidth"   );
     rseed          = in.GetNumber ( "rseed"          );
@@ -505,7 +519,7 @@ void settings::check_consitency(){
       else
 	intDimVJ = 7;
     
-    if (intDimVJ < 7 && order == 2)
+    if (doVJ && intDimVJ < 7 && order == 2)
       {
 	cout << "cannot perform quadrature integration for V+jet at NNLO" << endl;
 	exit (-1);
@@ -641,8 +655,24 @@ void settings::dumpAll(){
 
     if (print_inputs) {
         printf("Input settings:\n");
-        dumpD ( "g_param     ",  g_param_     . g_param_    ) ;
-        dumpI ( "order       ",  nnlo_        . order_      ) ;
+        dumpD ("g              ",  g_param_     . g_param_    ) ;
+	dumpI ("npff           ",npff               );
+	dumpD ("g1             ",g1               );
+	dumpD ("g2             ",g2               );
+	dumpD ("g3             ",g3               );
+	dumpD ("e              ",e                );
+	dumpD ("g0             ",g0               );
+	dumpD ("Q0             ",Q0               );
+	dumpB ("flavour_kt     ",flavour_kt       );
+	dumpD ("g1_uv          ",g1_uv            );
+	dumpD ("g1_us          ",g1_us            );
+	dumpD ("g1_dv          ",g1_dv            );
+	dumpD ("g1_ds          ",g1_ds            );
+	dumpD ("g1_ss          ",g1_ss            );
+	dumpD ("g1_ch          ",g1_ch            );
+	dumpD ("g1_bo          ",g1_bo            );
+	dumpD ("g1_gl          ",g1_gl            );
+	dumpI ( "order       ",  nnlo_        . order_      ) ;
         dumpD ( "kmuren      ",  kmuren                     ) ;
         dumpD ( "kmufac      ",  kmufac                     ) ;
 	dumpD ( "kmures       ",  kmures   ) ;
