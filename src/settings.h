@@ -79,7 +79,8 @@ public:
   //PDF settings
   string LHAPDFset    ;
   int    LHAPDFmember ;
-
+  bool   externalpdf;
+  
   //functional forms of the QCD scales
   int fmures;
   int fmuren;
@@ -95,9 +96,6 @@ public:
   double kmub;
   double kmut;
   
-  //Additional resummation scales
-  double C1,C3;
-  
   //  double a_param;
   
   //EW parameters
@@ -105,7 +103,6 @@ public:
   double Gf, zmass, wmass;
   double xw, aemmz;
   double zwidth, wwidth;
-  bool zerowidth;
 
   //Fixed width to running width translation
   bool runningwidth;
@@ -158,9 +155,12 @@ public:
   int intDimCT;
   bool ctint1d, ctint2d, ctint3d, ctintvegas6d, ctintvegas8d;
 
-  //  //type of integration for the V+j at LO
+  //type of integration for the V+j at LO
   int intDimVJ;
   bool vjint3d, vjint5d, vjintvegas7d;
+
+  //type of integration, automatic selector
+  bool BORNquad, CTquad, VJquad;
   
   //term switches
   bool doBORN;
@@ -275,34 +275,32 @@ public:
   bool timeprofile;
   bool verbose;
   bool gridverbose;
+
+  //output settings
   bool texttable;
   bool redirect;
-
   bool unicode;
+  bool silent;
+  bool makehistos;
+  string output_filename; // Output Filenames
   
   //resummed code in C++
-  bool resumcpp;
+  bool resumcpp = true; //use C++ code for resummation     
 
   //counter term code in C++
-  bool ctcpp;
+  bool ctcpp = true;   //use C++ code for the counter term
   
   //dyres or pegasus PDF evolution
   int evolmode;
 
-  //VFN settings
-  bool vfnsudakov;
-
   //bin width normalisation
-  bool ptbinwidth, ybinwidth;
+  bool ptbinwidth, ybinwidth, mbinwidth;
 
   // Force to loop over all bins even you have all Vegas integrands
   bool force_binsampling = false;
 
   // Calculate helicity cross sections
   int helicity;
-
-  // Output Filenames
-  std::string output_filename;
 };
 
 class binning

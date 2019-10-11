@@ -35,7 +35,7 @@ void settings::parse_options(int argc, char* argv[]){
         ("p,proc"            , "Set process [z0/wp/wm]"                              , po::value<string>() )
         ("c,collider"        , "Set beam conditions [tev2/lhc7/lhc8/lhc13/lhc14]"    , po::value<string>() )
         ("o,order"           , "Set order [0:LO, 1:NLL+NLO, 2:NNLL+NNLO]"            , po::value<int>() )
-        ("f,fixedorder"      , "Set fixed order"                )
+        ("f,fixedorder"      , "Set fixed order only"              )
         ("e,resummation"     , "Set resummation"                )
         ("t,term"            , "Set term [BORN,CT,VJ,VJREAL,VJVIRT,ALL]"             , po::value<string>() )
         ("r,seed"            , "Set random seed [integer]"                           , po::value<int>()    )
@@ -70,6 +70,8 @@ void settings::parse_options(int argc, char* argv[]){
     readfromfile      ( args["conf_file"].as<string>() );
     bins.readfromfile ( args["conf_file"].as<string>() );
 
+    externalpdf = false;
+    
     if (opts.redirect)
       {
 	string logfile = output_filename + ".log";
@@ -154,6 +156,7 @@ void settings::parse_options(int argc, char* argv[]){
         if        (val == "tev1"  ){ sroot=1.80e3; ih1=1; ih2=-1;
         } else if (val == "tev2"  ){ sroot=1.96e3; ih1=1; ih2=-1;
         } else if (val == "lhc7"  ){ sroot=7.00e3; ih1=1; ih2=1;
+        } else if (val == "lhc5"  ){ sroot=5.00e3; ih1=1; ih2=1;
         } else if (val == "lhc8"  ){ sroot=8.00e3; ih1=1; ih2=1;
         } else if (val == "lhc13" ){ sroot=13.0e3; ih1=1; ih2=1;
         } else if (val == "lhc14" ){ sroot=14.0e3; ih1=1; ih2=1;
@@ -270,14 +273,11 @@ void settings::readfromfile(const string fname){
     fmuren         = in.GetNumber ( "fmuren"     );
     fmufac         = in.GetNumber ( "fmufac"     );
     fmures         = in.GetNumber ( "fmures"     );
-    C1             = in.GetNumber ( "C1"         );
-    C3             = in.GetNumber ( "C3"         );
     kmuc           = in.GetNumber ( "kmuc"       );
     kmub           = in.GetNumber ( "kmub"       );
     kmut           = in.GetNumber ( "kmut"       );
     g_param        = in.GetNumber ( "g_param"        );
     order          = in.GetNumber ( "order"          );
-    zerowidth      = in.GetBool   ( "zerowidth"      ); //false          # zerowidth
     runningwidth   = in.GetBool   ( "runningwidth"   );
     rseed          = in.GetNumber ( "rseed"          );
     blim           = in.GetNumber ( "blim"           );
@@ -313,15 +313,18 @@ void settings::readfromfile(const string fname){
     intDimRes      = in.GetNumber ( "intDimRes"      );
     intDimBorn     = in.GetNumber ( "intDimBorn"     );
     intDimCT       = in.GetNumber ( "intDimCT"       );
-    intDimVJ           = in.GetNumber ( "intDimVJ"        );
-    fixedorder         = in.GetBool   ( "fixedorder"      );
+    intDimVJ       = in.GetNumber ( "intDimVJ"        );
+    BORNquad       = in.GetBool   ( "BORNquad"          );
+    CTquad         = in.GetBool   ( "CTquad"            );
+    VJquad         = in.GetBool   ( "VJquad"            );
+    fixedorder         = in.GetBool   ( "fixedorder_only" );
     doBORN             = in.GetBool   ( "doBORN"          );
     doCT               = in.GetBool   ( "doCT"            );
     doVJ               = in.GetBool   ( "doVJ"            );
     doVJREAL           = in.GetBool   ( "doVJREAL"        );
     doVJVIRT           = in.GetBool   ( "doVJVIRT"        );
     cubaverbosity      = in.GetNumber ( "cubaverbosity"   );
-    cubacores          = in.GetNumber ( "cubacores"       );
+    cubacores          = in.GetNumber ( "cores"       );
     cubanbatch         = in.GetNumber ( "cubanbatch"      );
     niterBORN          = in.GetNumber ( "niterBORN"       );
     niterCT            = in.GetNumber ( "niterCT"         );
@@ -371,15 +374,14 @@ void settings::readfromfile(const string fname){
     texttable          = in.GetBool   ( "texttable"       ); //
     redirect           = in.GetBool   ( "redirect"       ); //
     unicode            = in.GetBool   ( "unicode"         ); //
-    resumcpp           = in.GetBool   ( "resumcpp"        );
-    ctcpp              = in.GetBool   ( "ctcpp"        );
+    silent             = in.GetBool   ( "silent"         ); //
+    makehistos         = in.GetBool   ( "makehistos"      ); //
     useGamma           = in.GetBool ( "useGamma" );//
     PDFerrors           = in.GetBool ( "PDFerrors" );//
     opts_.approxpdf_    = in.GetNumber ( "opts_approxpdf" ); //0
     opts_.pdfintervals_ = in.GetNumber ( "opts_pdfintervals" ); //100
     pdfrule            = in.GetNumber ( "pdfrule" );
     evolmode           = in.GetNumber  ("evolmode");
-    vfnsudakov         = in.GetBool   ("vfnsudakov");
     bprescription      = in.GetNumber   ("bprescription");
     bintaccuracy       = in.GetNumber ( "bintaccuracy" );
     phibr              = in.GetNumber ( "phibr" );
@@ -432,8 +434,9 @@ void settings::check_consitency(){
     //In fixed order mode, a_param must be one
     if (fixedorder == true)
       {
-	cout << "Asked for fixed order predictions, enforce kmures = 1.0" << endl;
+	//cout << "Asked for fixed order only predictions, enforce kmures = 1.0" << endl;
 	kmures = 1.0;
+	fmures = 1;
       }
 
     if (evolmode > 4 || evolmode < 0)
@@ -449,6 +452,11 @@ void settings::check_consitency(){
     //	exit (-1);
     //  }
 
+    //minimal b prescription in the complex plain available only for evolmode 0
+    //real axix minimal presxription works only at LL
+
+    //with modlog = false can run only the resummation term
+    
     if (PDFerrors == true && LHAPDFmember != 0)
       {
 	cout << "Asked for PDFerrors, enforce LHAPDFmember  = 0" << endl;
@@ -461,6 +469,47 @@ void settings::check_consitency(){
 	exit (-1);
       }
 
+    //Automatic selector of integration type
+    //check if yrange is above ymax
+    if (intDimBorn < 0)
+      if (BORNquad)
+	{
+	  intDimBorn = 2;
+	  if (opts.makecuts)
+	    intDimRes = 2;
+	  else
+	    intDimRes = 1; // -> Check this works also when not fully integrated in rapidity!!!
+	}
+      else
+	{
+	  intDimBorn = 4;
+	  intDimRes = 4;
+	}
+
+    if (intDimCT < 0)
+      if (CTquad)
+	if (opts.makecuts) // || yrange below ymax
+	  intDimCT = 2;
+	else
+	  intDimCT = 1;
+      else
+	intDimCT = 8;
+
+    if (intDimVJ < 0)
+      if (VJquad)
+	if (opts.makecuts)
+	  intDimVJ = 5;
+	else
+	  intDimVJ = 3;
+      else
+	intDimVJ = 7;
+    
+    if (intDimVJ < 7 && order == 2)
+      {
+	cout << "cannot perform quadrature integration for V+jet at NNLO" << endl;
+	exit (-1);
+      }
+  
     // resummation term integration dimension
     if (intDimRes<4 && intDimRes>0){
         resint1d = (intDimRes == 1);
@@ -578,31 +627,27 @@ void settings::check_consitency(){
 void settings::dumpAll(){
     printf("==Listing settings==\n");
     bool print_inputs = true;
-    bool print_inputsDYRES = true;
+    bool print_process_inputs = true;
     bool print_masses = true;
 
-    if (print_inputsDYRES) {
-        printf("Input DYRES settings:\n");
+    if (print_process_inputs) {
+        printf("Input process settings:\n");
         dumpD ( "sroot       ",  energy_      . sroot_      ) ;
         dumpI ( "ih1         ",  density_     . ih1_        ) ;
         dumpI ( "ih2         ",  density_     . ih2_        ) ;
         dumpI ( "nproc       ",  nproc_       . nproc_      ) ;
-	//        dumpD ( "a_param     ",  a_param_     . a_param_    ) ;
-        dumpD ( "g_param     ",  g_param_     . g_param_    ) ;
-        dumpI ( "order       ",  nnlo_        . order_      ) ;
-        dumpB ( "zerowidth   ",  zerowidth_   . zerowidth_  ) ;
     }
 
     if (print_inputs) {
         printf("Input settings:\n");
+        dumpD ( "g_param     ",  g_param_     . g_param_    ) ;
+        dumpI ( "order       ",  nnlo_        . order_      ) ;
         dumpD ( "kmuren      ",  kmuren                     ) ;
         dumpD ( "kmufac      ",  kmufac                     ) ;
 	dumpD ( "kmures       ",  kmures   ) ;
         dumpI ( "fmuren      ",  kmuren                     ) ;
         dumpI ( "fmufac      ",  kmufac                     ) ;
 	dumpI ( "fmures       ",  kmures   ) ;
-	dumpD ( "C1       ",  C1   ) ;
-	dumpD ( "C3       ",  C3   ) ;
         dumpD ( "kmuc      ",  kmuc                     ) ;
         dumpD ( "kmub      ",  kmub                     ) ;
 	dumpD ( "kmut      ",  kmut   ) ;
@@ -660,14 +705,17 @@ void settings::dumpAll(){
         dumpB("vjint3d           ", vjint3d             );
         dumpB("vjint5d           ", vjint5d             );
         dumpB("vjintvegas7d      ", vjintvegas7d        );
-        dumpB("fixedorder        ", fixedorder          );
+        dumpB("fixedorder_only   ", fixedorder          );
+        dumpB("BORNquad          ", BORNquad              );
+        dumpB("CTquad            ", CTquad                );
+        dumpB("VJquad            ", VJquad                );
         dumpB("doBORN            ", doBORN              );
         dumpB("doCT              ", doCT                );
         dumpB("doVJ              ", doVJ                );
         dumpB("doVJREAL          ", doVJREAL            );
         dumpB("doVJVIRT          ", doVJVIRT            );
         dumpI("cubaverbosity     ", cubaverbosity       );
-        dumpI("cubacores         ", cubacores           );
+        dumpI("cores             ", cubacores           );
         dumpI("cubanbatch        ", cubanbatch          );
         dumpI("niterBORN         ", niterBORN           );
         dumpI("niterCT           ", niterCT             );
@@ -704,13 +752,15 @@ void settings::dumpAll(){
         dumpB("timeprofile       ", timeprofile         );
         dumpB("verbose           ", verbose             );
         dumpB("gridverbose       ", gridverbose         );	
+        dumpB("unicode           ", unicode         );	
+        dumpB("silent            ", silent          );	
+        dumpB("makehistos        ", makehistos         );	
         dumpB("texttable         ", texttable           );
         dumpB("resumcpp          ", resumcpp            );
 	dumpB("ctcpp             ", ctcpp               );
         dumpI("approxpdf         ", opts_.approxpdf_    );
         dumpI("pdfintervals      ", opts_.pdfintervals_ );
         dumpI("evolmode          ", evolmode            );
-	dumpB("vfnsudakov        ", vfnsudakov          );
 	dumpI("bprescription     ", bprescription       );
 	dumpB("phibr             ", phibr       );
 	dumpB("bcf               ", bcf       );
@@ -735,6 +785,7 @@ void settings::dumpAll(){
 	dumpI("xrule             ", xrule               );
         dumpB("ptbinwidth        ", ptbinwidth          );
         dumpB("ybinwidth         ", ybinwidth           );
+        dumpB("mbinwidth         ", mbinwidth           );
         dumpB("force_binsampling ", force_binsampling   );
         dumpI("helicity ",          helicity   );
         dumpS("output_filename ",   output_filename   );
@@ -935,6 +986,7 @@ bool InputParser::GetBool(string name){
 
 void InputParser::GetVectorDouble(string name, vector<double> &vec){
     has_key(name);
+    vec.clear();
     string val = data[name];
     // has open/close array
     size_t strBegin = val.find(CopenAr,0);
