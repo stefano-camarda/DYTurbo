@@ -41,3 +41,9 @@ void abint::init()
 	}
     }
 }
+void abint::release()
+{
+  delete[] abx;
+  delete[] abw;
+
+}
