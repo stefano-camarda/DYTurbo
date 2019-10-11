@@ -126,9 +126,9 @@ void pdf::setg()
   if (gformfactor >= 0)
     {
       cout << "g form factor: input from PDF member: " << gformfactor << endl;
-      opts.g_param = gformfactor;
+      opts.g1 = gformfactor;
       g_param_.g_param_ = gformfactor;
-      np_.g_ = opts.g_param;
+      np_.g_ = opts.g1;
     }
 }
 
