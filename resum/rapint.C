@@ -27,6 +27,12 @@ void rapint::init()
   cfmy = new complex <double>[mellinint::mdim*mellinint::mdim*ydim];
 }
 
+void rapint::release()
+{
+  delete[] cfpy;
+  delete[] cfmy;
+}
+
 void rapint::cache(double ymin, double ymax)
 {
   //cache the rapidity dependent exponentials

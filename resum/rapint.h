@@ -11,6 +11,7 @@ namespace rapint
 {
   extern int ydim;
   void init();
+  void release();
 
   extern complex <double> * cfpy;
   extern complex <double> * cfmy;
