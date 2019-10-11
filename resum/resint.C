@@ -290,7 +290,7 @@ void resint::init()
   v_.v_=1.;
 
   //g-parameter of the non perturbative form factor
-  np_.g_ = opts.g_param;
+  np_.g_ = opts.g1;
 
   //a-parameter of the resummation scale, set it for the dynamic case
   if (opts.fmures > 0)
@@ -690,7 +690,6 @@ double resint::bintegral(double qt)
   //--> Need to split the integral in this case
       
   // Compute integral using double exponential quadratures for oscillatory fuctions (intde2.c)
-  sudakov::setnf(5);
 
   //bstar prescription
   if (opts.bprescription == 0)
