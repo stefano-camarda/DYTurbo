@@ -27,6 +27,12 @@ double *vjint::t2;
 double vjint::brz;
 double vjint::brw;
 
+void vjint::release()
+{
+  delete[] t1;
+  delete[] t2;
+}
+
 void vjint::init()
 {
   z1rule = opts.zrule;
@@ -215,31 +221,31 @@ double vjint::vint(double m, double pt, double y)
   
   //calculate propagators
   double cw2 = 1.- coupling::xw;
-  if (opts.zerowidth)
-    {
-      sigs_.sigz_ = brz; // /(16.*cw2)
-      sigs_.sigw_ = brw; // /4.
-      sigs_.siggamma_ = 0.;
-      sigs_.sigint_ = 0.;
-    }
-  else
-    {
+  //if (opts.zerowidth)
+  //  {
+  //    sigs_.sigz_ = brz; // /(16.*cw2)
+  //    sigs_.sigw_ = brw; // /4.
+  //    sigs_.siggamma_ = 0.;
+  //    sigs_.sigint_ = 0.;
+  //  }
+  //else
+  //  {
       //sigs_.sigz_ = brz*dymasses_.zwidth_*q2/(M_PI*coupling::zmass) / (pow(q2-pow(coupling::zmass,2),2)+pow(coupling::zmass,2)*pow(dymasses_.zwidth_,2)); // /(16.*cw2)
       //sigs_.sigw_ = brw*dymasses_.wwidth_*q2/(M_PI*coupling::wmass) / (pow(q2-pow(coupling::wmass,2),2)+pow(coupling::wmass,2)*pow(dymasses_.wwidth_,2)); // !/4.
       //sigs_.siggamma_ = em_.aemmz_/(3.*M_PI*q2);
       //sigs_.sigint_ = -em_.aemmz_/(6.*M_PI)*(q2-pow(coupling::zmass,2)) /(pow(q2-pow(coupling::zmass,2),2)+pow(coupling::zmass,2)*pow(dymasses_.zwidth_,2)) * (-1.+4.*coupling::xw)/(2.*sqrt(coupling::xw*cw2)); // !sqrt(sw2/cw2)/2.
 
-      mesq::setpropagators(m);
-      if (opts.nproc == 3)
-	sigs_.sigz_ = brz*dymasses_.zwidth_/(M_PI*coupling::zmass)*mesq::propZ;
-      else
-	sigs_.sigw_ = brw*dymasses_.wwidth_/(M_PI*coupling::wmass)*mesq::propW;
-      if (opts.useGamma)
-	{
-	  sigs_.siggamma_ = coupling::aemmz/(3.*M_PI) * mesq::propG;
-	  sigs_.sigint_ = -coupling::aemmz/(6.*M_PI)* mesq::propZG * (-1.+4.*coupling::xw)/(2.*sqrt(coupling::xw*cw2));
-	}
+  mesq::setpropagators(m);
+  if (opts.nproc == 3)
+    sigs_.sigz_ = brz*dymasses_.zwidth_/(M_PI*coupling::zmass)*mesq::propZ;
+  else
+    sigs_.sigw_ = brw*dymasses_.wwidth_/(M_PI*coupling::wmass)*mesq::propW;
+  if (opts.useGamma)
+    {
+      sigs_.siggamma_ = coupling::aemmz/(3.*M_PI) * mesq::propG;
+      sigs_.sigint_ = -coupling::aemmz/(6.*M_PI)* mesq::propZG * (-1.+4.*coupling::xw)/(2.*sqrt(coupling::xw*cw2));
     }
+  //}
   //set phase space variables
   //  internal_.q_ = m;
   //  internal_.q2_ = pow(m,2);
