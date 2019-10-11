@@ -480,7 +480,6 @@ namespace DYTurbo {
             cout << Col4( "" , "Z mass ="      , dymasses_.zmass_  , "GeV"    , 12);
             cout << Col4( "" , "W width ="     , dymasses_.wwidth_ , "GeV"    , 12);
             cout << Col4( "" , "Z width ="     , dymasses_.zwidth_ , "GeV"    , 12);
-            cout << Col4( "" , "Narrow width:" , (opts.zerowidth ? "true" : "false")    , ""       , 16);
         }
 
         void QCDsettings(){
