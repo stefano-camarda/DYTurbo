@@ -186,7 +186,9 @@ namespace HistoHandler{
             // remove temporary files
             tmp << " && rm -f ";
             tmp << " tmp_" << result_filename <<"_*" << file_suffix;
-            if (system(tmp.str().c_str())!=0) printf ("Something went wrong during `%s`. Better to throw exception",tmp.str().c_str());
+#ifdef USEROOT
+            if (system(tmp.str().c_str())!=0) printf ("Something went wrong during `%s`. Better to throw exception\n",tmp.str().c_str());
+#endif	    
         } // else do nothing, workers should not terminate anything
     }
 
