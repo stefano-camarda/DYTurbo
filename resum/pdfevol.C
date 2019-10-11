@@ -95,7 +95,7 @@ void pdfevol::init()
 {
   //calculate Mellin moments of PDFs
   if (opts.fmufac == 0)
-    cout << "Initialise PDF moments with numerical integration... " << flush;
+    if (!opts.silent) cout << "Initialise PDF moments with numerical integration... " << flush;
   
   //double xmin = 1e-8;
   double xmin = pow(bins.mbins.front()/opts.sroot,2); //Restrict the integration of moments to xmin = m/sqrt(s)*exp(-ymax) = (m/sqrt(s))^2
@@ -187,8 +187,14 @@ void pdfevol::init()
       begin_time = clock();  
       update();
       end_time = clock();  
-      cout << "Done in "  << float(end_time - begin_time)/CLOCKS_PER_SEC*1000. << "ms" << endl;
+      if (!opts.silent) cout << "Done in "  << float(end_time - begin_time)/CLOCKS_PER_SEC*1000. << "ms" << endl;
     }
+}
+
+void pdfevol::release()
+{
+  if (opts.fmufac == 0)
+    free();
 }
 
 void pdfevol::update()
