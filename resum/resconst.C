@@ -7,15 +7,19 @@ const int resconst::NF = 5;
 const double resconst::CA = 3.;
 const double resconst::Cf = 4./3.;
 
-const double resconst::Euler = 0.57721566;
-const double resconst::Z2 = 1.64493406685; //1.644934;
-const double resconst::Z3 = 1.20205690316;// 1.202057;
+//DYRes precision
+//const double resconst::Euler = 0.57721566;
+//const double resconst::Z2 = 1.644934;
+//const double resconst::Z3 = 1.202057;
+
 //higher precision
-/*
+//const double resconst::Z2 = 1.64493406685;
+//const double resconst::Z3 = 1.20205690316;
+
+//even higher precision
 const double resconst::Euler = 0.57721566490153286;
 const double resconst::Z2 = M_PI*M_PI/6.;
 const double resconst::Z3 = 1.2020569031595942853;
-*/
 
 double resconst::b0;
 double resconst::beta0, resconst::beta1, resconst::beta2, resconst::Kappa;
@@ -54,7 +58,7 @@ void resconst::init()
   A2q=Cf/2.*Kappa; //(67./6.-pi2/2.-5./9.*NF);
   A3q=Cf*(13.81-2.15*NF-nf2/108.)+Cf*(CA*(29.9259-28.*Z3)-8.2963*NF/2.)*2.*(beta0*4.)/64.; //A3 from Becher & Neubert
   B1q=-(3.*Cf)/2.; //-2;
-  B2q=Cf*Cf*(pi2/4.-3./16.-3.*Z3)+CA*Cf*(11*pi2/36.-193./48.+3.*Z3/2.)+Cf*NF*(17./24.-pi2/18.);
+  B2q=Cf*Cf*(pi2/4.-3./16.-3.*Z3)+CA*Cf*(11.*pi2/36.-193./48.+3.*Z3/2.)+Cf*NF*(17./24.-pi2/18.);
   //B2q=4./9.*(pi2-3./4.-12.*Z3)+(11./9.*pi2-193./12.+6.*Z3)+NF/6.*(17./3.-4./9.*pi2);
   C1qqn=Cf/2.*(pi2/2.-4.);          // Only delta(1-z) part, i.e. N independent part
 
