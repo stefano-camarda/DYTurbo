@@ -28,152 +28,170 @@ using DYTurbo::PrintTable::Col4;
 bool DYTurbo::HasOnlyVegas = false;
 bool DYTurbo::isDryRun = false;
 
-namespace DYTurbo {
+namespace DYTurbo
+{
+  // definition of data member
+  Term subtotal;
+  TermList ActiveTerms;
+  BoundariesList ActiveBoundaries;
+  BoundIterator last_bounds;
 
-    // definition of data member
-    Term subtotal;
-    TermList ActiveTerms;
-    BoundariesList ActiveBoundaries;
-    BoundIterator last_bounds;
+  //Term
 
-    // Term
+  void Term::last_reset()
+  {
+    last_int.assign(opts.totpdf,0.);
+    last_err2=0;
+    last_time = clock_real();
+  }
 
-    void Term::last_reset() {
-        last_int.assign(opts.totpdf,0.);
-        last_err2=0;
-        last_time = clock_real();
+  void Term::RunIntegration()
+  {
+    double err;
+    last_reset();
+    /// @todo specialized (need to reincorporate)
+    if ( integrate == resintegr2d ){
+      if (opts.resumcpp) rapint::cache(phasespace::ymin, phasespace::ymax);
+      else cacheyrapint_(phasespace::ymin, phasespace::ymax);
     }
+    // run
+    if (isDryRun) // this is for testing interface
+      {
+	last_int[0] = 1; err = 1;
+      }
+    else
+      integrate(last_int,err);
+    //
+    if (opts.ptbinwidth) {last_int[0] /= (phasespace::qtmax-phasespace::qtmin); err /=  (phasespace::qtmax-phasespace::qtmin);}
+    if (opts.ybinwidth)  {last_int[0] /= (phasespace::ymax-phasespace::ymin); err /=  (phasespace::ymax-phasespace::ymin);}
+    if (opts.mbinwidth)  {last_int[0] /= (phasespace::mmax-phasespace::mmin); err /=  (phasespace::mmax-phasespace::mmin);}
+    last_time = clock_real()-last_time;
+    last_err2 += err*err;
+    // save results to histograms
+    if (!isVegas)
+      {
+	if (opts.makehistos)
+	  for (size_t ivar = 0; ivar < last_int.size(); ++ivar)
+	    {
+	      HistoHandler::SetVariation(ivar);
+	      HistoHandler::FillResult(last_int[ivar],sqrt(last_err2));
+	    }
+      }
+    // cumulate
+    total_time+=last_time;
+    total_int+=last_int[0];
+    total_err2+=last_err2;
+    // cumulate integral to subtotal
+    subtotal.last_int[0] += last_int[0];
+    subtotal.total_int   += last_int[0];
+    // cumulate error to subtotal
+    subtotal.last_err2   += last_err2;
+    subtotal.total_err2  += last_err2;
 
-    void Term::RunIntegration(){
-        double err;
-        last_reset();
-        /// @todo specialized (need to reincorporate)
-        if ( integrate == resintegr2d ){
-            if (opts.resumcpp) rapint::cache(phasespace::ymin, phasespace::ymax);
-            else cacheyrapint_(phasespace::ymin, phasespace::ymax);
-        }
-        // run
-        if (isDryRun){
-            // this is for testing interface
-            last_int[0] = 1; err = 1;
-        } else {
-            integrate(last_int,err);
-        }
-        //
-        last_time = clock_real()-last_time;
-        last_err2 += err*err;
-        // save results to histograms
-        if (!isVegas){
-            for (size_t ivar = 0; ivar < last_int.size(); ++ivar) {
-                HistoHandler::SetVariation(ivar);
-                HistoHandler::FillResult(last_int[ivar],sqrt(last_err2));
-            }
-        }
-        // cumulate
-        total_time+=last_time;
-        total_int+=last_int[0];
-        total_err2+=last_err2;
-        // cumulate integral to subtotal
-        subtotal.last_int[0] += last_int[0];
-        subtotal.total_int   += last_int[0];
-        // cumulate error to subtotal
-        subtotal.last_err2   += last_err2;
-        subtotal.total_err2  += last_err2;
+    //// cumulate integral to bintotal
+    //bintotal.last_int[0] += bin_int[0];
+    //bintotal.total_int   += last_int[0];
+    // cumulate error to subtotal
+    //bintotal.last_err2   += last_err2;
+    //bintotal.total_err2  += last_err2;
+  }
+
+  void Term::Print()
+  {
+    printf("%24s:%s",name.c_str(), description.c_str());
+  }
+
+  // Term iterator
+  TermIterator::TermIterator() : icurrent(0) { }
+
+  bool TermIterator::IsEnd()
+  { 
+    return icurrent==ActiveTerms.size(); 
+  }
+
+  TermIterator & TermIterator::operator++()
+  {
+    icurrent++;
+    return (*this);
+  }
+
+  Term & TermIterator::operator*()
+  {
+    return ActiveTerms[icurrent];
+  }
+
+  // Boundary iterator
+  BoundIterator::BoundIterator()
+  {
+    // set first boundary
+    isFirst=true;
+    current.clear();
+    if (!ActiveBoundaries.empty())
+      for (size_t i = 0; i < N_boundaries; ++i)
+	current.push_back(ActiveBoundaries[i].begin());
+    
+  }
+  
+  bool BoundIterator::IsEnd()
+  {
+    if (isFirst) return false;
+    for (size_t i = 0; i < N_boundaries; ++i)
+      if (current[i] != ActiveBoundaries[i].begin() )
+	return false;
+    return true;
+  }
+
+  BoundIterator & BoundIterator::operator++()
+  {
+    for (int i = N_boundaries-1; i >= 0; --i) { // start from last 
+      current[i]++; // increase
+      // check if it's equal to previous to last (need two numbers as boundaries)
+      if(current[i]!=ActiveBoundaries[i].end()-1) break; // go to return
+      else current[i]=ActiveBoundaries[i].begin(); // is previous to last 
     }
-
-    void Term::Print(){
-        printf("%24s:%s",name.c_str(), description.c_str());
-    }
-
-    // Term iterator
-
-    TermIterator::TermIterator() : icurrent(0) { }
-
-    bool TermIterator::IsEnd(){ 
-        return icurrent==ActiveTerms.size(); 
-    }
-
-    TermIterator & TermIterator::operator++(){
-        icurrent++;
-        return (*this);
-    }
-
-    Term & TermIterator::operator*(){
-        return ActiveTerms[icurrent];
-    }
-
-    // Boundary iterator
-
-    BoundIterator::BoundIterator(){
-        // set first boundary
-        isFirst=true;
-        current.clear();
-        if (!ActiveBoundaries.empty())
-            for (size_t i = 0; i < N_boundaries; ++i) {
-                current.push_back(ActiveBoundaries[i].begin());
-            }
-    }
-
-    bool BoundIterator::IsEnd(){
-        if (isFirst) return false;
-        for (size_t i = 0; i < N_boundaries; ++i)
-            if (current[i] != ActiveBoundaries[i].begin() )
-                return false;
-        return true;
-    }
-
-    BoundIterator & BoundIterator::operator++(){
-        for (int i = N_boundaries-1; i >= 0; --i) { // start from last 
-            current[i]++; // increase
-            // check if it's equal to previous to last (need two numbers as boundaries)
-            if(current[i]!=ActiveBoundaries[i].end()-1) break; // go to return
-            else current[i]=ActiveBoundaries[i].begin(); // is previous to last 
-        }
-        /**
-         * @attention After looping through all of boundary bins it points back
-         * to beginning. Therefore it is necessary to set `isFirst=false` 
-         */
-        if (isFirst) isFirst=false;
-        return (*this);
-    }
-
-    void BoundIterator::Print(){
-        printf ("Boundaries ");
-        printf ( "| M    : %f -- %f " , *current [ b_M    ] , * ( current [ b_M    ] +1 ) ) ;
-        printf ( "| Qt   : %f -- %f " , *current [ b_QT   ] , * ( current [ b_QT   ] +1 ) ) ;
-        printf ( "| Y    : %f -- %f " , *current [ b_Y    ] , * ( current [ b_Y    ] +1 ) ) ;
-        printf ( "| CsTh : %f -- %f " , *current [ b_CsTh ] , * ( current [ b_CsTh ] +1 ) ) ;
-        printf ( "\n");
-    }
-
-
-
-    //! Internal flag only for test purposes
-    bool TestAllTerms=false;
-
     /**
-     * @brief Add term to active terms if is requested.
-     *
-     * Also it is checked if we are only using Vegas for integration. TYhi
-     *
-     * @param isActive If this false then skip all stuff.
-     * @param fun The pointer to integration function, which should be called for calculation.
-     * @param name Set the name of term
-     * @param is_vegas For checking if we need Integration mode.
-     *
-     * @return It returns newly added term so we can define description by using stream operator.
+     * @attention After looping through all of boundary bins it points back
+     * to beginning. Therefore it is necessary to set `isFirst=false` 
      */
-    Term & AddTermIfActive(const bool &isActive, void (* fun)(VecDbl &val,double &err), const String &name, const bool &is_vegas ){
-        subtotal.description = "";
-        if (!isActive && !TestAllTerms) return subtotal;
-        ActiveTerms.push_back(Term());
-        ActiveTerms.back().name = name;
-        ActiveTerms.back().description = "";
-        ActiveTerms.back().integrate = fun;
-        ActiveTerms.back().isVegas = is_vegas;
-        HasOnlyVegas&=is_vegas;
-        return ActiveTerms.back();
-    }
+    if (isFirst) isFirst=false;
+    return (*this);
+  }
+
+  void BoundIterator::Print(){
+    printf ("Boundaries ");
+    printf ( "| M    : %f -- %f " , *current [ b_M    ] , * ( current [ b_M    ] +1 ) ) ;
+    printf ( "| Qt   : %f -- %f " , *current [ b_QT   ] , * ( current [ b_QT   ] +1 ) ) ;
+    printf ( "| Y    : %f -- %f " , *current [ b_Y    ] , * ( current [ b_Y    ] +1 ) ) ;
+    printf ( "| CsTh : %f -- %f " , *current [ b_CsTh ] , * ( current [ b_CsTh ] +1 ) ) ;
+    printf ( "\n");
+  }
+
+  //! Internal flag only for test purposes
+  bool TestAllTerms=false;
+
+  /**
+   * @brief Add term to active terms if is requested.
+   *
+   * Also it is checked if we are only using Vegas for integration. TYhi
+   *
+   * @param isActive If this false then skip all stuff.
+   * @param fun The pointer to integration function, which should be called for calculation.
+   * @param name Set the name of term
+   * @param is_vegas For checking if we need Integration mode.
+   *
+   * @return It returns newly added term so we can define description by using stream operator.
+   */
+  Term & AddTermIfActive(const bool &isActive, void (* fun)(VecDbl &val,double &err), const String &name, const bool &is_vegas ){
+    subtotal.description = "";
+    if (!isActive && !TestAllTerms) return subtotal;
+    ActiveTerms.push_back(Term());
+    ActiveTerms.back().name = name;
+    ActiveTerms.back().description = "";
+    ActiveTerms.back().integrate = fun;
+    ActiveTerms.back().isVegas = is_vegas;
+    HasOnlyVegas&=is_vegas;
+    return ActiveTerms.back();
+  }
 
     template<class Streamable> Term & Term::operator<<(const Streamable &data){
         SStream strm;
@@ -283,13 +301,14 @@ namespace DYTurbo {
      * @param _inArg Description of param
      * @return Description of return.
      */
-    void AddBoundaries(){
-        ActiveBoundaries.resize(N_boundaries);
-        VecDbl costh{opts.costhmin , opts.costhmax};
-        AddBoundary ( b_M    , "q2"    , bins.mbins     ) ;
-        AddBoundary ( b_Y    , "y"     , bins.ybins     ) ;
-        AddBoundary ( b_QT   , "qT"    , bins.qtbins    ) ;
-        AddBoundary ( b_CsTh , "costh" , costh );
+    void AddBoundaries()
+    {
+      ActiveBoundaries.resize(N_boundaries);
+      VecDbl costh{opts.costhmin , opts.costhmax};
+      AddBoundary ( b_M    , "q2"    , bins.mbins     ) ;
+      AddBoundary ( b_Y    , "y"     , bins.ybins     ) ;
+      AddBoundary ( b_QT   , "qT"    , bins.qtbins    ) ;
+      AddBoundary ( b_CsTh , "costh" , costh );
     }
 
     /**
@@ -339,25 +358,27 @@ namespace DYTurbo {
         void IntegrationSettings();
     }
 
-    void WarmUp(){
-        /// - Create term list for calculation
-        /// - Check if bounds should be simple (MC) or per each bin (cubature mode)
-        AddTerms();
-        AddBoundaries();
-        /// - Check if all histograms are integrable if necessary (make warning)
-        //HistoHandler::Book();
-        /// - Check if we need to warm up CT integration or Resummation
-        WarmUpResummation();
-        /// - Clear subtotal
-        subtotal = Term();
-        subtotal.name = "TOTAL";
-        subtotal.last_int.assign(opts.totpdf,0);
-        if (!HasOnlyVegas) HistoHandler::DeleteNonIntegrableHists();
-        PrintTable::IntegrationSettings();
-    }
+  void WarmUp()
+  {
+    /// - Create term list for calculation
+    /// - Check if bounds should be simple (MC) or per each bin (cubature mode)
+    AddTerms();
+    AddBoundaries();
+    /// - Check if all histograms are integrable if necessary (make warning)
+    //HistoHandler::Book();
+    /// - Check if we need to warm up CT integration or Resummation
+    WarmUpResummation();
+    /// - Clear subtotal
+    subtotal = Term();
+    subtotal.name = "TOTAL";
+    subtotal.last_int.clear();
+    subtotal.last_int.assign(opts.totpdf,0);
+    if (!HasOnlyVegas && opts.makehistos) HistoHandler::DeleteNonIntegrableHists();
+    if (!opts.silent) PrintTable::IntegrationSettings();
+  }
 
 
-    //! Set current boundaries to phasespace.
+  //! Set current boundaries to phasespace.
     void SetBounds(BoundIterator bounds){
         phasespace::setcthbounds(
                 bounds.loBound ( b_CsTh  )  , bounds.hiBound ( b_CsTh  ) 
@@ -370,15 +391,43 @@ namespace DYTurbo {
     }
 
     //! Close, clear, delete and say bye bye..
-    void Terminate(){
-        PrintTable::Footer();
-        ActiveTerms.clear();
-        ActiveBoundaries.clear();
-        subtotal.last_reset();
-        HistoHandler::Terminate();
-	if (opts.redirect)
-	  fclose (stdout);
-    }
+  void Terminate()
+  {
+    if (!opts.silent) PrintTable::Footer();
+    ActiveTerms.clear();
+    ActiveBoundaries.clear();
+    subtotal.last_reset();
+    if (opts.makehistos) HistoHandler::Terminate();
+    if (opts.redirect) fclose (stdout);
+
+    //clean allocate memory
+    release();
+  }
+
+  //Interface for using dyturbo as a library
+  void compute(vector <double> &val, vector <double> &err)
+  {
+    //Set up integration terms and bins boundaries
+    DYTurbo::WarmUp();
+
+    //Loop on phase space bins
+    for ( DYTurbo::BoundIterator bounds; !bounds.IsEnd(); ++bounds)
+      {
+        DYTurbo::SetBounds(bounds);
+
+	//Loop on active terms
+        for (DYTurbo::TermIterator term; !term.IsEnd(); ++term)
+	  {
+            (*term).RunIntegration();
+	  }
+
+	val.push_back(subtotal.last_int[0]);
+	err.push_back(sqrt(subtotal.last_err2));
+	//cout << "dyturbo " << val.size() << "  " << subtotal.last_int[0] << "  " << sqrt(subtotal.last_err2) << endl;
+	subtotal.last_reset();
+      }
+    DYTurbo::Terminate();
+  }
 
 };
 
