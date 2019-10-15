@@ -228,7 +228,7 @@ submit_jobs(){
     fi
     if [[ $order == unset ]]
     then
-	order=`grep order $infile | cut -d\# -f1 | cut -d= -f2 | xargs`
+	order=`grep order $infile | sed  "/fixedorder_only/ d" | cut -d\# -f1 | cut -d= -f2 | xargs`
     fi
     # check order term
     [[ $order == 1 ]] && [[ $termlist =~ VJREAL|VJVIRT ]] && echo "WRONG ORDER $order TO TERM $termlist" && return 3
@@ -279,6 +279,7 @@ submit_jobs(){
 
 #directories 
 dyturbo_project=`pwd -P`
+echo " Your dyturboproject is : $dyturbo_project"
 batch_script_dir=$dyturbo_project/scripts/batch_scripts
 queue=atlasshort
 batch_template=$dyturbo_project/scripts/run_on_batch_tmpl.sh

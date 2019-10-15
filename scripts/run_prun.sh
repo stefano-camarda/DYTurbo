@@ -22,6 +22,7 @@ PRUN(){
 
         echo NOT TESTED $target && exit 6
  prun \
+ --osMatching \
  --bexec "chmod 777 compile_grid.sh; ./compile_grid.sh  $DYTURBOVERSION;" \
  --exec "chmod 777 run_grid.sh; ./run_grid.sh %RNDM:0 ${arguments} ;" \
  --extFile dyturbo-${DYTURBOVERSION}.tar.gz \
@@ -36,6 +37,7 @@ PRUN(){
     else
 
 prun \
+--osMatching \
 --exec "chmod 777 run_grid.sh; ./run_grid.sh %RNDM:0 ${arguments} ;" \
 --nJobs $njobs \
 --maxFileSize=25000000 \
