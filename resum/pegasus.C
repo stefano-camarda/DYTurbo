@@ -15,6 +15,7 @@
 #include "mellinint.h"
 #include "settings.h"
 #include "LHAPDF/LHAPDF.h"
+#include "pdf.h"
 
 int pegasus::nff;
 int pegasus::ivfns;
@@ -230,7 +231,7 @@ void pegasus::init()
       asinp_.m20_ = pow(qmin,2);
     }
 
-  double ASI = LHAPDF::alphasPDF(sqrt(asinp_.m20_));
+  double ASI = pdf::alphas(sqrt(asinp_.m20_));
 
   //The heavy quark masses squared, input values from LHAPDF (kmux can be used to modify the matching scales)
   asfthr_.m2c_ = pow(LHAPDF::getThreshold(4)*opts.kmuc,2);
