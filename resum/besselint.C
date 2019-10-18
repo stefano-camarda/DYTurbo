@@ -92,7 +92,17 @@ complex <double> besselint::bint(complex <double> b)
   double xj0;
   double qtb = qt*real(b);
   if (resint::_mode == 3) //qt-integrated mode --> Needs to be implemented also for the other prescriptions
-    xj0 = 2.*fort_besj1_(qtb)/real(b);
+    {
+      //bstar prescription
+      if (opts.bprescription == 0)
+	xj0 = 2.*fort_besj1_(qtb)/real(b);
+      //Integrate up to blim with besche
+      else if (opts.bprescription == 1)
+	xj0 = 2./real(b);
+      //Minimal prescription
+      else if (opts.bprescription == 2 || opts.bprescription == 3)
+	xj0 = 2./real(b);
+    }
   else
     {
       //bstar prescription
@@ -109,12 +119,14 @@ complex <double> besselint::bint(complex <double> b)
   //********************
 
   //The Sudakov is mass and b dependent
+
   //fortran
-  fcomplex fbb = fcx(bb);
-  complex <double> sudak=cx(s_(fbb));
+  //fcomplex fbb = fcx(bb);
+  //complex <double> sudak=cx(s_(fbb));
 
   //C++
-  //complex <double> sudak=sudakov::sff(bb);
+  complex <double> sudak=sudakov::sff(bb);
+
   if (sudak == 0.)
     return 0.;
 
@@ -127,11 +139,12 @@ complex <double> besselint::bint(complex <double> b)
   //********************
   //b, qt and mass dependence
   complex <double> factorfin = bb*xj0*sudak;
+  //cout << "where is the nan " << bb << "  " << xj0 << "  " << sudak << endl;
   //********************
 
   //Do not need the Mellin transform for the LL case, because the HN coefficient is 1 --> Use PDFs in x space
-  if (opts.order == 0 && opts.xspace && (opts.evolmode == 0 || opts.evolmode == 1))
-    return real(factorfin);
+  if (opts.order == 0 && opts.xspace && (opts.evolmode == 0 || opts.evolmode == 1)) //if (opts.order == 0 && opts.xspace && (opts.evolmode == 1))
+    return factorfin;
   
   
   //**************************************
@@ -206,8 +219,7 @@ complex <double> besselint::bint(complex <double> b)
   //original dyres evolution: Perform PDF evolution from muf to the scale b0/b ~ pt
   //the scales used in the evolution correspond to SALP and alpr
   if (opts.evolmode == 0)
-    for (int i = 0; i < mellinint::mdim; i++)
-      pdfevol::evolution (i);
+    pdfevol::evolution();
   
   //PDF evolution with Pegasus QCD from muf to the scale b0/b ~ pt
   else if (opts.evolmode == 1)
@@ -243,6 +255,7 @@ complex <double> besselint::bint(complex <double> b)
   complex <double> aexp = cx(exponent_.aexp_); //aexp is actually the ratio alphas(a*b0/b)/alphas(muren)
 
   //calculate aexp = alphas(a*b0/b)/alphas(muren) using LHAPDF
+  //if (opts.evolmode == 2 || opts.evolmode == 3)
   //aexp = LHAPDF::alphasPDF(real(pdfevol::bstartilde))/LHAPDF::alphasPDF(resint::muren);
   
 //  //In order to have variable flavour evolution, use here a VFN definition of aexp (aexpB instead, should be independent from NF)
@@ -279,148 +292,115 @@ complex <double> besselint::bint(complex <double> b)
     pdfevol::flavour_kt();
 
       
-  complex <double> invres = 0.;
   double fun = 0.;
 
+  mellinint::reset();
+    
   //Do not need the Mellin transform for the LL case, because the HN coefficient is 1 --> Use PDFs in x space
   if (opts.order == 0 && opts.xspace && (opts.evolmode == 2 || opts.evolmode == 3 || opts.evolmode == 4))
+    //if (opts.order == 0 && opts.xspace && (opts.evolmode == 0 || opts.evolmode == 2 || opts.evolmode == 3 || opts.evolmode == 4))
     {
       double muf;
       
-      //double muf = fabs(pdfevol::bstartilde);
       //double muf = resconst::b0/b;
-
 //      if (opts.evolmode == 2)
 //	muf = fabs(pdfevol::qbstar);
 //      if (opts.evolmode == 4)
 //	muf = fabs(pdfevol::qbstar);
       //muf = fabs(pdfevol::bscale);
-      muf = fabs(pdfevol::bstartilde);
-      
-      
-      //      //PDFs
-      //      double fx1[2*MAXNF+1],fx2[2*MAXNF+1];
-      //      fdist_(opts.ih1,resint::x1,muf,fx1);
-      //      fdist_(opts.ih2,resint::x2,muf,fx2);
-      //      
-      //      //mesq::setmesq_expy(1, resint::_m, resint::_costh, resint::_y);
-      //      for (int sp = 0; sp < mesq::totpch; sp++)
-      //	fun += fx1[mesq::pid1[sp]]*fx2[mesq::pid2[sp]]*real(mesq::mesqij[sp]);
+
+      if (opts.evolmode == 0 || opts.evolmode == 1)
+	muf = resint::mufac;
+      else
+	muf = fabs(pdfevol::bstartilde);
+
 
       if (resint::_mode < 2) //rapidity differential
+	fun = mesq::loxs(resint::x1, resint::x2, muf);
+      else                   //rapidity integrated
+	fun = mesq::loxs(resint::tau, muf);      
+
+      //cout << "besselint " << fun << endl;
+    }
+  else
+    {
+      //1d mellin
+      if (opts.mellin1d)
+	fun = mellinint::calc1d();
+//	{
+//	  //double q2 = resint::_m*resint::_m;
+//	  //double bjx= q2/pow(opts.sroot,2);
+//	  //double ax = log(bjx);
+//	  for (int i = 0; i < mellinint::mdim; i++)
+//	    {
+//	      pdfevol::retrieve1d(i::positive);
+//	      mellinint::pdf_mesq_expy(i,i,mesq::positive);
+//	      double int1 = mellinint::integrand1d(i);
+//      
+//	      pdfevol::retrieve1d(i,mesq::negative); //--> both branches are negative
+//	      mellinint::pdf_mesq_expy(i,i,mesq::negative);
+//	      complex <double> int2 = mellinint::integrand1d(i,mesq::negative);
+//	      //fun += 0.5*real(int1-int2);
+//	      fun += 0.5*(int1-int2); //--> complex result for bprescription 2
+//	      
+//	      //fun += 0.5*(int1-int2);
+//	      //cout << "C++ " << setprecision(16) << i1 << "  " << i2 << "  " << int1 << "  " << int2 << endl;
+//	      
+//	      //do not actually need the negative branch, because it is equal to the complex conjugate of the positive branch
+//	      //so the sum of the two branches is equal to the real part of the positive branch: 1/2(a+conj(a)) = real(a)
+//	      fun += int1;
+//	      //cout << "mellin 1d " << setprecision(16) << i << "  " << int1 << endl;
+//	      
+//	    }
+//	  //cout << "besselint 1d inversion " << fun << endl;
+//          }
+      else
 	{
-	  //PDFs
-	  double fx1[2*MAXNF+1],fx2[2*MAXNF+1];
-	  fdist_(opts.ih1,resint::x1,muf,fx1);
-	  fdist_(opts.ih2,resint::x2,muf,fx2);
-	  
-	  for (int sp = 0; sp < mesq::totpch; sp++)
-	    fun += fx1[mesq::pid1[sp]]*fx2[mesq::pid2[sp]]*real(mesq::mesqij[sp]);
-	}
-      else //rapidity integration
-	{
-	  for (int i=0; i < opts.yintervals; i++)
+#pragma omp parallel for reduction(+:fun) num_threads(opts.mellincores) copyin(creno_,mesq::mesqij_expy,hcoefficients::Hqqb,hcoefficients::Hqg_1,hcoefficients::Hqg_2,hcoefficients::Hgg,hcoefficients::Hqq,hcoefficients::Hqq_1,hcoefficients::Hqq_2,hcoefficients::Hqqp_1,hcoefficients::Hqqp_2)
+	  for (int i1 = 0; i1 < mellinint::mdim; i1++)
 	    {
-	      double ya = phasespace::ymin+(phasespace::ymax-phasespace::ymin)*i/opts.yintervals;
-	      double yb = phasespace::ymin+(phasespace::ymax-phasespace::ymin)*(i+1)/opts.yintervals;
-	      double xc = 0.5*(ya+yb);
-	      double xm = 0.5*(yb-ya);
-	      for (int j=0; j < opts.yrule; j++)
+	      pdfevol::retrieve_beam1(i1);
+	      for (int i2 = 0; i2 < mellinint::mdim; i2++)
 		{
-		  double y = xc+xm*gr::xxx[opts.yrule-1][j];
-		  double exppy = exp(y);
-		  double expmy = 1./exppy;
-		  double x1 = resint::tau*exppy;
-		  double x2 = resint::tau*expmy;
-		      
-		  //PDFs
-		  double fx1[2*MAXNF+1],fx2[2*MAXNF+1];
-		  fdist_(opts.ih1,x1,muf,fx1);
-		  fdist_(opts.ih2,x2,muf,fx2);
-		      
-		  for (int sp = 0; sp < mesq::totpch; sp++)
-		    fun += fx1[mesq::pid1[sp]]*fx2[mesq::pid2[sp]]*real(mesq::mesqij[sp])*gr::www[opts.yrule-1][j]*xm;;
+		  // here scale2 is fixed (b-dependent), and the function is called many times at I1 I2 points       
+		  // part of the coefficients calculation is hoisted in the previous i loop
+	      
+		  //  -->   merge positive and negative branch?
+	      
+		  //     In Rapidity integrated mode:
+		  //     sigmaij are fatorised from HCRN and numerical integration in y is performed in rapintegrals
+		  //     the full expression is HCRN(I1,I2)_ij * ccex(I1,I2) * sigma_ij
+		  //     HCRN(I1,I2)_ij is only b dependent
+		  //     ccex(I1,I2) is rapidity and mass dependent
+		  //     sigma_ij is costh and mass dependent, but becomes rapidity dependent after integration of the costh moments
+		  //     The integrals are solved analitically when no cuts on the leptons are applied
+	      
+		  //pdfevol::retrieve(i1,i2,mesq::positive);
+		  pdfevol::retrieve_beam2_pos(i2);
+		  mellinint::pdf_mesq_expy(i1,i2,mesq::positive);
+		  double int1 = real(mellinint::integrand2d(i1,i2,mesq::positive));
+	      
+		  //pdfevol::retrieve(i1,i2,mesq::negative);
+		  pdfevol::retrieve_beam2_neg();
+		  mellinint::pdf_mesq_expy(i1,i2,mesq::negative);
+		  double int2 = real(mellinint::integrand2d(i1,i2,mesq::negative));
+
+		  //fun += -real(0.5*(int1-int2));
+		  fun += -0.5*(int1-int2);
+		  //cout << "C++ " << setprecision(16) << i1 << "  " << i2 << "  " << int1 << "  " << int2 << endl;
 		}
 	    }
+	  //invres = fun*factorfin;
 	}
-
-      
-      invres = fun*real(factorfin);
-    }
-  else
-
-
-  //1d mellin
-  if (opts.mellin1d)
-    {
-      //double q2 = resint::_m*resint::_m;
-      //double bjx= q2/pow(opts.sroot,2);
-      //double ax = log(bjx);
-      for (int i = 0; i < mellinint::mdim; i++)
-	{
-	  pdfevol::retrieve1d(i,mesq::positive);
-	  mellinint::pdf_mesq_expy(i,i,mesq::positive);
-	  double int1 = mellinint::integrand1d(i);
-
-	  //	  pdfevol::retrieve1d(i,mesq::negative); //--> both branches are negative
-	  //	  mellinint::pdf_mesq_expy(i,i,mesq::negative);
-	  //	  complex <double> int2 = mellinint::integrand1d(i,mesq::negative);
-	  //	  fun += 0.5*real(int1-int2);
-
-	  //fun += 0.5*(int1-int2);
-	  //cout << "C++ " << setprecision(16) << i1 << "  " << i2 << "  " << int1 << "  " << int2 << endl;
-
-	  //do not actually need the negative branch, because it is equal to the complex conjugate of the positive branch
-	  //so the sum of the two branches is equal to the real part of the positive branch: 1/2(a+conj(a)) = real(a)
-	  fun += int1;
-	  //cout << "mellin 1d " << setprecision(16) << i << "  " << int1 << endl;
-	  
-	}
-      //cout << "besselint 1d inversion " << fun << endl;
-      //invres = fun*real(factorfin);
-      invres = fun*factorfin;
-      //invres = real(factorfin)/resint::_m*(8./3.)*pow(opts.sroot,2)/2.; // --> Check unitarity of Sudakov integral
-    }
-  else
-    {
-#pragma omp parallel for reduction(+:fun) num_threads(opts.mellincores) copyin(creno_,mesq::mesqij_expy,hcoefficients::Hqqb,hcoefficients::Hqg_1,hcoefficients::Hqg_2,hcoefficients::Hgg,hcoefficients::Hqq,hcoefficients::Hqq_1,hcoefficients::Hqq_2,hcoefficients::Hqqp_1,hcoefficients::Hqqp_2)
-      for (int i1 = 0; i1 < mellinint::mdim; i1++)
-	{
-	  pdfevol::retrieve_beam1(i1);
-	  for (int i2 = 0; i2 < mellinint::mdim; i2++)
-	    {
-	      // here scale2 is fixed (b-dependent), and the function is called many times at I1 I2 points       
-	      // part of the coefficients calculation is hoisted in the previous i loop
-	      
-	      //  -->   merge positive and negative branch?
-	      
-	      //     In Rapidity integrated mode:
-	      //     sigmaij are fatorised from HCRN and numerical integration in y is performed in rapintegrals
-	      //     the full expression is HCRN(I1,I2)_ij * ccex(I1,I2) * sigma_ij
-	      //     HCRN(I1,I2)_ij is only b dependent
-	      //     ccex(I1,I2) is rapidity and mass dependent
-	      //     sigma_ij is costh and mass dependent, but becomes rapidity dependent after integration of the costh moments
-	      //     The integrals are solved analitically when no cuts on the leptons are applied
-	      
-	      //pdfevol::retrieve(i1,i2,mesq::positive);
-	      pdfevol::retrieve_beam2_pos(i2);
-	      mellinint::pdf_mesq_expy(i1,i2,mesq::positive);
-	      double int1 = real(mellinint::integrand2d(i1,i2,mesq::positive));
-	      
-	      //pdfevol::retrieve(i1,i2,mesq::negative);
-	      pdfevol::retrieve_beam2_neg();
-	      mellinint::pdf_mesq_expy(i1,i2,mesq::negative);
-	      double int2 = real(mellinint::integrand2d(i1,i2,mesq::negative));
-
-	      //fun += -real(0.5*(int1-int2));
-	      fun += -0.5*(int1-int2);
-	      //cout << "C++ " << setprecision(16) << i1 << "  " << i2 << "  " << int1 << "  " << int2 << endl;
-	    }
-	}
-      //invres = fun*real(factorfin);
-      invres = fun*factorfin;
     }
 
+  complex <double> invres = fun*factorfin;
+
+  //complex <double> invres = fun*real(factorfin); //with bstar prescription factorfin is real
+  //complex <double> invres = factorfin/resint::_m*(8./3.)*pow(opts.sroot,2)/2.; // --> Check unitarity of Sudakov integral
+  //complex <double> invres = factorfin;
+
+  
   //cout << "invres " << b << "  " << fun << "  " << factorfin << "  " << invres << endl;
   if (isnan_ofast(real(invres)) || isnan_ofast(imag(invres)))
     {
