@@ -6,6 +6,7 @@ AUTOMAKE_OPTIONS = foreign
 AM_CPPFLAGS = -fpermissive -Wl,Bstatic \
 		-I$(srcdir)/../src \
 		-I$(srcdir)/../dequad \
+		-I$(srcdir)/../bequad \
 		-I$(srcdir)/../besche \
 		-I$(srcdir)/../minprescription \
 		-I$(srcdir)/../specialfunctions \
