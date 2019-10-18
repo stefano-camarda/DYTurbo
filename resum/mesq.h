@@ -75,6 +75,10 @@ namespace mesq
   extern complex <double> mesqij[12];
 #pragma omp threadprivate(mesqij)
 
+  //cross sections
+  double loxs(double x1, double x2, double muf); //rapidity differential
+  double loxs(double tau, double muf);           //rapidity integrated
+  
   enum sign {positive=0, negative=1};
 
   //Number of partonic channels

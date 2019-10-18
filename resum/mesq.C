@@ -7,7 +7,9 @@
 #include "parton.h"
 #include "codata.h"
 #include "clenshawcurtisrules.h"
+#include "gaussrules.h"
 #include "propagator.h"
+#include "pdf.h"
 #include <iostream>
 #include <cmath>
 
@@ -517,4 +519,51 @@ void initsigma_cpp_(double &m, double &cthmom0, double &cthmom1, double &cthmom2
       sigmaij_.sigmaij_[cb][b ] = real(mesq::mesqij[10]);
       sigmaij_.sigmaij_[b ][cb] = real(mesq::mesqij[11]);
     }
+}
+
+//rapidity differential
+double mesq::loxs(double x1, double x2, double muf)
+{
+  double xs = 0.;
+
+  //PDFs
+  double fx1[2*MAXNF+1],fx2[2*MAXNF+1];
+  fdist_(opts.ih1,x1,muf,fx1);
+  fdist_(opts.ih2,x2,muf,fx2);
+	  
+  for (int sp = 0; sp < totpch; sp++)
+    xs += fx1[pid1[sp]]*fx2[pid2[sp]]*real(mesqij[sp]);
+
+  return xs;
+}
+  
+ //rapidity integrated
+double mesq::loxs(double tau, double muf)
+{
+  double xs = 0.;
+
+  double fx1[2*MAXNF+1],fx2[2*MAXNF+1];
+  for (int i=0; i < opts.yintervals; i++)
+    {
+      double ya = phasespace::ymin+(phasespace::ymax-phasespace::ymin)*i/opts.yintervals;
+      double yb = phasespace::ymin+(phasespace::ymax-phasespace::ymin)*(i+1)/opts.yintervals;
+      double xc = 0.5*(ya+yb);
+      double xm = 0.5*(yb-ya);
+      for (int j=0; j < opts.yrule; j++)
+	{
+	  double y = xc+xm*gr::xxx[opts.yrule-1][j];
+	  double exppy = exp(y);
+	  double expmy = 1./exppy;
+	  double x1 = tau*exppy;
+	  double x2 = tau*expmy;
+		      
+	  //PDFs
+	  fdist_(opts.ih1,x1,muf,fx1);
+	  fdist_(opts.ih2,x2,muf,fx2);
+		      
+	  for (int sp = 0; sp < totpch; sp++)
+	    xs += fx1[pid1[sp]]*fx2[pid2[sp]]*real(mesqij[sp])*gr::www[opts.yrule-1][j]*xm;;
+	}
+    }
+  return xs;
 }
