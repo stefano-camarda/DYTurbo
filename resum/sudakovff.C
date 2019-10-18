@@ -4,6 +4,7 @@
 #include "besselint.h"
 #include "pegasus.h"
 #include "npff.h"
+#include "isnan.h"
 #include <iostream>
 #include <iomanip>
 
@@ -113,7 +114,7 @@ complex <double> sudakov::sff(complex <double> b)
   //FFN beta
   //complex <double> y = resconst::beta0*aass_.aass_*blog;
   //VFN beta
-  complex <double> y = beta0*aass_.aass_*blog;
+  complex <double> y = beta0*resint::aass*blog;
   csud_.log1y_ = fcx(log(1.-y));
   log1y = log(1.-y);
 
@@ -128,7 +129,7 @@ complex <double> sudakov::sff(complex <double> b)
     S = exp(blog*f0(y)+f1(y));
   else if (opts.order == 2)
     //S = exp(blog*cx(f0_(fy))+cx(f1_(fy))+aass_.aass_*cx(f2_(fy)));
-    S = exp(blog*f0(y)+f1(y)+aass_.aass_*f2(y));
+    S = exp(blog*f0(y)+f1(y)+resint::aass*f2(y));
   //  cout << " y " << y << "  " << cx(fy) << endl;
 
   //cout << setprecision(16);
@@ -140,7 +141,13 @@ complex <double> sudakov::sff(complex <double> b)
     {
       fcomplex fbb = fcx(b);
       cout << "Warning! Large Sudakov, S(b) = " << S <<"; for bstar = " << bstar << " fortran S(b) = " << cx(s_(fbb)) << endl;
-      S = 0.;
+      //	  S = 0.;
+      cout << "C++ " << b << "  " << bstar << "  " << blog << "  " << y << "  " << f0(y) << "  " << f1(y) << "  " << f2(y) << "  " <<  S << endl;
+    }
+  if (isnan_ofast(real(S)))
+    {
+      fcomplex fbb = fcx(b);
+      cout << "Warning! Sudakov is nan, S(b) = " << S <<"; for bstar = " << bstar << " fortran S(b) = " << cx(s_(fbb)) << endl;
     }
   //cout << "C++ " << b << "  " << bstar << "  " << y << "  " << f0(y) << "  " << S << endl;
   
