@@ -15,6 +15,7 @@
 #include "mcfm_interface.h"
 #include "gaussrules.h"
 #include "clenshawcurtisrules.h"
+#include "bequad.h"
 //#include "chebyshev.h"
 #include "pdfevol.h"
 #include "mellinint.h"
@@ -62,6 +63,7 @@ void DYTurbo::init_const()
   gaussinit_();             //initialisation of fortran gaussian quadrature nodes and weights
   cc::init();               //nodes and weights of Clenshaw-Curtis quadrature rules
   gr::init();               //nodes and weights of gaussian quadrature rules
+  bq::init();               //nodes and weights of Bessel quadrature rules
   //cheb::init();           //Chebyshev nodes for Lagrange interpolation
   itilde::init();           //itilde dequad initialisation
   if (!opts.ctcpp)
