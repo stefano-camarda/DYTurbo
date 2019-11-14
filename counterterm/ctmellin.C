@@ -125,7 +125,7 @@ void ctmellin::calc(double m, double f[])
   for (int n = 0; n < mellinint::mdim; n++)
     {
       //retrieve PDFs in Mellin space at the factorisation scale
-      pdfevol::retrievemuf(n, mesq::positive);
+      pdfevol::retrievemuf(n);
       complex<double>* fn1 = pdfevol::fn1;
       complex<double>* fn2 = pdfevol::fn2;
 
