@@ -51,7 +51,7 @@ public:
   settings() {};
   void parse_options(int argc, char * argv[]);
   void readfromfile(const string fname);
-  void check_consitency();
+  void check_consistency();
   void parse_binning(string name, vector<double> &vec, po::Options &args);
 
   // private:

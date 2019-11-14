@@ -86,6 +86,7 @@ void settings::parse_options(int argc, char* argv[]){
     }
     if (args.count("grid")) {
         gridverbose=true;
+	redirect=true;
         cubaverbosity=3;
     }
     // rseed
@@ -191,7 +192,7 @@ void settings::parse_options(int argc, char* argv[]){
 
 
     // check consistency of settings
-    check_consitency();
+    check_consistency();
 }
 
 // PROTOTYPE OF VARIABLE REGISTRATION
@@ -427,7 +428,7 @@ void settings::readfromfile(const string fname){
     return ;
 }
 
-void settings::check_consitency(){
+void settings::check_consistency(){
 
     // additional conditions
     if (order != 0 && order != 1 && order != 2)
@@ -485,22 +486,23 @@ void settings::check_consitency(){
       }
 
     //Automatic selector of integration type
-    //check if yrange is above ymax
     if (intDimBorn < 0)
       if (BORNquad)
-	{
-	  intDimBorn = 2;
-	  if (opts.makecuts)
-	    intDimRes = 2;
-	  else
-	    intDimRes = 1; // -> Check this works also when not fully integrated in rapidity!!!
-	}
+	intDimBorn = 2;
       else
-	{
-	  intDimBorn = 4;
-	  intDimRes = 4;
-	}
+	intDimBorn = 4;
 
+    if (intDimRes < 0)
+      if (BORNquad)
+	if (opts.makecuts)
+	  intDimRes = 2;
+	else
+	  intDimRes = 1; // -> Check this works also when not fully integrated in rapidity!!!
+      else
+	intDimRes = 4;
+
+    //Here check also if yrange is above ymax to set mellin1d = true when makecuts is false
+    
     if (intDimCT < 0)
       if (CTquad)
 	if (opts.makecuts) // || yrange below ymax
