@@ -29,6 +29,9 @@ namespace mellinint
   extern double integrand1d(int i);
   //  extern complex <double> integrand();
 
+  extern double calc1d();
+  extern void reset();
+
   inline int index(int i1, int i2)
   {return i2 + mellinint::mdim*i1;}
   

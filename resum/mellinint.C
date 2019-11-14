@@ -288,24 +288,41 @@ void mellinint::initgauss()
 //#define fn1(x) pdfevol::fx1[i1*11+x]
 //#define fn2(x) pdfevol::fx2[i2*11+x]
 
+void mellinint::reset()
+{
+  //LL
+  QQBN=0;
+
+  //NLL
+  QGN_1=0;
+  QGN_2=0;
+
+  //NNLL
+  GGN=0;
+  QQN_1=0;
+  QQN_2=0;
+  QQPN_1=0;
+  QQPN_2=0;
+}
+
 void mellinint::pdf_mesq_expy(int i1, int i2, int sign)
 {
-  //QQBN=0;
-  if (opts.order < 1)
-    {
-      QGN_1=0;
-      QGN_2=0;
-    }
-      
-  if (opts.order < 2)
-    {
-      GGN=0;
-      //QQN=0;
-      QQN_1=0;
-      QQN_2=0;
-      QQPN_1=0;
-      QQPN_2=0;
-    }
+//  //QQBN=0;
+//  if (opts.order < 1)
+//    {
+//      QGN_1=0;
+//      QGN_2=0;
+//    }
+//      
+//  if (opts.order < 2)
+//    {
+//      GGN=0;
+//      //QQN=0;
+//      QQN_1=0;
+//      QQN_2=0;
+//      QQPN_1=0;
+//      QQPN_2=0;
+//    }
 
   complex<double>* fn1 = pdfevol::fn1;
   complex<double>* fn2 = pdfevol::fn2;
@@ -1135,3 +1152,31 @@ complex <double> mellinint::integrand()
     + (QQPN_1+QQPN_2)*hcoeff::Hqqpz;  
 }
 */
+
+double mellinint::calc1d()
+{
+  double fun = 0;
+  for (int i = 0; i < mdim; i++)
+    {
+      pdfevol::retrieve1d_pos(i);
+      pdf_mesq_expy(i,i,mesq::positive);
+
+      if (opts.order == 0)
+	fun += real(QQBN);
+      else
+	{
+	  fun +=
+	    //contribution starting at LL
+	    real(QQBN*hcoeff::Hqqb[i])
+
+	    //contribution starting at NLL
+	    + real((QGN_1+QGN_2)*hcoeff::Hqg[i])
+    
+	    //contributions starting at NNLL
+	    + real(GGN*hcoeff::Hgg[i])
+	    + real((QQN_1+QQN_2)*hcoeff::Hqq[i])
+	    + real((QQPN_1+QQPN_2)*hcoeff::Hqqp[i]);
+	}
+    }
+  return fun;
+}
