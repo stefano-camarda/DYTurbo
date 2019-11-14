@@ -36,6 +36,15 @@ namespace pdfevol
   extern complex <double> *BOP;
 #pragma omp threadprivate(UVP,DVP,USP,DSP,SSP,GLP,CHP,BOP)
 
+  //Singlet/non-singlet decomposition
+  extern complex <double> *SIP;
+  extern complex <double> *NS3P;
+  extern complex <double> *NS8P;
+  extern complex <double> *NS15P;
+  extern complex <double> *NS24P;
+  extern complex <double> *NS35P;
+#pragma omp threadprivate(SIP,NS3P,NS8P,NS15P,NS24P,NS35P)
+  
   //evolved PDFs mellin moments
   extern complex <double> *fx1;
   extern complex <double> *fx2;
@@ -71,7 +80,7 @@ namespace pdfevol
   //update Mellin moments of PDFs at the starting scale with a dynamic factorisation scale
   extern void update();
   //evolve Mellin moments of PDFs from the factorisation scale to the scale ~1/b, set in bscale
-  extern void evolution(int i);
+  extern void evolution();
   //calculate Mellin moments of PDFs at all scales by direct Mellin transform
   extern void calculate(int i);
   extern void calculate();
@@ -93,12 +102,14 @@ namespace pdfevol
   //flavour dependent form factors
   extern void flavour_kt();
   
-  //retrieve moments corresponding to i, and sign from fx1 and fx2 and store them in fn1 and fn2, to be used with the mellin1d option
-  extern void retrieve1d(int i, int sign);
+  //retrieve moments corresponding to i, and positive branch from fx1 and fx2 and store them in fn1 and fn2, to be used with the mellin1d option
+  extern void retrieve1d_pos(int i);
+  //retrieve moments corresponding to i, and negative branch by complex conjugation of the positive branch moments into fn1 fn2, to be used with the mellin1d option
+  extern void retrieve1d_neg();
   //retrieve moments corresponding to i, and sign from the Fortran common block and store them in fn1 and fn2, to be used with the mellin1d option
   extern void retrieve1d_fortran(int i, int sign);
 
-  extern void retrievemuf(int i, int sign);
+  extern void retrievemuf(int i);
 
   extern void truncate();
   extern void uppertruncate();

@@ -28,6 +28,13 @@ complex <double> *pdfevol::GLP;
 complex <double> *pdfevol::CHP;
 complex <double> *pdfevol::BOP;
 
+complex <double> *pdfevol::SIP;
+complex <double> *pdfevol::NS3P;
+complex <double> *pdfevol::NS8P;
+complex <double> *pdfevol::NS15P;
+complex <double> *pdfevol::NS24P;
+complex <double> *pdfevol::NS35P;
+
 complex <double> *pdfevol::fx1;
 complex <double> *pdfevol::fx2;
 
@@ -66,6 +73,13 @@ void pdfevol::allocate()
   GLP = new complex <double>[mellinint::mdim];
   CHP = new complex <double>[mellinint::mdim];
   BOP = new complex <double>[mellinint::mdim];
+
+  SIP   = new complex <double>[mellinint::mdim];
+  NS3P  = new complex <double>[mellinint::mdim];
+  NS8P  = new complex <double>[mellinint::mdim];
+  NS15P = new complex <double>[mellinint::mdim];
+  NS24P = new complex <double>[mellinint::mdim];
+  NS35P = new complex <double>[mellinint::mdim];
 }
 
 void pdfevol::free()
@@ -78,6 +92,13 @@ void pdfevol::free()
   delete[] GLP;
   delete[] CHP;
   delete[] BOP;
+  
+  delete[] SIP;
+  delete[] NS3P;
+  delete[] NS8P;
+  delete[] NS15P;
+  delete[] NS24P;
+  delete[] NS35P;
 }
 
 //evolved moments
@@ -239,6 +260,40 @@ void pdfevol::update()
       //cout << "bottom" << mellinpdf::BP[k] << endl;
     }
   mellinpdf::free();
+
+  //Precompute singlet/non-singlet decomposition
+  if (opts.evolmode == 0)
+    {
+      //N flavour dependence
+      int nf = resconst::NF;
+      for (int k = 0; k < mellinint::mdim; k++)
+	{
+	  NS3P[k] = UVP[k] + 2.*USP[k] - DVP[k] - 2.*DSP[k];               //(u+ub-d-db)               u-d
+	  NS8P[k] = UVP[k] + 2.*USP[k] + DVP[k] + 2.*DSP[k] - 4.*SSP[k];   //(u+ub+d+db-s-sb)          u+d-s
+
+	  if (nf == 5)
+	    {
+	      SIP[k]   = UVP[k] + DVP[k] + 2.*USP[k] + 2.*DSP[k] + 2.*SSP[k] + 2.*CHP[k] + 2.*BOP[k]; //(u+ub+d+db+s+sb+c+cb+b+bb) -> all quarks      u+d+s+c+b
+	      NS15P[k] = UVP[k] + DVP[k] + 2.*USP[k] + 2.*DSP[k] + 2.*SSP[k] - 6.*CHP[k];             //(u+ub+d+db+s+sb-3(c+cb))                      u+d+s-3c
+	      NS24P[k] = UVP[k] + DVP[k] + 2.*USP[k] + 2.*DSP[k] + 2.*SSP[k] + 2.*CHP[k] - 8.*BOP[k]; //(u+ub+d+db+s+sb+c+cb-4(b+bb))                 u+d+s+c-4b
+	      NS35P[k] = SIP[k];
+	    }
+	  if (nf == 4)
+	    {
+	      SIP[k]   = UVP[k] + DVP[k] + 2.*USP[k] + 2.*DSP[k] + 2.*SSP[k] + 2.*CHP[k];          //(u+ub+d+db+s+sb+c+cb) -> all quarks
+	      NS15P[k] = UVP[k] + DVP[k] + 2.*USP[k] + 2.*DSP[k] + 2.*SSP[k] - 6.*CHP[k];
+	      NS24P[k] = UVP[k] + DVP[k] + 2.*USP[k] + 2.*DSP[k] + 2.*SSP[k] + 2.*CHP[k];
+	      NS35P[k] = SIP[k];
+	    }
+	  if (nf == 3)
+	    {
+	      SIP[k]   = UVP[k] + DVP[k] + 2.*USP[k] + 2.*DSP[k] + 2.*SSP[k];     //(u+ub+d+db+s+sb) -> all quarks
+	      NS15P[k] = SIP[k];
+	      NS24P[k] = SIP[k];
+	      NS35P[k] = SIP[k];
+	    }
+	}
+    }
 }
 
 // PROVIDES MOMENTS OF DENSITIES AT A GIVEN SCALE (INCLUDES EVOLUTION)
@@ -255,39 +310,260 @@ void pdfevol::update()
 
 //Evolve the Mellin moment of PDF corresponding to the index i, sign sign, beam beam, from the scale q2 to the scale scale2(b)
 //Output in fx
-void pdfevol::evolution(int i) //from reno2
+void pdfevol::evolution() //from reno2
 {
-  // i is the index of the complex mellin moment in the z-space for the gaussian quadrature used for the mellin inversion
 
   //N flavour dependence
   int nf = resconst::NF;
 
+  //complex <double> alpq, ALPr;
+
+  //evolve only the moments of the positive branch, the negative branch is obtained by complex conjugation
+  int sign = mesq::positive;
+
+  complex <double> fx[11];
+
   //At LL there is no PDF evolution, PDFs are evaluated at the factorisation scale
   if (opts.order == 0)
+    for (int i = 0; i < mellinint::mdim; i++)
+      {
+	//XP[i] are moments of PDFs at the starting scale (factorisation scale)
+	fx[0+MAXNF] = GLP[i];
+	fx[1+MAXNF] = UVP[i] + USP[i];
+	fx[-1+MAXNF] = USP[i];
+	fx[2+MAXNF] = DVP[i] + DSP[i];
+	fx[-2+MAXNF] = DSP[i];
+	fx[3+MAXNF] = SSP[i];
+	fx[-3+MAXNF] = SSP[i];
+	if (nf >= 4)
+	  {
+	    fx[4+MAXNF] = CHP[i];
+	    fx[-4+MAXNF] = CHP[i];
+	  }
+	else
+	  {
+	    fx[4+MAXNF] = 0.;
+	    fx[-4+MAXNF] = 0.;
+	  }
+	if (nf >= 5)
+	  {
+	    fx[5+MAXNF] = BOP[i];
+	    fx[-5+MAXNF] = BOP[i];
+	  }
+	else
+	  {
+	    fx[5+MAXNF] = 0.;
+	    fx[-5+MAXNF] = 0.;
+	  }
+	
+	storemoments(i, fx);
+	continue;
+      }
+  
+  //i is the index of the complex mellin moment in the z-space for the gaussian quadrature used for the mellin inversion
+  for (int i = 0; i < mellinint::mdim; i++)
     {
-      //XP[i] are moments of PDFs at the starting scale (factorisation scale)
-      complex <double> fx[11];
-      fx[0+MAXNF] = GLP[i];
-      fx[1+MAXNF] = UVP[i] + USP[i];
-      fx[-1+MAXNF] = USP[i];
-      fx[2+MAXNF] = DVP[i] + DSP[i];
-      fx[-2+MAXNF] = DSP[i];
-      fx[3+MAXNF] = SSP[i];
-      fx[-3+MAXNF] = SSP[i];
+      /*
+      //Moments at the factorisation scale
+      //complex <double> UVI, DVI, USI, DSI, SSI, GLI, CHI, BOI;
+
+      //Moments of PDFs at the starting scale (factorisation scale)
+      UVI = UVP[i];
+      DVI = DVP[i];
+      USI = USP[i];
+      DSI = DSP[i];
+      SSI = SSP[i];
+      GLI = GLP[i];
+      CHI = CHP[i];
+      BOI = BOP[i];
+
+      // ***********************
+      // this part can be precomputed
+      complex <double> UVN = UVI;
+      complex <double> DVN = DVI;
+      complex <double> NS3N = UVI + 2.*USI - DVI - 2.*DSI;            //(u+ub-d-db)               u-d
+      complex <double> NS8N = UVI + 2.*USI + DVI + 2.*DSI - 4.*SSI;   //(u+ub+d+db-s-sb)          u+d-s
+      complex <double> GLN = GLI;
+
+      complex <double> SIN, NS15N, NS24N, NS35N;
+      if (nf == 5)
+	{
+	  SIN = UVI + DVI + 2.*USI + 2.*DSI + 2.*SSI + 2.*CHI + 2.*BOI;   //(u+ub+d+db+s+sb+c+cb+b+bb) -> all quarks      u+d+s+c+b
+	  NS15N = UVI + DVI + 2.*USI + 2.*DSI + 2.*SSI - 6.*CHI;          //(u+ub+d+db+s+sb-3(c+cb))                      u+d+s-3c
+	  NS24N = UVI + DVI + 2.*USI + 2.*DSI + 2.*SSI + 2.*CHI - 8.*BOI; //(u+ub+d+db+s+sb+c+cb-4(b+bb))                 u+d+s+c-4b
+	  NS35N = SIN;
+	}
+      if (nf == 4)
+	{
+	  SIN = UVI + DVI + 2.*USI + 2.*DSI + 2.*SSI + 2.*CHI;          //(u+ub+d+db+s+sb+c+cb) -> all quarks
+	  NS15N = UVI + DVI + 2.*USI + 2.*DSI + 2.*SSI - 6.*CHI;
+	  NS24N = UVI + DVI + 2.*USI + 2.*DSI + 2.*SSI + 2.*CHI;
+	  NS35N = SIN;
+	}
+      if (nf == 3)
+	{
+	  SIN = UVI + DVI + 2.*USI + 2.*DSI + 2.*SSI;     //(u+ub+d+db+s+sb) -> all quarks
+	  NS15N = SIN;
+	  NS24N = SIN;
+	  NS35N = SIN;
+	}
+      complex <double> SG = SIN;
+      complex <double> GL = GLN;
+      */
+
+      // Singlet/non-singlet decomposition at the starting scale (factorisation scale)
+      complex <double> UVN   = UVP[i];
+      complex <double> DVN   = DVP[i];
+      complex <double> GLN   = GLP[i];
+      complex <double> SIN   = SIP[i];
+      complex <double> NS3N  = NS3P[i];
+      complex <double> NS8N  = NS8P[i];
+      complex <double> NS15N = NS15P[i];
+      complex <double> NS24N = NS24P[i];
+      complex <double> NS35N = NS35P[i];
+
+      complex <double> SG = SIN;
+      complex <double> GL = GLN;
+
+
+      // retrieved values cached in anomalous.C
+      complex <double> ANS = anomalous::ans[anomalous::index(i,sign)];
+      complex <double> AM = anomalous::am[anomalous::index(i,sign)];
+      complex <double> AP = anomalous::ap[anomalous::index(i,sign)];
+      complex <double> AL = anomalous::al[anomalous::index(i,sign)];
+      complex <double> BE = anomalous::be[anomalous::index(i,sign)];
+      complex <double> AB = anomalous::ab[anomalous::index(i,sign)];
+      complex <double> AC  = 1. -AL;
+      complex <double> RMIN = anomalous::rmin[anomalous::index(i,sign)];
+      complex <double> RPLUS = anomalous::rplus[anomalous::index(i,sign)];
+      complex <double> RMMQQ = anomalous::RMMQQ[anomalous::index(i,sign)];
+      complex <double> RMMQG = anomalous::RMMQG[anomalous::index(i,sign)];
+      complex <double> RMMGQ = anomalous::RMMGQ[anomalous::index(i,sign)];
+      complex <double> RMMGG = anomalous::RMMGG[anomalous::index(i,sign)];
+      complex <double> RMPQQ = anomalous::RMPQQ[anomalous::index(i,sign)];
+      complex <double> RMPQG = anomalous::RMPQG[anomalous::index(i,sign)];
+      complex <double> RMPGQ = anomalous::RMPGQ[anomalous::index(i,sign)];
+      complex <double> RMPGG = anomalous::RMPGG[anomalous::index(i,sign)];
+      complex <double> RPMQQ = anomalous::RPMQQ[anomalous::index(i,sign)];
+      complex <double> RPMQG = anomalous::RPMQG[anomalous::index(i,sign)];
+      complex <double> RPMGQ = anomalous::RPMGQ[anomalous::index(i,sign)];
+      complex <double> RPMGG = anomalous::RPMGG[anomalous::index(i,sign)];
+      complex <double> RPPQQ = anomalous::RPPQQ[anomalous::index(i,sign)];
+      complex <double> RPPQG = anomalous::RPPQG[anomalous::index(i,sign)];
+      complex <double> RPPGQ = anomalous::RPPGQ[anomalous::index(i,sign)];
+      complex <double> RPPGG = anomalous::RPPGG[anomalous::index(i,sign)];
+      // **************************************
+
+      // **************************************
+      //     b-dependence
+      //resummation scale
+      //  complex <double> XL = 1./cx(alphasl_(fcx(scale2)));
+      //  complex <double> XL1 = 1.- XL;
+      //  complex <double> SALP = log(XL);
+      //--> SALP ~ log[alphas(Q)/alphas(b0/b)]
+  
+      complex <double> S = SALP;
+      //  cout << S << "  " << <<alpr <<  endl;
+  
+      complex <double> ENS = exp(-ANS*S);
+      complex <double> EM  = exp(-AM*S);
+      complex <double> EP  = exp(-AP*S);
+      complex <double> EMP = EM/EP;
+      complex <double> EPM = EP/EM;
+
+      //...EVOLUTION OF LIGHT PARTON DENSITIES
+      //double q2s = q2/pow(resint::a,2);                //resummation scale
+      //double alpqf = dyalphas_lhapdf_(sqrt(q2s))/4./M_PI; //alphas at the resummation scale
+      //complex <double> alpq = alpqf * alphasl(scale2);              //alphas at the resummation scale times alphas at 1/b
+      //complex <double> alpr= alpq * 1 *(opts.order-1);
+      //--> alpr = 0 at NLL; alpr = alphas(Q) * alphasl ~ alphas(b0/b) at NNLL
+
+      if (opts.order == 1)
+	{
+	  UVN  = UVN  * ENS;
+	  DVN  = DVN  * ENS;
+	  NS3N = NS3N * ENS;
+	  NS8N = NS8N * ENS;
+	  
+	  SIN = EM * (AL*SG + BE*GL) + EP * (AC*SG - BE*GL);
+	  GLN = EM * (AB*SG + AC*GL) + EP * (-AB*SG + AL*GL);
+  
+	  NS15N = NS15N * ENS;
+	  NS24N = NS24N * ENS;
+	}
+      else if (opts.order == 2)
+	{
+	  UVN  = UVN  * ENS * (1.+  alpr * XL1 * RMIN);
+	  DVN  = DVN  * ENS * (1.+  alpr * XL1 * RMIN);
+	  NS3N = NS3N * ENS * (1.+  alpr * XL1 * RPLUS);
+	  NS8N = NS8N * ENS * (1.+  alpr * XL1 * RPLUS);
+	  
+	  SIN = EM * ((AL + alpr * (RMMQQ*XL1 + RMPQQ*(EPM-XL)))* SG + (BE + alpr * (RMMQG*XL1 + RMPQG*(EPM-XL))) * GL)
+	    + EP * ((AC + alpr * (RPPQQ*XL1 + RPMQQ*(EMP-XL)))* SG + (-BE + alpr * (RPPQG*XL1 + RPMQG*(EMP-XL))) * GL);
+	  GLN = EM * ((AB + alpr * (RMMGQ*XL1 + RMPGQ*(EPM-XL)))* SG + (AC + alpr * (RMMGG*XL1 + RMPGG*(EPM-XL))) * GL)
+	    + EP *((-AB + alpr * (RPPGQ*XL1 + RPMGQ*(EMP-XL)))* SG + (AL + alpr * (RPPGG*XL1 + RPMGG*(EMP-XL))) * GL);
+  
+	  NS15N = NS15N * ENS * (1.+  alpr * XL1 * RPLUS);
+	  NS24N = NS24N * ENS * (1.+  alpr * XL1 * RPLUS);
+	}
+
+      
+      NS35N = SIN;
+
+      //...  FLAVOUR DECOMPOSITION OF THE QUARK SEA :
+      complex <double> SSN, DSN, USN, CHN, BON;
+      SSN = (10.* SIN + 2.* NS35N + 3.* NS24N + 5.* NS15N - 20.* NS8N) / 120.;
+      DSN = (10.* SIN + 2.* NS35N + 3.* NS24N + 5.* NS15N + 10.* NS8N - 30.* NS3N - 60.* DVN) / 120.;
+      USN = (10.* SIN + 2.* NS35N + 3.* NS24N + 5.* NS15N + 10.* NS8N + 30.* NS3N - 60.* UVN) / 120.;
+      CHN = (UVN + DVN + 2.*USN + 2.*DSN + 2.*SSN - NS15N)/6.;
+      BON = (UVN + DVN + 2.*USN + 2.*DSN + 2.*SSN + 2.*CHN - NS24N)/8.;
+      //equivalent to:
+      //CHN = (10.* SIN + 2. *NS35N + 3.* NS24N - 15.* NS15N) / 120.;
+      //BON = (10.* SIN + 2. *NS35N - 12.* NS24N) / 120.;
+
+      if (nf == 3) //GRV
+	{
+	  SSN= (20.* SIN - 20.* NS8N)/120.;
+	  DSN = (20.* SIN + 10.* NS8N - 30.* NS3N - 60.* DVN) / 120.;
+	  USN = (20.* SIN + 10.* NS8N + 30.* NS3N - 60.* UVN) / 120.;
+	  CHN=0.;
+	  BON=0.;
+	}
+
+      //if (fabs(bstarscale) < LHAPDF::getThreshold(4))
+      //    CHN *= exp(-pow((LHAPDF::getThreshold(4)-fabs(bstarscale)),2)/pow((LHAPDF::getThreshold(4)/10.) ,2)); //=0
+      //  double delta = 1./5.;
+      //  if (fabs(bstarscale) < LHAPDF::getThreshold(5)*(1+delta/2.))
+      //    BON *= exp(-pow((LHAPDF::getThreshold(5)*(1+delta/2.)-fabs(bstarscale)),2)/pow((LHAPDF::getThreshold(5)*delta),2)); //=0
+
+      // **************************************
+
+      // output:
+      // bbar cbar sbar dbar ubar gluon  u   d   s   c   b
+      // -5    -4   -3   -2   -1    0    1   2   3   4   5
+
+      fx[0+MAXNF] = GLN;
+      fx[1+MAXNF] = UVN + USN;
+      fx[-1+MAXNF] = USN;
+      fx[2+MAXNF] = DVN + DSN;
+      fx[-2+MAXNF] = DSN;
+      fx[3+MAXNF] = SSN;
+      fx[-3+MAXNF] = SSN;
       if (nf >= 4)
 	{
-	  fx[4+MAXNF] = CHP[i];
-	  fx[-4+MAXNF] = CHP[i];
+	  fx[4+MAXNF] = CHN;
+	  fx[-4+MAXNF] = CHN;
 	}
       else
 	{
 	  fx[4+MAXNF] = 0.;
 	  fx[-4+MAXNF] = 0.;
 	}
+  
       if (nf >= 5)
 	{
-	  fx[5+MAXNF] = BOP[i];
-	  fx[-5+MAXNF] = BOP[i];
+	  fx[5+MAXNF] = BON;
+	  fx[-5+MAXNF] = BON;
 	}
       else
 	{
@@ -296,190 +572,7 @@ void pdfevol::evolution(int i) //from reno2
 	}
 
       storemoments(i, fx);
-      return;
     }
-
-  complex <double> alpq, ALPr;
-
-  //Moments at the factorisation scale
-  complex <double> UVI,	DVI, USI, DSI, SSI, GLI, CHI, BOI;
-
-  //evolve only the moments of the positive branch, the negative branch is obtained by complex conjugation
-  int sign = mesq::positive;
-
-  //Moments of PDFs at the starting scale (factorisation scale)
-  UVI = UVP[i];
-  DVI = DVP[i];
-  USI = USP[i];
-  DSI = DSP[i];
-  SSI = SSP[i];
-  GLI = GLP[i];
-  CHI = CHP[i];
-  BOI = BOP[i];
-
-  // ***********************
-  // this part can be precomputed
-  complex <double> UVN = UVI;
-  complex <double> DVN = DVI;
-  complex <double> NS3N = UVI + 2.*USI - DVI - 2.*DSI;            //(u+ub-d-db)               u-d
-  complex <double> NS8N = UVI + 2.*USI + DVI + 2.*DSI - 4.*SSI;   //(u+ub+d+db-s-sb)          u+d-s
-  complex <double> GLN = GLI;
-
-  complex <double> SIN, NS15N, NS24N, NS35N;
-  if (nf == 5)
-    {
-      SIN = UVI + DVI + 2.*USI + 2.*DSI + 2.*SSI + 2.*CHI + 2.*BOI;   //(u+ub+d+db+s+sb+c+cb+b+bb) -> all quarks      u+d+s+c+b
-      NS15N = UVI + DVI + 2.*USI + 2.*DSI + 2.*SSI - 6.*CHI;          //(u+ub+d+db+s+sb-3(c+cb))                      u+d+s-3c
-      NS24N = UVI + DVI + 2.*USI + 2.*DSI + 2.*SSI + 2.*CHI - 8.*BOI; //(u+ub+d+db+s+sb+c+cb-4(b+bb))                 u+d+s+c-4b
-      NS35N = SIN;
-    }
-  if (nf == 4)
-    {
-      SIN = UVI + DVI + 2.*USI + 2.*DSI + 2.*SSI + 2.*CHI;          //(u+ub+d+db+s+sb+c+cb) -> all quarks
-      NS15N = UVI + DVI + 2.*USI + 2.*DSI + 2.*SSI - 6.*CHI;
-      NS24N = UVI + DVI + 2.*USI + 2.*DSI + 2.*SSI + 2.*CHI;
-      NS35N = SIN;
-    }
-  if (nf == 3)
-    {
-      SIN = UVI + DVI + 2.*USI + 2.*DSI + 2.*SSI;     //(u+ub+d+db+s+sb) -> all quarks
-      NS15N = SIN;
-      NS24N = SIN;
-      NS35N = SIN;
-    }
-  complex <double> SG = SIN;
-  complex <double> GL = GLN;
-
-  // **************************************
-  // retrieved values cached in anomalous.C
-  complex <double> ANS = anomalous::ans[anomalous::index(i,sign)];
-  complex <double> AM = anomalous::am[anomalous::index(i,sign)];
-  complex <double> AP = anomalous::ap[anomalous::index(i,sign)];
-  complex <double> AL = anomalous::al[anomalous::index(i,sign)];
-  complex <double> BE = anomalous::be[anomalous::index(i,sign)];
-  complex <double> AB = anomalous::ab[anomalous::index(i,sign)];
-  complex <double> AC  = 1. -AL;
-  complex <double> RMIN = anomalous::rmin[anomalous::index(i,sign)];
-  complex <double> RPLUS = anomalous::rplus[anomalous::index(i,sign)];
-  complex <double> RMMQQ = anomalous::RMMQQ[anomalous::index(i,sign)];
-  complex <double> RMMQG = anomalous::RMMQG[anomalous::index(i,sign)];
-  complex <double> RMMGQ = anomalous::RMMGQ[anomalous::index(i,sign)];
-  complex <double> RMMGG = anomalous::RMMGG[anomalous::index(i,sign)];
-  complex <double> RMPQQ = anomalous::RMPQQ[anomalous::index(i,sign)];
-  complex <double> RMPQG = anomalous::RMPQG[anomalous::index(i,sign)];
-  complex <double> RMPGQ = anomalous::RMPGQ[anomalous::index(i,sign)];
-  complex <double> RMPGG = anomalous::RMPGG[anomalous::index(i,sign)];
-  complex <double> RPMQQ = anomalous::RPMQQ[anomalous::index(i,sign)];
-  complex <double> RPMQG = anomalous::RPMQG[anomalous::index(i,sign)];
-  complex <double> RPMGQ = anomalous::RPMGQ[anomalous::index(i,sign)];
-  complex <double> RPMGG = anomalous::RPMGG[anomalous::index(i,sign)];
-  complex <double> RPPQQ = anomalous::RPPQQ[anomalous::index(i,sign)];
-  complex <double> RPPQG = anomalous::RPPQG[anomalous::index(i,sign)];
-  complex <double> RPPGQ = anomalous::RPPGQ[anomalous::index(i,sign)];
-  complex <double> RPPGG = anomalous::RPPGG[anomalous::index(i,sign)];
-  // **************************************
-
-  // **************************************
-  //     b-dependence
-  //resummation scale
-  //  complex <double> XL = 1./cx(alphasl_(fcx(scale2)));
-  //  complex <double> XL1 = 1.- XL;
-  //  complex <double> SALP = log(XL);
-  //--> SALP ~ log[alphas(Q)/alphas(b0/b)]
-  
-  complex <double> S = SALP;
-  //  cout << S << "  " << <<alpr <<  endl;
-  
-  complex <double> ENS = exp(-ANS*S);
-  complex <double> EM  = exp(-AM*S);
-  complex <double> EP  = exp(-AP*S);
-  complex <double> EMP = EM/EP;
-  complex <double> EPM = EP/EM;
-
-  //...EVOLUTION OF LIGHT PARTON DENSITIES
-  //double q2s = q2/pow(resint::a,2);                //resummation scale
-  //double alpqf = dyalphas_lhapdf_(sqrt(q2s))/4./M_PI; //alphas at the resummation scale
-  //complex <double> alpq = alpqf * alphasl(scale2);              //alphas at the resummation scale times alphas at 1/b
-  //complex <double> alpr= alpq * 1 *(opts.order-1);
-  //--> alpr = 0 at NLL; alpr = alphas(Q) * alphasl ~ alphas(b0/b) at NNLL
-  
-  UVN  = UVN  * ENS * (1.+  alpr * XL1 * RMIN);
-  DVN  = DVN  * ENS * (1.+  alpr * XL1 * RMIN);
-  NS3N = NS3N * ENS * (1.+  alpr * XL1 * RPLUS);
-  NS8N = NS8N * ENS * (1.+  alpr * XL1 * RPLUS);
-
-  SIN = EM * ((AL + alpr * (RMMQQ*XL1 + RMPQQ*(EPM-XL)))* SG + (BE + alpr * (RMMQG*XL1 + RMPQG*(EPM-XL))) * GL)
-      + EP * ((AC + alpr * (RPPQQ*XL1 + RPMQQ*(EMP-XL)))* SG + (-BE + alpr * (RPPQG*XL1 + RPMQG*(EMP-XL))) * GL);
-  GLN = EM * ((AB + alpr * (RMMGQ*XL1 + RMPGQ*(EPM-XL)))* SG + (AC + alpr * (RMMGG*XL1 + RMPGG*(EPM-XL))) * GL)
-      + EP *((-AB + alpr * (RPPGQ*XL1 + RPMGQ*(EMP-XL)))* SG + (AL + alpr * (RPPGG*XL1 + RPMGG*(EMP-XL))) * GL);
-  
-  NS15N = NS15N * ENS * (1.+  alpr * XL1 * RPLUS);
-  NS24N = NS24N * ENS * (1.+  alpr * XL1 * RPLUS);
-  NS35N = SIN;
-
-  //...  FLAVOUR DECOMPOSITION OF THE QUARK SEA :
-  complex <double> SSN, DSN, USN, CHN, BON;
-  SSN = (10.* SIN + 2.* NS35N + 3.* NS24N + 5.* NS15N - 20.* NS8N) / 120.;
-  DSN = (10.* SIN + 2.* NS35N + 3.* NS24N + 5.* NS15N + 10.* NS8N - 30.* NS3N - 60.* DVN) / 120.;
-  USN = (10.* SIN + 2.* NS35N + 3.* NS24N + 5.* NS15N + 10.* NS8N + 30.* NS3N - 60.* UVN) / 120.;
-  CHN = (UVN + DVN + 2.*USN + 2.*DSN + 2.*SSN - NS15N)/6.;
-  BON = (UVN + DVN + 2.*USN + 2.*DSN + 2.*SSN + 2.*CHN - NS24N)/8.;
-  //equivalent to:
-  //CHN = (10.* SIN + 2. *NS35N + 3.* NS24N - 15.* NS15N) / 120.;
-  //BON = (10.* SIN + 2. *NS35N - 12.* NS24N) / 120.;
-
-  if (nf == 3) //GRV
-    {
-      SSN= (20.* SIN - 20.* NS8N)/120.;
-      DSN = (20.* SIN + 10.* NS8N - 30.* NS3N - 60.* DVN) / 120.;
-      USN = (20.* SIN + 10.* NS8N + 30.* NS3N - 60.* UVN) / 120.;
-      CHN=0.;
-      BON=0.;
-    }
-
-  //if (fabs(bstarscale) < LHAPDF::getThreshold(4))
-  //    CHN *= exp(-pow((LHAPDF::getThreshold(4)-fabs(bstarscale)),2)/pow((LHAPDF::getThreshold(4)/10.) ,2)); //=0
-  //  double delta = 1./5.;
-  //  if (fabs(bstarscale) < LHAPDF::getThreshold(5)*(1+delta/2.))
-  //    BON *= exp(-pow((LHAPDF::getThreshold(5)*(1+delta/2.)-fabs(bstarscale)),2)/pow((LHAPDF::getThreshold(5)*delta),2)); //=0
-
-  // **************************************
-
-  // output:
-  // bbar cbar sbar dbar ubar gluon  u   d   s   c   b
-  // -5    -4   -3   -2   -1    0    1   2   3   4   5
-
-  complex <double> fx[11];
-  fx[0+MAXNF] = GLN;
-  fx[1+MAXNF] = UVN + USN;
-  fx[-1+MAXNF] = USN;
-  fx[2+MAXNF] = DVN + DSN;
-  fx[-2+MAXNF] = DSN;
-  fx[3+MAXNF] = SSN;
-  fx[-3+MAXNF] = SSN;
-  if (nf >= 4)
-    {
-      fx[4+MAXNF] = CHN;
-      fx[-4+MAXNF] = CHN;
-    }
-  else
-    {
-      fx[4+MAXNF] = 0.;
-      fx[-4+MAXNF] = 0.;
-    }
-  
-  if (nf >= 5)
-    {
-      fx[5+MAXNF] = BON;
-      fx[-5+MAXNF] = BON;
-    }
-  else
-    {
-      fx[5+MAXNF] = 0.;
-      fx[-5+MAXNF] = 0.;
-    }
-
-  storemoments(i, fx);
 }
 
 
@@ -599,68 +692,17 @@ void pdfevol::storemoments(int i, complex <double> fx[11])
   int negidx = mellinint::mdim*11;
   int nf = 2*MAXNF+1;
 
-  //beam 1 positive
-  fx1[i*nf+bb] = fx[bb];
-  fx1[i*nf+cb] = fx[cb];
-  fx1[i*nf+sb] = fx[sb];
-  fx1[i*nf+g ] = fx[g ];
-  fx1[i*nf+s ] = fx[s ];
-  fx1[i*nf+c ] = fx[c ];
-  fx1[i*nf+b ] = fx[b ];
-  if (opts.ih1 == 1)
-    {
-      fx1[i*nf+db] = fx[db];
-      fx1[i*nf+ub] = fx[ub];
-      fx1[i*nf+u ] = fx[u ];
-      fx1[i*nf+d ] = fx[d ];
-    }
-  else if (opts.ih1 == -1)
+  copy(fx, fx+nf, fx1+i*nf);
+  copy(fx, fx+nf, fx2+i*nf);
+
+  if (opts.ih1 == -1)
     {
       fx1[i*nf+db] = fx[d ];
       fx1[i*nf+ub] = fx[u ];
       fx1[i*nf+u ] = fx[ub];
       fx1[i*nf+d ] = fx[db];
     }
-
-  //beam 1 negative (never used)
-  fx1[negidx+i*nf+bb] = conj(fx[bb]);
-  fx1[negidx+i*nf+cb] = conj(fx[cb]);
-  fx1[negidx+i*nf+sb] = conj(fx[sb]);
-  fx1[negidx+i*nf+g ] = conj(fx[g ]);
-  fx1[negidx+i*nf+s ] = conj(fx[s ]);
-  fx1[negidx+i*nf+c ] = conj(fx[c ]);
-  fx1[negidx+i*nf+b ] = conj(fx[b ]);
-  if (opts.ih1 == 1)
-    {
-      fx1[negidx+i*nf+db] = conj(fx[db]);
-      fx1[negidx+i*nf+ub] = conj(fx[ub]);
-      fx1[negidx+i*nf+u ] = conj(fx[u ]);
-      fx1[negidx+i*nf+d ] = conj(fx[d ]);
-    }
-  else if (opts.ih1 == -1)
-    {
-      fx1[negidx+i*nf+db] = conj(fx[d ]);
-      fx1[negidx+i*nf+ub] = conj(fx[u ]);
-      fx1[negidx+i*nf+u ] = conj(fx[ub]);
-      fx1[negidx+i*nf+d ] = conj(fx[db]);
-    }
-
-  //beam 2 positive
-  fx2[i*nf+bb] = fx[bb];
-  fx2[i*nf+cb] = fx[cb];
-  fx2[i*nf+sb] = fx[sb];
-  fx2[i*nf+g ] = fx[g ];
-  fx2[i*nf+s ] = fx[s ];
-  fx2[i*nf+c ] = fx[c ];
-  fx2[i*nf+b ] = fx[b ];
-  if (opts.ih2 == 1)
-    {
-      fx2[i*nf+db] = fx[db];
-      fx2[i*nf+ub] = fx[ub];
-      fx2[i*nf+u ] = fx[u ];
-      fx2[i*nf+d ] = fx[d ];
-    }
-  else if (opts.ih2 == -1)
+  if (opts.ih2 == -1)
     {
       fx2[i*nf+db] = fx[d ];
       fx2[i*nf+ub] = fx[u ];
@@ -668,6 +710,77 @@ void pdfevol::storemoments(int i, complex <double> fx[11])
       fx2[i*nf+d ] = fx[db];
     }
 
+//  //beam 1 positive
+//  fx1[i*nf+bb] = fx[bb];
+//  fx1[i*nf+cb] = fx[cb];
+//  fx1[i*nf+sb] = fx[sb];
+//  fx1[i*nf+g ] = fx[g ];
+//  fx1[i*nf+s ] = fx[s ];
+//  fx1[i*nf+c ] = fx[c ];
+//  fx1[i*nf+b ] = fx[b ];
+//  if (opts.ih1 == 1)
+//    {
+//      fx1[i*nf+db] = fx[db];
+//      fx1[i*nf+ub] = fx[ub];
+//      fx1[i*nf+u ] = fx[u ];
+//      fx1[i*nf+d ] = fx[d ];
+//    }
+//  else if (opts.ih1 == -1)
+//    {
+//      fx1[i*nf+db] = fx[d ];
+//      fx1[i*nf+ub] = fx[u ];
+//      fx1[i*nf+u ] = fx[ub];
+//      fx1[i*nf+d ] = fx[db];
+//    }
+//
+//  //beam 1 negative (never used)
+//  fx1[negidx+i*nf+bb] = conj(fx[bb]);
+//  fx1[negidx+i*nf+cb] = conj(fx[cb]);
+//  fx1[negidx+i*nf+sb] = conj(fx[sb]);
+//  fx1[negidx+i*nf+g ] = conj(fx[g ]);
+//  fx1[negidx+i*nf+s ] = conj(fx[s ]);
+//  fx1[negidx+i*nf+c ] = conj(fx[c ]);
+//  fx1[negidx+i*nf+b ] = conj(fx[b ]);
+//  if (opts.ih1 == 1)
+//    {
+//      fx1[negidx+i*nf+db] = conj(fx[db]);
+//      fx1[negidx+i*nf+ub] = conj(fx[ub]);
+//      fx1[negidx+i*nf+u ] = conj(fx[u ]);
+//      fx1[negidx+i*nf+d ] = conj(fx[d ]);
+//    }
+//  else if (opts.ih1 == -1)
+//    {
+//      fx1[negidx+i*nf+db] = conj(fx[d ]);
+//      fx1[negidx+i*nf+ub] = conj(fx[u ]);
+//      fx1[negidx+i*nf+u ] = conj(fx[ub]);
+//      fx1[negidx+i*nf+d ] = conj(fx[db]);
+//    }
+//
+//  //beam 2 positive
+//  fx2[i*nf+bb] = fx[bb];
+//  fx2[i*nf+cb] = fx[cb];
+//  fx2[i*nf+sb] = fx[sb];
+//  fx2[i*nf+g ] = fx[g ];
+//  fx2[i*nf+s ] = fx[s ];
+//  fx2[i*nf+c ] = fx[c ];
+//  fx2[i*nf+b ] = fx[b ];
+//  if (opts.ih2 == 1)
+//    {
+//      fx2[i*nf+db] = fx[db];
+//      fx2[i*nf+ub] = fx[ub];
+//      fx2[i*nf+u ] = fx[u ];
+//      fx2[i*nf+d ] = fx[d ];
+//    }
+//  else if (opts.ih2 == -1)
+//    {
+//      fx2[i*nf+db] = fx[d ];
+//      fx2[i*nf+ub] = fx[u ];
+//      fx2[i*nf+u ] = fx[ub];
+//      fx2[i*nf+d ] = fx[db];
+//    }
+
+//  if (opts.mellin1d && opts.bprescription != 2) return;
+  
   //beam 2 negative
   fx2[negidx+i*nf+bb] = conj(fx[bb]);
   fx2[negidx+i*nf+cb] = conj(fx[cb]);
@@ -768,8 +881,8 @@ void pdfevol::storemoments_fortran(int i, complex <double> fx[11])
 //Apply the flavour dependent form factors
 void pdfevol::flavour_kt()
 {
-  int negidx = mellinint::mdim*11;
   int nf = 2*MAXNF+1;
+  int negidx = mellinint::mdim*nf;
   complex <double> uv, dv, us, ds;
   for (int i = 0; i < mellinint::mdim; i++)
     {
@@ -833,6 +946,37 @@ void pdfevol::flavour_kt()
 	  fx2[i*nf+db] = dv * npff::dvff + ds * npff::dsff;
 	  fx2[i*nf+u] = us * npff::usff;
 	  fx2[i*nf+d] = ds * npff::dsff;
+	}
+
+      //beam 2 negative
+      fx2[negidx+i*nf+bb] *= npff::boff;
+      fx2[negidx+i*nf+cb] *= npff::chff;
+      fx2[negidx+i*nf+sb] *= npff::ssff;
+      fx2[negidx+i*nf+g ] *= npff::glff;
+      fx2[negidx+i*nf+s ] *= npff::ssff;
+      fx2[negidx+i*nf+c ] *= npff::chff;
+      fx2[negidx+i*nf+b ] *= npff::boff;
+      if (opts.ih2 == 1)
+	{
+	  uv = (fx2[negidx+i*nf+u] - fx2[negidx+i*nf+ub]);
+	  dv = (fx2[negidx+i*nf+d] - fx2[negidx+i*nf+db]);
+	  us = fx2[negidx+i*nf+ub];
+	  ds = fx2[negidx+i*nf+db];
+	  fx2[negidx+i*nf+u] = uv * npff::uvff + us * npff::usff;
+	  fx2[negidx+i*nf+d] = dv * npff::dvff + ds * npff::dsff;
+	  fx2[negidx+i*nf+ub] = us * npff::usff;
+	  fx2[negidx+i*nf+db] = ds * npff::dsff;
+	}
+      else if (opts.ih2 == -1)
+	{      
+	  uv = (fx2[negidx+i*nf+ub] - fx2[negidx+i*nf+u]);
+	  dv = (fx2[negidx+i*nf+db] - fx2[negidx+i*nf+d]);
+	  us = fx2[negidx+i*nf+u];
+	  ds = fx2[negidx+i*nf+d];
+	  fx2[negidx+i*nf+ub] = uv * npff::uvff + us * npff::usff;
+	  fx2[negidx+i*nf+db] = dv * npff::dvff + ds * npff::dsff;
+	  fx2[negidx+i*nf+u] = us * npff::usff;
+	  fx2[negidx+i*nf+d] = ds * npff::dsff;
 	}
     }
 }
@@ -931,18 +1075,19 @@ void pdfevol::retrieve_fortran(int i1, int i2, int sign)
 void pdfevol::retrieve_beam1(int i1)
 {
   int nf = 2*MAXNF+1;
-  memcpy(fn1, &(fx1[i1*nf]), nf*sizeof(complex<double>));
+  //memcpy(fn1, &(fx1[i1*nf]), nf*sizeof(complex<double>));
+  copy(fx1+i1*nf, fx1+(i1+1)*nf, fn1);
 }
 
 void pdfevol::retrieve_beam2_pos(int i2)
 {
   int nf = 2*MAXNF+1;
-  memcpy(fn2, &(fx2[i2*nf]), nf*sizeof(complex<double>));
+  //memcpy(fn2, &(fx2[i2*nf]), nf*sizeof(complex<double>));
+  copy(fx2+i2*nf, fx2+(i2+1)*nf, fn2);
 }
 
 void pdfevol::retrieve_beam2_neg()
 {
-
   fn2[bb] = conj(fn2[bb]);
   fn2[cb] = conj(fn2[cb]);
   fn2[sb] = conj(fn2[sb]);
@@ -957,69 +1102,49 @@ void pdfevol::retrieve_beam2_neg()
 }
 
 
-void pdfevol::retrieve1d(int i, int sign)
+void pdfevol::retrieve1d_pos(int i)
 {
   int nf = 2*MAXNF+1;
-  int negidx = mellinint::mdim*nf;
 
-  if (sign == mesq::positive)
-    {
-      fn1[bb] = fx1[i*nf+bb];
-      fn1[cb] = fx1[i*nf+cb];
-      fn1[sb] = fx1[i*nf+sb];
-      fn1[db] = fx1[i*nf+db];
-      fn1[ub] = fx1[i*nf+ub];
-      fn1[g ] = fx1[i*nf+g ];
-      fn1[u ] = fx1[i*nf+u ];
-      fn1[d ] = fx1[i*nf+d ];
-      fn1[s ] = fx1[i*nf+s ];
-      fn1[c ] = fx1[i*nf+c ];
-      fn1[b ] = fx1[i*nf+b ];
-    }
-  else if (sign == mesq::negative)
-    {
-      fn1[bb] = fx1[negidx+i*nf+bb];
-      fn1[cb] = fx1[negidx+i*nf+cb];
-      fn1[sb] = fx1[negidx+i*nf+sb];
-      fn1[db] = fx1[negidx+i*nf+db];
-      fn1[ub] = fx1[negidx+i*nf+ub];
-      fn1[g ] = fx1[negidx+i*nf+g ];
-      fn1[u ] = fx1[negidx+i*nf+u ];
-      fn1[d ] = fx1[negidx+i*nf+d ];
-      fn1[s ] = fx1[negidx+i*nf+s ];
-      fn1[c ] = fx1[negidx+i*nf+c ];
-      fn1[b ] = fx1[negidx+i*nf+b ];
-    }
-  if (sign == mesq::positive)
-    {
-      fn2[bb] = fx2[i*nf+bb];
-      fn2[cb] = fx2[i*nf+cb];
-      fn2[sb] = fx2[i*nf+sb];
-      fn2[db] = fx2[i*nf+db];
-      fn2[ub] = fx2[i*nf+ub];
-      fn2[g ] = fx2[i*nf+g ];
-      fn2[u ] = fx2[i*nf+u ];
-      fn2[d ] = fx2[i*nf+d ];
-      fn2[s ] = fx2[i*nf+s ];
-      fn2[c ] = fx2[i*nf+c ];
-      fn2[b ] = fx2[i*nf+b ];
-    }
-  else if (sign == mesq::negative)
-    {
-      fn2[bb] = fx2[negidx+i*nf+bb];
-      fn2[cb] = fx2[negidx+i*nf+cb];
-      fn2[sb] = fx2[negidx+i*nf+sb];
-      fn2[db] = fx2[negidx+i*nf+db];
-      fn2[ub] = fx2[negidx+i*nf+ub];
-      fn2[g ] = fx2[negidx+i*nf+g ];
-      fn2[u ] = fx2[negidx+i*nf+u ];
-      fn2[d ] = fx2[negidx+i*nf+d ];
-      fn2[s ] = fx2[negidx+i*nf+s ];
-      fn2[c ] = fx2[negidx+i*nf+c ];
-      fn2[b ] = fx2[negidx+i*nf+b ];
-    }
+  //memcpy(fn1, &(fx1[i*nf]), nf*sizeof(complex<double>));
+  //memcpy(fn2, &(fx2[i*nf]), nf*sizeof(complex<double>));
+
+  copy(fx1+i*nf, fx1+(i+1)*nf, fn1);
+  copy(fx2+i*nf, fx2+(i+1)*nf, fn2);
 }
-  
+
+void pdfevol::retrieve1d_neg()
+{
+  //the negative branch is needed in mellin1d only for bprescription = 2
+  fn1[bb] = conj(fn1[bb]);
+  fn1[cb] = conj(fn1[cb]);
+  fn1[sb] = conj(fn1[sb]);
+  fn1[db] = conj(fn1[db]);
+  fn1[ub] = conj(fn1[ub]);
+  fn1[g ] = conj(fn1[g ]);
+  fn1[u ] = conj(fn1[u ]);
+  fn1[d ] = conj(fn1[d ]);
+  fn1[s ] = conj(fn1[s ]);
+  fn1[c ] = conj(fn1[c ]);
+  fn1[b ] = conj(fn1[b ]);
+
+  fn2[bb] = conj(fn2[bb]);
+  fn2[cb] = conj(fn2[cb]);
+  fn2[sb] = conj(fn2[sb]);
+  fn2[db] = conj(fn2[db]);
+  fn2[ub] = conj(fn2[ub]);
+  fn2[g ] = conj(fn2[g ]);
+  fn2[u ] = conj(fn2[u ]);
+  fn2[d ] = conj(fn2[d ]);
+  fn2[s ] = conj(fn2[s ]);
+  fn2[c ] = conj(fn2[c ]);
+  fn2[b ] = conj(fn2[b ]);
+
+  //  int negidx = mellinint::mdim*nf;
+  //  copy(fx1+negidx+i*nf, fx1+negidx+(i+1)*nf, fn1);
+  //  copy(fx2+negidx+i*nf, fx2+negidx+(i+1)*nf, fn2);
+}
+
 void pdfevol::retrieve1d_fortran(int i, int sign)
 {
   //cout << i << endl;
@@ -1082,8 +1207,8 @@ void pdfevol::retrieve1d_fortran(int i, int sign)
     }
 }
 
-//Retrieve PDFs at the starting scale (muf)
-void pdfevol::retrievemuf(int i, int sign)
+//Retrieve PDFs at the starting scale (muf), only positive branch
+void pdfevol::retrievemuf(int i)
 {
   // i is the index of the complex mellin moment in the z-space for the gaussian quadrature used for the mellin inversion
 
@@ -1121,7 +1246,7 @@ void pdfevol::retrievemuf(int i, int sign)
     }
   
   storemoments(i, fx);
-  retrieve1d(i, sign);
+  retrieve1d_pos(i);
   //  cout << i << "  " << GLP[i] << "  " << fx[0+MAXNF] << "  " << fn1[MAXNF] << "  " << fn2[MAXNF] << endl;
   return;
 }
