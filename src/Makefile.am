@@ -2,6 +2,7 @@ AUTOMAKE_OPTIONS = foreign
 AM_CPPFLAGS = -fpermissive \
 	-I$(srcdir)/../include \
 	-I$(srcdir)/../dequad \
+	-I$(srcdir)/../bequad \
 	-I$(srcdir)/../sandia \
 	-I$(srcdir)/../smolpack \
 	-I$(srcdir)/../dyres \
@@ -45,6 +46,7 @@ libdyturbo_la_LIBADD = libdyturbobase.la \
 		       ../mcfm/libmcfm.la \
 		       ../pegasus/libpegasus.la \
 		       ../dequad/libdequad.la \
+		       ../bequad/libbequad.la \
 		       ../bessel/libbessel.la \
 		       ../sandia/libsandia.la \
 		       ../smolpack/libsmolpack.la \
