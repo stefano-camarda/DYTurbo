@@ -17,6 +17,7 @@
 #include "vjint.h"
 #include "loint.h"
 #include "scales.h"
+#include "sudakovff.h"
 
 #include <iostream>
 #include <iomanip>
@@ -140,6 +141,16 @@ int main( int argc , char * argv[])
       double value = resint::rint(costh,m,qt,y,mode)/(8./3.)*2*m/1000;
       cout << qt << "\t" << value << endl;
     }
+
+//  cout << endl;
+//  cout << "#b" << "\t" << "S(b)" << endl;
+//  double value = resint::rint(costh,m,qt,y,mode)/(8./3.)*2*m/1000;
+//  for (int i = 1; i <= 200; i++)
+//    {
+//      complex <double> bb = 2*double(i)/200.;
+//      complex <double> sudak=sudakov::sff(bb);
+//      cout << real(bb) << "\t" << real(sudak) << endl;
+//    }
   
   //costhline();
   //ptline();
