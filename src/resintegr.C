@@ -21,7 +21,8 @@
 
 int resintegrand1d_cubature_v(unsigned ndim, long unsigned npts, const double x[], void *data, unsigned ncomp, double f[])
 {
-#pragma omp parallel for num_threads(opts.cubacores) copyin(a_param_,rlogs_,resint::a,resint::loga,resint::rloga,pdfevol::UVP,pdfevol::DVP,pdfevol::USP,pdfevol::DSP,pdfevol::SSP,pdfevol::GLP,pdfevol::CHP,pdfevol::BOP)
+#pragma omp parallel for num_threads(opts.cubacores) copyin(a_param_,rlogs_,resint::a,resint::loga,resint::rloga,pdfevol::UVP,pdfevol::DVP,pdfevol::USP,pdfevol::DSP,pdfevol::SSP,pdfevol::GLP,pdfevol::CHP,pdfevol::BOP,pdfevol::SIP,pdfevol::NS3P,pdfevol::NS8P,pdfevol::NS15P,pdfevol::NS24P,pdfevol::NS35P)
+  
   for (unsigned i = 0; i < npts; i++)
     {
       // evaluate the integrand for npts points
@@ -142,7 +143,8 @@ int resintegrand2d_cubature_v(unsigned ndim, long unsigned npts, const double x[
   
   //  cout << "parallel " << npts << endl;
 
-#pragma omp parallel for num_threads(opts.cubacores) copyin(a_param_,rlogs_,resint::a,resint::loga,resint::rloga,pdfevol::UVP,pdfevol::DVP,pdfevol::USP,pdfevol::DSP,pdfevol::SSP,pdfevol::GLP,pdfevol::CHP,pdfevol::BOP)
+#pragma omp parallel for num_threads(opts.cubacores) copyin(a_param_,rlogs_,resint::a,resint::loga,resint::rloga,pdfevol::UVP,pdfevol::DVP,pdfevol::USP,pdfevol::DSP,pdfevol::SSP,pdfevol::GLP,pdfevol::CHP,pdfevol::BOP,pdfevol::SIP,pdfevol::NS3P,pdfevol::NS8P,pdfevol::NS15P,pdfevol::NS24P,pdfevol::NS35P)
+
   for (unsigned i = 0; i < npts; i++)
     {
       //      int nThreads = omp_get_num_threads();
