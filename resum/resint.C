@@ -19,6 +19,7 @@
 #include "minprescription_interface.h"
 #include "specialfunctions_interface.h"
 #include "588_interface.h"
+#include "bequad.h"
 #include <iostream>
 
 #include "intde2_c.h"
@@ -173,9 +174,18 @@ double besselint_mp_real_dequad(double x)
   double bb = resint::bc + x;
   double qtb = bb*resint::_qt;
   complex <double> bint = besselint::bint(bb);
-  double J0 = fort_besj0_(qtb);
-  double Y0 = fort_besy0_(qtb);
-  double res = real(bint)*J0-imag(bint)*Y0;
+  double JN, YN;
+  if (resint::_mode == 3)
+    {
+      JN = fort_besj1_(qtb);
+      YN = fort_besy1_(qtb);
+    }
+  else
+    {
+      JN = fort_besj0_(qtb);
+      YN = fort_besy0_(qtb);
+    }
+  double res = real(bint)*JN-imag(bint)*YN;
   //cout << " b " << bb << "  "  << " bint " << bint << " J0 " << J0 << "  " << Y0 << endl;
 
   //cout << " b " << bb << " h " << (real(besselint::bint(bu)*jacu*h1) + real(besselint::bint(bd)*jacd*h2))/2. << " j " << res << endl;
@@ -201,13 +211,20 @@ double besselint_mp_complex_dequad(double x)
 //  //cout << bu << "  " << h1 << "  " << bd << "  " << h2 << endl;
 
   //call original Hankel functions
+  // --> Here should use Hankel with J1 and Y1 for qt-integrated mode = 3!!!
   int n = 1;
+  int nn;
+  if (resint::_mode == 3)
+    nn = 1;
+  else
+    nn = 0;
   int nm;    
+  //fcomplex chf1[n+1], chd1[n+1], chf2[n+1], chd2[n+1];
   fcomplex chf1[2], chd1[2], chf2[2], chd2[2];
   ch12n_ (n, qtbu, nm, chf1, chd1, chf2, chd2);
-  h1 = cx(chf1[0]);
+  h1 = cx(chf1[nn]);
   ch12n_ (n, qtbd, nm, chf1, chd1, chf2, chd2);
-  h2 = cx(chf2[0]);
+  h2 = cx(chf2[nn]);
   //cout << endl;
   //cout << " b " << bu << "  " << bd << " bint " << besselint::bint(bu) << "  " << besselint::bint(bd) << " h " << h1 << "  " << h2 << " jac " << jacu << "  " << jacd << endl;
 
@@ -578,16 +595,25 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
 	res = 0;
       else
 	{
-	  double res2, err2;
-	  _qt = qtmx;
-	  intdeo(besselint_dequad, 0.0, qtmx, awinf, &res2, &err2);
+//	  double res2, err2;
+//	  _qt = qtmx;
+//	  intdeo(besselint_dequad, 0.0, qtmx, awinf, &res2, &err2);
+//
+//	  double res1, err1;
+//	  _qt = qtmn;
+//	  if (qtmn < opts.qtcutoff)
+//	    res1 =  0.;
+//	  else
+//	    intdeo(besselint_dequad, 0.0, qtmn, awinf, &res1, &err1);
 
-	  double res1, err1;
+	  double res1, res2;
+	  _qt = qtmx;
+	  res2 = bintegral(qtmx);
 	  _qt = qtmn;
 	  if (qtmn < opts.qtcutoff)
 	    res1 =  0.;
 	  else
-	    intdeo(besselint_dequad, 0.0, qtmn, awinf, &res1, &err1);
+	    res1 = bintegral(qtmn);
 
 	  res = qtmx*res2 - qtmn*res1;
 
@@ -620,8 +646,16 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
       // Normalization
       res *= qt/2./pow(opts.sroot,2);
     }
-  
+
+
   //Do not need the Mellin transform for the LL case, because the HN coefficient is 1 --> Use PDFs in x space
+  if (opts.order == 0 && opts.xspace && (opts.evolmode == 0 || opts.evolmode == 1)) //if (opts.order == 0 && opts.xspace && (opts.evolmode == 1))
+    if (mode < 2) //rapidity differential
+      res *= mesq::loxs(x1, x2, mufac);
+    else           //rapidity integrated
+      res *= mesq::loxs(tau, mufac);      
+
+  /*
   if (opts.order == 0 && opts.xspace && (opts.evolmode == 0 || opts.evolmode == 1))
     {
       double fun = 0.;
@@ -661,8 +695,10 @@ double resint::rint(double costh, double m, double qt, double y, int mode)
 		}
 	    }
 	}
+      //cout << "resint " << fun << endl;
       res *= fun;
     }
+  */
   
   //free allocated Local Thread Storage (LTS) memory
   if (opts.mellin1d)
@@ -697,17 +733,36 @@ double resint::bintegral(double qt)
       //intdeo(besselint::bint, 0.0, qt, awinf, &res, &err);
       intdeo(besselint_dequad, 0.0, qt, awinf, &res, &err);
       if (err < 0)
-	cout << "warning: dequad abnormal termination, pt=" << _qt << " m=" << _m << " y=" << _y << " bint: " << res << " err " << err << endl;
+      	cout << "warning: dequad abnormal termination, pt=" << _qt << " m=" << _m << " y=" << _y << " bint: " << res << " err " << err << endl;
 
       /*
       //test alternative integrations
-      cout << endl;
-      cout << "dequad result of inverse bessel transform, pt=" << _qt << " m=" << _m << " y=" << _y << " : " << setprecision(16) << res << " +- " << err << endl;
-      hankel::init(0,0,0.1);
-      hankel::transform(besselint_hankel, qt, res, err);
-      hankel::free();
-      cout << "hankel result " << res << " +- " << err << endl;
-      cout.precision(6); cout.unsetf(ios_base::floatfield);
+      //      cout << endl;
+      //      cout << "dequad result of inverse bessel transform, pt=" << _qt << " m=" << _m << " y=" << _y << " : " << setprecision(16) << res << " +- " << err << endl;
+
+      int bqrule = 20;
+      complex <double> h1 = 0;
+      complex <double> h2 = 0;
+      complex <double> bb;
+      for (int i = 0; i < bqrule; i++)
+	{
+	  bb = complex <double> {0,bq::xxx[bqrule-1][i]/qt};
+	  h1 += 2./M_PI/qt * bq::www[bqrule-1][i] * besselint::bint(bb);
+	  //	  cout << "bb " << bb << " h1  " << h1 << endl;
+	  bb = complex <double> {0,-bq::xxx[bqrule-1][i]/qt};
+	  h2 += 2./M_PI/qt * bq::www[bqrule-1][i] * besselint::bint(bb);
+	  //	  cout << "bb " << bb << " h2  " << h2 << endl;
+	}
+      res = real(1./2.*(h1+h2));
+
+      //      cout << "bequad result " << res << endl;
+      //      cout.precision(6); cout.unsetf(ios_base::floatfield);
+      /*
+     hankel::init(0,0,0.1);
+     hankel::transform(besselint_hankel, qt, res, err);
+     hankel::free();
+     cout << "hankel result " << res << " +- " << err << endl;
+     cout.precision(6); cout.unsetf(ios_base::floatfield);
 
       //input
       int nb = 1; //lagged convolutions
@@ -737,7 +792,7 @@ double resint::bintegral(double qt)
       double C = blimit_.rblim_; //upper limit of integration
       double ALFA[1] = {_qt};    //oscillation frequency
       int NUM = 1;               //number of integrals to be computed
-      int NU = 0;                //order of the bessel function
+      int NU = (_mode != 3)?0:1; //order of the bessel function
       int N = 30;                //degree of the chebyshev approximation
       double RESULT[1];          //output result
       int INFO[1];               //output status code
@@ -750,22 +805,26 @@ double resint::bintegral(double qt)
   //Minimal prescription to avoid Landau singularity (see hep-ph/9604351 and hep-ph/0002078)
   else if (opts.bprescription == 2)
     {
-      //cout << endl;
-      //cout << "pt " << _qt << " m " << _m << endl;
-      bc =  opts.bcf*blimit_.rblim_;
+      res = 0;
+      if (opts.bcf > 0)
+	{
+	  //cout << endl;
+	  //cout << "pt " << _qt << " m " << _m << endl;
+	  bc =  opts.bcf*blimit_.rblim_;
 	  
-      //besche from 0 to bc
-      double C = bc;             //upper limit of integration
-      double ALFA[1] = {_qt};    //oscillation frequency
-      int NUM = 1;               //number of integrals to be computed
-      int NU = 0;                //order of the bessel function
-      int N = 30;                //degree of the chebyshev approximation
-      double RESULT[1];          //output result
-      int INFO[1];               //output status code
-      besche_(besselint_besche_,C,ALFA,NUM,NU,N,RESULT,INFO);
-      res = RESULT[0];
-      err = 0;
-      //cout << "besche result up to bc " << res << " status " << INFO[0] << endl;
+	  //besche from 0 to bc
+	  double C = bc;             //upper limit of integration
+	  double ALFA[1] = {_qt};    //oscillation frequency
+	  int NUM = 1;               //number of integrals to be computed
+	  int NU = (_mode != 3)?0:1; //order of the bessel function
+	  int N = 30;                //degree of the chebyshev approximation
+	  double RESULT[1];          //output result
+	  int INFO[1];               //output status code
+	  besche_(besselint_besche_,C,ALFA,NUM,NU,N,RESULT,INFO);
+	  res = RESULT[0];
+	  err = 0;
+	  //cout << "besche result up to bc " << res << " status " << INFO[0] << endl;
+	}
       
       /*
 	double min = 0.;
@@ -813,36 +872,66 @@ double resint::bintegral(double qt)
       
       intdeo(besselint_mp_complex_dequad, 0, qt*cos(M_PI/opts.phibr), awinf, &resdequad, &errdequad);
       //cout << "Complex dequad result " << resdequad << " error " << errdequad << endl;
+      if (errdequad < 0)
+	cout << "warning: dequad abnormal termination, pt=" << _qt << " m=" << _m << " y=" << _y << " bint: " << resdequad << " err " << errdequad << endl;
       res += resdequad;
       
       //cout << "Total bp = 2 " << res << endl;
+
+      /*
+      //test alternative integrations
+      //      cout << endl;
+      //      cout << "dequad result of inverse bessel transform, pt=" << _qt << " m=" << _m << " y=" << _y << " : " << setprecision(16) << resdequad << " +- " << errdequad << endl;
+
+      int bqrule = 40;
+      complex <double> h1 = 0;
+      complex <double> h2 = 0;
+      complex <double> bb;
+      for (int i = 0; i < bqrule; i++)
+       {
+	 bb = complex <double> {0,bq::xxx[bqrule-1][i]/qt};
+	 h1 += 2./M_PI/qt * bq::www[bqrule-1][i] * besselint::bint(bb);
+	 //	 cout << "bb " << bb << " h1  " << h1 << endl;
+	 bb = complex <double> {0,-bq::xxx[bqrule-1][i]/qt};
+	 h2 += 2./M_PI/qt * bq::www[bqrule-1][i] * besselint::bint(bb);
+	 //	 cout << "bb " << bb << " h2  " << h2 << endl;
+       }
+      res = real(1./2.*(h1+h2));
+
+      //      cout << "bequad result " << res << endl;
+      //      cout.precision(6); cout.unsetf(ios_base::floatfield);
+      */
+      
     }
   //Minimal prescription along the real axis, crossing the Landau singularity
   else if (opts.bprescription == 3)
     {
       //minimal prescription with real b integration (not always more efficient, but save the calculation of PDFs at complex scales)
+      res = 0;
+      if (opts.bcf > 0)
+	{
+	  bc =  opts.bcf*blimit_.rblim_;
 	  
-      bc =  opts.bcf*blimit_.rblim_;
-	  
-      //besche from 0 to bc
-      double C = bc;             //upper limit of integration
-      double ALFA[1] = {_qt};    //oscillation frequency
-      int NUM = 1;               //number of integrals to be computed
-      int NU = 0;                //order of the bessel function
-      int N = 30;                //degree of the chebyshev approximation
-      double RESULT[1];          //output result
-      int INFO[1];               //output status code
-      besche_(besselint_besche_,C,ALFA,NUM,NU,N,RESULT,INFO);
-      res = RESULT[0];
-      err = 0;
+	  //besche from 0 to bc
+	  double C = bc;             //upper limit of integration
+	  double ALFA[1] = {_qt};    //oscillation frequency
+	  int NUM = 1;               //number of integrals to be computed
+	  int NU = (_mode != 3)?0:1; //order of the bessel function
+	  int N = 30;                //degree of the chebyshev approximation
+	  double RESULT[1];          //output result
+	  int INFO[1];               //output status code
+	  besche_(besselint_besche_,C,ALFA,NUM,NU,N,RESULT,INFO);
+	  res = RESULT[0];
+	  err = 0;
+	}
 
       double resdequad;
       double errdequad;
       intdeo(besselint_mp_real_dequad, 0, qt, awinf, &resdequad, &errdequad);
-      cout << "Real dequad result " << resdequad << " error " << errdequad << endl;
+      //cout << "Real dequad result " << resdequad << " error " << errdequad << endl;
       res += resdequad;
       
-      cout << "Total bp = 3 " << res << endl;
+      //cout << "Total bp = 3 " << res << endl;
     }
       
   //  //vfn integration --> Not correct!!!
