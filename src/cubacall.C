@@ -980,13 +980,9 @@ void ctintegr1d(vector <double> &res, double &err)
 void tell_to_grid_we_are_alive(){
   if(opts.gridverbose && ICALL % 100000==0)
     {
-      if (opts.redirect) fclose (stdout);
-      printf (" Hi Grid, we are sitll alive! Look, our event is %d\n",ICALL);
-      if (opts.redirect)
-	{
-	  string logfile = opts.output_filename + ".log";
-	  freopen(logfile.c_str(),"w",stdout);
-	}
+      if (opts.redirect) freopen ("/dev/tty", "a", stdout);
+      printf (" Hi Grid, we are still alive! Look, our event is %d\n",ICALL);
+      if (opts.redirect) freopen((opts.output_filename + ".log").c_str(), "w", stdout);
     }
   ICALL++;
 }
