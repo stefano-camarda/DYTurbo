@@ -72,23 +72,26 @@ void settings::parse_options(int argc, char* argv[]){
 
     externalpdf = false;
     
+    // NOTE: Command line options are overiding the default and config file settings.
+    // verbose
+    if (args.count("verbose"))
+      {
+        verbose=true;
+        cubaverbosity=3;
+      }
+    if (args.count("grid"))
+      {
+        gridverbose=true;
+	redirect=true;
+        cubaverbosity=3;
+      }
     if (opts.redirect)
       {
 	string logfile = output_filename + ".log";
 	freopen(logfile.c_str(),"w",stdout);
       }
     
-    // NOTE: Command line options are overiding the default and config file settings.
-    // verbose
-    if (args.count("verbose")) {
-        verbose=true;
-        cubaverbosity=3;
-    }
-    if (args.count("grid")) {
-        gridverbose=true;
-	redirect=true;
-        cubaverbosity=3;
-    }
+    
     // rseed
     if (args.count("seed")) rseed=args["seed"].as<int>();
     // order
@@ -431,8 +434,8 @@ void settings::readfromfile(const string fname){
 void settings::check_consistency(){
 
     // additional conditions
-    if (order != 0 && order != 1 && order != 2)
-      throw invalid_argument("Invalid order, please select 0 (LO) 1 (NLO) or 2 (NNLO)");
+    if (order != 0 && order != 1 && order != 2 && order != 3)
+      throw invalid_argument("Invalid order, please select 0 (LL) 1 (NLL) 2 (NNLL) or 3 (NNNLL)");
     if (nproc != 1 && nproc != 2 && nproc != 3)
       throw invalid_argument("Wrong process, please select nproc = 1 (W+), 2 (W-), or 3(Z)");
 
