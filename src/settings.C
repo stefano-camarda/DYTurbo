@@ -524,7 +524,7 @@ void settings::check_consistency(){
       else
 	intDimVJ = 7;
     
-    if (doVJ && intDimVJ < 7 && order == 2)
+    if (opts.makecuts && doVJ && intDimVJ < 7 && order == 2)
       {
 	cout << "cannot perform quadrature integration for V+jet at NNLO" << endl;
 	exit (-1);
