@@ -6,7 +6,7 @@ c     implicit real*8(a-h,o-z)
       integer xlp
       double complex xlambda,aa1,all,alphasl,qq,t,xlt,bstar,b,blog
       double complex log1xlambda
-      double complex nq2,aa2
+      double complex nq2,aa2,aa3,aa4
       include 'const.h'
       include 'sudakov_inc.f'
       include 'scales_inc.f'
@@ -26,7 +26,7 @@ c     The result is actually alphas(qb2)/alphas(Q2), where Q2 is the resummation
       
 c     HERE CHANGE: order of alphas related to order of evolution
       xlp=0
-      if(iord.eq.1) then
+      if(iord.ge.1) then
       xlp=1
       elseif(iord.eq.0) then
       xlp=0
@@ -50,27 +50,67 @@ c     --> Not really, the running of alphas in this function reflects the defini
       
 c     print *,aass*pi,dyalphas_lhapdf(q),dyalphas_lhapdf(q/a_param),sqrt(nq2),xlambda
       
-c     HERE now a dependence (without constant term)!
+!c     HERE now a dependence (without constant term)!
+!      log1xlambda=log(1-xlambda)
+!      aa1=log1xlambda+aass*xlp*
+!     .      (beta1/beta0*log1xlambda/(1-xlambda) 
+!     .       + beta0*xlambda/(1-xlambda)*rlogq2mur2
+!c     .       +   beta0*log(q2/muf2)
+!     .       -2d0*beta0*xlambda*rloga/(1-xlambda)   )
+
       log1xlambda=log(1-xlambda)
-      aa1=log1xlambda+aass*xlp*
-     .      (beta1/beta0*log1xlambda/(1-xlambda) 
-     .       + beta0*xlambda/(1-xlambda)*rlogq2mur2
-c     .       +   beta0*log(q2/muf2)
-     .       -2d0*beta0*xlambda*rloga/(1-xlambda)   )
+      aa1=log1xlambda
+      if (iord.ge.1) then
+         aa1 = aa1+aass*
+     .        beta1/beta0*log1xlambda/(1-xlambda) 
+      endif
+      if (iord.ge.2) then
+         aa1 = aa1+aass**2*
+     .       ((beta1**2/beta0**2-beta2/beta0)*xlambda/(1d0-xlambda)**2
+     .       +(beta1**2/beta0**2)*log1xlambda/(1d0-xlambda)**2
+     .       +(beta1**2/beta0**2)*log1xlambda**2/(2d0*(1d0-xlambda)**2))
+      endif
+
+!     Scale dependence
+      if (iord.ge.1) then
+         aa1 = aa1+aass*(rlogq2mur2-2d0*rloga)*
+     .        beta0*xlambda/(1-xlambda)
+      endif
+      if (iord.ge.2) then
+         aa1 = aa1+aass**2*(rlogq2mur2-2d0*rloga)*
+     .     beta1*(xlambda/(1d0-xlambda)**2+log1xlambda/(1d0-xlambda)**2)
+      endif
+      
       alphasl=Exp(-aa1)
+
+
+      
 !      write(*,*) iord,alp,b,blim,flagrealcomplex,xlambda,as,a_param
 !     .,mur,blog,nq2,aa1,alphasl
       
 c.....Now compute the factors
 c.....needed to resum the logs which multiply the N-dependent part
 c.....of the C coefficients
+
+!      aa2= xlambda/(1- xlambda)
+!      aexpB=Exp(aa2) 
+!
+!      aa3 = xlambda*(xlambda-2d0)/(1-xlambda)**2 ! --> should be xlambda*(xlambda-2d0)/(2*(1-xlambda)**2) ?
+!      aexpC=Exp(aa3) 
+!
+!      aa4 = log1xlambda/(1-xlambda)**2 ! --> should be (xlambda*(2d0-xlambda)+2d0*log1xlambda)/(2d0*(1-xlambda)**2) ?
+!      aexpD=Exp(aa4) 
+
+      
 c  the limit below implies xlambda<1/2 and then aa2<= 1      
 c      blim=b0p*(1/q)*exp(1/(2*as*beta0)) 
 c      blim=b0p*(1/q)*exp(1/(4*as*beta0))
 C Set a limit to avoid very large values of b (= very small scales ~1/b)
 !       blim=b0p*(1/q)*exp(1/(2*aass*beta0)) ! avoid Landau pole     
-!       write(*,*) "blim",blim
-      blim=0.5d0
+!     write(*,*) "blim",blim
+!     without this additional blim some scale variations will fail (when mures > muren)
+      blim=0.5d0 ! --> allow this to a separate blim in the settings, or set it using muren instead of mures
+!      blim=1.1229190d0
 
       if (flagrealcomplex.eq.0) bstar=b/sqrt(1+(b**2)/(blim**2))
       if (imod.eq.1) blog=log( (q*bstar/b0p)**2 + 1) !modified sudakov
@@ -88,6 +128,13 @@ c     HERE now a dependence (without constant term)!
 
       aa2= xlambda/(1- xlambda)
       aexpB=Exp(aa2) 
+
+      aa3 = xlambda*(xlambda-2d0)/(1-xlambda)**2 ! --> should be xlambda*(xlambda-2d0)/(2*(1-xlambda)**2) ?
+      aexpC=Exp(aa3) 
+
+      aa4 = log1xlambda/(1-xlambda)**2 ! --> should be (xlambda*(2d0-xlambda)+2d0*log1xlambda)/(2d0*(1-xlambda)**2) ?
+      aexpD=Exp(aa4) 
+
       
       return
       end
