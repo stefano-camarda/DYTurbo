@@ -57,7 +57,7 @@ double vjint::delta(double x)
             
   //next to leading order delta(s2) contributions
   double xnlo = 0.;
-  if (opts.order == 2)
+  if (opts.order >= 2)
     {
       double s2 = 0.;
       utils_fu_(uh,q2);

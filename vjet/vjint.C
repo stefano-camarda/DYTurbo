@@ -386,7 +386,7 @@ double vjint::calc(double m, double pt, double y)
   double rsing = 0.;
 
   begin_time = clock();
-  if (opts.order == 2)
+  if (opts.order >= 2)
     {
       rsing = sing();
       /*
