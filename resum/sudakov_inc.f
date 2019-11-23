@@ -11,8 +11,8 @@
       common/a_param/a_param,b0p
 !$OMP THREADPRIVATE(/a_param/)
 
-      double complex aexp,aexpB
-      common/exponent/aexp,aexpB
+      double complex aexp,aexpB,aexpC,aexpD
+      common/exponent/aexp,aexpB,aexpC,aexpD
 !$OMP THREADPRIVATE(/exponent/)
 
       double precision rloga,rlogq2mur2
