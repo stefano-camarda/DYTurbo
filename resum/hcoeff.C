@@ -2,6 +2,8 @@
 #include "resconst.h"
 #include "anomalous.h"
 #include "mesq.h"
+#include "besselint.h"
+#include "resint.h"
 #include "settings.h"
 #include "interface.h"
 #include "phasespace.h"
@@ -112,7 +114,7 @@ void hcoeff::calc(double aass, complex <double> logmuf2q2, complex <double> logq
 	Hqqp[i] = 0.;
       }
 
-  if (opts.order == 2)
+  if (opts.order >= 2)
     {
       complex <double> loga2 = pow(loga,2);
       complex <double> loga3 = pow(loga,3);
@@ -204,6 +206,7 @@ void hcoeff::calcb(double aass, complex <double> logmuf2q2, complex <double> log
 
   double aassh=aass/2.;
   double aasshsq = pow(aassh,2);
+  double aass2=pow(aass,2);
 
   complex <double> aexp2 = aexp*aexp;
 
@@ -224,6 +227,7 @@ void hcoeff::calcb(double aass, complex <double> logmuf2q2, complex <double> log
     }
   
   // NNLL
+  //complex <double> c1delta = pow(aexpb,aassh*(-2.*C1qqn));
   if (opts.order == 2)
     {
       for (int i = 0; i < mellinint::mdim; i++)
@@ -232,6 +236,9 @@ void hcoeff::calcb(double aass, complex <double> logmuf2q2, complex <double> log
 
 	  aexpqq[i]=pow(aexpb,aassh*(C1QQ[idx]-2.*C1qqn));
 	  aexpqg[i]=pow(aexpb,aassh*(C2qgM[idx]/C1QG[idx]-2.*C1qqn));
+
+	  //aexpqq[i]=pow(aexpb,aassh*C1QQ[idx]);
+	  //aexpqg[i]=pow(aexpb,aassh*(C2qgM[idx]/C1QG[idx]));
 
 	  //QQb
 	  Hqqb[i] = (1.+aassh*H1stqqb[i]+aasshsq*H2stqqb[i])
@@ -245,17 +252,92 @@ void hcoeff::calcb(double aass, complex <double> logmuf2q2, complex <double> log
 	    *aexpqq[i];
 
 	  //QQ
-	  Hqq[i]=aasshsq*H2stqq[i]*aexpqq[i]*aexp2; 
+	  Hqq[i]=aasshsq*H2stqq[i]
+	    *aexpqq[i]
+	    //*c1delta
+	    *aexp2; 
 
 	  //QQ'
-	  Hqqp[i]=aasshsq*H2stqqp[i]*aexpqq[i]*aexp2;
+	  Hqqp[i]=aasshsq*H2stqqp[i]
+	    *aexpqq[i]
+	    //*c1delta
+	    *aexp2;
 	      
 	  //GG
 	  Hgg[i] = aasshsq*H2stgg[i]
 	    *aexp*aexpqg[i]
 	    *aexp*aexpqg[i];
-
 	}
+    }
+
+  // NNNLL
+  if (opts.order == 3)
+    {
+
+      for (int i = 0; i < mellinint::mdim; i++)
+	{
+	  int idx = anomalous::index(i,mesq::positive);
+
+	  //B3tilde additional pieces as in Eq. (50)
+	  //-2 beta1 C1 + 2 beta0 C1^2 - 4 beta0 C2
+
+	  //(B3qbar*(-2. + y)*y)/(2.*beta0*pow(1. - y,2))
+	  //1./beta0 * 1./2.  y*(y-2.)/pow(1.-y,2) * (-2 beta1 C1 + 2 beta0 C1^2 - 4 beta0 C2)
+	  //log(aexpC) * (C1^2 - beta1/beta0*C1 - 2*C2)
+
+	  //pieces from g4
+	  //(B3qbar*(-2. + y)*y)/(2.*beta0*pow(1. - y,2))
+	  //(B2qbar*beta1*((2. - y)*y + 2.*log1y))/(2.*pow(beta0,2)*pow(1. - y,2))
+	  //((rlogq2mur2-2.*rloga)*(3.*y*(-2.*B2qbar*pow(beta0,3)*(-2. + y)*(-1. + y)))/(6.*pow(beta0,3)*pow(-1. + y,3));
+
+	  //(1/2)*(1/beta0)*B3qbar       *y*(y-2)/(1-y)^2
+	  //-(1/2)*B2qbar*beta1/beta0^2  *y*(y-2)/(1-y)^2
+	  //B2qbar*beta1/beta0^2        *log1y  /(1-y)^2
+	  //-B2qbar((rlogq2mur2-2.*rloga)*y*(y-2)/(1-y)^2
+
+	  //(-beta1/beta0*C1+C1^2-2*C2)       *y*(y-2)/(1-y)^2
+	  //C1*beta1/beta0                      *y*(y-2)/(1-y)^2
+	  //-2*C1*beta1/beta0                    *log1y  /(1-y)^2
+	  //(2*beta0*C1)*((rlogq2mur2-2.*rloga) *y*(y-2)/(1-y)^2
+	   
+	  aexpqq[i]=pow(aexpb,aassh*C1QQ[idx])
+	    *pow(cx(exponent_.aexpc_),aass2*(0.5*pow(C1QQ[idx],2)))// - (C2NSqqM[idx] + C2SqqbM[idx])))
+	    *pow(cx(exponent_.aexpd_),aass2*beta1/beta0*C1QQ[idx])
+	    *pow(cx(exponent_.aexpc_),aass2*beta0*C1QQ[idx]*(resint::rlogq2mur2-2.*resint::rloga));
+	    ;
+	  
+	  //aexpqq[i]=pow(aexpb,aassh*C1QQ[idx]);
+	  aexpqg[i]=pow(aexpb,aassh*(C2qgM[idx]/C1QG[idx]));
+	  
+	  //QQb
+	  Hqqb[i] = (1.+aassh*H1stqqb[i]+aasshsq*H2stqqb[i])
+	    *aexpqq[i]
+	    *aexpqq[i];
+
+	  //QG and GQ
+	  Hqg[i] = (aassh*H1stqg[i]+aasshsq*H2stqg[i])
+	    *aexp
+	    *aexpqg[i]
+	    *aexpqq[i];
+
+	  //QQ
+	  Hqq[i]=aasshsq*H2stqq[i]
+	    *aexpqq[i]
+	    *aexp2; 
+
+	  //QQ'
+	  Hqqp[i]=aasshsq*H2stqqp[i]
+	    *aexpqq[i]
+	    *aexp2;
+	      
+	  //GG
+	  Hgg[i] = aasshsq*H2stgg[i]
+	    *aexp*aexpqg[i]
+	    *aexp*aexpqg[i];
+	  
+	  //multiple parton case as in Eqs.(100-107) of https://arxiv.org/pdf/hep-ph/0508068.pdf
+	}
+
     }
 }
 
