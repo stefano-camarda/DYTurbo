@@ -76,12 +76,17 @@ void pegasus::init()
   // Some default settings of the external initialization parameters
   // (standard-speed iterated VFNS evolution at NLO for mu_f/mu_r = 1)
 
-  //reproduce DYRES evolution
+  //mode of evolution in Pegasus-QCD
+  //there are three available schemes for solving the evolution equations in N-space at NNLO, IMODEV = 1, 2, 3
+  evmod_.imodev_ = evolution_mode;
+
   if (opts.evolmode == 1)
     {
       ivfns = 0; //FFN evolution
       nff = 5;   //5 light flavours
-      order_.npord_ = opts.order - 1; //order of evolution is LO(NLO) for NLL(NNLL)
+      order_.npord_ = opts.order - 1; //order of evolution is LO, NLO, NNLO for NLL, NNLL, NNNLL
+      //if (opts.order == 3) order_.npord_ = 1; //---> Use NLO evolution at N3LL
+      evmod_.imodev_ = 3; //reproduces DYRes evolution
     }
   //reproduce in N-space the LHAPDF evolution in x-space
   else if (opts.evolmode == 3 || opts.evolmode == 4)
@@ -89,12 +94,8 @@ void pegasus::init()
       ivfns = 1; //VFN evolution (read from LHAPDF)
       nff = 4;   //in FFN evolution, number of flavours  (read from LHAPDF)
       order_.npord_ = LHAPDF::getOrderPDF(); //order of evolution (read from LHAPDF)
+      evmod_.imodev_ = 1; //reproduces evolution in x-space
     }
-  
-  //mode of evolution in Pegasus-QCD
-  //there are three available schemes for solving the evolution equations in N-space at NNLO
-  // mode = 1 reproduces evolution in x-space
-  evmod_.imodev_ = evolution_mode; 
   
   double FR2 = 1.;//ratio of muren2/mufac2
   frrat_.logfr_ = log(FR2);
@@ -233,10 +234,20 @@ void pegasus::init()
 
   double ASI = pdf::alphas(sqrt(asinp_.m20_));
 
-  //The heavy quark masses squared, input values from LHAPDF (kmux can be used to modify the matching scales)
-  asfthr_.m2c_ = pow(LHAPDF::getThreshold(4)*opts.kmuc,2);
-  asfthr_.m2b_ = pow(LHAPDF::getThreshold(5)*opts.kmub,2);
-  asfthr_.m2t_ = pow(LHAPDF::getThreshold(6)*opts.kmut,2);
+  if (opts.evolmode == 1)
+    {
+      //Thresholds are not used with evolmode = 1
+      asfthr_.m2c_ = 1.4;
+      asfthr_.m2b_ = 4.8;
+      asfthr_.m2t_ = 173.3;
+    }
+  else if (opts.evolmode == 2 || opts.evolmode == 3 || opts.evolmode == 4)
+    {
+      //The heavy quark masses squared, input values from LHAPDF (kmux can be used to modify the matching scales)
+      asfthr_.m2c_ = pow(LHAPDF::getThreshold(4)*opts.kmuc,2);
+      asfthr_.m2b_ = pow(LHAPDF::getThreshold(5)*opts.kmub,2);
+      asfthr_.m2t_ = pow(LHAPDF::getThreshold(6)*opts.kmut,2);
+    }
 
   //Stop some nonsense
   if (ivfns == 1 && asinp_.m20_ > asfthr_.m2c_)
@@ -393,6 +404,17 @@ void pegasus::init()
 
 void pegasus::evolve()
 {
+  if (opts.evolmode == 1 && opts.order == 0)
+    {
+      //N flavour dependence
+      int nf = resconst::NF;
+
+      complex <double> fx[11];
+      //At LL there is no PDF evolution, PDFs are evaluated at the factorisation scale
+      for (int i = 0; i < mellinint::mdim; i++)
+	pdfevol::retrievemuf(i);
+    }
+  
   //The values of alphas: ASF for the evolution are obtained
   //using the Pegasus alphas function. In order to use the LHAPDF alphas function
   //the code which calculates the evolution at the thresholds should be changed
