@@ -10,6 +10,11 @@
 
 using namespace std;
 using namespace resconst;
+using namespace resint;
+
+const double pi2 = M_PI*M_PI;
+const double pi3 = pi2*M_PI;
+const double pi4 = pi2*pi2;
 
 //int sudakov::nf;
 //double sudakov::beta0;
@@ -35,7 +40,7 @@ complex <double> sudakov::f0(complex <double> y)
   return (A1q/beta0)*(y+log1y)/(y);
 }
 
-complex <double> sudakov::f1(complex <double> y)
+complex <double> sudakov::f1(complex <double> y) //Eq.23 of arXiv:hep-ph/0508068
 {
   complex <double> F1 = 
     ((A1q*beta1)/(pow(beta0,3)))*((1./2.)*log1y*log1y +
@@ -64,7 +69,7 @@ complex <double> sudakov::f2(complex <double> y)
 	  (beta0*beta2*(2.-3.*y)+pow(beta1,2)*y)) -
     (A1q/2.)*(y)*(y)/(1.-y)/(1.-y)*resint::rlogq2mur2*resint::rlogq2mur2 + //should be rlogq2mur2 -> log(mures^2/mur^2) = (logmur2q2-2.*loga) (is this a bug in DYRES?)
     resint::rlogq2mur2*(B1q*y/(1.-y)+A2q/beta0*y*y/(1.-y)/(1.-y)+
-			A1q*beta1/pow(beta0,2)*(y/(1.-y)+(1.-2.*y)/(1.-y)/(1.-y)*log1y)) 
+			A1q*beta1/pow(beta0,2)*(y/(1.-y)+(1.-2.*y)/(1.-y)/(1.-y)*log1y))
     +2.*C1qqn*((y)/(1.-y));
     
   //    a dependence (now without constant term)
@@ -76,6 +81,33 @@ complex <double> sudakov::f2(complex <double> y)
     return F2;
 }
 
+complex <double> sudakov::g1(complex <double> y)
+{
+  return (A1q*(y + log1y))/(beta0*y);
+
+}
+complex <double> sudakov::g2(complex <double> y)
+{
+  double B1qbar = B1q + A1q*2.*rloga;
+  return (A2q*(-(y/(1. - y)) - log1y))/pow(beta0,2) + (B1qbar*log1y)/beta0 + (A1q*beta1*(y/(1. - y) + log1y/(1. - y) + pow(log1y,2)/2.))/pow(beta0,3)
+    + (A1q*(-y + (-1. + y)*log1y)*(rlogq2mur2-2.*rloga))/(beta0*(-1. + y));
+}
+complex <double> sudakov::g3(complex <double> y)
+{
+  double B1qbar = B1q + A1q*2.*rloga;
+  double B2qbar = B2q + A2q*2.*rloga;
+  return (A1q*beta2*y)/(pow(beta0,3)*pow(1. - y,2)) - (3.*A1q*beta2*pow(y,2))/(2.*pow(beta0,3)*pow(1. - y,2)) - (A3q*pow(y,2))/(2.*pow(beta0,2)*pow(-1. + y,2)) + (A2q*beta1*y*(-2. + 3.*y))/(2.*pow(beta0,3)*pow(1. - y,2)) - (B2qbar*y)/(beta0 - beta0*y) + (A1q*beta2*log1y)/(pow(beta0,3)*pow(1. - y,2)) - (2.*A1q*beta2*y*log1y)/(pow(beta0,3)*pow(1. - y,2)) + (A1q*beta2*pow(y,2)*log1y)/(pow(beta0,3)*pow(1. - y,2)) + (A2q*beta1*(-1. + 2.*y)*log1y)/(pow(beta0,3)*pow(1. - y,2)) + (B1qbar*beta1*(y + log1y))/(pow(beta0,2)*(1. - y)) - (A1q*pow(beta1,2)*(y + log1y)*(-y + (-1. + 2.*y)*log1y))/(2.*pow(beta0,4)*pow(-1. + y,2))
+    - ((rlogq2mur2-2.*rloga)*(2.*A1q*beta1*(-1. + 2.*y)*log1y + y*(2.*B1qbar*pow(beta0,2)*(-1. + y) + 2.*A1q*beta1*(-1. + y) - 2.*A2q*beta0*y + A1q*pow(beta0,2)*y*(rlogq2mur2-2.*rloga))))/(2.*pow(beta0,2)*pow(-1. + y,2));
+
+}
+complex <double> sudakov::g4(complex <double> y)
+{
+  double B1qbar = B1q + A1q*2.*rloga;
+  double B2qbar = B2q + A2q*2.*rloga;
+  double B3qbar = B3q + A3q*2.*rloga;
+  return (B3qbar*(-2. + y)*y)/(2.*beta0*pow(1. - y,2)) + (A4q*(-3. + y)*pow(y,2))/(6.*pow(beta0,2)*pow(1. - y,3)) - (A3q*beta1*y*(6. - 15.*y + 5.*pow(y,2)))/(12.*pow(beta0,3)*pow(1. - y,3)) + (A3q*beta1*(-1. + 3.*y)*log1y)/(2.*pow(beta0,3)*pow(1. - y,3)) + (B2qbar*beta1*((2. - y)*y + 2.*log1y))/(2.*pow(beta0,2)*pow(1. - y,2)) + (B1qbar*((pow(beta1,2) - beta0*beta2)*pow(y,2) - pow(beta1,2)*pow(log1y,2)))/(2.*pow(beta0,3)*pow(1. - y,2)) - (A2q*(y*(8.*beta0*beta2*pow(y,2) + pow(beta1,2)*(-6. + (9. - 11.*y)*y)) + 6.*pow(beta1,2)*log1y*(-1. + y + (-1. + 3.*y)*log1y)))/(12.*pow(beta0,4)*pow(1. - y,3)) - (A1q*(y*(2.*pow(beta1,3)*pow(y,2) + pow(beta0,2)*beta3*(-6. + (15. - 7.*y)*y) + beta0*beta1*beta2*(6. + 5.*(-3. + y)*y)) + 2.*log1y*(3.*(-(pow(beta0,2)*beta3*pow(1. - y,3)) + pow(beta1,3)*pow(y,2)*(1. + y) + beta0*beta1*beta2*(1. + y*(-3. + 2.*(1. - y)*y))) + pow(beta1,3)*log1y*(3.*y + (1. - 3.*y)*log1y))))/(12.*pow(beta0,5)*pow(1. - y,3))
+    + ((rlogq2mur2-2.*rloga)*(3.*y*(-2.*B2qbar*pow(beta0,3)*(-2. + y)*(-1. + y) - A2q*beta0*beta1*(-2. + y)*(-1. + y) + y*(A3q*pow(beta0,2)*(-3. + y) + A1q*(pow(beta1,2) - beta0*beta2)*(1. + y))) + 3.*beta1*log1y*(2.*(-(B1qbar*pow(beta0,2)*(-1. + y)) + A1q*beta1*y + A2q*beta0*(-1. + 3.*y)) + A1q*beta1*(1. - 3.*y)*log1y) + 3.*pow(beta0,2)*(y*(A1q*beta1 + B1qbar*pow(beta0,2)*(-2. + y)*(-1. + y) - A2q*beta0*(-3. + y)*y) + A1q*beta1*(1. - 3.*y)*log1y)*(rlogq2mur2-2.*rloga) + A1q*pow(beta0,4)*(-3. + y)*pow(y,2)*pow(rlogq2mur2-2.*rloga,2)))/(6.*pow(beta0,3)*pow(-1. + y,3));
+}
 
 
 //Sudakov form factor
@@ -124,18 +156,43 @@ complex <double> sudakov::sff(complex <double> b)
   if (opts.order == 0)
     //S = exp(blog*cx(f0_(fy)));
     S = exp(blog*f0(y));
+    //S = exp(blog*g1(y));
   else if (opts.order == 1)
     //S = exp(blog*cx(f0_(fy))+cx(f1_(fy)));
     S = exp(blog*f0(y)+f1(y));
+    //S = exp(blog*g1(y)+g2(y));
   else if (opts.order == 2)
     //S = exp(blog*cx(f0_(fy))+cx(f1_(fy))+aass_.aass_*cx(f2_(fy)));
     S = exp(blog*f0(y)+f1(y)+resint::aass*f2(y));
+    //S = exp(blog*g1(y)+g2(y)+resint::aass*(g3(y)+2.*C1qqn*((y)/(1.-y))));
+  else if (opts.order == 3)
+    //S = exp(blog*g1(y)+g2(y)+resint::aass*g3(y));
+    S = exp(blog*g1(y)+g2(y)+resint::aass*g3(y)+pow(resint::aass,2)*g4(y));
+
+  /*
+  if (opts.order == 0)
+    S = exp(blog*g1(y));
+  else if (opts.order == 1)
+    S = exp(blog*g1(y)+g21(y));
+  else if (opts.order == 2)
+    S = exp(blog*g1(y)+g2(y)+resint::aass*g3(y));
+  else if (opts.order == 3)
+    S = exp(blog*g1(y)+g2(y)+resint::aass*g3(y)+pow(resint::aass,2)*g4(y));
+  */
+  
+
   //  cout << " y " << y << "  " << cx(fy) << endl;
 
   //cout << setprecision(16);
   //cout << "f0(y) " << cx(f0_(fy)) << "  " << f0(y) << endl;
   //cout << "f1(y) " << cx(f1_(fy)) << "  " << f1(y) << endl;
   //cout << "f2(y) " << cx(f2_(fy)) << "  " << f2(y) << endl;
+
+  //cout << setprecision(16);
+  //cout << "f0(y) " << f0(y) << " g1 " << g1(y) << endl;
+  //cout << "f1(y) " << f1(y) << " g2 " << g2(y) << endl;
+  //cout << "f2(y) " << f2(y) << " g3 " << g3(y) << endl;
+  //cout << "f3(y) " << 0     << " g4 " << g4(y) << endl;
   
   if (opts.bprescription == 0 && fabs(S) > 100.)
     {
