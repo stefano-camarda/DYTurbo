@@ -105,8 +105,8 @@ void hcoeff::calc(double aass, complex <double> logmuf2q2, complex <double> logq
 
 	Hqqb[i]=1.+aass*H1stqqb[i];
 
-	//	    H1stqg[i] = C1QG[idx]
-	//	      -gamma1qg[idx]*(logmuf2q2+2.*loga);
+	H1stqg[i] = C1QG[idx]
+	  -gamma1qg[idx]*(logmuf2q2+2.*loga);
 
 	// channels which do not contribute at NLL
 	Hgg[i] = 0.;
@@ -221,8 +221,12 @@ void hcoeff::calcb(double aass, complex <double> logmuf2q2, complex <double> log
 	  //  +(aass/2.)*(-gamma1qg[idx])*(logmuf2q2+2.*loga);
 
 	  //Bug fix in DYRES (compare lines 659-660 of DYRes-v1.0/src/Res/main2.f and line 894 of DYqT-v1.0/enew.f)
-	  Hqg[i] = aexp*(aass/2.)*C1QG[idx]
-	    +(aass/2.)*(-gamma1qg[idx])*(logmuf2q2+2.*loga);
+	  //Hqg[i] = aexp*(aass/2.)*C1QG[idx]
+	  //+(aass/2.)*(-gamma1qg[idx])*(logmuf2q2+2.*loga);
+
+	  //I would write instead
+	  Hqg[i] = (aassh*H1stqg[i])
+	    *aexp;
 	}
     }
   
@@ -273,7 +277,8 @@ void hcoeff::calcb(double aass, complex <double> logmuf2q2, complex <double> log
   // NNNLL
   if (opts.order == 3)
     {
-
+      complex <double> aexpC = cx(exponent_.aexpc_);
+      complex <double> aexpD = cx(exponent_.aexpd_);
       for (int i = 0; i < mellinint::mdim; i++)
 	{
 	  int idx = anomalous::index(i,mesq::positive);
@@ -299,15 +304,79 @@ void hcoeff::calcb(double aass, complex <double> logmuf2q2, complex <double> log
 	  //C1*beta1/beta0                      *y*(y-2)/(1-y)^2
 	  //-2*C1*beta1/beta0                    *log1y  /(1-y)^2
 	  //(2*beta0*C1)*((rlogq2mur2-2.*rloga) *y*(y-2)/(1-y)^2
-	   
-	  aexpqq[i]=pow(aexpb,aassh*C1QQ[idx])
-	    *pow(cx(exponent_.aexpc_),aass2*(0.5*pow(C1QQ[idx],2) - (C2NSqqM[idx] + C2SqqbM[idx])))
-	    *pow(cx(exponent_.aexpd_),aass2*beta1/beta0*C1QQ[idx])
-	    *pow(cx(exponent_.aexpc_),aass2*beta0*C1QQ[idx]*(resint::rlogq2mur2-2.*resint::rloga));
-	    ;
+
+	  //Diagonal form factor
+	  //Gca_D =
+	  //  + (aS/Pi)*C1                           *(lam)/(1-lam)
+	  //  
+	  //  + (aS^2/Pi^2)*(
+	  //		   + (C1^2/2 - C2)           *lam*(lam-2)/(1-lam)^2
+	  //		   - beta1/beta0*C1          *Log[1-lam]/(1-lam)^2
+	  //		   + beta0*C1*Log[Q2/muR2]   *lam*(lam-2)/(1-lam)^2
+	  //		   );
 	  
-	  //aexpqq[i]=pow(aexpb,aassh*C1QQ[idx]);
-	  aexpqg[i]=pow(aexpb,aassh*(C2qgM[idx]/C1QG[idx]));
+	  //Off-diagonal form factor
+	  //Gca_OD =
+	  //  - Log[1 - lam]
+	  //
+	  //  + (aS/Pi)*(
+	  //	       + (C2/C1)                         *lam/(1-lam)
+	  //	       - (beta1/beta0                    *Log[1-lam])/(1-lam)
+	  //	       - (beta0*Log[Q2/muR2])            *lam/(1-lam)
+	  //	       )
+	  //
+	  //  + (aS^2/Pi^2)*(
+	  //		   - beta1^2/beta0^2                        *lam/(1-lam)^2
+	  //		   + beta2/beta0                            *lam/(1-lam)^2
+	  //		   - beta1^2/beta0^2                        *Log[1-lam]/(1-lam)^2
+	  //		   + 1/2*beta1^2/beta0^2                    *Log[1-lam]^2/(1-lam)^2
+	  //		   + (C2^2/C1^2/2 - C1*C3/C1^2)             *lam*(lam-2)/(1-lam)^2
+	  //		   - beta1/beta0*C2/C1                      *Log[1-lam]/(1-lam)^2
+	  //
+	  //		   - beta1                  *Log[Q2/muR2]   *lam/(1-lam)^2
+	  //		   + beta1                  *Log[Q2/muR2]   *Log[1-lam]/(1-lam)^2
+	  //		   + beta0*C2/C1            *Log[Q2/muR2]   *lam*(lam-2)/(1-lam)^2
+	  //		   );
+
+	  //Doubly off-diagonal form factor
+	  //Gca_DOD =
+	  //  - 2*Log[1 - lam]
+	  //  + (aS/Pi)* (
+	  //		+ (C3/C2)                      *lam/(1-lam)
+	  //		- (2*beta1/beta0               *Log[1-lam])/(1-lam)
+	  //		- (2*beta0*Log[Q2/muR2])       *lam/(1-lam)
+	  //		)
+	  //  
+	  //  + (aS^2/Pi^2)* (
+	  //		    - 2*beta1^2/beta0^2                    *lam/(1-lam)^2
+	  //		    + 2*beta2/beta0                        *lam/(1-lam)^2
+	  //		    - 2*beta1^2/beta0^2                    *Log[1-lam]/(1-lam)^2
+	  //		    + beta1^2/beta0^2                      *Log[1-lam]^2/(1-lam)^2
+	  //		    + (C3^2/C2^2/2 - C4/C2)                *lam*(lam-2)/(1-lam)^2
+	  //		    + beta1/beta0*C3/C2                    *Log[1-lam]/(1-lam)^2
+	  //		     
+	  //		    - 2*beta1      *Log[Q2/muR2]          *lam/(1-lam)^2
+	  //		    + 2*beta1      *Log[Q2/muR2]          *Log[1-lam]/(1-lam)^2
+	  //		    + beta0*C3/C2  *Log[Q2/muR2]          *lam*(lam-2)/(1-lam)^2
+	  //		    );
+
+	  //aexpdod[i]=pow(aexpb,1./2.*aass*C3/C2)
+	  //  *pow(aexpC,1./2.*aass2*(pow(C3/C2,2)/2. - C4/C2))
+	  //  *pow(aexpD,1./2.*aass2*beta1/beta0*C3/C2)
+	  //  *pow(aexpC,1./2.*aass2*beta0*C3/C2*(resint::rlogq2mur2-2.*resint::rloga))
+	  //  ;
+	  
+	  aexpqq[i]=pow(aexpb,1./2.*aass*C1QQ[idx])
+	    *pow(aexpC,1./2.*aass2*(0.5*pow(C1QQ[idx],2) - (C2NSqqM[idx] + C2SqqbM[idx])))
+	    *pow(aexpD,-1./2.*aass2*beta1/beta0*C1QQ[idx])
+	    *pow(aexpC,1./2.*aass2*beta0*C1QQ[idx]*(resint::rlogq2mur2-2.*resint::rloga))
+	  ;
+	  
+	  aexpqg[i]=pow(aexpb,1./2.*aass*(C2qgM[idx]/C1QG[idx]))
+	    //*pow(aexpC,1./2.*aass2*(pow(C2qgM[idx]/C1QG[idx],2)/2. - C3/C1QG[idx]))
+	    *pow(aexpD,-1./2.*aass2*beta1/beta0*C2qgM[idx]/C1QG[idx])
+	    *pow(aexpC,1./2.*aass2*(beta0*C2qgM[idx]/C1QG[idx])*(resint::rlogq2mur2-2.*resint::rloga))
+	    ;
 	  
 	  //QQb
 	  Hqqb[i] = (1.+aassh*H1stqqb[i]+aasshsq*H2stqqb[i])
