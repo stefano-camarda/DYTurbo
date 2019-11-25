@@ -26,6 +26,8 @@ extern "C"
   extern struct {
     fcomplex aexp_;
     fcomplex aexpb_;
+    fcomplex aexpc_;
+    fcomplex aexpd_;
   } exponent_;
 }
 #pragma omp threadprivate(exponent_)
