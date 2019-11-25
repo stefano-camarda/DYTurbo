@@ -301,7 +301,7 @@ void hcoeff::calcb(double aass, complex <double> logmuf2q2, complex <double> log
 	  //(2*beta0*C1)*((rlogq2mur2-2.*rloga) *y*(y-2)/(1-y)^2
 	   
 	  aexpqq[i]=pow(aexpb,aassh*C1QQ[idx])
-	    *pow(cx(exponent_.aexpc_),aass2*(0.5*pow(C1QQ[idx],2)))// - (C2NSqqM[idx] + C2SqqbM[idx])))
+	    *pow(cx(exponent_.aexpc_),aass2*(0.5*pow(C1QQ[idx],2) - (C2NSqqM[idx] + C2SqqbM[idx])))
 	    *pow(cx(exponent_.aexpd_),aass2*beta1/beta0*C1QQ[idx])
 	    *pow(cx(exponent_.aexpc_),aass2*beta0*C1QQ[idx]*(resint::rlogq2mur2-2.*resint::rloga));
 	    ;
