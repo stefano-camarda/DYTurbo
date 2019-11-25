@@ -62,6 +62,7 @@ complex <double> besselint::bint(complex <double> b)
 
   //bstarscale = a*b0/bstar (final scale used for the PDF evolution)
   double bstar = real(b / sqrt(1.+(b*b)/(blimit_.rblim_*blimit_.rblim_)));
+  //double bstar = real(b / sqrt(1.+(b*b)/(1.1229190*1.1229190)));  //// -->hard-coded!! --> should allow a different blim in the PDF evolution as a setting
   pdfevol::bstarscale = resconst::b0*resint::a/bstar;
 
   //qbstar is used in evolmode 3
