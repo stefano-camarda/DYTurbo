@@ -29,6 +29,10 @@ namespace sudakov
 #pragma omp threadprivate(log1y)
 
   //  void setnf(int nff);
+  complex <double> g1(complex <double> y);
+  complex <double> g2(complex <double> y);
+  complex <double> g3(complex <double> y);
+  complex <double> g4(complex <double> y);
 
   complex <double> f0(complex <double> y);
   complex <double> f1(complex <double> y);
