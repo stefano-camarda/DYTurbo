@@ -42,8 +42,9 @@ void settings::parse_options(int argc, char* argv[]){
         ("s,pdfset"          , "Set PDF set [LHAPDF name]"                           , po::value<string>() )
         ("m,pdfvar"          , "Set PDF member [integer/all]"                        , po::value<string>() )
         ("g,gpar"            , "Set non-perturbative Sudakov parameter"              , po::value<double>() )
-        ("R,kmuren"          , "Set realative renormalization scale"                 , po::value<double>() )
-        ("F,kmufac"          , "Set realative factorization scale"                   , po::value<double>() )
+        ("R,kmuren"          , "Set relative renormalization scale"                 , po::value<double>() )
+        ("F,kmufac"          , "Set relative factorization scale"                   , po::value<double>() )
+        ("Q,kmures"          , "Set relative resummation scale"                     , po::value<double>() )
         ("qtbins"            , "Set equdistan binning for mass [N,lo,hi]"            , po::value<string>() )
         ("ybins"             , "Set equdistan binning for qt [N,lo,hi]"              , po::value<string>() )
         ("mbins"             , "Set equdistan binning for y [N,lo,hi]"               , po::value<string>() )
@@ -151,6 +152,9 @@ void settings::parse_options(int argc, char* argv[]){
     }
     if (args.count("kmufac")) {
         opts.kmufac = args["kmufac"].as<double>();
+    }
+    if (args.count("kmures")) {
+        opts.kmures = args["kmures"].as<double>();
     }
 
     // Collider
@@ -300,6 +304,12 @@ void settings::readfromfile(const string fname){
     runningwidth   = in.GetBool   ( "runningwidth"   );
     rseed          = in.GetNumber ( "rseed"          );
     blim           = in.GetNumber ( "blim"           );
+    blim_pdf       = in.GetNumber ( "blim_pdf"       );
+    blim_sudakov   = in.GetNumber ( "blim_sudakov"   );
+    blim_cexp      = in.GetNumber ( "blim_cexp"      );
+    bstar_pdf      = in.GetBool   ( "bstar_pdf"       );
+    bstar_sudakov  = in.GetBool   ( "bstar_sudakov"   );
+    bstar_cexp     = in.GetBool   ( "bstar_cexp"      );
     LHAPDFset      = in.GetString ( "LHAPDFset"      );
     LHAPDFmember   = in.GetNumber ( "LHAPDFmember"   );
     ewscheme       = in.GetNumber ( "ewscheme"       );
@@ -401,6 +411,9 @@ void settings::readfromfile(const string fname){
     opts_.pdfintervals_ = in.GetNumber ( "opts_pdfintervals" ); //100
     pdfrule            = in.GetNumber ( "pdfrule" );
     evolmode           = in.GetNumber  ("evolmode");
+    mufevol            = in.GetBool  ("mufevol");
+    nocexp             = in.GetBool  ("nocexp");
+    sumlogs            = in.GetBool  ("sumlogs");
     bprescription      = in.GetNumber   ("bprescription");
     bintaccuracy       = in.GetNumber ( "bintaccuracy" );
     phibr              = in.GetNumber ( "phibr" );
@@ -444,7 +457,7 @@ void settings::check_consistency(){
 	doCT = false;
 	doVJ = false;
       }
-    if (order != 2)
+    if (order < 2)
       {
 	doVJREAL = false;
 	doVJVIRT = false;
@@ -457,6 +470,16 @@ void settings::check_consistency(){
 	kmures = 1.0;
 	fmures = 1;
       }
+
+    //If default values of blim for pdfs, sudakov and cexp are not set, take blim as default
+    if (blim_pdf == 0)
+      blim_pdf = blim;
+
+    if (blim_sudakov == 0)
+      blim_sudakov = blim;
+
+    if (blim_cexp == 0)
+      blim_cexp = blim;
 
     if (evolmode > 4 || evolmode < 0)
       {
@@ -524,7 +547,7 @@ void settings::check_consistency(){
       else
 	intDimVJ = 7;
     
-    if (doVJ && intDimVJ < 7 && order == 2)
+    if (makecuts && doVJ && intDimVJ < 7 && order >= 2)
       {
 	cout << "cannot perform quadrature integration for V+jet at NNLO" << endl;
 	exit (-1);
@@ -689,6 +712,12 @@ void settings::dumpAll(){
 	dumpD ( "kmut      ",  kmut   ) ;
 	dumpB ( "flavour_kt", flavour_kt );
         dumpD( "blim              ",  blim    ) ;
+        dumpD( "blim_pdf               ",  blim_pdf    ) ;
+        dumpD( "blim_sudakov           ",  blim_sudakov    ) ;
+        dumpD( "bstar_cexp             ",  blim_cexp    ) ;
+        dumpB( "bstar_pdf              ",  bstar_pdf    ) ;
+        dumpB( "bstar_sudakov          ",  bstar_sudakov    ) ;
+        dumpB( "bstar_cexp             ",  bstar_cexp    ) ;
         dumpS("LHAPDFset          ", LHAPDFset           );
         dumpI("LHAPDFmember       ", LHAPDFmember        );
         dumpI("rseed              ", rseed               );
@@ -798,6 +827,8 @@ void settings::dumpAll(){
         dumpI("approxpdf         ", opts_.approxpdf_    );
         dumpI("pdfintervals      ", opts_.pdfintervals_ );
         dumpI("evolmode          ", evolmode            );
+        dumpB("mufevol           ", mufevol            );
+        dumpB("nocexp            ", nocexp             );
 	dumpI("bprescription     ", bprescription       );
 	dumpB("phibr             ", phibr       );
 	dumpB("bcf               ", bcf       );

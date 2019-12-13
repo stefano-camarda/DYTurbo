@@ -240,7 +240,11 @@ public:
   
   //blim parameter of the bstar prescription (acts as an IR cut-off)
   double blim;
+  double blim_pdf, blim_sudakov, blim_cexp;
 
+  //force bstar prescription
+  bool bstar_pdf, bstar_sudakov, bstar_cexp;
+  
   //arg(z) in the complex plane for the minimal prescription
   double phibr;
   //select the point bc, where the integration contour is bended in the complex plane, as a fraction of b_L = ... (Landau singularity)
@@ -307,9 +311,18 @@ public:
   //counter term code in C++
   bool ctcpp = true;   //use C++ code for the counter term
   
-  //dyres or pegasus PDF evolution
+  //dyres, pegasus,lhapdf PDF evolution
   int evolmode;
 
+  //Evolve PDFs from mufac instead of mures
+  bool mufevol;
+  
+  //swicth off C exponentiation
+  bool nocexp;
+
+  //sum all logs before exponentiation
+  bool sumlogs;
+  
   //bin width normalisation
   bool ptbinwidth, ybinwidth, mbinwidth;
 

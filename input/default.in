@@ -107,6 +107,12 @@ qtcutoff = 0.02   # Resummation cutoff in GeV
 # modlog = false # Canonical logarithms in the Sudakov L = log( (Q*b/b0)^2 )
 modlog = true
 
+# Switch off exponentiation of C coefficients
+nocexp = false
+
+# Sum all logs before exponentiation (helpful with bprescription = 0, but create issues with bprescription = 2)
+sumlogs = false
+
 # Prescription to avoid the Landau pole in the Bessel inverse transform
 # 0: bstar prescription, which freezes b at bmax: b -> bstar = b/sqrt(1+b^2/bmax^2)
 # 1: Integrate all the way up to the Landau singularity b_L = b0/Q * exp(1/(2*beta0*alphas))
@@ -115,6 +121,13 @@ modlog = true
 bprescription = 0
 
 blim = -1         #blim for the bstar prescription, applies to bprescription = 0. A positive value set a fixed bmax=blim, a negative values sets bmax=b_L/(-blim), where b_L is the Landau singularity.
+blim_pdf = 0      #if not zero, set a different blim for the PDF evolution
+blim_sudakov = 0  #if not zero, set a different blim for the Sudakov form factor
+blim_cexp = 0.5   #if not zero, set a different blim for the C exponentiation
+
+bstar_pdf     = false  #force bstar prescription for the PDF evolution
+bstar_sudakov = false  #force bstar prescription for the Sudakov form factor
+bstar_cexp    = false  #force bstar prescription for the C exponentiation
 
 phibr = 4.        #set arg(z) as phib = pi/phibr  for the integration contour in the complex plane for bprescription = 2 (should be set phibr > 4. )
 bcf = 0.5         #select the point bc = bcf * b_L, where the integration contour is bended in the complex plane, as a fraction of the Landau singularity b_L. Applies to bprescription = 2 or 3
@@ -135,6 +148,9 @@ pdfrule = 200             # Gaussian rule for the x-to-N Mellin transform
 #3: Pegasus VFN (forward evolution)
 #4: Pegasus VFN with alphas from DYRES (forward evolution)
 evolmode = 0
+
+# Evolve PDFs from mufac (instead of mures) to b0/b
+mufevol = false
 
 # Settings for the inverse Hankel transform
 bintaccuracy = 1.0e-4  # Accuracy of the integration
