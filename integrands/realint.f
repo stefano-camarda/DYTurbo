@@ -12,6 +12,7 @@
       include 'dipolescale.f'
       include 'qcdcouple.f'
       include 'options.f'
+      include 'sprods_com.f'
       integer ih1,ih2,j,k,nd,nvec
       double precision f(*)
       double precision vector(mxdim),W,val
@@ -20,7 +21,8 @@
       double precision p(mxpart,4),pjet(mxpart,4),p1ext(4),p2ext(4)
       double precision ptrans(mxpart,4)
       double precision pswt
-      double precision s(mxpart,mxpart),wgt,msq(-nf:nf,-nf:nf)
+c     double precision s(mxpart,mxpart)
+      double precision wgt,msq(-nf:nf,-nf:nf)
       double precision msqc(maxd,-nf:nf,-nf:nf),xmsq(0:maxd)
       double precision flux,BrnRat
       double precision xx1,xx2,dot,q2
@@ -42,21 +44,26 @@ C      external hists_fill
       double precision x,omx,sij,sik,sjk
       integer ip,jp,kp
 
-      data p/48*0d0/
+      data p/pdim*0d0/
 
       integer npdf,maxpdf
       double precision gsqcentral
 
+      logical dynamic_fac
+      external dynamic_fac
+
+      double precision pt,mjj
+      external pt,mjj
+      
       pswt=0d0
       realint=0d0      
       do npdf=0,totpdf-1
          f(npdf+1)=0d0
       enddo
 
-      W=sqrts**2
-      
       npart=4
-      call gen4(vector,p,pswt,*999)
+c      call gen4(vector,p,pswt,*999)
+      call dygen4(vector,p,pswt,*999)
 
 c      print*,'phase space in real'
 c      print*,p(3,1),p(3,2),p(3,3),p(3,4)
@@ -72,9 +79,9 @@ c      print*
       
       nvec=npart+2
 
-      q2=2*dot(p,3,4)
+      q2=2*dot(p,3,4)           ! =s(3,4)
 c      qt2=(p(3,1)+p(4,1))**2+(p(3,2)+p(4,2))**2
-
+      
       call dotem(nvec,p,s)
       
 c---impose cuts on final state
@@ -122,9 +129,12 @@ c     check which dipoles are to be included
             jp = 6
             kp = 5
          endif
-         sij=two*dot(p,ip,jp)
-         sik=two*dot(p,ip,kp)
-         sjk=two*dot(p,jp,kp)
+c         sij=two*dot(p,ip,jp)
+c         sik=two*dot(p,ip,kp)
+c         sjk=two*dot(p,jp,kp)
+         sij=s(ip,jp)
+         sik=s(ip,kp)
+         sjk=s(jp,kp)
 
          if (nd.le.4) then
             omx=-(sij+sjk)/sik
@@ -154,12 +164,19 @@ c     If the real and all the dipoles fail cuts, then exit
       endif
       
 CC   Dynamic scale for real contribution (nd = 0): set it only if point passes cuts 
-      if(dynamicscale.and.includereal) then
-       call scaleset(q2)
-       dipscale(0)=facscale
+c      if(dynamicscale.and.includereal) then
+c       call scaleset(q2)
+c       dipscale(0)=facscale
+c      endif
+      if(includereal) then
+         call scaleset_mcfm(sqrt(q2),
+     .        pt(p(4,:),p(3,:)),
+     .        mjj(p(5,:),p(6,:)))
+         dipscale(0)=facscale
       endif
-
+      
 c----calculate the x's for the incoming partons from generated momenta
+      W=sqrts**2
       xx1=two*(p(1,4)*p2ext(4)-p(1,3)*p2ext(3))/W
       xx2=two*(p(2,4)*p1ext(4)-p(2,3)*p1ext(3))/W
 
@@ -196,7 +213,8 @@ c     intitialise xmsq to 0 for the real and all dipoles
          enddo
 
 c     evaluate PDFs
-         if (dynamicscale) then
+c     if (dynamicscale) then
+         if (dynamic_fac()) then
             do nd=0,6
                if (incldip(nd)) then
                   call fdist(ih1,xx1,dipscale(nd),dipfx1(nd,:))
@@ -237,6 +255,15 @@ c     calculate xmsq for the dipole contributions
             endif
          enddo
 
+c     check single contributions:
+!         xmsq(0)=0d0
+!         xmsq(1)=0d0
+!         xmsq(2)=0d0
+!         xmsq(3)=0d0
+!         xmsq(4)=0d0
+!         xmsq(5)=0d0
+!         xmsq(6)=0d0
+         
 c     Sum up the real and all the dipole contributions
          xmsq(0)=xmsq(0)+xmsq(5)+xmsq(6)
 
@@ -257,11 +284,12 @@ C---  Fill only if it's last iteration
 c     this call to getptildejet can be removed, because pjet and ptildejet are both equal to ptrans,
 c     which is the transformation of p into the dipole kinematic
 c     ptrans is stored in ptilde(nd), which should be used for filling
-               call getptildejet(nd,pjet)
+c     !!! be careful, ptilde(0) is empty, should use ptildejet instead !!!
+               call getptildejet(nd,pjet) !copy ptildejet(nd) into pjet
                val=xmsq(nd)*wgt
 C---        store information per each dipole
               call hists_real_dipole(pjet(3,:),pjet(4,:),val,nd)
-C             call hists_fill(ptilde(nd,3,:),ptilde(nd,4,:),val)
+C               call hists_fill(ptildejet(nd,3,:),ptildejet(nd,4,:),val)
             endif
          enddo                  !End loop on real+dipoles contributions
 

@@ -1,0 +1,77 @@
+image: docker.cern.ch/linuxsupport/cc7-base:latest
+
+before_script:
+  - yum install -y tar wget make
+  - yum install -y gcc gcc-c++ gcc-gfortran
+  - yum install -y python python-devel
+  - yum install -y boost-devel
+  - yum install -y autoconf automake libtool
+  - yum install -y root root-physics root-multiproc
+
+stages:
+    - build
+    - deploy
+    - test
+
+#  pages:
+#      tags:
+#          - cvmfs
+#          - docker
+#      stage : build
+#      script:
+#          - cd $CI_PROJECT_DIR/doxy
+#          - doxygen
+#          - cd -
+#          - mkdir public
+#          - cp -r $CI_PROJECT_DIR/doxy/html/* public/
+#      artifacts:
+#          # Upload the public/ directory as artifact. The web generated will be attached to the build
+#          paths:
+#              - public
+#  
+#  # Deploy the pages generated to DFS
+#  dfsdeploy:
+#      # Executed during the deploy stage
+#      stage: deploy
+#      # Custom docker image providing the needed tools to deploy in DFS
+#      image: gitlab-registry.cern.ch/ci-tools/ci-web-deployer:latest
+#      script:
+#          # Script that performs the deploy to DFS. Makes use of the variables defined in the project
+#          # It will not sync the generated content with the folder in DFS (risk of deleting DFS management files)
+#          # It will just override the contents of DFS or copy new files
+#          - deploy-dfs
+
+
+build-with-root:
+    stage: test
+    tags:
+        - cvmfs
+        - docker
+    script:
+        - g++ -o hello test/hello.cxx
+        - ./hello
+        - export ATLAS_LOCAL_ROOT_BASE=/cvmfs/atlas.cern.ch/repo/ATLASLocalRootBase
+        - ls -la ${ATLAS_LOCAL_ROOT_BASE}/user/atlasLocalSetup.sh
+        - source ${ATLAS_LOCAL_ROOT_BASE}/user/atlasLocalSetup.sh
+        - lsetup root
+        - lsetup  "sft releases/Boost/1.55.0_python2.7-dcbb8"
+        - export BOOST_ROOT=$SFT_HOME_Boost
+        - export DYTURBOROOT=`pwd -P`
+        - autoreconf -i
+        - ./configure --enable-root --enable-test #--enable-Ofast
+        - make check
+
+
+#with-stl:
+#    script:
+#        - ./configure --enable-Ofast --enable-test
+#        - make check
+
+testdevel:
+  script:
+    - autoreconf -i
+#    - ./configure --enable-root --enable-Ofast --enable-test
+    - ./configure --enable-test --enable-Ofast
+    - make check
+  only:
+    - devel

@@ -8,13 +8,23 @@
 ## @author cuto <Jakub.Cuth@cern.ch>
 ## @date 2015-10-27
 
+# read job number
+jobseed=$1
+shift
+# read the rest
 arguments=$*
 
+# get random seed from config file (xargs will remove leading and trailing spaces)
+configseed=`grep rseed input.in | cut -d= -f2 | cut -d\# -f1 | xargs`
+jobseed=$((jobseed+configseed))
+# add jobseed
+arguments="${arguments} --seed ${jobseed}"
+
+# grid verbosity
+arguments="${arguments} --grid"
+
 # setup ENV
-export ATLAS_LOCAL_ROOT_BASE=/cvmfs/atlas.cern.ch/repo/ATLASLocalRootBase
-source ${ATLAS_LOCAL_ROOT_BASE}/user/atlasLocalSetup.sh
-# ROOT
-lsetup "root 6.04.14-x86_64-slc6-gcc49-opt"
+source ./setup.sh
 
 # LHAPDF
 if [[ SETTARGET =~ compile ]]
@@ -26,12 +36,12 @@ then
     export LHAPDF_DATA_PATH=/cvmfs/sft.cern.ch/lcg/external/lhapdfsets/current/
 else
     # own lhapdf set
-    export LHAPDF_DATA_PATH=./LHAPDF
+    export LHAPDF_DATA_PATH=$LHAPDF_DATA_PATH:./LHAPDF
 fi
-export LHAPATH=$LHAPDF_DATA_PATH
+#export LHAPATH=$LHAPDF_DATA_PATH
 # dyturbo libs
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:./lib
-export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/cvmfs/sft.cern.ch/lcg/external/gcc/4.8.1/x86_64-slc6-gcc48-opt/lib/../lib64
+#export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/cvmfs/sft.cern.ch/lcg/external/gcc/4.8.1/x86_64-slc6-gcc48-opt/lib/../lib64
 
 echo
 echo LD_LIBRARY_PATH
@@ -48,7 +58,5 @@ echo
 rm -f results*.root
 
 ./bin/dyturbo $arguments
-
-hadd -f results_merge.root results*.root
 
 

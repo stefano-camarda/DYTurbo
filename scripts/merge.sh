@@ -135,14 +135,14 @@ merge_grid(){
         base=`echo $griddir | cut -d. -f3 | sed "s|_seed|_merge|g"`
         outfile=$mergedir/$base.root
         echo skip $outfile
-        #$DRYRUN hadd -f $mergedir/$base.root $griddir/*results_merge.root*
+        #$DRYRUN hadd -f $mergedir/$base.root $griddir/*results.root*
         base=`echo $base | sed "s|_merge|_outliers|g"`
         outfile=$mergedir/$base.root
         if [ -f $outfile  ]
         then
             echo skip $outfile
         else
-            $DRYRUN $MERGER $outfile $griddir/*results_merge.root*
+            $DRYRUN $MERGER $outfile $griddir/*results.root*
         fi
     done
 }
@@ -421,7 +421,7 @@ merge_parsed(){
                 if [[ $seed =~ v146 ]]
                 then
                     newindir="$newindir*$outname"
-                    searchfile="*results_merge.root* -type d"
+                    searchfile="*results.root* -type d"
                 fi
                 #
                 for fres in `find $newindir -name $searchfile | sort `

@@ -9,14 +9,15 @@
 #include "interface.h"
 #include "phasespace.h"
 #include "gaussrules.h"
+#include "KinematicCuts.h"
 #include "cuba.h"
-#include "kinematic.h"
 
 #include <ctime>
 #include <math.h>
 #include <iostream>
 #include <iomanip>
 #include <vector>
+
 
 //rest frame axes
 double omegaintegr::kap1[4];
@@ -231,6 +232,7 @@ void omegaintegr::genl4p(double costh, double phi_lep)
   
   phasespace::set_cth(costh);
   phasespace::set_philep(phi_lep);
+  phasespace::calcphilep();
   phasespace::genl4p();
   return;
     
@@ -329,25 +331,40 @@ void omegaintegr::genl4p(double costh, double phi_lep)
 //costh for any general kt prescription
 double omegaintegr::costhCS()
 {
-  //change this to p3
+  //change this to p3  !!! should use p3 here instead of p4 !!!
   return (1.-4.*(kap1[3]*phasespace::p4[3]-kap1[2]*phasespace::p4[2]-kap1[1]*phasespace::p4[1]-kap1[0]*phasespace::p4[0])/(phasespace::m*phasespace::m));
 }
 
 //Algorithm to determine all the subintervals of costh between -1 and +1 in which the lepton cuts are satisfied
 void omegaintegr::costhbound(double phi_lep, vector<double> &min, vector<double> &max)
 {
-  if (!opts.makelepcuts)
+  if (!opts.makecuts)
     {
       min.push_back(phasespace::getcthmin());
       max.push_back(phasespace::getcthmax());
       return;
     }
 
-  bool status;
+  //determine costh range
   double c1 = phasespace::getcthmin();
   double c2 = phasespace::getcthmax();
-  genl4p(c1, phi_lep);
-  if (cuts::lep(phasespace::p3, phasespace::p4))
+
+  //set intial costh
+  phasespace::set_cth(c1);
+  
+  //set phi_lep once and for all costh iterations
+  phasespace::set_philep(phi_lep);
+  phasespace::calcphilep();
+
+ //perform the phi_lep rotation only once and for all costh iterations
+  phasespace::genl4p_phirot();
+  phasespace::genl4p_phifix();
+
+  //genl4p(c1, phi_lep);
+
+  //determine initial status (Keep or Skip event)
+  bool status;
+  if (Kinematics::Cuts::KeepThisEvent(phasespace::p3, phasespace::p4))
     {
       min.push_back(c1);
       status = true;
@@ -367,8 +384,10 @@ void omegaintegr::costhbound(double phi_lep, vector<double> &min, vector<double>
 	      for(int i=0;i<=nc;i++)
 		{
 		  double costh = i*hc+c1;
-		  genl4p(costh, phi_lep);
-		  if (!cuts::lep(phasespace::p3, phasespace::p4))
+		  phasespace::set_cth(costh);
+		  phasespace::genl4p_phifix();
+		  //genl4p(costh, phi_lep);
+		  if (!Kinematics::Cuts::KeepThisEvent(phasespace::p3, phasespace::p4))
 		    {
 		      tempmax = costh; //tempmax = costh_CS;
 		      c2 = i*hc+c1;
@@ -400,8 +419,10 @@ void omegaintegr::costhbound(double phi_lep, vector<double> &min, vector<double>
 	      for(int i=0;i<=nc;i++)
 		{
 		  double costh = i*hc+c1;
-		  genl4p(costh, phi_lep);
-		  if (cuts::lep(phasespace::p3, phasespace::p4))
+		  phasespace::set_cth(costh);
+		  phasespace::genl4p_phifix();
+		  //genl4p(costh, phi_lep);
+		  if (Kinematics::Cuts::KeepThisEvent(phasespace::p3, phasespace::p4))
 		    {
 		      tempmin = costh; //tempmin = costh_CS;
 		      c2 = i*hc+c1;
@@ -427,7 +448,7 @@ void omegaintegr::costhbound(double phi_lep, vector<double> &min, vector<double>
 void omegaintegr::cthmoments(double &cthmom0, double &cthmom1, double &cthmom2)
 {
   clock_t begin_time, end_time;
-  if (!opts.makelepcuts)
+  if (!opts.makecuts)
     {
       cthmom0 = phasespace::getcthmax()-phasespace::getcthmin();
       cthmom1 = (pow(phasespace::getcthmax(),2)-pow(phasespace::getcthmin(),2))/2.;
@@ -548,7 +569,6 @@ void omegaintegr::cthmoments(double &cthmom0, double &cthmom1, double &cthmom2)
   if (opts.quadint)
     {
       begin_time = clock();
-      double phi = 0.;
       double phi1 = 0.;
       double phi2 = 2. * M_PI;
       double hphi=(phi2-phi1)/opts.phiintervals;
@@ -561,7 +581,7 @@ void omegaintegr::cthmoments(double &cthmom0, double &cthmom1, double &cthmom2)
       vector<double>::iterator itmx;
 
       //for qt == 0 there is no phi dependence and the integration is reduced by one dimension, to only dcosth
-      if (phasespace::qt == 0.)
+      if (phasespace::qt == 0.) //can use if (opts.fixedorder) ?
 	{
 	  costhbound(0., cthmin, cthmax);
 	  itmn = cthmin.begin();
@@ -631,7 +651,7 @@ integrand_t omegaintegr::thphiintegrand(const int &ndim, const double x[], const
   */
 
   genl4p(costh, phi_lep);
-  if (cuts::lep(phasespace::p3, phasespace::p4))
+  if (Kinematics::Cuts::KeepThisEvent(phasespace::p3, phasespace::p4))
     {
       //evaluate couplings using cos(theta) in CS framework
       double costh_CS = costhCS();

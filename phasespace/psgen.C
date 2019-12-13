@@ -1,6 +1,7 @@
 #include "phasespace.h"
 #include "settings.h"
 #include "switch.h"
+#include "isnan.h"
 
 #include <iostream>
 #include <math.h>
@@ -51,13 +52,48 @@ bool phasespace::gen_y(double x, double& jac, double ylim)
 {
   //Generate the boson rapidity between the integration boundaries,
   //jac gets multiplied by the Jacobian of the change of variable from the unitary interval to the y boundaries
+
   double ymn = min(max(-ylim, phasespace::ymin),ylim);
   double ymx = max(min(ylim, phasespace::ymax),-ylim);
   if (ymn >= ymx)
     return false;
+
+  //Uniform weight
   y = ymn+(ymx-ymn)*x;
   jac = jac*(ymx-ymn);
   return true;
+
+  //Unweight assuming all PDFs have the form x^a*(1-x)^b, with a = 1 and b = 1
+  // --> s(y) = tau^2*(1+tau^2-2*tau*cosh(y)) with tau = m/sqrt(s)
+  // change of variable x = int_y0^y s(y) / int_y0^y1 s(y)
+  // --> x = ((y*(1+tau^2)-2*tau*sinh(y))-a)/(b-a)
+  // with a = y0*(1+tau^2)-2*tau*sinh(y0);
+  // and  b = y1*(1+tau^2)-2*tau*sinh(y1);
+  double tau = phasespace::m/opts.sroot;
+  double tau2 = pow(tau,2);
+  double a = ymn*(1+tau2)-2*tau*sinh(ymn);
+  double b = ymx*(1+tau2)-2*tau*sinh(ymx);
+
+  //need to find y by newton method: x_n+1 =  x_n - f(x_n)/f'(x_n)
+  //f(y) = ((y*(1+tau^2)-2*tau*sinh(y))-a)/(b-a) - x = 0
+  //f'(y) = ((1+tau^2)-2*tau*cosh(y))/(b-a)
+
+  //cout << x << "  ";
+  double yn = (x*(b-a)+a)/(1+tau2);
+  for (int n = 0; n < 5; n++)
+    {
+      //cout << yn << "  ";
+      double ynp1 = yn - ((yn*(1+tau2)-2*tau*sinh(yn)-a)/(b-a)-x) / (((1+tau2)-2*tau*cosh(yn))/(b-a));
+      //ynp1 = min(max(ymn, ynp1),ymx);
+      //ynp1 = max(min(ymx, ynp1),ymn);
+      yn = ynp1;
+    }
+  //cout << yn << endl;
+  y = yn;
+  
+  jac = jac*((b-a)/(1+tau2-2*tau*cosh(y)));
+  return true;
+  
 }
 
 bool phasespace::gen_qt(double x, double& jac, double qtlim, bool qtcut)
@@ -72,9 +108,13 @@ bool phasespace::gen_qt(double x, double& jac, double qtlim, bool qtcut)
     return false;
   if (qtcut) //phase space generation for counterterm and V+j fixed order
     qtweight_(x,qtmn,qtmx,qt,jac);
+    //qtweight_lo_(x,qtmn,qtmx,m2,qt,jac);
+    //qtweight_flat_(x,qtmn,qtmx,qt,jac);
   else       //phase space generation for resummed cross section
-    qtweight_res_(x,qtmn,qtmx,qt,jac);
-  //qtweight_flat_(x,qtmn,qtmx,qt,jac);
+    if (qtmx > 5)
+      qtweight_res_(x,qtmn,qtmx,qt,jac);
+    else
+      qtweight_flat_(x,qtmn,qtmx,qt,jac);
   qt2 = qt*qt;
   return true;
 }
@@ -137,7 +177,7 @@ bool phasespace::gen_mqty(const double x[3], double& jac, bool qtcut, bool qtswi
   //Generate the boson rapidity between the integration boundaries
   calcmt();
   double tmpx=(m2+pow(opts.sroot,2))/opts.sroot/mt;
-  double ylim=log((tmpx+sqrt(pow(tmpx,2)-4.))/2.); //Limit y boundaries to the kinematic limit in y
+  double ylim=log((tmpx+sqrt(max(0.,pow(tmpx,2)-4.)))/2.); //Limit y boundaries to the kinematic limit in y --> introduced max to avoid neqative argument of sqrt
   status = gen_y(x[2], jac, ylim);
   if (!status)
     return false;
@@ -176,7 +216,7 @@ bool phasespace::gen_myqt(const double x[3], double& jac, bool qtcut, bool qtswi
 	: phasespace::qtmin;
       double mtmin = sqrt(m2+pow(qtmn,2));
       double tmpx=(m2+pow(opts.sroot,2))/opts.sroot/mtmin;
-      ylim=log((tmpx+sqrt(pow(tmpx,2)-4.))/2.);
+      ylim=log((tmpx+sqrt(max(0.,pow(tmpx,2)-4.)))/2.); //introduced max to avoid neqative argument of sqrt
     }
   status = gen_y(x[1], jac, ylim);
   if (!status)
@@ -309,7 +349,7 @@ void phasespace::gen_phi(const double x, double& jac)
   jac=jac*2.*M_PI;
 }
 
-void phasespace::gen_x2(const double x, double& jac)
+bool phasespace::gen_x2(const double x, double& jac)
 {
   //Calculate Bjorken x1 and x2
   //Phase space is generated for integration performed in dx2
@@ -320,9 +360,9 @@ void phasespace::gen_x2(const double x, double& jac)
     
   if (x2min > 1. || x2min < 0.)
     {
-      cout << "error in x2min " << x2min << " m " << m << " pt " << qt  << " y " << y << endl;
+      //cout << "error in x2min " << x2min << " m " << m << " pt " << qt  << " y " << y << endl;
       jac=0.;
-      return;
+      return false;
     }
   
   x2=exp((1.-pow(x,esp))*lx2min);
@@ -334,10 +374,11 @@ void phasespace::gen_x2(const double x, double& jac)
   if (x1 > 1. || x2 > 1.)
     {
       jac=0.;
-      return;
+      return false;
     }
 
   //Jacobian from the change of variable in delta(p1+p2-p3-p4-p5)
   double xjj=fabs(x2*s-ss*mt*expmy);
   jac = jac/xjj;
+  return true;
 }

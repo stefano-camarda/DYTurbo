@@ -6,7 +6,7 @@
 
 namespace besselint
 {
-  extern double bint(double b);
+  extern complex <double> bint(complex <double> b);
 }
 
 //fortran interface
@@ -14,6 +14,11 @@ extern "C"
 {
   void besselint_(double &b, double &qt, double &q2);
   double fort_besj0_(double &x);
+  double fort_besy0_(double &x);
+  double fort_besj1_(double &x);
+  double fort_besy1_(double &x);
+  double fort_besjn_(int &n, double &x);
+  double fort_besyn_(int &n, double &x);
   fcomplex s_(fcomplex &b);
   fcomplex alphasl_(fcomplex &q2);
 

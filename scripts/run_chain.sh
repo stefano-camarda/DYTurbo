@@ -1,6 +1,161 @@
 #!/bin/bash
 
+thiswd=`pwd`
+AS_LIST="0.1150 0.1170 0.1173 0.1177 0.1180 0.1183 0.1187 0.1182 0.1194 0.1200"
+GPAR_LIST="0.2 0.5 0.8 1.0 1.1 1.2 1.5 2.0"
+#
+#AS_LIST="0.1171 0.1172"
+#GPAR_LIST="1.1 0.88"
 
+rmmkcd(){
+    rm -rf $1 && mkdir -p $1 && cd $1 || exit 2
+}
+
+prepare_lhapdf(){
+    for as in $AS_LIST
+    do
+        asstring=`echo $as | sed "s|\.||"`
+        newpdf=CT10nnlo_AS_${asstring}
+        rmmkcd `lhapdf-config --prefix`/share/LHAPDF/$newpdf
+        cat ../CT10nnlo/CT10nnlo.info |  sed "
+           s|^AlphaS_MZ:.*$|AlphaS_MZ: ${as}|;
+           s|^AlphaS_Type:.*$|AlphaS_Type: ode|;
+           s|^AlphaS_Vals:.*$|AlphaS_Reference: ${as}|;
+           s|^AlphaS_Qs:.*$|AlphaS_MassReference: 91.1876|;
+           s|^NumMembers:.*$|NumMembers: 1|;" > ${newpdf}.info
+        cp ../CT10nnlo/CT10nnlo_0000.dat ${newpdf}_0000.dat
+    done
+}
+
+run_alphaS_scan(){
+    for gparam in $GPAR_LIST
+    do
+        for as in $AS_LIST
+        do
+            asstring=`echo $as | sed "s|\.||"`
+            output=$thiswd/results/CT10nnlo_AS_${asstring}_G_${gparam}.root
+            $thiswd/bin/dyturbo $thiswd/input/alphaS_scan.in --gparam $gparam --pdfset CT10nnlo_AS_$asstring | tee out.log 
+            cp results.root $output
+        done
+    done
+}
+
+submit_as_scan(){
+    pdflist=""
+    for as in $AS_LIST
+    do
+        asstring=`echo $as | sed "s|\.||"`
+        pdflist=$pdflist"CT10nnlo_AS_$asstring,"
+    done
+    pdflist=${pdflist%,}
+    basecommand="./scripts/submit_jobs.sh --mogon --infile input/alphaS_scan.in --proc z0 --mbins 1,66,116 --pdfset $pdflist --seeds 3 --yes"
+    # finite order
+    for scl in 0.5 1 2
+    do
+        for kmu in kmuren kmufac
+        do
+            [[ $kmu == kmuren ]] && [[ $scl == 1 ]] && continue
+            $DRY_RUN $basecommand --$kmu $scl --order 1 --term CT
+            $DRY_RUN $basecommand --$kmu $scl --order 1 --term VJLO
+            #$DRY_RUN $basecommand --order 2 --term CT
+            #$DRY_RUN $basecommand --order 2 --term VJVIRT
+            #$DRY_RUN $basecommand --order 2 --term VJREAL
+            #
+            for gparam in $GPAR_LIST
+            do
+                $DRY_RUN $basecommand --$kmu $scl --order 1 --term BORN --gparam $gparam
+                $DRY_RUN $basecommand --$kmu $scl --order 2 --term BORN --gparam $gparam
+            done
+        done
+    done
+}
+
+check_as_scan_out(){
+    order=$1
+    term=$2
+    outfile=${dirbase}_${term}/${filebase}_o${order}t${term}_${filesuffix}
+    ls $outfile  > /dev/null 2>&1 || filelist="$filelist
+    $outfile"
+    filelist="$filelist`ack -L "Successfully completed." $outfile 2> /dev/null`"
+}
+
+check_as_scan(){
+    echo "Checking as scan output ... "
+    filelist=""
+    for as in $AS_LIST
+    do
+        asstring=`echo $as | sed "s|\.||"`
+        #results_z0_CT10nnlo_AS_01200_VJVIRT/
+        pdfset="CT10nnlo_AS_${asstring}"
+        dirbase="results_z0_${pdfset}"
+        #dyturbo_z0_CT10nnlo_AS_01200_0_o2tVJVIRT_seed_1.out
+        filesuffix=seed_1.out
+        filebase="dyturbo_z0_${pdfset}_0"
+        check_as_scan_out 1 CT
+        check_as_scan_out 1 VJLO
+        check_as_scan_out 2 CT
+        #check_as_scan_out 2 VJREAL
+        #check_as_scan_out 2 VJVIRT
+        for gparam in $GPAR_LIST
+        do
+            filebase="dyturbo_z0_CT10nnlo_AS_*_0_g${gparam}"
+            check_as_scan_out 1 BORN
+            check_as_scan_out 2 BORN
+        done
+    done
+    [[ $filelist != "" ]] && echo -e "$filelist\n There were failed jobs" && exit 2
+    echo "DONE"
+}
+
+merge_as_scan(){
+    outdir=/etapfs03/atlashpc/cuth/LGNTuple/Base-2.4.20/LGNTupleMaker/LGAnalysis/Zpt13TeVAnalysis/share/templates
+    order=2
+    mkdir -p $outdir
+    for gparam in $GPAR_LIST
+    do
+        for as in $AS_LIST
+        do
+            asstring=`echo $as | sed "s|\.||"`
+            output=$outdir/CT10nnlo_AS_${asstring}_G_${gparam}.root
+            inputs=""
+            if [[ $order == 1 ]]
+            then
+                inputs+=" results_z0_CT10nnlo_AS_${asstring}_BORN/dyturbo_z0_CT10nnlo_AS_${asstring}_0_g${gparam}_o1t*_seed_1.root"
+                inputs+=" results_z0_CT10nnlo_AS_${asstring}_CT/dyturbo_z0_CT10nnlo_AS_${asstring}_0_o1t*_seed_1.root"
+                inputs+=" results_z0_CT10nnlo_AS_${asstring}_VJLO/dyturbo_z0_CT10nnlo_AS_${asstring}_0_o1t*_seed_1.root"
+            fi
+            if [[ $order == 2 ]]
+            then
+                inputs+=" results_z0_CT10nnlo_AS_${asstring}_BORN/dyturbo_z0_CT10nnlo_AS_${asstring}_0_g${gparam}_o2t*_seed_1.root"
+                #inputs+=" results_z0_CT10nnlo_AS_${asstring}_CT/dyturbo_z0_CT10nnlo_AS_${asstring}_0_o2t*_seed_1.root"
+                #inputs+=" results_z0_CT10nnlo_AS_${asstring}_VJREAL/dyturbo_z0_CT10nnlo_AS_${asstring}_0_o2t*_seed_1.root"
+                #inputs+=" results_z0_CT10nnlo_AS_${asstring}_VJVIRT/dyturbo_z0_CT10nnlo_AS_${asstring}_0_o2t*_seed_1.root"
+            fi
+            # test input files
+            ls $inputs > /dev/null || exit 1
+            # merge
+            $DRY_RUN hadd -f $output $inputs || exit 1
+        done
+    done
+}
+
+copy_to_accuracy(){
+    rsync -avP results_z0_CT10* etap-accuracy.physik.uni-mainz.de:/home/cuth/work/unimainz/ATLAS/workarea/LGNtupleMaker/LGAnalysis/Zpt13TeVAnalysis/share/templates/DYTURBO/
+}
+
+DRY_RUN=
+#DRY_RUN="echo "
+main(){
+    #prepare_lhapdf
+    #run_alphaS_scan
+    submit_as_scan
+    #check_as_scan
+    #merge_as_scan
+    #copy_to_accuracy
+}
+
+main
+exit 0
 
 #./scripts/merge.sh --proc wp,wm --term RES2P,CT2P --qtymerge qt010y-11 --outdir CT10nnlo_RESCT2P_160512
 #./scripts/merge.sh --proc wp,wm,z0 --term RES2P,CT2P --qtymerge qt010y-11 --outdir CT10nnlo_RESCT2P_160512 --find_missing
@@ -198,9 +353,9 @@
 # add version and change kinematics
 # only nominal
 
-SUBM="./scripts/submit_jobs_wmass.sh --grid --griduser jcuth --voms phys-sm"
+#SUBM="./scripts/submit_jobs_wmass.sh --grid --griduser jcuth --voms phys-sm"
 # central
-$SUBM --pdfset CT10nnlo         --version v02 --pdfvar 0 --infile input/wmass.in  --seeds 1000 --proc wp,wm --mbins 96,20,500 --order 2 --term CT,VV,REAL,VIRT
+#$SUBM --pdfset CT10nnlo         --version v02 --pdfvar 0 --infile input/wmass.in  --seeds 1000 --proc wp,wm --mbins 96,20,500 --order 2 --term CT,VV,REAL,VIRT
 #$SUBM --pdfset CT14nnlo         --version v02 --pdfvar 0 --infile input/wmass.in  --seeds 1000 --proc wp,wm --mbins 96,20,500 --order 2 --term CT,VV,REAL,VIRT
 #$SUBM --pdfset MMHT2014nnlo68cl --version v02 --pdfvar 0 --infile input/wmass.in  --seeds 1000 --proc wp,wm --mbins 96,20,500 --order 2 --term CT,VV,REAL,VIRT
 #$SUBM --pdfset CT10nnlo         --version v02 --pdfvar 0 --infile input/wmass.in  --seeds 1000 --proc z0    --mbins 10,66,116 --order 2 --term CT,VV,REAL,VIRT
@@ -217,7 +372,6 @@ $SUBM --pdfset CT10nnlo         --version v02 --pdfvar 0 --infile input/wmass.in
 
 # submit with niter=0 -- same seed
 
-<<<<<<< HEAD
 
 
 #============================================
@@ -309,24 +463,24 @@ dyturbo_z0_lhc7_CT14nnlo_all_o2tREAL_seed_v1466990840_results_merge.root
 #samples=$test_real
 samples=$test_real14
 
-for job in $samples
-do
-
-    outlier=
-    [[ $job =~ REAL ]] && outlier=o
-    echo $job
-    #rucio ls group.phys-sm.$job
-    #echo
-    #rucio download --dir results_grid group.phys-sm.$job
-    echo
-    ls results_grid/group.phys-sm.$job/*.root* | wc -l
-    #ls results_merge/v01/${job} 
-    #/usr/bin/time -v ./bin/dyturbo-merger -d results_merge/v01/average_${job} results_grid/group.phys-sm.$job/group.phys-sm.*.root 2>&1
-    /usr/bin/time -v ./bin/dyturbo-merger -Td$outlier results_merge/v01/${job} results_grid/group.phys-sm.$job/group.phys-sm.*.root 2>&1
-    #/usr/bin/time -v ./../DYTURBO_CLIdev/bin/dyturbo-merger -d$outlier results_merge/v01/old_${job} results_grid/group.phys-sm.$job/group.phys-sm.*.root 2>&1
-    echo
-    echo
-done | tee merge-`hostname`.log
+# for job in $samples
+# do
+# 
+#     outlier=
+#     [[ $job =~ REAL ]] && outlier=o
+#     echo $job
+#     #rucio ls group.phys-sm.$job
+#     #echo
+#     #rucio download --dir results_grid group.phys-sm.$job
+#     echo
+#     ls results_grid/group.phys-sm.$job/*.root* | wc -l
+#     #ls results_merge/v01/${job} 
+#     #/usr/bin/time -v ./bin/dyturbo-merger -d results_merge/v01/average_${job} results_grid/group.phys-sm.$job/group.phys-sm.*.root 2>&1
+#     /usr/bin/time -v ./bin/dyturbo-merger -Td$outlier results_merge/v01/${job} results_grid/group.phys-sm.$job/group.phys-sm.*.root 2>&1
+#     #/usr/bin/time -v ./../DYTURBO_CLIdev/bin/dyturbo-merger -d$outlier results_merge/v01/old_${job} results_grid/group.phys-sm.$job/group.phys-sm.*.root 2>&1
+#     echo
+#     echo
+# done | tee merge-`hostname`.log
 
 #job=dyturbo_z0_lhc7_CT14nnlo_all_o2tREAL_seed_v1466990840_results_merge.root
 #/usr/bin/time -v ./bin/dyturbo-merger -d  results_merge/v01/average_$job results_grid/group.phys-sm.$job/*root*

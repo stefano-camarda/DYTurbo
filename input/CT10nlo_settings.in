@@ -73,7 +73,7 @@ vegasncallsREAL  = 100000000 # only for real 10d vegas integration
 vegasncallsVIRT  = 10000000 # only for virt 8d vegas integration
 
 # total or with lepton cuts
-makelepcuts = false
+makecuts = false
 
 # integration types and settings for costh phi_lep phase space
 cubaint   = false   # integration with Cuba Suave

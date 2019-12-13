@@ -10,7 +10,7 @@ C     Scale dependence included up to NNLO
       include 'options.f'
       include 'constants.f'
       include 'noglue.f'
-      include 'vegas_common.f'
+      include 'mxdim.f'
       include 'ptilde.f'
       include 'npart.f'
       include 'scale.f'
@@ -96,7 +96,7 @@ C
       common/nmin/nmin
       common/incldip/incldip
       common/outputflags/creatent,dswhisto
-      data p/48*0d0/
+      data p/pdim*0d0/
       data first/.true./
       save first,rscalestart,fscalestart
 
@@ -153,8 +153,7 @@ CC  Now compute effective qtc from qtcut and xqtcut
        qt2=qtc**2*dexp(1d0/xth-1)
 
 CC   Set qtmax (kinematical limit)
-       if(qt2.gt.((sqrts**2+q2)**2/(4d0*sqrts**2)-q2)) goto 999
-
+c     if(qt2.gt.((sqrts**2+q2)**2/(4d0*sqrts**2)-q2)) goto 999
 
 !  SWITCHING FUNCTIONS
 c      switch=1d0
@@ -179,6 +178,14 @@ CC    Jacobian for qt2
 
       shad=sqrts**2
 
+!bug bug bug -> missing dynamic resummation scale
+c      if(dynamicresscale) then
+c      else
+c      a_param=m/resscale
+c      endif
+
+      call scaleset_mcfm(m, 0d0, 0d0)
+      
       xmioOLD=dsqrt(qt2/q2)
       xmio=dsqrt(qt2/(q2/a_param**2))
 !      xmio=dsqrt(qt2/q2)
@@ -191,7 +198,7 @@ CC    Jacobian for qt2
 
 CC   Dynamic scale
 
-      if(dynamicscale) call scaleset(q2)
+c     if(dynamicscale) call scaleset(q2)
 
 CC   LR,LF,LQ
 
@@ -241,12 +248,12 @@ C Scaled momentum fractions
            
 CC    Generate event to be binned
 
-      y34=0.5d0*dlog(xx10/xx20)
-      cosh2y34=((dexp(y34)+dexp(-y34))*0.5d0)**2
+c      y34=0.5d0*dlog(xx10/xx20)
+c      cosh2y34=((dexp(y34)+dexp(-y34))*0.5d0)**2
 
 CC   Set qtmax (kinematical limit)
-      if(qt2.gt.((sqrts**2+q2)**2/(4d0*sqrts**2*(cosh2y34)-q2)))goto 999
-
+c     if(qt2.gt.((sqrts**2+q2)**2/(4d0*sqrts**2*(cosh2y34)-q2)))goto 999
+      
 !      write(*,*) qt,m,y34
 !      write(*,*) "p1",p(1,4)**2-p(1,1)**2-p(1,2)**2-p(1,3)**2
 !      write(*,*) "p2",p(2,4)**2-p(2,1)**2-p(2,2)**2-p(2,3)**2
@@ -723,8 +730,8 @@ C     Fill only if it's last iteration
       enddo                     ! end PDF loop
       countint=f(1)
      
-      xreal=xreal+xint*wgt/dfloat(itmx)
-      xreal2=xreal2+(xint*wgt)**2/dfloat(itmx)
+c      xreal=xreal+xint*wgt/dfloat(itmx)
+c      xreal2=xreal2+(xint*wgt)**2/dfloat(itmx)
       
       return
 

@@ -1,4 +1,5 @@
 #include "phasespace.h"
+#include "mcfm_interface.h"
 
 #include <iostream>
 
@@ -23,6 +24,10 @@ double phasespace::phiV;
 double phasespace::costh;
 double phasespace::phi_lep;
 
+//cached values of cos and sin of phi_lep
+double phasespace::cosphi_lep;
+double phasespace::sinphi_lep;
+
 using namespace std;
 
 void phasespace::setbounds(double m1, double m2, double qt1, double qt2, double y1, double y2)
@@ -40,6 +45,9 @@ void phasespace::setbounds(double m1, double m2, double qt1, double qt2, double 
       cout << "Error on integration boundaries" << endl;
       exit(-1);
     }
+
+  //update mass bounds in MCFM
+  mcfm::set_mass_bounds();
 }
 
 void phasespace::setcthbounds(double cth1, double cth2)
@@ -67,8 +75,8 @@ void phasespace::set_qt(double Qt) {qt = Qt; qt2 = qt*qt;}
 void phasespace::set_y(double Y) {y = Y;}
 void phasespace::set_phiV(double PhiV) {phiV = PhiV;}
 
-void phasespace::set_cth(double Costh) {costh = Costh;}
-void phasespace::set_philep(double Phi_lep) {phi_lep = Phi_lep;}
+//void phasespace::set_cth(double Costh) {costh = Costh;}
+//void phasespace::set_philep(double Phi_lep) {phi_lep = Phi_lep;}
 
 //fortran functions
 void setqt_(double &qtt) {phasespace::qt = qtt;}

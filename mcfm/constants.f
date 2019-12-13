@@ -44,5 +44,8 @@ c-----------------------------------------------------
      . czip=(0d0,0d0),cone=(1d0,0d0))
 c-----------------------------------------------------
       integer nloop,nf,fn,mxpart
-      parameter(nf=5,fn=-5,nloop=2,mxpart=12)
+c      parameter(nf=5,fn=-5,nloop=2,mxpart=12)
+      parameter(nf=5,fn=-5,nloop=2,mxpart=6)
+      integer pdim
+      parameter(pdim=mxpart*4)
 

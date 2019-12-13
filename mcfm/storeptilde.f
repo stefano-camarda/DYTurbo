@@ -4,6 +4,7 @@
       integer nd,i,j
       double precision p(mxpart,4)
       
+c      ptilde(nd,:,:)=p(:,:)
       do j=1,4
         do i=1,mxpart
         ptilde(nd,i,j)=p(i,j)

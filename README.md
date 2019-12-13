@@ -1,28 +1,27 @@
 # DYTURBO - fast Drell-Yan Monte Carlo and quadrature integrator
 DYTURBO is a fast Drell-Yan integrator, based on the DYRES and DYNNLO programs.
-Numerical integration is performed using both the Vegas Monte Carlo integration and quadrature rules.
+Numerical integration is performed using both the Vegas Monte Carlo integration
+and quadrature rules.
 
 ## How to setup USER
 1. ask for guest rights and get tarbal from webpage
-```
-https://gitlab.cern.ch/DYdevel/DYTURBO/wikis/home
-tar xzvf dyturbo-VERSION.tar.gz
-cd dyturbo-VERSION
-```
+
+        https://gitlab.cern.ch/DYdevel/DYTURBO/wikis/home
+        tar xzvf dyturbo-VERSION.tar.gz
+        cd dyturbo-VERSION
 
 2. setup and compile
-```
-(optional PATH=<lhapdfdir>:$PATH if you want to use your version of lhapdf previously installed in <lhapdfdir>)
-(optional setup root to enable root output)
-./configure --enable-root --enable-Ofast
-make
-make install
-```
+
+        (optional PATH=<lhapdfdir>:$PATH if you want to use your version of lhapdf previously installed in <lhapdfdir>)
+        (optional setup root to enable root output)
+        ./configure [--enable-root]
+        make
+        make install
 
 3. have fun
-```
-./bin/dyturbo
-```
+
+        ./bin/dyturbo input/test.in
+
 
 ## How to setup DEVEL
  1. ask for developer access and checkout the repository
@@ -71,18 +70,21 @@ make && make install && make check
 
 
 ## Customization
- - two files can be change to customize output of the calculation:
-     - `src/plotter.C` for histograms
-     - `src/settings.C` function `cuts` for changing cuts
+- user customization can be done in folder `user`
+- three files can be change to customize output of the calculation:
+    - `user/user_kinem.cxx` for defining new kinematic observable
+    - `user/user_book.cxx` for booking histograms
+    - `user/user_cuts.cxx` for define user cuts
+
 
 ## Merging results
  1. Merging of jobs
      - we recommend to run DYTURBO per each term (RES,CT,FO,REAL,VIRT) separately
      - to obtain correct normalization from run of several jobs with different
        random seeds, please, use our merger
-    ```
-    ./bin/merger -X merged_file.root result_file_1.root result_file_2.root ...
-    ```
+
+        ./bin/merger -X merged_file.root result_file_1.root result_file_2.root ...
+
      - Note: in case of real term for NNLO prediction it is better to use median results
        (object with suffix median in output file of `merger` program). It will remove ouliers
        from your distribution, which are caused by color dipole cancellations
@@ -187,5 +189,21 @@ There are several grid related scripts in `scripts` folder, which you can edit f
 * `run_prun.sh`: function for submit jobs with prun command
 * `compile_grid.sh`: compilation on grid side
 * `run_grid.sh`: running on grid side
+
+
+
+# LICENCE AND REFERENCES
+This project consist of several packages and each has its own licence.
+
+@todo We did not decided yet what licence should be there for our contributions.
+
+Code used:
+    * Gonsalves, Pawlowski, Wai calculation of dsigma/dqt
+      Phys. Rev. D40, 2245 (1989)
+      Code from http://www.physics.buffalo.edu/gonsalves/ewbqt/public.tar.gz
+
+Papers used:
+    * [Collins-Soper-Sterman]
+
 
 

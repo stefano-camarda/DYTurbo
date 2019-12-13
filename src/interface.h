@@ -16,10 +16,10 @@ extern "C" {
   void pdfini_();
   void iniflavreduce_();
   void gaussinit_();
-  double dyalphas_mcfm_(double &q, double &amz, int &nloop);
-  double dyalphas_lhapdf_(double &q);
-  int cuts_(double p[4][12], int &njet);
-  //int cutsold_(double p[4][12], int &njet);
+  //  double dyalphas_mcfm_(double &q, double &amz, int &nloop);
+  //  double dyalphas_lhapdf_(double &q);
+  int cuts_(double p[4][mxpart], int &njet);
+  //int cutsold_(double p[4][mxpart], int &njet);
   void rescinit_();
 
   //fortran interface for C++ rewritten resummation
@@ -36,6 +36,7 @@ extern "C" {
   void cacheyrapint_(double &ymin,double &ymax);
 
   void ctqtint_(double &m, double &y, double &qtmin, double &qtmax);
+  void ctquadinit_();
 
   void initmoments_();
   // fortran common spaces
@@ -68,63 +69,18 @@ extern "C" {
     double kmures_;
   } scaleopts_;
 
-  extern struct {
-    double amz_;
-  } couple_;
-
-  /*extern struct {
-    int nlooprun_;
-    } nlooprun_;*/
-
-  /*  extern struct {
-    int lhapdfs_;
-    } lhapdfs_;*/
-
-  //initialization flag
-  extern struct {
-    int flag_;
-  } flag_;
-
-  extern struct {
-    double a_param_;
-    double b0p_;
-  } a_param_;
-  
-  //non perturbative g
-  extern struct {
-    double g_param_;
-  } g_param_;
-
-  extern struct {
-    double g_;
-  } np_;
-
-  extern struct {
-    int order_;
-  } nnlo_;
-
-  extern struct {
-    double qtcut_;
-    double xqtcut_;
-  } qtsub_;
-
+  //! Flag for filling. Only last 60% of events are used to fill histogram.
   extern struct {
     int doFill_;
   } dofill_;
 
-  extern struct {
-    double sigmaij_[11][11];
-  } sigmaij_;
-
-  void hists_setpdf_(int * npdf);
-  void hists_fill_(double p3[4], double p4[4], double *weight);
-  void hists_AiTest_(double pjet[4][12], double p4cm[4],double *Q,double *qt,double *y,double* pcosthCS, double* pphiCS, double *pphiVB, double *wt, double *loHst );
-  void hists_real_dipole_(double p3[4], double p4[4], double *weight,int *nd);
-  void hists_real_event_();
-  void hists_fill_pdf_(double p3[4], double p4[4], double *weight, int *npdf);
-  void hists_real_dipole_pdf_(double p3[4], double p4[4], double *weight,int *nd, int *npdf);
-  void hists_real_event_pdf_(int* npdf);
+  void hists_setpdf_          (int*   npdf   );
+  void hists_fill_            (double p3[4], double p4[4], double *weight );
+  void hists_fill_pdf_        (double p3[4], double p4[4], double *weight, int *npdf );
+  void hists_real_dipole_     (double p3[4], double p4[4], double *weight, int *nd   );
+  void hists_real_dipole_pdf_ (double p3[4], double p4[4], double *weight, int *nd,  int *npdf);
+  void hists_real_event_      ();
+  //void hists_real_event_pdf_ (int* npdf); // this is very dangerous, please dont use it
 }
-#pragma omp threadprivate(a_param_,scale_,facscale_,qcdcouple_,sigmaij_)
 
 #endif

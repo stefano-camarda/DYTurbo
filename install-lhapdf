@@ -1,5 +1,5 @@
 #!/bin/bash
-VERSION=6.1.6
+VERSION=6.2.3
 
 rm -r lhapdf6 >& /dev/null
 mkdir -p lhapdf6

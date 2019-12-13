@@ -12,6 +12,8 @@ namespace coupling {
   extern double xw;
   extern double zmass;
   extern double wmass;
+  extern double zwidth;
+  extern double wwidth;
 
   extern const double NC;
  }

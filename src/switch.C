@@ -14,7 +14,7 @@ const double switching::cutoff = 0.01;
 
 //this tolerance on the cutoff is introduced to avoid 0 values at the upper pt limit of integration,
 //it is needed because pcubature evaluate the integrals at the borders of the phase space
-const double switching::tolerance = 1.-1e-10;
+const double switching::tolerance = 1.-1e-10; //--> probably not needed anymore
 
 void switching::init()
 {
@@ -30,6 +30,9 @@ double switching::swtch(double qt, double m)
   if (opts.fixedorder)
     return swtch;
 
+  if (!opts.damp)
+    return swtch;
+  
   if (qt < m*k)
     return swtch;
   
@@ -49,7 +52,7 @@ double switching::swtch(double qt, double m)
       swtch = (cos(M_PI/(delta*m)*(qt-k*m))+1.)/2.;
     }
   
-  if (swtch < cutoff*tolerance)
+  if (swtch < cutoff*tolerance)  //--> probably not needed anymore, since the phase space is generated up to the qt and m limits
     swtch = 0;
 
   return swtch;
@@ -62,6 +65,9 @@ double switching::qtlimit(double m)
   if (opts.fixedorder)
     return limit;
   
+  if (!opts.damp)
+    return limit;
+
   if (mode == 1)
     limit = m*(k+delta*sqrt(log(1./cutoff)));
 
@@ -82,6 +88,9 @@ double switching::mlimit(double qt)
   if (opts.fixedorder)
     return limit;
   
+  if (!opts.damp)
+    return limit;
+
   if (mode == 1)
     limit = qt/(k+delta*sqrt(log(1./cutoff)));
 
@@ -96,5 +105,5 @@ double switching::mlimit(double qt)
 
 double switching_(double &qt, double &m)
 {
-  switching::swtch(qt, m);
+  return switching::swtch(qt, m);
 }

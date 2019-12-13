@@ -1,11 +1,8 @@
 #ifndef settings_h
 #define settings_h
 
-#include "cuts.h"
-
 #include <vector>
 using namespace std;
-using namespace cuts;
 
 #include <algorithm>
 #include <map>
@@ -22,9 +19,9 @@ class InputParser {
         string GetString(string name);
         bool GetBool(string name);
         void GetVectorDouble(string name, vector<double> &vec);
+        void parse_file(const string fname);
     private :
         // functions
-        void parse_file(const string fname);
         void trim(string & str);
         void has_key(const string key);
         // data members
@@ -54,7 +51,7 @@ public:
   settings() {};
   void parse_options(int argc, char * argv[]);
   void readfromfile(const string fname);
-  void check_consitency();
+  void check_consistency();
   void parse_binning(string name, vector<double> &vec, po::Options &args);
 
   // private:
@@ -76,35 +73,60 @@ public:
   int    ih1;
   int    ih2;
   int    nproc;
-  double g_param;
+
+  //resummation or fixed order switch
+  bool fixedorder;
   int    order;
 
+  //Non-perturbative form factor
+  int npff;
+  double g1,g2,g3; //Gaussian
+  double e;        //Exponential
+  double g0;       //Collins-Rogers
+  double Q0;       //reference mass
+
+  //Flavour dependent g1
+  bool flavour_kt;
+  double g1_uv = 0.5;
+  double g1_us = 0.5;
+  double g1_dv = 0.5;
+  double g1_ds = 0.5;
+  double g1_ss = 0.5;
+  double g1_ch = 0.5;
+  double g1_bo = 0.5;
+  double g1_gl = 0.5;
+  
   //PDF settings
   string LHAPDFset    ;
   int    LHAPDFmember ;
-
-  //fixed or dynamic QCD scales
-  bool dynamicscale, dynamicresscale;
+  bool   externalpdf;
+  
+  //functional forms of the QCD scales
+  int fmures;
+  int fmuren;
+  int fmufac;
   
   //scale factors for the QCD scales
   double kmures;
   double kmuren;
   double kmufac;
 
-  //Additional resummation scales
-  double C1,C3;
+  //scale factors for the matching scales
+  double kmuc;
+  double kmub;
+  double kmut;
   
   //  double a_param;
   
-  //IR cut-off
-  double blim;
-  
   //EW parameters
+  int ewscheme;
   double Gf, zmass, wmass;
   double xw, aemmz;
   double zwidth, wwidth;
-  bool zerowidth;
 
+  //Fixed width to running width translation
+  bool runningwidth;
+  
   //CKM matrix
   double Vud, Vus, Vub;
   double Vcd, Vcs, Vcb;
@@ -125,12 +147,16 @@ public:
   //double mhigh;
 
   //Resummation damping
+  bool damp;
   double dampk, dampdelta;
   int dampmode;
 
   //Resummation cutoff
   double qtcutoff;
 
+  //Modified logarithms
+  bool modlog;
+  
   //qtcut
   double xqtcut, qtcut;
 
@@ -139,7 +165,7 @@ public:
 
   //dimension of integration for the resummed part
   int intDimRes;
-  bool resint2d, resint3d, resintvegas;
+  bool resint1d, resint2d, resint3d, resintvegas;
 
   //dimension of integration for the born configuration
   int intDimBorn;
@@ -147,11 +173,14 @@ public:
   
   //type of integration for the counterterm
   int intDimCT;
-  bool ctint2d, ctint3d, ctintvegas6d, ctintvegas8d;
+  bool ctint1d, ctint2d, ctint3d, ctintvegas6d, ctintvegas8d;
 
-  //  //type of integration for the V+j at LO
+  //type of integration for the V+j at LO
   int intDimVJ;
   bool vjint3d, vjint5d, vjintvegas7d;
+
+  //type of integration, automatic selector
+  bool BORNquad, CTquad, VJquad;
   
   //term switches
   bool doBORN;
@@ -159,9 +188,6 @@ public:
   bool doVJ;
   
   bool doVJREAL, doVJVIRT;
-
-  //resummation or fixed order switch
-  bool fixedorder;
 
   //Cuba settings
   int cubaverbosity;
@@ -173,21 +199,25 @@ public:
   int vegasncallsBORN  ;
   int vegasncallsCT   ;
   int vegasncallsVJLO   ;
-  int vegasncallsVJREAL ;
+  long long int vegasncallsVJREAL ;
   int vegasncallsVJVIRT ;
-
+  bool vegascollect;
+  
   //cubature settings
   bool pcubature;
-  double pcubaccuracy;
+  double relaccuracy;
+  double absaccuracy;
 
   //costh boundaries
   double costhmin, costhmax;
   
   //lepton fiducial cuts
-  bool makelepcuts;
-  double lptcut, lycut;
+  bool makecuts;
+  double lptcut, lycut; //charged leptons
   double mtcut, etmisscut;
-  double l1ptcut, l1ycut, l2ptcut, l2ycut;
+  double lepptcut, lepycut, alpptcut, alpycut; //lepton and antilepton
+  double lcptcut, lcymin, lcymax, lfptcut, lfymin, lfymax; //lc and lf are absolute-rapidity-ordered leptons
+  double cthCSmin, cthCSmax;
 
   //integration types and settings for costh phi_lep phase space
   bool cubaint;
@@ -205,15 +235,51 @@ public:
   //settings for Bessel integration
   double bintaccuracy;
 
+  //b-space prescription
+  int bprescription;
+  
+  //blim parameter of the bstar prescription (acts as an IR cut-off)
+  double blim;
+
+  //arg(z) in the complex plane for the minimal prescription
+  double phibr;
+  //select the point bc, where the integration contour is bended in the complex plane, as a fraction of b_L = ... (Landau singularity)
+  double bcf;
+  
   //settings for Mellin integration
+  int mellininv;
   int mellinintervals;
   int mellinrule;
   double zmax;
+  double cpoint;
+  double phi;
   int mellincores;
+  bool mellin1d;
+  bool xspace;
+
+  //settings for x-to-N Mellin transform
+  int pdfrule;
   
-  //settings for rapidity integration
+  //settings for rapidity integration in 2D resummed piece
   int yintervals;
   int yrule;
+
+  //settings for qt integration in 2D counter term
+  int qtintervals;
+  int qtrule;
+
+  //settings for alfa beta scaled-PDF integration in counter term and born fixed order
+  int abintervals;
+  int abrule;
+
+  //settings for the phi integration in the V+J 5d LO term when makecuts is false
+  int vjphirule;
+
+  //settings for the z1, z2 integration in the V+J 3d NLO singular term
+  int zrule;
+
+  //settings for the x integration in the V+J 3d delta term
+  int xrule;
   
   //qt-recoil prescriptions
   bool qtrec_naive, qtrec_cs, qtrec_kt0;
@@ -225,18 +291,33 @@ public:
   //debug settings
   bool timeprofile;
   bool verbose;
+  bool gridverbose;
 
+  //output settings
+  bool texttable;
+  bool redirect;
+  bool unicode;
+  bool silent;
+  bool makehistos;
+  string output_filename; // Output Filenames
+  
   //resummed code in C++
-  bool resumcpp;
+  bool resumcpp = true; //use C++ code for resummation     
 
+  //counter term code in C++
+  bool ctcpp = true;   //use C++ code for the counter term
+  
   //dyres or pegasus PDF evolution
   int evolmode;
 
-  // fiducial switches
-  cuts::DetFiducial fiducial;
-
   //bin width normalisation
-  bool ptbinwidth, ybinwidth;
+  bool ptbinwidth, ybinwidth, mbinwidth;
+
+  // Force to loop over all bins even you have all Vegas integrands
+  bool force_binsampling = false;
+
+  // Calculate helicity cross sections
+  int helicity;
 };
 
 class binning
@@ -244,14 +325,16 @@ class binning
  public:
   binning() {};
   void readfromfile(const string fname);
+  void GetBins(string name,vector<double> &bins);
   // private:
-  string plotmode;
   vector <double> qtbins;
   vector <double> ybins;
   vector <double> mbins;
   vector <double> hist_qt_bins;
   vector <double> hist_y_bins;
   vector <double> hist_m_bins;
+ private:
+  InputParser in;
 };
 
 

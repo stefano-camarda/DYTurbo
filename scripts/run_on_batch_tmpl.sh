@@ -34,7 +34,7 @@ lsetup root # 5.34.25-x86_64-slc6-gcc48-opt
 #export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/etapfs03/atlashpc/cuth/resbos/lhapdf/LHAPDF-6.1.4/install/lib/
 #LD_LIBRARY_PATH=$LD_LIBRARY_PATH:DYTURBOROOTDIR/../RESBOS/lhapdf/lhapdf-5.6.0/install/lib/
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:SETLHAPDFLIB
-export LHAPDF_DATA_PATH=SETLHAPDFDATA
+export LHAPDF_DATA_PATH=$LHAPDF_DATA_PATH:SETLHAPDFDATA
 export LHAPATH=$LHAPDF_DATA_PATH
 #mkdir PDFsets/
 
@@ -60,7 +60,6 @@ CP DYTURBOINPUTFILE input.in
 
 # run
 /usr/bin/time -v ./dyturbo SETPROGARGUMETS
-hadd -f results_merge.root results*.root || exit 3
-CP results_merge.root OUTDIR/JOBNAME_${LSB_JOBINDEX}.root
+CP results.root OUTDIR/JOBNAME_${LSB_JOBINDEX}.root
 
 exit 0
