@@ -549,7 +549,8 @@ void settings::check_consistency(){
     
     if (makecuts && doVJ && intDimVJ < 7 && order >= 2)
       {
-	cout << "cannot perform quadrature integration for V+jet at NNLO" << endl;
+
+	cout << "cannot perform quadrature integration for V+jet at NNLO with cuts on the leptons" << endl;
 	exit (-1);
       }
   
