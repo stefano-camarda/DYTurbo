@@ -2,6 +2,7 @@
 #include "settings.h"
 #include "interface.h"
 #include "resconst.h"
+#include "constants.h"
 #include "cubature.h"
 #include "gaussrules.h"
 #include "mesq.h"
@@ -176,8 +177,8 @@ void vjint::init()
   //  const2_.pi_ = M_PI;
 
   dyqcd_.pi_ = M_PI;
-  dyqcd_.cf_ = resconst::Cf;
-  dyqcd_.ca_ = resconst::CA;
+  dyqcd_.cf_ = constants::CF;
+  dyqcd_.ca_ = constants::CA;
   dyqcd_.tr_ = resconst::NF/2.;
   dyqcd_.xnc_ = coupling::NC;
   dyqcd_.nf_ = resconst::NF;
