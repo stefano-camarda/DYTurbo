@@ -60,7 +60,8 @@ double switching::swtch(double qt, double m)
 
 double switching::qtlimit(double m)
 {
-  double limit=opts.sroot/2.;
+  //double limit=opts.sroot/2.;
+  double limit=1e20;
 
   if (opts.fixedorder)
     return limit;
