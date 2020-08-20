@@ -260,6 +260,8 @@ void vjloint::calc(const double x[5], double f[2])
 	  double xphi = phic+phim*gr::xxx[phirule-1][iphi];
 	  phasespace::set_philep(xphi);
 	  phasespace::calcphilep();
+	  //perform the phi_lep rotation only once and for all costh iterations
+	  phasespace::genl4p_phirot();
 
 	  double phi, cphi, c2phi;
 	  //double sphi, s2phi;
@@ -294,7 +296,7 @@ void vjloint::calc(const double x[5], double f[2])
 		  //Generate leptons 4-momenta: p3 is the lepton and p4 is the antilepton
 		  phasespace::set_cth(xcth);
 		  //phasespace::genRFaxes(CS);
-		  phasespace::genl4p();
+		  phasespace::genl4p_phifix();
 
 		  //calculate V+j matrix elements
 		  double p[4][mxpart];
