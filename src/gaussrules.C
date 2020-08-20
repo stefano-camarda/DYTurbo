@@ -1,5 +1,6 @@
 #include "gaussrules.h"
 #include "sandia_rules.hpp"
+#include <string.h>
 //nodes and weights for the gaussian quadrature rules
 //from https://pomax.github.io/bezierinfo/legendre-gauss.html
 
@@ -247,8 +248,13 @@ const double gr::www64[64]={0.0486909570091397,0.0486909570091397,
 			    0.0041470332605625,0.0041470332605625,
 			    0.0017832807216964,0.0017832807216964};
 
+#include <fstream>
+#include <iomanip>
+using namespace std;
+
 void gr::init()
 {
+  /*
   for (int i = 0; i < 64; i++)
     for (int j = 0; j < 64; j++)
       {
@@ -281,6 +287,7 @@ void gr::init()
       if (i < 50) www[50-1][i] = www50[i];
       if (i < 64) www[64-1][i] = www64[i];
     }
+  */
 
   /*
   //generation of weights and nodes
@@ -314,7 +321,31 @@ void gr::init()
 	}
     }
   */
-  
+
+  /*
+  ifstream ifile(string(SHAREDIR)+"/gr.txt");
+  if (ifile)
+    {
+      for (int n = 1; n <= GRNMAX; n++)
+	for ( int i = 1; i <= n; i++ )
+	  ifile >> xxx[n-1][i-1] >> www[n-1][i-1];
+      ifile.close();
+      return;
+    }
+  */
+
+  fstream iff;
+  iff = fstream(string(SHAREDIR)+"/gr.bin", ios::in | ios::binary);
+  if (iff)
+    {
+      iff.read((char*)&xxx,GRNMAX*GRNMAX*sizeof(double));
+      iff.read((char*)&www,GRNMAX*GRNMAX*sizeof(double));
+      iff.close();
+      return;
+    }
+ 
+  memset(xxx, 0, sizeof(xxx));
+  memset(www, 0, sizeof(xxx));
   for (int n = 1; n <= GRNMAX; n++)
     {
       double *w = new double[n];
@@ -328,4 +359,20 @@ void gr::init()
       delete[] w;
       delete[] x;
     }
+
+  //write out
+  /*
+  ofstream ofile(string(SHAREDIR)+"/gr.txt");
+  ofile << setprecision(20);
+  for (int n = 1; n <= GRNMAX; n++)
+    for ( int i = 1; i <= n; i++ )
+      ofile << setw(40) << xxx[n-1][i-1] << setw(40) << www[n-1][i-1] << endl;
+  ofile.close();
+  */
+
+  fstream off;
+  off = fstream(string(SHAREDIR)+"/gr.bin", ios::out | ios::binary);
+  off.write((char*)&xxx,GRNMAX*GRNMAX*sizeof(double));
+  off.write((char*)&www,GRNMAX*GRNMAX*sizeof(double));
+  off.close();
 }
