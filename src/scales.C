@@ -40,6 +40,9 @@ string scales::func(int ff)
   case 3:
     f = "sqrt(m_ll^2+p_T^2+m_jj^2)";
     break;
+  case 4: //see slide 27 of https://gsalam.web.cern.ch/gsalam/talks/repo/2016-03-SB+SLAC-Munich-precision.pdf
+    f = "1/2(p_T + sqrt(m_ll^2+p_T^2)";
+    break;
   }
   return f;
 }
@@ -60,6 +63,9 @@ void scales::form(double &scale2, int ff, double m, double pt, double mjj)
   case 3:
     scale2 =  pow(m,2) + pow(pt,2) + pow(mjj,2);
     break;
+  case 4: //see slide 27 of https://gsalam.web.cern.ch/gsalam/talks/repo/2016-03-SB+SLAC-Munich-precision.pdf
+    scale2 = pow(0.5*(pt + sqrt(m*m+pt*pt)),2);
+    break;
   }
 }
 
@@ -79,12 +85,12 @@ void scales::set(double m, double pt, double mjj)
   fac *= opts.kmufac;
   res *= opts.kmures;
 
-  //catch absurdly large scales      
-  double scalemax = 10000.;
-
-  if (ren > scalemax) {ren = scalemax; ren2 = pow(ren,2);}
-  if (fac > scalemax) {fac = scalemax; fac2 = pow(fac,2);}
-  if (res > scalemax) {res = scalemax; res2 = pow(res,2);}
+  //catch absurdly large scales --> no good reason to do it
+  //double scalemax = 10000.;
+  //
+  //if (ren > scalemax) {ren = scalemax; ren2 = pow(ren,2);}
+  //if (fac > scalemax) {fac = scalemax; fac2 = pow(fac,2);}
+  //if (res > scalemax) {res = scalemax; res2 = pow(res,2);}
 
   //run alphas
   if (opts_.approxpdf_ == 1)
