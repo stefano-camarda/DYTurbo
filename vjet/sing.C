@@ -9,7 +9,7 @@
 #include "luminosity.h"
 #include "mesq.h"
 #include "scales.h"
-#include "resconst.h"
+#include "constants.h"
 #include "LHAPDF/LHAPDF.h"
 
 #include <iostream>
@@ -34,7 +34,7 @@ double vjint::sing()
   double delta = x10*phasespace::qt2/(x10*phasespace::qt2+(1-x10)*phasespace::mt2);                             //delta from the relation x1 < 1 <=> x10*(1.+lb) < 1
 
   double q2 = phasespace::m2;
-  double fac = gevfb/1000.*coupling::aemmz*asp_.asp_*resconst::Cf;
+  double fac = gevfb/1000.*coupling::aemmz*asp_.asp_*constants::CF;
 
   //double sh, uh, th, s2;
   //double x1,x2;
@@ -81,7 +81,7 @@ double vjint::sing()
 	{
 	  scales::set(phasespace::m, phasespace::qt);
 	  scales::vjet();
-	  fac = gevfb/1000.*coupling::aemmz*asp_.asp_*resconst::Cf;
+	  fac = gevfb/1000.*coupling::aemmz*asp_.asp_*constants::CF;
 	  utils_scales_(q2);
 	}
 
@@ -94,7 +94,7 @@ double vjint::sing()
 	  scales2_.xmuf2_ = pow(scales2_.xmuf_,2);
 	  asnew_.as_ = LHAPDF::alphasPDF(scales2_.xmur_)/M_PI;
 	  asp_.asp_ = asnew_.as_*M_PI;
-	  fac = gevfb/1000.*coupling::aemmz*asp_.asp_*resconst::Cf;
+	  fac = gevfb/1000.*coupling::aemmz*asp_.asp_*constants::CF;
 	  utils_scales_(q2);
 	}
       */
@@ -203,7 +203,7 @@ double vjint::sing()
 	    {
 	      scales::set(phasespace::m, phasespace::qt, sqrt(s2));
 	      scales::vjet();
-	      fac = gevfb/1000.*coupling::aemmz*asp_.asp_*resconst::Cf;
+	      fac = gevfb/1000.*coupling::aemmz*asp_.asp_*constants::CF;
 	      utils_scales_(q2);
 	    }
 	  /*
@@ -215,7 +215,7 @@ double vjint::sing()
 	      scales2_.xmuf2_ = pow(scales2_.xmuf_,2);
 	      asnew_.as_ = LHAPDF::alphasPDF(scales2_.xmur_)/M_PI;
 	      asp_.asp_ = asnew_.as_*M_PI;
-	      fac = gevfb/1000.*coupling::aemmz*asp_.asp_*resconst::Cf;
+	      fac = gevfb/1000.*coupling::aemmz*asp_.asp_*constants::CF;
 	      utils_scales_(q2);
 	      //printf ("s2 %f mur %f alphas %f\n", s2, scales2_.xmur_, asnew_.as_);
 	    }
