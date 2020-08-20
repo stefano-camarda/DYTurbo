@@ -239,7 +239,8 @@ bool phasespace::gen_myqt(const double x[3], double& jac, bool qtcut, bool qtswi
       //in switching mode (ct and res) do not account for y in the qt limit (actually the qtlimit should be 1e10, i.e. unphysical)
       double kinqtlim = sqrt(max(0.,pow(pow(opts.sroot,2)+m2,2)/(4*pow(opts.sroot,2))-m2)); //introduced max to avoid neqative argument of sqrt
       double switchqtlim = switching::qtlimit(m);
-      qtlim = min(kinqtlim, switchqtlim);
+      //qtlim = min(kinqtlim, switchqtlim);
+      qtlim = switchqtlim; //--> in CT and RES should not have any phase space qt limit
     }
   else
     {
@@ -280,7 +281,8 @@ bool phasespace::gen_mqt(const double x[2], double& jac, bool qtcut, bool qtswit
   
   double kinqtlim = sqrt(max(0.,pow(pow(opts.sroot,2)+m2,2)/(4*pow(opts.sroot,2))-m2)); //introduced max to avoid neqative argument of sqrt
   double switchqtlim = switching::qtlimit(m);
-  double qtlim = min(kinqtlim, switchqtlim);
+  //double qtlim = min(kinqtlim, switchqtlim);
+  double qtlim = switchqtlim; //--> in CT and RES should not have any phase space qt limit
   status = gen_qt(x[1], jac, qtlim, qtcut);
   if (!status)
     return false;
