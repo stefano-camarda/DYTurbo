@@ -71,8 +71,8 @@ void phasespace::genl4p_phifix()
   //Generate the 4-momentum of the first lepton in the boson rest frame, using costh and phi_lep
   double p3cm[4];
   
-  //if (qt == 0. || CurrentRF == naive)
-  if (opts.fixedorder || CurrentRF == naive) //can use opts.fixedorder instead of qt == 0.?
+  if (qt == 0. || CurrentRF == naive)
+    //if (opts.fixedorder || CurrentRF == naive) //can use opts.fixedorder instead of qt == 0.?
     genp_(costh, phi_lep, m, p3cm);
   else
     {
@@ -110,7 +110,7 @@ void phasespace::genl4p()
   //Generate the 4-momentum of the first lepton in the boson rest frame, using costh and phi_lep
   double p3cm[4];
   
-  if (qt == 0. || CurrentRF == naive)  //can use if (opts.fixedorder || CurrentRF == naive) ?
+  if (qt == 0. || CurrentRF == naive)  //can use if (opts.fixedorder || CurrentRF == naive) ? --> No, because V+jet at LO also need this routine
     genp_(costh, phi_lep, m, p3cm);
   else
     {
