@@ -5,7 +5,7 @@
 #include "coupling.h"
 #include "luminosity.h"
 #include "mesq.h"
-#include "resconst.h"
+#include "constants.h"
 
 #include <iostream>
 
@@ -13,14 +13,19 @@ double vjint::logx2min;
 
 double vjint::delta(double x)
 {
-  double fac = gevfb/1000.*coupling::aemmz*asp_.asp_*resconst::Cf;
+  double fac = gevfb/1000.*coupling::aemmz*asp_.asp_*constants::CF;
   double q2 = phasespace::m2;
 
   //change of variable to allow integration over 0-1
   //"esp" introduced for better behavior at small qt
-  int esp = 8;
+  int esp = 8; //16;
   double x2 = exp((1.-pow(x,esp))*logx2min);
   double xjac = x2*logx2min*esp*pow(x,(esp-1));
+
+  //double eps = 1e-7;
+  //double x2 = exp(pow(eps,1.-x)*logx2min);
+  //double xjac = x2*logx2min*(-log(eps))*pow(eps,1.-x);
+
   //x2=x2min*exp(1d0/x2min*t)
   //xjac=xjac*x2(1d0-x2min)
 
