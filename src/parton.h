@@ -17,5 +17,6 @@ namespace parton
 
   inline pdgid charge_conj(pdgid i)  {return pdgid(int((i-G))*(-1)+G);}
   inline partid charge_conjn(partid i)  {return partid(int((i-g))*(-1)+g);}
+  inline int isq(partid i)  {return (int(i-g) >= 0) ? 1:-1;}
 }
 #endif
