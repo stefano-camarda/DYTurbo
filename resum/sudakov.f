@@ -44,9 +44,7 @@ c.....choose bstar (b) for real axis (complex plane) integration
 
       xlambda=beta0*aass*blog
 
-c     I think it would be more correct to calculate alphas at the resummation scale, rather than aass which is alphas at the renormalisation scale
-c     xlambda=beta0*dyalphas_lhapdf(q/a_param)/pi*blog
-c     --> Not really, the running of alphas in this function reflects the definition of lambda in Eq. 25 of hep-ph/0508068.
+c     --> the running of alphas in this function reflects the definition of lambda in Eq. 25 of hep-ph/0508068.
       
 c     print *,aass*pi,dyalphas_lhapdf(q),dyalphas_lhapdf(q/a_param),sqrt(nq2),xlambda
       
@@ -62,26 +60,25 @@ c     print *,aass*pi,dyalphas_lhapdf(q),dyalphas_lhapdf(q/a_param),sqrt(nq2),xl
       aa1=log1xlambda
       if (iord.ge.1) then
          aa1 = aa1+aass*
-     .        beta1/beta0*log1xlambda/(1-xlambda)
+     .        beta1/beta0*log1xlambda/(1d0-xlambda)
       endif
       if (iord.ge.2) then
          aa1 = aa1+aass**2*
      .       ((beta1**2/beta0**2-beta2/beta0)*xlambda/(1d0-xlambda)**2
      .       +(beta1**2/beta0**2)*log1xlambda/(1d0-xlambda)**2
-c     .       +(beta1**2/beta0**2)*log1xlambda**2/(2d0*(1d0-xlambda)**2))
      .       -(beta1**2/beta0**2)*log1xlambda**2/(2d0*(1d0-xlambda)**2))
       endif
 
 !     Scale dependence
       if (iord.ge.1) then
          aa1 = aa1+aass*(rlogq2mur2-2d0*rloga)*
-     .        beta0*xlambda/(1-xlambda)
+     .        beta0*xlambda/(1d0-xlambda)
       endif
       if (iord.ge.2) then
          aa1 = aa1+aass**2*(rlogq2mur2-2d0*rloga)*
-c     .     beta1*(xlambda/(1d0-xlambda)**2+log1xlambda/(1d0-xlambda)**2)
-     .        (beta1*(xlambda/(1d0-xlambda)**2
-     .        -beta1*log1xlambda/(1d0-xlambda)**2))
+     .        (beta1*xlambda/(1d0-xlambda)**2
+     .        -beta1*log1xlambda/(1d0-xlambda)**2)
+!     Here a few pieces are missing...
       endif
       
       alphasl=Exp(-aa1)
@@ -139,8 +136,8 @@ c     .       -2d0*beta0*xlambda*rloga/(1-xlambda)   )
       endif
       if (iord.ge.2) then
          aa1 = aa1+aass**2*(rlogq2mur2-2d0*rloga)*
-     .        (beta1*(xlambda/(1d0-xlambda)**2
-     .        -beta1*log1xlambda/(1d0-xlambda)**2))
+     .        (beta1*xlambda/(1d0-xlambda)**2
+     .        -beta1*log1xlambda/(1d0-xlambda)**2)
       endif
       
       aexp=Exp(-aa1)      
