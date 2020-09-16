@@ -1,10 +1,12 @@
 #ifndef clenshawcurtisrules_h
 #define clenshawcurtisrules_h
 
+#define CCNMAX 500
+
 namespace cc
 {
-  extern double xxx[65][65];
-  extern double www[65][65];
+  extern double xxx[CCNMAX][CCNMAX];
+  extern double www[CCNMAX][CCNMAX];
   extern double cosw[65][65];
   extern double sinw[65][65];
 

@@ -3,13 +3,14 @@
 //from https://people.sc.fsu.edu/~jburkardt/datasets/quadrature_rules_clenshaw_curtis/quadrature_rules_clenshaw_curtis.html
 #include "sandia_rules.hpp"
 #include "settings.h"
+#include <string.h>
 #include <iostream>
 #include <math.h>
 #include <quadmath.h>
 
 using namespace std;
-double cc::xxx[65][65];
-double cc::www[65][65];
+double cc::xxx[CCNMAX][CCNMAX];
+double cc::www[CCNMAX][CCNMAX];
 double cc::cosw[65][65];
 double cc::sinw[65][65];
 
@@ -232,6 +233,7 @@ const double cc::www65[65]={0.2442002442002449E-03,
 
 void cc::init()
 {
+  /*
   for (int i = 0; i < 65; i++)
     for (int j = 0; j < 65; j++)
       {
@@ -248,9 +250,22 @@ void cc::init()
       if (i < 33) www[33-1][i] = www33[i];
       if (i < 65) www[65-1][i] = www65[i];
     }
+  */
 
+  fstream iff;
+  iff = fstream(string(SHAREDIR)+"/ccr.bin", ios::in | ios::binary);
+  if (iff)
+    {
+      iff.read((char*)&xxx,CCNMAX*CCNMAX*sizeof(double));
+      iff.read((char*)&www,CCNMAX*CCNMAX*sizeof(double));
+      iff.close();
+      return;
+    }
+ 
   //generation of weights and nodes
-  for (int n = 1; n <= 65; n++)
+  memset(xxx, 0, sizeof(xxx));
+  memset(www, 0, sizeof(xxx));
+  for (int n = 1; n <= CCNMAX; n++)
     {
       double *w = new double[n];
       double *x = new double[n];
@@ -264,6 +279,12 @@ void cc::init()
       delete[] x;      
     }
 
+  fstream off;
+  off = fstream(string(SHAREDIR)+"/ccr.bin", ios::out | ios::binary);
+  off.write((char*)&xxx,CCNMAX*CCNMAX*sizeof(double));
+  off.write((char*)&www,CCNMAX*CCNMAX*sizeof(double));
+  off.close();
+  
   /*
   //calculate nodes and weights and cross check result
   int n = opts.mellinrule;
