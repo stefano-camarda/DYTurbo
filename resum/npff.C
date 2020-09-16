@@ -1,11 +1,14 @@
 #include "npff.h"
 #include "settings.h"
 #include "resconst.h"
+#include "constants.h"
 #include "pdfevol.h"
 #include "resint.h"
 //#include <LHAPDF/LHAPDF.h>
 #include "pdf.h"
 #include <iostream>
+
+using namespace constants;
 
 complex <double> npff::uvff;
 complex <double> npff::usff;
@@ -39,7 +42,7 @@ complex <double> npff::S(complex <double> b, double m, double x1, double x2)
   //g0 = 0.3; //Q0 = 1.6;
   if (opts.npff == 2)
     {
-      double gk = opts.g0 * (1. - exp(- (resconst::Cf*pdf::alphas(real(pdfevol::qbstar))*pow(real(b),2))/(M_PI*opts.g0*pow(blimit_.rblim_,2))));
+      double gk = opts.g0 * (1. - exp(- (CF*pdf::alphas(real(pdfevol::qbstar))*pow(real(b),2))/(M_PI*opts.g0*pow(blimit_.rblim_,2))));
       ff = exp(-gk*log(pow(m/opts.Q0,2)));
     }
 
