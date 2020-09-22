@@ -1,7 +1,7 @@
 #ifndef gaussrules_h
 #define gaussrules_h
 
-#define GRNMAX 2000
+#define GRNMAX 500
 
 namespace gr
 {
