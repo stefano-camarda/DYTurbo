@@ -11,6 +11,7 @@
 #include "qtint.h"
 #include "ctint.h"
 #include "ctmellin.h"
+#include "evolnative.h"
 
 #include "KinematicCuts.h"
 
@@ -512,7 +513,7 @@ int ctintegrand1d_cubature_v(unsigned ndim, long unsigned npts, const double x[]
 {
   tell_to_grid_we_are_alive();
   //  cout << "parallel " << npts << endl;
-#pragma omp parallel for num_threads(opts.cubacores) copyin(a_param_,scale_,facscale_,qcdcouple_)
+#pragma omp parallel for num_threads(opts.cubacores) copyin(a_param_,scale_,facscale_,qcdcouple_,evolnative::UVP,evolnative::DVP,evolnative::USP,evolnative::DSP,evolnative::SSP,evolnative::GLP,evolnative::CHP,evolnative::BOP,evolnative::SVP,evolnative::CVP,evolnative::BVP)
   for (unsigned i = 0; i < npts; i++)
     {
       // evaluate the integrand for npts points
