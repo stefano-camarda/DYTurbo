@@ -4,6 +4,7 @@
 #include "mesq.h"
 #include "anomalous.h"
 #include "pdfevol.h"
+#include "evolnative.h"
 #include "parton.h"
 #include "settings.h"
 #include "omegaintegr.h"
@@ -46,10 +47,11 @@ void ctmellin::calc(double m, double f[])
   double mur = scales::ren;
 
   //update PDFs in Mellin space at the starting scale, if the factorisation scale is proportional to mll
+  //!!! create a special function/module to deal with non-evolved PDFs
   if (opts.fmufac > 0)
     {
-      pdfevol::allocate();
-      pdfevol::update();
+      evolnative::allocate();
+      evolnative::update();
     }
   pdfevol::allocate_fx();
   
@@ -263,7 +265,7 @@ void ctmellin::calc(double m, double f[])
 
   //cout << "xmsq " << xmsq << endl;
   if (opts.fmufac > 0)
-    pdfevol::free();
+    evolnative::free();
   
   pdfevol::free_fx();
 
