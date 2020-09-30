@@ -1,0 +1,17 @@
+        t1 = -1.44103095d7*invnp2
+        t2 = 4.647845d5 + t1
+        t3 = invnp2*t2
+        t4 = -1.91135d4 + t3
+        t5 = invnp2*t4
+        t6 = 1.0365d3 + t5
+        t7 = invnp2*t6
+        t8 = -7.75d1 + t7
+        t9 = invnp2*t8
+        t10 = 8.5d0 + t9
+        t11 = invnp2*t10
+        t12 = -1.5d0 + t11
+        t13 = 5.d-1 + invnp2*t12
+        t14 = -5.d-1 + invnp2*t13
+        t15 = 5.d-1 + invnp1*t14
+        t16 = eta*invnp2*t15
+        HSexpand = -8.224670334241133140551483d-1 + t16
