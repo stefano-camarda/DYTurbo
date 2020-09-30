@@ -110,8 +110,10 @@ C...ANALYTIC CONTINUATIONS OF N-SUMS AS GIVEN IN GLUECK ET AL. (1990) :
 *       CPSI2 = 0.5 * PSIFN2 (XN1) - ZETA2
 *       SPMOM = 1.01/XN1 - 0.846/XN2 + 1.155/(XN+3.) - 1.074/(XN+4.) +
 *     1         0.55/(XN+5.)
-       SPMOM = 1.004D0 / XN1 - 0.846D0 / XN2 + 1.342D0 / (XN+3.) -
-     1         1.532D0 / (XN+4.) + 0.839D0 / (XN+5.)
+c       SPMOM = 1.004D0 / XN1 - 0.846D0 / XN2 + 1.342D0 / (XN+3.) -
+c     1         1.532D0 / (XN+4.) + 0.839D0 / (XN+5.)
+       SPMOM=ACG3(XN-1D0) ! --> Improved approximation for the Mellin transform of: Li2(x)/(1+x)
+*
        SLC = -5./8.* ZETA3
        SLV = - ZETA2/2.* (PSIFN (XN1/2.) - PSIFN (XN/2.))
      1       + CPSI/XNS + SPMOM
