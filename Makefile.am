@@ -1,7 +1,7 @@
 ACLOCAL_AMFLAGS=-I m4
 #do not ditribute test directories
 # add cuba to SUBDIRS to ship cuba
-DIST_SUBDIRS = histo user cernlib ancont pegasus cubature dequad bequad sandia smolpack besche bessel minprescription specialfunctions dyres dynnlo mcfm integrands resum counterterm v2j born phasespace vjet src
+DIST_SUBDIRS = histo user cernlib ancont pegasus cubature dequad bequad zeta harmonicsums sandia smolpack besche bessel minprescription specialfunctions dyres dynnlo mcfm integrands resum counterterm v2j born phasespace vjet src
 SUBDIRS      = ${DIST_SUBDIRS}
 
 # add test directories if enabled
@@ -13,7 +13,7 @@ SUBDIRS += origdyres
 endif
 
 
-dist_bin_SCRIPTS = install-cuba install-lhapdf install-chaplin install-cubature
+dist_bin_SCRIPTS = install-cuba install-lhapdf install-chaplin install-cubature install-ceres
 EXTRA_DIST = README.md
 
 bin_SCRIPTS = dyturbo-config
@@ -43,5 +43,6 @@ distclean-local:
 	rm -rf Cuba-$(CUBA_VERSION)
 	rm -rf lhapdf6
 	rm -rf chaplin-$(CHAPLIN_VERSION)
+	rm -rf ceres-solver-$(CERES_VERSION)
 	rm -rf cubature/*.c cubature/*.h cubature/NEWS cubature/COPYING cubature/README cubature/ChangeLog
 	rm -rf origdyres/*.f origdyres/*.h origdyres/DYRes-v1.0
