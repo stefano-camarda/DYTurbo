@@ -2,6 +2,8 @@
 #include "mesq.h"
 #include "interface.h"
 #include "resconst.h"
+#include "constants.h"
+#include "settings.h"
 
 #include <iostream>
 
@@ -35,11 +37,6 @@ complex <double> *anomalous::RPPQG;
 complex <double> *anomalous::RPPGQ;
 complex <double> *anomalous::RPPGG;
 
-complex <double> *anomalous::C1QQ;
-complex <double> *anomalous::C1QG;
-complex <double> *anomalous::C1GQ;
-complex <double> anomalous::C1GG;
-
 complex <double> *anomalous::gamma1qq;
 complex <double> *anomalous::gamma1qg;
 complex <double> *anomalous::gamma1gq;
@@ -53,22 +50,40 @@ complex <double> *anomalous::gamma2qg;
 complex <double> *anomalous::gamma2gq;
 complex <double> *anomalous::gamma2gg;
 
+complex <double> *anomalous::C1QQ;
+complex <double> *anomalous::C1QG;
+complex <double> *anomalous::C1GQ;
+complex <double> anomalous::C1GG;
+
 complex <double> *anomalous::C2qgM;
 complex <double> *anomalous::C2NSqqM;
 complex <double> *anomalous::C2SqqbM;
 complex <double> *anomalous::C2NSqqbM;
 
+complex <double> *anomalous::C1QQ_1;
+complex <double> *anomalous::C1QG_1;
+complex <double> *anomalous::C1GQ_1;
+complex <double> *anomalous::C1QQ_2;
+complex <double> *anomalous::C1QG_2;
+complex <double> *anomalous::C1GQ_2;
+
+complex <double> *anomalous::C2qgM_1;
+complex <double> *anomalous::C2NSqqM_1;
+complex <double> *anomalous::C2SqqbM_1;
+complex <double> *anomalous::C2NSqqbM_1;
+complex <double> *anomalous::C2qgM_2;
+complex <double> *anomalous::C2NSqqM_2;
+complex <double> *anomalous::C2SqqbM_2;
+complex <double> *anomalous::C2NSqqbM_2;
+
 void anomalous::init()
 {
-  // ANOMALOUS DIMENSIONS FOR LEADING AND NEXT TO LEADING ORDER
-  // EVOLUTION OF PARTON DENSITIES AND WILSON COEFFICIENTS FOR
-  // NLO STRUCTURE FUNCTIONS :
+  allocate();
+  calc();
+}
 
-  // all values are precalculated at the values of the z points used for the complex contour of the Mellin inverse transform
-
-  //settings: nf = 5 (flavours)
-  int nf = resconst::NF;
-
+void anomalous::allocate()
+{
   ans = new complex <double>[mellinint::mdim*2];
   am = new complex <double> [mellinint::mdim*2];
   ap = new complex <double> [mellinint::mdim*2];
@@ -99,10 +114,6 @@ void anomalous::init()
   RPPGQ = new complex <double> [mellinint::mdim*2];
   RPPGG = new complex <double> [mellinint::mdim*2];
 
-  C1QQ = new complex <double> [mellinint::mdim*2];
-  C1QG = new complex <double> [mellinint::mdim*2];
-  C1GQ = new complex <double> [mellinint::mdim*2];
-
   gamma1qq = new complex <double> [mellinint::mdim*2];
   gamma1qg = new complex <double> [mellinint::mdim*2];
   gamma1gq = new complex <double> [mellinint::mdim*2];
@@ -115,12 +126,126 @@ void anomalous::init()
   gamma2qg = new complex <double> [mellinint::mdim*2];
   gamma2gq = new complex <double> [mellinint::mdim*2];
   gamma2gg = new complex <double> [mellinint::mdim*2];
-  
-  C2qgM = new complex <double> [mellinint::mdim*2];
-  C2NSqqM = new complex <double> [mellinint::mdim*2];
-  C2SqqbM = new complex <double> [mellinint::mdim*2];
-  C2NSqqbM = new complex <double> [mellinint::mdim*2];
 
+  if (opts.mellin1d)
+    {
+      C1QQ = new complex <double> [mellinint::mdim*2];
+      C1QG = new complex <double> [mellinint::mdim*2];
+      C1GQ = new complex <double> [mellinint::mdim*2];
+
+      C2qgM = new complex <double> [mellinint::mdim*2];
+      C2NSqqM = new complex <double> [mellinint::mdim*2];
+      C2SqqbM = new complex <double> [mellinint::mdim*2];
+      C2NSqqbM = new complex <double> [mellinint::mdim*2];
+    }
+  else
+    {
+      C1QQ_1 = new complex <double> [mellinint::mdim*2];
+      C1QG_1 = new complex <double> [mellinint::mdim*2];
+      C1GQ_1 = new complex <double> [mellinint::mdim*2];
+      C1QQ_2 = new complex <double> [mellinint::mdim*2];
+      C1QG_2 = new complex <double> [mellinint::mdim*2];
+      C1GQ_2 = new complex <double> [mellinint::mdim*2];
+      
+      C2qgM_1 = new complex <double> [mellinint::mdim*2];
+      C2NSqqM_1 = new complex <double> [mellinint::mdim*2];
+      C2SqqbM_1 = new complex <double> [mellinint::mdim*2];
+      C2NSqqbM_1 = new complex <double> [mellinint::mdim*2];
+      C2qgM_2 = new complex <double> [mellinint::mdim*2];
+      C2NSqqM_2 = new complex <double> [mellinint::mdim*2];
+      C2SqqbM_2 = new complex <double> [mellinint::mdim*2];
+      C2NSqqbM_2 = new complex <double> [mellinint::mdim*2];
+    }
+}
+
+void anomalous::release()
+{
+  delete[] ans;
+  delete[] am;
+  delete[] ap;
+  delete[] al;
+  delete[] be;
+  delete[] ab;
+  delete[] rmin;
+  delete[] rplus;
+  delete[] rqq;
+  delete[] rqg;
+  delete[] rgq;
+  delete[] rgg;
+
+  delete[] RMMQQ;
+  delete[] RMMQG;
+  delete[] RMMGQ;
+  delete[] RMMGG;
+  delete[] RMPQQ;
+  delete[] RMPQG;
+  delete[] RMPGQ;
+  delete[] RMPGG;
+  delete[] RPMQQ;
+  delete[] RPMQG;
+  delete[] RPMGQ;
+  delete[] RPMGG;
+  delete[] RPPQQ;
+  delete[] RPPQG;
+  delete[] RPPGQ;
+  delete[] RPPGG;
+
+  delete[] gamma1qq;
+  delete[] gamma1qg;
+  delete[] gamma1gq;
+  delete[] gamma1gg;
+  delete[] gamma2qq;
+  delete[] gamma2qqV;
+  delete[] gamma2qqbV;
+  delete[] gamma2qqS;
+  delete[] gamma2qqbS;
+  delete[] gamma2qg;
+  delete[] gamma2gq;
+  delete[] gamma2gg;
+
+  if (opts.mellin1d)
+    {
+      delete[] C1QQ;
+      delete[] C1QG;
+      delete[] C1GQ;
+
+      delete[] C2qgM;
+      delete[] C2NSqqM;
+      delete[] C2SqqbM;
+      delete[] C2NSqqbM;
+    }
+  else
+    {
+      delete[] C1QQ_1;
+      delete[] C1QG_1;
+      delete[] C1GQ_1;
+      delete[] C1QQ_2;
+      delete[] C1QG_2;
+      delete[] C1GQ_2;
+
+      delete[] C2qgM_1;
+      delete[] C2NSqqM_1;
+      delete[] C2SqqbM_1;
+      delete[] C2NSqqbM_1;
+      delete[] C2qgM_2;
+      delete[] C2NSqqM_2;
+      delete[] C2SqqbM_2;
+      delete[] C2NSqqbM_2;
+    }
+}
+
+void anomalous::calc()
+{
+  // ANOMALOUS DIMENSIONS FOR LEADING AND NEXT TO LEADING ORDER
+  // EVOLUTION OF PARTON DENSITIES AND WILSON COEFFICIENTS FOR
+  // NLO STRUCTURE FUNCTIONS :
+
+  // all values are precalculated at the values of the z points used for the complex contour of the Mellin inverse transform
+
+  //settings: nf = 5 (flavours)
+  int nf = resconst::NF;
+
+  if (opts.mellin1d)
   for (int sign = mesq::positive; sign <= mesq::negative; sign++)
     for (int i = 0; i < mellinint::mdim; i++)
       {
@@ -199,11 +324,10 @@ void anomalous::init()
 
       
 	// C1 coefficients      
-	double pi2 = M_PI*M_PI;
 	C1QG[index(i,sign)]=1./((cxn+1.)*(cxn+2.));
 	C1GQ[index(i,sign)]=4./3./(cxn+1.);
-	C1QQ[index(i,sign)]=2.*pi2/3.-16./3.+4./3./(cxn*(cxn+1.)); // = 2. * resconst::C1qqn + 4./3./(cxn*(cxn+1.));
-	C1GG=pi2/2.+11./2.+pi2; // = 2. * resconst::C1ggn;
+	C1QQ[index(i,sign)]=2.*constants::pi2/3.-16./3.+4./3./(cxn*(cxn+1.)); // = 2. * resconst::C1qqn + 4./3./(cxn*(cxn+1.));
+	C1GG=constants::pi2/2.+11./2.+constants::pi2; // = 2. * resconst::C1ggn;
 
 	// gamma1 gamma2: NORMALIZED ANOMALOUS DIMENSIONS AND COEFFICIENTS
 	gamma1qq[index(i,sign)]=-1.*(cx(QQI)/4.);
@@ -215,7 +339,8 @@ void anomalous::init()
 	gamma2qqbV[index(i,sign)]=-1.*(cx(NS1PI)-cx(NS1MI))/16.;
 	gamma2qqS[index(i,sign)]=-1.*(cx(QQ1F)/16.);
 	gamma2qqbS[index(i,sign)]=gamma2qqS[index(i,sign)];
-	gamma2qg[index(i,sign)]=-1.*(cx(QG1F)/16.);
+	gamma2qg[index(i,sign)]=-1.*(cx(QG1F)/16.); //---> bug
+	//gamma2qg[index(i,sign)]=-1.*((double)nf*cx(QG1F)/8.); // ---> fix
 	gamma2gq[index(i,sign)]=-1.*((cx(GQ1I)+(double)nf*cx(GQ1F))/8.);
 	gamma2gg[index(i,sign)]=-1.*((cx(GG1I)+(double)nf*cx(GG1F))/8.);
 
@@ -228,59 +353,56 @@ void anomalous::init()
 	C2SqqbM[index(i,sign)]  = cx(C2Sqqb);
 	C2NSqqbM[index(i,sign)] = cx(C2NSqqb);
       }
-}
+  else
+    //mellin2d
+    for (int sign = mesq::positive; sign <= mesq::negative; sign++)
+      for (int i = 0; i < mellinint::mdim; i++)
+	{
+	  fcomplex fxn_1, fxn_2;
+	  complex <double> cxn_1, cxn_2;
+	  if (sign == mesq::positive)
+	    {
+	      fxn_1.real = real(mellinint::Np_1[i]);
+	      fxn_1.imag = imag(mellinint::Np_1[i]);
+	      cxn_1 = mellinint::Np_1[i];
+	      
+	      fxn_2.real = real(mellinint::Np_2[i]);
+	      fxn_2.imag = imag(mellinint::Np_2[i]);
+	      cxn_2 = mellinint::Np_2[i];
+	    }
+	  else
+	    {
+	      fxn_1.real = real(mellinint::Nm_1[i]);
+	      fxn_1.imag = imag(mellinint::Nm_1[i]);
+	      cxn_1 = mellinint::Nm_1[i];
 
-void anomalous::release()
-{
-  delete[] ans;
-  delete[] am;
-  delete[] ap;
-  delete[] al;
-  delete[] be;
-  delete[] ab;
-  delete[] rmin;
-  delete[] rplus;
-  delete[] rqq;
-  delete[] rqg;
-  delete[] rgq;
-  delete[] rgg;
+	      fxn_2.real = real(mellinint::Nm_2[i]);
+	      fxn_2.imag = imag(mellinint::Nm_2[i]);
+	      cxn_2 = mellinint::Nm_2[i];
+	    }
+	  
+	  // C1 coefficients      
+	  C1QG_1[index(i,sign)]=1./((cxn_1+1.)*(cxn_1+2.));
+	  C1GQ_1[index(i,sign)]=4./3./(cxn_1+1.);
+	  C1QQ_1[index(i,sign)]=2.*constants::pi2/3.-16./3.+4./3./(cxn_1*(cxn_1+1.)); // = 2. * resconst::C1qqn + 4./3./(cxn_1*(cxn_1+1.));
 
-  delete[] RMMQQ;
-  delete[] RMMQG;
-  delete[] RMMGQ;
-  delete[] RMMGG;
-  delete[] RMPQQ;
-  delete[] RMPQG;
-  delete[] RMPGQ;
-  delete[] RMPGG;
-  delete[] RPMQQ;
-  delete[] RPMQG;
-  delete[] RPMGQ;
-  delete[] RPMGG;
-  delete[] RPPQQ;
-  delete[] RPPQG;
-  delete[] RPPGQ;
-  delete[] RPPGG;
+	  C1QG_2[index(i,sign)]=1./((cxn_2+1.)*(cxn_2+2.));
+	  C1GQ_2[index(i,sign)]=4./3./(cxn_2+1.);
+	  C1QQ_2[index(i,sign)]=2.*constants::pi2/3.-16./3.+4./3./(cxn_2*(cxn_2+1.)); // = 2. * resconst::C1qqn + 4./3./(cxn_1*(cxn_1+1.));
+	  
+	  // C2 coefficients      
+	  //input: fxn and nf from the common block
+	  fcomplex C2qg,C2NSqqb,C2NSqq,C2Sqqb;
+	  h2calc_(C2qg,C2NSqqb,C2NSqq,C2Sqqb,fxn_1);
+	  C2qgM_1[index(i,sign)]    = cx(C2qg);
+	  C2NSqqM_1[index(i,sign)]  = cx(C2NSqq);
+	  C2SqqbM_1[index(i,sign)]  = cx(C2Sqqb);
+	  C2NSqqbM_1[index(i,sign)] = cx(C2NSqqb);
 
-  delete[] C1QQ;
-  delete[] C1QG;
-  delete[] C1GQ;
-
-  delete[] gamma1qq;
-  delete[] gamma1qg;
-  delete[] gamma1gq;
-  delete[] gamma1gg;
-  delete[] gamma2qq;
-  delete[] gamma2qqV;
-  delete[] gamma2qqbV;
-  delete[] gamma2qqS;
-  delete[] gamma2qqbS;
-  delete[] gamma2qg;
-  delete[] gamma2gq;
-  delete[] gamma2gg;
-
-  delete[] C2qgM;
-  delete[] C2NSqqM;
-  delete[] C2SqqbM;
-  delete[] C2NSqqbM;
+	  h2calc_(C2qg,C2NSqqb,C2NSqq,C2Sqqb,fxn_2);
+	  C2qgM_2[index(i,sign)]    = cx(C2qg);
+	  C2NSqqM_2[index(i,sign)]  = cx(C2NSqq);
+	  C2SqqbM_2[index(i,sign)]  = cx(C2Sqqb);
+	  C2NSqqbM_2[index(i,sign)] = cx(C2NSqqb);
+	}
 }
