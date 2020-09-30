@@ -6,6 +6,8 @@
 #include "mesq.h"
 #include "hcoefficients.h"
 #include "hcoeff.h"
+#include "cexp.h"
+#include "muf.h"
 #include "phasespace.h"
 #include "gaussrules.h"
 #include "resint.h"
@@ -13,6 +15,7 @@
 #include "pdf.h"
 #include "sudakovff.h"
 #include "npff.h"
+#include "ccoeff.h"
 
 #include <LHAPDF/LHAPDF.h>
 
@@ -32,9 +35,9 @@ complex <double> besselint::bint(complex <double> b)
   if (b == 0.)
     return 1.; //Should be correct, since J_0(0) = 1, and S(0) = 1 (Sudakov). May be different in the case that the L~ = L+1 matching is not used.
   
-  complex <double> bb = b;
   double qt = resint::_qt; //better take this from phasespace::qt
 
+  /***************************************************** Moved to pdfevol::scales (begin)
   //pdfevol::bscale is used for
   //alpq (C1)
   //pdfevol::alpr (C3)
@@ -85,24 +88,29 @@ complex <double> besselint::bint(complex <double> b)
   pdfevol::bcomplex = resconst::b0/b;
   
   //  cout << b << "  " << bstar << "  " << blimit_.rblim_ << endl;
+  *****************************************************/ // Moved to pdfevol::scales (end)
+
   
   //The integration from b to qt space is done with the bstar prescription (real axis in the b space), and use the bessel function
   //The (complex) integration in the minimal prescription would require hankel functions
   //********************
   //qt and b dependence (bessel function) (is xj0 a jacobian? Probably yes, the Jacobian for the change of variable from cartesian to radial coordinate, which translates from Fourier to Hankel transform)
-  double xj0;
+  complex <double> xj0;
   double qtb = qt*real(b);
-  if (resint::_mode == 3) //qt-integrated mode --> Needs to be implemented also for the other prescriptions
+  if (resint::_mode == 3 || resint::_mode == 4) //qt-integrated mode --> Needs to be implemented also for the other prescriptions
     {
       //bstar prescription
       if (opts.bprescription == 0)
-	xj0 = 2.*fort_besj1_(qtb)/real(b);
+	xj0 = 2.*fort_besj1_(qtb)/b;
       //Integrate up to blim with besche
       else if (opts.bprescription == 1)
-	xj0 = 2./real(b);
+	xj0 = 2./b;
       //Minimal prescription
       else if (opts.bprescription == 2 || opts.bprescription == 3)
-	xj0 = 2./real(b);
+	xj0 = 2./b;
+      //Local bstar prescription
+      else if (opts.bprescription == 4)
+	xj0 = 2.*fort_besj1_(qtb)/b;
     }
   else
     {
@@ -116,17 +124,20 @@ complex <double> besselint::bint(complex <double> b)
       //Minimal prescription
       else if (opts.bprescription == 2 || opts.bprescription == 3)
 	xj0 = 2.;
+      //Local bstar prescription
+      else if (opts.bprescription == 4)
+	xj0 = 2.*fort_besj0_(qtb);
     }
   //********************
 
   //The Sudakov is mass and b dependent
 
   //fortran
-  //fcomplex fbb = fcx(bb);
-  //complex <double> sudak=cx(s_(fbb));
+  //fcomplex fb = fcx(b);
+  //complex <double> sudak=cx(s_(fb));
 
   //C++
-  complex <double> sudak=sudakov::sff(bb);
+  complex <double> sudak=sudakov::sff(b);
 
   if (sudak == 0.)
     return 0.;
@@ -139,8 +150,8 @@ complex <double> besselint::bint(complex <double> b)
 
   //********************
   //b, qt and mass dependence
-  complex <double> factorfin = bb*xj0*sudak;
-  //cout << "where is the nan " << bb << "  " << xj0 << "  " << sudak << endl;
+  complex <double> factorfin = b*xj0*sudak;
+  //cout << "where is the nan " << b << "  " << xj0 << "  " << sudak << endl;
   //********************
 
   //Do not need the Mellin transform for the LL case, because the HN coefficient is 1 --> Use PDFs in x space
@@ -151,17 +162,19 @@ complex <double> besselint::bint(complex <double> b)
   //**************************************
   //b-dependence
   // Set scales for evolution in pdfevol
-  //alphasl gives the LL/NLL evolution of alpha from Qres=Q/a_param to  q2=b0^2/b^2
+  //alphasl gives the LL/NLL/NNLL evolution of alphas from Qres=Q/a_param to q2=b0^2/b^2
+  pdfevol::alphasl(b);
+  pdfevol::scales(b);
 
-  /********************************************/
+  /********************************************
   //pdfevol::alpqf is used as starting scale of the PDF evolution in pdfevol::evolution
   //according to Eq. 42 of arXiv:hep-ph/0508068 it should be the factorisation scale,
   //but in Eq. 98 in the resummation scale is used
   double alpqf = resint::alpqres;              //alphas at resummation scale   (as in dyres)
   //double alpqf = resint::alpqfac;            //alphas at factorisation scale (as in Eq. 42 of arXiv:hep-ph/0508068, but see also Eq. 98)
-  /********************************************/
+  ********************************************/
   
-  /********************************************/
+  /********************************************
   //alpq is used in hcoefficients::calcb, it is alpq = alphas(b0^2/b^2)
   //it is used only at NLL, at NNLL instead aexp and aexpb are used (aexp is the same as alphasl, but with a different blim)
   complex <double> alpq;
@@ -186,12 +199,12 @@ complex <double> besselint::bint(complex <double> b)
 
       //alpq = LHAPDF::alphasPDF(sqrt(M2)) / (4.* M_PI);
 
-      /*
-      //tweak this to look as in dyres, where alphas(muren) is used:
-      double R20 = resint::_m;
-      alpq = as_(M2, R20, resint::alpqren, NF);
-      alpq = alpq/resint::alpqren*resint::alpqres;
-      */
+
+//      //tweak this to look as in dyres, where alphas(muren) is used:
+//      double R20 = resint::_m;
+//      alpq = as_(M2, R20, resint::alpqren, NF);
+//      alpq = alpq/resint::alpqren*resint::alpqres;
+
       
       //Based on the definition of aexp, may be need to rescale alpq for as(qres)/as(muren)?
       //alpq = alpq/resint::alpqren*resint::alpqres;
@@ -200,9 +213,15 @@ complex <double> besselint::bint(complex <double> b)
 
   //  complex <double> alpq = LHAPDF::alphasPDF(fabs(pdfevol::bstartilde))/4./M_PI;        //alpq = alphas(b0^2/b^2)
   //  cout << pdfevol::bstarscale << "  " << resint::alpqres * cx(alphasl_(fscale2)) << "  " <<  LHAPDF::alphasPDF(fabs(pdfevol::bstartilde))/4./M_PI << endl;
-  /********************************************/
+
+  ********************************************
 
   //pdfevol::XL = pdfevol::alpqf / alpq; // = 1./cx(alphasl_(fscale2));
+
+  double alpqf = resint::alpqres;              //alphas at resummation scale   (as in dyres)
+  fcomplex fscale2_mufb = fcx(pow(resint::a * resconst::b0/b,2));
+
+
   pdfevol::XL = 1./cx(alphasl_(fscale2_mufb)); //XL = alphas(mures2)/alphas(b0^2/b^2)
   pdfevol::XL1 = 1.- pdfevol::XL;
   pdfevol::SALP = log(pdfevol::XL);
@@ -211,12 +230,14 @@ complex <double> besselint::bint(complex <double> b)
   pdfevol::alpr = alpqf * cx(alphasl_(fscale2_mufb))*(double)(opts.order-1);
   //force LO evolution
   //pdfevol::alpr = alpqf * cx(alphasl_(fscale2_mufb))*(double)(0);
-  //cout << b << "  " << scale2 << "  " << pdfevol::SALP << "  " << log(1./cx(alphasl_(fscale2))) << "  " << pdfevol::alpr << "  " << alpq <<  endl;
-  //**************************************
+  //  cout << "old " << b << "  " << pdfevol::SALP << "  " << log(1./cx(alphasl_(fscale2_mufb))) << "  " << pdfevol::alpr << "  " << pdfevol::alpq <<  endl;
 
-  //**************************************
+  **************************************/
   //Perform PDF evolution
-  
+  pdfevol::evolution();
+
+
+  /*
   //original dyres evolution: Perform PDF evolution from muf to the scale b0/b ~ pt
   //the scales used in the evolution correspond to SALP and alpr
   if (opts.evolmode == 0)
@@ -227,10 +248,6 @@ complex <double> besselint::bint(complex <double> b)
     pegasus::evolve();
 
   //Calculate PDF moments by direct Mellin transformation at each value of bstarscale = b0p/bstar
-  //else if (opts.evolmode == 2)
-  //for (int i = 0; i < mellinint::mdim; i++)
-  //pdfevol::calculate(i);
-
   else if (opts.evolmode == 2)
     pdfevol::calculate();
   
@@ -241,16 +258,21 @@ complex <double> besselint::bint(complex <double> b)
   //PDF evolution with Pegasus QCD from the starting scale Q20, in VFN, and using alphasl(nq2) to evaluate ASF at the final scale
   else if (opts.evolmode == 4)
     pegasus::evolve();
+  */
 
   //Truncate moments from xmin to 1, with xmin = m/sqrt(s) e^-y0 (currently works only at LL where the HN coefficient is 1)
   //if (opts.mellin1d)
-    //  pdfevol::truncate();
+  //{
+      //  pdfevol::truncate();
+      //  ccoeff::truncate();
+  //}
   //pdfevol::uppertruncate();
   
   //  for (int i = 0; i < mellinint::mdim; i++)
   //    cout << "C++ " << b << "  " << i << "  " << cx(creno_.cfx1_[i][5]) << endl;
   //**************************************
 
+  /*  
   //aexp and aexpb are calculated in alphasl, they are used in hcoefficients::calcb only for the NNLL cross section
   alphasl_(fscale2_mub);
   complex <double> aexp = cx(exponent_.aexp_); //aexp is actually the ratio alphas(a*b0/b)/alphas(muren)
@@ -268,17 +290,37 @@ complex <double> besselint::bint(complex <double> b)
   
   //cout << pdfevol::bstartilde << "  " << cx(exponent_.aexp_) << "  " << alpq / resint::alpqres << "  " << alpq / resint::alpqren << endl;
   complex <double> aexpb = cx(exponent_.aexpb_);
+  */
 
   //In case of truncation of hcoeff, need to recalculate the original coefficients before truncation
   //if (opts.mellin1d)
   //hcoeff::calc(resint::aass,resint::logmuf2q2,resint::logq2muf2,resint::logq2mur2,resint::loga);
   
   // Cache the positive and negative branch of coefficients which depend only on one I index
+  cexp::reset();
   if (opts.mellin1d)
-    hcoeff::calcb(resint::aass,resint::logmuf2q2,resint::loga,alpq,aexp,aexpb); // --> Need to access aass,logmuf2q2,loga,alpq,aexp,aexpb
+    {
+      cexp::calc(b);
+      if (opts.mufevol)
+	{
+	  muf::reset();
+	  muf::calc(b);
+	}
+      //cexp::reset();
+      //hcoeff::calcb(resint::aass,resint::logmuf2q2,resint::loga,pdfevol::alpq,cexp::aexp,cexp::aexpB); // --> Need to access aass,logmuf2q2,loga,alpq,aexp,aexpb
+    }
   else
-    hcoefficients::calcb(resint::aass,resint::logmuf2q2,resint::loga,alpq,aexp,aexpb); // --> Need to access aass,logmuf2q2,loga,alpq,aexp,aexpb
+    //--> Implement 2D cexp here 
+    {
+      //complex <double> aexpb = cx(exponent_.aexpb_);
+      //complex <double> aexp = cx(exponent_.aexp_); //aexp is actually the ratio alphas(a*b0/b)/alphas(muren)
+      //hcoefficients::calcb(resint::aass,resint::logmuf2q2,resint::loga,pdfevol::alpq,cexp::aexp,cexp::aexpB); // --> Need to access aass,logmuf2q2,loga,alpq,aexp,aexpb
 
+      cexp::calc(b);
+      //cexp::reset();
+      //hcoefficients::calcb(resint::aass,resint::logmuf2q2,resint::loga,pdfevol::alpq,cexp::aexp,cexp::aexpB); // --> Need to access aass,logmuf2q2,loga,alpq,aexp,aexpb
+    }      
+    
   //Inverting the HN coefficients from N to z space does not work, because it would miss the convolution with PDFs
   //double q2 = pow(phasespace::m,2);
   //if (opts.mellin1d)
@@ -293,7 +335,7 @@ complex <double> besselint::bint(complex <double> b)
     pdfevol::flavour_kt();
 
       
-  double fun = 0.;
+  complex <double> fun = 0.;
 
   mellinint::reset();
     
@@ -313,10 +355,10 @@ complex <double> besselint::bint(complex <double> b)
       if (opts.evolmode == 0 || opts.evolmode == 1)
 	muf = resint::mufac;
       else
-	muf = fabs(pdfevol::bstartilde);
+	muf = real(pdfevol::bstartilde);
 
 
-      if (resint::_mode < 2) //rapidity differential
+      if (resint::_mode < 2 || resint::_mode == 4) //rapidity differential
 	fun = mesq::loxs(resint::x1, resint::x2, muf);
       else                   //rapidity integrated
 	fun = mesq::loxs(resint::tau, muf);      
@@ -356,43 +398,44 @@ complex <double> besselint::bint(complex <double> b)
 //	  //cout << "besselint 1d inversion " << fun << endl;
 //          }
       else
-	{
-#pragma omp parallel for reduction(+:fun) num_threads(opts.mellincores) copyin(creno_,mesq::mesqij_expy,hcoefficients::Hqqb,hcoefficients::Hqg_1,hcoefficients::Hqg_2,hcoefficients::Hgg,hcoefficients::Hqq,hcoefficients::Hqq_1,hcoefficients::Hqq_2,hcoefficients::Hqqp_1,hcoefficients::Hqqp_2)
-	  for (int i1 = 0; i1 < mellinint::mdim; i1++)
-	    {
-	      pdfevol::retrieve_beam1(i1);
-	      for (int i2 = 0; i2 < mellinint::mdim; i2++)
-		{
-		  // here scale2 is fixed (b-dependent), and the function is called many times at I1 I2 points       
-		  // part of the coefficients calculation is hoisted in the previous i loop
-	      
-		  //  -->   merge positive and negative branch?
-	      
-		  //     In Rapidity integrated mode:
-		  //     sigmaij are fatorised from HCRN and numerical integration in y is performed in rapintegrals
-		  //     the full expression is HCRN(I1,I2)_ij * ccex(I1,I2) * sigma_ij
-		  //     HCRN(I1,I2)_ij is only b dependent
-		  //     ccex(I1,I2) is rapidity and mass dependent
-		  //     sigma_ij is costh and mass dependent, but becomes rapidity dependent after integration of the costh moments
-		  //     The integrals are solved analitically when no cuts on the leptons are applied
-	      
-		  //pdfevol::retrieve(i1,i2,mesq::positive);
-		  pdfevol::retrieve_beam2_pos(i2);
-		  mellinint::pdf_mesq_expy(i1,i2,mesq::positive);
-		  double int1 = real(mellinint::integrand2d(i1,i2,mesq::positive));
-	      
-		  //pdfevol::retrieve(i1,i2,mesq::negative);
-		  pdfevol::retrieve_beam2_neg();
-		  mellinint::pdf_mesq_expy(i1,i2,mesq::negative);
-		  double int2 = real(mellinint::integrand2d(i1,i2,mesq::negative));
-
-		  //fun += -real(0.5*(int1-int2));
-		  fun += -0.5*(int1-int2);
-		  //cout << "C++ " << setprecision(16) << i1 << "  " << i2 << "  " << int1 << "  " << int2 << endl;
-		}
-	    }
-	  //invres = fun*factorfin;
-	}
+	fun = mellinint::calc2d();
+//	{
+//	  //#pragma omp parallel for reduction(+:fun) num_threads(opts.mellincores) copyin(creno_,mesq::mesqij_expy,hcoefficients::Hqqb,hcoefficients::Hqg_1,hcoefficients::Hqg_2,hcoefficients::Hgg,hcoefficients::Hqq,hcoefficients::Hqq_1,hcoefficients::Hqq_2,hcoefficients::Hqqp_1,hcoefficients::Hqqp_2)
+//	  for (int i1 = 0; i1 < mellinint::mdim; i1++)
+//	    {
+//	      pdfevol::retrieve_beam1(i1);
+//	      for (int i2 = 0; i2 < mellinint::mdim; i2++)
+//		{
+//		  // here scale2 is fixed (b-dependent), and the function is called many times at I1 I2 points       
+//		  // part of the coefficients calculation is hoisted in the previous i loop
+//	      
+//		  //  -->   merge positive and negative branch?
+//	      
+//		  //     In Rapidity integrated mode:
+//		  //     sigmaij are fatorised from HCRN and numerical integration in y is performed in rapintegrals
+//		  //     the full expression is HCRN(I1,I2)_ij * ccex(I1,I2) * sigma_ij
+//		  //     HCRN(I1,I2)_ij is only b dependent
+//		  //     ccex(I1,I2) is rapidity and mass dependent
+//		  //     sigma_ij is costh and mass dependent, but becomes rapidity dependent after integration of the costh moments
+//		  //     The integrals are solved analitically when no cuts on the leptons are applied
+//	      
+//		  //pdfevol::retrieve(i1,i2,mesq::positive);
+//		  pdfevol::retrieve_beam2_pos(i2);
+//		  mellinint::pdf_mesq_expy(i1,i2,mesq::positive);
+//		  double int1 = real(mellinint::integrand2d(i1,i2,mesq::positive));
+//	      
+//		  //pdfevol::retrieve(i1,i2,mesq::negative);
+//		  pdfevol::retrieve_beam2_neg();
+//		  mellinint::pdf_mesq_expy(i1,i2,mesq::negative);
+//		  double int2 = real(mellinint::integrand2d(i1,i2,mesq::negative));
+//
+//		  //fun += -real(0.5*(int1-int2));
+//		  fun += -0.5*(int1-int2);
+//		  //cout << "C++ " << setprecision(16) << i1 << "  " << i2 << "  " << int1 << "  " << int2 << endl;
+//		}
+//	    }
+//	  //invres = fun*factorfin;
+//	}
     }
 
   complex <double> invres = fun*factorfin;
@@ -406,8 +449,11 @@ complex <double> besselint::bint(complex <double> b)
   if (isnan_ofast(real(invres)) || isnan_ofast(imag(invres)))
     {
       cout << "Warning, invres = " << invres << ", qt = " << qt << ", b = "  << b << ", pdf*mesq = " << fun << ", S*bj0 = " << factorfin << endl;
+      cout << "Warning, invres = " << invres << ", qt = " << qt << ", b = "  << b << ", pdf = " << pdfevol::fx1[6] << ", mesq = " << mesq::mesqij_expy[mesq::index(0,0,0,mesq::positive)] << endl;
       invres = 0;
     }
+  //cout << "invres = " << invres << ", qt = " << qt << ", b = "  << b << ", pdf*mesq = " << fun << ", S " << sudakov::S << " bj0 = " << b*xj0 << endl;
+  //cout << "invres = " << invres << ", qt = " << qt << ", b = "  << b << ", pdf = " << pdfevol::fx1[6] << ", mesq = " << mesq::mesqij_expy[mesq::index(0,0,0,mesq::positive)] << endl;
   //cout << setprecision(16) << "C++ " << b << "  " << invres << "  " << fun << "  " << factorfin << endl;
   //cout << setprecision(16) << " b " << b << " bstar " << bstar << " besselint " << invres << " J0 " << fort_besj0_(qtb) << " sud " << sudak << " fun " << fun << endl;
   return invres;
