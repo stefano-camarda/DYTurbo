@@ -135,31 +135,36 @@ AC_SEARCH_LIBS([vegas],[cuba],[
 AC_SUBST(CUBA_CPPFLAGS)
 AC_SUBST(CUBA_LDFLAGS)
 
-## check for Chaplin installation, and install it if missing
-#AC_MSG_CHECKING([for chaplin library installation])
-#AC_SEARCH_LIBS([hpl2],[hpl3],[
-#	AC_MSG_RESULT([Using -lchaplin from system installation])
-#        CHAPLIN_LDFLAGS=-lchaplin],
-#        [
-#	CHAPLIN_VERSION=1.2
-#	AC_SUBST(CHAPLIN_VERSION)
-#	# search for local istallation of chaplin-1.2
-#	chaplinlib=`ls ${PWD}/chaplin-${CHAPLIN_VERSION}/lib/libchaplin.a`
-#	if test x$chaplinlib == x; then
-#          # if not found, install it
-#  	   AC_MSG_RESULT([Install chaplin ${CHAPLIN_VERSION}])
-#	   ${srcdir}/install-chaplin
-#	fi
-#	chaplinlib=`ls ${PWD}/chaplin-${CHAPLIN_VERSION}/lib/libchaplin.a`
-#	if test x$chaplinlib == x; then
-#  	   AC_MSG_ERROR([Failed to install chaplin ${CHAPLIN_VERSION}.])
-#	fi
-#	
-#        CHAPLIN_LDFLAGS="-L${PWD}/chaplin-${CHAPLIN_VERSION}/lib -lchaplin"
-#	AC_MSG_RESULT([Using -lchaplin from local installation ${PWD}/chaplin-${CHAPLIN_VERSION}])
-#        ])
-#
-#AC_SUBST(CHAPLIN_LDFLAGS)
+AC_ARG_ENABLE([hpl], AC_HELP_STRING(--enable-hpl, [Install and link Chaplin, link Ginac for HPLs (default=no)]))
+AS_IF([test "x$enable_hpl" = "xyes"], [
+   # check for Chaplin installation, and install it if missing
+   AC_MSG_CHECKING([for chaplin library installation])
+   AC_SEARCH_LIBS([hpl2],[hpl3],[
+	AC_MSG_RESULT([Using -lchaplin from system installation])
+        CHAPLIN_LDFLAGS=-lchaplin],
+        [
+	CHAPLIN_VERSION=1.2
+	AC_SUBST(CHAPLIN_VERSION)
+	# search for local istallation of chaplin-1.2
+	chaplinlib=`ls ${PWD}/chaplin-${CHAPLIN_VERSION}/lib/libchaplin.a`
+	if test x$chaplinlib == x; then
+          # if not found, install it
+  	   AC_MSG_RESULT([Install chaplin ${CHAPLIN_VERSION}])
+	   ${srcdir}/install-chaplin
+	fi
+	chaplinlib=`ls ${PWD}/chaplin-${CHAPLIN_VERSION}/lib/libchaplin.a`
+	if test x$chaplinlib == x; then
+  	   AC_MSG_ERROR([Failed to install chaplin ${CHAPLIN_VERSION}.])
+	fi
+	
+        CHAPLIN_LDFLAGS="-L${PWD}/chaplin-${CHAPLIN_VERSION}/lib -lchaplin"
+	AC_MSG_RESULT([Using -lchaplin from local installation ${PWD}/chaplin-${CHAPLIN_VERSION}])
+        ])
+
+   AC_SUBST(CHAPLIN_LDFLAGS)
+   AC_DEFINE(USEHPL, "1",[ Link Chaplin and Ginac.] )
+])
+AM_CONDITIONAL([HAVE_HPL],test "x$enable_hpl" = "xyes")
 
 # check for cubature installation, and install it if missing
 AC_MSG_CHECKING([for cubature source code])
@@ -169,6 +174,42 @@ cubasrc=`ls ${PWD}/cubature/pcubature.c`
 if test x$cubasrc == x; then
    AC_MSG_ERROR([Failed to install cubature.])
 fi
+
+AC_ARG_ENABLE([ceres], AC_HELP_STRING(--enable-ceres, [Install and link google ceres (default=no)]))
+AS_IF([test "x$enable_ceres" = "xyes"], [
+#check for google ceres installation, and install it if missing
+   AC_MSG_CHECKING([for google ceres])
+   AC_SEARCH_LIBS([ceres],[ceres],[
+   AC_MSG_RESULT([Using -lceres from system installation])
+      CERES_LDFLAGS=-lceres],
+      [
+      CERES_VERSION=1.14.0
+      AC_SUBST(CERES_VERSION)
+      # search for local istallation of ceres-solver-1.14
+      cereslib=`ls ${PWD}/ceres-solver-${CERES_VERSION}/build/lib/libceres.a`
+      if test x$cereslib == x; then
+         # if not found, install it
+  	 AC_MSG_RESULT([Install ceres-solver ${CERES_VERSION}])
+	 ${srcdir}/install-ceres
+      fi
+      cereslib=`ls ${PWD}/ceres-solver-${CERES_VERSION}/build/lib/libceres.a`
+      if test x$cereslib == x; then
+         AC_MSG_ERROR([Failed to install ceres-solver ${CERES_VERSION}.])
+      fi
+
+      CERES_LDFLAGS="-L${PWD}/ceres-solver-${CERES_VERSION}/build/lib -lceres"
+      CERES_CPPFLAGS="-I${PWD}/ceres-solver-${CERES_VERSION}/include -I${PWD}/ceres-solver-${CERES_VERSION}/build/config -I${PWD}/ceres-solver-${CERES_VERSION}/internal/ceres/miniglog/"
+      AC_MSG_RESULT([Using -lceres from local installation ${PWD}/ceres-solver-${CHAPLIN_VERSION}])
+      ])
+   AC_SUBST(CERES_CPPFLAGS)
+   AC_SUBST(CERES_LDFLAGS)
+   AC_DEFINE(USECERES, "1",[ Link google ceres.] )
+
+   #check for eigen installation
+   EIGEN_CPPFLAGS="-I /usr/include/eigen3"
+   AC_SUBST(EIGEN_CPPFLAGS)
+])
+AM_CONDITIONAL([HAVE_CERES],test "x$enable_ceres" = "xyes")
 
 # check for DYRES installation
 AC_ARG_ENABLE([dyres], AC_HELP_STRING(--enable-dyres, [Install and link original DYRes code, Available only in git (default=no)]))
@@ -266,6 +307,8 @@ AC_CONFIG_FILES([Makefile
 		 cernlib/Makefile
 		 dequad/Makefile
 		 bequad/Makefile
+	 	 zeta/Makefile
+	 	 harmonicsums/Makefile
 		 sandia/Makefile
 		 smolpack/Makefile
 		 besche/Makefile
