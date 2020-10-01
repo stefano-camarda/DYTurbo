@@ -334,8 +334,9 @@ void gr::init()
     }
   */
 
-  fstream iff;
-  iff = fstream(string(SHAREDIR)+"/gr.bin", ios::in | ios::binary);
+  //fstream iff;
+  //iff = fstream(string(SHAREDIR)+"/gr.bin", ios::in | ios::binary);
+  fstream iff(string(SHAREDIR)+"/gr.bin", ios::in | ios::binary);
   if (iff)
     {
       iff.read((char*)&xxx,GRNMAX*GRNMAX*sizeof(double));
@@ -370,8 +371,9 @@ void gr::init()
   ofile.close();
   */
 
-  fstream off;
-  off = fstream(string(SHAREDIR)+"/gr.bin", ios::out | ios::binary);
+  //fstream off;
+  //off = fstream(string(SHAREDIR)+"/gr.bin", ios::out | ios::binary);
+  fstream off(string(SHAREDIR)+"/gr.bin", ios::out | ios::binary);
   off.write((char*)&xxx,GRNMAX*GRNMAX*sizeof(double));
   off.write((char*)&www,GRNMAX*GRNMAX*sizeof(double));
   off.close();

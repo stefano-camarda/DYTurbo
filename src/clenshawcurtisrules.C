@@ -252,8 +252,9 @@ void cc::init()
     }
   */
 
-  fstream iff;
-  iff = fstream(string(SHAREDIR)+"/ccr.bin", ios::in | ios::binary);
+  //fstream iff;
+  //iff = fstream(string(SHAREDIR)+"/ccr.bin", ios::in | ios::binary);
+  fstream iff(string(SHAREDIR)+"/ccr.bin", ios::in | ios::binary);
   if (iff)
     {
       iff.read((char*)&xxx,CCNMAX*CCNMAX*sizeof(double));
@@ -279,8 +280,9 @@ void cc::init()
       delete[] x;      
     }
 
-  fstream off;
-  off = fstream(string(SHAREDIR)+"/ccr.bin", ios::out | ios::binary);
+  //fstream off;
+  //off = fstream(string(SHAREDIR)+"/ccr.bin", ios::out | ios::binary);
+  fstream off(string(SHAREDIR)+"/ccr.bin", ios::out | ios::binary);
   off.write((char*)&xxx,CCNMAX*CCNMAX*sizeof(double));
   off.write((char*)&www,CCNMAX*CCNMAX*sizeof(double));
   off.close();
