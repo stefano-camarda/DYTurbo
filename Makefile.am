@@ -44,5 +44,5 @@ distclean-local:
 	rm -rf lhapdf6
 	rm -rf chaplin-$(CHAPLIN_VERSION)
 	rm -rf ceres-solver-$(CERES_VERSION)
-	rm -rf cubature/*.c cubature/*.h cubature/NEWS cubature/COPYING cubature/README cubature/ChangeLog
+	rm -rf cubature/*.c cubature/*.h cubature/NEWS.md cubature/COPYING cubature/README.md cubature/ChangeLog cubature/doc
 	rm -rf origdyres/*.f origdyres/*.h origdyres/DYRes-v1.0
