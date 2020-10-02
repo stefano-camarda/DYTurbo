@@ -30,7 +30,7 @@
        PARAMETER (NDIM = 512, NFMIN = 3, NFMAX = 6, NUMAX = 20)
        DOUBLE PRECISION PGBETA0 (NFMIN:NFMAX), PGBETA1 (NFMIN:NFMAX),
      1                  PGBETA2 (NFMIN:NFMAX), PGBETA3 (NFMIN:NFMAX)
-       DOUBLE PRECISION ASI, ASF, S, LOGFR, AFI1, AFI2, ASIO, ASFO
+       DOUBLE PRECISION ASI, ASF, S, LOGFR, AFI2, ASIO, ASFO
        DIMENSION ENS(3), UNSF(NUMAX), UNSI(NUMAX)
        PARAMETER ( ONE = (1.D0, 0.D0) )
 *
@@ -92,10 +92,10 @@
 *
 * ..4) the fully truncated solution -- default
 *
-       AFI1 = (ASF - ASI) * (1.- ASI)
        AFI2 = ASF*ASF - ASI*ASI
 *
        DO 13 K1 = NSMIN, NSMAX
+       AFI1 = (ASF - ASI) * (1.- UNS2(1,KN,NF,K1) * ASI)
          ENS(K1) = LNS * ( ONE + AFI1 * UNS2(1,KN,NF,K1) 
      1                         + AFI2 * UNS2(2,KN,NF,K1) )
   13   CONTINUE
