@@ -1,5 +1,5 @@
 # Process settings
-sroot        = 7e3  # Center-of-mass energy
+sroot        = 13e3  # Center-of-mass energy
 ih1          = 1    # Hadron 1: 1 for proton, -1 for antiproton
 ih2          = 1    # Hadron 2: 1 for proton, -1 for antiproton
 nproc        = 3    # Process: 1) W+; 2) W-; 3) Z/gamma*
@@ -40,7 +40,7 @@ g1_bo = 0.5  # bottom
 g1_gl = 0.5  # gluon
 
 # PDF settings
-LHAPDFset    = CT10nnlo       # PDF set from LHAPDF
+LHAPDFset    = CT18nnlo       # PDF set from LHAPDF
 LHAPDFmember = 0              # PDF member
 PDFerrors    = false	      # Calculate PDF errors
 
@@ -113,7 +113,7 @@ modlog = true
 #1: Keep only delta terms of Cnqq coefficients in the exponentiation
 #2: Taylor expansion of the N-dependent coefficients up to order ntaylor
 #3: Full exponentiation 
-cexp = 2
+expc = 3
 ntaylor = 5
 
 # Sum all logs before exponentiation (helpful with bprescription = 0, but create issues with bprescription = 2)
@@ -130,14 +130,14 @@ numsud = false
 # 4: Local bstar prescription (can be used only with numsud = true)
 bprescription = 0
 
-blim = -1         #blim for the bstar prescription, applies to bprescription = 0. A positive value set a fixed bmax=blim, a negative values sets bmax=b_L/(-blim), where b_L is the Landau singularity.
-blim_pdf = 0      #if not zero, set a different blim for the PDF evolution
-blim_sudakov = 0  #if not zero, set a different blim for the Sudakov form factor
-blim_cexp = 0.5   #if not zero, set a different blim for the C exponentiation
+blim = 3                #blim for the bstar prescription, applies to bprescription = 0. A positive value set a fixed bmax=blim, a negative values sets bmax=b_L/(-blim), where b_L is the Landau singularity.
+blim_pdf = 1.1229190    #if not zero, set a different blim for the PDF evolution
+blim_sudakov = 0        #if not zero, set a different blim for the Sudakov form factor
+blim_expc = 0           #if not zero, set a different blim for the exponentiation of the C coefficients
 
 bstar_pdf     = false  #force bstar prescription for the PDF evolution
 bstar_sudakov = false  #force bstar prescription for the Sudakov form factor
-bstar_cexp    = false  #force bstar prescription for the C exponentiation
+bstar_expc    = false  #force bstar prescription for the exponentiation of the C coefficients
 
 phibr = 4.        #set arg(z) as phib = pi/phibr  for the integration contour in the complex plane for bprescription = 2 (should be set phibr > 4. )
 bcf = 0.5         #select the point bc = bcf * b_L, where the integration contour is bended in the complex plane, as a fraction of the Landau singularity b_L. Applies to bprescription = 2 or 3
@@ -162,7 +162,7 @@ pdfrule = 200             # Gaussian rule for the x-to-N Mellin transform
 #2: Mellin transform (forward evolution)
 #3: Pegasus VFN (forward evolution)
 #4: Pegasus VFN with alphas from DYRES (forward evolution)
-evolmode = 0
+evolmode = 1
 
 # Evolve PDFs from mufac (instead of mures) to b0/b
 mufevol = false
@@ -173,11 +173,11 @@ bintaccuracy = 1.0e-4  # Accuracy of the integration
 # Settings for the inverse Mellin integrations
 mellininv = 0       # Strategy for the Mellin inversion (0 Gauss-Legendre, 1 Talbot)
 mellinintervals = 1 # Number of intervals
-mellinrule = 64     # Number of nodes
+mellinrule = 30     # Number of nodes
 
 # Options for the Mellin inversion with Gauss-Legendre integration
-zmax = 27.   	    # Upper limit of the contour in the imaginary axis
-cpoint = 1.   	    # Point of intersection of the contour with the real axis
+zmax = 1.   	    # Upper limit of the contour in the imaginary axis
+cpoint = 2.   	    # Point of intersection of the contour with the real axis
 phi = 0.5           # Angle between the real axis and the linear contour in units of pi
 
 mellincores = 1     # Number of parallel threads for the Mellin integration
