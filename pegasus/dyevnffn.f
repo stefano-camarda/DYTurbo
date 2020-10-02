@@ -40,8 +40,10 @@
 * 
        COMMON / PAINP  / VAI (NDIM), M3I (NDIM), M8I(NDIM), 
      1                   SGI (NDIM), P3I (NDIM), P8I(NDIM), GLI (NDIM)
+!$OMP THREADPRIVATE(/PAINP/)
        COMMON / HFPAINP  /M15I (NDIM), M24I(NDIM), 
      1                   P15I (NDIM), P24I(NDIM)
+!$OMP THREADPRIVATE(/HFPAINP/)
        COMMON / ORDER  / NPORD
 *
 * ---------------------------------------------------------------------
