@@ -45,6 +45,10 @@
        COMMON / FRRAT  / LOGFR
        COMMON / PAINP  / VAI (NDIM), M3I (NDIM), M8I (NDIM), 
      1                   SGI (NDIM), P3I (NDIM), P8I (NDIM), GLI (NDIM)
+!$OMP THREADPRIVATE(/PAINP/)
+       COMMON / HFPAINP  /M15I (NDIM), M24I(NDIM), 
+     1                   P15I (NDIM), P24I(NDIM)
+!$OMP THREADPRIVATE(/HFPAINP/)
        COMMON / ANS2   / A2NS (NDIM)
        COMMON / ASG2   / A2SG (NDIM,2,2)
 *
@@ -121,7 +125,9 @@
          CALL ENS2N (ENS, AS0, ASC3, SC, KN, 3, 1, 3)
          CALL ESG2N (ESG, AS0, ASC3, SC, KN, 3)
        END IF
-*
+
+       IF (M2C > M20-1D-3) THEN
+*     
 * ..The N_f=3 parton distributions at the four-flavour threshold
 *
        M3C3 = ENS(2) * M3I(KN)
@@ -151,7 +157,39 @@
        SGC(KN)  = SGC3 * NSTHR + HQTHR 
        P15C(KN) = SGC(KN) - 4.* HQTHR
        GLC(KN) = GLC3 + ASC2* (A2SG(KN,2,1)* SGC3 + A2SG(KN,2,2)* GLC3)
-*    
+
+      ELSE !starting scale above mcharm
+*
+* ..The kernels for the evolution from AS0 to M2C
+*
+       SC   = LOG (AS0 / ASC)
+         
+       IF (NPORD .EQ. 0) THEN
+         CALL ENSG0N (ENS, ESG, AS0, ASC, SC, KN, 4)
+       ELSE IF (NPORD .EQ. 1) THEN
+         CALL ENS1N (ENS, AS0, ASC, SC, KN, 4)
+         CALL ESG1N (ESG, AS0, ASC, SC, KN, 4)
+       ELSE
+         CALL ENS2N (ENS, AS0, ASC, SC, KN, 4, 1, 3)
+         CALL ESG2N (ESG, AS0, ASC, SC, KN, 4)
+       END IF
+       
+* ..The N_f=4 parton distributions at the four-flavour threshold
+*
+
+       M3C(KN)  = ENS(2) * M3I(KN)
+       M8C(KN)  = ENS(2) * M8I(KN)
+       M15C(KN) = ENS(2) * M15I(KN)
+       VAC(KN)  = ENS(3) * VAI(KN)
+
+       P3C(KN)  = ENS(1) * P3I(KN)
+       P8C(KN)  = ENS(1) * P8I(KN)
+       P15C(KN) = ENS(1) * P15I(KN)
+       SGC(KN)  = ESG(1,1) * SGI(KN) + ESG(1,2) * GLI(KN) 
+       GLC(KN)  = ESG(2,1) * SGI(KN) + ESG(2,2) * GLI(KN)
+       
+      END IF
+*     
 * ---------------------------------------------------------------------
 *
 * ..The kernels for the evolution from M2C to M2B
