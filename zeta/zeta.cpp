@@ -10,7 +10,7 @@
 
 #include <zeta.h>
 #include <bernoulli.h>
-
+#ifdef USECERES
 #include <gsl/gsl_sf.h>
 #include <complex>
 #include <stdexcept>
@@ -123,3 +123,7 @@ cdouble polylog(double s, cdouble a, int N) {
                        hurwitz_zeta(1. - s, 1. - arg, N);
   return factor * zeta;
 }
+#else
+cdouble hurwitz_zeta(double s, cdouble a, int N) {return 0.;};
+cdouble polylog(double s, cdouble a, int N) {return 0.;};
+#endif
