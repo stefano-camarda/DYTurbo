@@ -41,6 +41,7 @@
        COMMON / ORDER  / NPORD
        COMMON / PAINP  / VAI (NDIM), M3I (NDIM), M8I(NDIM),
      1                   SGI (NDIM), P3I (NDIM), P8I(NDIM), GLI (NDIM)
+!$OMP THREADPRIVATE(/PAINP/)
        COMMON / PACTHR / VAC (NDIM), M3C (NDIM), M8C (NDIM), M15C(NDIM),
      1                   SGC (NDIM), P3C (NDIM), P8C (NDIM), P15C(NDIM),
      2                   GLC (NDIM)  
