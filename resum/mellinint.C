@@ -190,7 +190,8 @@ void mellinint::initgauss()
       sigma = opts.cpoint/opts.mellinrule;
       mu = 0.;
       alpha = 1.;
-      nu = opts.zmax/M_PI;
+      //nu = opts.zmax/M_PI; //-> nu should be a multiple of pi, to cancel oscillations
+      nu = opts.zmax/3.;
     }
       
   midpoint = true;
@@ -312,7 +313,7 @@ void mellinint::initgauss()
 
 	  if (opts.mellin1d)
 	    {
-	      Np[j] = s+1.;
+	      Np[j] = s+1.+opts.cshift;
 	      //cout << j << "  " << Np[j] << endl;
 	      if (midpoint)
 		wn[j] = jac/double(opts.mellinrule);                                //midpoint
@@ -333,7 +334,7 @@ void mellinint::initgauss()
 	    }
 	  else
 	    {
-	      Np_1[j] = Np_2[j] = s+1.;
+	      Np_1[j] = Np_2[j] = s+1.+opts.cshift;
 	      if (midpoint)
 		wn_1[j] = wn_2[j] = jac/double(opts.mellinrule);                                //midpoint
 	      else
@@ -493,7 +494,7 @@ void mellinint::update()
 		  jac = thmax * (theta==0? ii*lambda*nu : ii * lambda *( nu + ii * (theta + (theta /tan(theta) - 1.) / tan(theta))));
 		}
 
-	      Np[j] = s+1.;
+	      Np[j] = s+1.+opts.cshift;
 	      //cout << j << "  " << Np[j] << endl;
 	      if (midpoint)
 		wn[j] = jac/double(opts.mellinrule);                                //midpoint
@@ -711,8 +712,8 @@ void mellinint::update()
 		  jac_2 = thmax * (theta==0? ii*lambda*nu : ii * lambda *( nu + ii * (theta + (theta /tan(theta) - 1.) / tan(theta))));
 		}
 
-	      Np_1[j] = s_1+1.;
-	      Np_2[j] = s_2+1.;
+	      Np_1[j] = s_1+1.+opts.cshift;
+	      Np_2[j] = s_2+1.+opts.cshift;
 	      //cout << j << " Np_1 " << Np_1[j] << " Np_2 " << Np_2[j] << endl;
 	      if (midpoint)
 		{
