@@ -444,11 +444,17 @@ namespace DYTurbo {
                     cout << "   Computing NLO fixed order cross section" << endl;
                 else if (nnlo_.order_ == 2)
                     cout << "   Computing NNLO fixed order cross section" << endl;
+                else if (nnlo_.order_ == 2)
+                    cout << "   Computing NNNLO fixed order cross section" << endl;
             } else {
-                if (nnlo_.order_ == 1)
+                if (nnlo_.order_ == 0)
+                    cout << "   Computing LO+LL resummed cross section" << endl;
+                else if (nnlo_.order_ == 1)
                     cout << "   Computing NLO+NLL resummed cross section" << endl;
                 else if (nnlo_.order_ == 2)
                     cout << "   Computing NNLO+NNLL resummed cross section" << endl;
+                else if (nnlo_.order_ == 3)
+                    cout << "   Computing NNNLO+NNNLL resummed cross section" << endl;
             }
             // Process
             if (nproc_.nproc_ == 1)
@@ -543,6 +549,7 @@ namespace DYTurbo {
         void ResummationDamp(){
             if (!opts.fixedorder && ((opts.doBORN && !opts.fixedorder) || opts.doCT)) {
                 SettingsHeader("ResummationDamp");
+		cout << Col4( "" , "damping :"           , opts.damp                 , ""    );
                 cout << Col4( "" , "damping mode:"       , opts.dampmode             , ""    );
                 cout << Col4( "" , "damp above:"         , opts.dampk*opts.rmass     , "GeV" );
                 cout << Col4( "" , "damping width:"      , opts.dampdelta*opts.rmass , "GeV" );
