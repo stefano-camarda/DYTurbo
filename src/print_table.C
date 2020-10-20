@@ -549,11 +549,16 @@ namespace DYTurbo {
         void ResummationDamp(){
             if (!opts.fixedorder && ((opts.doBORN && !opts.fixedorder) || opts.doCT)) {
                 SettingsHeader("ResummationDamp");
-		cout << Col4( "" , "damping :"           , opts.damp                 , ""    );
-                cout << Col4( "" , "damping mode:"       , opts.dampmode             , ""    );
-                cout << Col4( "" , "damp above:"         , opts.dampk*opts.rmass     , "GeV" );
-                cout << Col4( "" , "damping width:"      , opts.dampdelta*opts.rmass , "GeV" );
-                cout << Col4( "" , "resummation cutoff:" , opts.qtcutoff*1000        , "MeV" );
+		if (!opts.damp)
+		  cout << Col4( "" , "damping :"           , "off"                 , ""    );
+		else
+		  {
+		    cout << Col4( "" , "damping :"           , "on"                 , ""    );
+		    cout << Col4( "" , "damping mode:"       , opts.dampmode             , ""    );
+		    cout << Col4( "" , "damp above:"         , opts.dampk*opts.rmass     , "GeV" );
+		    cout << Col4( "" , "damping width:"      , opts.dampdelta*opts.rmass , "GeV" );
+		    cout << Col4( "" , "resummation cutoff:" , opts.qtcutoff*1000        , "MeV" );
+		  }
             }
         }
 
