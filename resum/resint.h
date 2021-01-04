@@ -86,7 +86,7 @@ namespace resint
   extern double a;
 #pragma omp threadprivate(muren,mufac,mures,muren2,mufac2,mures2,a)
 
-  //log of scales
+  //log of scales --> In principle there is no need to declare these variables as complex
   extern complex <double> loga;
   extern double rloga;
   extern complex <double> logmuf2q2;
@@ -94,7 +94,11 @@ namespace resint
   extern complex <double> logq2mur2;
   extern double rlogq2mur2;
 #pragma omp threadprivate(loga,rloga,logmuf2q2,logq2muf2,logq2mur2,rlogq2mur2)
-    
+
+  //log of scales (cleaner version, should clean up all the above)
+  extern double LQ, LF, LR;
+#pragma omp threadprivate(LQ,LF,LR)
+  
   //alphas
   extern double alpqr;
   extern double alpqf;
@@ -110,7 +114,8 @@ namespace resint
 #pragma omp threadprivate(bc)
   
   extern void init();
-  extern double rint(double costh, double m, double qt, double y, int mode);
+  extern void rint(double costh, double m, double qt, double y, int mode, double f[2]);
+  extern double calc(int mode);
   extern double bintegral(double qt);
 }
 
