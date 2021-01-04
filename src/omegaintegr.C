@@ -360,7 +360,7 @@ void omegaintegr::costhbound(double phi_lep, vector<double> &min, vector<double>
   phasespace::genl4p_phirot();
   phasespace::genl4p_phifix();
 
-  //genl4p(c1, phi_lep);
+  //genl4p(c1, phi_lep); //<-- fully generate the lepton kinematics
 
   //determine initial status (Keep or Skip event)
   bool status;
@@ -386,7 +386,7 @@ void omegaintegr::costhbound(double phi_lep, vector<double> &min, vector<double>
 		  double costh = i*hc+c1;
 		  phasespace::set_cth(costh);
 		  phasespace::genl4p_phifix();
-		  //genl4p(costh, phi_lep);
+		  //genl4p(costh, phi_lep); //<-- fully generate the lepton kinematics
 		  if (!Kinematics::Cuts::KeepThisEvent(phasespace::p3, phasespace::p4))
 		    {
 		      tempmax = costh; //tempmax = costh_CS;
@@ -421,7 +421,7 @@ void omegaintegr::costhbound(double phi_lep, vector<double> &min, vector<double>
 		  double costh = i*hc+c1;
 		  phasespace::set_cth(costh);
 		  phasespace::genl4p_phifix();
-		  //genl4p(costh, phi_lep);
+		  //genl4p(costh, phi_lep); //<-- fully generate the lepton kinematics
 		  if (Kinematics::Cuts::KeepThisEvent(phasespace::p3, phasespace::p4))
 		    {
 		      tempmin = costh; //tempmin = costh_CS;
