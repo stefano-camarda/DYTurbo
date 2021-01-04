@@ -51,10 +51,16 @@ namespace evolnative
   
   extern void init();
   extern void allocate(); //allocate dynamic memory
+  extern void allocate_pdfs();
+  extern void allocate_engine();
   extern void update();
+  extern void update_pdfs();
+  extern void update_engine();
   extern void scales();
   extern void evolve();
   extern void free();     //free dynamic memory
+  extern void free_pdfs();
+  extern void free_engine();
   extern void release();
 
   //obsolete

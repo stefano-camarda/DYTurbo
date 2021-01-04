@@ -74,9 +74,10 @@ complex <double> *evolnative::rppqg;
 complex <double> *evolnative::rppgq;
 complex <double> *evolnative::rppgg;
 
+//separate allocation and update of PDF moments at the starting scale and evolution engine
 
 //allocate PDFs at the starting scale
-void evolnative::allocate()
+void evolnative::allocate_pdfs()
 {
   UVP = new complex <double>[ndim];
   DVP = new complex <double>[ndim];
@@ -96,7 +97,11 @@ void evolnative::allocate()
   NS15P = new complex <double>[ndim];
   NS24P = new complex <double>[ndim];
   NS35P = new complex <double>[ndim];
+}
 
+//allocate evolution engine
+void evolnative::allocate_engine()
+{
   ans = new complex <double>[ndim];
   am = new complex <double> [ndim];
   ap = new complex <double> [ndim];
@@ -127,9 +132,14 @@ void evolnative::allocate()
   rppgq = new complex <double> [ndim];
   rppgg = new complex <double> [ndim];
 }
-
-//free PDFs at the starting scale
-void evolnative::free()
+  
+void evolnative::allocate()
+{
+  allocate_pdfs();
+  if (opts.melup == 2)
+    allocate_engine();
+}
+void evolnative::free_pdfs()
 {
   delete[] UVP;
   delete[] DVP;
@@ -149,7 +159,9 @@ void evolnative::free()
   delete[] NS15P;
   delete[] NS24P;
   delete[] NS35P;
-
+}
+void evolnative::free_engine()
+{
   delete[] ans;
   delete[] am;
   delete[] ap;
@@ -181,53 +193,64 @@ void evolnative::free()
   delete[] rppgg;
 }
 
+//free PDFs at the starting scale
+void evolnative::free()
+{
+  free_pdfs();
+  if (opts.melup == 2)
+    free_engine();
+}
+
 void evolnative::init()
 {
-  if (opts.evolmode != 0)
-    return;
+  //if (opts.evolmode != 0) //--> Always init for ctmellin
+  //return;
 
   if (opts.mellin1d)
     ndim = mellinint::mdim;
   else
     ndim = 2*mellinint::mdim;
   
-  if (opts.fmufac != 0) //probably better to drop distinction between fixed and mll scale... ? It creates a lot of trouble, thread private needs copyin, etc...
-    return;
+  //  if (opts.fmufac != 0) //probably better to drop distinction between fixed and mll scale... ? It creates a lot of trouble, thread private needs copyin, etc...
+  //    return;
 
+  /*
   //calculate Mellin moments of PDFs
   if (!opts.silent) cout << "Initialise PDF moments with numerical integration... " << flush;
   clock_t begin_time, end_time;
   begin_time = clock();  
 
-  allocate();
+  allocate_pdfs();
   scales::set(opts.rmass);
-  update();
+  update_pdfs();
+  */
 
-  end_time = clock();  
-  if (!opts.silent) cout << "Done in "  << float(end_time - begin_time)/CLOCKS_PER_SEC*1000. << "ms" << endl;
+  if (opts.melup <= 1)
+    allocate_engine();
+  if (opts.melup == 0)
+    update_engine();
+    
+  //end_time = clock();  
+  //if (!opts.silent) cout << "Done in "  << float(end_time - begin_time)/CLOCKS_PER_SEC*1000. << "ms" << endl;
 }
 
 void evolnative::release()
 {
-  if (opts.evolmode != 0)
-    return;
+  //if (opts.evolmode != 0)  //--> should always free evolnative for the counterterm in Mellin space?
+  //return;
 
-  if (opts.fmufac != 0)
-    return;
+  //  if (opts.fmufac != 0)
+  //    return;
   
-  free();
+  //free(); //Do not free at the end of DYTurbo as all variables are local thread
+  if (opts.melup <= 1)
+    free_engine();
 }
 
 
 //Update the PDFs at the factorisation scale by performing the Mellin transform from x to N
-void evolnative::update()
+void evolnative::update_pdfs()
 {
-  if (opts.evolmode != 0)
-    return;
-
-  if (opts.fmufac == 0) //This will not work when the Mellin inversion points are updated
-    return;
-  
   clock_t begin_time, end_time;
 
   //Restrict the integration of moments to xmin = m/sqrt(s)*exp(-ymax) = (m/sqrt(s))^2
@@ -368,7 +391,13 @@ void evolnative::update()
 	}
       
     }
+}
+void evolnative::update_engine()
+{
+  if (opts.order == 0)
+    return;
 
+  int nf = resconst::NF;
   fcomplex QQI, QGF, GQI, GGI, GGF, NS1MI, NS1PI, NS1F, QQ1F, QG1F, GQ1I, GQ1F, GG1I, GG1F;
   fcomplex ANS, AM, AP, AL, BE, AB, RMIN, RPLUS, RQQ, RQG, RGQ, RGG, C2Q, C2G, CDYQ, CDYG; //output of anom
   fcomplex CDYQI;// = 0.; //unused dummy input
@@ -379,19 +408,16 @@ void evolnative::update()
   for (int i = 0; i < mellinint::mdim; i++)
     {
       fcomplex fxn; //input of ancalc
-      complex <double> cxn;
       
       if (opts.mellin1d)
 	{
 	  fxn.real = real(mellinint::Np[i]);
 	  fxn.imag = imag(mellinint::Np[i]);
-	  cxn = mellinint::Np[i];
 	}
       else
 	{
 	  fxn.real = real(mellinint::Np_1[i]);
 	  fxn.imag = imag(mellinint::Np_1[i]);
-	  cxn = mellinint::Np_1[i];
 	}
 	  
       //input: fxn
@@ -451,7 +477,6 @@ void evolnative::update()
 
       fxn.real = real(mellinint::Np_2[i]);
       fxn.imag = imag(mellinint::Np_2[i]);
-      cxn = mellinint::Np_2[i];
 
       ancalc_(QQI, QGF, GQI, GGI, GGF, NS1MI, NS1PI, NS1F, QQ1F, QG1F, GQ1I, GQ1F, GG1I, GG1F, fxn);
       anom_(ANS, AM, AP, AL, BE, AB, RMIN, RPLUS, RQQ, RQG,RGQ, RGG, C2Q, C2G, CDYQ, CDYG,
@@ -499,6 +524,16 @@ void evolnative::update()
       rppgq[i+mellinint::mdim]=    AC   * DPGQ-cx(AB)*DPGG;
       rppgg[i+mellinint::mdim]= -cx(BE) * DPGQ+cx(AL)*DPGG;
     } 
+}
+void evolnative::update()
+{
+  //  if (opts.evolmode != 0) //--> always update for the counterterm in Mellin space
+  //    return;
+  //  if (opts.fmufac == 0) //This will not work when the Mellin inversion points are updated
+  //    return;
+  
+  update_pdfs();
+  update_engine();
 }
 
 void evolnative::scales()
@@ -740,7 +775,7 @@ void evolnative::evolve()
   
       complex <double> S = SALP;
       //  cout << S << "  " << <<alpr <<  endl;
-  
+
       complex <double> ENS = exp(-ANS*S);
       complex <double> EM  = exp(-AM*S);
       complex <double> EP  = exp(-AP*S);
