@@ -21,8 +21,8 @@
 #include "phasespace.h"
 #include "rapint.h"
 #include "HistoHandler.h"
-//#include <iostream>
-//using namespace std;
+#include <iostream>
+using namespace std;
 using DYTurbo::PrintTable::Col3;
 using DYTurbo::PrintTable::Col4;
 
@@ -51,10 +51,15 @@ namespace DYTurbo
     double err;
     last_reset();
     /// @todo specialized (need to reincorporate)
+    //update mellin quadrature points
+    if (opts.melup == 1)
+      mellinint::update();
     if ( integrate == resintegr2d ){
-      if (opts.resumcpp) rapint::cache(phasespace::ymin, phasespace::ymax);
-      else cacheyrapint_(phasespace::ymin, phasespace::ymax);
+      if (opts.melup <= 1)
+	if (opts.resumcpp) rapint::cache(phasespace::ymin, phasespace::ymax);
+	else cacheyrapint_(phasespace::ymin, phasespace::ymax);
     }
+
     // run
     if (isDryRun) // this is for testing interface
       {
@@ -229,6 +234,7 @@ namespace DYTurbo
                                                                                     << Col4 ( "",""                 , "intervals =" , opts.yintervals      )
 										    << Col3 ( "","analytical (dpt)","" );
             AddTermIfActive ( opts.resint2d    , resintegr2d  , name , isNotVegas ) << Col3 ( "cuhre (dm, dpt)"     , "iter ="      , opts.niterBORN       )
+	      //AddTermIfActive ( opts.resint2d    , resintegr2d_my  , name , isNotVegas ) << Col3 ( "cuhre (dm, dpt)"     , "iter ="      , opts.niterBORN       )
                                                                                     << Col4 ( "","gauss (dy)"       , "nodes ="     , opts.yrule           )
                                                                                     << Col4 ( "",""                 , "intervals =" , opts.yintervals      );
             AddTermIfActive ( opts.resint3d    , resintegr3d  , name , isNotVegas ) << Col3 ( "cuhre (dm, dpt, dy)" , "iter ="      , opts.niterBORN       );
@@ -416,7 +422,6 @@ namespace DYTurbo
       {
         DYTurbo::SetBounds(bounds);
 
-	//Loop on active terms
         for (DYTurbo::TermIterator term; !term.IsEnd(); ++term)
 	  {
             (*term).RunIntegration();
