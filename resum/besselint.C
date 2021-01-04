@@ -6,7 +6,7 @@
 #include "mesq.h"
 #include "hcoefficients.h"
 #include "hcoeff.h"
-#include "cexp.h"
+#include "expc.h"
 #include "muf.h"
 #include "phasespace.h"
 #include "gaussrules.h"
@@ -33,6 +33,7 @@ void besselint_(double &b, double &qt, double &q2)
 complex <double> besselint::bint(complex <double> b)
 {
   if (b == 0.)
+    //if (opts.modlog && abs(b) < 1e-8)
     return 1.; //Should be correct, since J_0(0) = 1, and S(0) = 1 (Sudakov). May be different in the case that the L~ = L+1 matching is not used.
   
   double qt = resint::_qt; //better take this from phasespace::qt
@@ -138,7 +139,6 @@ complex <double> besselint::bint(complex <double> b)
 
   //C++
   complex <double> sudak=sudakov::sff(b);
-
   if (sudak == 0.)
     return 0.;
 
@@ -297,28 +297,28 @@ complex <double> besselint::bint(complex <double> b)
   //hcoeff::calc(resint::aass,resint::logmuf2q2,resint::logq2muf2,resint::logq2mur2,resint::loga);
   
   // Cache the positive and negative branch of coefficients which depend only on one I index
-  cexp::reset();
+  expc::reset();
   if (opts.mellin1d)
     {
-      cexp::calc(b);
+      expc::calc(b);
       if (opts.mufevol)
 	{
 	  muf::reset();
 	  muf::calc(b);
 	}
-      //cexp::reset();
-      //hcoeff::calcb(resint::aass,resint::logmuf2q2,resint::loga,pdfevol::alpq,cexp::aexp,cexp::aexpB); // --> Need to access aass,logmuf2q2,loga,alpq,aexp,aexpb
+      //expc::reset();
+      //hcoeff::calcb(resint::aass,resint::logmuf2q2,resint::loga,pdfevol::alpq,expc::aexp,expc::aexpB); // --> Need to access aass,logmuf2q2,loga,alpq,aexp,aexpb
     }
   else
-    //--> Implement 2D cexp here 
+    //--> Implement 2D expc here 
     {
       //complex <double> aexpb = cx(exponent_.aexpb_);
       //complex <double> aexp = cx(exponent_.aexp_); //aexp is actually the ratio alphas(a*b0/b)/alphas(muren)
-      //hcoefficients::calcb(resint::aass,resint::logmuf2q2,resint::loga,pdfevol::alpq,cexp::aexp,cexp::aexpB); // --> Need to access aass,logmuf2q2,loga,alpq,aexp,aexpb
+      //hcoefficients::calcb(resint::aass,resint::logmuf2q2,resint::loga,pdfevol::alpq,expc::aexp,expc::aexpB); // --> Need to access aass,logmuf2q2,loga,alpq,aexp,aexpb
 
-      cexp::calc(b);
-      //cexp::reset();
-      //hcoefficients::calcb(resint::aass,resint::logmuf2q2,resint::loga,pdfevol::alpq,cexp::aexp,cexp::aexpB); // --> Need to access aass,logmuf2q2,loga,alpq,aexp,aexpb
+      expc::calc(b);
+      //expc::reset();
+      //hcoefficients::calcb(resint::aass,resint::logmuf2q2,resint::loga,pdfevol::alpq,expc::aexp,expc::aexpB); // --> Need to access aass,logmuf2q2,loga,alpq,aexp,aexpb
     }      
     
   //Inverting the HN coefficients from N to z space does not work, because it would miss the convolution with PDFs
@@ -438,7 +438,11 @@ complex <double> besselint::bint(complex <double> b)
 //	}
     }
 
-  complex <double> invres = fun*factorfin;
+  complex <double> invres;
+  //if (fun == 0. || factorfin == 0.)
+  //  invres = 0;
+  //else
+  invres = fun*factorfin;
 
   //complex <double> invres = fun*real(factorfin); //with bstar prescription factorfin is real
   //complex <double> invres = factorfin/resint::_m*(8./3.)*pow(opts.sroot,2)/2.; // --> Check unitarity of Sudakov integral
