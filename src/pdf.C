@@ -3,12 +3,25 @@
 #include "interface.h"
 #include "scales.h"
 #include "settings.h"
+#include "coupling.h"
+#include "alphas.h"
+#include "isnan.h"
+#include "vjint.h"
+#include "mcfm_interface.h"
 
 #include <LHAPDF/LHAPDF.h>
 #include <LHAPDF/LHAGlue.h>
 #include <math.h>
 
 LHAPDF::PDF* pdf::lhapdf = 0;
+
+int pdf::order;
+double pdf::xmin;
+double pdf::qmin;
+double pdf::mc;
+double pdf::mb;
+double pdf::mt;
+double pdf::g;
 
 void (*pdf::xfxq)(const double &x, const double &Q, double *fPDF) = 0;
 double (*pdf::alphas)(const double &Q) = 0;
@@ -23,6 +36,24 @@ void pdf::lhaxfxq(const double &x, const double &Q, double *r)
 double pdf::lhaalphas(const double &Q)
 {
   return lhapdf->alphasQ(Q);
+}
+
+double pdf::rgktalphas(double q)
+{
+  //Interface to the Runge-Kutta alphas solution, with order matched to opts.order
+  double q0 = coupling::zmass;
+  double as0 = alphas(q0);
+  alphas::rgkt(q,q0,as0);
+  
+  switch (opts.order)
+    {
+    case 0: return real(alphas::asLO);     break;
+    case 1: return real(alphas::asNLO);    break;
+    case 2: return real(alphas::asNNLO);   break;
+    case 3: return real(alphas::asNNNLO);  break;
+    case 4: return real(alphas::asNNNNLO); break;
+    default: return 0.;
+    }
 }
 
 void pdf::init()
@@ -55,8 +86,10 @@ void pdf::init()
       lhapdf = LHAPDF::mkPDF(opts.LHAPDFset, opts.LHAPDFmember);
 
       xfxq = lhaxfxq;
+      //if (opts.lhaalphas)
       alphas = lhaalphas;
-  
+      //else
+      //alphas = rgktalphas
       if (opts.PDFerrors && LHAPDF::numberPDF() > 1)
 	{
 	  opts.totpdf = LHAPDF::numberPDF()+1;
@@ -69,6 +102,16 @@ void pdf::init()
 	  pdferropts_.pdferr_ = false;
 	  pdferropts_.totpdf_ = 1;
 	}
+
+      order = LHAPDF::getOrderPDF(); //order of evolution
+
+      LHAPDF::PDFInfo info(opts.LHAPDFset, opts.LHAPDFmember);
+      qmin = info.get_entry_as<double>("QMin", -1);
+      xmin = info.get_entry_as<double>("XMin", -1);
+
+      mc = LHAPDF::getThreshold(4);
+      mb = LHAPDF::getThreshold(5);
+      mt = LHAPDF::getThreshold(6);
     }
   else
     {
@@ -80,9 +123,9 @@ void pdf::init()
   // initialization of alphas
   setalphas();
 
-  // read g from the PDF
+  //read g from the PDF
   setg();
-
+  
   //take the cmass and b mass from the PDF
   //      cmass=dsqrt(mcsq)
   //      bmass=dsqrt(mbsq)
@@ -92,43 +135,58 @@ void pdf::init()
 void pdf::setalphas()
 {
   //Old LHAPDF interface
-  //couple_.amz_=LHAPDF::alphasPDF(dymasses_.zmass_);
+  //double asmz = LHAPDF::alphasPDF(coupling::zmass);
 
   //New LHAPDF interface
-  //couple_.amz_ = lhapdf->alphasQ(dymasses_.zmass_);
+  //double asmz = lhapdf->alphasQ(coupling::zmass);
 
   //Allows external alphas
-  couple_.amz_ = alphas(dymasses_.zmass_);
-
-  double scale = fabs(scale_.scale_);
-
+  //couple_.amz_ = alphas(dymasses_.zmass_);
+  double asmz = alphas(coupling::zmass);
+  
+  //run alphas
+  double as;
   if (opts_.approxpdf_ == 1)
     {
       int nloop = 3;
-      qcdcouple_.as_=dyalphas_mcfm_(scale,couple_.amz_,nloop);
+      as = dyalphas_mcfm_(scales::ren,couple_.amz_,nloop);
     }
   else
-    //qcdcouple_.as_=dyalphas_lhapdf_(scale);
-    //qcdcouple_.as_=LHAPDF::alphasPDF(scale); //Old LHAPDF interface
-    //qcdcouple_.as_=lhapdf->alphasQ(scale);   //New LHAPDF interface
-    qcdcouple_.as_=alphas(scale);              //Allows external alphas
-  
-  qcdcouple_.ason2pi_=qcdcouple_.as_/(2*M_PI);
-  qcdcouple_.ason4pi_=qcdcouple_.as_/(4*M_PI);
-  qcdcouple_.gsq_=4*M_PI*qcdcouple_.as_;
+    //as = dyalphas_lhapdf_(scales::ren);
+    //as = LHAPDF::alphasPDF(scales::ren); //Old LHAPDF interface
+    //as = lhapdf->alphasQ(scales::ren);   //New LHAPDF interface
+    if (opts.alphaslha)
+      as = alphas(scales::ren);		  //Allows external alphas
+    else
+      as = rgktalphas(scales::ren);
+
+  //Set alphas and strong coupling in the fortran common blocks
+
+  //MCFM
+  qcdcouple_.as_ = as;
+  qcdcouple_.ason2pi_ = as/(2*M_PI);
+  qcdcouple_.ason4pi_ = as/(4*M_PI);
+  qcdcouple_.gsq_= 4*M_PI*as;
+
+  //vjet analytical calculation
+  asnew_.as_ = as/M_PI;
+  asp_.asp_ = as;
 }
 
 //set the value of the g-parameter of the non perturbative form factor
 void pdf::setg()
 {
-  LHAPDF::PDFInfo info(opts.LHAPDFset, opts.LHAPDFmember);
-  double gformfactor = info.get_entry_as<double>("g", -1);
-  if (gformfactor >= 0)
+  if (!opts.externalpdf)
     {
-      cout << "g form factor: input from PDF member: " << gformfactor << endl;
-      opts.g1 = gformfactor;
-      g_param_.g_param_ = gformfactor;
-      np_.g_ = opts.g1;
+      LHAPDF::PDFInfo info(opts.LHAPDFset, opts.LHAPDFmember);
+      g = info.get_entry_as<double>("g", -1);
+    }
+  if (g >= 0)
+    {
+      cout << "g form factor: input from PDF member: " << g << endl;
+      opts.g1 = g;
+      g_param_.g_param_ = g;
+      np_.g_ = g;
     }
 }
 
@@ -166,8 +224,15 @@ void setmellinpdf_(int &member){
 
 void fdist_(int& ih, double& x, double& xmu, double fx[2*MAXNF+1])
 {
-
   //set to zero if x out of range
+  //check for nans
+  if (isnan_ofast(x))
+    {
+      cout << "Bjorken-x is nan in fdist_" << endl;
+      for (int i = -MAXNF; i <= MAXNF; i++)
+	fx[MAXNF+i]=0.;
+      return;
+    }
   if (x > 1. || x <= 0.)
     {
       for (int i = -MAXNF; i <= MAXNF; i++)
@@ -187,16 +252,15 @@ void fdist_(int& ih, double& x, double& xmu, double fx[2*MAXNF+1])
   double fPDF[13];
   pdf::xfxq(x,xmu,fPDF);
 
-  
+  //cout << "fdist " << setprecision(16) << fPDF[6] << endl;
   //vector<int> pids = pdf::lhapdf->flavors();
   //for (int i = 0; i < pids.size(); i++)
   //cout << pids[i] << endl;
 
-  //  cout << endl;
-  //  for (int i = -MAXNF; i <= MAXNF; i++)
-  //    cout << fPDF[6+i]/x << "  ";
-  //  cout << endl;
-
+  //cout << " fdist " << endl;
+  //for (int i = -MAXNF; i <= MAXNF; i++)
+  //cout << fPDF[6+i]/x << "  ";
+  //cout << endl;
   
   //xmu *= xmu;
   //fPDF[6-5] = pdf::lhapdf->xfxQ(-5,x,xmu);
@@ -270,4 +334,16 @@ void fdist_(int& ih, double& x, double& xmu, double fx[2*MAXNF+1])
     }
   */
 
+  //flat PDFs
+  //fx[MAXNF-5]=1.; //bbar
+  //fx[MAXNF-4]=1.; //cbar
+  //fx[MAXNF-3]=1.; //sbar
+  //fx[MAXNF-2]=1.;
+  //fx[MAXNF-1]=1.;
+  //fx[MAXNF+0]=1.; //gluon
+  //fx[MAXNF+1]=1.;
+  //fx[MAXNF+2]=1.;
+  //fx[MAXNF+3]=1.; //s
+  //fx[MAXNF+4]=1.; //c
+  //fx[MAXNF+5]=1.; //b
 }
