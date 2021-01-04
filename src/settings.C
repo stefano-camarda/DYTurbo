@@ -7,6 +7,7 @@
 #include "dyres_interface.h"
 #include "interface.h"
 #include "phasespace.h"
+//#include "pegasus.h"
 
 // CXX option parser: https://raw.githubusercontent.com/jarro2783/cxxopts/master/src/cxxopts.hpp
 #include "cxxopts.hpp"
@@ -45,10 +46,12 @@ void settings::parse_options(int argc, char* argv[]){
         ("R,kmuren"          , "Set relative renormalization scale"                 , po::value<double>() )
         ("F,kmufac"          , "Set relative factorization scale"                   , po::value<double>() )
         ("Q,kmures"          , "Set relative resummation scale"                     , po::value<double>() )
-        ("qtbins"            , "Set equdistan binning for mass [N,lo,hi]"            , po::value<string>() )
-        ("ybins"             , "Set equdistan binning for qt [N,lo,hi]"              , po::value<string>() )
-        ("mbins"             , "Set equdistan binning for y [N,lo,hi]"               , po::value<string>() )
+        ("cores"             , "Set number of multi-threading cores [integer]"      , po::value<int>()    )
+        ("qtbins"            , "Set equidistant binning for mass [N,lo,hi]"            , po::value<string>() )
+        ("ybins"             , "Set equidistant binning for qt [N,lo,hi]"              , po::value<string>() )
+        ("mbins"             , "Set equidistant binning for y [N,lo,hi]"               , po::value<string>() )
         ("grid"              , "Be verbose to avoid jobs being killed")
+        ("n,ofname"          , "Set output file name [filename]"                      , po::value<string>() )
 
 
     ;
@@ -64,7 +67,10 @@ void settings::parse_options(int argc, char* argv[]){
     }
     // Print help and die
     if (args.count("help")) {
-        throw QuitProgram(args.help().c_str());
+      //throw QuitProgram(args.help().c_str());
+      //Exit gently
+      cout << args.help() << endl;
+      exit (-1);
     }
 
     // load config file (or default settings)
@@ -75,6 +81,7 @@ void settings::parse_options(int argc, char* argv[]){
     
     // NOTE: Command line options are overiding the default and config file settings.
     // verbose
+    if (args.count("ofname")) output_filename=args["ofname"].as<string>();
     if (args.count("verbose"))
       {
         verbose=true;
@@ -192,6 +199,9 @@ void settings::parse_options(int argc, char* argv[]){
         }
     }
 
+    // cores
+    if (args.count("cores")) cubacores=args["cores"].as<int>();
+    
     //binning
     parse_binning("qtbins" , bins.qtbins ,args);
     parse_binning("ybins"  , bins.ybins  ,args);
@@ -275,6 +285,7 @@ void settings::readfromfile(const string fname){
     ih1            = in.GetNumber ( "ih1"        );
     ih2            = in.GetNumber ( "ih2"        );
     nproc          = in.GetNumber ( "nproc"      );
+    alphaslha      = in.GetBool   ( "alphaslha"  );
     kmuren         = in.GetNumber ( "kmuren"     );
     kmufac         = in.GetNumber ( "kmufac"     );
     kmures         = in.GetNumber ( "kmures"     );
@@ -291,6 +302,8 @@ void settings::readfromfile(const string fname){
     e              = in.GetNumber ( "e"          );
     g0             = in.GetNumber ( "g0"          );
     Q0             = in.GetNumber ( "Q0"          );
+    a2             = in.GetNumber ( "a2"          );
+    a2p            = in.GetNumber ( "a2p"         );
     flavour_kt     = in.GetBool   ( "flavour_kt"     );
     g1_uv          = in.GetNumber ( "g1_uv"          );
     g1_us          = in.GetNumber ( "g1_us"          );
@@ -306,10 +319,10 @@ void settings::readfromfile(const string fname){
     blim           = in.GetNumber ( "blim"           );
     blim_pdf       = in.GetNumber ( "blim_pdf"       );
     blim_sudakov   = in.GetNumber ( "blim_sudakov"   );
-    blim_cexp      = in.GetNumber ( "blim_cexp"      );
+    blim_expc      = in.GetNumber ( "blim_expc"      );
     bstar_pdf      = in.GetBool   ( "bstar_pdf"       );
     bstar_sudakov  = in.GetBool   ( "bstar_sudakov"   );
-    bstar_cexp     = in.GetBool   ( "bstar_cexp"      );
+    bstar_expc     = in.GetBool   ( "bstar_expc"      );
     LHAPDFset      = in.GetString ( "LHAPDFset"      );
     LHAPDFmember   = in.GetNumber ( "LHAPDFmember"   );
     ewscheme       = in.GetNumber ( "ewscheme"       );
@@ -412,20 +425,28 @@ void settings::readfromfile(const string fname){
     pdfrule            = in.GetNumber ( "pdfrule" );
     evolmode           = in.GetNumber  ("evolmode");
     mufevol            = in.GetBool  ("mufevol");
-    nocexp             = in.GetBool  ("nocexp");
+    expc               = in.GetNumber  ("expc");
+    ntaylor            = in.GetNumber  ("ntaylor");
     sumlogs            = in.GetBool  ("sumlogs");
+    numsud             = in.GetBool   ("numsud");
+    asrgkt             = in.GetBool   ("asrgkt");
+    numexpc            = in.GetBool   ("numexpc");
     bprescription      = in.GetNumber   ("bprescription");
     bintaccuracy       = in.GetNumber ( "bintaccuracy" );
     phibr              = in.GetNumber ( "phibr" );
     bcf                = in.GetNumber ( "bcf" );
+    mellintr           = in.GetNumber ( "mellintr" );
     mellininv          = in.GetNumber ( "mellininv" );
     mellinintervals    = in.GetNumber ( "mellinintervals" );
     mellinrule         = in.GetNumber ( "mellinrule" );
     zmax               = in.GetNumber ( "zmax" );
+    ncycle             = in.GetNumber ( "ncycle" );
     cpoint             = in.GetNumber ( "cpoint" );
+    cshift             = in.GetNumber ( "cshift" );
     phi                = in.GetNumber ( "phi" );
     mellincores        = in.GetNumber ( "mellincores" );
     mellin1d           = in.GetBool   ( "mellin1d" );
+    melup              = in.GetNumber ( "melup" );
     xspace             = in.GetBool   ( "xspace" );
     yintervals         = in.GetNumber ( "yintervals" );
     yrule              = in.GetNumber ( "yrule" );
@@ -447,8 +468,8 @@ void settings::readfromfile(const string fname){
 void settings::check_consistency(){
 
     // additional conditions
-    if (order != 0 && order != 1 && order != 2 && order != 3)
-      throw invalid_argument("Invalid order, please select 0 (LL) 1 (NLL) 2 (NNLL) or 3 (NNNLL)");
+  //    if (order != 0 && order != 1 && order != 2 && order != 3)
+  //      throw invalid_argument("Invalid order, please select 0 (LL) 1 (NLL) 2 (NNLL) or 3 (NNNLL)");
     if (nproc != 1 && nproc != 2 && nproc != 3)
       throw invalid_argument("Wrong process, please select nproc = 1 (W+), 2 (W-), or 3(Z)");
 
@@ -471,22 +492,34 @@ void settings::check_consistency(){
 	fmures = 1;
       }
 
-    //If default values of blim for pdfs, sudakov and cexp are not set, take blim as default
+    //If default values of blim for pdfs, sudakov and expc are not set, take blim as default
     if (blim_pdf == 0)
       blim_pdf = blim;
 
     if (blim_sudakov == 0)
       blim_sudakov = blim;
 
-    if (blim_cexp == 0)
-      blim_cexp = blim;
+    if (blim_expc == 0)
+      blim_expc = blim;
 
+    if (bcf < 0 || bcf > 1)
+      {
+	cout << "bcf should be between 0 and 1" << endl;
+	exit (-1);
+      }
+      
     if (evolmode > 4 || evolmode < 0)
       {
 	cout << "wrong value for evolmode: available evolmodes: 0,1,2,3,4" << endl;
 	exit (-1);
       }
 
+    //reset evolmode to zero at leading log
+    if (evolmode == 1 && order == 0)
+      {
+	evolmode = 0;
+      }
+    
     //if (fmufac > 0 && evolmode < 3 && order > 0 && fixedorder == false)
     //  {
     //	//cannot use a dynamic muren, mufac, when the PDFs are converted from x-space to N-space at the factorisation scale
@@ -527,11 +560,20 @@ void settings::check_consistency(){
       else
 	intDimRes = 4;
 
-    //Here check also if yrange is above ymax to set mellin1d = true when makecuts is false
+    bool fullrap = true;
+    double ylim = log(opts.sroot/bins.mbins.front());
+    if (bins.ybins.front() >= -ylim || bins.ybins.back() <= ylim)
+      fullrap = false;
+    if (bins.ybins.size() > 2)
+      fullrap = false;
+
+    //Cannot use mellin1d option if yrange is below ymax or makecuts is true
+    if (opts.makecuts || !fullrap)
+      mellin1d = false;
     
     if (intDimCT < 0)
       if (CTquad)
-	if (opts.makecuts) // || yrange below ymax
+	if (opts.makecuts || !fullrap)
 	  intDimCT = 2;
 	else
 	  intDimCT = 1;
@@ -546,7 +588,12 @@ void settings::check_consistency(){
 	  intDimVJ = 3;
       else
 	intDimVJ = 7;
-    
+
+    //cannot update mellin support points at every phase-space point when rapidity integrals are calculated numerically
+    if (makecuts && intDimRes == 2)
+      if (melup == 2)
+	melup = 1;
+          
     if (makecuts && doVJ && intDimVJ < 7 && order >= 2)
       {
 
@@ -614,10 +661,39 @@ void settings::check_consistency(){
 	exit (-1);
       }
 
-    if (mellinintervals*mellinrule >= 512)
+    if (mellinintervals*mellinrule >= 512) // >= ndim //(from pegasus.h)
       {
 	cout << "mellinintervals*mellinrule  should be less than 512 " << endl;
 	exit(-1);
+      }
+
+    //adjust zmax and cpoint between mellin1d and mellin2d !!! --> This is very empirical, why should zmax and cpoint be different between 1d and 2d???
+    //The scaling from 1d to 2d should account for the change in the inverse transform of [F(N)]^2 -> F(N)
+    if (!mellin1d)
+      {
+	//zmax   = (zmax+1)*2-1;
+	//cpoint = (cpoint+1)*2-1;
+      }
+    
+    //Check that no rule is bigger than the maximum value computed
+    if (pdfrule       > gaussrules::GRNMAX
+	|| phirule    > gaussrules::GRNMAX
+	|| mellinrule > gaussrules::GRNMAX
+	|| yrule      > gaussrules::GRNMAX
+	|| qtrule     > gaussrules::GRNMAX
+	|| abrule     > gaussrules::GRNMAX
+	|| vjphirule  > gaussrules::GRNMAX
+	|| zrule      > gaussrules::GRNMAX
+	|| xrule      > gaussrules::GRNMAX)
+      {
+	cout << "Check that no quadrature rule is larger than " << gaussrules::GRNMAX << endl;
+	exit (-1);
+      }
+
+    if (mellininv > 1 || mellininv < 0)
+      {
+	cout << "Not valid option for mellininv (should be 0 or 1) " << endl;
+	exit (-1);
       }
     
     if (makecuts && vjint3d)
@@ -692,6 +768,8 @@ void settings::dumpAll(){
 	dumpD ("e              ",e                );
 	dumpD ("g0             ",g0               );
 	dumpD ("Q0             ",Q0               );
+	dumpD ("a2             ",a2               );
+	dumpD ("a2p            ",a2p              );
 	dumpB ("flavour_kt     ",flavour_kt       );
 	dumpD ("g1_uv          ",g1_uv            );
 	dumpD ("g1_us          ",g1_us            );
@@ -702,6 +780,7 @@ void settings::dumpAll(){
 	dumpD ("g1_bo          ",g1_bo            );
 	dumpD ("g1_gl          ",g1_gl            );
 	dumpI ( "order       ",  nnlo_        . order_      ) ;
+        dumpB ( "alphaslha   ",  alphaslha                  ) ;
         dumpD ( "kmuren      ",  kmuren                     ) ;
         dumpD ( "kmufac      ",  kmufac                     ) ;
 	dumpD ( "kmures       ",  kmures   ) ;
@@ -715,10 +794,10 @@ void settings::dumpAll(){
         dumpD( "blim              ",  blim    ) ;
         dumpD( "blim_pdf               ",  blim_pdf    ) ;
         dumpD( "blim_sudakov           ",  blim_sudakov    ) ;
-        dumpD( "bstar_cexp             ",  blim_cexp    ) ;
+        dumpD( "bstar_expc             ",  blim_expc    ) ;
         dumpB( "bstar_pdf              ",  bstar_pdf    ) ;
         dumpB( "bstar_sudakov          ",  bstar_sudakov    ) ;
-        dumpB( "bstar_cexp             ",  bstar_cexp    ) ;
+        dumpB( "bstar_expc             ",  bstar_expc    ) ;
         dumpS("LHAPDFset          ", LHAPDFset           );
         dumpI("LHAPDFmember       ", LHAPDFmember        );
         dumpI("rseed              ", rseed               );
@@ -829,16 +908,24 @@ void settings::dumpAll(){
         dumpI("pdfintervals      ", opts_.pdfintervals_ );
         dumpI("evolmode          ", evolmode            );
         dumpB("mufevol           ", mufevol            );
-        dumpB("nocexp            ", nocexp             );
+        dumpI("expc              ", expc             );
+        dumpI("ntaylor           ", ntaylor             );
+	dumpB("sumlogs           ", sumlogs       );
+	dumpB("numsud            ", numsud       );
+	dumpB("asrgkt            ", asrgkt       );
+	dumpB("numexpc           ", numexpc      );
 	dumpI("bprescription     ", bprescription       );
 	dumpB("phibr             ", phibr       );
 	dumpB("bcf               ", bcf       );
         dumpB("PDFerrors         ", PDFerrors           );
+        dumpI("mellintr          ", mellintr     );
         dumpI("mellininv         ", mellininv     );
 	dumpI("mellinintervals   ", mellinintervals     );
         dumpI("mellinrule        ", mellinrule          );
         dumpD("zmax              ", zmax                );
+        dumpI("ncycle            ", ncycle                );
 	dumpD("cpoint            ", cpoint              );
+	dumpD("cshift            ", cshift              );
 	dumpD("phi               ", phi              );
         dumpD("mellincores       ", mellincores         );
 	dumpB("mellin1d          ", mellin1d            );

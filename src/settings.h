@@ -84,7 +84,8 @@ public:
   double e;        //Exponential
   double g0;       //Collins-Rogers
   double Q0;       //reference mass
-
+  double a2,a2p;   //Dokshitzer, Marchesini, Webber
+  
   //Flavour dependent g1
   bool flavour_kt;
   double g1_uv = 0.5;
@@ -100,6 +101,9 @@ public:
   string LHAPDFset    ;
   int    LHAPDFmember ;
   bool   externalpdf;
+
+  //alphas running
+  bool alphaslha;
   
   //functional forms of the QCD scales
   int fmures;
@@ -235,30 +239,44 @@ public:
   //settings for Bessel integration
   double bintaccuracy;
 
+  //numerical integration of the Sudakov
+  bool numsud;
+  //use a numerical solution for the running of alphas
+  bool asrgkt;
+
+  //numerical integration of the C exponentiation
+  bool numexpc;
+  
   //b-space prescription
   int bprescription;
   
   //blim parameter of the bstar prescription (acts as an IR cut-off)
   double blim;
-  double blim_pdf, blim_sudakov, blim_cexp;
+  double blim_pdf, blim_sudakov, blim_expc;
 
   //force bstar prescription
-  bool bstar_pdf, bstar_sudakov, bstar_cexp;
+  bool bstar_pdf, bstar_sudakov, bstar_expc;
   
   //arg(z) in the complex plane for the minimal prescription
   double phibr;
   //select the point bc, where the integration contour is bended in the complex plane, as a fraction of b_L = ... (Landau singularity)
   double bcf;
   
-  //settings for Mellin integration
+  //settings for the Mellin transform
+  int mellintr;
+
+  //settings for the Mellin inversion
   int mellininv;
   int mellinintervals;
   int mellinrule;
   double zmax;
+  int ncycle;
   double cpoint;
+  double cshift;
   double phi;
   int mellincores;
   bool mellin1d;
+  int melup;
   bool xspace;
 
   //settings for x-to-N Mellin transform
@@ -317,8 +335,8 @@ public:
   //Evolve PDFs from mufac instead of mures
   bool mufevol;
   
-  //swicth off C exponentiation
-  bool nocexp;
+  //switches for C exponentiation
+  int expc, ntaylor;
 
   //sum all logs before exponentiation
   bool sumlogs;
