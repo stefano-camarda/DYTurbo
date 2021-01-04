@@ -16,19 +16,25 @@ using namespace std;
 namespace mellinint
 {
   extern int mdim;
+  extern complex <double> CCp,CCm; //angles of the positive and negative branches in the unitary complex circle
+  extern double cphi,sphi;
+  
   extern complex <double> *wn; //weights of the gaussian quadrature rule
   extern complex <double> *Np; //nodes on the positive branch of the contour
   extern complex <double> *Nm; //nodes on the negative branch of the contour
-  extern complex <double> CCp,CCm; //angles of the positive and negative branches in the unitary complex circle
+#pragma omp threadprivate(wn,Np,Nm)
 
   //mellin 2d case
   extern complex <double> *wn_1, *wn_2; //weights of the gaussian quadrature rule
   extern complex <double> *Np_1, *Np_2; //nodes on the positive branch of the contour
   extern complex <double> *Nm_1, *Nm_2; //nodes on the negative branch of the contour
+#pragma omp threadprivate(wn_1,Np_1,Nm_1,wn_2,Np_2,Nm_2)
 
   extern void initgauss();
   extern void update();
+  extern void updategauss();
   extern void allocate();
+  extern void free();
   extern void release();
 
   extern double Not;
@@ -39,7 +45,8 @@ namespace mellinint
   extern double nu;
   extern double alpha;
   extern double mu;
-
+  //pragma omp threadprivate(Not,Not_1,Not_2)
+  
   extern bool midpoint;
   extern bool weideman;
   

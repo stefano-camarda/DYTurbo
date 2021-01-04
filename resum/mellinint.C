@@ -43,6 +43,8 @@ complex <double> *mellinint::Np;
 complex <double> *mellinint::Nm;
 complex <double> mellinint::CCp; //--> Can drop and put into the Jacobian (jac)
 complex <double> mellinint::CCm; //--> Can drop and put into the Jacobian (jac)
+double mellinint::cphi;
+double mellinint::sphi;
 
 //mellin 2d case
 complex <double> *mellinint::Np_1;
@@ -120,6 +122,12 @@ void mellinint::allocate()
 
 void mellinint::release()
 {
+  if (opts.melup <= 1)
+    free();
+}
+
+void mellinint::free()
+{
   if (opts.mellin1d)
     {
       delete[] wn;
@@ -141,7 +149,6 @@ void mellinint::initgauss()
 {
   //allocate memory
   mdim = opts.mellinintervals*opts.mellinrule;
-  allocate();
 
   //if (!opts.silent) cout << "start initgauss " << endl;
   //fixed talbot of Peter Valko'
@@ -187,205 +194,16 @@ void mellinint::initgauss()
   if (opts.mellintr == 0) // --> Gauss Legendre quadrature for the Mellin transform of PDFs
     {
       Not = 1.;
-      sigma = opts.cpoint/opts.mellinrule;
+      sigma = opts.cpoint/opts.mellinrule; //opts.cpoint;
       mu = 0.;
       alpha = 1.;
-      //nu = opts.zmax/M_PI; //-> nu should be a multiple of pi, to cancel oscillations
-      nu = opts.zmax/3.;
+      nu = opts.zmax/M_PI; //-> nu should be a multiple of pi, to cancel oscillations
+      //nu = double(opts.ncycle)/double(mdim);
     }
       
   midpoint = true;
   weideman = true;
-      
-  //Gauss-Legendre quadrature along a linear contour
-  if (opts.mellininv == 0)
-    {
-      //set up weights and nodes for gaussian quadrature
-      //cpoint is the starting point on the real axis for the positive and negative part of the integration path
-      //phi is the angle in the complex plane of the positive part of the integration path
-       
-      double cpoint = opts.cpoint;
-      double phi = M_PI * opts.phi; // opts.phi = 1/2 -> straight line; opts.phi = 3/4 -> Pegasus default
 
-      double cphi,sphi;
-      if (opts.phi == 0.5)
-	{
-	  cphi = 0;
-	  sphi = 1;
-	}
-      else
-	{
-	  cphi = cos(phi);
-	  sphi = sin(phi);
-	}
-      
-      double zmin = 0;
-      //upper limit for the mellin integration in the complex plane (z)
-      //Above 50 the integral becomes unstable, especially when m_ll << mur,
-      //due to large logs in the Sudakov, which can be reduced with smaller blim.
-      //The issue can be avoided by using dynamicscale
-      //Also, larger values of zmax requires more support points for the
-      //Mellin inverse transform, i.e. higher mellinintervals or mellinrule.
-      double zmax = opts.zmax;
-
-      //Rescale zmax and cpoint
-      double mlogz = -log(bins.mbins.front()/opts.sroot);
-      cpoint = opts.cpoint       / mlogz;
-      zmax   = opts.zmax   *mdim / mlogz;
-
-      cpoint += opts.cshift;
-      
-      // positive branch      
-      CCp = complex <double> (cphi, sphi);
-      for (int i=0; i < opts.mellinintervals; i++)
-	{
-	  double a = 0.+(1.-0.)*i/opts.mellinintervals;
-	  double b = 0.+(1.-0.)*(i+1)/opts.mellinintervals;
-	  double c = 0.5*(a+b);
-	  double m = 0.5*(b-a);
-	  for (int j=0; j < opts.mellinrule; j++)
-	    {
-	      double x = c+m*gr::xxx[opts.mellinrule-1][j];
-	      //double x = c+m*cc::xxx[opts.mellinrule-1][j];
-	      double t = zmin+(zmax-zmin)*x;
-	      double jac = zmax-zmin;
-	      if (opts.mellin1d)
-		{
-		  Np[j+i*opts.mellinrule]=complex <double> (cpoint+cphi*t+1.,sphi*t);
-		  wn[j+i*opts.mellinrule]=gr::www[opts.mellinrule-1][j]*m*jac;
-		  //wn[j+i*opts.mellinrule]=cc::www[opts.mellinrule-1][j]*m*jac;
-		  //cout << setprecision(16) <<  t << " " << Np[j+i*opts.mellinrule] << "  " << wn[j+i*opts.mellinrule] << endl;
-		}
-	      else
-		{
-		  //Np_1[j+i*opts.mellinrule] = Np_2[j+i*opts.mellinrule] = complex <double> (cpoint+cphi*t+1.,sphi*t);
-		  //wn_1[j+i*opts.mellinrule] = wn_2[j+i*opts.mellinrule] = gr::www[opts.mellinrule-1][j]*m*jac;
-		  Np_1[j+i*opts.mellinrule]=complex <double> (cpoint+cphi*t+1.,sphi*t);
-		  wn_1[j+i*opts.mellinrule]=gr::www[opts.mellinrule-1][j]*m*jac;
-		  Np_2[j+i*opts.mellinrule]=complex <double> (cpoint+cphi*t+1.,sphi*t);
-		  wn_2[j+i*opts.mellinrule]=gr::www[opts.mellinrule-1][j]*m*jac;
-		}
-	    }
-	}
-    }
-    
-  //Talbot contour
-  else if (opts.mellininv == 1)
-    {
-      //calculate the range of the corresponding Laplace transform
-      double xmin, xmax;
-      double t0, t1;
-
-      //could restrict xmin and xmax further for limited y range
-      xmin = pow(bins.mbins.front()/opts.sroot,2);
-      xmax = 1;
-
-      t0 = -log(xmax);
-      t1 = -log(xmin);
-
-      double tmid = (t0+t1)/2.;
-	  
-      CCp = 1;
-      for (int j=0; j < opts.mellinrule; j++)
-	{
-	  double x;
-	  if (midpoint)
-	    x = (double(j)+0.5)/opts.mellinrule;   //midpoint
-	  else
-	    x = double(j)/opts.mellinrule;         //trapezoidal
-	  
-	  double thmax = M_PI;
-	  double theta = thmax*x;
-	  
-	  complex <double> s, jac;
-	  if (weideman)
-	    {
-	      //Weideman contour
-	      s = Not*(sigma+(theta==0?mu/alpha:mu*theta/tan(alpha*theta)+theta*nu*ii));
-	      jac = thmax * Not * (ii * nu + (theta==0?0 : mu * (1./tan(alpha*theta) - alpha*theta*(1. + 1./tan(alpha*theta)/tan(alpha*theta)))));
-	    }
-	  else
-	    {
-	      //Talbot contour
-	      s = sigma+(theta==0?lambda:lambda*theta*(1./tan(theta)+nu*ii));
-	      jac = thmax * (theta==0? ii*lambda*nu : ii * lambda *( nu + ii * (theta + (theta /tan(theta) - 1.) / tan(theta))));
-	    }
-
-	  if (opts.mellin1d)
-	    {
-	      Np[j] = s+1.+opts.cshift;
-	      //cout << j << "  " << Np[j] << endl;
-	      if (midpoint)
-		wn[j] = jac/double(opts.mellinrule);                                //midpoint
-	      else
-		wn[j] = (j==0 ? jac/2.:jac)/double(opts.mellinrule);                //trapezoidal
-	  
-	      //cout << setprecision(16) <<  theta << " " << Np[j] << "  " << wn[j] << endl;
-
-	      /*
-		double x = 0.5+0.5*gr::xxx[opts.mellinrule-1][j];
-		double t = zmin+(zmax-zmin)*x;
-		complex <double> jac = (zmax-zmin) * (cos(phi)+ii*sin(phi));
-		complex <double> s = cpoint + t * (cos(phi)+ii*sin(phi));
-		Np[j] = s + 1.;
-		wn[j] = gr::www[opts.mellinrule-1][j]*0.5*jac;
-		cout << setprecision(16) <<  t << " " << Np[j] << "  " << wn[j] << endl;
-	      */
-	    }
-	  else
-	    {
-	      Np_1[j] = Np_2[j] = s+1.+opts.cshift;
-	      if (midpoint)
-		wn_1[j] = wn_2[j] = jac/double(opts.mellinrule);                                //midpoint
-	      else
-		wn_1[j] = wn_2[j] = (j==0 ? jac/2.:jac)/double(opts.mellinrule);                //trapezoidal
-	    }
-	}
-    }
-  else
-    {
-      //Implement here other mellin inversions
-      cout << "Not valid option for mellininv (should be 0 or 1) " << endl;
-      exit (-1);
-    }
-
-  //Compute negative branch by complex conjugation of the positive branch
-  if (opts.mellin1d)
-    {
-      CCm = conj (CCp);
-      for (int i=0; i < opts.mellinintervals; i++)
-	for (int j=0; j < opts.mellinrule; j ++)
-	  Nm[j+i*opts.mellinrule] = conj(Np[j+i*opts.mellinrule]);
-    }
-  else
-    for (int i=0; i < opts.mellinintervals; i++)
-      for (int j=0; j < opts.mellinrule; j ++)
-	{
-	  Nm_1[j+i*opts.mellinrule] = conj(Np_1[j+i*opts.mellinrule]);
-	  Nm_2[j+i*opts.mellinrule] = conj(Np_2[j+i*opts.mellinrule]);
-	}
-}
-
-//improve structure with
-//void mellinint::updategauss(double m, double y)
-//{
-//}
-//setting m and y to phasespace::m phasespace::y, average of bin boundaries, or average of first-to-last bin boundaries (depending on input file options)
-
-void mellinint::update()
-{
-  //Update quadrature nodes according to the N/t scaling (N is in the number of nodes, t = -log(x))
-  //and recalculate all the Mellin transforms
-  //--> should distinguish between N1 and N2 for the double Mellin inversion
-
-  //set up weights and nodes for gaussian quadrature
-  //cpoint is the starting point on the real axis for the positive and negative part of the integration path
-  //phi is the angle in the complex plane of the positive part of the integration path
-  //cout << "Update mellin points... " << flush;
-  clock_t begin_time_tot, end_time_tot;
-  begin_time_tot = clock();  
-  
-  double cphi,sphi;
   if (opts.phi == 0.5)
     {
       cphi = 0;
@@ -396,29 +214,77 @@ void mellinint::update()
       cphi = cos(M_PI * opts.phi);
       sphi = sin(M_PI * opts.phi);
     }
+
+  if (opts.mellininv == 0)
+    CCp = complex <double> (cphi, sphi);
+  else if (opts.mellininv == 1)
+    CCp = 1;
+
+  CCm = conj (CCp);
   
+  if (opts.melup <= 1)
+    allocate();
+  if (opts.melup == 0)
+    updategauss();
+}
+
+//setting m and y to phasespace::m phasespace::y, average of bin boundaries, or average of first-to-last bin boundaries (depending on input file options)
+void mellinint::updategauss()
+{
+  //Update quadrature nodes according to the N/t scaling (N is in the number of nodes, t = -log(x))
+  //and recalculate all the Mellin transforms
+  //--> should distinguish between N1 and N2 for the double Mellin inversion
+
+  //set up weights and nodes for gaussian quadrature
+  //cpoint is the starting point on the real axis for the positive and negative part of the integration path
+  //opts.phi*M_PI is the angle in the complex plane of the positive part of the integration path
+  //opts.phi = 1/2 -> straight line; opts.phi = 3/4 -> Pegasus default
+
   double zmin = 0;
 
+  //mellin1d case
   if (opts.mellin1d)
     {
-      //Scale zmax by N/t and cpoint by 1/t (mellin1d case)
+      //zmax is the upper limit for the mellin integration in the complex plane (z)
+      //Above 50 the integral becomes unstable, especially when m_ll << mur,
+      //due to large logs in the Sudakov, which can be reduced with smaller blim.
+      //The issue can be avoided by using dynamicscale
+      //Also, larger values of zmax requires more support points for the
+      //Mellin inverse transform, i.e. higher mellinintervals or mellinrule.
 
+      //zmax is set to opts.ncycle * M_PI,
+      //and scaled by N/t
+
+      //cpoint is the intersection with the real axis of the integration contour
+      //cpoint is set to opts.cpoint scaled by 1/t, and shifted to the right by opts.cshift
+
+      double m0;
+      //Compute once for all
+      if (opts.melup == 0)
+	//m0 = (bins.mbins.front() + bins.mbins.back())/2.; //arithmetic mean
+        m0 = sqrt(bins.mbins.front() * bins.mbins.back()); //geometric mean
+      
       //Recompute in each bin
-      //double mlogz = -log((phasespace::mmin + phasespace::mmax)/2./opts.sroot);
+      if (opts.melup == 1)
+	//m0 = (phasespace::mmin + phasespace::mmax)/2.; //arithmetic mean
+	m0 = sqrt(phasespace::mmin * phasespace::mmax); //geometric mean
       
       //Recompute in each phasespace point
-      double mlogz = -log(phasespace::m/opts.sroot);
+      if (opts.melup == 2)
+	m0 = phasespace::m;
+
+      //Recompute in each phasespace point
+      double mlogz = -log(m0/opts.sroot);
       
       double cpoint = opts.cpoint       / mlogz;
-      double zmax   = opts.zmax   *mdim / mlogz;
-
+      //double zmax   = opts.zmax   *mdim / mlogz;
+      double zmax   = opts.ncycle *M_PI / mlogz;
       cpoint += opts.cshift;
-      
+
       //Gauss-Legendre quadrature along a linear contour
       if (opts.mellininv == 0)
 	{
 	  // positive branch      
-	  CCp = complex <double> (cphi, sphi);
 	  for (int i=0; i < opts.mellinintervals; i++)
 	    {
 	      double a = 0.+(1.-0.)*i/opts.mellinintervals;
@@ -428,10 +294,12 @@ void mellinint::update()
 	      for (int j=0; j < opts.mellinrule; j++)
 		{
 		  double x = c+m*gr::xxx[opts.mellinrule-1][j];
+		  //double x = c+m*cc::xxx[opts.mellinrule-1][j];
 		  double t = zmin+(zmax-zmin)*x;
 		  double jac = zmax-zmin;
 		  Np[j+i*opts.mellinrule]=complex <double> (cpoint+cphi*t+1.,sphi*t);
 		  wn[j+i*opts.mellinrule]=gr::www[opts.mellinrule-1][j]*m*jac;
+		  //wn[j+i*opts.mellinrule]=cc::www[opts.mellinrule-1][j]*m*jac;
 		  //cout << setprecision(16) <<  t << " " << Np[j+i*opts.mellinrule] << "  " << wn[j+i*opts.mellinrule] << endl;
 		}
 	    }      
@@ -460,6 +328,7 @@ void mellinint::update()
 	  if (opts.mellintr == 0)
 	    {
 	      Not    = mdim / mlogz;          //Global scaling of the contour
+	      //Not    = 1. / mlogz;          //Global scaling of the contour
 	      //Set mu to a value that curves the contour so that the last point has real part equal to c (and never becomes negative)
 	      //double c = 1.;                
 	      /*sigma + mu (1-2N) = c --> as in https://people.math.ethz.ch/~hiptmair/Seminars/CONVQUAD/Articles/WEI06.pdf */
@@ -468,7 +337,6 @@ void mellinint::update()
 	      //cout << Not*(sigma + mu* (1.-mdim))+1. << endl;
 	    }
 	  
-	  CCp = 1;
 	  for (int j=0; j < opts.mellinrule; j++)
 	    {
 	      double x;
@@ -514,11 +382,6 @@ void mellinint::update()
 	      */
 	    }
 	}
-      // negative branch
-      CCm = conj (CCp);
-      for (int i=0; i < opts.mellinintervals; i++)
-	for (int j=0; j < opts.mellinrule; j ++)
-	  Nm[j+i*opts.mellinrule] = conj(Np[j+i*opts.mellinrule]);
     }
   else
     //mellin 2d case
@@ -529,10 +392,25 @@ void mellinint::update()
       //Recompute in each bin
       double m0,y0;
 
+      //Compute once for all
+      if (opts.melup == 0)
+	{
+	  //m0 = (bins.mbins.front() + bins.mbins.back())/2.; //arithmetic mean
+	  //m0 = sqrt(bins.mbins.front()*bins.mbins.back()); //geometric mean
+	  m0 = bins.mbins.front(); //take the minimum to avoid z < 0
+	  double ylim = log(opts.sroot/bins.mbins.back());  //here take bins.mbins.back() so that this is the smallest ylim --> avoid z < 0
+	  double ymn = min(max(-ylim, bins.ybins.front()),ylim);
+	  double ymx = max(min(ylim, bins.ybins.back()),-ylim);
+	  y0 = (ymn+ymx)/2.;
+	}
+
+      //Recompute in each bin
       if (opts.melup == 1)
 	{
-	  m0 = (phasespace::mmin + phasespace::mmax)/2.;
-	  double ylim = log(opts.sroot/phasespace::mmax);
+	  //m0 = (phasespace::mmin + phasespace::mmax)/2.;    //arithmetic mean
+	  //m0 = sqrt(phasespace::mmin * phasespace::mmax); //geometric mean
+	  m0 = phasespace::mmin; //take the minimum to avoid z < 0
+	  double ylim = log(opts.sroot/phasespace::mmax); //here take mmax so that this is the smallest ylim --> avoid z < 0
 	  double ymn = min(max(-ylim, phasespace::ymin),ylim);
 	  double ymx = max(min(ylim, phasespace::ymax),-ylim);
 	  y0 = (ymn+ymx)/2.;
@@ -546,12 +424,16 @@ void mellinint::update()
 	  double ylim = 0.5*log(pow(opts.sroot,2)/phasespace::m2);
 	  double ymn = min(max(-ylim, phasespace::ymin),ylim);
 	  double ymx = max(min(ylim, phasespace::ymax),-ylim);
-	  y0 = (ymn+ymx)/2.; //phasespace::y;
+	  //if (y-differential mode...)
+	  //y0 = phasespace::y;
+	  //else //y-integrated mode
+	  //{
+	  y0 = (ymn+ymx)/2.;
 	  if (phasespace::ymax >= ylim && phasespace::ymin > -ylim)
 	    y0 = ymn;
 	  if (phasespace::ymin <= -ylim && phasespace::ymax < ylim)
 	    y0 = ymx;
-
+	  //}
 	  
 //      if (ymx >= ylim-1e-4)
 //	{
@@ -579,10 +461,12 @@ void mellinint::update()
       
       
       double cpoint_1 = opts.cpoint       / mlogz_1;
-      double zmax_1   = opts.zmax   *mdim / mlogz_1;
+      //double zmax_1   = opts.zmax   *mdim / mlogz_1;
+      double zmax_1   = opts.ncycle *M_PI / mlogz_1;
 
       double cpoint_2 = opts.cpoint       / mlogz_2;
-      double zmax_2   = opts.zmax   *mdim / mlogz_2;
+      //double zmax_2   = opts.zmax   *mdim / mlogz_2;
+      double zmax_2   = opts.ncycle *M_PI / mlogz_2;
 
       //Patch to fix issues with NNPDF, likely due to the position of the PDF poles in N-space
       cpoint_1 += opts.cshift;
@@ -592,7 +476,6 @@ void mellinint::update()
       if (opts.mellininv == 0)
 	{
 	  // positive branch      
-	  CCp = complex <double> (cphi, sphi);
 	  for (int i=0; i < opts.mellinintervals; i++)
 	    {
 	      double a = 0.+(1.-0.)*i/opts.mellinintervals;
@@ -621,7 +504,6 @@ void mellinint::update()
 		  //wn[j+i*opts.mellinrule]=gr::www[opts.mellinrule-1][j]*m*jac;
 		}
 	    }
-	  //CCp = 1.;	  
 	}
 
       //Talbot contour
@@ -658,6 +540,10 @@ void mellinint::update()
 	    {
 	      Not_1    = mdim / mlogz_1;          //Global scaling of the contour
 	      Not_2    = mdim / mlogz_2;          //Global scaling of the contour
+
+	      //Not_1    = 1. / mlogz_1;          //Global scaling of the contour
+	      //Not_2    = 1. / mlogz_2;          //Global scaling of the contour
+
 	      //Set mu to a value that curves the contour so that the last point has real part equal to c (and never becomes negative)
 	      //double c = 1.;
 	      /*sigma + mu (1-2N) = c --> as in https://people.math.ethz.ch/~hiptmair/Seminars/CONVQUAD/Articles/WEI06.pdf */
@@ -682,7 +568,6 @@ void mellinint::update()
 	      //cout << sigma * Not_2 << endl;
 	    }
 	  
-	  CCp = 1;
 	  for (int j=0; j < opts.mellinrule; j++)
 	    {
 	      double x;
@@ -739,18 +624,22 @@ void mellinint::update()
 	      */
 	    }
 	}
-      
-      // negative branch
-      CCm = conj (CCp);
-      for (int i=0; i < opts.mellinintervals; i++)
-	for (int j=0; j < opts.mellinrule; j ++)
-	  {
-	    Nm_1[j+i*opts.mellinrule] = conj(Np_1[j+i*opts.mellinrule]);
-	    Nm_2[j+i*opts.mellinrule] = conj(Np_2[j+i*opts.mellinrule]);
-	  }
-        
     }
 
+  //Compute negative branch by complex conjugation of the positive branch
+  if (opts.mellin1d)
+    for (int i=0; i < opts.mellinintervals; i++)
+      for (int j=0; j < opts.mellinrule; j ++)
+	Nm[j+i*opts.mellinrule] = conj(Np[j+i*opts.mellinrule]);
+  else
+    for (int i=0; i < opts.mellinintervals; i++)
+      for (int j=0; j < opts.mellinrule; j ++)
+	{
+	  Nm_1[j+i*opts.mellinrule] = conj(Np_1[j+i*opts.mellinrule]);
+	  Nm_2[j+i*opts.mellinrule] = conj(Np_2[j+i*opts.mellinrule]);
+	}
+  
+  
   //cout << endl;
   //cout << " Mellin inversion support points" << endl;
   //for (int i=0; i < opts.mellinintervals; i++)
@@ -763,14 +652,28 @@ void mellinint::update()
   //	    cout << j << "  " << Np_1[j] << "  " << Np_2[j] << endl;
   //	  }
   //    }
+}
+
+void mellinint::update()
+{
+  //Update quadrature nodes according to the N/t scaling (N is in the number of nodes, t = -log(x))
+  //cout << "Update mellin points... " << flush;
+
+  clock_t begin_time_tot, end_time_tot;
+  begin_time_tot = clock();  
   
-  //update all other initialisations which depends on the Mellin quadrature nodes
-  //calculate anomalous dimensions, C1, C2 and gamma coefficients
+  updategauss();
+
+  //Recalculate all the Mellin transforms, i.e. update all other initialisations which depends on the Mellin quadrature nodes
   clock_t begin_time, end_time;
+
+  /*
+  //calculate anomalous dimensions, C1, C2 and gamma coefficients
   begin_time = clock();  
   anomalous::calc();
   end_time = clock();  
   //cout << "anomalous done in "  << float(end_time - begin_time)/CLOCKS_PER_SEC*1000. << "ms" << endl;
+  */
   
   //calculate, C1, C2, and C3 coefficients
   begin_time = clock();
@@ -781,6 +684,7 @@ void mellinint::update()
   end_time = clock();  
   //cout << "ccoeff done in "  << float(end_time - begin_time)/CLOCKS_PER_SEC*1000. << "ms" << endl;
 
+  /*
   //transform the PDF from x- to N-space at the factorisation scale
   begin_time = clock();  
   //mellinpdf::update_mellin();
@@ -789,10 +693,11 @@ void mellinint::update()
   pdfevol::free();
   end_time = clock();  
   //cout << "pdfevol done in "  << float(end_time - begin_time)/CLOCKS_PER_SEC*1000. << "ms" << endl;
-
+  */
+  
   begin_time = clock();  
   pegasus::calc_mellin();
-  pegasus::init_pdf();
+  //pegasus::init_pdf(); //pegasus::update();
   end_time = clock();  
   //cout << "pegasus done in "  << float(end_time - begin_time)/CLOCKS_PER_SEC*1000. << "ms" << endl;
 
@@ -2884,16 +2789,17 @@ complex <double> mellinint::calc1d()
   for (int i = 0; i < mdim; i++)
     {
       //Positive branch
+      complex <double> pos;
       idx = anomalous::index(i,mesq::positive);
       pdfevol::retrieve1d_pos(i);
       pdf_mesq_expy(i,i,mesq::positive);
 
       if (opts.order == 0)
-	fun += QQBN*expc::qqb[idx];
+	pos = QQBN*expc::qqb[idx];
       else
 	{
 	  //cout << i << "  " << muf::qqb[i] << endl;
-	  fun +=
+	  pos =
 	    //contribution starting at LL
 	    QQBN             *(hcoeff::Hqqb[i]+muf::qqb[i])*expc::qqb[idx]
 	    
@@ -2914,14 +2820,21 @@ complex <double> mellinint::calc1d()
 
 	}
       //if (opts.order == 0)
-      //cout << i << " positive " << " QQBN " << QQBN << " expc::qqb[idx] " << expc::qqb[idx] << " hcoeff::Hqqb[i] " << hcoeff::Hqqb[i] << endl;
-      //else
+      //cout << i << " positive " << " QQBN " << QQBN
+      //<< " expc::qqb[idx] " << expc::qqb[idx] << " hcoeff::Hqqb[i] " << hcoeff::Hqqb[i]
+      //<< endl;
+      //cout << pdfevol::fn1[u ] << "  " << pdfevol::fn2[ub] << "  "
+      //<< mesq::mesqij_expy[mesq::index(0,i,i,mesq::positive)] << endl;
+	//else
       //	{
-      //	  cout << i << " positive " << setprecision(16) << " QQBN " << QQBN << " Hqqb " << hcoeff::Hqqb[i]+muf::qqb[i] << " expc::qqb[idx] " << expc::qqb[idx] << endl;
-      //	  cout << " QGN_1 " << QGN_1 << " Hqg " << hcoeff::Hqg[i] << " expc::qg[idx] " << expc::qg[idx] << endl;
+      //cout << i << " positive " << setprecision(16) << " QQBN " << QQBN << " Hqqb " << hcoeff::Hqqb[i]+muf::qqb[i] << " expc::qqb[idx] " << expc::qqb[idx] << endl;
+      //cout << " QGN_1 " << QGN_1 << " Hqg " << hcoeff::Hqg[i] << " expc::qg[idx] " << expc::qg[idx] << endl;
       //	}
-
+      //complex <double> pos = 	    QQBN             *(hcoeff::Hqqb[i]+muf::qqb[i])*expc::qqb[idx]
+      //+ (QGN_1+QGN_2)  *(hcoeff::Hqg[i]+muf::qg[i]) *expc::qg[idx]
+      //;
       //Negative branch
+      complex <double> neg;
       //if (opts.mellininv == 1 && i == 0)
       //continue;
       idx = anomalous::index(i,mesq::negative);
@@ -2929,10 +2842,10 @@ complex <double> mellinint::calc1d()
       pdf_mesq_expy(i,i,mesq::negative);
 
       if (opts.order == 0)
-	fun -= QQBN*expc::qqb[idx];
+	neg = QQBN*expc::qqb[idx];
       else
 	{
-	  fun -=
+	  neg =
 	    //contribution starting at LL
 	    QQBN             *conj(hcoeff::Hqqb[i]+muf::qqb[i])*expc::qqb[idx]
 
@@ -2955,11 +2868,17 @@ complex <double> mellinint::calc1d()
       //	cout << i << " negative " << " QQBN " << -QQBN  << " expc::qqb[idx] " << expc::qqb[idx] << endl;
       //else
       //	{
-      //	  cout << i << " negative " << " QQBN " << -QQBN << " Hqqb " << conj(hcoeff::Hqqb[i]+muf::qqb[i]) << " expc::qqb[idx] " << expc::qqb[idx] << endl;
-      //	  cout << " QGN_1 " << -QGN_1 << " Hqg " << conj(hcoeff::Hqg[i]) << " expc::qg[idx] " << expc::qg[idx] << endl;
+      //cout << i << " negative " << " QQBN " << -QQBN << " Hqqb " << conj(hcoeff::Hqqb[i]+muf::qqb[i]) << " expc::qqb[idx] " << expc::qqb[idx] << endl;
+      //cout << " QGN_1 " << -QGN_1 << " Hqg " << conj(hcoeff::Hqg[i]) << " expc::qg[idx] " << expc::qg[idx] << endl;
       //	}
 
+      //      complex <double> neg =QQBN             *conj(hcoeff::Hqqb[i]+muf::qqb[i])*expc::qqb[idx]
+      //	+ (QGN_1+QGN_2)  *conj(hcoeff::Hqg[i]+muf::qg[i]) *expc::qg[idx]
+      //	;
+      
       //Check carefully in the real case (bprescription = 0) that all pieces are complex conjugate between positive and negative branches!!!
+      fun += pos-neg;
+      //cout << i << " pos - neg " << pos-neg << " fun " << fun << endl;
     }
   //return real(fun);
   //cout << QGN_1+QGN_2 << "  " << "hqg 1d " << hcoeff::Hqg[0] << endl;
@@ -3013,7 +2932,8 @@ complex <double> mellinint::calc2d()
 //	  if (opts.order == 0)
 //	    cout << i1 << "  " << i2 << " positive " << " QQBN " << QQBN << " expc::qqb[ii] " << expc::qqb[ii]
 //		 << " mesq " << mesq::mesqij_expy[mesq::index(0,i1,i2,mesq::positive)]
-//		 << " fn2 " << pdfevol::fn2[ub]
+//		 << " fn1 " << pdfevol::fn1[g]
+//		 << " fn2 " << pdfevol::fn2[g]
 //		 << endl;
 //	  cout << i1 << "  " << i2 << " positive " << " QQBN " << QQBN << " expc::qqb[ii] " << expc::qqb[ii]
 //	       << " mesq " << mesq::mesqij_expy[mesq::index(0,i1,i2,mesq::positive)]
@@ -3031,6 +2951,7 @@ complex <double> mellinint::calc2d()
 //		 << " GGN     " << hcoeff::Hgg[ii]
 //		 << endl;
 	      
+	  //Negative branch
 	  pdfevol::retrieve_beam2_neg();
 	  pdf_mesq_expy(i1,i2,mesq::negative);
 	  ii = hcoeff::index(i1,i2,mesq::negative);
@@ -3071,7 +2992,6 @@ complex <double> mellinint::calc2d()
 	}
     }
 
-  //cout << -fun/2. << endl;
   if (opts.bprescription == 0)
     return -real(fun/2.);
   else
