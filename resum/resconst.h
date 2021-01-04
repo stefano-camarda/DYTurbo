@@ -9,22 +9,19 @@ namespace resconst
   //number of light flavours
   extern const int NF;
 
-  //QCD constants
-  extern const double CA;
-  extern const double Cf;
-
   //Mathematics constants
-  extern const double Euler;
   extern const double Z2;
   extern const double Z3;
   extern const double Z4;
   extern const double Z5;
+  extern const double b0;
   
   //Resummation coefficients
-  extern double b0;
   extern double beta0, beta1, beta2, beta3, beta4, Kappa;
   extern double A1g, A2g, A3g, B1g, B2g, C1ggn;
-  extern double A1q, A2q, A3q, A4q, B1q, B2q, C1qqn, B3q;
+  extern double A1q, A2q, A3q, A4q, A5q;
+  extern double B1q, B2q, B3q, B4q;
+  extern double C1qqn, C2qqn;
 
   // Delta terms
   extern double C1qqdelta, Delta2qq;
