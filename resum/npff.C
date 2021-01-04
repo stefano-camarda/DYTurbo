@@ -32,7 +32,9 @@ complex <double> npff::S(complex <double> b, double m, double x1, double x2)
   //g1 = 0.330;  //g2 = 0.066;  //g3 = 0.;  //Q0 = 2.*1.3;
   //g1 = 0.50;   //g2 = 2.0;  //g3 = 0.;  //Q0 = 50;
   if (opts.npff == 0)
-    ff = exp(-(opts.g1 + opts.g2 * log(m/opts.Q0) + opts.g3*log(100*x1*x2)) * pow(b,2));
+    //ff = exp(-(opts.g1 + opts.g2 * log(m/opts.Q0) + opts.g3*log(100*x1*x2)) * pow(b,2));
+    //ff = exp(-(opts.g1 + opts.g2 * log(m/opts.Q0) + opts.g3*log(100*x1*x2)) * pow(real(b),2));
+    ff = exp(-(opts.g1 + opts.g2 * log(m/opts.Q0) + opts.g3*log(100*x1*x2)) * pow(abs(b),2));
 
   //Exponential form
   if (opts.npff == 1)
@@ -46,6 +48,10 @@ complex <double> npff::S(complex <double> b, double m, double x1, double x2)
       ff = exp(-gk*log(pow(m/opts.Q0,2)));
     }
 
+  //Dispersive approach (DMW) https://arxiv.org/abs/hep-ph/9512336  https://iopscience.iop.org/article/10.1088/1126-6708/1999/07/012/pdf
+  if (opts.npff == 3)
+    ff = exp(-(opts.a2 * (log(m)+1.) - opts.a2p) * pow(real(b),2)/2. * 2.); //one factor for each leg -> multiply by 2
+  
   //Additional flavor dependent form factors
   if (opts.flavour_kt)
     {
