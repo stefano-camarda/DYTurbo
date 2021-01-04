@@ -5,7 +5,6 @@
 #include "dyres_interface.h"
 #include "vjint.h"
 #include "pdf.h"
-//#include <LHAPDF/LHAPDF.h>
 
 double scales::ren;
 double scales::fac;
@@ -13,15 +12,6 @@ double scales::res;
 double scales::ren2;
 double scales::fac2;
 double scales::res2;
-double scales::alphasmz;
-double scales::alphas;
-
-void scales::init()
-{
-  //alphasmz = LHAPDF::alphasPDF(coupling::zmass);    //Old LHAPDF interface
-  //alphasmz = pdf::lhapdf->alphasQ(coupling::zmass); //New LHAPDF interface
-  alphasmz = pdf::alphas(coupling::zmass);            //Allows external alphas
-}
 
 string scales::func(int ff)
 {
@@ -41,7 +31,8 @@ string scales::func(int ff)
     f = "sqrt(m_ll^2+p_T^2+m_jj^2)";
     break;
   case 4: //see slide 27 of https://gsalam.web.cern.ch/gsalam/talks/repo/2016-03-SB+SLAC-Munich-precision.pdf
-    f = "1/2(p_T + sqrt(m_ll^2+p_T^2)";
+    //f = "1/2(p_T + sqrt(m_ll^2+p_T^2))";
+    f = "p_T + sqrt(m_ll^2+p_T^2)";
     break;
   }
   return f;
@@ -64,7 +55,7 @@ void scales::form(double &scale2, int ff, double m, double pt, double mjj)
     scale2 =  pow(m,2) + pow(pt,2) + pow(mjj,2);
     break;
   case 4: //see slide 27 of https://gsalam.web.cern.ch/gsalam/talks/repo/2016-03-SB+SLAC-Munich-precision.pdf
-    scale2 = pow(0.5*(pt + sqrt(m*m+pt*pt)),2);
+    scale2 = pow(pt + sqrt(m*m+pt*pt),2);
     break;
   }
 }
@@ -91,17 +82,6 @@ void scales::set(double m, double pt, double mjj)
   //if (ren > scalemax) {ren = scalemax; ren2 = pow(ren,2);}
   //if (fac > scalemax) {fac = scalemax; fac2 = pow(fac,2);}
   //if (res > scalemax) {res = scalemax; res2 = pow(res,2);}
-
-  //run alphas
-  if (opts_.approxpdf_ == 1)
-    {
-      int loop = 3;
-      alphas = dyalphas_mcfm_(ren,alphasmz,loop);
-    }
-  else
-    //alphas = LHAPDF::alphasPDF(ren);    //Old LHAPDF interface  
-    //alphas = pdf::lhapdf->alphasQ(ren); //New LHAPDF interface  
-    alphas = pdf::alphas(ren);		  //Allows external alphas
 }
 
 //set mcfm scales and couplings
@@ -112,16 +92,12 @@ void scales::mcfm()
   scale_.musq_ = pow(ren,2);
   facscale_.facscale_ = fac;
 
-  //Set alphas and strong coupling in the fortran common blocks
-  qcdcouple_.as_ = alphas;
-  qcdcouple_.ason2pi_ = alphas/(2*M_PI);
-  qcdcouple_.ason4pi_ = alphas/(4*M_PI);
-  qcdcouple_.gsq_= 4*M_PI*alphas;
-
+  /*
   //Set all factorization scales of the dipole contributions to facscale
   //to avoid problems when dynamicscale=.false.
   for (int nd =0; nd <= 40; nd++)
     dipolescale_.dipscale_[nd] = fac;
+  */
 }
 
 void scales::dyres(double m)
@@ -136,8 +112,9 @@ void scales::vjet()
   scales2_.xmuf_ = fac;
   scales2_.xmur2_ = pow(ren,2);
   scales2_.xmuf2_ = pow(fac,2);
-  asnew_.as_ = alphas/M_PI;
-  asp_.asp_ = alphas;
+
+  //Set alphas in the fortran common blocks
+  pdf::setalphas();
 }
 
 //Fortran interface
@@ -146,6 +123,9 @@ void scaleset_mcfm_(double &m, double &pt, double &mjj)
   scales::set(m, pt, mjj);
   scales::mcfm();
   scales::dyres(m);
+
+  //Set alphas and strong coupling in the fortran common blocks
+  pdf::setalphas();
 }
 
 int dynamic_fac_()
