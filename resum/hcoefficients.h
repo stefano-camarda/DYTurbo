@@ -10,34 +10,31 @@ using namespace std;
 namespace hcoefficients
 {
   extern complex <double> *Hqqb;
-  extern complex <double> *Hqg;
   extern complex <double> *Hqg_1;
   extern complex <double> *Hqg_2;
-  extern complex <double> *Hqq_nnll;
-  extern complex <double> *Hqq;
   extern complex <double> *Hqq_1;
   extern complex <double> *Hqq_2;
-  extern complex <double> *Hqqp;
   extern complex <double> *Hqqp_1;
   extern complex <double> *Hqqp_2;
   extern complex <double> *Hgg;
-
-  extern complex <double> *H1stqqb;
-  extern complex <double> *H1stqg;
-  extern complex <double> H1stgg;
-
-  extern complex <double> *H2stqq;
-  extern complex <double> *H2stqqp;
-  extern complex <double> *H2stqqb;
-  extern complex <double> *H2stqg_1;
-  extern complex <double> *H2stqg_2;
-  extern complex <double> *H2stgg;
-
-  extern complex <double> *aexpqq;
-  extern complex <double> *aexpqg;
-#pragma omp threadprivate(Hqqb,Hqg,Hqg_1,Hqg_2,Hqq_nnll,Hqq,Hqq_1,Hqq_2,Hqqp,Hqqp_1,Hqqp_2,Hgg,H1stgg,H1stqg,H1stqqb,H2stqq,H2stqqp,H2stqqb,H2stqg_1,H2stqg_2,H2stgg,aexpqq,aexpqg)
+#pragma omp threadprivate(Hqqb,Hqg_1,Hqg_2,Hqq_1,Hqq_2,Hqqp_1,Hqqp_2,Hgg)
+  
+//  extern complex <double> *H1stqqb;
+//  extern complex <double> *H1stqg;
+//#pragma omp threadprivate(H1stqqb,H1stqg)
+//
+//  extern complex <double> *H2stqqb;
+//  extern complex <double> *H2stqg;
+//  extern complex <double> *H2stqq;
+//  extern complex <double> *H2stqqp;
+//#pragma omp threadprivate(H2stqqb,H2stqg,H2stqq,H2stqqp)
+//
+//  extern complex <double> *aexpqq;
+//  extern complex <double> *aexpqg;
+//#pragma omp threadprivate(aexpqq,aexpqg)
 
   extern void allocate();
+  extern void reset();
   // q2-dependent quantities
   extern void calc(double aass, complex <double> logmuf2q2, complex <double> logq2muf2, complex <double> logq2mur2, complex <double> loga);
 

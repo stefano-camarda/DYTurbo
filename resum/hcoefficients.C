@@ -1,6 +1,7 @@
 #include "hcoefficients.h"
 #include "resconst.h"
 #include "anomalous.h"
+#include "resint.h"
 #include "mesq.h"
 #include "settings.h"
 #include "interface.h"
@@ -9,34 +10,29 @@
 const complex <double> H1q=(0.,0.);
 
 complex <double> *hcoefficients::Hqqb;
-complex <double> *hcoefficients::Hqg;
 complex <double> *hcoefficients::Hqg_1;
 complex <double> *hcoefficients::Hqg_2;
-complex <double> *hcoefficients::Hqq_nnll;
-complex <double> *hcoefficients::Hqq;
 complex <double> *hcoefficients::Hqq_1;
 complex <double> *hcoefficients::Hqq_2;
-complex <double> *hcoefficients::Hqqp;
 complex <double> *hcoefficients::Hqqp_1;
 complex <double> *hcoefficients::Hqqp_2;
 complex <double> *hcoefficients::Hgg;
 
-complex <double> hcoefficients::H1stgg;
-complex <double> *hcoefficients::H1stqg;
-complex <double> *hcoefficients::H1stqqb;
+//complex <double> *hcoefficients::H1stqqb;
+//complex <double> *hcoefficients::H1stqg;
+//
+//complex <double> *hcoefficients::H2stqqb;
+//complex <double> *hcoefficients::H2stqg;
+//complex <double> *hcoefficients::H2stqq;
+//complex <double> *hcoefficients::H2stqqp;
+//
+//complex <double> *hcoefficients::aexpqq;
+//complex <double> *hcoefficients::aexpqg;
 
-complex <double> *hcoefficients::H2stqq;
-complex <double> *hcoefficients::H2stqqp;
-complex <double> *hcoefficients::H2stqqb;
-complex <double> *hcoefficients::H2stqg_1;
-complex <double> *hcoefficients::H2stqg_2;
-complex <double> *hcoefficients::H2stgg;
-
-complex <double> *hcoefficients::aexpqq;
-complex <double> *hcoefficients::aexpqg;
+using namespace anomalous;
+using namespace resconst;
 
 //using namespace hcoefficients;
-//#pragma omp threadprivate(Hqqb,Hqg,Hqg_1,Hqg_2,Hqq_nnll,Hqq,Hqq_1,Hqq_2,Hqqp,Hqqp_1,Hqqp_2,Hgg,H1stgg,H1stqg,H1stqqb,H2stqq,H2stqqp,H2stqqb,H2stqg_1,H2stqg_2,H2stgg,aexpqq,aexpqg)
 
 //fortran interface
 void hcoeff_calc_(double& aass, double& logmuf2q2, double& logq2muf2, double& logq2mur2, double& loga)
@@ -50,40 +46,59 @@ void hcoeff_calcb_(double& aass, double& logmuf2q2, double& loga, double& alpq, 
 
 void hcoefficients::allocate()
 {
-  if (opts.order == 0)
-    return;
-
   //allocate memory
   //LL
   Hqqb = new complex <double> [mellinint::mdim*mellinint::mdim*2];
 
+  if (opts.order == 0)
+    return;
+
   //NLL
-  Hqg = new complex <double> [mellinint::mdim*2];
   Hqg_1 = new complex <double> [mellinint::mdim*mellinint::mdim*2];
   Hqg_2 = new complex <double> [mellinint::mdim*mellinint::mdim*2];
 
-  H1stqg = new complex <double> [mellinint::mdim*2];
-  H1stqqb = new complex <double> [mellinint::mdim*mellinint::mdim*2];
+  //H1stqg = new complex <double> [mellinint::mdim*2];
+  //H1stqqb = new complex <double> [mellinint::mdim*mellinint::mdim*2];
+
+  //if (opts.order == 1)
+  //return;
 
   //NNLL
-  Hqq_nnll = new complex <double> [mellinint::mdim*2];
-  Hqq = new complex <double> [mellinint::mdim*mellinint::mdim*2];
-  Hqq_1 = new complex <double> [mellinint::mdim*mellinint::mdim*2];
-  Hqq_2 = new complex <double> [mellinint::mdim*mellinint::mdim*2];
-  Hqqp = new complex <double> [mellinint::mdim*2];
+  Hqq_1  = new complex <double> [mellinint::mdim*mellinint::mdim*2];
+  Hqq_2  = new complex <double> [mellinint::mdim*mellinint::mdim*2];
   Hqqp_1 = new complex <double> [mellinint::mdim*mellinint::mdim*2];
   Hqqp_2 = new complex <double> [mellinint::mdim*mellinint::mdim*2];
-  Hgg = new complex <double> [mellinint::mdim*mellinint::mdim*2];
+  Hgg    = new complex <double> [mellinint::mdim*mellinint::mdim*2];
 
-  H2stqq = new complex <double> [mellinint::mdim*2];
-  H2stqqp = new complex <double> [mellinint::mdim*2];
-  H2stqqb = new complex <double> [mellinint::mdim*mellinint::mdim*2];
-  H2stqg_1 = new complex <double> [mellinint::mdim*mellinint::mdim*2];
-  H2stqg_2 = new complex <double> [mellinint::mdim*mellinint::mdim*2];
-  H2stgg = new complex <double> [mellinint::mdim*mellinint::mdim*2];
+//  H2stqq = new complex <double> [mellinint::mdim*2];
+//  H2stqqp = new complex <double> [mellinint::mdim*2];
+//  H2stqqb = new complex <double> [mellinint::mdim*mellinint::mdim*2];
+//  H2stqg_1 = new complex <double> [mellinint::mdim*mellinint::mdim*2];
+//  H2stqg_2 = new complex <double> [mellinint::mdim*mellinint::mdim*2];
+//  H2stgg = new complex <double> [mellinint::mdim*mellinint::mdim*2];
+//
+//  aexpqq = new complex <double> [mellinint::mdim*2];
+//  aexpqg = new complex <double> [mellinint::mdim*2];
+}
 
-  aexpqq = new complex <double> [mellinint::mdim*2];
-  aexpqg = new complex <double> [mellinint::mdim*2];
+void hcoefficients::reset()
+{
+  fill(Hqqb,   Hqqb  +mellinint::mdim*mellinint::mdim*2, 1.);
+
+  if (opts.order == 0)
+    return;
+
+  fill(Hqg_1,  Hqg_1 +mellinint::mdim*mellinint::mdim*2, 0.);
+  fill(Hqg_2,  Hqg_2 +mellinint::mdim*mellinint::mdim*2, 0.);
+
+  //if (opts.order == 1)
+  //return;
+
+  fill(Hqq_1,  Hqq_1 +mellinint::mdim*mellinint::mdim*2, 0.);
+  fill(Hqq_2,  Hqq_2 +mellinint::mdim*mellinint::mdim*2, 0.);
+  fill(Hqqp_1, Hqqp_1+mellinint::mdim*mellinint::mdim*2, 0.);
+  fill(Hqqp_2, Hqqp_2+mellinint::mdim*mellinint::mdim*2, 0.);
+  fill(Hgg ,   Hgg   +mellinint::mdim*mellinint::mdim*2, 0.);
 }
 
 void hcoefficients::calc(double aass, complex <double> logmuf2q2, complex <double> logq2muf2, complex <double> logq2mur2, complex <double> loga)
@@ -98,9 +113,26 @@ void hcoefficients::calc(double aass, complex <double> logmuf2q2, complex <doubl
   //  complex <double> loga = resint::loga;
   //  double aass = resint::aass;
 
+
+  complex <double> LQF = logq2muf2-2.*loga;
+  complex <double> LQ2F2 = pow(logq2muf2,2)-4.*pow(loga,2);
+  if (opts.mufevol)
+    {
+      //LQF = 0.;
+      //LQ2F2 = 0.;
+      LQF = resint::LF;
+      LQ2F2 = pow(resint::LF,2);
+    }
+  LQF = 0.;
+  LQ2F2 = 0.;
+
+  double aassh=aass/2.;
+  double aasshsq = pow(aassh,2);
+  
   
   //All the following coefficients need to be calculated at each resumm iteration only with fixed factorization and renormalization scale (variable logmuf2q2) or
   //with fixed resummation scale (variable loga: a = q2/mu_res). Otherwise they can be computed at initialization
+  /*
   if (opts.order == 0)
     for (int sign = mesq::positive; sign <= mesq::negative; sign++)
       for (int i1 = 0; i1 < mellinint::mdim; i1++)
@@ -117,121 +149,181 @@ void hcoefficients::calc(double aass, complex <double> logmuf2q2, complex <doubl
 	    Hqqp_1[index(i1,i2,sign)] = 0.;//           !  qqp_1  means   Q' Q -> Qb Q  flavor in sigmaQQb determined by "second parton"
 	    Hqqp_2[index(i1,i2,sign)] = 0.;//		!  qqp_2  means   Q Q' -> Q Qb  flavor in sigmaQQb determined by "first parton" 
 	  }
+  */
+
+  complex <double> H1stqqb[mellinint::mdim*2];
+  complex <double> H1stqg[mellinint::mdim*2];
   
   if (opts.order == 1)
-    for (int sign = mesq::positive; sign <= mesq::negative; sign++)
-      for (int i1 = 0; i1 < mellinint::mdim; i1++)
-	for (int i2 = 0; i2 < mellinint::mdim; i2++)
-	  {
-	    Hqqb[index(i1,i2,sign)]=1.+aass/2.*
-	      (H1q + anomalous::C1QQ[anomalous::index(i1,mesq::positive)] + anomalous::C1QQ[anomalous::index(i2,sign)])
-	      -aass/2.*(anomalous::gamma1qq[anomalous::index(i1,0)]+anomalous::gamma1qq[anomalous::index(i2,sign)])*(logmuf2q2+2.*loga)
-	      +aass/2.*(-4.*loga)*(resconst::B1q+resconst::A1q*loga);
-	    
-	    /*
-	    H1stqqb[index(i1,i2,sign)]=
-	      (H1q+anomalous::C1QQ[anomalous::index(i1,mesq::positive)]+anomalous::C1QQ[anomalous::index(i2,sign)])
-	      -(anomalous::gamma1qq[anomalous::index(i1,mesq::positive)]+anomalous::gamma1qq[anomalous::index(i2,sign)])*(logmuf2q2+2.*loga)
-	      +(-4.*loga)*(resconst::B1q+resconst::A1q*loga);
-
-	    Hqqb[index(i1,i2,sign)]=1.+aass/2.*H1stqqb[index(i1,i2,sign)];
-	    */
-	    
-	    // channels which do not contribute at NLL
-	    Hgg[index(i1,i2,sign)] = 0.;//
-	    Hqq[index(i1,i2,sign)] = 0.;//              !  Q Q -> Qb Q  = Qb Qb -> Q Qb
-	    Hqq_1[index(i1,i2,sign)] = 0.;//
-	    Hqq_2[index(i1,i2,sign)] = 0.;//
-	    Hqqp_1[index(i1,i2,sign)] = 0.;//           !  qqp_1  means   Q' Q -> Qb Q  flavor in sigmaQQb determined by "second parton"
-	    Hqqp_2[index(i1,i2,sign)] = 0.;//		!  qqp_2  means   Q Q' -> Q Qb  flavor in sigmaQQb determined by "first parton" 
-	  }
-
-  if (opts.order == 2)
     {
-      complex <double> loga2 = pow(loga,2);
-      complex <double> loga3 = pow(loga,3);
-      complex <double> logq2muf22 = pow(logq2muf2,2);
-      H1stgg=0;
       for (int sign = mesq::positive; sign <= mesq::negative; sign++)
 	for (int i = 0; i < mellinint::mdim; i++)
 	  {
-	    H1stqg[index(i,sign)] = anomalous::C1QG[anomalous::index(i,sign)]
-	      -anomalous::gamma1qg[anomalous::index(i,sign)]*(logmuf2q2+2.*loga);
+	    int idx = anomalous::index(i,sign);
+	    int ii = hcoefficients::index(i,sign);
 
+	    H1stqqb[ii] = C1QQ[idx]
+	      -gamma1qq[idx]*(-LQF)
+	      +(-2.*loga)*(B1q+A1q*loga);
 
-	    //  qq  means   Qb Qb -> Qb Q =  Q Q -> Q Qb
-	    H2stqq[index(i,sign)]= anomalous::C2NSqqbM[anomalous::index(i,sign)] + anomalous::C2SqqbM[anomalous::index(i,sign)];
-	    H2stqq[index(i,sign)]=H2stqq[index(i,sign)]
-	      +4.*(-2.*loga*1./4.*(anomalous::gamma2qqbV[anomalous::index(i,sign)]+anomalous::gamma2qqbS[anomalous::index(i,sign)])
-		   +1./4.*(anomalous::gamma2qqbV[anomalous::index(i,sign)]+anomalous::gamma2qqbS[anomalous::index(i,sign)])*logq2muf2
-		   +1./2.*(H1stqg[index(i,sign)]+anomalous::C1QG[anomalous::index(i,sign)])/2.
-		   *1./2.*anomalous::gamma1gq[anomalous::index(i,sign)]*(logq2muf2-2.*loga));
-
-
-	    //  qqp_2  means   Q Q' -> Q Qb  flavor in sigmaQQb determined by "first parton"
-	    H2stqqp[index(i,sign)]= anomalous::C2SqqbM[anomalous::index(i,sign)];
-	    H2stqqp[index(i,sign)]=H2stqqp[index(i,sign)]
-	      +4.*(-2.*loga*1./4.*anomalous::gamma2qqbS[anomalous::index(i,sign)]
-		   +1./4.*anomalous::gamma2qqbS[anomalous::index(i,sign)]*logq2muf2
-		   +1./2.*(H1stqg[index(i,sign)]+anomalous::C1QG[anomalous::index(i,sign)])/2.
-		   *1./2.*anomalous::gamma1gq[anomalous::index(i,sign)]*(logq2muf2-2.*loga));
+	    //Bug fix in DYRES (compare lines 659-660 of DYRes-v1.0/src/Res/main2.f and line 894 of DYqT-v1.0/enew.f)
+	    H1stqg[ii] = C1QG[idx]
+	      -gamma1qg[idx]*(-LQF);
 	  }
 
       for (int sign = mesq::positive; sign <= mesq::negative; sign++)
 	for (int i1 = 0; i1 < mellinint::mdim; i1++)
 	  for (int i2 = 0; i2 < mellinint::mdim; i2++)
 	    {
-	      H1stqqb[index(i1,i2,sign)]=(H1q+anomalous::C1QQ[anomalous::index(i1,0)]+anomalous::C1QQ[anomalous::index(i2,sign)])
-		-(anomalous::gamma1qq[anomalous::index(i1,0)]+anomalous::gamma1qq[anomalous::index(i2,sign)])*(logmuf2q2+2.*loga)
-		+(-4.*loga)*(resconst::B1q+resconst::A1q*loga);
+	      //Hqqb[index(i1,i2,sign)]=1.+aass/2.*
+	      //(H1q + anomalous::C1QQ[anomalous::index(i1,mesq::positive)] + anomalous::C1QQ[anomalous::index(i2,sign)])
+	      //-aass/2.*(anomalous::gamma1qq[anomalous::index(i1,0)]+anomalous::gamma1qq[anomalous::index(i2,sign)])*(logmuf2q2+2.*loga)
+	      //+aass/2.*(-4.*loga)*(resconst::B1q+resconst::A1q*loga);
 
-	      //  All *4 because of normalization (as/2pi)^2 instead of as/pi
-	      // normalization of as/2pi  implies  gamma^1->gamma^1/2
-	      //                                   C^1, H^1 -> C^1/2, H^1/2 
-	      //                                   gamma^2-> gamma^2/4
-	      //                              beta,A,B -> beta,A,B are in as/pi already
-
-	      H2stqqb[index(i1,i2,sign)] = anomalous::C2NSqqM[anomalous::index(i1,0)] + anomalous::C2NSqqM[anomalous::index(i2,sign)] + anomalous::C2SqqbM[anomalous::index(i1,0)] + anomalous::C2SqqbM[anomalous::index(i2,sign)] + anomalous::C1QQ[anomalous::index(i1,0)]*anomalous::C1QQ[anomalous::index(i2,sign)];
-	      H2stqqb[index(i1,i2,sign)] = H2stqqb[index(i1,i2,sign)]
-		+ 4.*(+ 1./6.*resconst::A1q*resconst::beta0*8*loga3  
-		      + 1./2.*4*loga2*(resconst::A2q-resconst::beta0*(resconst::B1q+2*resconst::A1q*loga+anomalous::gamma1qq[anomalous::index(i1,0)]/2.+anomalous::gamma1qq[anomalous::index(i2,sign)]/2.))
-		      - 2.*loga*(resconst::B2q+2*resconst::A2q*loga-resconst::beta0*(anomalous::C1QQ[anomalous::index(i1,0)]+anomalous::C1QQ[anomalous::index(i2,sign)])/2.
-				+ anomalous::gamma2qqV[anomalous::index(i1,0)]/4. + anomalous::gamma2qqS[anomalous::index(i1,0)]/4. 
-				+ anomalous::gamma2qqV[anomalous::index(i2,sign)]/4. + anomalous::gamma2qqS[anomalous::index(i2,sign)]/4. )      
-		      + resconst::beta0/2.*(anomalous::gamma1qq[anomalous::index(i1,0)]+anomalous::gamma1qq[anomalous::index(i2,sign)])/2.*logq2muf22
-		      + (anomalous::gamma2qqV[anomalous::index(i1,0)]/4. + anomalous::gamma2qqS[anomalous::index(i1,0)]/4. + anomalous::gamma2qqV[anomalous::index(i2,sign)]/4. + anomalous::gamma2qqS[anomalous::index(i2,sign)]/4.)*logq2muf2
-		      - H1stqqb[index(i1,i2,sign)]/2.*resconst::beta0*logq2mur2
-		      + 1./2.*(H1stqqb[index(i1,i2,sign)]+H1q+anomalous::C1QQ[anomalous::index(i1,0)]+anomalous::C1QQ[anomalous::index(i2,sign)])/2.*((anomalous::gamma1qq[anomalous::index(i1,0)]+anomalous::gamma1qq[anomalous::index(i2,sign)])/2.*(logq2muf2-2.*loga)-(resconst::B1q+resconst::A1q*loga)*2.*loga)
-		      + 1./4.*(H1stqg[index(i1,0)]+anomalous::C1QG[anomalous::index(i1,0)])
-		      * anomalous::gamma1gq[anomalous::index(i1,0)]/2.*(logq2muf2-2.*loga)
-		      + 1./4.*(H1stqg[index(i2,sign)]+anomalous::C1QG[anomalous::index(i2,sign)])
-		      * anomalous::gamma1gq[anomalous::index(i2,sign)]/2.*(logq2muf2-2.*loga));
-		
-	      H2stqg_1[index(i1,i2,sign)] = anomalous::C2qgM[anomalous::index(i1,0)] + anomalous::C1QG[anomalous::index(i1,0)]*anomalous::C1QQ[anomalous::index(i2,sign)] 
-		+ 4.*(+ 1./2.*resconst::beta0*4*loga2*(-anomalous::gamma1qg[anomalous::index(i1,0)]/2.)
-		     - 2.*loga*(-resconst::beta0 * anomalous::C1QG[anomalous::index(i1,0)]/2. + anomalous::gamma2qg[anomalous::index(i1,0)]/4.)
-		     + 1./2.*resconst::beta0*logq2muf22*anomalous::gamma1qg[anomalous::index(i1,0)]/2.
-		     + anomalous::gamma2qg[anomalous::index(i1,0)]/4.*logq2muf2
-		     - resconst::beta0*logq2mur2*H1stqg[index(i1,0)]/2.
-		     + 1./2.*(H1stqqb[index(i1,i2,sign)] + H1q + anomalous::C1QQ[anomalous::index(i1,0)] + anomalous::C1QQ[anomalous::index(i2,sign)])/2.*(logq2muf2-2.*loga)*anomalous::gamma1qg[anomalous::index(i1,0)]/2.
-		     + 1./2.*(H1stqg[index(i1,0)] + anomalous::C1QG[anomalous::index(i1,0)])/2.*((logq2muf2-2.*loga)*(anomalous::gamma1qq[anomalous::index(i2,sign)]+anomalous::gamma1gg[anomalous::index(i1,0)])/2.-(resconst::B1q+resconst::A1q*loga)*2.*loga));
-		
-	      H2stqg_2[index(i1,i2,sign)] = anomalous::C2qgM[anomalous::index(i2,sign)] + anomalous::C1QG[anomalous::index(i2,sign)]*anomalous::C1QQ[anomalous::index(i1,0)]
-		+ 4.*(+ 1./2.*resconst::beta0*4*loga2*(-anomalous::gamma1qg[anomalous::index(i2,sign)]/2.)
-		     - 2.*loga*(-resconst::beta0 * anomalous::C1QG[anomalous::index(i2,sign)]/2. + anomalous::gamma2qg[anomalous::index(i2,sign)]/4.)
-		     + 1./2.*resconst::beta0*logq2muf22*(anomalous::gamma1qg[anomalous::index(i2,sign)]/2.)
-		     + anomalous::gamma2qg[anomalous::index(i2,sign)]/4.*logq2muf2
-		     - resconst::beta0*logq2mur2*H1stqg[index(i2,sign)]/2.
-		     + 1./2.*(H1stqqb[index(i1,i2,sign)] + H1q + anomalous::C1QQ[anomalous::index(i2,sign)] + anomalous::C1QQ[anomalous::index(i1,0)])/2.*(logq2muf2-2.*loga)*anomalous::gamma1qg[anomalous::index(i2,sign)]/2.
-		     + 1./2.*(H1stqg[index(i2,sign)] + anomalous::C1QG[anomalous::index(i2,sign)])/2. * ((logq2muf2-2.*loga)*(anomalous::gamma1qq[anomalous::index(i1,0)] + anomalous::gamma1gg[anomalous::index(i2,sign)])/2.-(resconst::B1q+resconst::A1q*loga)*2.*loga));
-
-	      //!!! simplification
-	      //H2stqg_2[index(i1,i2,sign)] = H2stqg_1[index(i2,i1,0)]
-	      //!!!
+	      int ii1 = index(i1,0);
+	      int ii2 = index(i2,sign);
+	      int idx = index(i1,i2,sign);
 	      
-	      //  GG done
-	      H2stgg[index(i1,i2,sign)] = anomalous::C1QG[anomalous::index(i2,sign)]*anomalous::C1QG[anomalous::index(i1,0)]
-		-4.*1./2.*(logmuf2q2+2.*loga)*((H1stqg[index(i1,0)] + anomalous::C1QG[anomalous::index(i1,0)])/2.*anomalous::gamma1qg[anomalous::index(i2,sign)]/2.+(H1stqg[index(i2,sign)] + anomalous::C1QG[anomalous::index(i2,sign)])/2.*anomalous::gamma1qg[anomalous::index(i1,0)]/2.);
+	      Hqqb[idx] = 1. + aass/2.*(H1q+H1stqqb[ii1]+H1stqqb[ii2]);
+  
+	      Hqg_1[idx] = aass/2.*H1stqg[ii1];
+	      Hqg_2[idx] = aass/2.*H1stqg[ii2];
+	      
+	      
+	      /*
+		H1stqqb[index(i1,i2,sign)]=
+		(H1q+anomalous::C1QQ[anomalous::index(i1,mesq::positive)]+anomalous::C1QQ[anomalous::index(i2,sign)])
+		-(anomalous::gamma1qq[anomalous::index(i1,mesq::positive)]+anomalous::gamma1qq[anomalous::index(i2,sign)])*(logmuf2q2+2.*loga)
+		+(-4.*loga)*(resconst::B1q+resconst::A1q*loga);
+		
+		Hqqb[index(i1,i2,sign)]=1.+aass/2.*H1stqqb[index(i1,i2,sign)];
+	      */
+	    
+	      //// channels which do not contribute at NLL
+	      //Hgg[index(i1,i2,sign)] = 0.;//
+	      //Hqq[index(i1,i2,sign)] = 0.;//              !  Q Q -> Qb Q  = Qb Qb -> Q Qb
+	      //Hqq_1[index(i1,i2,sign)] = 0.;//
+	      //Hqq_2[index(i1,i2,sign)] = 0.;//
+	      //Hqqp_1[index(i1,i2,sign)] = 0.;//           !  qqp_1  means   Q' Q -> Qb Q  flavor in sigmaQQb determined by "second parton"
+	      //Hqqp_2[index(i1,i2,sign)] = 0.;//		!  qqp_2  means   Q Q' -> Q Qb  flavor in sigmaQQb determined by "first parton" 
+	    }
+    }
+
+  if (opts.order == 2)
+    {
+      complex <double> H1stqqb[mellinint::mdim*2];
+      complex <double> H1stqg[mellinint::mdim*2];
+
+      complex <double> H2stqqb[mellinint::mdim*2];
+      complex <double> H2stqg[mellinint::mdim*2];
+      complex <double> H2stqq[mellinint::mdim*2];
+      complex <double> H2stqqp[mellinint::mdim*2];
+      
+      complex <double> loga2 = pow(loga,2);
+      complex <double> loga3 = pow(loga,3);
+      complex <double> logq2muf22 = pow(logq2muf2,2);
+      for (int sign = mesq::positive; sign <= mesq::negative; sign++)
+	for (int i = 0; i < mellinint::mdim; i++)
+	  {
+	    int idx = anomalous::index(i,sign);
+	    int ii = hcoefficients::index(i,sign);
+
+	    H1stqqb[ii] = C1QQ[idx]
+	      -gamma1qq[idx]*(-LQF)
+	      +(-2.*loga)*(B1q+A1q*loga);
+
+	    H1stqg[ii] = C1QG[idx]
+	      -gamma1qg[idx]*(-LQF);
+
+	    // All *4 because of normalization (as/2pi)^2 instead of as/pi
+	    // normalization of as/2pi  implies  gamma^1->gamma^1/2
+	    //                                   C^1, H^1 -> C^1/2, H^1/2 
+	    //                                   gamma^2-> gamma^2/4
+	    //                              beta,A,B -> beta,A,B are in as/pi already
+
+	    //qqb
+	    H2stqqb[ii] = C2NSqqM[idx]+C2SqqbM[idx] 
+	      + 4.*(+ 0.5*1./6.*A1q*beta0*8*loga3  
+		    + 0.5*1./2.*4*loga2*(A2q-beta0*(B1q+2*A1q*loga))
+		    - 0.5*2.*loga*(B2q+2*A2q*loga-beta0*C1QQ[idx])
+		    + 0.5*(gamma2qqV[idx]+gamma2qqS[idx])/2.*LQF
+		    + 0.5*1./2.*beta0*gamma1qq[idx]*LQ2F2
+		    - 0.5*H1stqqb[idx]*beta0*logq2mur2
+		    + 0.5*1./2.*(H1stqqb[idx]+C1QQ[idx])*(-(B1q+A1q*loga)*2.*loga)
+		    + 0.5*1./4.*(H1stqg[ii]+C1QG[idx])*gamma1gq[idx]*(LQF));
+
+	    //qg
+	    H2stqg[ii] = C2qgM[idx]
+	      + 4.*(- 2.*loga*(-beta0 * C1QG[idx]/2.)
+		    + 1./2.*beta0*gamma1qg[idx]/2.*LQ2F2
+		    + gamma2qg[idx]/4.*LQF
+		    - beta0*logq2mur2*H1stqg[ii]/2.
+		    + 1./2.*(H1stqqb[ii]+C1QQ[idx])/2.*(LQF)*gamma1qg[idx]/2.
+		    + 1./2.*(H1stqg[ii]+C1QG[idx])/2.*((LQF)*(gamma1gg[idx])/2.-(B1q+A1q*loga)*2.*loga)
+		    );
+
+	    //qq (Qb Qb -> Qb Q =  Q Q -> Q Qb)
+	    H2stqq[ii] = C2NSqqbM[idx] + C2SqqbM[idx]
+	      +4.*(+1./4.*(gamma2qqbV[idx]+gamma2qqbS[idx])*LQF
+		   +1./2.*(H1stqg[ii]+C1QG[idx])/2.
+		   *1./2.*gamma1gq[idx]*(LQF));
+
+
+	    //qqp (Q Q' -> Q Qb)
+	    H2stqqp[ii] = C2SqqbM[idx]
+	      +4.*(+1./4.*gamma2qqbS[idx]*LQF
+		   +1./2.*(H1stqg[ii]+C1QG[idx])/2.
+		   *1./2.*gamma1gq[idx]*(LQF));
+	  }
+
+      for (int sign = mesq::positive; sign <= mesq::negative; sign++)
+	for (int i1 = 0; i1 < mellinint::mdim; i1++)
+	  for (int i2 = 0; i2 < mellinint::mdim; i2++)
+	    {
+	      int idx1 = anomalous::index(i1,0);
+	      int idx2 = anomalous::index(i2,sign);
+	      int ii1 = hcoefficients::index(i1,0);
+	      int ii2 = hcoefficients::index(i2,sign);
+	      int ii12 = hcoefficients::index(i1,i2,sign);
+
+	      complex <double> H2stqqb_mix = C1QQ[idx1]*C1QQ[idx2]
+		+ 4.*(1./2.*(H1stqqb[ii1]+H1stqqb[ii2]+C1QQ[idx1]+C1QQ[idx2])/2.*(gamma1qq[idx1]+gamma1qq[idx2])/2.*(LQF));
+
+	      complex <double> H2stqg_mix_1 = C1QG[idx1]*C1QQ[idx2]
+		+4.*(+ 1./2.*(C1QQ[idx2])/2.*(LQF)*gamma1qg[idx1]/2.
+		     + 1./2.*(H1stqg[ii1] + C1QG[idx1])/2.*((LQF)*(gamma1qq[idx2])/2.)
+		     )
+		;
+	    
+	      complex <double> H2stqg_mix_2 = C1QG[idx2]*C1QQ[idx1]
+		+4.*(+ 1./2.*(C1QQ[idx1])/2.*(LQF)*gamma1qg[idx2]/2.
+		     + 1./2.*(H1stqg[ii2] + C1QG[idx2])/2.*((LQF)*(gamma1qq[idx1])/2.)
+		     )
+		;
+	      
+	      complex <double> H2stgg_mix = C1QG[idx2]*C1QG[idx1]
+		-4.*1./2.*(-LQF)*((H1stqg[ii1]+C1QG[idx1])/2.*gamma1qg[idx2]/2.
+				  +(H1stqg[ii2]+C1QG[idx2])/2.*gamma1qg[idx1]/2.);
+		
+	      //QQb
+	      Hqqb[ii12] = 1.+aassh*(H1stqqb[ii1]+H1stqqb[ii2]) + aasshsq*(H2stqqb[ii1]+H2stqqb[ii2]+H2stqqb_mix);
+
+	      //qg_1 -> GQ initial state
+	      Hqg_1[ii12] = aassh*H1stqg[ii1] + aasshsq*(H2stqg[ii1]+H2stqg_mix_1);
+
+	      //qg_2 -> QG initial state
+	      Hqg_2[ii12] = aassh*H1stqg[ii2] + aasshsq*(H2stqg[ii2]+H2stqg_mix_2);
+	      
+	      //QQ
+	      Hqq_1[ii12] = aasshsq*H2stqq[ii1]; // Q Q -> Qb Q and Qb Qb -> Q Qb (sigmaQQb determined by "second parton")
+	      Hqq_2[ii12] = aasshsq*H2stqq[ii2]; // Q Q -> Q Qb and Qb Qb -> Qb Q (sigmaQQb determined by "first parton")
+
+	      //QQ'
+	      Hqqp_1[ii12] = aasshsq*H2stqqp[ii1]; // qqp_1  means   Q' Q -> Qb Q  flavor in sigmaQQb determined by "second parton"
+	      Hqqp_2[ii12] = aasshsq*H2stqqp[ii2]; // qqp_2  means   Q Q' -> Q Qb  flavor in sigmaQQb determined by "first parton"
+	      
+	      //GG
+	      Hgg[ii12] = aasshsq*H2stgg_mix;
 	    }
     }
 }
@@ -253,7 +345,7 @@ void hcoefficients::calcb(double aass, complex <double> logmuf2q2, complex <doub
 
   //b-dependent quantities to be computed in invres(b)
   // complex <double> alpq = pdfevol::alpq; //(alpqf * alphasl(scale2))
-
+  /*
   double aassh=aass/2.;
   double aasshsq = pow(aassh,2);
 
@@ -336,32 +428,20 @@ void hcoefficients::calcb(double aass, complex <double> logmuf2q2, complex <doub
 	      Hqqp_2[idx12] = Hqqp[idx2]; // qqp_2  means   Q Q' -> Q Qb  flavor in sigmaQQb determined by "first parton"
 	    }
     }
+*/
 }
 void hcoefficients::free()
 {
+  delete[] Hqqb;
+
   if (opts.order == 0)
     return;
 
-  delete[] Hqqb;
-  delete[] Hqg;
   delete[] Hqg_1;
   delete[] Hqg_2;
-  delete[] Hqq_nnll;
-  delete[] Hqq;
   delete[] Hqq_1;
   delete[] Hqq_2;
-  delete[] Hqqp;
   delete[] Hqqp_1;
   delete[] Hqqp_2;
   delete[] Hgg;
-  delete[] H1stqg;
-  delete[] H1stqqb;
-  delete[] H2stqq;
-  delete[] H2stqqp;
-  delete[] H2stqqb;
-  delete[] H2stqg_1;
-  delete[] H2stqg_2;
-  delete[] H2stgg;
-  delete[] aexpqq;
-  delete[] aexpqg;
 }
