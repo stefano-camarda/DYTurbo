@@ -27,7 +27,13 @@ namespace sudakov
   //#pragma omp threadprivate(nf,beta0,beta1,beta2,log1y)
   extern complex <double> log1y;
 #pragma omp threadprivate(log1y)
+  //extern double ry;
+  //#pragma omp threadprivate(ry)
 
+  extern complex <double> S;
+  extern complex <double> logS;
+#pragma omp threadprivate(S,logS)
+  
   //  void setnf(int nff);
   complex <double> g1(complex <double> y);
   complex <double> g2(complex <double> y);
