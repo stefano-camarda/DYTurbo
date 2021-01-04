@@ -26,7 +26,8 @@ namespace rapint
 #pragma omp threadprivate(Ith0p,Ith1p,Ith2p,Ith0m,Ith1m,Ith2m)
 
   void allocate();
-  void integrate(double m, double ymin, double ymax);
+  void integrate(double m, double ymin, double ymax, int helicity = -1);
+  void numint(double m, double ymin, double ymax, int helicity = -1);
   void free();
 
   inline int index(int i, int j, int i1, int i2)
