@@ -78,8 +78,10 @@ complex <double> *anomalous::C2NSqqbM_2;
 
 void anomalous::init()
 {
-  allocate();
-  calc();
+  if (opts.melup <= 1)
+    allocate();
+  if (opts.melup == 0)
+    calc();
 }
 
 void anomalous::allocate()
@@ -159,6 +161,13 @@ void anomalous::allocate()
 }
 
 void anomalous::release()
+{
+  if (opts.melup <= 1)
+    free();
+}
+
+
+void anomalous::free()
 {
   delete[] ans;
   delete[] am;
