@@ -9,7 +9,8 @@ using namespace std;
 extern "C"
 {
   void pdfmoments_(int &beam, double &scale, fcomplex &N, fcomplex &UV, fcomplex &DV, fcomplex &US, fcomplex &DS, fcomplex &SP, fcomplex &SM, fcomplex &GL, fcomplex &CH, fcomplex &BO, double &xmin);
-
+  fcomplex alphasl_(fcomplex &q2);
+  
   //access dyres PDF in N-space
   extern struct {
     //    fcomplex cfx1_[136][11];
@@ -25,26 +26,6 @@ extern "C"
 
 namespace pdfevol
 {
-  //PDFs mellin moments at the factorisation scale
-  extern complex <double> *UVP;
-  extern complex <double> *DVP;
-  extern complex <double> *USP;
-  extern complex <double> *DSP;
-  extern complex <double> *SSP;
-  extern complex <double> *GLP;
-  extern complex <double> *CHP;
-  extern complex <double> *BOP;
-#pragma omp threadprivate(UVP,DVP,USP,DSP,SSP,GLP,CHP,BOP)
-
-  //Singlet/non-singlet decomposition
-  extern complex <double> *SIP;
-  extern complex <double> *NS3P;
-  extern complex <double> *NS8P;
-  extern complex <double> *NS15P;
-  extern complex <double> *NS24P;
-  extern complex <double> *NS35P;
-#pragma omp threadprivate(SIP,NS3P,NS8P,NS15P,NS24P,NS35P)
-  
   //evolved PDFs mellin moments
   extern complex <double> *fx1;
   extern complex <double> *fx2;
@@ -56,36 +37,55 @@ namespace pdfevol
 #pragma omp threadprivate(fn1,fn2)
 
   //scales
+  //extern complex <double> bb;
+  extern complex <double> bstar;
+  extern complex <double> mub_a;
+  extern complex <double> mub;
+  extern complex <double> mubstar_a;
+  extern complex <double> mubstar;
+  extern complex <double> mubstartilde;
+#pragma omp threadprivate(bstar,mub_a,mub,mubstar_a,mubstar,mubstartilde)
+
+  //alphas for the evolution
+  extern complex <double> logasl, asl;
+#pragma omp threadprivate(logasl, asl)
+  
+  //obsolete
   extern complex <double> bscale;
   extern complex <double> bstarscale;
   extern complex <double> bstartilde;
   extern complex <double> qbstar;
   extern complex <double> bcomplex;
-  extern complex <double> XL;
-  extern complex <double> XL1;
-  extern complex <double> SALP;
-  extern complex <double> alpr;
-#pragma omp threadprivate(bscale,bstarscale,bstartilde,qbstar,bcomplex,XL,XL1,SALP,alpr)
-
-  extern void allocate(); //allocate dynamic memory
-  extern void free();     //free dynamic memory
+#pragma omp threadprivate(bscale,bstarscale,bstartilde,qbstar,bcomplex)
 
   extern void allocate_fx(); //allocate dynamic memory
   extern void free_fx();     //free dynamic memory
+
+  extern void allocate(); //allocate dynamic memory
+  extern void free();     //free dynamic memory
   
   //initialise and compute Mellin moments of PDFs at the starting scale (factorisation scale)
   extern void init();
+  extern void init_fortran();
   //release memory if fmufac = 0
   extern void release();
   //update Mellin moments of PDFs at the starting scale with a dynamic factorisation scale
   extern void update();
-  //evolve Mellin moments of PDFs from the factorisation scale to the scale ~1/b, set in bscale
+  //set various scales of order b0/b
+  extern void scales(complex <double> b);
+  //compute the LL,NLL,NNLL,NNNLL evolution of alphas
+  extern void alphasl(complex <double> b);
+  //evolution main selector
   extern void evolution();
+  //evolve Mellin moments of PDFs from the factorisation scale to the scale ~b0/b, set in bscale
+  extern void evolve();
   //calculate Mellin moments of PDFs at all scales by direct Mellin transform
   extern void calculate(int i);
   extern void calculate();
   //store the moments in the fx1 and fx2 arrays
   extern void storemoments(int i, complex <double> fx[11]);
+  extern void storemoments_1(int i, complex <double> fx[11]);
+  extern void storemoments_2(int i, complex <double> fx[11]);
   //store the moments in the Fortran common block
   extern void storemoments_fortran(int i, complex <double> fx[11]);
   //retrieve moments corresponding to i1, i2, and sign from the fx1 and fx2 arrays and store them in fn1 and fn2
