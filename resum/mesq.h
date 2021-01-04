@@ -66,7 +66,7 @@ namespace mesq
 #pragma omp threadprivate(mesqij_expy)
 
   extern void allocate();
-  extern void setmesq_expy(int mode, double m, double costh, double y);
+  extern void setmesq_expy(int mode, double m, double costh, double y, int helicity =-1);
   extern void free();
 
   //amplitudes

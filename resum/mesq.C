@@ -220,12 +220,12 @@ void mesq::allocate()
   mesqij_expy = new complex <double> [mellinint::mdim*mellinint::mdim*2*12];
 }
 
-void mesq::setmesq_expy(int mode, double m, double costh, double y)
+void mesq::setmesq_expy(int mode, double m, double costh, double y, int helicity)
 {
   //mass dependent part
   setpropagators(m);
   
-  if (mode < 2)
+  if (mode < 2 || mode == 4)
     {
       //costh dependent part
       double one, costh1, costh2;
@@ -235,12 +235,34 @@ void mesq::setmesq_expy(int mode, double m, double costh, double y)
 	  costh1 = costh;
 	  costh2 = pow(costh,2);
 	}
-      else if (mode == 1)
+      else if (mode == 1 || mode == 4)
 	{
 	  //retrieve cos theta moments
 	  double cthmom0, cthmom1, cthmom2;
 	  cthmoments_(cthmom0, cthmom1, cthmom2);
 	  //omegaintegr::cthmoments(cthmom0, cthmom1, cthmom2);
+	  if (helicity >= 0)
+	    {
+	      if (helicity == 0)
+		{
+		  cthmom0 = 4./3.; //20./3. * (0.5*2. - 1.5*2./3.  ) +2./3.*2.;
+		  cthmom1 = 0.;
+		  cthmom2 = -4./3.; //20./3. * (0.5*2./3.-1.5*2./5.  ) +2./3.*2./3.;
+		}
+	      else if (helicity == 4)
+		{
+		  cthmom0=0.;
+		  //cthmom1=4*cthmom2*(y < 0 ? -1. : 1.);
+		  cthmom1=4*cthmom2;
+		  cthmom2=0.;
+		}
+	      else
+		{
+		  cthmom0=0.;
+		  cthmom1=0.;
+		  cthmom2=0.;
+		}
+	    }
 	  one = cthmom0;
 	  costh1 = cthmom1;
 	  costh2 = cthmom2;
@@ -257,9 +279,12 @@ void mesq::setmesq_expy(int mode, double m, double costh, double y)
       complex <double> cex2m[mellinint::mdim];
       for (int i = 0; i < mellinint::mdim; i++)
 	{
-	  cex1[i] = exp(-mellinint::Np[i] * ax1) / M_PI * mellinint::CCp;
-	  cex2p[i] = exp(-mellinint::Np[i] * ax2) / M_PI * mellinint::CCp;
-	  cex2m[i] = exp(-mellinint::Nm[i] * ax2) / M_PI * mellinint::CCm; //Is this the complex conjugate of the above?
+//	  cex1[i] = exp(-mellinint::Np[i] * ax1) / M_PI * mellinint::CCp;
+//	  cex2p[i] = exp(-mellinint::Np[i] * ax2) / M_PI * mellinint::CCp;
+//	  cex2m[i] = exp(-mellinint::Nm[i] * ax2) / M_PI * mellinint::CCm; //Is this the complex conjugate of the above?
+	  cex1[i] = exp(-mellinint::Np_1[i] * ax1) / M_PI * mellinint::CCp;
+	  cex2p[i] = exp(-mellinint::Np_2[i] * ax2) / M_PI * mellinint::CCp;
+	  cex2m[i] = exp(-mellinint::Nm_2[i] * ax2) / M_PI * mellinint::CCm; //Is this the complex conjugate of the above?
 	}
 
       //product of amplitudes and x1^-z1 * x2^-z2 piece of the Mellin inverse transform
@@ -267,18 +292,45 @@ void mesq::setmesq_expy(int mode, double m, double costh, double y)
 	for (int i2 = 0; i2 < mellinint::mdim; i2++)
 	  for (int pch = 0; pch < totpch; pch++)
 	    {
-	      mesqij_expy[mesq::index(pch, i1, i2, mesq::positive)] = mesqij[pch] * cex1[i1] * cex2p[i2] * mellinint::wn[i1] * mellinint::wn[i2];
-	      mesqij_expy[mesq::index(pch, i1, i2, mesq::negative)] = mesqij[pch] * cex1[i1] * cex2m[i2] * mellinint::wn[i1] * mellinint::wn[i2];
+	      //mesqij_expy[mesq::index(pch, i1, i2, mesq::positive)] = mesqij[pch] * cex1[i1] * cex2p[i2] * mellinint::wn[i1] * mellinint::wn[i2];
+	      //mesqij_expy[mesq::index(pch, i1, i2, mesq::negative)] = mesqij[pch] * cex1[i1] * cex2m[i2] * mellinint::wn[i1] * mellinint::wn[i2];
+	      mesqij_expy[mesq::index(pch, i1, i2, mesq::positive)] = mesqij[pch] * cex1[i1] * cex2p[i2] * mellinint::wn_1[i1] * mellinint::wn_2[i2];
+	      mesqij_expy[mesq::index(pch, i1, i2, mesq::negative)] = mesqij[pch] * cex1[i1] * cex2m[i2] * mellinint::wn_1[i1] * mellinint::wn_2[i2];
 	      //cout << i1 << "  " << i2 << "  " << mesqij[pch] << "  " <<  cex1[i1] << "  " <<  cex2m[i2] << "  " <<  mellinint::wn[i1] << "  " <<  mellinint::wn[i2] << endl;
 	    }
     }
   else //if mode == 2 or mode == 3 -> rapidity integrated mode
     {
       //1D mellin
-      if (opts.mellin1d)
+      if (opts.mellin1d) //helicity option is not valid in mellin 1d if collisions are pp, because cannot apply the y <> 0 switch!
 	{
 	  double cthmom0, cthmom1, cthmom2;
 	  omegaintegr::cthmoments(cthmom0,cthmom1,cthmom2);
+	  //cthmom0 = 2.;
+	  //cthmom1 = 0.;
+	  //cthmom2 = 2./3.;
+	  if (helicity >= 0)
+	    {
+	      if (helicity == 0)
+		{
+		  cthmom0 = 4./3.; //20./3. * (0.5*2. - 1.5*2./3.  ) +2./3.*2.;
+		  cthmom1 = 0.;
+		  cthmom2 = -4./3.; //20./3. * (0.5*2./3.-1.5*2./5.  ) +2./3.*2./3.;
+		}
+	      else if (helicity == 4)
+		{
+		  cthmom0=0.;
+		  //cthmom1=4*cthmom2*(y < 0 ? -1. : 1.);
+		  cthmom1=4*cthmom2;
+		  cthmom2=0.;
+		}
+	      else
+		{
+		  cthmom0=0.;
+		  cthmom1=0.;
+		  cthmom2=0.;
+		}
+	    }
 	  setmesq(cthmom0, cthmom1, cthmom2);
 	  double bjx= q2/pow(opts.sroot,2);
 	  double ax = log(bjx);
@@ -289,7 +341,7 @@ void mesq::setmesq_expy(int mode, double m, double costh, double y)
 		complex <double> cexp = exp(-mellinint::Np[i] * ax)/M_PI * mellinint::CCp/complex <double>(0.,1);
 		complex <double> cexm = exp(-mellinint::Nm[i] * ax)/M_PI * mellinint::CCm/complex <double>(0.,1);
 		mesqij_expy[mesq::index(pch, i, i, mesq::positive)] = mesqij[pch] * cexp * mellinint::wn[i];
-		mesqij_expy[mesq::index(pch, i, i, mesq::negative)] = mesqij[pch] * cexm * mellinint::wn[i];
+		mesqij_expy[mesq::index(pch, i, i, mesq::negative)] = mesqij[pch] * cexm * conj(mellinint::wn[i]);
 	      }
 
 	  /*
