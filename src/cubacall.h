@@ -14,6 +14,7 @@ using namespace std;
 //resummation
 void resintegr1d(vector <double> &res, double &err); //missing Ai
 void resintegr2d(vector <double> &res, double &err); //missing Ai
+void resintegr2d_my(vector <double> &res, double &err); //missing Ai
 void resintegr3d(vector <double> &res, double &err); //(missing Ai)
 void resintegrMC(vector <double> &res, double &err); //missing PDF variations
 

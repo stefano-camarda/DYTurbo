@@ -29,7 +29,7 @@ void resintegr1d(vector <double> &res, double &err)
     }
 
   const int ndim = 1;     //dimensions of the integral
-  const int ncomp = 1;  //components of the integrand
+  const int ncomp = (opts.helicity >= 0 ? 2 : 1);    //components of the integrand
   void *userdata = NULL;
   const int nvec = 1;
   const double epsrel = 0.;
@@ -66,24 +66,33 @@ void resintegr1d(vector <double> &res, double &err)
       if (opts.cubacores == 0)
 	pcubature(ncomp, resintegrand1d_cubature, userdata,
 		  ndim, xmin, xmax,
-		  eval, epsabs, epsrel, ERROR_INDIVIDUAL, integral, error);
+		  eval, epsabs, epsrel, ERROR_LINF, integral, error);
       else
 	pcubature_v(ncomp, resintegrand1d_cubature_v, userdata,
 		    ndim, xmin, xmax,
-		    eval, epsabs, epsrel, ERROR_INDIVIDUAL, integral, error);
+		    eval, epsabs, epsrel, ERROR_LINF, integral, error);
     }
   res.clear();
-  res.push_back(integral[0]);
+
+  if (opts.helicity >= 0)
+    res.push_back(integral[0] != 0? integral[1]/integral[0] : 0);
+  else
+    res.push_back(integral[0]);
+
   for (int i = 1; i < opts.totpdf; i++)
     res.push_back(0);
-  err = error[0];
+
+  if (opts.helicity >= 0)
+    err = integral[0] != 0? error[0]/integral[0]*integral[1]/integral[0] : 0; // error[1]/integral[1]*integral[1]/integral[0]
+  else
+    err = error[0];
   return;
 }
 
 void resintegr2d(vector <double> &res, double &err)
 {
   const int ndim = 2;     //dimensions of the integral
-  const int ncomp = 1;  //components of the integrand
+  const int ncomp = (opts.helicity >= 0 ? 2 : 1);    //components of the integrand
   void *userdata = NULL;
   const int nvec = 1;
   const double epsrel = 0.;
@@ -120,25 +129,95 @@ void resintegr2d(vector <double> &res, double &err)
       if (opts.cubacores == 0)
 	pcubature(ncomp, resintegrand2d_cubature, userdata, 
 		  ndim, xmin, xmax, 
-		  eval, epsabs, epsrel, ERROR_INDIVIDUAL, integral, error);
+		  eval, epsabs, epsrel, ERROR_LINF, integral, error);
       else
 	pcubature_v(ncomp, resintegrand2d_cubature_v, userdata, 
 		    ndim, xmin, xmax, 
-		    eval, epsabs, epsrel, ERROR_INDIVIDUAL, integral, error);
+		    eval, epsabs, epsrel, ERROR_LINF, integral, error);
     }
   res.clear();
-  res.push_back(integral[0]);
+
+  if (opts.helicity >= 0)
+    res.push_back(integral[0] != 0? integral[1]/integral[0] : 0);
+  else
+    res.push_back(integral[0]);
+
   for (int i = 1; i < opts.totpdf; i++)
     res.push_back(0);
-  err = error[0];
+  if (opts.helicity >= 0)
+    err = integral[0] != 0? error[0]/integral[0]*integral[1]/integral[0] : 0; // error[1]/integral[1]*integral[1]/integral[0]
+  else
+    err = error[0];
+  return;
+}
+
+void resintegr2d_my(vector <double> &res, double &err)
+{
+  const int ndim = 2;     //dimensions of the integral
+  const int ncomp = (opts.helicity >= 0 ? 2 : 1);    //components of the integrand
+  void *userdata = NULL;
+  const int nvec = 1;
+  const double epsrel = 0.;
+  const double epsabs = 0.;
+  const char *statefile = "";
+  void *spin=NULL;
+  int neval;
+  int fail;
+  double integral[ncomp];
+  double error[ncomp];
+  double prob[ncomp];
+  const int flags = 0+opts.cubaverbosity;
+  const int mineval = 65+2*65*opts.niterBORN;
+  const int maxeval = 65+2*65*opts.niterBORN;
+  const int key = 13;
+  int nregions;
+
+  if (!opts.pcubature)
+    Cuhre(ndim, ncomp,
+	  (integrand_t) resintegrand2d_my, userdata, nvec,
+	  epsrel, epsabs,
+	  flags,
+	  mineval, maxeval,
+	  key, statefile, NULL,
+	  &nregions, &neval, &fail,
+	  integral, error, prob);
+  else
+    {
+      const int eval = 0;
+      const double epsrel = opts.relaccuracy;
+      const double epsabs = opts.absaccuracy;
+      double xmin[2] = {0, 0};
+      double xmax[2] = {1, 1};
+      if (opts.cubacores == 0)
+	pcubature(ncomp, resintegrand2d_my_cubature, userdata, 
+		  ndim, xmin, xmax, 
+		  eval, epsabs, epsrel, ERROR_LINF, integral, error);
+      else
+	pcubature_v(ncomp, resintegrand2d_my_cubature_v, userdata, 
+		    ndim, xmin, xmax, 
+		    eval, epsabs, epsrel, ERROR_LINF, integral, error);
+    }
+  res.clear();
+
+  if (opts.helicity >= 0)
+    res.push_back(integral[0] != 0? integral[1]/integral[0] : 0);
+  else
+    res.push_back(integral[0]);
+
+  for (int i = 1; i < opts.totpdf; i++)
+    res.push_back(0);
+  if (opts.helicity >= 0)
+    err = integral[0] != 0? error[0]/integral[0]*integral[1]/integral[0] : 0; // error[1]/integral[1]*integral[1]/integral[0]
+  else
+    err = error[0];
   return;
 }
 
 void resintegr3d(vector <double> &res, double &err)
 {
   const int ndim = 3;     //dimensions of the integral
-  const int ncomp = 1;  //components of the integrand
-  void *userdata;
+  const int ncomp = (opts.helicity >= 0 ? 2 : 1);    //components of the integrand
+  void *userdata = NULL;
   const int nvec = 1;
   const double epsrel = 0.;
   const double epsabs = 0.;
@@ -154,19 +233,45 @@ void resintegr3d(vector <double> &res, double &err)
   const int maxeval = 127+2*127*opts.niterBORN;
   const int key = 13;
   int nregions;
-  Cuhre(ndim, ncomp,
-	(integrand_t) resintegrand3d, userdata, nvec,
-	epsrel, epsabs,
-	flags,
-	mineval, maxeval,
-	key, statefile, NULL,
-	&nregions, &neval, &fail,
-  	integral, error, prob);
+
+  if (!opts.pcubature)
+    Cuhre(ndim, ncomp,
+	  (integrand_t) resintegrand3d, userdata, nvec,
+	  epsrel, epsabs,
+	  flags,
+	  mineval, maxeval,
+	  key, statefile, NULL,
+	  &nregions, &neval, &fail,
+	  integral, error, prob);
+  else
+    {
+      const int eval = 0;
+      const double epsrel = opts.relaccuracy;
+      const double epsabs = opts.absaccuracy;
+      double xmin[3] = {0, 0, 0};
+      double xmax[3] = {1, 1, 1};
+      if (opts.cubacores == 0)
+	pcubature(ncomp, resintegrand3d_cubature, userdata, 
+		  ndim, xmin, xmax, 
+		  eval, epsabs, epsrel, ERROR_LINF, integral, error);
+      else
+	pcubature_v(ncomp, resintegrand3d_cubature_v, userdata, 
+		    ndim, xmin, xmax, 
+		    eval, epsabs, epsrel, ERROR_LINF, integral, error);
+    }
   res.clear();
-  res.push_back(integral[0]);
+
+  if (opts.helicity >= 0)
+    res.push_back(integral[0] != 0? integral[1]/integral[0] : 0);
+  else
+    res.push_back(integral[0]);
+
   for (int i = 1; i < opts.totpdf; i++)
     res.push_back(0);
-  err = error[0];
+  if (opts.helicity >= 0)
+    err = integral[0] != 0? error[0]/integral[0]*integral[1]/integral[0] : 0; // error[1]/integral[1]*integral[1]/integral[0]
+  else
+    err = error[0];
   return;
 }
 
@@ -648,11 +753,11 @@ void bornintegr2d(vector <double> &res, double &err)
       if (opts.cubacores == 0)
 	pcubature(ncomp, lointegrand2d_cubature, userdata, 
 		  ndim, xmin, xmax, 
-		  eval, epsabs, epsrel, ERROR_INDIVIDUAL, integral, error);
+		  eval, epsabs, epsrel, ERROR_LINF, integral, error);
       else
 	pcubature_v(ncomp, lointegrand2d_cubature_v, userdata, 
 		    ndim, xmin, xmax, 
-		    eval, epsabs, epsrel, ERROR_INDIVIDUAL, integral, error);
+		    eval, epsabs, epsrel, ERROR_LINF, integral, error);
 
       /*
       //smolyak
@@ -676,6 +781,7 @@ void bornintegr2d(vector <double> &res, double &err)
     res.push_back(integral[0] != 0? integral[1]/integral[0] : 0);
   else
     res.push_back(integral[0]);
+
   for (int i = 1; i < opts.totpdf; i++)
     res.push_back(0);
   
@@ -683,9 +789,6 @@ void bornintegr2d(vector <double> &res, double &err)
     err = integral[0] != 0? error[0]/integral[0]*integral[1]/integral[0] : 0; // error[1]/integral[1]*integral[1]/integral[0]
   else
     err = error[0];
-  return;
-
-  
   return;
 }
 
@@ -978,10 +1081,11 @@ void ctintegr1d(vector <double> &res, double &err)
 }
 /***************************************************************/
 void tell_to_grid_we_are_alive(){
-  if(opts.gridverbose && ICALL % 100000==0)
+  if(opts.gridverbose && ICALL % 1000==0)
     {
       if (opts.redirect) freopen ("/dev/tty", "a", stdout);
       printf (" Hi Grid, we are still alive! Look, our event is %d\n",ICALL);
+      fprintf (stderr," Hi Grid, we are still alive! Look, our event is %d\n",ICALL);
       if (opts.redirect) freopen((opts.output_filename + ".log").c_str(), "w", stdout);
     }
   ICALL++;
@@ -998,7 +1102,9 @@ void cuba::exitfun(void * input, const int &core){
 
 void cuba::init()
 {
-  cubacores(opts.cubacores,1000000);     //< set number of cores
+  int pcores = 1000000;
+  cubacores(&opts.cubacores,&pcores);    //< set number of cores
+  //cubacores(opts.cubacores,1000000);    //< set number of cores
   cubainit((void (*)()) initfun,NULL);   //< merge at the end of the run
   cubaexit((void (*)()) exitfun,NULL);   //< merge at the end of the run
 }
