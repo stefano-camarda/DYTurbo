@@ -28,8 +28,8 @@
        SUBROUTINE ENS1N (ENS, ALPI, ALPF, S, KN, NF)
 *
        IMPLICIT DOUBLE COMPLEX (A - Z)
-       INTEGER NDIM, NFMIN, NFMAX, KN, NF, IMODE
-       PARAMETER (NDIM = 512, NFMIN = 3, NFMAX = 6)
+       include 'pnsg_inc.f'
+       INTEGER IMODE
        DOUBLE PRECISION PGBETA0 (NFMIN:NFMAX), PGBETA1 (NFMIN:NFMAX),
      1                  PGBETA2 (NFMIN:NFMAX), PGBETA3 (NFMIN:NFMAX)
        DOUBLE PRECISION B0I, B10, ALPI, ALPF, S, LOGFR
@@ -43,8 +43,10 @@
        COMMON / EVMOD  / IMODE
        COMMON / FRRAT  / LOGFR
        COMMON / PGBETA   / PGBETA0, PGBETA1, PGBETA2, PGBETA3
-       COMMON / PNS0   / P0NS (NDIM, NFMIN:NFMAX)
-       COMMON / PNS1   / P1NS (NDIM, NFMIN:NFMAX, 3)
+!        COMMON / PNS0   / P0NS (NDIM, NFMIN:NFMAX)
+! !$OMP THREADPRIVATE(/PNS0/)
+!        COMMON / PNS1   / P1NS (NDIM, NFMIN:NFMAX, 3)
+! !$OMP THREADPRIVATE(/PNS1/)
 *
 * ---------------------------------------------------------------------
 *
