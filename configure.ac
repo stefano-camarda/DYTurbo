@@ -105,7 +105,7 @@ AC_SEARCH_LIBS([vegas],[cuba],[
 	AC_MSG_RESULT([Using -lcuba from system installation])
         CUBA_LDFLAGS=-lcuba],
         [
-	CUBA_VERSION=4.2
+	CUBA_VERSION=4.2.1
 	AC_SUBST(CUBA_VERSION)
 	# search for local istallation of Cuba-4.2
 	cubalib=`ls ${PWD}/Cuba-${CUBA_VERSION}/libcuba.a`
@@ -290,7 +290,6 @@ AS_IF([test "x$enable_checkBounds" = "xyes"], [
   FFLAGS="$FFLAGS -fbounds-check"
 ])
 
-
 AC_CONFIG_FILES([Makefile 
 		 user/Makefile
 		 histo/Makefile
@@ -308,6 +307,7 @@ AC_CONFIG_FILES([Makefile
 		 dequad/Makefile
 		 bequad/Makefile
 	 	 zeta/Makefile
+		 polylog/Makefile
 	 	 harmonicsums/Makefile
 		 sandia/Makefile
 		 smolpack/Makefile
@@ -322,12 +322,12 @@ AC_CONFIG_FILES([Makefile
 		 dyturbo-config])
 
 
-AM_COND_IF([HAVE_DYRES], [
-  AC_CONFIG_FILES([origdyres/Makefile])
-])
-AM_COND_IF([HAVE_TEST], [
-  AC_CONFIG_FILES([test/Makefile])
-])
+#AM_COND_IF([HAVE_DYRES], [
+#  AC_CONFIG_FILES([origdyres/Makefile])
+#])
+#AM_COND_IF([HAVE_TEST], [
+#  AC_CONFIG_FILES([test/Makefile])
+#])
 
 #add this to ship cuba
 #		 cuba/Makefile

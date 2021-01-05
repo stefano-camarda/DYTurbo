@@ -1,16 +1,16 @@
 ACLOCAL_AMFLAGS=-I m4
 #do not ditribute test directories
 # add cuba to SUBDIRS to ship cuba
-DIST_SUBDIRS = histo user cernlib ancont pegasus cubature dequad bequad zeta harmonicsums sandia smolpack besche bessel minprescription specialfunctions dyres dynnlo mcfm integrands resum counterterm v2j born phasespace vjet src
+DIST_SUBDIRS = histo user cernlib ancont pegasus cubature dequad bequad zeta polylog harmonicsums sandia smolpack besche bessel minprescription specialfunctions dyres dynnlo mcfm integrands resum counterterm v2j born phasespace vjet src
 SUBDIRS      = ${DIST_SUBDIRS}
 
 # add test directories if enabled
-if HAVE_TEST
-SUBDIRS += test
-endif
-if HAVE_DYRES
-SUBDIRS += origdyres
-endif
+#if HAVE_TEST
+#SUBDIRS += test
+#endif
+#if HAVE_DYRES
+#SUBDIRS += origdyres
+#endif
 
 
 dist_bin_SCRIPTS = install-cuba install-lhapdf install-chaplin install-cubature install-ceres
