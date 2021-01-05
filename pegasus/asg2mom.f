@@ -30,25 +30,26 @@
        SUBROUTINE ASG2MOM 
 *
        IMPLICIT DOUBLE COMPLEX (A - Z)
-       INTEGER NMAX, NDIM, KN
-       PARAMETER (NDIM = 512)
-       DOUBLE PRECISION ZETA(6), CF, CA, TR
-*
-* ---------------------------------------------------------------------
-*
-* ..Input common-blocks 
-*
-       COMMON / MOMS   / NA (NDIM)
-       COMMON / NNUSED / NMAX
-       COMMON / HSUMS  / S(NDIM,6)
-       COMMON / RZETA  / ZETA
-       COMMON / COLOUR / CF, CA, TR
-*
-* ..Output common-block 
-*
-       COMMON / ASG2   / A2SG (NDIM, 2, 2)
-*
-* ---------------------------------------------------------------------
+!       INTEGER NMAX, NDIM, KN
+!       include 'dimensions.f'
+!       DOUBLE PRECISION ZETA(6), CF, CA, TR
+!*
+!* ---------------------------------------------------------------------
+!*
+!* ..Input common-blocks 
+!*
+!       COMMON / MOMS   / NA (NDIM)
+!       COMMON / NNUSED / NMAX
+!       COMMON / HSUMS  / S(NDIM,6)
+!       COMMON / RZETA  / ZETA
+!       COMMON / COLOUR / CF, CA, TR
+!*
+!* ..Output common-block 
+!*
+!       COMMON / ASG2   / A2SG (NDIM, 2, 2)
+!*
+!* ---------------------------------------------------------------------
+      include 'pnsg_inc.f'
 *
 * ..Begin of the Mellin-N loop
 *
