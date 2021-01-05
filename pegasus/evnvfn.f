@@ -28,8 +28,8 @@
        SUBROUTINE EVNVFN (PDFN, ASI, ASF, NF, NLOW, NHIGH, IPSTD)
 *
        IMPLICIT DOUBLE COMPLEX (A - Z)
-       INTEGER NF, NLOW, NHIGH, NPORD, IPSTD, NDIM, KN
-       PARAMETER (NDIM = 512)
+       INTEGER NF, NLOW, NHIGH, NPORD, IPSTD, KN
+       include 'dimensions.f'
        DOUBLE PRECISION ASI, ASF, S, THRD
        PARAMETER ( THRD = 1.D0/3.D0 )
        DIMENSION PDFN (NDIM, -6:6), ESG(2,2), ENS(3)
@@ -45,13 +45,16 @@
        COMMON / PACTHR / VAC (NDIM), M3C (NDIM), M8C (NDIM), M15C(NDIM),
      1                   SGC (NDIM), P3C (NDIM), P8C (NDIM), P15C(NDIM),
      2                   GLC (NDIM)  
+!$OMP THREADPRIVATE(/PACTHR/)
        COMMON / PABTHR / VAB (NDIM), M3B (NDIM), M8B (NDIM), M15B(NDIM),
      1                   SGB (NDIM), P3B (NDIM), P8B (NDIM), P15B(NDIM),
      2                   M24B(NDIM), P24B(NDIM), GLB (NDIM)
+!$OMP THREADPRIVATE(/PABTHR/)
        COMMON / PATTHR / VAT (NDIM), M3T (NDIM), M8T (NDIM), M15T(NDIM),
      1                   SGT (NDIM), P3T (NDIM), P8T (NDIM), P15T(NDIM),
      2                   M24T(NDIM), P24T(NDIM), M35T(NDIM), P35T(NDIM),
      3                   GLT (NDIM)
+!$OMP THREADPRIVATE(/PATTHR/)
 *
 * ---------------------------------------------------------------------
 *
