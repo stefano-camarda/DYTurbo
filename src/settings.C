@@ -7,6 +7,7 @@
 #include "dyres_interface.h"
 #include "interface.h"
 #include "phasespace.h"
+#include "gaussrules.h"
 //#include "pegasus.h"
 
 // CXX option parser: https://raw.githubusercontent.com/jarro2783/cxxopts/master/src/cxxopts.hpp
@@ -676,17 +677,17 @@ void settings::check_consistency(){
       }
     
     //Check that no rule is bigger than the maximum value computed
-    if (pdfrule       > gaussrules::GRNMAX
-	|| phirule    > gaussrules::GRNMAX
-	|| mellinrule > gaussrules::GRNMAX
-	|| yrule      > gaussrules::GRNMAX
-	|| qtrule     > gaussrules::GRNMAX
-	|| abrule     > gaussrules::GRNMAX
-	|| vjphirule  > gaussrules::GRNMAX
-	|| zrule      > gaussrules::GRNMAX
-	|| xrule      > gaussrules::GRNMAX)
+    if (pdfrule       > GRNMAX
+	|| phirule    > GRNMAX
+	|| mellinrule > GRNMAX
+	|| yrule      > GRNMAX
+	|| qtrule     > GRNMAX
+	|| abrule     > GRNMAX
+	|| vjphirule  > GRNMAX
+	|| zrule      > GRNMAX
+	|| xrule      > GRNMAX)
       {
-	cout << "Check that no quadrature rule is larger than " << gaussrules::GRNMAX << endl;
+	cout << "Check that no quadrature rule is larger than GRNMAX = " << GRNMAX << endl;
 	exit (-1);
       }
 
