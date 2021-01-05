@@ -13,7 +13,8 @@ order           = 2        # QCD order: 0) LO(+LL), 1) NLO(+NLL), 2) NNLO(+NNLL)
 # Non-perturbative form factor, S_NP = exp(-npff(b))
 # 0: Gaussian (BLNY)                 npff(b) = (g1 + g2*log(m/Q0) + g3*log(100*m/sqrt(s)))*b^2
 # 1: Exponential                     npff(b) = e*b
-# 2: Collins-Rogers                 npff(b) = g0*(1-exp(-(Cf*alphas(b0/bstar))*b^2)/(PI*g0*blim^2))*ln(m/Q0^2)
+# 2: Collins-Rogers                  npff(b) = g0*(1-exp(-(Cf*alphas(b0/bstar))*b^2)/(PI*g0*blim^2))*ln((m/Q0)^2)
+# 3: Dokshitzer-Marchesini-Webber    npff(b) = exp(-(a2 * (log(m)+1.) - a2p) * b^2/2);
 npff = 0 
 
 # Gaussian options (npff = 0)
@@ -27,7 +28,10 @@ e = 0.0
 
 # Collins-Rogers options (npff = 2)
 g0 = 0.3
-Q0 = 1.6
+
+# Dokshitzer-Marchesini-Webber options (npff = 3)
+a2 = 0.2
+a2p = 0
 
 flavour_kt   = false       # Flavour-dependent g1 parameters
 g1_uv = 0.5  # u-valence
@@ -44,12 +48,15 @@ LHAPDFset    = CT18nnlo       # PDF set from LHAPDF
 LHAPDFmember = 0              # PDF member
 PDFerrors    = false	      # Calculate PDF errors
 
+# Running of alphas
+alphaslha = false  # If true, take alphas(mur) from LHAPDF, otherwise alphas is evolved from alphas(mZ) to alphas(mur) at (order+1)-loops
+
 # Functional form of QCD scales (mV: wmass or zmass, pT: boson transverse momentum, mjj: dijet invariant mass)
 #0: mu^2 = mV^2
 #1: mu^2 = mll^2
 #2: mu^2 = mll^2+pT^2
 #3: mu^2 = mll^2+pT^2+mjj^2
-#4: mu   = 0.5*(pT + sqrt(mll^2+pT^2))
+#4: mu^2 = (pT + sqrt(mll^2+pT^2))^2
 fmuren = 1     # Functional form of the renormalisation scale
 fmufac = 1     # Functional form of the factorisation scale
 fmures = 1     # Functional form of the resummation scale (forms 2 and 3 are equivalent to 1)
@@ -121,6 +128,10 @@ sumlogs = false
 
 # Integrate the Sudakov form factor numerically (otherwise use the analytical solution)
 numsud = false
+# Integrate the C exponentiation numerically (otherwise use the analytical solution)
+numexpc = false
+# Use a numerical solution for the running of alphas
+asrgkt = false
 
 # Prescription to avoid the Landau pole in the Bessel inverse transform
 # 0: bstar prescription, which freezes b at bmax: b -> bstar = b/sqrt(1+b^2/bmax^2)
@@ -144,7 +155,7 @@ bcf = 0.5         #select the point bc = bcf * b_L, where the integration contou
 
 # Strategy for the direct Mellin transform of PDFs at the factorization scale
 #0: Numerical integration with Gauss-Legendre quadrature
-#1: Approximation in x-spaxe with Laguerre polynomials
+#1: Approximation in x-space with Laguerre polynomials
 #2: Approximation with google ceres
 mellintr = 0
 
@@ -176,11 +187,13 @@ mellinintervals = 1 # Number of intervals
 mellinrule = 30     # Number of nodes
 
 # Options for the Mellin inversion with Gauss-Legendre integration
-zmax = 1.   	    # Upper limit of the contour in the imaginary axis
-cpoint = 2.   	    # Point of intersection of the contour with the real axis
+zmax = 2   	    # Upper limit of the contour in the imaginary axis
+ncycle = 15         # Number of pi-cycles in the contour (use 40 for mellin1d = false at high rapidity)
+cpoint = 3   	    # Point of intersection of the contour with the real axis (scaled by 1/log(z))
+cshift = 0.5	    # Shift to the right of the point of intersection of the contour with the real axis
 phi = 0.5           # Angle between the real axis and the linear contour in units of pi
 
-mellincores = 1     # Number of parallel threads for the Mellin integration
+mellincores = 1     # Number of parallel threads for the Mellin integration (not yet supported)
 mellin1d = false    # Use 1d (y-integrated) or 2d (y-dependent) Mellin inversion
 melup = 2           # Strategy for the update of the contour for the Mellin inversion (0; do not update; 1: update in each bin; 2: update at each phase-space point)
 xspace = false      # Access PDFs in Bjorken-x space, without Mellin inversion (option available only in the LL case where the convolution is trivial)
@@ -280,7 +293,6 @@ makecuts = false
 # charged leptons cuts
 lptcut = 20
 lycut = 2.5 # absolute rapidity cut
-lycutmin
 
 # leptons and antileptons cuts
 lepptcut = 0
@@ -296,7 +308,7 @@ lfptcut = 0
 lfymin = 0
 lfymax = 1000
 
-# cuts on neutrino and transverse mass
+# cuts on neutrino and transverse mass (these cuts are applied only in W processes)
 etmisscut = 0
 mtcut = 0
 
