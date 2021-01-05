@@ -26,26 +26,27 @@
        SUBROUTINE PNS1MOM 
 *
        IMPLICIT DOUBLE COMPLEX (A - Z)
-       INTEGER NMAX, NDIM, NFMIN, NFMAX, KN, NF
-       PARAMETER (NDIM = 512, NFMIN = 3, NFMAX = 6)
-       DOUBLE PRECISION ZETA(6), CF, CA, TR
-*
-* ---------------------------------------------------------------------
-*
-* ..Input common-blocks 
-*
-       COMMON / MOMS   / NA (NDIM)
-       COMMON / NNUSED / NMAX
-       COMMON / HSUMS  / S(NDIM,6)
-       COMMON / COLOUR / CF, CA, TR
-       COMMON / RZETA  / ZETA
-*
-* ..Output common-blocks 
-*
-       COMMON / PNS1   / P1NS (NDIM, NFMIN:NFMAX, 3)
-       COMMON / SPSUMS / SSCHLP(NDIM), SSTR2P(NDIM), SSTR3P(NDIM)
-*
-* ---------------------------------------------------------------------
+!       INTEGER NMAX, NDIM, NFMIN, NFMAX, KN, NF
+!       include 'dimensions.f'
+!       DOUBLE PRECISION ZETA(6), CF, CA, TR
+!*
+!* ---------------------------------------------------------------------
+!*
+!* ..Input common-blocks 
+!*
+!       COMMON / MOMS   / NA (NDIM)
+!       COMMON / NNUSED / NMAX
+!       COMMON / HSUMS  / S(NDIM,6)
+!       COMMON / COLOUR / CF, CA, TR
+!       COMMON / RZETA  / ZETA
+!*
+!* ..Output common-blocks 
+!*
+!       COMMON / PNS1   / P1NS (NDIM, NFMIN:NFMAX, 3)
+!       COMMON / SPSUMS / SSCHLP(NDIM), SSTR2P(NDIM), SSTR3P(NDIM)
+!*
+!* ---------------------------------------------------------------------
+      include 'pnsg_inc.f'
 *
 * ..Begin of the Mellin-N loop
 *
