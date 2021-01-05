@@ -24,9 +24,9 @@
        SUBROUTINE USG2MOM 
 *
        IMPLICIT DOUBLE COMPLEX (A - Z)
-       INTEGER NMAX, NDIM, NFMIN, NFMAX, NFLOW, NFHIGH, KN, NF, 
+       include 'pnsg_inc.f'
+       INTEGER NFLOW, NFHIGH,
      1         J1, J2, K1, K2
-       PARAMETER (NDIM = 512, NFMIN = 3, NFMAX = 6)
        DOUBLE PRECISION PGBETA0 (NFMIN:NFMAX), PGBETA1 (NFMIN:NFMAX),
      1                  PGBETA2 (NFMIN:NFMAX), PGBETA3 (NFMIN:NFMAX)
        DOUBLE PRECISION B0, B1, B0I, B10, B20, LOGFR
@@ -36,21 +36,28 @@
 *
 * ..Input common-blocks
 *
-       COMMON / NNUSED / NMAX
+!       COMMON / NNUSED / NMAX
        COMMON / NFUSED / NFLOW, NFHIGH
        COMMON / PGBETA   / PGBETA0, PGBETA1, PGBETA2, PGBETA3
-       COMMON / PSG0   / P0SG (NDIM, NFMIN:NFMAX, 2, 2)
-       COMMON / PSG1   / P1SG (NDIM, NFMIN:NFMAX, 2, 2)
-       COMMON / PSG2   / P2SG (NDIM, NFMIN:NFMAX, 2, 2)
-       COMMON / LSG    / R(NDIM, NFMIN:NFMAX, 2),
-     1                   E(NDIM, NFMIN:NFMAX, 2, 2, 2)  
-       COMMON / U1SG   / U1(NDIM, NFMIN:NFMAX, 2, 2)
+!        COMMON / PSG0   / P0SG (NDIM, NFMIN:NFMAX, 2, 2)
+! !$OMP THREADPRIVATE(/PSG0/)
+!        COMMON / PSG1   / P1SG (NDIM, NFMIN:NFMAX, 2, 2)
+! !$OMP THREADPRIVATE(/PSG1/)
+!        COMMON / PSG2   / P2SG (NDIM, NFMIN:NFMAX, 2, 2)
+! !$OMP THREADPRIVATE(/PSG2/)
+!        COMMON / LSG    / R(NDIM, NFMIN:NFMAX, 2),
+!      1                   E(NDIM, NFMIN:NFMAX, 2, 2, 2)  
+! !$OMP THREADPRIVATE(/LSG/)
+!        COMMON / U1SG   / U1(NDIM, NFMIN:NFMAX, 2, 2)
+! !$OMP THREADPRIVATE(/U1SG/)
        COMMON / FRRAT  / LOGFR
 *
 * ..Output common-blocks
 *
-       COMMON / U2SG   / U2(NDIM, NFMIN:NFMAX, 2, 2)
-       COMMON / R2SG   / R2(NDIM, NFMIN:NFMAX, 2, 2)
+!        COMMON / U2SG   / U2(NDIM, NFMIN:NFMAX, 2, 2)
+! !$OMP THREADPRIVATE(/U2SG/)
+!        COMMON / R2SG   / R2(NDIM, NFMIN:NFMAX, 2, 2)
+! !$OMP THREADPRIVATE(/R2SG/)
 *
 * ---------------------------------------------------------------------
 *
