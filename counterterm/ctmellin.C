@@ -3,6 +3,9 @@
 #include "qtint.h"
 #include "mesq.h"
 #include "anomalous.h"
+#include "pegasus.h"
+#include "pmom.h"
+#include "ccoeff.h"
 #include "pdfevol.h"
 #include "evolnative.h"
 #include "parton.h"
@@ -23,7 +26,8 @@
 
 using namespace std;
 
-using namespace anomalous;
+//using namespace anomalous;
+using namespace pmom;
 
 
 //Counterterm to be subtracted from V+j to get a finite cross section at qt->0
@@ -43,16 +47,34 @@ void ctmellin::calc(double m, double f[])
   //Set scales
   scales::set(m);
   scales::mcfm();
-  double muf = scales::fac;
-  double mur = scales::ren;
+  scales::dyres(m);
+  double muren = scales::ren;
+  double mufac = scales::fac;
+  double mures = scales::res;
+  //double muf = scales::fac;
+  //double mur = scales::ren;
 
   //update PDFs in Mellin space at the starting scale, if the factorisation scale is proportional to mll
   //!!! create a special function/module to deal with non-evolved PDFs
-  if (opts.fmufac > 0)
+  if (opts.melup == 2)
     {
-      evolnative::allocate();
-      evolnative::update();
+      //anomalous::calc(); //--> should switch to ccoeff for all C coefficients!!!
+
+      mellinint::allocate();
+      ccoeff::allocate();
+      //pegasus::allocate();
+      pmom::allocate();
+
+      mellinint::updategauss();
+      ccoeff::calc1d();
+      pegasus::calc_mellin();
+      pmom::calc();
     }
+  //if (opts.fmufac > 0)
+  //{
+  evolnative::allocate();
+  evolnative::update();
+      //}
   pdfevol::allocate_fx();
   
   /*
@@ -74,19 +96,20 @@ void ctmellin::calc(double m, double f[])
   */
 
   //a-parameter of the resummation scale, set it for the dynamic case
-  if (opts.fmures > 0)
-    a_param_.a_param_ = 1./opts.kmures;
+  //if (opts.fmures > 0)
+  //a_param_.a_param_ = 1./opts.kmures;
   
   //for fixed resummation scale need to recompute a_param
-  else
-    a_param_.a_param_ = m/scales::res;
+  //else
+  //a_param_.a_param_ = m/scales::res;
   //////////////////////////////////////////////////////////
 
   double LR, LF, LQ;
   if (opts.order >= 2)
-    LR = log(m2/pow(mur,2));
-  LF = log(m2/pow(muf,2));
-  LQ = 2.*log(a_param_.a_param_);
+    LR = log(m2/pow(muren,2));
+  LF = log(m2/pow(mufac,2));
+  //LQ = 2.*log(a_param_.a_param_);
+  LQ = log(m2/pow(mures,2));
 
   // skip PDF loop in the preconditioning phase
   int maxpdf=0;
@@ -136,7 +159,7 @@ void ctmellin::calc(double m, double f[])
       //Mellin transform
       complex <double> cexp = exp(-mellinint::Np[n] * ax)/M_PI * mellinint::CCp/complex <double>(0.,1);
 
-      //      cout << mellinint::mdim << "  " << n << "  " << mellinint::Np[n] << "  " << fn1[4] << "  " << fn2[4] << endl;
+      //cout << mellinint::mdim << "  " << n << "  " << mellinint::Np[n] << "  " << fn1[4] << "  " << fn2[4] << endl;
       
       //loop on born subprocesses, i.e. born incoming partons ij
       complex<double> s11,s12,s21,s22,s23,s24;     
@@ -154,7 +177,7 @@ void ctmellin::calc(double m, double f[])
 	  //Simplest term without convolutions
 	  complex <double> tdelta = fn1[i]*fn2[j];
 	  
-	  complex <double> th1stF = 2.*gamma1qq[ni]*tdelta + gamma1qg[ni]*(fn1[i]*fn2[g]+fn1[g]*fn2[j]);
+	  complex <double> th1stF = 2.*(2.*pmom::gamma1qq[ni])*tdelta + (2.*pmom::gamma1qg[ni])*(fn1[i]*fn2[g]+fn1[g]*fn2[j]);
 
 	  s12 = -0.5*A1qN*tdelta;
 	  s11 = -(B1qN+A1qN*LQ)*tdelta - th1stF;
@@ -162,26 +185,26 @@ void ctmellin::calc(double m, double f[])
 	  sig11[sp] += real(s11 * cexp * mellinint::wn[n]);
 	  sig12[sp] += real(s12 * cexp * mellinint::wn[n]);
 	  //sig11[sp] += real(tdelta * cexp * mellinint::wn[n])*real(mesq::mesqij[sp]);
- 
+
 	  //end NLO
 	  if (opts.order == 1) continue;
 	  
 	  
 	  complex <double> th1stQ = -(B1qN+A1qN*LQ/2.)*LQ*tdelta;
-	  complex <double> th1st = 2.*C1QQ[ni]*tdelta + C1QG[ni]*(fn1[i]*fn2[g]+fn1[g]*fn2[j]);
+	  complex <double> th1st = 2.*2.*ccoeff::C1qq[ni]*tdelta + 2.*ccoeff::C1qg[ni]*(fn1[i]*fn2[g]+fn1[g]*fn2[j]);
 	  
 	  s24 = pow(A1qN,2)/8.*tdelta;
 	  s23 = -beta0N*A1qN/3.*tdelta-0.5*A1qN*s11;
 	   
 	  complex <double> tgaga = 
-	    +4.*pow(gamma1qq[ni],2)*tdelta
-	    +3.*gamma1qq[ni]*gamma1qg[ni]*(fn1[i]*fn2[g]+fn1[g]*fn2[j])
-	    +2.*pow(gamma1qg[ni],2)*(fn1[g]*fn2[g])
-	    +gamma1qg[ni]*gamma1gg[ni]*(fn1[i]*fn2[g]+fn1[g]*fn2[j]);
+	    +4.*pow(2.*pmom::gamma1qq[ni],2)*tdelta
+	    +3.*2.*pmom::gamma1qq[ni]*2.*pmom::gamma1qg[ni]*(fn1[i]*fn2[g]+fn1[g]*fn2[j])
+	    +2.*pow(2.*pmom::gamma1qg[ni],2)*(fn1[g]*fn2[g])
+	    +2.*pmom::gamma1qg[ni]*2.*pmom::gamma1gg[ni]*(fn1[i]*fn2[g]+fn1[g]*fn2[j]);
 
 	  for (int k = 0; k < 2*MAXNF+1; k++)
 	    if (k != g)
-	      tgaga += gamma1qg[ni]*gamma1gq[ni]*(fn1[i]*fn2[k]+fn1[k]*fn2[j]);
+	      tgaga += 2.*pmom::gamma1qg[ni]*2.*pmom::gamma1gq[ni]*(fn1[i]*fn2[k]+fn1[k]*fn2[j]);
 
 	  s22 =
 	    0.5*(beta0N*A1qN*(LR-LQ)-A2qN)*tdelta
@@ -193,7 +216,7 @@ void ctmellin::calc(double m, double f[])
 	  //	  //add this piece to tgaga
 	  //	  for (int k = 0; k < 2*MAXNF+1; k++)
 	  //	    if (k != g)
-	  //	      s22 += 0.5*gamma1qg[ni]*gamma1gq[ni]*(fn1[i]*fn2[k]+fn1[k]*fn2[j]);
+	  //	      s22 += 0.5*2.*pmom::gamma1qg[ni]*2.*pmom::gamma1gq[ni]*(fn1[i]*fn2[k]+fn1[k]*fn2[j]);
 
 	  s21 =
 	    -beta0N*(LR-LQ)*s11
@@ -202,26 +225,26 @@ void ctmellin::calc(double m, double f[])
 	    -(B2qN+A2qN*LQ)*tdelta
 	    +beta0N*th1st
 	    +(B1qN+A1qN*LQ/2.)*LQ*th1stF
-	    - (C1QG[ni]*(gamma1qq[ni]+gamma1gg[ni])+(H1q+2.*C1QQ[ni])*gamma1qg[ni])*(fn1[i]*fn2[g]+fn1[g]*fn2[j])  //tcga
-	    -(2.*(gamma2qqV[ni]+gamma2qqS[ni]))*tdelta //tgamma2
-	    -(gamma2qg[ni])*(fn1[i]*fn2[g]+fn1[g]*fn2[j])
-	    -(gamma2qqbV[ni]+gamma2qqbS[ni])*(fn1[i]*fn2[jm]+fn1[im]*fn2[j]) //tgamma2
-	    -2.*C1QG[ni]*gamma1qg[ni]*(fn1[g]*fn2[g]) //tgamma2
-	    -2.*H1q*gamma1qq[ni]*tdelta
-	    -4.*C1QQ[ni]*gamma1qq[ni]*tdelta;
+	    - (2.*ccoeff::C1qg[ni]*(2.*pmom::gamma1qq[ni]+2.*pmom::gamma1gg[ni])+(H1q+2.*2.*ccoeff::C1qq[ni])*2.*pmom::gamma1qg[ni])*(fn1[i]*fn2[g]+fn1[g]*fn2[j])  //tcga
+	    -(2.*(4.*pmom::gamma2qq[ni]))*tdelta //tgamma2
+	    -(4.*pmom::gamma2qg[ni])*(fn1[i]*fn2[g]+fn1[g]*fn2[j])
+	    -(4.*pmom::gamma2qqb[ni])*(fn1[i]*fn2[jm]+fn1[im]*fn2[j]) //tgamma2
+	    -2.*2.*ccoeff::C1qg[ni]*2.*pmom::gamma1qg[ni]*(fn1[g]*fn2[g]) //tgamma2
+	    -2.*H1q*2.*pmom::gamma1qq[ni]*tdelta
+	    -4.*2.*ccoeff::C1qq[ni]*2.*pmom::gamma1qq[ni]*tdelta;
 
 	  for (int k = 0; k < 2*MAXNF+1; k++)
 	    {
 	      if (k != g && k != j && k != jm)
-		s21 -= gamma2qqS[ni]*(fn1[i]*fn2[k]);
+		s21 -= 4.*pmom::gamma2qqp[ni]*(fn1[i]*fn2[k]);
 	      if (k != g && k != i && k != im)
-		s21 -= gamma2qqS[ni]*(fn1[k]*fn2[j]);
+		s21 -= 4.*pmom::gamma2qqp[ni]*(fn1[k]*fn2[j]);
 	    }
 
 
 	  for (int k = 0; k < 2*MAXNF+1; k++)
 	    if (k != g)
-	      s21 -= C1QG[ni]*gamma1gq[ni]*(fn1[i]*fn2[k]+fn1[k]*fn2[j]);
+	      s21 -= 2.*ccoeff::C1qg[ni]*2.*pmom::gamma1gq[ni]*(fn1[i]*fn2[k]+fn1[k]*fn2[j]);
 	  
       	  sig21[sp] += real(s21 * cexp * mellinint::wn[n]);
 	  sig22[sp] += real(s22 * cexp * mellinint::wn[n]);
@@ -264,7 +287,15 @@ void ctmellin::calc(double m, double f[])
   f[0] = xmsq;
 
   //cout << "xmsq " << xmsq << endl;
-  if (opts.fmufac > 0)
+
+  if (opts.melup == 2)
+    {
+      mellinint::free();
+      ccoeff::free();
+      //pegasus::free();
+      pmom::free();
+    }
+  //if (opts.fmufac > 0)
     evolnative::free();
   
   pdfevol::free_fx();
