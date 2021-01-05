@@ -167,7 +167,7 @@ namespace Kinematics{
 	      }
 
 	      
-	  if (opts.mtcut > 0)
+	  if (opts.nproc != 3 && opts.mtcut > 0)
 	    {
 	      double mt2 = 2 * (sqrt(p3[0]*p3[0]+p3[1]*p3[1])*sqrt(p4[0]*p4[0]+p4[1]*p4[1]) - (p3[0]*p4[0]+p3[1]*p4[1]));
 	      if (mt2 < mt2cut) return SkipEvent;
@@ -178,6 +178,7 @@ namespace Kinematics{
 	      ptsq = (opts.nproc==1 ? pow(p3[0],2)+pow(p3[1],2) : pow(p4[0],2)+pow(p4[1],2));
 	      if (ptsq < et2misscut) return SkipEvent;
 	    }
+
 	  
             if (opts.makecuts){
                 if ( standard_cuts() == SkipEvent ) return SkipEvent ;
