@@ -19,8 +19,8 @@
        SUBROUTINE LSGMOM 
 *
        IMPLICIT DOUBLE COMPLEX (A - Z)
-       INTEGER NMAX, NDIM, NFMIN, NFMAX, NFLOW, NFHIGH, KN, NF
-       PARAMETER (NDIM = 512, NFMIN = 3, NFMAX = 6)
+       include 'pnsg_inc.f'
+       INTEGER NMAX, NFLOW, NFHIGH,
        DOUBLE PRECISION PGBETA0 (NFMIN:NFMAX), PGBETA1 (NFMIN:NFMAX),
      1                  PGBETA2 (NFMIN:NFMAX), PGBETA3 (NFMIN:NFMAX)
 *
@@ -30,13 +30,15 @@
 *
        COMMON / NNUSED / NMAX
        COMMON / NFUSED / NFLOW, NFHIGH
-       COMMON / PSG0   / P0SG (NDIM, NFMIN:NFMAX, 2, 2)
+!       COMMON / PSG0   / P0SG (NDIM, NFMIN:NFMAX, 2, 2)
+!!$OMP THREADPRIVATE(/PSG0/)
        COMMON / PGBETA   / PGBETA0, PGBETA1, PGBETA2, PGBETA3
 *
 * ..Output common-block
 *
-       COMMON / LSG    / R(NDIM, NFMIN:NFMAX, 2),
-     1                   E(NDIM, NFMIN:NFMAX, 2, 2, 2)                  
+!       COMMON / LSG    / R(NDIM, NFMIN:NFMAX, 2),
+!     1                   E(NDIM, NFMIN:NFMAX, 2, 2, 2)                  
+!!$OMP THREADPRIVATE(/LSG/)
 *
 * ---------------------------------------------------------------------
 *
