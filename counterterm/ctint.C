@@ -79,6 +79,7 @@ void ctint::calc(double costh, double m, double qt, double y, int mode, double f
   //Set scales
   scales::set(m);
   scales::mcfm();
+  scales::dyres(m);
   double muf = scales::fac;
   double mur = scales::ren;
 
@@ -102,12 +103,12 @@ void ctint::calc(double costh, double m, double qt, double y, int mode, double f
   //a-parameter of the resummation scale
 
   //dynamic case
-  if (opts.fmures > 0)
-    a_param_.a_param_ = 1./opts.kmures;
+  //if (opts.fmures > 0)
+  //a_param_.a_param_ = 1./opts.kmures;
 
   //for fixed resummation scale need to recompute a_param
-  else
-    a_param_.a_param_ = m/scales::res;
+  //else
+  //a_param_.a_param_ = m/scales::res;
   
   //PDFs
   double fx1[2*MAXNF+1],fx2[2*MAXNF+1];
