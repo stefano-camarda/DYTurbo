@@ -28,8 +28,8 @@
        SUBROUTINE EVNFTHR (MC2, MB2, MT2)
 *
        IMPLICIT DOUBLE COMPLEX (A - Z)
-       INTEGER NPORD, NDIM, NMAX, KN
-       PARAMETER (NDIM = 512)
+       include 'pnsg_inc.f'
+       INTEGER NPORD, NMAX
        DOUBLE PRECISION MC2, MB2, MT2, M20, M2C, M2B, M2T, R20, R2C, 
      1                  R2B, R2T, AS, ASNF1, AS0, ASC, ASB, AST, ASC2, 
      2                  ASB2, AST2, ASC3, ASB4, AST5, LOGFR, SC, SB, ST
@@ -49,8 +49,10 @@
        COMMON / HFPAINP  /M15I (NDIM), M24I(NDIM), 
      1                   P15I (NDIM), P24I(NDIM)
 !$OMP THREADPRIVATE(/HFPAINP/)
-       COMMON / ANS2   / A2NS (NDIM)
-       COMMON / ASG2   / A2SG (NDIM,2,2)
+!        COMMON / ANS2   / A2NS (NDIM)
+! !$OMP THREADPRIVATE(/ANS2/)
+!        COMMON / ASG2   / A2SG (NDIM,2,2)
+! !$OMP THREADPRIVATE(/ASG2/)
 *
 * ..Output common blocks
 *
@@ -58,13 +60,16 @@
        COMMON / PACTHR / VAC (NDIM), M3C (NDIM), M8C (NDIM), M15C(NDIM),
      1                   SGC (NDIM), P3C (NDIM), P8C (NDIM), P15C(NDIM),
      2                   GLC (NDIM) 
+!$OMP THREADPRIVATE(/PACTHR/)
        COMMON / PABTHR / VAB (NDIM), M3B (NDIM), M8B (NDIM), M15B(NDIM),
      1                   SGB (NDIM), P3B (NDIM), P8B (NDIM), P15B(NDIM),
      2                   M24B(NDIM), P24B(NDIM), GLB (NDIM)
+!$OMP THREADPRIVATE(/PABTHR/)
        COMMON / PATTHR / VAT (NDIM), M3T (NDIM), M8T (NDIM), M15T(NDIM),
      1                   SGT (NDIM), P3T (NDIM), P8T (NDIM), P15T(NDIM),
      2                   M24T(NDIM), P24T(NDIM), M35T(NDIM), P35T(NDIM),
      3                   GLT (NDIM)
+!$OMP THREADPRIVATE(/PATTHR/)
 *
 * ---------------------------------------------------------------------
 *
