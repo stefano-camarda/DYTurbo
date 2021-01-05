@@ -26,10 +26,10 @@
 *
        SUBROUTINE ESG2N (ESG, ASI, ASF, S, KN, NF)
 *
+       include 'pnsg_inc.f'
        IMPLICIT DOUBLE COMPLEX (A - Z)
-       INTEGER NDIM, NFMIN, NFMAX, NUMAX, NUORD, KN, NF, IMODE, 
+       INTEGER NUORD, IMODE, 
      1         KO, K1, K2, J1, J2
-       PARAMETER (NDIM = 512, NFMIN = 3, NFMAX = 6, NUMAX = 20)
        DOUBLE PRECISION ASI, ASF, S, ASFO, ASIO
        DIMENSION ESG(2,2), ER(2), L(2,2), UF(2,2), UI(2,2), UM(2,2), 
      1           UM2(2,2)
@@ -42,11 +42,15 @@
        COMMON / KRON2D / D(2,2)
        COMMON / EVMOD  / IMODE
        COMMON / ITORD  / NUORD
-       COMMON / LSG    / R(NDIM, NFMIN:NFMAX, 2),
-     1                   E(NDIM, NFMIN:NFMAX, 2, 2, 2)
-       COMMON / U1SG   / U1(NDIM, NFMIN:NFMAX, 2, 2)
-       COMMON / U2SG   / U2(NDIM, NFMIN:NFMAX, 2, 2)
-       COMMON / U2HSG  / U2H(NUMAX, NDIM, NFMIN:NFMAX, 2, 2)
+!        COMMON / LSG    / R(NDIM, NFMIN:NFMAX, 2),
+!      1                   E(NDIM, NFMIN:NFMAX, 2, 2, 2)
+! !$OMP THREADPRIVATE(/LSG/)
+!        COMMON / U1SG   / U1(NDIM, NFMIN:NFMAX, 2, 2)
+! !$OMP THREADPRIVATE(/U1SG/)
+!        COMMON / U2SG   / U2(NDIM, NFMIN:NFMAX, 2, 2)
+! !$OMP THREADPRIVATE(/U2SG/)
+!        COMMON / U2HSG  / U2H(NUMAX, NDIM, NFMIN:NFMAX, 2, 2)
+! !$OMP THREADPRIVATE(/U2HSG/)
 *
 * ---------------------------------------------------------------------
 *
