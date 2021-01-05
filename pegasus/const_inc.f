@@ -1,0 +1,3 @@
+       DOUBLE PRECISION ZETA(6), CF, CA, TR
+       COMMON / RZETA  / ZETA
+       COMMON / COLOUR / CF, CA, TR
