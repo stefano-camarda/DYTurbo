@@ -75,7 +75,7 @@ void mline()
   double m = opts.rmass;
   double qt = (phasespace::qtmin + phasespace::qtmax)/2.;
   double y =  (phasespace::ymin + phasespace::ymax)/2.;
-  int mode = 3;
+  int mode = 4; //3;
   double f[opts.totpdf];
 
   double m1 = phasespace::mmin;
@@ -103,19 +103,19 @@ void mline()
 //      rapint::cache(phasespace::ymin, phasespace::ymax);
 //      rapint::allocate();
 //      rapint::integrate(phasespace::ymin,phasespace::ymax,(phasespace::mmin+phasespace::mmax)/2.);
-//      mf << "gm->SetPoint(gm->GetN(), " << i*hm+m1 << ", " << resint::rint(costh,m,qt,y,mode) << ");" << endl;
-      //      mf << "gm->SetPoint(gm->GetN(), " << i*hm+m1 << ", " << resint::rint(costh,m,qt,y,mode) << ");" << endl;
+      resint::rint(costh,m,qt,y,mode,f);
+      mf << "gm->SetPoint(gm->GetN(), " << i*hm+m1 << ", " << f[0] << ");" << endl;
       //mf << "gm->SetPoint(gm->GetN(), " << i*hm+m1 << ", " << -ctint_(costh,m,qt,y,mode,f)*2*qt/vjint::vint(m,qt,y) << ");" << endl;
       //mf << "gm1->SetPoint(gm1->GetN(), " << i*hm+m1 << ", " << -ctint_(costh,m,qt,y,mode,f)*2*qt << ");" << endl;
       //mf << "gm2->SetPoint(gm2->GetN(), " << i*hm+m1 << ", " << vjint::vint(m,qt,y) << ");" << endl;
 
       dofill_.doFill_ = 1;
 
-      mode = 2;
-      qtint::calc(m,max(opts.qtcut,opts.xqtcut*phasespace::m),1e10,mode);
-      omegaintegr::genV4p();//generate boson 4-momentum, with m, qt, y and phi=0
-      ctint::calc(costh,m,qt,y,mode,f);
-      mf << "gm->SetPoint(gm->GetN(), " << i*hm+m1 << ", " << f[0]*2*qt << ");" << endl;
+      //mode = 2;
+      //qtint::calc(m,max(opts.qtcut,opts.xqtcut*phasespace::m),1e10,mode);
+      //omegaintegr::genV4p();//generate boson 4-momentum, with m, qt, y and phi=0
+      //ctint::calc(costh,m,qt,y,mode,f);
+      //mf << "gm->SetPoint(gm->GetN(), " << i*hm+m1 << ", " << f[0]*2*qt << ");" << endl;
 
       //      cout << vj << "  " << f[0]*2*qt << endl;
       
@@ -275,7 +275,7 @@ void ptline()
   double qt = 5.;
   double y = 0.0;
   int mode = 1;
-  double f[opts.totpdf];
+  double f[2];
   /*
   phasespace::setbounds(phasespace::mmin, phasespace::mmax, 0, 100, phasespace::ymin, phasespace::ymax);
   cacheyrapint_(phasespace::ymin, phasespace::ymax);
@@ -288,8 +288,8 @@ void ptline()
       }
   */
 
-  double p1 = 1;
-  double p2 = 100;
+  double p1 =  0.01;
+  double p2 =  1;
   int np = 99;
 
   ofstream pf("ptline.C");
@@ -308,25 +308,26 @@ void ptline()
       phasespace::calcexpy();
       phasespace::calcmt();
       omegaintegr::genV4p();//generate boson 4-momentum, with m, qt, y and phi=0
-      //      double vj = vjint::vint(m,qt,y);
+      //double vj = vjint::vint(m,qt,y);
 
       //pf << "gp->SetPoint(gp->GetN(), " << i*hp+p1 << ", " << resumm_(costh,m,qt,y,mode) << ");" << endl;
       //phasespace::setbounds(phasespace::mmin, phasespace::mmax, 0, qt, phasespace::ymin, phasespace::ymax);
-      pf << "gp->SetPoint(gp->GetN(), " << i*hp+p1 << ", " << resint::rint(costh,m,qt,y,mode) << ");" << endl;
+      resint::rint(costh,m,qt,y,mode,f);
+      pf << "gp->SetPoint(gp->GetN(), " << i*hp+p1 << ", " << f[0] << ");" << endl;
       //pf << "gp->SetPoint(gp->GetN(), " << i*hp+p1 << ", " << vjint::vint(m,qt,y) << ");" << endl;
       /*      pf << "gp->SetPoint(gp->GetN(), "   << i*hp+p1 << ", " << vjfo_(m,qt,y)+ctint_(costh,m,qt,y,mode,f)*2*qt << ");" << endl;
       pf << "gp1->SetPoint(gp1->GetN(), " << i*hp+p1 << ", " << -ctint_(costh,m,qt,y,mode,f)*2*qt << ");" << endl;
       pf << "gp2->SetPoint(gp2->GetN(), " << i*hp+p1 << ", " << vjfo_(m,qt,y) << ");" << endl;*/
 
-//      dofill_.doFill_ = 1;
-//      qtint::calc(m,qt,0,1);
-//      omegaintegr::genV4p();//generate boson 4-momentum, with m, qt, y and phi=0
-//      mode = 1;
-//      ctint::calc(costh,m,qt,y,mode,f);
+      //dofill_.doFill_ = 1;
+      //qtint::calc(m,qt,0,1);
+      //omegaintegr::genV4p();//generate boson 4-momentum, with m, qt, y and phi=0
+      //mode = 1;
+      //ctint::calc(costh,m,qt,y,mode,f);
 
-//      cout << qt << "  " << vj << "  " << f[0]*2*qt << endl;
-      //pf << "gp->SetPoint(gp->GetN(), " << i*hp+p1 << ", " << (f[0]*2*qt)+vj << ");" << endl;
-      //      pf << "gp->SetPoint(gp->GetN(), " << i*hp+p1 << ", " << (f[0]*2*qt)/vj << ");" << endl;
+      //cout << qt << "  " << vj << "  " << f[0]*2*qt << "  " << (f[0]*2*qt)+vj << endl;
+      //pf << "gp->SetPoint(gp->GetN(), " << i*hp+p1 << ", " << -((f[0]*2*qt)+vj)*qt << ");" << endl;
+      //pf << "gp->SetPoint(gp->GetN(), " << i*hp+p1 << ", " << 1.+(f[0]*2*qt)/vj << ");" << endl;
     }
   pf << "gp->Draw();" << endl;
   pf << "//gp1->Draw();" << endl;
@@ -385,7 +386,8 @@ void ptomline()
 	    rapint::allocate();
 	    rapint::integrate(phasespace::ymin,phasespace::ymax,m);
 	  }
-      double z = resint::rint(costh,m,qt,y,mode);
+      resint::rint(costh,m,qt,y,mode,f);
+      double z = f[0];
       //double z = vjint::vint(m,qt,y);
       
       opts.nproc = 1;
@@ -412,7 +414,8 @@ void ptomline()
 	    rapint::allocate();
 	    rapint::integrate(phasespace::ymin,phasespace::ymax,m);
 	  }
-      double wp = resint::rint(costh,m,qt,y,mode);
+      resint::rint(costh,m,qt,y,mode,f);
+      double wp = f[0];
       //double wp = vjint::vint(m,qt,y);
 
       cout << i*hp+p1 << " " << wp << "  " << z << endl;
