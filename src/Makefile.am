@@ -51,9 +51,7 @@ libdyturbo_la_LIBADD = libdyturbobase.la \
 		       ../pegasus/libpegasus.la \
 		       ../dequad/libdequad.la \
 		       ../bequad/libbequad.la \
-		       ../zeta/libzeta.la \
 		       ../polylog/libpolylog.la \
-		       ../harmonicsums/libhs.la \
 		       ../bessel/libbessel.la \
 		       ../sandia/libsandia.la \
 		       ../smolpack/libsmolpack.la \
@@ -65,6 +63,9 @@ libdyturbo_la_LIBADD = libdyturbobase.la \
 		       -lgfortran \
 		       $(LHAPDF_LDFLAGS) \
 		       $(POLYLOG_LDFLAGS)
+#		       ../zeta/libzeta.la
+#		       ../harmonicsums/libhs.la
+
  #-lgsl -lgslcblas -lifcore -limf -lifport -lintlc -lquadmath
 
 if HAVE_CERES
