@@ -24,26 +24,27 @@
 *
        SUBROUTINE PNS0MOM 
 *
-       IMPLICIT DOUBLE COMPLEX (A - Z)
-       INTEGER NMAX, NDIM, NFMIN, NFMAX, KN, NF
-       PARAMETER (NDIM = 512, NFMIN = 3, NFMAX = 6)
-       DOUBLE PRECISION CF, CA, TR
-*
-* ---------------------------------------------------------------------
-*
-* ..Input common-blocks 
-*
-       COMMON / MOMS   / NA (NDIM)
-       COMMON / NNUSED / NMAX
-       COMMON / HSUMS  / S(NDIM,6)
-       COMMON / COLOUR / CF, CA, TR
-*
-* ..Output common-block 
-*
-       COMMON / PNS0   / P0NS (NDIM, NFMIN:NFMAX)
-*
-* ---------------------------------------------------------------------
-*
+        IMPLICIT DOUBLE COMPLEX (A - Z)
+!       INTEGER NMAX, KN, NF
+!       DOUBLE PRECISION CF, CA, TR
+!*
+!* ---------------------------------------------------------------------
+!*
+!* ..Input common-blocks 
+!*
+!       COMMON / MOMS   / NA (NDIM)
+!       COMMON / NNUSED / NMAX
+!       COMMON / HSUMS  / S(NDIM,6)
+!       COMMON / COLOUR / CF, CA, TR
+!*
+!* ..Output common-block 
+!*
+!       COMMON / PNS0   / P0NS (NDIM, NFMIN:NFMAX)
+!*
+!* ---------------------------------------------------------------------
+      include 'pnsg_inc.f'
+
+*     
 * ..Mellin-N loop
 *
        DO 1 KN = 1, NMAX
@@ -71,23 +72,28 @@
        SUBROUTINE PSG0MOM 
 *
        IMPLICIT DOUBLE COMPLEX (A - Z)
-       INTEGER NMAX, NDIM, NFMIN, NFMAX, KN, NF
-       PARAMETER (NDIM = 512, NFMIN = 3, NFMAX = 6)
-       DOUBLE PRECISION CF, CA, TR
-*
-* ---------------------------------------------------------------------
-*
-* ..Input common-blocks  
-*
-       COMMON / MOMS   / NA (NDIM)
-       COMMON / NNUSED / NMAX
-       COMMON / HSUMS  / S(NDIM,6)
-       COMMON / COLOUR / CF, CA, TR
-*
-* ..Output common-block  
-*
-       COMMON / PSG0   / P0SG (NDIM, NFMIN:NFMAX, 2, 2)
-*
+!       INTEGER NMAX, KN, NF
+!       include 'dimensions.f'
+!       DOUBLE PRECISION CF, CA, TR
+!*
+!* ---------------------------------------------------------------------
+!*
+!* ..Input common-blocks  
+!*
+!       COMMON / MOMS   / NA (NDIM)
+!!$OMP THREADPRIVATE(/MOMS/)
+!       COMMON / NNUSED / NMAX
+!       COMMON / HSUMS  / S(NDIM,6)
+!!$OMP THREADPRIVATE(/HSUMS/)
+!       COMMON / COLOUR / CF, CA, TR
+!*
+!* ..Output common-block  
+!*
+!       COMMON / PSG0   / P0SG (NDIM, NFMIN:NFMAX, 2, 2)
+!!$OMP THREADPRIVATE(/PSG0/)
+
+      include 'pnsg_inc.f'
+*     
 * ---------------------------------------------------------------------
 *
 * ..Mellin-N loop
