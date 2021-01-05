@@ -32,7 +32,7 @@ points_SOURCES = points.C finitemapping.C
 points_LDADD = ../src/libdyturbo.la \
 	       ../cernlib/libcern.la ../dequad/libdequad.la \
 	       -lgfortran \
-	       $(CUBA_LDFLAGS) $(LHAPDF_LDFLAGS) $(CHAPLIN_LDFLAGS) -lgsl -lgslcblas $(ROOT_LDFLAGS)
+	       $(CUBA_LDFLAGS) $(LHAPDF_LDFLAGS) $(CHAPLIN_LDFLAGS) -lgsl -lgslcblas $(ROOT_LDFLAGS) # $(CERES_LDFLAGS)
 
 
 ### # unit tests
