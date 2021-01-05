@@ -44,6 +44,8 @@
 !*
 !* ---------------------------------------------------------------------
       include 'pnsg_inc.f'
+      include 'const_inc.f'
+      include 'moms_inc.f'
 *
 * ..Begin of the Mellin-N loop
 *

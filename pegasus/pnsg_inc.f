@@ -1,9 +1,3 @@
-       INTEGER KN, NF
-
-       INTEGER NMAX
-       include 'dimensions.f'
-       DOUBLE PRECISION ZETA(6), CF, CA, TR
-       DOUBLE COMPLEX NA,S
        DOUBLE COMPLEX P0NS,P0SG
        DOUBLE COMPLEX P1NS,P1SG
        DOUBLE COMPLEX P2NS,P2SG
@@ -11,20 +5,12 @@
        DOUBLE COMPLEX SSCHLP,SSTR2P,SSTR3P
        DOUBLE COMPLEX U1,R1,U1H
        DOUBLE COMPLEX U2,R2,U2H,UNS2
+       DOUBLE COMPLEX R,E
+       include 'dimensions.f'
 *
 * ---------------------------------------------------------------------
 *
-* ..Input common-blocks 
-*
-       COMMON / MOMS   / NA (NDIM)
-!$OMP THREADPRIVATE(/MOMS/)
-       COMMON / NNUSED / NMAX
-       COMMON / HSUMS  / S(NDIM,6)
-!$OMP THREADPRIVATE(/HSUMS/)
-       COMMON / COLOUR / CF, CA, TR
-       COMMON / RZETA  / ZETA
-*
-* ..Output common-block 
+* Singlet and non-singlet splitting functions at LO,NLO,NNLO
 *
        COMMON / PNS0   / P0NS (NDIM, NFMIN:NFMAX)
 !$OMP THREADPRIVATE(/PNS0/)

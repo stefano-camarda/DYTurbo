@@ -20,7 +20,8 @@
 *
        IMPLICIT DOUBLE COMPLEX (A - Z)
        include 'pnsg_inc.f'
-       INTEGER NMAX, NFLOW, NFHIGH,
+       include 'moms_inc.f'
+       INTEGER NFLOW, NFHIGH
        DOUBLE PRECISION PGBETA0 (NFMIN:NFMAX), PGBETA1 (NFMIN:NFMAX),
      1                  PGBETA2 (NFMIN:NFMAX), PGBETA3 (NFMIN:NFMAX)
 *
@@ -28,7 +29,7 @@
 *
 * ..Input common-blocks
 *
-       COMMON / NNUSED / NMAX
+!       COMMON / NNUSED / NMAX
        COMMON / NFUSED / NFLOW, NFHIGH
 !       COMMON / PSG0   / P0SG (NDIM, NFMIN:NFMAX, 2, 2)
 !!$OMP THREADPRIVATE(/PSG0/)

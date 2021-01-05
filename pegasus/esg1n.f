@@ -28,6 +28,7 @@
 *
        IMPLICIT DOUBLE COMPLEX (A - Z)
        include 'pnsg_inc.f'
+       INTEGER KN, NF
        INTEGER NUORD, IMODE,
      1         KO, K1, K2, J1, J2
        DOUBLE PRECISION ASI, ASF, S, ASIO, ASFO

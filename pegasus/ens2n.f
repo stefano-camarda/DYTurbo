@@ -26,6 +26,7 @@
 *
        IMPLICIT DOUBLE COMPLEX (A - Z)
        include 'pnsg_inc.f'
+       INTEGER KN, NF
        INTEGER NSMIN, NSMAX, NUORD, 
      1         IMODE, KO, K1
        DOUBLE PRECISION PGBETA0 (NFMIN:NFMAX), PGBETA1 (NFMIN:NFMAX),

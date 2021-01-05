@@ -27,6 +27,7 @@
 *
        IMPLICIT DOUBLE COMPLEX (A - Z)
        include 'pnsg_inc.f'
+       include 'moms_inc.f'
        INTEGER NFLOW, NFHIGH, IMODE, 
      1         KO, K1, K2
        DOUBLE PRECISION PGBETA0 (NFMIN:NFMAX), PGBETA1 (NFMIN:NFMAX),
