@@ -27,9 +27,9 @@
        SUBROUTINE ESG1N (ESG, ASI, ASF, S, KN, NF)
 *
        IMPLICIT DOUBLE COMPLEX (A - Z)
-       INTEGER NDIM, NFMIN, NFMAX, NUMAX, NUORD, IMODE, KN, NF, 
+       include 'pnsg_inc.f'
+       INTEGER NUORD, IMODE,
      1         KO, K1, K2, J1, J2
-       PARAMETER (NDIM = 512, NFMIN = 3, NFMAX = 6, NUMAX = 20)
        DOUBLE PRECISION ASI, ASF, S, ASIO, ASFO
        DIMENSION ESG(2,2), ER(2), L(2,2), UF(2,2), UI(2,2), UM(2,2)
        PARAMETER ( ZERO = (0.D0, 0.D0) )
@@ -41,10 +41,13 @@
        COMMON / KRON2D / D(2,2)
        COMMON / EVMOD  / IMODE
        COMMON / ITORD  / NUORD
-       COMMON / LSG    / R(NDIM, NFMIN:NFMAX, 2),
-     1                   E(NDIM, NFMIN:NFMAX, 2, 2, 2)
-       COMMON / U1SG   / U1(NDIM, NFMIN:NFMAX, 2, 2)
-       COMMON / U1HSG  / U1H(NUMAX, NDIM, NFMIN:NFMAX, 2, 2)
+!       COMMON / LSG    / R(NDIM, NFMIN:NFMAX, 2),
+!     1                   E(NDIM, NFMIN:NFMAX, 2, 2, 2)
+!!$OMP THREADPRIVATE(/LSG/)
+!       COMMON / U1SG   / U1(NDIM, NFMIN:NFMAX, 2, 2)
+!!$OMP THREADPRIVATE(/U1SG/)
+!       COMMON / U1HSG  / U1H(NUMAX, NDIM, NFMIN:NFMAX, 2, 2)
+!!$OMP THREADPRIVATE(/U1HSG/)
 *
 * ---------------------------------------------------------------------
 *
