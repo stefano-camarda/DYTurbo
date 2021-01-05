@@ -26,9 +26,9 @@
        SUBROUTINE UNS2MOM 
 *
        IMPLICIT DOUBLE COMPLEX (A - Z)
-       INTEGER NMAX, NDIM, NFMIN, NFMAX, NFLOW, NFHIGH, NUMAX, IMODE, 
-     1         KN, NF, KO, K1, K2
-       PARAMETER (NDIM = 512, NFMIN = 3, NFMAX = 6, NUMAX = 20)
+       include 'pnsg_inc.f'
+       INTEGER NFLOW, NFHIGH, IMODE, 
+     1         KO, K1, K2
        DOUBLE PRECISION PGBETA0 (NFMIN:NFMAX), PGBETA1 (NFMIN:NFMAX),
      1                  PGBETA2 (NFMIN:NFMAX), PGBETA3 (NFMIN:NFMAX)
        DOUBLE PRECISION B0, B0I, B1, B10, B20, LOGFR
@@ -38,18 +38,22 @@
 *
 * ..Input common-blocks
 *
-       COMMON / NNUSED / NMAX
+!       COMMON / NNUSED / NMAX
        COMMON / NFUSED / NFLOW, NFHIGH
        COMMON / EVMOD  / IMODE
        COMMON / FRRAT  / LOGFR
        COMMON / PGBETA   / PGBETA0, PGBETA1, PGBETA2, PGBETA3
-       COMMON / PNS0   / P0NS (NDIM, NFMIN:NFMAX)
-       COMMON / PNS1   / P1NS (NDIM, NFMIN:NFMAX, 3)
-       COMMON / PNS2   / P2NS (NDIM, NFMIN:NFMAX, 3)
+!       COMMON / PNS0   / P0NS (NDIM, NFMIN:NFMAX)
+!!$OMP THREADPRIVATE(/PNS0/)
+!       COMMON / PNS1   / P1NS (NDIM, NFMIN:NFMAX, 3)
+!!$OMP THREADPRIVATE(/PNS1/)
+!       COMMON / PNS2   / P2NS (NDIM, NFMIN:NFMAX, 3)
+!!$OMP THREADPRIVATE(/PNS2/)
 *
 * ..Output common-block
 *
-       COMMON / U2NS   / UNS2(NUMAX, NDIM, NFMIN:NFMAX, 3)
+!       COMMON / U2NS   / UNS2(NUMAX, NDIM, NFMIN:NFMAX, 3)
+!!$OMP THREADPRIVATE(/U2NS/)
 *
 * ---------------------------------------------------------------------
 *
