@@ -306,9 +306,7 @@ AC_CONFIG_FILES([Makefile
 		 cernlib/Makefile
 		 dequad/Makefile
 		 bequad/Makefile
-	 	 zeta/Makefile
 		 polylog/Makefile
-	 	 harmonicsums/Makefile
 		 sandia/Makefile
 		 smolpack/Makefile
 		 besche/Makefile
@@ -320,6 +318,9 @@ AC_CONFIG_FILES([Makefile
 		 cubature/Makefile
 	 	 src/Makefile
 		 dyturbo-config])
+
+#	 	 zeta/Makefile
+#	 	 harmonicsums/Makefile
 
 
 #AM_COND_IF([HAVE_DYRES], [

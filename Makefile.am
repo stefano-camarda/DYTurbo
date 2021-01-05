@@ -1,7 +1,7 @@
 ACLOCAL_AMFLAGS=-I m4
 #do not ditribute test directories
 # add cuba to SUBDIRS to ship cuba
-DIST_SUBDIRS = histo user cernlib ancont pegasus cubature dequad bequad zeta polylog harmonicsums sandia smolpack besche bessel minprescription specialfunctions dyres dynnlo mcfm integrands resum counterterm v2j born phasespace vjet src
+DIST_SUBDIRS = histo user cernlib ancont pegasus cubature dequad bequad polylog sandia smolpack besche bessel minprescription specialfunctions dyres dynnlo mcfm integrands resum counterterm v2j born phasespace vjet src #zeta harmonicsums
 SUBDIRS      = ${DIST_SUBDIRS}
 
 # add test directories if enabled
