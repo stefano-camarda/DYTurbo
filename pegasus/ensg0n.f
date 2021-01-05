@@ -21,8 +21,8 @@
        SUBROUTINE ENSG0N (ENS, ESG, ASI, ASF, S, KN, NF)
 *
        IMPLICIT DOUBLE COMPLEX (A - Z)
-       INTEGER NDIM, NFMIN, NFMAX, KN, NF, K1, K2
-       PARAMETER (NDIM = 512, NFMIN = 3, NFMAX = 6)
+       include 'pnsg_inc.f'
+       INTEGER K1, K2
        DOUBLE PRECISION PGBETA0 (NFMIN:NFMAX), PGBETA1 (NFMIN:NFMAX),
      1                  PGBETA2 (NFMIN:NFMAX), PGBETA3 (NFMIN:NFMAX)
        DOUBLE PRECISION ASI, ASF, S
@@ -33,9 +33,11 @@
 * ..Input common-blocks 
 *
        COMMON / PGBETA   / PGBETA0, PGBETA1, PGBETA2, PGBETA3
-       COMMON / PNS0   / P0NS (NDIM, NFMIN:NFMAX)
-       COMMON / LSG    / R(NDIM, NFMIN:NFMAX, 2),
-     1                   E(NDIM, NFMIN:NFMAX, 2, 2, 2)
+!       COMMON / PNS0   / P0NS (NDIM, NFMIN:NFMAX)
+!!$OMP THREADPRIVATE(/PNS0/)
+!       COMMON / LSG    / R(NDIM, NFMIN:NFMAX, 2),
+!     1                   E(NDIM, NFMIN:NFMAX, 2, 2, 2)
+!!$OMP THREADPRIVATE(/LSG/)
 *
 * ---------------------------------------------------------------------
 *
