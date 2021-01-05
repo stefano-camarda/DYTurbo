@@ -64,6 +64,7 @@ void vjloint::calc(const double x[5], double f[2])
   //Set factorization and renormalization scales
   scales::set(phasespace::m, phasespace::qt);
   scales::mcfm();
+  pdf::setalphas(); //Set alphas and strong coupling in the fortran common blocks
   muf = scales::fac;
   mur = scales::ren;
   
@@ -442,6 +443,7 @@ double vjloint::calcvegas(const double x[7])
   //Set factorization and renormalization scales
   scales::set(phasespace::m, phasespace::qt);
   scales::mcfm();
+  pdf::setalphas(); //Set alphas and strong coupling in the fortran common blocks
   muf = scales::fac;
   mur = scales::ren;
   
