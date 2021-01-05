@@ -20,9 +20,9 @@ c     delta(p2^2) delta(p3^2)
 
       s=p0(4)**2-p0(1)**2-p0(2)**2-p0(3)**2  
       if (s .lt. zip) then
-       if (case(1:5) .ne. 'vlchk') then 
-        write(6,*) 's<0 in phi3m0',s
-       endif
+c       if (case(1:5) .ne. 'vlchk') then 
+c        write(6,*) 's<0 in phi3m0',s
+c       endif
        return 1
       endif
 
