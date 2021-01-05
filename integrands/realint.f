@@ -97,7 +97,7 @@ c--- bother calculating the matrix elements for it, instead set to zero
 
 c     check which dipoles are to be included
       incldip(5)=incldip(0)
-      incldip(6)=incldip(0) 
+      incldip(6)=incldip(0)
       do nd=1,6
          if (nd.eq.1) then
             ip = 1
@@ -142,7 +142,7 @@ c         sjk=two*dot(p,jp,kp)
             omx=-sjk/(sij+sik)
          endif
          x=one-omx
-                     
+                      
 c     ptrans is the transformation of p into the dipole kinematic
          call transform(p,ptrans,x,ip,jp,kp)
 c     ptrans is stored into ptilde(nd), to be used by dips in  dipolesub.f
@@ -188,6 +188,9 @@ c--- Calculate the required matrix elements  (dipscale(nd) are set appropriately
       if (pdferr) then
          call dysetpdf(0)
       endif
+         call scaleset_mcfm(sqrt(q2),
+     .        pt(p(4,:),p(3,:)),
+     .        mjj(p(5,:),p(6,:)))
       gsqcentral=gsq
       if(nproc.eq.3) then
        if (includereal) call qqb_z2jet(p,msq)
@@ -237,7 +240,7 @@ c     calculate xmsq for the real event
             do j=-nf,nf
                do k=-nf,nf
                   xmsq(0)=xmsq(0)+dipfx1(0,j)*dipfx2(0,k)*msq(j,k)
-     .                 *(gsq/gsqcentral)**2
+c     .                 *(gsq/gsqcentral)**2
                enddo
             enddo
          endif
@@ -249,7 +252,7 @@ c     calculate xmsq for the dipole contributions
                   do k=-nf,nf
                      xmsq(nd)=xmsq(nd)
      .                    +dipfx1(nd,j)*dipfx2(nd,k)*(-msqc(nd,j,k))
-     .                    *(gsq/gsqcentral)**2
+c     .                    *(gsq/gsqcentral)**2
                   enddo
                enddo
             endif
