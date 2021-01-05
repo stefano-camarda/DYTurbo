@@ -40,7 +40,7 @@ complex <double> npff::S(complex <double> b, double m, double x1, double x2)
   if (opts.npff == 1)
     ff = exp(-opts.e*b);
 
-  //Collins, Rogers, large bT form (https://arxiv.org/abs/1412.3820)
+  //Collins, Rogers, large bT form (https://arxiv.org/abs/1412.3820 Eq.(39), (79))
   //g0 = 0.3; //Q0 = 1.6;
   if (opts.npff == 2)
     {
