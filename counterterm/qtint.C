@@ -1,5 +1,6 @@
 #include "qtint.h"
 
+#include "scales.h"
 #include "mesq.h"
 #include "settings.h"
 #include "phasespace.h"
@@ -19,6 +20,10 @@ double qtint::LL4_mesqij[12];
 //perform qt integration for the counterterm
 void qtint::calc(double m, double qtmin, double qtmax, int mode)
 {
+  //Call scales::set in order to set a_param (this is a duplicate call to scales::set)
+  scales::set(m);
+  a_param_.a_param_ = m/scales::res;
+
   for (int sp = 0; sp < mesq::totpch; sp++)
     {
       LL1_mesqij[sp] = 0.;
