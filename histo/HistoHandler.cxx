@@ -38,7 +38,7 @@ namespace HistoHandler{
     void DeleteNonIntegrableHists(){
         for (size_t ih = 0; ih < histos.size(); ++ih) {
             if (!histos[ih]->IsIntegrationSafe()){
-                printf ("Warining: Histogram `%s` contains non-integrable observable and will be deleted \n", histos[ih]->GetName());
+                printf ("Warning: Histogram `%s` contains non-integrable observable and will be deleted \n", histos[ih]->GetName());
                 histos[ih]->Delete();
                 histos.erase(histos.begin()+ih);
                 ih--;
