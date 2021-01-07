@@ -412,17 +412,29 @@ void pdfevol::storemoments(int i, complex <double> fx[11])
 
   if (opts.ih1 == -1)
     {
+      fx1[i*nf+bb] = fx[b ];
+      fx1[i*nf+cb] = fx[c ];
+      fx1[i*nf+sb] = fx[s ];
       fx1[i*nf+db] = fx[d ];
       fx1[i*nf+ub] = fx[u ];
       fx1[i*nf+u ] = fx[ub];
       fx1[i*nf+d ] = fx[db];
+      fx1[i*nf+s ] = fx[sb];
+      fx1[i*nf+c ] = fx[cb];
+      fx1[i*nf+b ] = fx[bb];
     }
   if (opts.ih2 == -1)
     {
+      fx2[i*nf+bb] = fx[b ];
+      fx2[i*nf+cb] = fx[c ];
+      fx2[i*nf+sb] = fx[s ];
       fx2[i*nf+db] = fx[d ];
       fx2[i*nf+ub] = fx[u ];
       fx2[i*nf+u ] = fx[ub];
       fx2[i*nf+d ] = fx[db];
+      fx2[i*nf+s ] = fx[sb];
+      fx2[i*nf+c ] = fx[cb];
+      fx2[i*nf+b ] = fx[bb];
     }
 
 //  //beam 1 positive
@@ -497,26 +509,32 @@ void pdfevol::storemoments(int i, complex <double> fx[11])
 //  if (opts.mellin1d && opts.bprescription != 2) return;
   
   //beam 2 negative
-  fx2[negidx+i*nf+bb] = conj(fx[bb]);
-  fx2[negidx+i*nf+cb] = conj(fx[cb]);
-  fx2[negidx+i*nf+sb] = conj(fx[sb]);
   fx2[negidx+i*nf+g ] = conj(fx[g ]);
-  fx2[negidx+i*nf+s ] = conj(fx[s ]);
-  fx2[negidx+i*nf+c ] = conj(fx[c ]);
-  fx2[negidx+i*nf+b ] = conj(fx[b ]);
   if (opts.ih2 == 1)
     {
+      fx2[negidx+i*nf+bb] = conj(fx[bb]);
+      fx2[negidx+i*nf+cb] = conj(fx[cb]);
+      fx2[negidx+i*nf+sb] = conj(fx[sb]);
       fx2[negidx+i*nf+db] = conj(fx[db]);
       fx2[negidx+i*nf+ub] = conj(fx[ub]);
       fx2[negidx+i*nf+u ] = conj(fx[u ]);
       fx2[negidx+i*nf+d ] = conj(fx[d ]);
+      fx2[negidx+i*nf+s ] = conj(fx[s ]);
+      fx2[negidx+i*nf+c ] = conj(fx[c ]);
+      fx2[negidx+i*nf+b ] = conj(fx[b ]);
     }
   else if (opts.ih2 == -1)
     {
+      fx2[negidx+i*nf+bb] = conj(fx[b ]);
+      fx2[negidx+i*nf+cb] = conj(fx[c ]);
+      fx2[negidx+i*nf+sb] = conj(fx[s ]);
       fx2[negidx+i*nf+db] = conj(fx[d ]);
       fx2[negidx+i*nf+ub] = conj(fx[u ]);
       fx2[negidx+i*nf+u ] = conj(fx[ub]);
       fx2[negidx+i*nf+d ] = conj(fx[db]);
+      fx2[negidx+i*nf+s ] = conj(fx[sb]);
+      fx2[negidx+i*nf+c ] = conj(fx[cb]);
+      fx2[negidx+i*nf+b ] = conj(fx[bb]);
     }
 }  
 
@@ -530,10 +548,16 @@ void pdfevol::storemoments_1(int i, complex <double> fx[11])
 
   if (opts.ih1 == -1)
     {
+      fx1[i*nf+bb] = fx[b ];
+      fx1[i*nf+cb] = fx[c ];
+      fx1[i*nf+sb] = fx[s ];
       fx1[i*nf+db] = fx[d ];
       fx1[i*nf+ub] = fx[u ];
       fx1[i*nf+u ] = fx[ub];
       fx1[i*nf+d ] = fx[db];
+      fx1[i*nf+s ] = fx[sb];
+      fx1[i*nf+c ] = fx[cb];
+      fx1[i*nf+b ] = fx[bb];
     }
 
 //  //beam 1 negative
@@ -571,33 +595,45 @@ void pdfevol::storemoments_2(int i, complex <double> fx[11])
 
   if (opts.ih2 == -1)
     {
+      fx2[i*nf+bb] = fx[b ];
+      fx2[i*nf+cb] = fx[c ];
+      fx2[i*nf+sb] = fx[s ];
       fx2[i*nf+db] = fx[d ];
       fx2[i*nf+ub] = fx[u ];
       fx2[i*nf+u ] = fx[ub];
       fx2[i*nf+d ] = fx[db];
+      fx2[i*nf+s ] = fx[sb];
+      fx2[i*nf+c ] = fx[cb];
+      fx2[i*nf+b ] = fx[bb];
     }
 
   //beam 2 negative
-  fx2[negidx+i*nf+bb] = conj(fx[bb]);
-  fx2[negidx+i*nf+cb] = conj(fx[cb]);
-  fx2[negidx+i*nf+sb] = conj(fx[sb]);
   fx2[negidx+i*nf+g ] = conj(fx[g ]);
-  fx2[negidx+i*nf+s ] = conj(fx[s ]);
-  fx2[negidx+i*nf+c ] = conj(fx[c ]);
-  fx2[negidx+i*nf+b ] = conj(fx[b ]);
   if (opts.ih2 == 1)
     {
+      fx2[negidx+i*nf+bb] = conj(fx[bb]);
+      fx2[negidx+i*nf+cb] = conj(fx[cb]);
+      fx2[negidx+i*nf+sb] = conj(fx[sb]);
       fx2[negidx+i*nf+db] = conj(fx[db]);
       fx2[negidx+i*nf+ub] = conj(fx[ub]);
       fx2[negidx+i*nf+u ] = conj(fx[u ]);
       fx2[negidx+i*nf+d ] = conj(fx[d ]);
+      fx2[negidx+i*nf+s ] = conj(fx[s ]);
+      fx2[negidx+i*nf+c ] = conj(fx[c ]);
+      fx2[negidx+i*nf+b ] = conj(fx[b ]);
     }
   else if (opts.ih2 == -1)
     {
+      fx2[negidx+i*nf+bb] = conj(fx[b ]);
+      fx2[negidx+i*nf+cb] = conj(fx[c ]);
+      fx2[negidx+i*nf+sb] = conj(fx[s ]);
       fx2[negidx+i*nf+db] = conj(fx[d ]);
       fx2[negidx+i*nf+ub] = conj(fx[u ]);
       fx2[negidx+i*nf+u ] = conj(fx[ub]);
       fx2[negidx+i*nf+d ] = conj(fx[db]);
+      fx2[negidx+i*nf+s ] = conj(fx[sb]);
+      fx2[negidx+i*nf+c ] = conj(fx[cb]);
+      fx2[negidx+i*nf+b ] = conj(fx[bb]);
     }
 }  
 
