@@ -43,6 +43,9 @@ bool phasespace::gen_m(double x, double& jac, double mlim, bool qtcut, bool qtsw
   double wsqmax = pow(min(mlim,min(phasespace::mmax,qtcutlim)),2);
   if (wsqmin >= wsqmax)
     return false;
+  //If the mass is generated at the phase space limit, there is no room for integration in y (i.e. ymx-ymn = 0)
+  if (wsqmax == pow(mlim,2) && x == 1)
+    return false;
   mweight_breitw_(x,wsqmin,wsqmax,opts.rmass,opts.rwidth,m2,jac);
   m = sqrt(m2);
   return true;
