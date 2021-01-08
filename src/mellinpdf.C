@@ -358,7 +358,11 @@ void mellinpdf::evalpdfs(double scale, double m, double y)
   if (opts.melup == 0)
     {
       m = bins.mbins.front();
-      y = 0.;
+      //y = 0.;
+      double ylim = log(opts.sroot/bins.mbins.back());  //here take bins.mbins.back() so that this is the smallest ylim --> avoid z < 0
+      double ymn = min(max(-ylim, bins.ybins.front()),ylim);
+      double ymx = max(min(ylim, bins.ybins.back()),-ylim);
+      y = (ymn+ymx)/2.;
     }
   if (opts.melup == 1)
     {
@@ -373,7 +377,15 @@ void mellinpdf::evalpdfs(double scale, double m, double y)
   if (opts.melup == 2)
     {
       m = phasespace::m;
-      y = phasespace::y;
+      //y = phasespace::y;
+      double ylim = log(opts.sroot/phasespace::mmax);
+      double ymn = min(max(-ylim, phasespace::ymin),ylim);
+      double ymx = max(min(ylim, phasespace::ymax),-ylim);
+      y = (ymn+ymx)/2.;
+      if (phasespace::ymax >= ylim && phasespace::ymin > -ylim)
+	y = ymn;
+      if (phasespace::ymin <= -ylim && phasespace::ymax < ylim)
+	y = ymx;
     }
 
   //y = 0.;
