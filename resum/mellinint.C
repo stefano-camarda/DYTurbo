@@ -409,8 +409,8 @@ void mellinint::updategauss()
 	{
 	  //m0 = (phasespace::mmin + phasespace::mmax)/2.;    //arithmetic mean
 	  //m0 = sqrt(phasespace::mmin * phasespace::mmax); //geometric mean
-	  m0 = phasespace::mmin; //take the minimum to avoid z < 0
-	  double ylim = log(opts.sroot/phasespace::mmax); //here take mmax so that this is the smallest ylim --> avoid z < 0
+	  m0 = phasespace::mmin; //take the minimum to avoid log(z) < 0 (--> x > 1)
+	  double ylim = log(opts.sroot/phasespace::mmax); //here take mmax so that this is the smallest ylim --> avoid log(z) < 0 (--> x > 1)
 	  double ymn = min(max(-ylim, phasespace::ymin),ylim);
 	  double ymx = max(min(ylim, phasespace::ymax),-ylim);
 	  y0 = (ymn+ymx)/2.;
@@ -447,9 +447,10 @@ void mellinint::updategauss()
 //	}
 
 	}
-
       mlogz_1 = -(log(m0/opts.sroot)+y0);
       mlogz_2 = -(log(m0/opts.sroot)-y0);
+      //cout << " z1 " << m0/opts.sroot*exp(y0) << endl;
+      //cout << " z2 " << m0/opts.sroot*exp(-y0) << endl;
 
       //mlogz_1 = -log(m0/opts.sroot);
       //mlogz_2 = -log(m0/opts.sroot);
