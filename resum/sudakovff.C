@@ -233,13 +233,21 @@ complex <double> sudakov::sff(complex <double> b)
   //  blog = log(pow(scaleh_.q_*bstar/a_param_.b0p_,2)+1.); //modified sudakov
   //else
   //  blog = log(pow(scaleh_.q_*bstar/a_param_.b0p_,2));    //normal sudakov
-
+  
   double Q = scales::res;
   complex <double> blog;
-  if (opts.modlog)
-    blog = log(pow(Q*bstar/b0,2) + 1.); //modified sudakov
-  else
+  if (opts.modlog == 0)
     blog = log(pow(Q*bstar/b0,2));   //normal sudakov
+  else if (opts.modlog == 1)
+    blog = log(pow(Q*bstar/b0,2) + 1.); //modified sudakov
+  else if (opts.modlog == 2)
+    //blog = 1./opts.p*log(pow(Q*bstar/b0,2*opts.p) + 1.); //modified sudakov with exponent p
+    blog = log(pow(pow(Q*bstar/b0,2*opts.p) + 1.,1./opts.p)); //modified sudakov with exponent p
+
+  //if (opts.modlog)
+  //  blog = log(pow(Q*bstar/b0,2) + 1.); //modified sudakov
+  //else
+  //  blog = log(pow(Q*bstar/b0,2));   //normal sudakov
 
   //double rblog;
   //if (opts.modlog)

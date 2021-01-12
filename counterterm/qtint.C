@@ -144,6 +144,26 @@ void qtint::calc(double m, double qtmin, double qtmax, int mode)
     }
   */
 
+
+  //modlog == 2
+  if (!opts.makecuts && opts.modlog != 1)
+    {
+      double LL1int = 2.*(qtmax*itilde::integral(qtmax,m/a_param_.a_param_,1) - qtmin*itilde::integral(qtmin,m/a_param_.a_param_,1))/pow(q2,2)*pow(a_param_.a_param_,2);
+      double LL2int = 2.*(qtmax*itilde::integral(qtmax,m/a_param_.a_param_,2) - qtmin*itilde::integral(qtmin,m/a_param_.a_param_,2))/pow(q2,2)*pow(a_param_.a_param_,2);
+      double LL3int = 2.*(qtmax*itilde::integral(qtmax,m/a_param_.a_param_,3) - qtmin*itilde::integral(qtmin,m/a_param_.a_param_,3))/pow(q2,2)*pow(a_param_.a_param_,2);
+      double LL4int = 2.*(qtmax*itilde::integral(qtmax,m/a_param_.a_param_,4) - qtmin*itilde::integral(qtmin,m/a_param_.a_param_,4))/pow(q2,2)*pow(a_param_.a_param_,2);
+
+      //loop on born subprocesses, i.e. born incoming partons ij
+      for (int sp = 0; sp < mesq::totpch; sp++)
+	{
+	  LL1_mesqij[sp] += LL1int*real(mesq::mesqij[sp]);
+	  LL2_mesqij[sp] += LL2int*real(mesq::mesqij[sp]);
+	  LL3_mesqij[sp] += LL3int*real(mesq::mesqij[sp]);
+	  LL4_mesqij[sp] += LL4int*real(mesq::mesqij[sp]);
+	}
+      return;
+    }
+  
   //In the general case (resummation, either with cuts or at high pT) use a gaussian quadrature integration
   double qtmin2 = pow(qtmin,2);
   double qtmax2 = pow(qtmax,2);

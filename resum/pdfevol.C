@@ -161,10 +161,18 @@ void pdfevol::alphasl(complex <double> b)
     bstar = b;
 
   complex <double> blog;
-  if (opts.modlog)
-    blog = log(pow(Q*bstar/b0,2) + 1.); //modified sudakov
-  else
+  if (opts.modlog == 0)
     blog = log(pow(Q*bstar/b0,2));   //normal sudakov
+  else if (opts.modlog == 1)
+    blog = log(pow(Q*bstar/b0,2) + 1.); //modified sudakov
+  else if (opts.modlog == 2)
+    blog = 1./opts.p*log(pow(Q*bstar/b0,2*opts.p) + 1.); //modified sudakov with exponent p
+  
+
+  //  if (opts.modlog)
+  //    blog = log(pow(Q*bstar/b0,2) + 1.); //modified sudakov
+  //  else
+  //    blog = log(pow(Q*bstar/b0,2));   //normal sudakov
 
   //lambda as defined in Eq. (25) of hep-ph/0508068.
   complex <double> xlambda = beta0*as*blog;
@@ -256,12 +264,20 @@ void pdfevol::scales(complex <double> b)
   bool useC2 = false;
   if (useC2) //convert muF variations to C2 variations
     Q = resint::mures;
-      
-  if (opts.modlog)
+
+  if (opts.modlog == 0)
+    mubstartilde = mubstar;
+  else if (opts.modlog == 1)
     mubstartilde = mubstar * Q / sqrt((pow(mubstar,2) + pow(Q,2)));
   //mubstartilde = mubstar / sqrt(1.+pow(mubstar/Q,2));
-  else
-    mubstartilde = mubstar;
+  else if (opts.modlog == 2)
+    mubstartilde = mubstar * Q / pow((pow(mubstar,2*opts.p) + pow(Q,2*opts.p)),0.5/opts.p);
+
+  //if (opts.modlog)
+  //  mubstartilde = mubstar * Q / sqrt((pow(mubstar,2) + pow(Q,2)));
+  ////mubstartilde = mubstar / sqrt(1.+pow(mubstar/Q,2));
+  //else
+  //  mubstartilde = mubstar;
 
   if (useC2) //convert muF to a C2 variation
     mubstartilde *= resint::mufac/resint::mures;
