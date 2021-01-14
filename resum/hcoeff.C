@@ -43,6 +43,7 @@ complex <double> *hcoeff::Hqpg_2;
 complex <double> *hcoeff::Hqbpg;
 complex <double> *hcoeff::Hqbpg_1;
 complex <double> *hcoeff::Hqbpg_2;
+complex <double> hcoeff::Hqqb_nfz;
 
 
 //complex <double> hcoeff::H1stgg;
@@ -199,6 +200,7 @@ void hcoeff::reset()
       fill(Hqbpg_1,Hqbpg_1 + mellinint::mdim*mellinint::mdim*2, 0.);
       fill(Hqbpg_2,Hqbpg_2 + mellinint::mdim*mellinint::mdim*2, 0.);
     }
+  Hqqb_nfz = 0.;
 }
 
 void hcoeff::calc()
@@ -213,7 +215,7 @@ void hcoeff::calc()
   else 
     fill(Hqqb, Hqqb+mellinint::mdim*mellinint::mdim*2, 1.);
   
-  if (opts.order == 0)
+  if (opts.order_hcoef == 0)
     return;
   /**************************************************/
 
@@ -277,7 +279,7 @@ void hcoeff::calc()
 	Hqqb[i] += as*H1st_qqb;
 	Hqg[i]  += as*H1st_qg;
 
-	if (opts.order == 1)
+	if (opts.order_hcoef == 1)
 	  continue;
 
 	//NNLO
@@ -323,7 +325,7 @@ void hcoeff::calc()
 	Hqqbp[i] += as2*H2st_qqbp;
 	Hgg[i]   += as2*H2st_gg;
 
-	if (opts.order == 2)
+	if (opts.order_hcoef == 2)
 	  continue;
 
 	//NNNLO
@@ -336,6 +338,7 @@ void hcoeff::calc()
 	complex <double> H3st_qbg  = (C2qqb[idx]*C1qg[idx]);
 	complex <double> H3st_qpg  = (C2qqp[idx]*C1qg[idx]);
 	complex <double> H3st_qbpg = (C2qqbp[idx]*C1qg[idx]);
+	complex <double> H3st_qqb_nfz  = 2.*C3qq_delta_NFV;
 
 	//Resummation scale variations
 	H3st_qqb += (-B3q*LQ + (-A3q/2. + B1q*B2q - B2q*beta0 - B1q*beta1/2.)*LQ2
@@ -401,7 +404,7 @@ void hcoeff::calc()
 	Hqbg[i]  += as3*H3st_qbg;
 	Hqpg[i]  += as3*H3st_qpg;
 	Hqbpg[i] += as3*H3st_qbpg;
-
+	Hqqb_nfz += as3*H3st_qqb_nfz;
       }
   else
     //rapidity dependent
@@ -433,7 +436,7 @@ void hcoeff::calc()
 	    Hqg_1[idx]  += as*H1st_qg_1;
 	    Hqg_2[idx]  += as*H1st_qg_2;
 	    
-	    if (opts.order == 1)
+	    if (opts.order_hcoef == 1)
 	      continue;
 	    
 	    //NNLO
@@ -485,7 +488,7 @@ void hcoeff::calc()
 	    Hqqbp_2[idx] += as2*H2st_qqbp_2;
 	    Hgg[idx]     += as2*H2st_gg;
 	    
-	    if (opts.order == 2)
+	    if (opts.order_hcoef == 2)
 	      continue;
 
 	    //NNNLO
@@ -505,6 +508,7 @@ void hcoeff::calc()
 	    complex <double> H3st_qqp_1 = C3qqbp_1[ii1]+ C1qq_2[ii2]*C2qqbp_1[ii1]; // (=C3qqbp_1+ C1qq_2[ii2]*C2qqp_1[ii1])
 	    complex <double> H3st_qqp_2 = C3qqbp_2[ii2]+ C1qq_1[ii1]*C2qqbp_2[ii2]; // (=C3qqbp_2+ C1qq_1[ii1]*C2qqp_2[ii2])
 	    complex <double> H3st_gg  = C1qg_1[ii1]*C2qg_2[ii2] + C1qg_2[ii2]*C2qg_1[ii1];
+	    complex <double> H3st_qqb_nfz  = 2.*C3qq_delta_NFV;
 
 	    //Resummation scale variations
 	    H3st_qqb += (-B3q*LQ + (-A3q/2. + B1q*B2q - B2q*beta0 - B1q*beta1/2.)*LQ2
@@ -602,6 +606,7 @@ void hcoeff::calc()
 	    Hqpg_2[idx]  += as3*H3st_qpg_2;
 	    Hqbpg_1[idx] += as3*H3st_qbpg_1;
 	    Hqbpg_2[idx] += as3*H3st_qbpg_2;
+	    Hqqb_nfz += as3*H3st_qqb_nfz;
 	  }
   
   return;
@@ -618,7 +623,7 @@ void hcoeff::calc()
   //All the following coefficients need to be calculated at each resumm iteration only with fixed factorization and renormalization scale (variable logmuf2q2) or
   //with fixed resummation scale (variable loga: a = q2/mu_res). Otherwise they can be computed at initialization
   /*
-  if (opts.order == 0)
+  if (opts.order_hcoef == 0)
     fill(Hqqb, Hqqb+mellinint::mdim, 1.);
   */
   //for (int i = 0; i < mellinint::mdim; i++)
@@ -645,7 +650,7 @@ void hcoeff::calc()
   complex <double> logq2muf22 = pow(logq2muf2,2);
   H1stgg=0;
   */
-//  if (opts.order == 1)
+//  if (opts.order_hcoef == 1)
 //    for (int i = 0; i < mellinint::mdim; i++)
 //      {
 //	int idx = anomalous::index(i,mesq::positive);
@@ -661,7 +666,7 @@ void hcoeff::calc()
 //	Hqg[i] = aass/2.*H1st_qg;
 //      }
 //
-//  if (opts.order >= 2)
+//  if (opts.order_hcoef >= 2)
 //    {
 //      for (int i = 0; i < mellinint::mdim; i++)
 //	{
@@ -1114,7 +1119,7 @@ void hcoeff::invert(double q2)
   Hqqz = 0;
   Hqqpz = 0;
 
-  if (opts.order == 0)
+  if (opts.order_hcoef == 0)
     return;
 
   double bjx= q2/pow(opts.sroot,2);
