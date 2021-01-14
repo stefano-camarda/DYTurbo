@@ -16,6 +16,7 @@
 #include "sudakovff.h"
 #include "npff.h"
 #include "ccoeff.h"
+#include "gint.h"
 
 #include <LHAPDF/LHAPDF.h>
 
@@ -134,7 +135,7 @@ complex <double> besselint::bint(complex <double> b)
   //The Sudakov is mass and b dependent
 
   //numerical Sudakov
-  if (opts.numsud || opts.numexcp)
+  if (opts.numsud || opts.numexpc)
     gint::calc(b);
   
   //fortran
