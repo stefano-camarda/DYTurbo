@@ -50,6 +50,7 @@ using namespace constants;
 double ccoeff::C1qq_delta;
 double ccoeff::C2qq_delta;
 double ccoeff::C3qq_delta;
+double ccoeff::C3qq_delta_NFV;
 
 complex <double> *ccoeff::C1qg;
 complex <double> *ccoeff::C1qq;
@@ -243,11 +244,15 @@ void ccoeff::delta()
 		  + ((-4 + pow(NC,2))*NFV*(1./8. + (5*pi2)/96. - pi4/2880. + (7*zeta3)/48. - (5*zeta5)/6.))/NC
 		  + CA*NF*(1700171./209952. - (201749*pi2)/139968. -  (35*pi4)/15552. - (134*zeta3)/27. + (37*pi2*zeta3)/144. -  zeta5/24.)
 		  + pow(CF,2)*(-5599/384. + (4339*pi2)/2304. - (173*pi4)/480. +  (27403*pi6)/1088640. - (115*zeta3)/16. - (35*pi2*zeta3)/48. + pow(zeta3,2)/2. + (83*zeta5)/4.));
+  double K3_NFV = ( (-4 + pow(NC,2)) *(1./8. + (5*pi2)/96. - pi4/2880. + (7*zeta3)/48. - (5*zeta5)/6.) ) /NC; 
 
   C1qq_delta = (K1+S1)/2.;
   C2qq_delta = (K2+S2+K1*S1)/2. - pow(C1qq_delta,2)/2.;
   C3qq_delta = (K3 + S3 + K2*S1 + K1*S2)/2. - C1qq_delta*C2qq_delta;
 
+  //C3qq_delta_NFV = K3_NFV/2.;
+  C3qq_delta_NFV = 0.;
+    
   icoeff::delta();
 }
 
