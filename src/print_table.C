@@ -16,6 +16,7 @@
 #include "interface.h"
 #include "coupling.h"
 #include "scales.h"
+#include "pdf.h"
 #include "HistoHandler.h"
 #include "clock_real.h"
 
@@ -502,8 +503,8 @@ namespace DYTurbo {
             cout << Col4(  "Factorization scale:"   , String(opts.fmufac    ? "dynamic" : "fixed") + " mufac =" , opts.kmufac , String("* ") + scales::func(opts.fmufac) );
             cout << Col4(  "Resummation scale:"     , String(opts.fmures    ? "dynamic" : "fixed") + " mures =" , opts.kmures , String("* ") + scales::func(opts.fmures) );
 	    
-            cout << Col4( "Strong coupling"  , "alpha_s(MZ) ="   , couple_.amz_                 , ""      );
-            cout << Col4( ""                 , "alpha_s(mur) ="  , qcdcouple_.as_               , ""      );
+            cout << Col4( "Strong coupling"  , "alpha_s(MZ) ="   , pdf::alphas(coupling::zmass)                 , ""      );
+	    //            cout << Col4( ""                 , "alpha_s(mur) ="  , qcdcouple_.as_               , ""      );
             cout << Col4( ""                 , "running order =" , (LHAPDF::getOrderAlphaS()+1) , "-loop" );
             cout << Col4( "Non-perturbative" , "form factor g =" , g_param_.g_param_            , "GeV^2" );
         }
