@@ -133,6 +133,10 @@ complex <double> besselint::bint(complex <double> b)
 
   //The Sudakov is mass and b dependent
 
+  //numerical Sudakov
+  if (opts.numsud || opts.numexcp)
+    gint::calc(b);
+  
   //fortran
   //fcomplex fb = fcx(b);
   //complex <double> sudak=cx(s_(fb));
