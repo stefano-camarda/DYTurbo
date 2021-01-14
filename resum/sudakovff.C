@@ -255,7 +255,7 @@ complex <double> sudakov::sff(complex <double> b)
   //Numerical integration of the Sudakov form factor
   if (opts.numsud || opts.order >= 4)
     {
-      logS = gint::calc(b);
+      logS = gint::logS;
       S = exp(logS);
     }
   //Analytical solution for the Sudakov form factor
