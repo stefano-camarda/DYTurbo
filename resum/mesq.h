@@ -45,6 +45,11 @@ namespace mesq
   extern double aem2pi;   //gamma* coupling
   extern double aem2pi2;
   extern double Q[MAXNF];
+  extern double gLpgR_sum[MAXNF]; //box at 3-loops
+  extern double gLmgR_sum[MAXNF];
+  extern double Q2_sum[MAXNF];
+  extern double QgZp_sum[MAXNF];
+  extern double QgZm_sum[MAXNF];
 
   //Initialisation of constants
   extern void init();
@@ -63,7 +68,8 @@ namespace mesq
   //Amplitudes times mellin inverse transform piece x1^-z1 * x2^-z2
   //Depending on the mode 0, 1, 2 they can be differential, cos theta integrated, or cos theta and y integrated
   extern complex <double> *mesqij_expy;
-#pragma omp threadprivate(mesqij_expy)
+  extern complex <double> *mesqij_expy_NFZ;
+#pragma omp threadprivate(mesqij_expy,mesqij_expy_NFZ)
 
   extern void allocate();
   extern void setmesq_expy(int mode, double m, double costh, double y, int helicity =-1);
@@ -73,7 +79,8 @@ namespace mesq
   template <class T>
   extern void setmesq(T one, T costh1, T costh2);
   extern complex <double> mesqij[12];
-#pragma omp threadprivate(mesqij)
+  extern complex <double> mesqij_NFZ[10];
+#pragma omp threadprivate(mesqij,mesqij_NFZ)
 
   //cross sections
   double loxs(double x1, double x2, double muf); //rapidity differential
