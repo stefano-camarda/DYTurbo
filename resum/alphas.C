@@ -124,7 +124,7 @@ complex <double> alphas::calc(complex <double> q, int nloop)
   as4_5l = pow(asLO,4)+4.*pow(asLO,3)*dasNLO;
   //alphas truncated powers of 5
   as5_5l = pow(asLO,5);
-  
+
   //QCD coupling scale dependence
 
   //double LQR = log(pow(q0/scales::ren,2));
@@ -204,6 +204,16 @@ complex <double> alphas::calc(complex <double> q, int nloop)
   else if (nloop == 4) as = asNNNLO;
   else if (nloop == 5) as = asNNNNLO;
 
+  //do not truncate alphas
+  if (opts.asrgkt)
+    {
+      as1_1l = as1_2l = as1_3l = as1_4l = as1_5l = as;
+      as2_2l = as2_3l = as2_4l = as2_5l = pow(as,2);
+      as3_3l = as3_4l = as3_5l =  pow(as,3);
+      as4_4l = as4_5l =  pow(as,4);
+      as5_5l =  pow(as,5);
+    }
+ 
   return as;
 }
 
