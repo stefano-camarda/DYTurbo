@@ -76,7 +76,14 @@ public:
 
   //resummation or fixed order switch
   bool fixedorder;
-  int    order;
+
+  //order
+  int    order;       //Main order
+  int    order_sudak; //Order of the Sudakov
+  int    order_hcoef; //Order of the H coefficients
+  //  int    order_evol;  //Order of the PDF evolution
+  //  int    order_expc;  //Order of the C exponentiation
+  //  int    order_ford;  //Order of the finite order part
 
   //Non-perturbative form factor
   int npff;
