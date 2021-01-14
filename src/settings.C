@@ -315,6 +315,8 @@ void settings::readfromfile(const string fname){
     g1_bo          = in.GetNumber ( "g1_bo"          );
     g1_gl          = in.GetNumber ( "g1_gl"          );
     order          = in.GetNumber ( "order"          );
+    order_sudak    = in.GetNumber ( "order_sudak"    );
+    order_hcoef    = in.GetNumber ( "order_hcoef"    );
     runningwidth   = in.GetBool   ( "runningwidth"   );
     rseed          = in.GetNumber ( "rseed"          );
     blim           = in.GetNumber ( "blim"           );
@@ -474,6 +476,15 @@ void settings::check_consistency(){
     if (nproc != 1 && nproc != 2 && nproc != 3)
       throw invalid_argument("Wrong process, please select nproc = 1 (W+), 2 (W-), or 3(Z)");
 
+    if (order_sudak < 0)
+      order_sudak = order;
+
+    if (order_hcoef < 0)
+      order_hcoef = order;
+
+    order = max(order,order_sudak);
+    order = max(order,order_hcoef);
+    
     if (order == 0)
       {
 	doCT = false;
@@ -484,7 +495,12 @@ void settings::check_consistency(){
 	doVJREAL = false;
 	doVJVIRT = false;
       }
-
+    if (order >= 4 || asrgkt)
+      {
+	numsud = true;
+	numexpc = true;
+      }
+    
     //In fixed order mode, a_param must be one
     if (fixedorder == true)
       {
@@ -781,6 +797,8 @@ void settings::dumpAll(){
 	dumpD ("g1_bo          ",g1_bo            );
 	dumpD ("g1_gl          ",g1_gl            );
 	dumpI ( "order       ",  nnlo_        . order_      ) ;
+	dumpI ( "order_sudak ",  order_sudak      ) ;
+	dumpI ( "order_hcoef ",  order_hcoef      ) ;
         dumpB ( "alphaslha   ",  alphaslha                  ) ;
         dumpD ( "kmuren      ",  kmuren                     ) ;
         dumpD ( "kmufac      ",  kmufac                     ) ;
