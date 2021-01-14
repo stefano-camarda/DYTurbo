@@ -74,6 +74,7 @@ namespace mellinint
   extern complex<double> QQPN_2;
 #pragma omp threadprivate(GGN,QGN_1,QGN_2,QQBN,QQN,QQN_1,QQN_2,QQPN_1,QQPN_2)
 
+  extern complex <double> QQBN_nfz;
   extern complex <double> QQBPN_1;
   extern complex <double> QQBPN_2;
   extern complex <double> QBGN_1;
@@ -82,7 +83,7 @@ namespace mellinint
   extern complex <double> QPGN_2;
   extern complex <double> QBPGN_1;
   extern complex <double> QBPGN_2;
-#pragma omp threadprivate(QQBPN_1,QQBPN_2,QBGN_1,QBGN_2,QPGN_1,QPGN_2,QBPGN_1,QBPGN_2)
+#pragma omp threadprivate(QQBN_nfz,QQBPN_1,QQBPN_2,QBGN_1,QBGN_2,QPGN_1,QPGN_2,QBPGN_1,QBPGN_2)
   
 }
 
