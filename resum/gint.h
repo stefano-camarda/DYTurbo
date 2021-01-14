@@ -11,7 +11,7 @@ namespace gint
   void intg(complex <double> q, complex<double> jac, double blim);
   void intbeta(complex <double> q, complex <double> jac, double blim);
   void intexpc(complex <double> q, complex <double> jac, double blim);
-  complex <double> calc(complex <double> b);
+  void calc(complex <double> b);
   void allocate();
   void reset();
   void free();
