@@ -145,6 +145,7 @@ void pdfevol::alphasl(complex <double> b)
       //      cout << as << "  " << Q << "  " << LQR << endl;
     }
   */
+  //artificially remove mur scale variations
   //Q = scales::fac;
   //as = pdf::alphas(Q)/M_PI;
   //LQR = 0.;
@@ -214,11 +215,10 @@ void pdfevol::alphasl(complex <double> b)
 
   //cout << endl;
   //cout << "analytic logasl " << logasl        << endl;
-  //cout << "numeric  logasl " << gint::logasl  << endl;
+  //cout << "numeric  logasl " << gint::logasl_pdf  << endl;
 
-  //!!! gint::logasl is evaluated with blim::sudakov, not with blim:pdf !!!
-  //if (opts.numsud || opts.order >= 4)
-  //logasl = gint::logasl;
+  if (opts.numsud || opts.order >= 4)
+    logasl = gint::logasl_pdf;
   
   asl = exp(-logasl);
 }
