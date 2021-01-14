@@ -281,8 +281,8 @@ void expc::calc(complex <double> b)
   //cout << logasl << " logasl" << endl;
   //!!! gint::logasl is evaluated with blim::sudakov, not with blim:expc !!!
   if (opts.numexpc)
-    logasl = gint::logasl;
-  //cout << gint::logasl << " gint logasl" << endl;
+    logasl = gint::logasl_expc;
+  //cout << gint::logasl_expc << " gint logasl" << endl;
 
   if (isnan_ofast(real(logasl)) || isnan_ofast(imag(logasl)))
     {
