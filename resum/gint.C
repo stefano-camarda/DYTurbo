@@ -522,10 +522,10 @@ void gint::intexpc(complex <double> q, complex <double> jac, double blim)
       }
 }
 
-complex <double> btoqmin(complex <double> b, double blim)
+complex <double> btoqmin(complex <double> b, double blim, bool isbstar)
 {
   complex <double> bstar;
-  if (opts.bprescription == 0 || opts.bprescription == 4 || opts.bstar_sudakov)
+  if (opts.bprescription == 0 || opts.bprescription == 4 || isbstar)
     bstar = real(b)/sqrt(1.+pow(real(b)/blim,2));
   else
     bstar = b;
@@ -566,15 +566,18 @@ void gint::calc(complex <double> b)
 
   reset();
 
-  int rule = 200;
+  int rule = 100;
 
   // boundaries of integration (allow complex values for the minimal prescription)
-  complex <double> qmin,cq,mq;
-  double qmax = scales::res;
+  complex <double> qmax,qmin,cq,mq;
+  if (opts.bprescription == 2)
+    qmax = scales::res+complex <double>(0.,1.)*imag(qmin);
+  else
+    qmax = scales::res;
 
   if (opts.numsud)
     {
-      qmin = btoqmin(b, blim::sudakov);
+      qmin = btoqmin(b, blim::sudakov, opts.bstar_sudakov);
       cq = (qmax+qmin)/2.;
       mq = (qmax-qmin)/2.;
       for (int i = 0; i < rule; i++)
@@ -584,7 +587,7 @@ void gint::calc(complex <double> b)
 	  intg(q, jac, blim::sudakov);
 	}
 
-      qmin = btoqmin(b, blim::pdf); 
+      qmin = btoqmin(b, blim::pdf, opts.bstar_pdf);
       cq = (qmax+qmin)/2.;
       mq = (qmax-qmin)/2.;
       for (int i = 0; i < rule; i++)
@@ -593,13 +596,13 @@ void gint::calc(complex <double> b)
 	  complex <double> jac = mq * gr::www[rule-1][i];
 	  intbeta(q, jac, blim::pdf);
 	}
-      logasl_pdf = logasl;
+      logasl_pdf += logasl;
       logasl = 0.;
     }
   
   if (opts.numexpc)
     {
-      qmin = btoqmin(b, blim::expc);
+      qmin = btoqmin(b, blim::expc, opts.bstar_expc);
       cq = (qmax+qmin)/2.;
       mq = (qmax-qmin)/2.;
       for (int i = 0; i < rule; i++)
@@ -609,8 +612,53 @@ void gint::calc(complex <double> b)
 	  intbeta(q, jac, blim::expc);
 	  intexpc(q, jac, blim::expc);
 	}
-      logasl_expc = logasl;
+      logasl_expc += logasl;
+      logasl = 0.;
     }
+
+  //now the integration among the vertical line
+  if (opts.bprescription == 2)
+    {
+      qmin = qmax;
+      qmax = scales::res;      
+
+      if (opts.numsud)
+	{
+	  cq = (qmax+qmin)/2.;
+	  mq = (qmax-qmin)/2.;
+	  for (int i = 0; i < rule; i++)
+	    {
+	      complex <double> q = cq+mq*gr::xxx[rule-1][i];
+	      complex <double> jac = mq * gr::www[rule-1][i];
+	      intg(q, jac, blim::sudakov);
+	    }
+	  cq = (qmax+qmin)/2.;
+	  mq = (qmax-qmin)/2.;
+	  for (int i = 0; i < rule; i++)
+	    {
+	      complex <double> q = cq+mq*gr::xxx[rule-1][i];
+	      complex <double> jac = mq * gr::www[rule-1][i];
+	      intbeta(q, jac, blim::pdf);
+	    }
+	  logasl_pdf += logasl;
+	  logasl = 0.;
+	}
+      if (opts.numexpc)
+	{
+	  cq = (qmax+qmin)/2.;
+	  mq = (qmax-qmin)/2.;
+	  for (int i = 0; i < rule; i++)
+	    {
+	      complex <double> q = cq+mq*gr::xxx[rule-1][i];
+	      complex <double> jac = mq * gr::www[rule-1][i];
+	      intbeta(q, jac, blim::expc);
+	      intexpc(q, jac, blim::expc);
+	    }
+	  logasl_expc += logasl;
+	  logasl = 0.;
+	}
+    }
+
   
   //cout << qmin << " " << logasl << " int(beta) " << endl;
   //cout << qmin << " " << alogqq[0] << " gint::alogqq " << endl;
