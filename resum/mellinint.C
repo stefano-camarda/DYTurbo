@@ -62,6 +62,7 @@ complex <double> mellinint::QQN_1;
 complex <double> mellinint::QQN_2;
 complex <double> mellinint::QQPN_1;
 complex <double> mellinint::QQPN_2;
+complex <double> mellinint::QQBN_nfz;
 complex <double> mellinint::QQBPN_1;
 complex <double> mellinint::QQBPN_2;
 complex <double> mellinint::GGN;
@@ -741,6 +742,7 @@ void mellinint::reset()
   QGN_2=0;
 
   //NNLL
+  QQBN_nfz=0;
   GGN=0;
   QQN_1=0;
   QQN_2=0;
@@ -1221,6 +1223,30 @@ void mellinint::pdf_mesq_expy(int i1, int i2, int sign)
 	}
       if (opts.order >= 3)
 	{
+	  complex <double> mesq_uub_nfz = mesq::mesqij_expy_NFZ[mesq::index(0,i1,i2,sign)];
+	  complex <double> mesq_ubu_nfz = mesq::mesqij_expy_NFZ[mesq::index(1,i1,i2,sign)];
+	  complex <double> mesq_ddb_nfz = mesq::mesqij_expy_NFZ[mesq::index(2,i1,i2,sign)];
+	  complex <double> mesq_dbd_nfz = mesq::mesqij_expy_NFZ[mesq::index(3,i1,i2,sign)];
+	  complex <double> mesq_ssb_nfz = mesq::mesqij_expy_NFZ[mesq::index(4,i1,i2,sign)];
+	  complex <double> mesq_sbs_nfz = mesq::mesqij_expy_NFZ[mesq::index(5,i1,i2,sign)];
+	  complex <double> mesq_ccb_nfz = mesq::mesqij_expy_NFZ[mesq::index(6,i1,i2,sign)];
+	  complex <double> mesq_cbc_nfz = mesq::mesqij_expy_NFZ[mesq::index(7,i1,i2,sign)];
+	  complex <double> mesq_bbr_nfz = mesq::mesqij_expy_NFZ[mesq::index(8,i1,i2,sign)];
+	  complex <double> mesq_brb_nfz = mesq::mesqij_expy_NFZ[mesq::index(9,i1,i2,sign)];
+      
+	  //      cout << "pdf_mesq_expy " << i1 << "  " << i2 << "  " << mesq_uub << "  " << fn1[u] << "  " << fn2[ub]  << endl;
+	  //LL part
+	  QQBN_nfz = fn1[u ]*fn2[ub]*mesq_uub_nfz
+	            +fn1[c ]*fn2[cb]*mesq_ccb_nfz
+	            +fn1[d ]*fn2[db]*mesq_ddb_nfz
+	            +fn1[s ]*fn2[sb]*mesq_ssb_nfz
+	            +fn1[b ]*fn2[bb]*mesq_bbr_nfz
+	            +fn1[ub]*fn2[u ]*mesq_ubu_nfz
+	            +fn1[cb]*fn2[c ]*mesq_cbc_nfz
+	            +fn1[db]*fn2[d ]*mesq_dbd_nfz
+	            +fn1[sb]*fn2[s ]*mesq_sbs_nfz
+	            +fn1[bb]*fn2[b ]*mesq_brb_nfz;
+
 	  QBGN_1 = fn1[g]*(fn2[u]*mesq_uub
 			  +fn2[c]*mesq_ccb
 			  +fn2[d]*mesq_ddb
@@ -2814,6 +2840,7 @@ complex <double> mellinint::calc1d()
 	    + (QQBPN_1+QQBPN_2)*(hcoeff::Hqqbp[i]+muf::qqbp[i])*expc::qqbp[idx]
 	    
 	    //contributions starting at NNNLL
+	    + QQBN_nfz         *(hcoeff::Hqqb_nfz             )*expc::qqb[idx]
 	    + (QBGN_1+QBGN_2)  *(hcoeff::Hqbg[i] +muf::qbg[i] )*expc::qbg[idx]
 	    + (QPGN_1+QPGN_2)  *(hcoeff::Hqpg[i] +muf::qpg[i] )*expc::qpg[idx]
 	    + (QBPGN_1+QBPGN_2)*(hcoeff::Hqbpg[i]+muf::qbpg[i])*expc::qbpg[idx];
@@ -2834,6 +2861,9 @@ complex <double> mellinint::calc1d()
       //complex <double> pos = 	    QQBN             *(hcoeff::Hqqb[i]+muf::qqb[i])*expc::qqb[idx]
       //+ (QGN_1+QGN_2)  *(hcoeff::Hqg[i]+muf::qg[i]) *expc::qg[idx]
       //;
+      //cout << " QQBN_nfx " << QQBN_nfz
+      //	   << hcoeff::Hqqb_nfz
+      //	   << endl;
       //Negative branch
       complex <double> neg;
       //if (opts.mellininv == 1 && i == 0)
@@ -2860,6 +2890,7 @@ complex <double> mellinint::calc1d()
 	    + (QQBPN_1+QQBPN_2)*conj(hcoeff::Hqqbp[i]+muf::qqbp[i])*expc::qqbp[idx]
 	    
 	    //contributions starting at NNNLL
+	    + QQBN_nfz         *conj(hcoeff::Hqqb_nfz             )*expc::qqb[idx]
 	    + (QBGN_1+QBGN_2)  *conj(hcoeff::Hqbg[i] +muf::qbg[i] )*expc::qbg[idx]
 	    + (QPGN_1+QPGN_2)  *conj(hcoeff::Hqpg[i] +muf::qpg[i] )*expc::qpg[idx]
 	    + (QBPGN_1+QBPGN_2)*conj(hcoeff::Hqbpg[i]+muf::qbpg[i])*expc::qbpg[idx];
@@ -2924,6 +2955,7 @@ complex <double> mellinint::calc2d()
 		+ QQBPN_1*hcoeff::Hqqbp_1[ii]*expc::qqbp_1[ii] + QQBPN_2*hcoeff::Hqqbp_2[ii]*expc::qqbp_2[ii]
 
 		//contributions starting at NNNLL
+		+ QQBN_nfz*hcoeff::Hqqb_nfz*expc::qqb[ii]
 		+ QBGN_1*hcoeff::Hqbg_1[ii]*expc::qbg_1[ii]+QBGN_2  *hcoeff::Hqbg_2[ii]*expc::qbg_2[ii]
 		+ QPGN_1*hcoeff::Hqbg_1[ii]*expc::qbg_1[ii]+QPGN_2  *hcoeff::Hqpg_2[ii]*expc::qpg_2[ii]
 		+ QBPGN_1*hcoeff::Hqbg_1[ii]*expc::qbg_1[ii]+QBPGN_2*hcoeff::Hqbpg_2[ii]*expc::qbpg_2[ii]
@@ -2975,6 +3007,7 @@ complex <double> mellinint::calc2d()
 		+ QQBPN_1*hcoeff::Hqqbp_1[ii]*expc::qqbp_1[ii] + QQBPN_2*hcoeff::Hqqbp_2[ii]*expc::qqbp_2[ii]
 		
 		//contributions starting at NNNLL
+		+ QQBN_nfz*hcoeff::Hqqb_nfz*expc::qqb[ii]
 		+ QBGN_1*hcoeff::Hqbg_1[ii]*expc::qbg_1[ii]+QBGN_2  *hcoeff::Hqbg_2[ii]*expc::qbg_2[ii]
 		+ QPGN_1*hcoeff::Hqbg_1[ii]*expc::qbg_1[ii]+QPGN_2  *hcoeff::Hqpg_2[ii]*expc::qpg_2[ii]
 		+ QBPGN_1*hcoeff::Hqbg_1[ii]*expc::qbg_1[ii]+QBPGN_2*hcoeff::Hqbpg_2[ii]*expc::qbpg_2[ii]
