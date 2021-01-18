@@ -10,7 +10,7 @@
 #include "constants.h"
 #include "icoeff.h"
 #include "phasespace.h"
-#include "hs.h"
+//#include "hs.h"
 #include "psi.h"
 #include "cmom.h"
 #include <iostream>
@@ -362,7 +362,7 @@ void ccoeff::calc1d()
       cout << mellinint::Np[m] << " C3qqbp " << icoeff::c3qqbp[idx] - C3qqbpN(N) << endl;
     }
   */
-
+  
 /*
   int prec = 8;
   int dist = 2*prec+20;
@@ -622,7 +622,7 @@ void ccoeff::num_calc()
   for (int m = 0; m < mellinint::mdim; m++)
     {
       int idx = anomalous::index(m,mesq::positive);
-      //C1qq[idx] += resconst::C1qqn;
+      C1qq[idx] += resconst::C1qqn;
       C2qq[idx] += resconst::C2qqn;
     }
 
