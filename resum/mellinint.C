@@ -2849,11 +2849,12 @@ complex <double> mellinint::calc1d()
 	}
       //if (opts.order == 0)
       //cout << i << " positive " << " QQBN " << QQBN
-      //<< " expc::qqb[idx] " << expc::qqb[idx] << " hcoeff::Hqqb[i] " << hcoeff::Hqqb[i]
-      //<< endl;
+      //	   << " expc::qqb[idx] " << expc::qqb[idx]
+      //	   << " hcoeff::Hqqb[i] " << hcoeff::Hqqb[i]
+      //	   << endl;
       //cout << pdfevol::fn1[u ] << "  " << pdfevol::fn2[ub] << "  "
-      //<< mesq::mesqij_expy[mesq::index(0,i,i,mesq::positive)] << endl;
-	//else
+      //	   << mesq::mesqij_expy[mesq::index(0,i,i,mesq::positive)] << endl;
+      //else
       //	{
       //cout << i << " positive " << setprecision(16) << " QQBN " << QQBN << " Hqqb " << hcoeff::Hqqb[i]+muf::qqb[i] << " expc::qqb[idx] " << expc::qqb[idx] << endl;
       //cout << " QGN_1 " << QGN_1 << " Hqg " << hcoeff::Hqg[i] << " expc::qg[idx] " << expc::qg[idx] << endl;
