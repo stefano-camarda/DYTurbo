@@ -317,6 +317,7 @@ void settings::readfromfile(const string fname){
     order          = in.GetNumber ( "order"          );
     order_sudak    = in.GetNumber ( "order_sudak"    );
     order_hcoef    = in.GetNumber ( "order_hcoef"    );
+    order_evol     = in.GetNumber ( "order_evol"    );
     runningwidth   = in.GetBool   ( "runningwidth"   );
     rseed          = in.GetNumber ( "rseed"          );
     blim           = in.GetNumber ( "blim"           );
@@ -482,8 +483,12 @@ void settings::check_consistency(){
     if (order_hcoef < 0)
       order_hcoef = order;
 
-    order = max(order,order_sudak);
-    order = max(order,order_hcoef);
+    if (order_evol < 0)
+      order_evol = order;
+    
+    //order = max(order,order_sudak);
+    //order = max(order,order_hcoef);
+    //order = max(order,order_evol);
     
     if (order == 0)
       {
@@ -532,10 +537,8 @@ void settings::check_consistency(){
       }
 
     //reset evolmode to zero at leading log
-    if (evolmode == 1 && order == 0)
-      {
-	evolmode = 0;
-      }
+    if (evolmode == 1 && order_evol == 0)
+      evolmode = 0;
     
     //if (fmufac > 0 && evolmode < 3 && order > 0 && fixedorder == false)
     //  {
@@ -564,7 +567,11 @@ void settings::check_consistency(){
     //Automatic selector of integration type
     if (intDimBorn < 0)
       if (BORNquad)
-	intDimBorn = 2;
+	{
+	  intDimBorn = 2;
+	  if (order >= 3)
+	    intDimBorn = 1;
+	}
       else
 	intDimBorn = 4;
 
@@ -633,16 +640,17 @@ void settings::check_consistency(){
 
 
     // born term integration dimension
-    if (intDimBorn < 4 && intDimBorn>1){
+    if (intDimBorn < 4 && intDimBorn>0){
+      bornint1d      = (intDimBorn == 1);
       bornint2d      = (intDimBorn == 2);
       bornintvegas4d = false;
       bornintvegas6d = false;
     } else {
+      bornint1d      = false;
       bornint2d      = false;
       bornintvegas4d = (intDimBorn == 4);
       bornintvegas6d = (intDimBorn >  5);
     }
-
 
     // counter term integration dimension
     if (intDimCT<4 && intDimCT>0){
@@ -799,6 +807,7 @@ void settings::dumpAll(){
 	dumpI ( "order       ",  nnlo_        . order_      ) ;
 	dumpI ( "order_sudak ",  order_sudak      ) ;
 	dumpI ( "order_hcoef ",  order_hcoef      ) ;
+	dumpI ( "order_evol ",   order_evol      ) ;
         dumpB ( "alphaslha   ",  alphaslha                  ) ;
         dumpD ( "kmuren      ",  kmuren                     ) ;
         dumpD ( "kmufac      ",  kmufac                     ) ;
@@ -858,6 +867,7 @@ void settings::dumpAll(){
         dumpB("resint3d          ", resint3d            );
         dumpB("resintvegas       ", resintvegas         );
         dumpI("intDimBorn        ", intDimBorn          );
+        dumpB("bornint1d         ", bornint1d           );
         dumpB("bornint2d         ", bornint2d           );
         dumpB("bornintvegas4d    ", bornintvegas4d      );
         dumpB("bornintvegas6d    ", bornintvegas6d      );

@@ -81,9 +81,10 @@ public:
   int    order;       //Main order
   int    order_sudak; //Order of the Sudakov
   int    order_hcoef; //Order of the H coefficients
-  //  int    order_evol;  //Order of the PDF evolution
-  //  int    order_expc;  //Order of the C exponentiation
-  //  int    order_ford;  //Order of the finite order part
+  int    order_evol;  //Order of the PDF evolution
+  //  int    order_expc;   //Order of the C exponentiation
+  //  int    order_ford;   //Order of the finite order part
+  //  int    order_alphas; //Order of the alphas running
 
   //Non-perturbative form factor
   int npff;
@@ -180,7 +181,7 @@ public:
 
   //dimension of integration for the born configuration
   int intDimBorn;
-  bool bornint2d, bornintvegas4d, bornintvegas6d;
+  bool bornint1d, bornint2d, bornintvegas4d, bornintvegas6d;
   
   //type of integration for the counterterm
   int intDimCT;
