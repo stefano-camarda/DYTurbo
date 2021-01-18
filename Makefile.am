@@ -46,3 +46,4 @@ distclean-local:
 	rm -rf ceres-solver-$(CERES_VERSION)
 	rm -rf cubature/*.c cubature/*.h cubature/NEWS.md cubature/COPYING cubature/README.md cubature/ChangeLog cubature/doc
 	rm -rf origdyres/*.f origdyres/*.h origdyres/DYRes-v1.0
+	rm -rf ${sharedir}/ccr.bin ${sharedir}/i3.bin ${sharedir}/gr.bin
