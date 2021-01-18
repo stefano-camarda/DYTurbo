@@ -221,7 +221,8 @@ namespace DYTurbo
         bool fixed_born = opts.doBORN && opts.fixedorder;
         if (fixed_born || TestAllTerms) {
             name="Fixed born";
-            AddTermIfActive ( opts.bornint2d      , bornintegr2d   , name, isNotVegas ) << Col3( "cuhre (dm, dpt)" , "iter ="   , opts.niterBORN       );
+            AddTermIfActive ( opts.bornint1d      , bornintegr1d   , name, isNotVegas ) << Col3( "cuhre (dm)"      , "iter ="   , opts.niterBORN       );
+            AddTermIfActive ( opts.bornint2d      , bornintegr2d   , name, isNotVegas ) << Col3( "cuhre (dm, dy)"  , "iter ="   , opts.niterBORN       );
             AddTermIfActive ( opts.bornintvegas4d , bornintegrMC4d , name, isVegas    ) << Col3( "vegas 4D"        , "ncalls =" , opts.vegasncallsBORN );
             AddTermIfActive ( opts.bornintvegas6d , bornintegrMC6d , name, isVegas    ) << Col3( "vegas 6D"        , "ncalls =" , opts.vegasncallsBORN );
         }
