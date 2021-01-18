@@ -330,7 +330,7 @@ void evolnative::update_pdfs()
 
   mellinpdf::free();
   
-  if (opts.order == 0)
+  if (opts.order_evol == 0)
     return;
   //Precompute singlet/non-singlet decomposition
   
@@ -394,7 +394,7 @@ void evolnative::update_pdfs()
 }
 void evolnative::update_engine()
 {
-  if (opts.order == 0)
+  if (opts.order_evol == 0)
     return;
 
   int nf = resconst::NF;
@@ -603,7 +603,7 @@ void evolnative::scales()
   SALP = log(XL);
 //  //cout << pdfevol::bscale << "  " << evolnative::XL << endl;
 //  // SELECT ORDER FOR EVOLUTION LO/NLO
-  if (opts.order <= 1)
+  if (opts.order_evol <= 1)
     alpr = 0.;
   else
     //alpr = alpqf * cx(alphasl_(fscale2_mub));
@@ -647,7 +647,7 @@ void evolnative::evolve()
 //	pdfevol::retrievemuf(i);
 //    }
   
-  if (opts.order == 0)
+  if (opts.order_evol == 0)
     {
       if (opts.mellin1d)
 	for (int i = 0; i < mellinint::mdim; i++)
@@ -789,7 +789,7 @@ void evolnative::evolve()
       //complex <double> alpr= alpq * 1 *(opts.order-1);
       //--> alpr = 0 at NLL; alpr = alphas(Q) * alphasl ~ alphas(b0/b) at NNLL
 
-      if (opts.order == 1)
+      if (opts.order_evol == 1)
 	{
 	  UVN  = UVN  * ENS;
 	  DVN  = DVN  * ENS;
@@ -802,7 +802,7 @@ void evolnative::evolve()
 	  NS15N = NS15N * ENS;
 	  NS24N = NS24N * ENS;
 	}
-      else if (opts.order == 2)
+      else if (opts.order_evol == 2)
 	{
 	  UVN  = UVN  * ENS * (1.+  alpr * XL1 * RMIN);
 	  DVN  = DVN  * ENS * (1.+  alpr * XL1 * RMIN);
