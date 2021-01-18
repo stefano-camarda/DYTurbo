@@ -1042,7 +1042,7 @@ void pdfevol::retrieve1d_fortran(int i, int sign)
 
 //Retrieve PDFs at the starting scale (muf), only positive branch
 // --> Check that this is doing the right thing, as it now depends on evolnative
-void pdfevol::retrievemuf(int i)
+void pdfevol::retrievemuf_1d(int i)
 {
   // i is the index of the complex mellin moment in the z-space for the gaussian quadrature used for the mellin inversion
 
@@ -1078,12 +1078,58 @@ void pdfevol::retrievemuf(int i)
       fx[5+MAXNF] = 0.;
       fx[-5+MAXNF] = 0.;
     }
-  
+
   storemoments(i, fx);
   retrieve1d_pos(i);
   //  cout << i << "  " << GLP[i] << "  " << fx[0+MAXNF] << "  " << fn1[MAXNF] << "  " << fn2[MAXNF] << endl;
   return;
 }
+
+void pdfevol::retrievemuf_2d(int i)
+{
+  // i is the index of the complex mellin moment in the z-space for the gaussian quadrature used for the mellin inversion
+
+  //N flavour dependence
+  int nf = resconst::NF;
+
+  //XP[i] are moments of PDFs at the starting scale (factorisation scale)
+  complex <double> fx_1[11];
+  fx_1[-5+MAXNF] = evolnative::BOP[i];
+  fx_1[-4+MAXNF] = evolnative::CHP[i];
+  fx_1[-3+MAXNF] = evolnative::SSP[i];
+  fx_1[-2+MAXNF] = evolnative::DSP[i];
+  fx_1[-1+MAXNF] = evolnative::USP[i];
+  fx_1[ 0+MAXNF] = evolnative::GLP[i];
+  fx_1[ 1+MAXNF] = evolnative::UVP[i] + evolnative::USP[i];
+  fx_1[ 2+MAXNF] = evolnative::DVP[i] + evolnative::DSP[i];
+  fx_1[ 3+MAXNF] = evolnative::SVP[i] + evolnative::SSP[i];
+  fx_1[ 4+MAXNF] = evolnative::CVP[i] + evolnative::CHP[i];
+  fx_1[ 5+MAXNF] = evolnative::BVP[i] + evolnative::BOP[i];
+
+  complex <double> fx_2[11];
+  fx_2[-5+MAXNF] = evolnative::BOP[i+mellinint::mdim];
+  fx_2[-4+MAXNF] = evolnative::CHP[i+mellinint::mdim];
+  fx_2[-3+MAXNF] = evolnative::SSP[i+mellinint::mdim];
+  fx_2[-2+MAXNF] = evolnative::DSP[i+mellinint::mdim];
+  fx_2[-1+MAXNF] = evolnative::USP[i+mellinint::mdim];
+  fx_2[ 0+MAXNF] = evolnative::GLP[i+mellinint::mdim];
+  fx_2[ 1+MAXNF] = evolnative::UVP[i+mellinint::mdim] + evolnative::USP[i+mellinint::mdim];
+  fx_2[ 2+MAXNF] = evolnative::DVP[i+mellinint::mdim] + evolnative::DSP[i+mellinint::mdim];
+  fx_2[ 3+MAXNF] = evolnative::SVP[i+mellinint::mdim] + evolnative::SSP[i+mellinint::mdim];
+  fx_2[ 4+MAXNF] = evolnative::CVP[i+mellinint::mdim] + evolnative::CHP[i+mellinint::mdim];
+  fx_2[ 5+MAXNF] = evolnative::BVP[i+mellinint::mdim] + evolnative::BOP[i+mellinint::mdim];
+  
+  if (nf < 4)
+    fx_1[4+MAXNF] = fx_1[-4+MAXNF] = fx_2[4+MAXNF] = fx_2[-4+MAXNF] = 0.;
+  if (nf < 5)
+    fx_1[5+MAXNF] = fx_1[-5+MAXNF] = fx_2[5+MAXNF] = fx_2[-5+MAXNF] = 0.;
+
+  storemoments_1(i, fx_1);
+  storemoments_2(i, fx_2);
+  //  cout << i << "  " << GLP[i] << "  " << fx[0+MAXNF] << "  " << fn1[MAXNF] << "  " << fn2[MAXNF] << endl;
+  return;
+}
+
 void pdfevol::truncate()
 {
   //Calculate truncated moments
