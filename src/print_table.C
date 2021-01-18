@@ -445,7 +445,7 @@ namespace DYTurbo {
                     cout << "   Computing NLO fixed order cross section" << endl;
                 else if (nnlo_.order_ == 2)
                     cout << "   Computing NNLO fixed order cross section" << endl;
-                else if (nnlo_.order_ == 2)
+                else if (nnlo_.order_ == 3)
                     cout << "   Computing NNNLO fixed order cross section" << endl;
             } else {
                 if (nnlo_.order_ == 0)
