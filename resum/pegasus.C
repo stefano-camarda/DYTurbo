@@ -605,7 +605,7 @@ void pegasus::init()
     {
       ivfns = 0; //FFN evolution
       nff = 5;   //5 light flavours
-      order_.npord_ = opts.order - 1; //order of evolution is LO, NLO, NNLO for NLL, NNLL, NNNLL
+      order_.npord_ = opts.order_evol - 1; //order of evolution is LO, NLO, NNLO for NLL, NNLL, NNNLL
       //if (opts.order == 3) order_.npord_ = 1; //---> Use NLO evolution at N3LL
       //evmod_.imodev_ = 3; //reproduces DYRes evolution
       evmod_.imodev_ = 4; //reproduces DYRes evolution (even better)
@@ -885,7 +885,7 @@ void pegasus::evolve()
   //    retrieve();
 
   //--> this part is not working, should avoid evolmode 1 at LL, could automatically switch to evolmode 0
-  if (opts.evolmode == 1 && opts.order == 0)
+  if (opts.evolmode == 1 && opts.order_evol == 0)
     {
       cout << "at LL should use evolmode = 0" << endl;
       //N flavour dependence
@@ -894,7 +894,10 @@ void pegasus::evolve()
       complex <double> fx[11];
       //At LL there is no PDF evolution, PDFs are evaluated at the factorisation scale
       for (int i = 0; i < mellinint::mdim; i++)
-	pdfevol::retrievemuf(i);
+	if (opts.mellin1d)
+	  pdfevol::retrievemuf_1d(i);
+	else
+	  pdfevol::retrievemuf_2d(i);
 
       return;
     }
@@ -1118,7 +1121,7 @@ void pegasus::evolve()
       ASF = resint::alpqfac;
       order_.npord_ = pdf::order; //order of evolution read from LHAPDF
       evmod_.imodev_ = 1; //reproduces evolution in x-space
-      //order_.npord_ = opts.order-1;
+      //order_.npord_ = opts.order_evol-1;
       //evmod_.imodev_ = 4;
 
       /*
@@ -1126,7 +1129,7 @@ void pegasus::evolve()
       //ASI = resint::alpqfac;
       //ASF = resint::alpqres;
       
-      order_.npord_ = opts.order-1;
+      order_.npord_ = opts.order_evol-1;
       evmod_.imodev_ = 4;
       double blog = log(pow(scales::res/scales::fac,2));
       double as = resint::alpqren*4.;
@@ -1198,7 +1201,7 @@ void pegasus::evolve()
 
       if (opts.evolmode == 1)
 	{
-	  order_.npord_ = opts.order - 1; //order of evolution is LO, NLO, NNLO for NLL, NNLL, NNNLL
+	  order_.npord_ = opts.order_evol - 1; //order of evolution is LO, NLO, NNLO for NLL, NNLL, NNNLL
 	  evmod_.imodev_ = 4; //reproduces DYRes evolution (even better)
 	}
       else if (opts.evolmode == 3 || opts.evolmode == 4)
