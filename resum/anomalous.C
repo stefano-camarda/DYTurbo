@@ -356,7 +356,7 @@ void anomalous::calc()
 	// C2 coefficients      
 	//input: fxn and nf from the common block
 	fcomplex C2qg,C2NSqqb,C2NSqq,C2Sqqb;
-	h2calc_(C2qg,C2NSqqb,C2NSqq,C2Sqqb,fxn);
+	dyh2calc_(C2qg,C2NSqqb,C2NSqq,C2Sqqb,fxn);
 	C2qgM[index(i,sign)]    = cx(C2qg);
 	C2NSqqM[index(i,sign)]  = cx(C2NSqq);
 	C2SqqbM[index(i,sign)]  = cx(C2Sqqb);
@@ -402,13 +402,13 @@ void anomalous::calc()
 	  // C2 coefficients      
 	  //input: fxn and nf from the common block
 	  fcomplex C2qg,C2NSqqb,C2NSqq,C2Sqqb;
-	  h2calc_(C2qg,C2NSqqb,C2NSqq,C2Sqqb,fxn_1);
+	  dyh2calc_(C2qg,C2NSqqb,C2NSqq,C2Sqqb,fxn_1);
 	  C2qgM_1[index(i,sign)]    = cx(C2qg);
 	  C2NSqqM_1[index(i,sign)]  = cx(C2NSqq);
 	  C2SqqbM_1[index(i,sign)]  = cx(C2Sqqb);
 	  C2NSqqbM_1[index(i,sign)] = cx(C2NSqqb);
 
-	  h2calc_(C2qg,C2NSqqb,C2NSqq,C2Sqqb,fxn_2);
+	  dyh2calc_(C2qg,C2NSqqb,C2NSqq,C2Sqqb,fxn_2);
 	  C2qgM_2[index(i,sign)]    = cx(C2qg);
 	  C2NSqqM_2[index(i,sign)]  = cx(C2NSqq);
 	  C2SqqbM_2[index(i,sign)]  = cx(C2Sqqb);
