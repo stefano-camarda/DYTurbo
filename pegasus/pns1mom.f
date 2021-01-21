@@ -90,7 +90,7 @@
 !     4         0.6621D0 * (ZETA(2) - S14/ N4) / N4 -
 !     5         0.3174D0 * (ZETA(2) - S15/ N5) / N5 +
 !     6         0.0699D0 * (ZETA(2) - S16/ N6) / N6  
-       SPMOM=ACG3(N-1D0) ! --> Improved approximation for the Mellin transform of: Li2(x)/(1+x)
+       SPMOM=fun6(N-1D0) ! --> Improved approximation for the Mellin transform of: Li2(x)/(1+x)
 *
        SLC = - 5D0/8D0 * ZETA(3)
        SLV = - ZETA(2)/2D0* (PSI(N1/2D0) - PSI(N/2D0)) + S1/NS + SPMOM
