@@ -49,7 +49,7 @@ extern "C" {
 	     fcomplex &QQI, fcomplex &QGF, fcomplex &GQI, fcomplex &GGI, fcomplex &GGF, fcomplex &NS1MI, fcomplex &NS1PI, fcomplex &NS1F,
 	     fcomplex &QQ1F, fcomplex &QG1F, fcomplex &GQ1I, fcomplex &GQ1F, fcomplex &GG1I, fcomplex &GG1F, fcomplex &C2QI, fcomplex &C2GF,
 	     fcomplex &CDYQI, fcomplex &CDYGI);
-  void h2calc_(fcomplex &C2qg, fcomplex &C2NSqqb, fcomplex &C2NSqq, fcomplex &C2Sqqb,fcomplex &xn);
+  void dyh2calc_(fcomplex &C2qg, fcomplex &C2NSqqb, fcomplex &C2NSqq, fcomplex &C2Sqqb,fcomplex &xn);
 
   // controls
   extern struct {
