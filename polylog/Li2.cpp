@@ -416,6 +416,7 @@ std::complex<long double> Li2(const std::complex<long double>& z_) noexcept
 
 } // namespace polylogarithm
 
-double dli2_(double& x) {return polylogarithm::Li2(x);}
-double li2_(double& x) {return polylogarithm::Li2(x);}
-double ddilog_(double& x) {return polylogarithm::Li2(x);}
+double dli2_(double& x)   {return polylogarithm::Li2(x);}
+double li2_(double& x)    {return polylogarithm::Li2(x);} //li2 function called from vjet/utils.f
+double ddilog_(double& x) {return polylogarithm::Li2(x);} //ddilog function called from mcfm/i3m.f, mcfm/lfunctions.f
+double myli2_(double& x)  {return polylogarithm::Li2(x);} //myli2 function called from dynnlo/lowintHst.f,dyres/countDYnew-RES.f
