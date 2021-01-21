@@ -31,7 +31,7 @@ libdyturbobase_la_SOURCES = dyturbo.C resintegr.C ctintegr.C finintegr.C bornint
 if HAVE_CERES
 libdyturbobase_la_SOURCES += cerespdf.C
 endif
-libdyturbobase_la_SOURCES += flavreduce.f gaussinit.f rescinit.f pdfmoments.f ddilog.f mjj.f
+libdyturbobase_la_SOURCES += flavreduce.f gaussinit.f rescinit.f pdfmoments.f mjj.f
 libdyturbobase_la_SOURCES += AiMoments.cxx TLVUtils.cxx
 
 lib_LTLIBRARIES = libdyturbo.la
