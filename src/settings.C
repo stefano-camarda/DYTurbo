@@ -539,6 +539,10 @@ void settings::check_consistency(){
     //reset evolmode to zero at leading log
     if (evolmode == 1 && order_evol == 0)
       evolmode = 0;
+
+    //use evolmode 1 at N3LL (evolmode 0 not implemented)
+    if (evolmode == 0 && order_evol >= 3)
+      evolmode = 1;
     
     //if (fmufac > 0 && evolmode < 3 && order > 0 && fixedorder == false)
     //  {
