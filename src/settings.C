@@ -601,7 +601,7 @@ void settings::check_consistency(){
     
     if (intDimCT < 0)
       if (CTquad)
-	if (opts.makecuts || !fullrap)
+	if (opts.makecuts || !fullrap || !mellin1d)
 	  intDimCT = 2;
 	else
 	  intDimCT = 1;
