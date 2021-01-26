@@ -601,7 +601,7 @@ void evolnative::update_engine()
 	    fxn, nf, QQI, QGF, GQI, GGI, GGF, NS1MI, NS1PI, NS1F, QQ1F, QG1F, GQ1I, GQ1F, GG1I, GG1F, C2QI, C2GF, CDYQI, CDYGI);
 
       complex <double> Ans, Am, Ap, Al, Be, Ab, Rmin, Rplus, Rqq, Rqg, Rgq, Rgg; //output of anom
-      anom(mellinint::Np[i], Ans, Am, Ap, Al, Be, Ab, Rmin, Rplus, Rqq, Rqg, Rgq, Rgg);
+      anom(cxn, Ans, Am, Ap, Al, Be, Ab, Rmin, Rplus, Rqq, Rqg, Rgq, Rgg);
 
       /*
       cout << endl;
