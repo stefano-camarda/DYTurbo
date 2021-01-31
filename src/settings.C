@@ -428,7 +428,8 @@ void settings::readfromfile(const string fname){
     opts_.pdfintervals_ = in.GetNumber ( "opts_pdfintervals" ); //100
     pdfrule            = in.GetNumber ( "pdfrule" );
     evolmode           = in.GetNumber  ("evolmode");
-    mufevol            = in.GetBool  ("mufevol");
+    //mufevol            = in.GetBool  ("mufevol");
+    mufvar             = in.GetBool  ("mufvar");
     expc               = in.GetNumber  ("expc");
     ntaylor            = in.GetNumber  ("ntaylor");
     sumlogs            = in.GetBool  ("sumlogs");
@@ -551,6 +552,10 @@ void settings::check_consistency(){
     //	exit (-1);
     //  }
 
+    //Save expensive muf b-dependent scale variations when not needed
+    if (opts.kmufac == opts.kmures)
+      mufvar = false;
+    
     //minimal b prescription in the complex plain available only for evolmode 0
     //real axix minimal presxription works only at LL
 
@@ -940,7 +945,8 @@ void settings::dumpAll(){
         dumpI("approxpdf         ", opts_.approxpdf_    );
         dumpI("pdfintervals      ", opts_.pdfintervals_ );
         dumpI("evolmode          ", evolmode            );
-        dumpB("mufevol           ", mufevol            );
+        //dumpB("mufevol           ", mufevol            );
+        dumpB("mufvar            ", mufvar            );
         dumpI("expc              ", expc             );
         dumpI("ntaylor           ", ntaylor             );
 	dumpB("sumlogs           ", sumlogs       );

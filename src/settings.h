@@ -341,7 +341,10 @@ public:
   int evolmode;
 
   //Evolve PDFs from mufac instead of mures
-  bool mufevol;
+  //bool mufevol;
+
+  //Do not factorize muf variations with expc
+  bool mufvar;
   
   //switches for C exponentiation
   int expc, ntaylor;
