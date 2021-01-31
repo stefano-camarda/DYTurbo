@@ -2958,8 +2958,8 @@ complex <double> mellinint::calc2d()
 		//contributions starting at NNNLL
 		+ QQBN_nfz*hcoeff::Hqqb_nfz*expc::qqb[ii]
 		+ QBGN_1*hcoeff::Hqbg_1[ii]*expc::qbg_1[ii]+QBGN_2  *hcoeff::Hqbg_2[ii]*expc::qbg_2[ii]
-		+ QPGN_1*hcoeff::Hqbg_1[ii]*expc::qbg_1[ii]+QPGN_2  *hcoeff::Hqpg_2[ii]*expc::qpg_2[ii]   //!!! bug on the first leg qbg->qpg 
-		+ QBPGN_1*hcoeff::Hqbg_1[ii]*expc::qbg_1[ii]+QBPGN_2*hcoeff::Hqbpg_2[ii]*expc::qbpg_2[ii] //!!! bug on the first leg qbg->qbpg
+		+ QPGN_1*hcoeff::Hqpg_1[ii]*expc::qpg_1[ii]+QPGN_2  *hcoeff::Hqpg_2[ii]*expc::qpg_2[ii]   //!!! bug on the first leg qbg->qpg --> fixed
+		+ QBPGN_1*hcoeff::Hqbpg_1[ii]*expc::qbpg_1[ii]+QBPGN_2*hcoeff::Hqbpg_2[ii]*expc::qbpg_2[ii] //!!! bug on the first leg qbg->qbpg --> fixed
 		;
 	    }	  
 	      
@@ -3010,8 +3010,8 @@ complex <double> mellinint::calc2d()
 		//contributions starting at NNNLL
 		+ QQBN_nfz*hcoeff::Hqqb_nfz*expc::qqb[ii]
 		+ QBGN_1*hcoeff::Hqbg_1[ii]*expc::qbg_1[ii]+QBGN_2  *hcoeff::Hqbg_2[ii]*expc::qbg_2[ii]    
-		+ QPGN_1*hcoeff::Hqbg_1[ii]*expc::qbg_1[ii]+QPGN_2  *hcoeff::Hqpg_2[ii]*expc::qpg_2[ii]	   //!!! bug on the first leg qbg->qpg
-		+ QBPGN_1*hcoeff::Hqbg_1[ii]*expc::qbg_1[ii]+QBPGN_2*hcoeff::Hqbpg_2[ii]*expc::qbpg_2[ii]  //!!! bug on the first leg qbg->qbpg
+		+ QPGN_1*hcoeff::Hqpg_1[ii]*expc::qpg_1[ii]+QPGN_2  *hcoeff::Hqpg_2[ii]*expc::qpg_2[ii]	   //!!! bug on the first leg qbg->qpg  --> fixed
+		+ QBPGN_1*hcoeff::Hqbpg_1[ii]*expc::qbpg_1[ii]+QBPGN_2*hcoeff::Hqbpg_2[ii]*expc::qbpg_2[ii]  //!!! bug on the first leg qbg->qbpg  --> fixed
 		;
 	      
 	    }
