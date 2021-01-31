@@ -9,6 +9,23 @@ using namespace std;
 
 namespace expc
 {
+  extern complex <double> *aexpqq;
+  extern complex <double> *aexpqg;
+  extern complex <double> *aexpqqb;
+  extern complex <double> *aexpqqp;
+  extern complex <double> *aexpqqbp;
+  extern complex <double> *aexpqq_1;
+  extern complex <double> *aexpqg_1;
+  extern complex <double> *aexpqqb_1;
+  extern complex <double> *aexpqqp_1;
+  extern complex <double> *aexpqqbp_1;
+  extern complex <double> *aexpqq_2;
+  extern complex <double> *aexpqg_2;
+  extern complex <double> *aexpqqb_2;
+  extern complex <double> *aexpqqp_2;
+  extern complex <double> *aexpqqbp_2;
+#pragma omp threadprivate(aexpqq,aexpqg,aexpqqb,aexpqqp,aexpqqbp,aexpqq_1,aexpqg_1,aexpqqb_1,aexpqqp_1,aexpqqbp_1,aexpqq_2,aexpqg_2,aexpqqb_2,aexpqqp_2,aexpqqbp_2)
+  
   extern complex <double> *qqb;
   extern complex <double> *qg;
   extern complex <double> *qg_1;
