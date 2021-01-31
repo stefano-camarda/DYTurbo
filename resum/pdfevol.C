@@ -122,7 +122,7 @@ void pdfevol::alphasl(complex <double> b)
 {
   double as = resint::aass; // = pdf::alphas(muren)/4./M_PI;
   double Q = scales::res;
-  double LQR = real(logq2mur2-2.*loga); //2*loga = logq2mures2;
+  double LQR = LR-LQ;//real(logq2mur2-2.*loga); //2*loga = logq2mures2;
   /*
   if (opts.mufevol)  //should be actually if (opts.mufevol || opts.evolmode == 2 || opts.evolmode == 3)
     {
@@ -149,7 +149,7 @@ void pdfevol::alphasl(complex <double> b)
   //Q = scales::fac;
   //as = pdf::alphas(Q)/M_PI;
   //LQR = 0.;
-  
+
   double as2 = pow(as,2);
 
   double blim = blim::pdf;
@@ -249,9 +249,8 @@ void pdfevol::scales(complex <double> b)
   //it is used in evolmode 2, for the direct mellin transfrom at each scale
 
   double Q = resint::mures;
-  if (opts.mufevol || opts.evolmode == 2 || opts.evolmode == 3)
-    //if (opts.mufevol)
-    Q = resint::mufac;
+  //if (opts.mufevol || opts.evolmode == 2)
+  //Q = resint::mufac; //--> instead of usingg mufac in mubstartilde, apply an evolution operator U(Q,muF) to the PDFs also in evolmode = 2
 
   bool useC2 = false;
   if (useC2) //convert muF variations to C2 variations
