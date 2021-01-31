@@ -759,31 +759,30 @@ void resint::rint(double costh, double m, double qt, double y, int mode, double 
   expc::allocate();
   if (opts.numsud || opts.numexpc || opts.order >= 4)
     gint::allocate();
+
+  hcoeff::allocate();
+  hcoeff::reset();
+  hcoeff::calc();
+
+  muf::allocate();
+  muf::reset();
+
+  /*
   if (opts.mellin1d)
     {
-      hcoeff::allocate();
-      hcoeff::reset();
-      hcoeff::calc();
 
       //hcoeff_check::allocate();
       //hcoeff_check::reset();
       //hcoeff_check::calc();
-      
-      muf::allocate();
-      muf::reset();
-      //muf::calc();
     }
   else
     {
       //hcoefficients::allocate();
       //hcoefficients::reset();
       //hcoefficients::calc(aass,logmuf2q2,logq2muf2,logq2mur2,loga);
-
-      hcoeff::allocate();
-      hcoeff::reset();
-      hcoeff::calc();
     }
-
+  */
+  
   pdfevol::allocate_fx();
   //*****************************************
 
