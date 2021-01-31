@@ -56,7 +56,9 @@ namespace mellinint
   //  extern complex <double> integrand();
 
   extern complex <double> calc1d();
+  extern complex <double> calc1d_muf();
   extern complex <double> calc2d();
+  extern complex <double> calc2d_muf();
   extern void reset();
 
   inline int index(int i1, int i2)
