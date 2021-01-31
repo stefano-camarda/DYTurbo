@@ -575,7 +575,7 @@ void resint::rint(double costh, double m, double qt, double y, int mode, double 
       // -> put all this into mellinint::allocate()
       mellinint::allocate();
       ccoeff::allocate();
-      //pegasus::allocate();
+      pegasus::allocate();
       pmom::allocate();
       mellinint::update();
     }
@@ -967,7 +967,7 @@ void resint::rint(double costh, double m, double qt, double y, int mode, double 
     {
       mellinint::free();
       ccoeff::free();
-      //pegasus::free();
+      pegasus::free();
       pmom::free();
     }
 
