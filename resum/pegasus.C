@@ -1111,8 +1111,8 @@ void pegasus::evolve()
     evnvfn_(PDFN, ASI, ASF, NF, nlow, nhigh, IPSTD);
 
   //Evolve from Q to muF, to compensate the LQF*gamma terms in the H coefficients
-  if (false)
-    //if (opts.evolmode == 3 && (opts.kmufac != opts.kmures))
+  //if (false)
+  if (opts.evolmode == 3 && (opts.kmufac != opts.kmures))
     {
       NF = 5;
       /*
