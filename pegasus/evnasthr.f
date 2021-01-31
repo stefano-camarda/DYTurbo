@@ -40,6 +40,7 @@
 *  
        COMMON / NNUSED / NMAX
        COMMON / ORDER  / NPORD
+!$OMP THREADPRIVATE(/ORDER/)
        COMMON / ASINP  / AS0, M20
        COMMON / FRRAT  / LOGFR
 *
