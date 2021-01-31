@@ -178,8 +178,8 @@ pdfrule = 200             # Gaussian rule for the x-to-N Mellin transform
 #4: Pegasus VFN with alphas from DYRES (forward evolution)
 evolmode = 1
 
-# Evolve PDFs from mufac (instead of mures) to b0/b
-mufevol = false
+# Do not factorize muf/Q variations from expc (use false only to reproduce old results)
+mufvar = true
 
 # Settings for the inverse Hankel transform
 bintaccuracy = 1.0e-4  # Accuracy of the integration
