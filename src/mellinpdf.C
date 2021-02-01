@@ -391,7 +391,7 @@ void mellinpdf::evalpdfs(double scale, double m, double y)
   //y = 0.;
   if (opts.mellin1d)
     {
-      int p = 2; //2;
+      int p = 4; //2;
       //double xmin = 1e-8;
       //double xmin = pdf::xmin;
       double xmin = pow(m/opts.sroot,p);
