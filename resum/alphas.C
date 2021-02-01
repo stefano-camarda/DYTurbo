@@ -59,17 +59,17 @@ complex <double> alphas::calc(complex <double> q, int nloop)
   cout << "as Runge-Kutta C++:     " << asLO << "  " << asNLO << "  " << asNNLO << "  " << asNNNLO << "  " << asNNNNLO << endl;
       
   //double R20  = pow(q0,2);
-      //double R2   = pow(q,2);
-      //double AS0 = as0/4./M_PI;
-      //int nf = 5;
-      //aspar_.naord_ = 0;    asLO = as_(R2, R20, AS0, nf)*4*M_PI;
-      //aspar_.naord_ = 1;   asNLO = as_(R2, R20, AS0, nf)*4*M_PI;
-      //aspar_.naord_ = 2;  asNNLO = as_(R2, R20, AS0, nf)*4*M_PI;
-      //aspar_.naord_ = 3; asNNNLO = as_(R2, R20, AS0, nf)*4*M_PI;
-      //aspar_.naord_  = order_.npord_;
-      //cout << "as Runge-Kutta fortran: " << asLO << "  " << asNLO << "  " << asNNLO << "  " << asNNNLO << endl;
-      //    }
-      */
+  //double R2   = pow(q,2);
+  //double AS0 = as0/4./M_PI;
+  //int nf = 5;
+  //aspar_.naord_ = 0;    asLO = as_(R2, R20, AS0, nf)*4*M_PI;
+  //aspar_.naord_ = 1;   asNLO = as_(R2, R20, AS0, nf)*4*M_PI;
+  //aspar_.naord_ = 2;  asNNLO = as_(R2, R20, AS0, nf)*4*M_PI;
+  //aspar_.naord_ = 3; asNNNLO = as_(R2, R20, AS0, nf)*4*M_PI;
+  //aspar_.naord_  = order_.npord_;
+  //cout << "as Runge-Kutta fortran: " << asLO << "  " << asNLO << "  " << asNNLO << "  " << asNNNLO << endl;
+  //    }
+  */
   
   //compute asN4LO numerically
   if (opts.order >= 4)
@@ -104,6 +104,16 @@ complex <double> alphas::calc(complex <double> q, int nloop)
 
   //cout << "as analytic             " << asLO << "  " << asNLO << "  " << asNNLO << "  " << asNNNLO << endl;
 
+  //Approximate the exact numeric alphas with higher-order iterative analytic solutions setting beta terms to zero
+  //complex <double> asiter;
+  //asiter   = as0/(1.+lambda); //Taylor series: asLO = as0*(1.-lambda+pow(lambda,2)-pow(lambda,3)+pow(lambda,4)-pow(lambda,5)+pow(lambda,6));
+  //asiter   += - (pow(as0,2)*beta1*log1plambda)/(beta0*pow(oneplambda,2)*M_PI);
+  //asiter   += + (pow(as0,3)*((pow(beta1,2))*lambda + pow(beta1,2)*(-1.+log1plambda)*log1plambda))/(pow(beta0,2)*pow(oneplambda,3)*pi2);
+  //asiter   += + (pow(as0,4)*(-(lambda*(pow(beta1,3)*lambda))
+  //				  + beta1*log1plambda*(-4.*pow(beta1,2)*lambda
+  //						       + pow(beta1,2)*(5. - 2.*log1plambda)*log1plambda)))/(2.*pow(beta0,3)*pow(oneplambda,4)*pi2*M_PI);
+  //cout << "as iterative             " << asLO << "  " << asiter << endl;
+  
   complex <double> dasNLO   = asNLO-asLO;
   complex <double> dasNNLO  = asNNLO-asNLO;
   complex <double> dasNNNLO = asNNNLO-asNNLO;
