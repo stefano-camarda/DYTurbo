@@ -247,6 +247,20 @@ double besselint_mp_complex_dequad(double x)
   bd = resint::bc + jacd*(x-resint::bc);
   /**********************************************/
 
+  ///*********** smooth the contour at the bisection point **************/
+  //complex <double> jacu, jacd;
+  //complex <double> bu, bd;
+  //double y = x-resint::bc;
+  //double m = tan(M_PI/opts.phibr);
+  //double f = sqrt(1+y*y)-1.;
+  //double df = y/(sqrt(y*y)+1);
+  //bu = resint::bc + complex <double> (y, m*f);
+  //bd = resint::bc + complex <double> (y, -m*f);
+  //jacu = complex <double> (1.,df);
+  //jacd = complex <double> (1.,-df);
+  ///**********************************************/
+
+  
   ///*********** Parallelogram contour **************/
   // //--> make this an option?
   // //Continue parallel to the real axis after the Landau pole at bmax
