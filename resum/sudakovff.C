@@ -253,7 +253,7 @@ complex <double> sudakov::sff(complex <double> b)
   complex <double> y = beta0*resint::aass*blog;
 
   //Numerical integration of the Sudakov form factor
-  if (opts.numsud || opts.order >= 4)
+  if (opts.numsud || opts.order_sudak >= 4)
     {
       logS = gint::logS;
       S = exp(logS);
@@ -274,41 +274,41 @@ complex <double> sudakov::sff(complex <double> b)
       
       fcomplex fy = fcx(y);
       
-      if (opts.order == 0)
+      if (opts.order_sudak == 0)
 	//S = exp(blog*cx(f0_(fy)));
 	//S = exp(blog*f0(y));
 	S = exp(blog*g1(y));
-      else if (opts.order == 1)
+      else if (opts.order_sudak == 1)
 	//S = exp(blog*cx(f0_(fy))+cx(f1_(fy)));
 	//S = exp(blog*f0(y)+f1(y));
 	S = exp(blog*g1(y)+g2(y));
-      else if (opts.order == 2)
+      else if (opts.order_sudak == 2)
 	//S = exp(blog*cx(f0_(fy))+cx(f1_(fy))+aass_.aass_*cx(f2_(fy)));
 	//S = exp(blog*f0(y)+f1(y)+resint::aass*f2(y));
 	//S = exp(blog*g1(y)+g2(y)+resint::aass*(g3(y)+2.*C1qqn*((y)/(1.-y))));
 	S = exp(blog*g1(y)+g2(y)+resint::aass*g3(y));
-      else if (opts.order == 3)
+      else if (opts.order_sudak == 3)
 	//S = exp(blog*g1(y)+g2(y)+resint::aass*g3(y));
 	S = exp(blog*g1(y)+g2(y)+resint::aass*g3(y)+pow(resint::aass,2)*g4(y));
 
       /*
-	if (opts.order == 0)
+	if (opts.order_sudak == 0)
 	S = exp(blog*g1(y));
-	else if (opts.order == 1)
+	else if (opts.order_sudak == 1)
 	S = exp(blog*g1(y)+g2(y));
-	else if (opts.order == 2)
+	else if (opts.order_sudak == 2)
 	S = exp(blog*g1(y)+g2(y)+resint::aass*g3(y));
-	else if (opts.order == 3)
+	else if (opts.order_sudak == 3)
 	S = exp(blog*g1(y)+g2(y)+resint::aass*g3(y)+pow(resint::aass,2)*g4(y));
       */
 
-      if (opts.order == 0)
+      if (opts.order_sudak == 0)
 	logS = blog*g1(y);
-      else if (opts.order == 1)
+      else if (opts.order_sudak == 1)
 	logS = blog*g1(y)+g2(y);
-      else if (opts.order == 2)
+      else if (opts.order_sudak == 2)
 	logS = blog*g1(y)+g2(y)+resint::aass*g3(y);
-      else if (opts.order == 3)
+      else if (opts.order_sudak == 3)
 	logS = blog*g1(y)+g2(y)+resint::aass*g3(y)+pow(resint::aass,2)*g4(y);
 
       //cout << " blog " << blog << " g1 " << g1(y) << " g2 " << g2(y) << endl;
