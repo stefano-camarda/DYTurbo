@@ -270,7 +270,7 @@ void expc::calc(complex <double> b)
   //    return;
 
   //LL (no evolution)
-  if (opts.order == 0)
+  if (opts.order_expc == 0)
     return;
 
   double blim = blim::expc;  //better use blim::sudakov?
@@ -312,32 +312,32 @@ void expc::calc(complex <double> b)
   logasl = 0.;
   
   //NLL (LO evolution)
-  if (opts.order >= 1)
+  if (opts.order_expc >= 1)
     logasl += log1xlambda;
 
   //NNLL (NLO evolution)
-  if (opts.order >= 2)
+  if (opts.order_expc >= 2)
     logasl += aass* beta1/beta0*log1xlambda/(1.-xlambda);
 
   //NNNLL (NNLO evolution)
-  if (opts.order >= 3)
+  if (opts.order_expc >= 3)
     logasl += aass2* ((pow(beta1/beta0,2)-beta2/beta0) *xlambda/pow(1.-xlambda,2)
 		      + pow(beta1/beta0,2)             *log1xlambda/pow(1.-xlambda,2)
 		      - pow(beta1/beta0,2)             *pow(log1xlambda,2)/(2.*pow(1.-xlambda,2)));
 
   double LQR = real(logq2mur2-2.*loga);
   //QCD coupling scale dependence
-  if (opts.order >= 2)
+  if (opts.order_expc >= 2)
     logasl += aass*LQR*beta0*xlambda/(1.-xlambda);
 
   //from c3new.txt
-  if (opts.order >= 3)
+  if (opts.order_expc >= 3)
     logasl += aass2*(+LQR*beta1                   *(xlambda-log1xlambda)/pow(1.-xlambda,2)
 		     +LQR*beta1                   *xlambda/(1.-xlambda)                      //missing piece
     		     +0.5*pow(LQR,2)*pow(beta0,2) *xlambda*(xlambda-2.)/pow(1.-xlambda,2));  //missing piece
 
   //from g4 LQR part by replacing B1qbar->beta0 and B2qbar->beta1 (and all An pieces set to zero)
-  //if (opts.order >= 3)
+  //if (opts.order_expc >= 3)
   //  logasl += aass2*(LQR*beta1*(xlambda*(2.-xlambda)-log1xlambda)/pow(1.-xlambda,2)
   //		     +0.5*pow(LQR,2)*pow(beta0,2)*xlambda*(xlambda-2.)/pow(1.-xlambda,2));
   
@@ -441,7 +441,7 @@ void expc::calc(complex <double> b)
   complex <double> aexp2 = pow(aexp,2);
 
   // NLL
-  if (opts.order == 1)
+  if (opts.order_expc == 1)
     if (opts.mellin1d)
       if (opts.sumlogs)
 	fill(qg, qg+mellinint::mdim*2, exp(-logasl+sudakov::logS));
@@ -469,7 +469,7 @@ void expc::calc(complex <double> b)
   //cout << " gint::logasl "   << gint::logasl      << " expc " << logasl      << endl;
   // NNLL
   //complex <double> c1delta = pow(aexpb,aassh*(-2.*C1qqn));
-  if (opts.order == 2)
+  if (opts.order_expc == 2)
     {
       if (opts.mellin1d)
 	{
@@ -1015,7 +1015,7 @@ void expc::calc(complex <double> b)
   //		    + beta0*C3/C2  *Log[Q2/muR2]          *lam*(lam-2)/(1-lam)^2
   //		    );
 
-  if (opts.order == 3)
+  if (opts.order_expc == 3)
     {
       if (opts.mellin1d)
 	{
@@ -1710,6 +1710,19 @@ void expc::calc(complex <double> b)
 	  //delete[] aexpqqb;
 	  //delete[] aexpqqp;
 	  //delete[] aexpqqbp;
+
+	  //cout << "mellin1d" << endl;
+	  //for (int sign = mesq::positive; sign <= mesq::negative; sign++)
+	  //  for (int i = 0; i < mellinint::mdim; i++)
+	  //    {
+	  //	int idx = anomalous::index(i,sign);
+	  //	cout << i << " " << sign << " aexpqq   " << aexpqq[idx] << endl;
+	  //	cout << i << " " << sign << " aexpqg   " << aexpqg[idx] << endl;
+	  //	//cout << i << " " << sign << " aexpqqb  " << aexpqqb[idx] << endl;
+	  //	//cout << i << " " << sign << " aexpqqp  " << aexpqqp[idx] << endl;
+	  //	//cout << i << " " << sign << " aexpqqbp " << aexpqqbp[idx] << endl;
+	  //    }
+	  
 	}
       else //mellin2d
 	{
@@ -1982,6 +1995,22 @@ void expc::calc(complex <double> b)
 		aexpqqp_2[idx]  *= aexp2;
 		aexpqqbp_2[idx] *= aexp2;
 	      }
+	  //cout << "mellin2d" << endl;
+	  //for (int sign = mesq::positive; sign <= mesq::negative; sign++)
+	  //  for (int i = 0; i < mellinint::mdim; i++)
+	  //    {
+	  //	int idx = anomalous::index(i,sign);
+	  //	cout << i << " " << sign << " aexpqq   " << aexpqq_1[idx] << "  " << aexpqq_1[idx] - aexpqq_2[idx] << endl;
+	  //	cout << i << " " << sign << " aexpqg   " << aexpqg_1[idx] << "  " << aexpqg_1[idx] - aexpqg_1[idx] << endl;
+	  //	//cout << i << " " << sign << " aexpqqb_1  " << aexpqqb_1[idx] << endl;
+	  //	//cout << i << " " << sign << " aexpqqp_1  " << aexpqqp_1[idx] << endl;
+	  //	//cout << i << " " << sign << " aexpqqbp_1 " << aexpqqbp_1[idx] << endl;
+	  //	//cout << i << " " << sign << " aexpqqb_2  " << aexpqqb_2[idx] << endl;
+	  //	//cout << i << " " << sign << " aexpqqp_2  " << aexpqqp_2[idx] << endl;
+	  //	//cout << i << " " << sign << " aexpqqbp_2 " << aexpqqbp_2[idx] << endl;
+	  //    }
+	  
+	  
 	}
       //cout << alogqq[0] << " expc::alogqq " << endl;
       //cout << alogqg[0] << " expc::alogqg " << endl;
@@ -1991,7 +2020,7 @@ void expc::calc(complex <double> b)
       //cout << endl;
     }
 
-  if (opts.order >= 4)
+  if (opts.order_expc >= 4)
     {
       if (opts.mellin1d)
 	{
