@@ -1232,6 +1232,25 @@ void pegasus::evolve()
     }
 
   /*
+  cout << endl;
+  for (int i = 0; i < dim; i++)
+    {
+      //int i = 0;
+      cout << "pegasus " << sqrt(M2) << "  "
+  	   << i << "  " << cx(moms_.na_[i]) << "  "
+  	   << cx(PDFN[0+6][i]) << "  "
+  	   << cx(PDFN[1+6][i])-cx(PDFN[-1+6][i]) << "  "
+  	   << cx(PDFN[2+6][i])-cx(PDFN[-2+6][i]) << "  "
+  	   << cx(PDFN[-1+6][i]) << "  "
+  	   << cx(PDFN[-2+6][i]) << "  "
+  	   << cx(PDFN[3+6][i]) << "  "
+       	   << cx(PDFN[4+6][i]) << "  "
+       	   << cx(PDFN[5+6][i]) << endl;
+    }
+  */
+
+  
+  /*
   //Compare Pegasus QCD evolution with direct Mellin transform
   //  if ( real(pdfevol::mubstartilde)  > 2  && real(pdfevol::mubstartilde)  < 4)
     //if ( real(pdfevol::mubstartilde)  > 10)
