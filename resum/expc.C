@@ -1726,16 +1726,16 @@ void expc::calc(complex <double> b)
 	}
       else //mellin2d
 	{
-	  complex <double> aexpqq_1[mellinint::mdim*2];
-	  complex <double> aexpqg_1[mellinint::mdim*2];
-	  complex <double> aexpqqb_1[mellinint::mdim*2];
-	  complex <double> aexpqqp_1[mellinint::mdim*2];
-	  complex <double> aexpqqbp_1[mellinint::mdim*2];
-	  complex <double> aexpqq_2[mellinint::mdim*2];
-	  complex <double> aexpqg_2[mellinint::mdim*2];
-	  complex <double> aexpqqb_2[mellinint::mdim*2];
-	  complex <double> aexpqqp_2[mellinint::mdim*2];
-	  complex <double> aexpqqbp_2[mellinint::mdim*2];
+	  //complex <double> aexpqq_1[mellinint::mdim*2];
+	  //complex <double> aexpqg_1[mellinint::mdim*2];
+	  //complex <double> aexpqqb_1[mellinint::mdim*2];
+	  //complex <double> aexpqqp_1[mellinint::mdim*2];
+	  //complex <double> aexpqqbp_1[mellinint::mdim*2];
+	  //complex <double> aexpqq_2[mellinint::mdim*2];
+	  //complex <double> aexpqg_2[mellinint::mdim*2];
+	  //complex <double> aexpqqb_2[mellinint::mdim*2];
+	  //complex <double> aexpqqp_2[mellinint::mdim*2];
+	  //complex <double> aexpqqbp_2[mellinint::mdim*2];
 
 	  //case opts.expc == 0
 	  fill(aexpqq_1, aexpqq_1+mellinint::mdim*2, 1.);
