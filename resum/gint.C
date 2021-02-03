@@ -110,26 +110,26 @@ void gint::intg(complex <double> q, complex <double> jac, double blim)
   double B4qbar = B4q + A4q*resint::LQ;
   
   //Truncate alphas at the exact order
-  if (opts.order == 0) res = A1q*as1_1l * ll;
-  if (opts.order == 1) res = (A1q*as1_2l + A2q*as2_2l) * ll + B1qbar * as1_1l;
-  if (opts.order == 2) res = (A1q*as1_3l + A2q*as2_3l + A3q*as3_3l) * ll + B1qbar * as1_2l + B2qbar * as2_2l;
-  if (opts.order == 3) res = (A1q*as1_4l + A2q*as2_4l + A3q*as3_4l + A4q*as4_4l) * ll + B1qbar*as1_3l + B2qbar*as2_3l + B3qbar*as3_3l;
-  if (opts.order == 4) res = (A1q*as1_5l + A2q*as2_5l + A3q*as3_5l + A4q*as4_5l + A5q*as5_5l) * ll + B1qbar*as1_4l + B2qbar*as2_4l + B3qbar*as3_4l + B4qbar*as4_4l;
+  if (opts.order_sudak == 0) res = A1q*as1_1l * ll;
+  if (opts.order_sudak == 1) res = (A1q*as1_2l + A2q*as2_2l) * ll + B1qbar * as1_1l;
+  if (opts.order_sudak == 2) res = (A1q*as1_3l + A2q*as2_3l + A3q*as3_3l) * ll + B1qbar * as1_2l + B2qbar * as2_2l;
+  if (opts.order_sudak == 3) res = (A1q*as1_4l + A2q*as2_4l + A3q*as3_4l + A4q*as4_4l) * ll + B1qbar*as1_3l + B2qbar*as2_3l + B3qbar*as3_3l;
+  if (opts.order_sudak == 4) res = (A1q*as1_5l + A2q*as2_5l + A3q*as3_5l + A4q*as4_5l + A5q*as5_5l) * ll + B1qbar*as1_4l + B2qbar*as2_4l + B3qbar*as3_4l + B4qbar*as4_4l;
 
   //Truncate alphas approximately
-  //if (opts.order == 0) res = A1q*asLO * ll;
-  //if (opts.order == 1) res = (A1q*asNLO + A2q*pow(asLO,2)) * ll + B1qbar * asLO;
-  //if (opts.order == 2) res = (A1q*asNNLO + A2q*pow(asNLO,2) + A3q*pow(asLO,3)) * ll + B1qbar * asNLO + B2qbar * pow(asLO,2);
-  //if (opts.order == 3) res = (A1q*asNNNLO + A2q*pow(asNNLO,2) + A3q*pow(asNLO,3) + A4q*pow(asLO,4)) * ll + B1qbar * asNNLO + B2qbar * pow(asNLO,2) + B3qbar * pow(asLO,3);
+  //if (opts.order_sudak == 0) res = A1q*asLO * ll;
+  //if (opts.order_sudak == 1) res = (A1q*asNLO + A2q*pow(asLO,2)) * ll + B1qbar * asLO;
+  //if (opts.order_sudak == 2) res = (A1q*asNNLO + A2q*pow(asNLO,2) + A3q*pow(asLO,3)) * ll + B1qbar * asNLO + B2qbar * pow(asLO,2);
+  //if (opts.order_sudak == 3) res = (A1q*asNNNLO + A2q*pow(asNNLO,2) + A3q*pow(asNLO,3) + A4q*pow(asLO,4)) * ll + B1qbar * asNNLO + B2qbar * pow(asNLO,2) + B3qbar * pow(asLO,3);
 
   //Do not truncate alphas
   if (opts.asrgkt)
     {
-      if (opts.order == 0) res = A1q*as * ll;
-      if (opts.order == 1) res = (A1q*as + A2q*pow(as,2)) * ll + B1qbar * as;
-      if (opts.order == 2) res = (A1q*as + A2q*pow(as,2) + A3q*pow(as,3)) * ll + B1qbar * as + B2qbar * pow(as,2);
-      if (opts.order == 3) res = (A1q*as + A2q*pow(as,2) + A3q*pow(as,3) + A4q*pow(as,4)) * ll + B1qbar * as + B2qbar * pow(as,2) + B3qbar * pow(as,3);
-      if (opts.order == 4) res = (A1q*as + A2q*pow(as,2) + A3q*pow(as,3) + A4q*pow(as,4) + A5q*pow(as,5)) * ll + B1qbar*as + B2qbar*pow(as,2) + B3qbar*pow(as,3) + B4qbar*pow(as,4);
+      if (opts.order_sudak == 0) res = A1q*as * ll;
+      if (opts.order_sudak == 1) res = (A1q*as + A2q*pow(as,2)) * ll + B1qbar * as;
+      if (opts.order_sudak == 2) res = (A1q*as + A2q*pow(as,2) + A3q*pow(as,3)) * ll + B1qbar * as + B2qbar * pow(as,2);
+      if (opts.order_sudak == 3) res = (A1q*as + A2q*pow(as,2) + A3q*pow(as,3) + A4q*pow(as,4)) * ll + B1qbar * as + B2qbar * pow(as,2) + B3qbar * pow(as,3);
+      if (opts.order_sudak == 4) res = (A1q*as + A2q*pow(as,2) + A3q*pow(as,3) + A4q*pow(as,4) + A5q*pow(as,5)) * ll + B1qbar*as + B2qbar*pow(as,2) + B3qbar*pow(as,3) + B4qbar*pow(as,4);
     }
 
   res *= 2./qq*jac;
@@ -255,7 +255,7 @@ void gint::intexpc(complex <double> q, complex <double> jac, double blim)
     for (int i = 0; i < mellinint::mdim; i++)
       {
 	int idx = anomalous::index(i,sign);
-	if (opts.order == 2)
+	if (opts.order_expc == 2)
 	  {
 	    if (opts.expc == 1)
 		alogqq[idx]   += fac*(as2_2l*beta0*ccoeff::C1qq_delta);
@@ -280,7 +280,7 @@ void gint::intexpc(complex <double> q, complex <double> jac, double blim)
 		alogqqbp[idx] += fac*(as2_2l*beta0*ccoeff::C3qqbp[idx]/ccoeff::C2qqbp[idx]/(1.+as1_1l*ccoeff::C3qqbp[idx]/ccoeff::C2qqbp[idx]));
 	      }
 	  }
-	if (opts.order == 3)
+	if (opts.order_expc == 3)
 	  {
 	    if (opts.expc == 1)
 		alogqq[idx] += fac*(
@@ -421,7 +421,7 @@ void gint::intexpc(complex <double> q, complex <double> jac, double blim)
 				     );
 	      }
 	  }
-	if (opts.order == 4)
+	if (opts.order_expc == 4)
 	  {
 	    if (opts.expc == 1)
 		alogqq[idx] += fac*(
