@@ -12,6 +12,7 @@ order           = 2        # QCD order: 0) LO(+LL), 1) NLO(+NLL), 2) NNLO(+NNLL)
 order_sudak     = -1
 order_hcoef     = -1
 order_evol      = -1
+order_expc      = -1
 
 # Non-perturbative form factor, S_NP = exp(-npff(b))
 # 0: Gaussian (BLNY)                 npff(b) = (g1 + g2*log(m/Q0) + g3*log(100*m/sqrt(s)))*b^2
