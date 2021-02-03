@@ -3049,6 +3049,7 @@ complex <double> mellinint::calc1d_muf()
       //contribution starting at LL
       pos +=
 	+ QQBN             *(hcoeff::Hqqb[i]+muf::qqb[idx])*expc::qqb[idx];
+
       //contribution starting at NLL
       if (opts.order_hcoef >= 1)
 	pos +=
@@ -3062,7 +3063,7 @@ complex <double> mellinint::calc1d_muf()
 	  + (QQPN_1+QQPN_2)  *(hcoeff::Hqqp[i] *expc::qqp[idx]  + muf::qqp[idx] *expc::qqb[idx])
 	  + (QQBPN_1+QQBPN_2)*(hcoeff::Hqqbp[i]*expc::qqbp[idx] + muf::qqbp[idx]*expc::qqb[idx]);
 	    
-	    //contributions starting at NNNLL
+      //contributions starting at NNNLL
       if (opts.order_hcoef >= 3)
 	pos +=
 	  + QQBN_nfz         *hcoeff::Hqqb_nfz *expc::qqb[idx]
