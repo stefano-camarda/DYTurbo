@@ -318,6 +318,7 @@ void settings::readfromfile(const string fname){
     order_sudak    = in.GetNumber ( "order_sudak"    );
     order_hcoef    = in.GetNumber ( "order_hcoef"    );
     order_evol     = in.GetNumber ( "order_evol"    );
+    order_expc     = in.GetNumber ( "order_expc"    );
     runningwidth   = in.GetBool   ( "runningwidth"   );
     rseed          = in.GetNumber ( "rseed"          );
     blim           = in.GetNumber ( "blim"           );
@@ -486,10 +487,14 @@ void settings::check_consistency(){
 
     if (order_evol < 0)
       order_evol = order;
+
+    if (order_expc < 0)
+      order_expc = order;
     
     //order = max(order,order_sudak);
     //order = max(order,order_hcoef);
     //order = max(order,order_evol);
+    //order = max(order,order_expc);
     
     if (order == 0)
       {
@@ -817,6 +822,7 @@ void settings::dumpAll(){
 	dumpI ( "order_sudak ",  order_sudak      ) ;
 	dumpI ( "order_hcoef ",  order_hcoef      ) ;
 	dumpI ( "order_evol ",   order_evol      ) ;
+	dumpI ( "order_expc ",   order_expc      ) ;
         dumpB ( "alphaslha   ",  alphaslha                  ) ;
         dumpD ( "kmuren      ",  kmuren                     ) ;
         dumpD ( "kmufac      ",  kmufac                     ) ;
