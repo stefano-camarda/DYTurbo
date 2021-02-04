@@ -51,7 +51,7 @@ g1_bo = 0.5  # bottom
 g1_gl = 0.5  # gluon
 
 # PDF settings
-LHAPDFset    = CT18nnlo       # PDF set from LHAPDF
+LHAPDFset    = CT18NNLO       # PDF set from LHAPDF
 LHAPDFmember = 0              # PDF member
 PDFerrors    = false	      # Calculate PDF errors
 
@@ -66,7 +66,7 @@ alphaslha = false  # If true, take alphas(mur) from LHAPDF, otherwise alphas is 
 #4: mu^2 = (pT + sqrt(mll^2+pT^2))^2
 fmuren = 1     # Functional form of the renormalisation scale
 fmufac = 1     # Functional form of the factorisation scale
-fmures = 1     # Functional form of the resummation scale (forms 2 and 3 are equivalent to 1)
+fmures = 1     # Functional form of the resummation scale (forms >= 2 are equivalent to 1)
 
 # QCD scale settings
 kmuren = 0.5         # Scale factor for the renormalisation scale
@@ -153,7 +153,7 @@ blim_pdf = 1.1229190    #if not zero, set a different blim for the PDF evolution
 blim_sudakov = 0        #if not zero, set a different blim for the Sudakov form factor
 blim_expc = 0           #if not zero, set a different blim for the exponentiation of the C coefficients
 
-bstar_pdf     = false  #force bstar prescription for the PDF evolution
+bstar_pdf     = true  #force bstar prescription for the PDF evolution
 bstar_sudakov = false  #force bstar prescription for the Sudakov form factor
 bstar_expc    = false  #force bstar prescription for the exponentiation of the C coefficients
 
@@ -201,7 +201,7 @@ cshift = 0.5	    # Shift to the right of the point of intersection of the contou
 phi = 0.5           # Angle between the real axis and the linear contour in units of pi
 
 mellincores = 1     # Number of parallel threads for the Mellin integration (not yet supported)
-mellin1d = false    # Use 1d (y-integrated) or 2d (y-dependent) Mellin inversion
+mellin1d = true     # Use 1d (y-integrated) or 2d (y-dependent) Mellin inversion
 melup = 2           # Strategy for the update of the contour for the Mellin inversion (0; do not update; 1: update in each bin; 2: update at each phase-space point)
 xspace = false      # Access PDFs in Bjorken-x space, without Mellin inversion (option available only in the LL case where the convolution is trivial)
 
@@ -213,7 +213,7 @@ damp = true
 # 2: Exponential: exp((k*mll)^-qt^2)/(delta*mll)^2
 # 3: Cosine:      cos(PI/(delta*mll)*(qt-k*mll))+1)/2
 dampmode = 1
-dampk = 0.5
+dampk = 0.75
 dampdelta = 0.5
 
 # qt-subtraction cut-off. Both conditions are applied, at least one between qtcut and xqtcut must be > 0
