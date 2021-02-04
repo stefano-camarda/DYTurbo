@@ -209,10 +209,10 @@ void mesq::init()
     {
       QgZp_sum[j] = 0.;
       for (int f = 0; f < MAXNF; f++)
-	QgZp_sum[j] += Q[j]*(gLZ[f]+gRZ[f])+Q[f]*(gLZ[j]+gRZ[j]);
+	QgZp_sum[j] += 1./2.*(Q[j]*(gLZ[f]+gRZ[f])+Q[f]*(gLZ[j]+gRZ[j]));
       QgZm_sum[j] = 0.;
       for (int f = 0; f < MAXNF; f++)
-	QgZm_sum[j] += Q[j]*(gLZ[f]-gRZ[f])+Q[f]*(gLZ[j]-gRZ[j]);
+	QgZm_sum[j] += 1./2.*(Q[j]*(gLZ[f]-gRZ[f])+Q[f]*(gLZ[j]-gRZ[j]));
     }
   
   q2 = 0;
