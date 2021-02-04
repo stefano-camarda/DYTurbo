@@ -86,6 +86,8 @@ public:
   //  int    order_ford;   //Order of the finite order part
   //  int    order_alphas; //Order of the alphas running
 
+  bool qbox;
+  
   //Non-perturbative form factor
   int npff;
   double g1,g2,g3; //Gaussian

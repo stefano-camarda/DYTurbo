@@ -14,6 +14,9 @@ order_hcoef     = -1
 order_evol      = -1
 order_expc      = -1
 
+# Switch for quark box contribution at N3LO
+qbox = true
+
 # Non-perturbative form factor, S_NP = exp(-npff(b))
 # 0: Gaussian (BLNY)                 npff(b) = (g1 + g2*log(m/Q0) + g3*log(100*m/sqrt(s)))*b^2
 # 1: Exponential                     npff(b) = e*b

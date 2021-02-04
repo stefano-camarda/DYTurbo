@@ -319,6 +319,7 @@ void settings::readfromfile(const string fname){
     order_hcoef    = in.GetNumber ( "order_hcoef"    );
     order_evol     = in.GetNumber ( "order_evol"    );
     order_expc     = in.GetNumber ( "order_expc"    );
+    qbox           = in.GetBool   ( "qbox"    );
     runningwidth   = in.GetBool   ( "runningwidth"   );
     rseed          = in.GetNumber ( "rseed"          );
     blim           = in.GetNumber ( "blim"           );
@@ -823,6 +824,7 @@ void settings::dumpAll(){
 	dumpI ( "order_hcoef ",  order_hcoef      ) ;
 	dumpI ( "order_evol ",   order_evol      ) ;
 	dumpI ( "order_expc ",   order_expc      ) ;
+	dumpB ( "qbox ",   qbox      ) ;
         dumpB ( "alphaslha   ",  alphaslha                  ) ;
         dumpD ( "kmuren      ",  kmuren                     ) ;
         dumpD ( "kmufac      ",  kmufac                     ) ;
