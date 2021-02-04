@@ -110,8 +110,8 @@ void pegasus::free()
 
 void pegasus::release()
 {
-  if (opts.melup <= 1)
-    free();
+  //if (opts.melup <= 1)
+  //free();
 }
 
 void pegasus::init_alphas()
@@ -394,7 +394,7 @@ void pegasus::init_pdf()
 	  if (nf >= 5)
 	    hfpainp_.p24i_[i] = fcx(qp[0]+qp[1]+qp[2]+qp[3]-4.*qp[4]);
 	}
-      store();
+      //store();
 
       //Perform explicit Mellin transform at each threshold
       if (threval)
@@ -568,8 +568,8 @@ void pegasus::init()
 
   nnused_.nmax_ = dim;
   
-  if (opts.melup <= 1)
-    allocate();
+  //if (opts.melup <= 1)
+  //allocate();
   
   // From:
   // ..File: initevol.f    
@@ -833,7 +833,8 @@ void pegasus::update()
       hfpainp_.p24i_[i] = fcx(qp[0]+qp[1]+qp[2]+qp[3]-4.*qp[4]);
     }
   mellinpdf::free();
-  store();
+  if (opts.evolmode == 3)
+    store();
 
   //In VFN evolution calculate PDFs at the mc, mb, mt thresholds
   if (ivfns != 0)// && !threval)
@@ -881,8 +882,8 @@ void pegasus::retrieve()
 
 void pegasus::evolve()
 {
-  //  if (opts.evolmode != 3)
-  retrieve();
+  if (opts.evolmode == 3)
+    retrieve();
 
   //--> this part is not working, should avoid evolmode 1 at LL, could automatically switch to evolmode 0
   if (opts.evolmode == 1 && opts.order_evol == 0)

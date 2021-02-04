@@ -589,7 +589,6 @@ void resint::rint(double costh, double m, double qt, double y, int mode, double 
       // -> put all this into mellinint::allocate()
       mellinint::allocate();
       ccoeff::allocate();
-      pegasus::allocate();
       pmom::allocate();
       mellinint::update();
     }
@@ -622,6 +621,7 @@ void resint::rint(double costh, double m, double qt, double y, int mode, double 
       double ymn = min(max(-ylim, phasespace::ymin),ylim);
       double ymx = max(min(ylim, phasespace::ymax),-ylim);
       rapint::allocate();
+
       if (opts.makecuts)
 	{
 	  //there is a potential issue here, when lepton cuts are applied
@@ -981,7 +981,6 @@ void resint::rint(double costh, double m, double qt, double y, int mode, double 
     {
       mellinint::free();
       ccoeff::free();
-      pegasus::free();
       pmom::free();
     }
 

@@ -323,8 +323,8 @@ void pdfevol::allocate()
   if (opts.evolmode == 0) //--> always allocate evolnative for the counterterm in Mellin space
     evolnative::allocate();
 
-  //  if (opts.evolmode == 1 || opts.evolmode == 3)
-  //    pegasus::allocate();
+  if (opts.evolmode == 1 || opts.evolmode == 3)
+    pegasus::allocate();
 }
 
 void pdfevol::free()
@@ -332,8 +332,8 @@ void pdfevol::free()
   if (opts.evolmode == 0) //--> always free evolnative for the counterterm in Mellin space
     evolnative::free();
 
-  //  if (opts.evolmode == 1 || opts.evolmode == 3)
-  //    pegasus::free();
+  if (opts.evolmode == 1 || opts.evolmode == 3)
+    pegasus::free();
 }
 
 
