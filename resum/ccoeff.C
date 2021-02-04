@@ -234,33 +234,11 @@ void ccoeff::delta()
 {
   //delta pieces -> N-independent part (proportional to delta(1-z))
   int NF2 = NF*NF; //Number of flavours from resconst
-  double NFV;
+
   //NFV is the charge weighted sum of the quark flavours (in the case of purely electromagnetic interactions we have NFgamma=1/eq*Sum_{i=,nf} ei).
-  // --> ??? Check this, I do not understand the formula
-  //NFV = Sum_{i=1,nf} eq = +1/3 -2/3 +1/3 -2/3 -2/3
-  //double NFV = -4./3.;
-  //NFV = Sum_{i=1,nf} |eq| = +1/3 +2/3 +1/3 +2/3 +2/3
-  NFV = 0.;//8./3.;
+  double NFV;
+  NFV = 0.;
 
-  double NFV_gamma[2*MAXNF+1];
-  double NFV_Z[2*MAXNF+1];
-
-  //no quark box contributions for W (--> to be checked)
-  if (opts.nproc == 1 || opts.nproc == 2)
-    NFV = 0;
-  
-  double sum_gamma = 0;
-  double sum_Z = 0;
-  for (int f = 1; f <= MAXNF; f++)
-    {
-      sum_gamma += ewcharge_.Q_[MAXNF+f]   + ewcharge_.Q_[MAXNF-f];
-      sum_Z     += ewcharge_.tau_[MAXNF+f] + ewcharge_.tau_[MAXNF-f];
-    }
-  for (int f = 1; f <= MAXNF; f++)
-    {
-      NFV_gamma[f] = ewcharge_.Q_[MAXNF+f]/sum_gamma;
-      NFV_Z[f]     = ewcharge_.tau_[MAXNF+f]/sum_Z;
-    }  
   double S1 = -CF*pi2/12.;
   double S2 = CF*(9.*CF*pi4 + CA*(4856. - 603.*pi2 + 18.*pi4 - 2772.*zeta3) + NF*(-656. + 90.*pi2 + 504.*zeta3))/2592.;
   double S3 = CF*(pow(CA,2)*(689661*pi4 - 55548*pi6 + 105*pi2*(-297481 + 89100*zeta3) + 35*(5211949 - 8161128*zeta3 + 1353024*pow(zeta3,2) + 2630232*zeta5))
@@ -282,8 +260,10 @@ void ccoeff::delta()
   C2qq_delta = (K2+S2+K1*S1)/2. - pow(C1qq_delta,2)/2.;
   C3qq_delta = (K3 + S3 + K2*S1 + K1*S2)/2. - C1qq_delta*C2qq_delta;
 
-  //C3qq_delta_NFV = K3_NFV/2.;
-  C3qq_delta_NFV = 0.;
+  if (opts.qbox)
+    C3qq_delta_NFV = K3_NFV/2.;
+  else
+    C3qq_delta_NFV = 0.;
     
   icoeff::delta();
 }
