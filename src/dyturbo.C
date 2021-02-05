@@ -267,7 +267,7 @@ namespace DYTurbo
 		//AddTermIfActive ( opts.vjintvegas7d && opts.order == 1 , vjlointegr   , name , isVegas    )  << Col3 ( "vegas 7D"            , "ncalls =" , opts.vegasncallsVJLO ); //original MCFM integration
 	      }
 	    // VJ NLO
-	    if (!opts.vjint3d && opts.order == 2)
+	    if (!opts.vjint3d && opts.order >= 2)
 	      {
 		AddTermIfActive ( opts.doVJREAL  , vjrealintegr , "V+J Real"    , isVegas) << Col3 ( "vegas" , "ncalls =" , opts.vegasncallsVJREAL );
 		AddTermIfActive ( opts.doVJVIRT  , vjvirtintegr , "V+J Virtual" , isVegas) << Col3 ( "vegas" , "ncalls =" , opts.vegasncallsVJVIRT );
