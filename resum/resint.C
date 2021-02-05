@@ -962,17 +962,13 @@ void resint::rint(double costh, double m, double qt, double y, int mode, double 
   expc::free();
   if (opts.numsud || opts.numexpc || opts.order >= 4)
     gint::free();
-  if (opts.mellin1d)
-    {
-      hcoeff::free();
-      muf::free();
-      //hcoeff_check::free();
-    }
-  else
-    {
-      //hcoefficients::free();
-      hcoeff::free();
-    }
+  hcoeff::free();
+  muf::free();
+  
+  //if (opts.mellin1d)
+  //  //hcoeff_check::free();
+  //else
+  //  //hcoefficients::free();
 
   if (!(opts.order == 0 && opts.xspace))
     mesq::free();
