@@ -255,7 +255,15 @@ void muf::calc(complex <double> b)
 	  complex <double> H2st_qqbp = ((2.*eC1qg*gamma1gq[idx] + 2.*gamma2qqp[idx] + gamma1gq[idx]*gamma1qg[idx]*LQF)*LQF)/2.;
 	  complex <double> H2st_qg   = (LQF*(4.*eC1qq*gamma1qg[idx] + 2.*eC1qg*(gamma1gg[idx] + gamma1qq[idx]) + 2.*gamma2qg[idx] + beta0*gamma1qg[idx]*LF + gamma1gg[idx]*gamma1qg[idx]*LF + 3.*gamma1qg[idx]*gamma1qq[idx]*LF - 2.*B1q*gamma1qg[idx]*LQ + beta0*gamma1qg[idx]*LQ - gamma1gg[idx]*gamma1qg[idx]*LQ - 3.*gamma1qg[idx]*gamma1qq[idx]*LQ - A1q*gamma1qg[idx]*LQ2))/2.;
 	  complex <double> H2st_gg   = gamma1qg[idx]*(2.*eC1qg + gamma1qg[idx]*LQF)*LQF;
-	
+
+	  //cout << "LQF " << LQF << endl;
+	  //cout << "H2st_qqb    " << H2st_qqb  << endl;
+	  //cout << "H2st_qq     " << H2st_qq   << endl;
+	  //cout << "H2st_qqp    " << H2st_qqp  << endl;
+	  //cout << "H2st_qqbp   " << H2st_qqbp << endl;
+	  //cout << "H2st_qg     " << H2st_qg   << endl;
+	  //cout << "H2st_gg     " << H2st_gg   << endl;
+	  
 	  //Mixed LR*LQF variations
 	  H2st_qqb += -beta0*H1st_qqb*LR;
 	  H2st_qg  += -beta0*H1st_qg*LR;
@@ -282,6 +290,17 @@ void muf::calc(complex <double> b)
 	  complex <double> H3st_qbpg = ((2.*eC2qqbp*gamma1qg[idx] + (eC1qg + gamma1qg[idx]*LQF)*(2.*eC1qg*gamma1gq[idx] + 2.*gamma2qqbp[idx] + gamma1gq[idx]*gamma1qg[idx]*LQF))*LQF)/2.;
 	  complex <double> H3st_gg   = (LQF*(4.*pow(eC1qg,2)*gamma1gg[idx] + 4.*eC2qg*gamma1qg[idx] + 2.*eC1qg*(2.*eC1qq*gamma1qg[idx] + 2.*gamma2qg[idx] + gamma1qg[idx]*(beta0*LF + 3.*gamma1gg[idx]*LF + gamma1qq[idx]*LF - 2.*B1q*LQ + 3.*beta0*LQ - 3.*gamma1gg[idx]*LQ - gamma1qq[idx]*LQ - A1q*LQ2)) + gamma1qg[idx]*LQF*(4.*eC1qq*gamma1qg[idx] + 4.*gamma2qg[idx] + gamma1qg[idx]*(2.*gamma1gg[idx]*LF + 2.*gamma1qq[idx]*LF - 2.*B1q*LQ - 2.*gamma1gg[idx]*LQ - 2.*gamma1qq[idx]*LQ - A1q*LQ2 + 2.*beta0*(LF + LQ)))))/2.;
 
+	  //cout << "LQF " << LQF << endl;
+	  //cout << "H3st_qqb    " << H3st_qqb  << endl;
+	  //cout << "H3st_qq     " << H3st_qq   << endl;
+	  //cout << "H3st_qqp    " << H3st_qqp  << endl;
+	  //cout << "H3st_qqbp   " << H3st_qqbp << endl;
+	  //cout << "H3st_qg     " << H3st_qg   << endl;
+	  //cout << "H3st_qbg    " << H3st_qbg  << endl;
+	  //cout << "H3st_qpg    " << H3st_qpg  << endl;
+	  //cout << "H3st_qbpg   " << H3st_qbpg << endl;
+	  //cout << "H3st_gg     " << H3st_gg   << endl;
+	  
 	  //Mixed LR*LQF variations
 	  H3st_qqb  += -2*beta0*H2st_qqb*LR + (-beta1*LR - pow(beta0,2)*pow(LR,2))*H1st_qqb;
 	  H3st_qg   += -2*beta0*H2st_qg*LR  + (-beta1*LR - pow(beta0,2)*pow(LR,2))*H1st_qg;
