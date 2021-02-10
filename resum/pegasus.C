@@ -110,8 +110,8 @@ void pegasus::free()
 
 void pegasus::release()
 {
-  if (opts.melup <= 1)
-    free();
+  //if (opts.melup <= 1)
+  //free();
 }
 
 void pegasus::init_alphas()
@@ -394,7 +394,7 @@ void pegasus::init_pdf()
 	  if (nf >= 5)
 	    hfpainp_.p24i_[i] = fcx(qp[0]+qp[1]+qp[2]+qp[3]-4.*qp[4]);
 	}
-      store();
+      //store();
 
       //Perform explicit Mellin transform at each threshold
       if (threval)
@@ -568,8 +568,8 @@ void pegasus::init()
 
   nnused_.nmax_ = dim;
   
-  if (opts.melup <= 1)
-    allocate();
+  //if (opts.melup <= 1)
+  //allocate();
   
   // From:
   // ..File: initevol.f    
@@ -605,7 +605,7 @@ void pegasus::init()
     {
       ivfns = 0; //FFN evolution
       nff = 5;   //5 light flavours
-      order_.npord_ = opts.order - 1; //order of evolution is LO, NLO, NNLO for NLL, NNLL, NNNLL
+      order_.npord_ = opts.order_evol - 1; //order of evolution is LO, NLO, NNLO for NLL, NNLL, NNNLL
       //if (opts.order == 3) order_.npord_ = 1; //---> Use NLO evolution at N3LL
       //evmod_.imodev_ = 3; //reproduces DYRes evolution
       evmod_.imodev_ = 4; //reproduces DYRes evolution (even better)
@@ -739,8 +739,8 @@ void pegasus::init()
 void pegasus::update()
 {
   //No need to update PDFs at the starting scale for forward evolution modes, where the starting scale is Q0
-  if (opts.evolmode != 1 && opts.evolmode != 3)
-    return;
+  //if (opts.evolmode != 1 && opts.evolmode != 3)
+  //return;
 
   //if (opts.evolmode == 1 && opts.fmufac == 0) //This would not work when the Mellin inversion points are updated
   //return;
@@ -833,7 +833,8 @@ void pegasus::update()
       hfpainp_.p24i_[i] = fcx(qp[0]+qp[1]+qp[2]+qp[3]-4.*qp[4]);
     }
   mellinpdf::free();
-  //store();
+  if (opts.evolmode == 3)
+    store();
 
   //In VFN evolution calculate PDFs at the mc, mb, mt thresholds
   if (ivfns != 0)// && !threval)
@@ -881,11 +882,11 @@ void pegasus::retrieve()
 
 void pegasus::evolve()
 {
-  //  if (opts.evolmode != 3)
-  //    retrieve();
+  if (opts.evolmode == 3)
+    retrieve();
 
   //--> this part is not working, should avoid evolmode 1 at LL, could automatically switch to evolmode 0
-  if (opts.evolmode == 1 && opts.order == 0)
+  if (opts.evolmode == 1 && opts.order_evol == 0)
     {
       cout << "at LL should use evolmode = 0" << endl;
       //N flavour dependence
@@ -894,7 +895,10 @@ void pegasus::evolve()
       complex <double> fx[11];
       //At LL there is no PDF evolution, PDFs are evaluated at the factorisation scale
       for (int i = 0; i < mellinint::mdim; i++)
-	pdfevol::retrievemuf(i);
+	if (opts.mellin1d)
+	  pdfevol::retrievemuf_1d(i);
+	else
+	  pdfevol::retrievemuf_2d(i);
 
       return;
     }
@@ -1107,30 +1111,31 @@ void pegasus::evolve()
   else
     evnvfn_(PDFN, ASI, ASF, NF, nlow, nhigh, IPSTD);
 
-  //Evolve from Q to muF
-  //if (opts.mufevol)
-  if (false)
+  //Evolve from Q to muF, to compensate the LQF*gamma terms in the H coefficients
+  //if (false)
+  if (opts.evolmode == 3 && (opts.kmufac != opts.kmures))
     {
       NF = 5;
-
+      /*
       //Fixed flavour evolution from Q to muF
       ASI = resint::alpqres;
       ASF = resint::alpqfac;
-      order_.npord_ = pdf::order; //order of evolution read from LHAPDF
-      evmod_.imodev_ = 1; //reproduces evolution in x-space
-      //order_.npord_ = opts.order-1;
-      //evmod_.imodev_ = 4;
-
-      /*
-      //Fixed order evolution from muF to Q
-      //ASI = resint::alpqfac;
-      //ASF = resint::alpqres;
-      
-      order_.npord_ = opts.order-1;
+      //order_.npord_ = pdf::order; //order of evolution read from LHAPDF
+      //evmod_.imodev_ = 1; //reproduces evolution in x-space
+      order_.npord_ = opts.order_evol-1;
       evmod_.imodev_ = 4;
+      */
+      //cout << "alpqres " << resint::alpqres << endl;
+      //cout << "alpqfac " << resint::alpqfac << endl;
+      //cout << " ratio " << resint::alpqfac/resint::alpqres << endl;
+      
+      
+      //Fixed flavour evolution from Q to muF
+      order_.npord_ = opts.order_evol-1;
+      //evmod_.imodev_ = 1; //reproduces evolution in x-space
       double blog = log(pow(scales::res/scales::fac,2));
-      double as = resint::alpqren*4.;
-      //double as = resint::alpqfac*4.;
+      double as = resint::aass;
+      double LQR = resint::LR-resint::LQ;
       double as2 = as*as;
       double xlambda = beta0*as*blog;
       double log1xlambda = log(1.-xlambda);
@@ -1143,17 +1148,26 @@ void pegasus::evolve()
 	logas += as2* ((pow(beta1/beta0,2)-beta2/beta0) *xlambda/pow(1.-xlambda,2)
 		       + pow(beta1/beta0,2)             *log1xlambda/pow(1.-xlambda,2)
 		       - pow(beta1/beta0,2)             *pow(log1xlambda,2)/(2.*pow(1.-xlambda,2)));
-      //ASF = exp(-logas)*ASI;
-
-      ASF = resint::alpqres;
-      ASI = exp(-logas)*ASF;
-      */
-
+      if (opts.order >= 2)
+	logas += as*(LQR)
+	  *beta0*xlambda/(1.-xlambda);
+      if (opts.order >= 3)
+	logas += as2*(+LQR*beta1                   *(xlambda-log1xlambda)/pow(1.-xlambda,2)
+		       +LQR*beta1                   *xlambda/(1.-xlambda)                      //missing piece
+		       +0.5*pow(LQR,2)*pow(beta0,2) *xlambda*(xlambda-2.)/pow(1.-xlambda,2));  //missing piece
+      ASI = resint::alpqres;
+      ASF = exp(-logas)*ASI;
+      
       //double FR2 = pow(scales::ren/scales::fac,2);//ratio of muren2/mufac2
       //frrat_.logfr_ = log(FR2);
       //double R2  = M2 * exp(-frrat_.logfr_);
-      
-      for (int i = 0; i < mellinint::mdim; i++)
+
+      //Need to allocate() store() and retrieve() moments at the starting scale,
+      //because pegasus::update() is called at most once per each phase space point,
+      //while pegasus::evolve is called at each value of b inside the Bessel inversion      
+      //allocate();
+      //store();
+      for (int i = 0; i < dim; i++)
 	{
 	  //gluon
 	  painp_.gli_[i] = PDFN[6][i];
@@ -1184,29 +1198,23 @@ void pegasus::evolve()
 	  hfpainp_.p15i_[i] = fcx(qp[0]+qp[1]+qp[2]-3.*qp[3]);
 	  hfpainp_.p24i_[i] = fcx(qp[0]+qp[1]+qp[2]+qp[3]-4.*qp[4]);
 	}
-//      //cout << endl;
-//      //cout << endl;
-//      //for (int p = -MAXNF; p <= MAXNF; p++)
-//      //cout << cx(PDFN[p+6][0]) << endl;
+
+      //cout << endl;
+      //cout << endl;
+      //for (int i = 0; i < mellinint::mdim; i++)
+      //	for (int p = -MAXNF; p <= MAXNF; p++)
+      //	  cout << i << "  " << p << "  " << cx(PDFN[p+6][i]) << endl;
+      //      fcomplex PDFN_evQF[13][ndim];
       dyevnffn_(PDFN, ASI, ASF, NF, nlow, nhigh, IPSTD); //modified ffn evolution with charm and bottom at the starting scale
-//      //cout << endl;
-//      //for (int p = -MAXNF; p <= MAXNF; p++)
-//      //cout << cx(PDFN[p+6][0]) << endl;
-
+      //      cout << endl;
+      //      for (int i = 0; i < mellinint::mdim; i++)
+      //	for (int p = -MAXNF; p <= MAXNF; p++)
+      //	  cout << i << "  " << p << "  " << cx(PDFN[p+6][i]) << endl;
+      //retrieve();
+      //free();
       order_.npord_ = pdf::order; //order of evolution from LHAPDF
-      evmod_.imodev_ = 1;         //reproduces evolution in x-space
-
-      if (opts.evolmode == 1)
-	{
-	  order_.npord_ = opts.order - 1; //order of evolution is LO, NLO, NNLO for NLL, NNLL, NNNLL
-	  evmod_.imodev_ = 4; //reproduces DYRes evolution (even better)
-	}
-      else if (opts.evolmode == 3 || opts.evolmode == 4)
-	{
-	  order_.npord_ = pdf::order; //order of evolution read from LHAPDF
-	  evmod_.imodev_ = 1; //reproduces evolution in x-space
-	}
-      frrat_.logfr_ = 0.;
+      //evmod_.imodev_ = 1;         //reproduces evolution in x-space
+      //frrat_.logfr_ = 0.;
     }
   
 
@@ -1224,6 +1232,25 @@ void pegasus::evolve()
 	  pdfevol::storemoments_2(i-mellinint::mdim, fx);
     }
 
+  /*
+  cout << endl;
+  for (int i = 0; i < dim; i++)
+    {
+      //int i = 0;
+      cout << "pegasus " << sqrt(M2) << "  "
+  	   << i << "  " << cx(moms_.na_[i]) << "  "
+  	   << cx(PDFN[0+6][i]) << "  "
+  	   << cx(PDFN[1+6][i])-cx(PDFN[-1+6][i]) << "  "
+  	   << cx(PDFN[2+6][i])-cx(PDFN[-2+6][i]) << "  "
+  	   << cx(PDFN[-1+6][i]) << "  "
+  	   << cx(PDFN[-2+6][i]) << "  "
+  	   << cx(PDFN[3+6][i]) << "  "
+       	   << cx(PDFN[4+6][i]) << "  "
+       	   << cx(PDFN[5+6][i]) << endl;
+    }
+  */
+
+  
   /*
   //Compare Pegasus QCD evolution with direct Mellin transform
   //  if ( real(pdfevol::mubstartilde)  > 2  && real(pdfevol::mubstartilde)  < 4)

@@ -35,7 +35,7 @@ void settings::parse_options(int argc, char* argv[]){
         ("v,verbose"         , "Be verbose"                     )
         ("q,small-stat"      , "Set quick run with small stat." )
         ("p,proc"            , "Set process [z0/wp/wm]"                              , po::value<string>() )
-        ("c,collider"        , "Set beam conditions [tev2/lhc7/lhc8/lhc13/lhc14]"    , po::value<string>() )
+        ("c,collider"        , "Set beam conditions [tev2/lhc5/lhc7/lhc8/lhc13/lhc14]"    , po::value<string>() )
         ("o,order"           , "Set order [0:LO, 1:NLL+NLO, 2:NNLL+NNLO]"            , po::value<int>() )
         ("f,fixedorder"      , "Set fixed order only"              )
         ("e,resummation"     , "Set resummation"                )
@@ -171,8 +171,8 @@ void settings::parse_options(int argc, char* argv[]){
         ToLower(val);
         if        (val == "tev1"  ){ sroot=1.80e3; ih1=1; ih2=-1;
         } else if (val == "tev2"  ){ sroot=1.96e3; ih1=1; ih2=-1;
-        } else if (val == "lhc7"  ){ sroot=7.00e3; ih1=1; ih2=1;
         } else if (val == "lhc5"  ){ sroot=5.00e3; ih1=1; ih2=1;
+        } else if (val == "lhc7"  ){ sroot=7.00e3; ih1=1; ih2=1;
         } else if (val == "lhc8"  ){ sroot=8.00e3; ih1=1; ih2=1;
         } else if (val == "lhc13" ){ sroot=13.0e3; ih1=1; ih2=1;
         } else if (val == "lhc14" ){ sroot=14.0e3; ih1=1; ih2=1;
@@ -315,6 +315,11 @@ void settings::readfromfile(const string fname){
     g1_bo          = in.GetNumber ( "g1_bo"          );
     g1_gl          = in.GetNumber ( "g1_gl"          );
     order          = in.GetNumber ( "order"          );
+    order_sudak    = in.GetNumber ( "order_sudak"    );
+    order_hcoef    = in.GetNumber ( "order_hcoef"    );
+    order_evol     = in.GetNumber ( "order_evol"    );
+    order_expc     = in.GetNumber ( "order_expc"    );
+    qbox           = in.GetBool   ( "qbox"    );
     runningwidth   = in.GetBool   ( "runningwidth"   );
     rseed          = in.GetNumber ( "rseed"          );
     blim           = in.GetNumber ( "blim"           );
@@ -426,7 +431,8 @@ void settings::readfromfile(const string fname){
     opts_.pdfintervals_ = in.GetNumber ( "opts_pdfintervals" ); //100
     pdfrule            = in.GetNumber ( "pdfrule" );
     evolmode           = in.GetNumber  ("evolmode");
-    mufevol            = in.GetBool  ("mufevol");
+    //mufevol            = in.GetBool  ("mufevol");
+    mufvar             = in.GetBool  ("mufvar");
     expc               = in.GetNumber  ("expc");
     ntaylor            = in.GetNumber  ("ntaylor");
     sumlogs            = in.GetBool  ("sumlogs");
@@ -475,6 +481,23 @@ void settings::check_consistency(){
     if (nproc != 1 && nproc != 2 && nproc != 3)
       throw invalid_argument("Wrong process, please select nproc = 1 (W+), 2 (W-), or 3(Z)");
 
+    if (order_sudak < 0)
+      order_sudak = order;
+
+    if (order_hcoef < 0)
+      order_hcoef = order;
+
+    if (order_evol < 0)
+      order_evol = order;
+
+    if (order_expc < 0)
+      order_expc = order;
+    
+    //order = max(order,order_sudak);
+    //order = max(order,order_hcoef);
+    //order = max(order,order_evol);
+    //order = max(order,order_expc);
+    
     if (order == 0)
       {
 	doCT = false;
@@ -485,7 +508,12 @@ void settings::check_consistency(){
 	doVJREAL = false;
 	doVJVIRT = false;
       }
-
+    if (order >= 4 || asrgkt)
+      {
+	numsud = true;
+	numexpc = true;
+      }
+    
     //In fixed order mode, a_param must be one
     if (fixedorder == true)
       {
@@ -517,10 +545,12 @@ void settings::check_consistency(){
       }
 
     //reset evolmode to zero at leading log
-    if (evolmode == 1 && order == 0)
-      {
-	evolmode = 0;
-      }
+    if (evolmode == 1 && order_evol == 0)
+      evolmode = 0;
+
+    //use evolmode 1 at N3LL (evolmode 0 not implemented)
+    if (evolmode == 0 && order_evol >= 3)
+      evolmode = 1;
     
     //if (fmufac > 0 && evolmode < 3 && order > 0 && fixedorder == false)
     //  {
@@ -529,6 +559,10 @@ void settings::check_consistency(){
     //	exit (-1);
     //  }
 
+    //Save expensive muf b-dependent scale variations when not needed
+    if (opts.kmufac == opts.kmures)
+      mufvar = false;
+    
     //minimal b prescription in the complex plain available only for evolmode 0
     //real axix minimal presxription works only at LL
 
@@ -549,7 +583,11 @@ void settings::check_consistency(){
     //Automatic selector of integration type
     if (intDimBorn < 0)
       if (BORNquad)
-	intDimBorn = 2;
+	{
+	  intDimBorn = 2;
+	  if (order >= 3)
+	    intDimBorn = 1;
+	}
       else
 	intDimBorn = 4;
 
@@ -575,7 +613,7 @@ void settings::check_consistency(){
     
     if (intDimCT < 0)
       if (CTquad)
-	if (opts.makecuts || !fullrap)
+	if (opts.makecuts || !fullrap || !mellin1d)
 	  intDimCT = 2;
 	else
 	  intDimCT = 1;
@@ -618,16 +656,17 @@ void settings::check_consistency(){
 
 
     // born term integration dimension
-    if (intDimBorn < 4 && intDimBorn>1){
+    if (intDimBorn < 4 && intDimBorn>0){
+      bornint1d      = (intDimBorn == 1);
       bornint2d      = (intDimBorn == 2);
       bornintvegas4d = false;
       bornintvegas6d = false;
     } else {
+      bornint1d      = false;
       bornint2d      = false;
       bornintvegas4d = (intDimBorn == 4);
       bornintvegas6d = (intDimBorn >  5);
     }
-
 
     // counter term integration dimension
     if (intDimCT<4 && intDimCT>0){
@@ -782,6 +821,11 @@ void settings::dumpAll(){
 	dumpD ("g1_bo          ",g1_bo            );
 	dumpD ("g1_gl          ",g1_gl            );
 	dumpI ( "order       ",  nnlo_        . order_      ) ;
+	dumpI ( "order_sudak ",  order_sudak      ) ;
+	dumpI ( "order_hcoef ",  order_hcoef      ) ;
+	dumpI ( "order_evol ",   order_evol      ) ;
+	dumpI ( "order_expc ",   order_expc      ) ;
+	dumpB ( "qbox ",   qbox      ) ;
         dumpB ( "alphaslha   ",  alphaslha                  ) ;
         dumpD ( "kmuren      ",  kmuren                     ) ;
         dumpD ( "kmufac      ",  kmufac                     ) ;
@@ -842,6 +886,7 @@ void settings::dumpAll(){
         dumpB("resint3d          ", resint3d            );
         dumpB("resintvegas       ", resintvegas         );
         dumpI("intDimBorn        ", intDimBorn          );
+        dumpB("bornint1d         ", bornint1d           );
         dumpB("bornint2d         ", bornint2d           );
         dumpB("bornintvegas4d    ", bornintvegas4d      );
         dumpB("bornintvegas6d    ", bornintvegas6d      );
@@ -910,7 +955,8 @@ void settings::dumpAll(){
         dumpI("approxpdf         ", opts_.approxpdf_    );
         dumpI("pdfintervals      ", opts_.pdfintervals_ );
         dumpI("evolmode          ", evolmode            );
-        dumpB("mufevol           ", mufevol            );
+        //dumpB("mufevol           ", mufevol            );
+        dumpB("mufvar            ", mufvar            );
         dumpI("expc              ", expc             );
         dumpI("ntaylor           ", ntaylor             );
 	dumpB("sumlogs           ", sumlogs       );

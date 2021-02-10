@@ -292,7 +292,7 @@ c     positive branch
          GG1Ip(k) = GG1I 
          GG1Fp(k) = GG1F 
          
-         call H2calc(C2qg,C2NSqqb,C2NSqq,C2Sqqb,XN)
+         call dyH2calc(C2qg,C2NSqqb,C2NSqq,C2Sqqb,XN)
 
          C2qgMp(k)= C2qg
          C2NSqqMp(k)= C2NSqq
@@ -318,7 +318,7 @@ c     negative branch
          GG1Im(k) = GG1I 
          GG1Fm(k) = GG1F 
 
-         call H2calc(C2qg,C2NSqqb,C2NSqq,C2Sqqb,XN)
+         call dyH2calc(C2qg,C2NSqqb,C2NSqq,C2Sqqb,XN)
 
          C2qgMm(k)= C2qg
          C2NSqqMm(k)= C2NSqq

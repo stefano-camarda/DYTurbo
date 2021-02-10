@@ -711,7 +711,7 @@ c        H2QGp(k)=0d0
 c        H2GQp(k)=MellinH2gq(XN)
 c        H2GGp(k)=MellinH2gg(XN) 
 
-        call H2calc(C2qg,C2NSqqb,C2NSqq,C2Sqqb,XN)
+        call dyH2calc(C2qg,C2NSqqb,C2NSqq,C2Sqqb,XN)
 
         C2qgMp(k)= C2qg
         C2NSqqMp(k)= C2NSqq
@@ -754,7 +754,7 @@ c        H2QGm(k)=0d0
 c        H2GQm(k)=MellinH2gq(XN) 
 c        H2GGm(k)=MellinH2gg(XN) 
 
-       call H2calc(C2qg,C2NSqqb,C2NSqq,C2Sqqb,XN)
+       call dyH2calc(C2qg,C2NSqqb,C2NSqq,C2Sqqb,XN)
 
         C2qgMm(k)= C2qg
         C2NSqqMm(k)= C2NSqq

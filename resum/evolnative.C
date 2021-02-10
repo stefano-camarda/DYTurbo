@@ -10,6 +10,9 @@
 #include "anomalous.h"
 #include "resint.h"
 #include "phasespace.h"
+#include "psi.h"
+#include "constants.h"
+#include "melfun.h"
 //#include "clock_real.h"
 
 #include <iostream>
@@ -247,6 +250,172 @@ void evolnative::release()
     free_engine();
 }
 
+//reimplementation of ancalc and anom
+void anom(
+	  complex <double> XN,
+	  complex <double> &ans,
+	  complex <double> &am,
+	  complex <double> &ap,
+	  complex <double> &al,
+	  complex <double> &be,
+	  complex <double> &ab,
+	  complex <double> &rmin,
+	  complex <double> &rplus,
+	  complex <double> &rqq,
+	  complex <double> &rqg,
+	  complex <double> &rgq,
+	  complex <double> &rgg
+	  )
+{
+  //Calculation of anomalous dimensions and wilson coefficients
+  //up to their dependence of the number of active flavours f :
+  complex <double> XNS = XN * XN;
+  complex <double> XN1 = XN + 1.;
+  complex <double> XN2 = XN + 2.;
+  complex <double> XNM = XN - 1.;
+  //Leading order
+  complex <double> CPSI = cpsi0(XN1) + constants::euler;
+  complex <double> QQI = (8./3.) * (-3.- 2./(XN * XN1) + 4.* CPSI);
+  complex <double> QGF = -4.* (XNS + XN +2.) / (XN * XN1 * XN2);
+  complex <double> GQI = -(16./3.) * (XNS + XN + 2.) / (XN * XN1 * XNM);
+  complex <double> GGI = -22.- 24./(XN * XNM) - 24./(XN1 * XN2) + 24.* CPSI;
+  complex <double> GGF = 4./3.;
+  //Next to leading order
+  complex <double> XNT = XNS * XN;
+  complex <double> XNFO = XNT * XN;
+  complex <double> XN1S = XN1 * XN1;
+  complex <double> XN1T = XN1S * XN1;
+  //Analytic continuations of n-sums as given in glueck et al. (1990)
+  double ZETA2 = constants::zeta2;
+  double ZETA3 = constants::zeta3;
+  complex <double> CPSI1 = ZETA2 - cpsi(1,XN1);
+//       SPMOM = 1.01/XN1 - 0.846/XN2 + 1.155/(XN+3.) - 1.074/(XN+4.) +
+//     1         0.55/(XN+5.)
+//       SPMOM = 1.004D0 / XN1 - 0.846D0 / XN2 + 1.342D0 / (XN+3.) -
+//     1         1.532D0 / (XN+4.) + 0.839D0 / (XN+5.)
+  complex <double> SPMOM = fun6(XN-1.); // --> Improved approximation for the Mellin transform of: Li2(x)/(1+x)
+
+  complex <double> SLC = -5./8.* ZETA3;
+  complex <double> SLV = - ZETA2/2.* (cpsi0 (XN1/2.) - cpsi0 (XN/2.))
+    + CPSI/XNS + SPMOM;
+  complex <double> SSCHLM = SLC - SLV;
+  complex <double> SSTR2M = ZETA2 - cpsi(1,XN1/2.);
+  complex <double> SSTR3M = 0.5 * cpsi(2,XN1/2.) + ZETA3;
+  complex <double> SSCHLP = SLC + SLV;
+  complex <double> SSTR2P = ZETA2 - cpsi(1,XN2/2.);
+  complex <double> SSTR3P = 0.5 * cpsi(2,XN2/2.) + ZETA3;
+  //Non-singlet pieces as given in curci et al. (1980)
+  complex <double> NS1MA = 16.* CPSI * (2.* XN + 1.) / (XNS * XN1S) +
+    16.* (2.* CPSI - 1./(XN * XN1)) * ( CPSI1 - SSTR2M ) +
+    64.* SSCHLM + 24.* CPSI1 - 3. - 8.* SSTR3M -
+    8.* (3.* XNT + XNS -1.) / (XNT * XN1T) +
+    16.* (2.* XNS + 2.* XN +1.) / (XNT * XN1T);
+  complex <double> NS1PA = 16.* CPSI * (2.* XN + 1.) / (XNS * XN1S) +
+    16.* (2.* CPSI - 1./(XN * XN1)) * ( CPSI1 - SSTR2P ) +
+    64.* SSCHLP + 24.* CPSI1 - 3. - 8.* SSTR3P -
+    8.* (3.* XNT + XNS -1.) / (XNT * XN1T) -
+    16.* (2.* XNS + 2.* XN +1.) / (XNT * XN1T);
+  complex <double> NS1B = CPSI * (536./9. + 8.* (2.* XN + 1.) / (XNS * XN1S)) -
+    (16.* CPSI + 52./3.- 8./(XN * XN1)) * CPSI1 - 43./6. -
+    (151.* XNFO + 263.* XNT + 97.* XNS + 3.* XN + 9.) *
+    4./ (9.* XNT * XN1T);
+  complex <double> NS1C = -160./9.* CPSI + 32./3.* CPSI1 + 4./3. +
+    16.* (11.* XNS + 5.* XN - 3.) / (9.* XNS * XN1S);
+  complex <double> NS1MI = -2./9.* NS1MA + 4.* NS1B;
+  complex <double> NS1PI = -2./9.* NS1PA + 4.* NS1B;
+  complex <double> NS1F = 2./3. * NS1C;
+  //Singlet pieces as given in floratos et al. (1981)
+  complex <double> XNFI = XNFO * XN;
+  complex <double> XNSI = XNFI * XN;
+  complex <double> XNSE = XNSI * XN;
+  complex <double> XNE = XNSE * XN;
+  complex <double> XNN = XNE * XN;
+  complex <double> XNMS = XNM * XNM;
+  complex <double> XN2S = XN2 * XN2;
+  complex <double> XN2T = XN2S * XN2;
+  complex <double> QQ1F = (5.* XNFI + 32.* XNFO + 49.* XNT + 38.* XNS + 28.* XN
+			   + 8.) / (XNM * XNT * XN1T * XN2S) * (-32./3.);
+  complex <double> QG1A = (-2.* CPSI * CPSI + 2.* CPSI1 - 2.* SSTR2P)
+    * (XNS + XN + 2.) / (XN * XN1 * XN2)
+    + (8.* CPSI * (2.* XN + 3.)) / (XN1S * XN2S)
+    + 2.* (XNN + 6.* XNE + 15. * XNSE + 25.* XNSI + 36.* XNFI
+	   + 85.* XNFO + 128.* XNT + 104.* XNS + 64.* XN + 16.)
+    / (XNM * XNT * XN1T * XN2T);
+  complex <double> QG1B = (2.* CPSI * CPSI - 2.* CPSI1 + 5.) * (XNS + XN + 2.)
+    / (XN * XN1 * XN2)   -   4.* CPSI / XNS
+    + (11.* XNFO + 26.* XNT + 15.* XNS + 8.* XN + 4.)
+    / (XNT * XN1T * XN2);
+  complex <double> QG1F = - 12.* QG1A - 16./3.* QG1B;
+  complex <double> GQ1A = (-2.* CPSI * CPSI + 10.* CPSI - 2.* CPSI1)
+    * (XNS + XN + 2.) / (XNM * XN * XN1)  -  4.* CPSI / XN1S
+    - (12.* XNSI + 30.* XNFI + 43.* XNFO + 28.* XNT - XNS
+       - 12.* XN - 4.) / (XNM * XNT * XN1T);
+  complex <double> GQ1B = (CPSI * CPSI + CPSI1 - SSTR2P) * (XNS + XN + 2.)
+    / (XNM * XN * XN1)
+    - CPSI * (17.* XNFO + 41.* XNS - 22.* XN - 12.)
+    / (3.* XNMS * XNS * XN1)
+    + (109.* XNN + 621.* XNE + 1400.* XNSE + 1678.* XNSI
+       + 695.* XNFI - 1031.* XNFO - 1304.* XNT - 152.* XNS
+       + 432.* XN + 144.) / (9.* XNMS * XNT * XN1T * XN2S);
+  complex <double> GQ1C = (CPSI - 8./3.) * (XNS + XN + 2.) / (XNM * XN * XN1)
+    + 1./ XN1S;
+  complex <double> GQ1I = - 64./9.* GQ1A - 32.* GQ1B;
+  complex <double> GQ1F = - 64./9.* GQ1C;
+  complex <double> GG1A = 16./9.* (38.* XNFO + 76.* XNT + 94.* XNS + 56.* XN + 12.)
+    / (XNM * XNS * XN1S * XN2)   -   160./9.* CPSI + 32./3.;
+  complex <double> GG1B = (2.* XNSI + 4.* XNFI + XNFO - 10.* XNT - 5.* XNS - 4.* XN
+			   - 4.) * 16. / (XNM * XNT * XN1T * XN2)   +   8.;
+  complex <double> GG1C = (2.* XNFI + 5.* XNFO + 8.* XNT + 7.* XNS - 2.* XN - 2.)
+    * 64.* CPSI / (XNMS * XNS * XN1S * XN2S)
+    + 536./9.* CPSI - 64./3.
+    + 32.* SSTR2P * (XNS + XN + 1.) / (XNM * XN * XN1 * XN2)
+    - 16.* CPSI * SSTR2P + 32.* SSCHLP - 4.* SSTR3P
+    - 4.* (457.* XNN + 2742.* XNE + 6040.* XNSE + 6098.* XNSI
+	   + 1567.* XNFI - 2344.* XNFO - 1632.* XNT + 560.* XNS
+	   + 1488.* XN + 576.) / (9.* XNMS * XNT * XN1T * XN2T);
+  complex <double> GG1I = 9.* GG1C;
+  complex <double> GG1F = 3./2.* GG1A + 2./3.* GG1B;
+
+  //Anomalous dimensions for leading and next to leading order
+  //evolution of parton densities and wilson coefficients for
+  //NLO structure functions
+
+  //Anomalous dimensions and related quantities in leading order
+  int nf = resconst::NF;
+  int N = 1;
+  double B0 = 11.- 2./3.* double(nf);
+  double B02 = 2.* B0;
+  complex <double> QQ = QQI;
+  complex <double> QG = double(nf) * QGF;
+  complex <double> GQ = GQI;
+  complex <double> GG = GGI + double(nf) * GGF;
+  complex <double> SQ = sqrt((GG - QQ) * (GG - QQ) + 4.* QG * GQ);
+  complex <double> GP = 0.5 * (QQ + GG + SQ);
+  complex <double> GM = 0.5 * (QQ + GG - SQ);
+  ans = QQ / B02;
+  am = GM / B02;
+  ap = GP / B02;
+  al = (QQ - GP) / (GM - GP);
+  be = QG / (GM - GP);
+  ab = GQ / (GM - GP);
+  //Next to leading order : anomalous dimensions and wilson coefficients
+  //in the ms-bar factorization scheme of bardeen et al. (1981)
+  complex <double> NS1M = NS1MI + double(nf) * NS1F;
+  complex <double> NS1P = NS1PI + double(nf) * NS1F;
+  complex <double> QQ1 = NS1P + double(nf) * QQ1F;
+  complex <double> QG1 = double(nf) * QG1F;
+  complex <double> GQ1 = GQ1I + double(nf) * GQ1F;
+  complex <double> GG1 = GG1I + double(nf) * GG1F;
+  //Combinations of anomalous dimensions for NLO - singlet evolution
+  double B1 = 102 - 38./3.* double(nf);
+  double B10 = B1 / B0;
+  rmin = (NS1M - QQ * B10) / B02;
+  rplus = (NS1P - QQ * B10) / B02;
+  rqq = (QQ1 - QQ * B10) / B02;
+  rqg = (QG1 - QG * B10) / B02;
+  rgq = (GQ1 - GQ * B10) / B02;
+  rgg = (GG1 - GG * B10) / B02;
+}
 
 //Update the PDFs at the factorisation scale by performing the Mellin transform from x to N
 void evolnative::update_pdfs()
@@ -330,7 +499,7 @@ void evolnative::update_pdfs()
 
   mellinpdf::free();
   
-  if (opts.order == 0)
+  if (opts.order_evol == 0)
     return;
   //Precompute singlet/non-singlet decomposition
   
@@ -394,7 +563,7 @@ void evolnative::update_pdfs()
 }
 void evolnative::update_engine()
 {
-  if (opts.order == 0)
+  if (opts.order_evol == 0)
     return;
 
   int nf = resconst::NF;
@@ -408,16 +577,18 @@ void evolnative::update_engine()
   for (int i = 0; i < mellinint::mdim; i++)
     {
       fcomplex fxn; //input of ancalc
-      
+      complex <double> cxn;
       if (opts.mellin1d)
 	{
 	  fxn.real = real(mellinint::Np[i]);
 	  fxn.imag = imag(mellinint::Np[i]);
+	  cxn = mellinint::Np[i];
 	}
       else
 	{
 	  fxn.real = real(mellinint::Np_1[i]);
 	  fxn.imag = imag(mellinint::Np_1[i]);
+	  cxn = mellinint::Np_1[i];
 	}
 	  
       //input: fxn
@@ -429,6 +600,27 @@ void evolnative::update_engine()
       anom_(ANS, AM, AP, AL, BE, AB, RMIN, RPLUS, RQQ, RQG,RGQ, RGG, C2Q, C2G, CDYQ, CDYG,
 	    fxn, nf, QQI, QGF, GQI, GGI, GGF, NS1MI, NS1PI, NS1F, QQ1F, QG1F, GQ1I, GQ1F, GG1I, GG1F, C2QI, C2GF, CDYQI, CDYGI);
 
+      complex <double> Ans, Am, Ap, Al, Be, Ab, Rmin, Rplus, Rqq, Rqg, Rgq, Rgg; //output of anom
+      anom(cxn, Ans, Am, Ap, Al, Be, Ab, Rmin, Rplus, Rqq, Rqg, Rgq, Rgg);
+
+      /*
+      cout << endl;
+      cout << " N " << mellinint::Np[i] << endl;
+      
+      cout << "  " << Ans   - cx(ANS) << endl;
+      cout << "  " << Am    - cx(AM) << endl;
+      cout << "  " << Ap    - cx(AP) << endl; 
+      cout << "  " << Al    - cx(AL) << endl;
+      cout << "  " << Be    - cx(BE) << endl;
+      cout << "  " << Ab    - cx(AB) << endl;
+      cout << "  " << Rmin  - cx(RMIN) << endl;
+      cout << "  " << Rplus - cx(RPLUS) << endl;
+      cout << "  " << Rqq   - cx(RQQ) << endl;
+      cout << "  " << Rqg   - cx(RQG) << endl;
+      cout << "  " << Rgq   - cx(RGQ) << endl;
+      cout << "  " << Rgg   - cx(RGG) << endl;
+      */
+      
       ans[i] = cx(ANS);
       am[i] = cx(AM);
       ap[i] = cx(AP); 
@@ -603,7 +795,7 @@ void evolnative::scales()
   SALP = log(XL);
 //  //cout << pdfevol::bscale << "  " << evolnative::XL << endl;
 //  // SELECT ORDER FOR EVOLUTION LO/NLO
-  if (opts.order <= 1)
+  if (opts.order_evol <= 1)
     alpr = 0.;
   else
     //alpr = alpqf * cx(alphasl_(fscale2_mub));
@@ -647,7 +839,7 @@ void evolnative::evolve()
 //	pdfevol::retrievemuf(i);
 //    }
   
-  if (opts.order == 0)
+  if (opts.order_evol == 0)
     {
       if (opts.mellin1d)
 	for (int i = 0; i < mellinint::mdim; i++)
@@ -789,7 +981,7 @@ void evolnative::evolve()
       //complex <double> alpr= alpq * 1 *(opts.order-1);
       //--> alpr = 0 at NLL; alpr = alphas(Q) * alphasl ~ alphas(b0/b) at NNLL
 
-      if (opts.order == 1)
+      if (opts.order_evol == 1)
 	{
 	  UVN  = UVN  * ENS;
 	  DVN  = DVN  * ENS;
@@ -802,7 +994,7 @@ void evolnative::evolve()
 	  NS15N = NS15N * ENS;
 	  NS24N = NS24N * ENS;
 	}
-      else if (opts.order == 2)
+      else if (opts.order_evol == 2)
 	{
 	  UVN  = UVN  * ENS * (1.+  alpr * XL1 * RMIN);
 	  DVN  = DVN  * ENS * (1.+  alpr * XL1 * RMIN);

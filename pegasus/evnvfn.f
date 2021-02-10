@@ -39,6 +39,7 @@
 * ..Input common blocks
 * 
        COMMON / ORDER  / NPORD
+!$OMP THREADPRIVATE(/ORDER/)
        COMMON / PAINP  / VAI (NDIM), M3I (NDIM), M8I(NDIM),
      1                   SGI (NDIM), P3I (NDIM), P8I(NDIM), GLI (NDIM)
 !$OMP THREADPRIVATE(/PAINP/)

@@ -181,6 +181,7 @@ void loint::lint(double costh, double m, double y, int mode, double f[2])
   //Set scales
   scales::set(m);
   scales::mcfm();
+  pdf::setalphas();
   double muf = scales::fac;
   double mur = scales::ren;
 

@@ -26,6 +26,7 @@ std::complex<long double> Li2(const std::complex<long double>&) noexcept;
 
 extern "C" {
   double dli2_(double& x);
-  //double li2_(double& x);
-  //double ddilog_(double& x);
+  double li2_(double& x);
+  double ddilog_(double& x);
+  double myli2_(double& x);
 }

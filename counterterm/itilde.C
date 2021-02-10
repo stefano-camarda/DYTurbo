@@ -18,7 +18,8 @@ int itilde::in;
 
 void itilde::init()
 {
-  intdeoini(lenaw, tiny, 1e-8, aw);
+  //intdeoini(lenaw, tiny, 1e-8, aw);
+  intdeoini(lenaw, tiny, 1e-16, aw);
 }
 
 double itilde::besselk(double x, int n)

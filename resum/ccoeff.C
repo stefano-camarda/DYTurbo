@@ -10,11 +10,43 @@
 #include "constants.h"
 #include "icoeff.h"
 #include "phasespace.h"
-#include "hs.h"
+//#include "hs.h"
 #include "psi.h"
 #include "cmom.h"
+#include "melfun.h"
 #include <iostream>
 #include <iomanip>
+
+
+//fotran interface for dymellinh2.f
+extern "C"
+{
+  fcomplex fun1_(fcomplex &xn)  {return fcx(fun1(cx(xn)));};
+  fcomplex fun2_(fcomplex &xn)  {return fcx(fun2(cx(xn)));};
+  fcomplex fun3_(fcomplex &xn)  {return fcx(fun3(cx(xn)));};
+  fcomplex fun4_(fcomplex &xn)  {return fcx(fun4(cx(xn)));};
+  fcomplex fun5_(fcomplex &xn)  {return fcx(fun5(cx(xn)));};
+  fcomplex fun6_(fcomplex &xn)  {return fcx(fun6(cx(xn)));};
+  fcomplex fun7_(fcomplex &xn)  {return fcx(fun7(cx(xn)));};
+  fcomplex fun8_(fcomplex &xn)  {return fcx(fun8(cx(xn)));};
+  fcomplex fun9_(fcomplex &xn)  {return fcx(fun9(cx(xn)));};
+  fcomplex fun10_(fcomplex &xn) {return fcx(fun10(cx(xn)));};
+  fcomplex fun11_(fcomplex &xn) {return fcx(fun11(cx(xn)));};
+  fcomplex fun12_(fcomplex &xn) {return fcx(fun12(cx(xn)));};
+  fcomplex fun13_(fcomplex &xn) {return fcx(fun13(cx(xn)));};
+  fcomplex fun14_(fcomplex &xn) {return fcx(fun14(cx(xn)));};
+  fcomplex fun15_(fcomplex &xn) {return fcx(fun15(cx(xn)));};
+  fcomplex fun16_(fcomplex &xn) {return fcx(fun16(cx(xn)));};
+
+  fcomplex dypsi0_(fcomplex &xn)  {return fcx(psi0(cx(xn)));};
+  fcomplex dypsi1_(fcomplex &xn)  {return fcx(psi1(cx(xn)));};
+  fcomplex dypsi2_(fcomplex &xn)  {return fcx(psi2(cx(xn)));};
+  fcomplex dypsi3_(fcomplex &xn)  {return fcx(psi3(cx(xn)));};
+  fcomplex dybe0_(fcomplex &xn)  {return fcx(be0(cx(xn)));};
+  fcomplex dybe1_(fcomplex &xn)  {return fcx(be1(cx(xn)));};
+  fcomplex dybe2_(fcomplex &xn)  {return fcx(be2(cx(xn)));};
+  fcomplex dybe3_(fcomplex &xn)  {return fcx(be3(cx(xn)));};
+}
 
 using namespace std;
 using namespace resconst;
@@ -50,6 +82,7 @@ using namespace constants;
 double ccoeff::C1qq_delta;
 double ccoeff::C2qq_delta;
 double ccoeff::C3qq_delta;
+double ccoeff::C3qq_delta_NFV;
 
 complex <double> *ccoeff::C1qg;
 complex <double> *ccoeff::C1qq;
@@ -201,33 +234,11 @@ void ccoeff::delta()
 {
   //delta pieces -> N-independent part (proportional to delta(1-z))
   int NF2 = NF*NF; //Number of flavours from resconst
-  double NFV;
+
   //NFV is the charge weighted sum of the quark flavours (in the case of purely electromagnetic interactions we have NFgamma=1/eq*Sum_{i=,nf} ei).
-  // --> ??? Check this, I do not understand the formula
-  //NFV = Sum_{i=1,nf} eq = +1/3 -2/3 +1/3 -2/3 -2/3
-  //double NFV = -4./3.;
-  //NFV = Sum_{i=1,nf} |eq| = +1/3 +2/3 +1/3 +2/3 +2/3
-  NFV = 0.;//8./3.;
+  double NFV;
+  NFV = 0.;
 
-  double NFV_gamma[2*MAXNF+1];
-  double NFV_Z[2*MAXNF+1];
-
-  //no quark box contributions for W (--> to be checked)
-  if (opts.nproc == 1 || opts.nproc == 2)
-    NFV = 0;
-  
-  double sum_gamma = 0;
-  double sum_Z = 0;
-  for (int f = 1; f <= MAXNF; f++)
-    {
-      sum_gamma += ewcharge_.Q_[MAXNF+f]   + ewcharge_.Q_[MAXNF-f];
-      sum_Z     += ewcharge_.tau_[MAXNF+f] + ewcharge_.tau_[MAXNF-f];
-    }
-  for (int f = 1; f <= MAXNF; f++)
-    {
-      NFV_gamma[f] = ewcharge_.Q_[MAXNF+f]/sum_gamma;
-      NFV_Z[f]     = ewcharge_.tau_[MAXNF+f]/sum_Z;
-    }  
   double S1 = -CF*pi2/12.;
   double S2 = CF*(9.*CF*pi4 + CA*(4856. - 603.*pi2 + 18.*pi4 - 2772.*zeta3) + NF*(-656. + 90.*pi2 + 504.*zeta3))/2592.;
   double S3 = CF*(pow(CA,2)*(689661*pi4 - 55548*pi6 + 105*pi2*(-297481 + 89100*zeta3) + 35*(5211949 - 8161128*zeta3 + 1353024*pow(zeta3,2) + 2630232*zeta5))
@@ -243,30 +254,43 @@ void ccoeff::delta()
 		  + ((-4 + pow(NC,2))*NFV*(1./8. + (5*pi2)/96. - pi4/2880. + (7*zeta3)/48. - (5*zeta5)/6.))/NC
 		  + CA*NF*(1700171./209952. - (201749*pi2)/139968. -  (35*pi4)/15552. - (134*zeta3)/27. + (37*pi2*zeta3)/144. -  zeta5/24.)
 		  + pow(CF,2)*(-5599/384. + (4339*pi2)/2304. - (173*pi4)/480. +  (27403*pi6)/1088640. - (115*zeta3)/16. - (35*pi2*zeta3)/48. + pow(zeta3,2)/2. + (83*zeta5)/4.));
+  double K3_NFV = ( (-4 + pow(NC,2)) *(1./8. + (5*pi2)/96. - pi4/2880. + (7*zeta3)/48. - (5*zeta5)/6.) ) /NC; 
 
   C1qq_delta = (K1+S1)/2.;
   C2qq_delta = (K2+S2+K1*S1)/2. - pow(C1qq_delta,2)/2.;
   C3qq_delta = (K3 + S3 + K2*S1 + K1*S2)/2. - C1qq_delta*C2qq_delta;
 
+  if (opts.qbox)
+    C3qq_delta_NFV = K3_NFV/2.;
+  else
+    C3qq_delta_NFV = 0.;
+    
   icoeff::delta();
 }
 
 void ccoeff::calc1d()
 {
-  //analytical C1 and C2 from anomalous
+  //analytical C1 and C2 from h2calc
   if (false)
     for (int m = 0; m < mellinint::mdim; m++)
       {
+	fcomplex fxn; //input of ancalc
+	fxn.real = real(mellinint::Np[m]);
+	fxn.imag = imag(mellinint::Np[m]);
+	complex <double> cxn = mellinint::Np[m];
+	fcomplex fC2qg,fC2NSqqb,fC2NSqq,fC2Sqqb;
+	dyh2calc_(fC2qg,fC2NSqqb,fC2NSqq,fC2Sqqb,fxn);
+
 	int idx = anomalous::index(m,mesq::positive);
 	
-	C1qg[idx] = anomalous::C1QG[idx]/2.;
-	C1qq[idx] = anomalous::C1QQ[idx]/2.;
-	
-	C2qg[idx]   = anomalous::C2qgM[idx]/4.;
-	C2qq[idx]   = (anomalous::C2NSqqM[idx]+anomalous::C2SqqbM[idx])/4.;
-	C2qqb[idx]  = (anomalous::C2NSqqbM[idx]+anomalous::C2SqqbM[idx])/4.;
-	C2qqp[idx]  = anomalous::C2SqqbM[idx]/4.;
-	C2qqbp[idx] = anomalous::C2SqqbM[idx]/4.;
+	C1qg[idx] = 1./((cxn+1.)*(cxn+2.))                             /2.;
+	C1qq[idx] = (2.*constants::pi2/3.-16./3.+4./3./(cxn*(cxn+1.))) /2.;
+
+	C2qg[idx]   =  cx(fC2qg)                 /4.;
+	C2qq[idx]   = (cx(fC2NSqq)+cx(fC2Sqqb))  /4.;
+	C2qqb[idx]  = (cx(fC2NSqqb)+cx(fC2Sqqb)) /4.;
+	C2qqp[idx]  =  cx(fC2Sqqb)               /4.;
+	C2qqbp[idx] =  cx(fC2Sqqb)               /4.;
       }
 
   //Evaluate numerically C1, C2 and C3 with I functions
@@ -336,8 +360,35 @@ void ccoeff::calc1d()
      C3qqbp[idxm] = conj(C3qqbp[idxp]);
    }
 
-  /*
   //Checks
+  /*
+  for (int m = 0; m < mellinint::mdim; m++)
+   {
+     complex <double> cxn = mellinint::Np[m];// - 1.;
+     fcomplex fxn; //input of ancalc
+     fxn.real = real(cxn);
+     fxn.imag = imag(cxn);
+     fcomplex fC2qg,fC2NSqqb,fC2NSqq,fC2Sqqb;
+     h2calc_(fC2qg,fC2NSqqb,fC2NSqq,fC2Sqqb,fxn);
+     fcomplex dyfC2qg,dyfC2NSqqb,dyfC2NSqq,dyfC2Sqqb;
+     dyh2calc_(dyfC2qg,dyfC2NSqqb,dyfC2NSqq,dyfC2Sqqb,fxn);
+     
+      int idx = anomalous::index(m,mesq::positive);
+      complex <double> N = cxn-1.;
+      cout << endl;
+      cout << " anomalous    expanded " << endl;
+      cout << cxn << " C1qg   " << 1./((cxn+1.)*(cxn+2.))                             /2.  - C1qgN(N)  << endl;
+      cout << cxn << " C1qq   " << (2.*constants::pi2/3.-16./3.+4./3./(cxn*(cxn+1.))) /2.  - C1qqN(N)  << endl;
+
+
+      cout << cxn << " C2qg   " << cx(fC2qg)/4.                 - C2qgN(N)   << "  " << cx(dyfC2qg)/4.                    - C2qgN(N)  << endl;
+      cout << cxn << " C2qq   " << (cx(fC2NSqq)+cx(fC2Sqqb))/4. - C2qqN(N)   << "  " << (cx(dyfC2NSqq)+cx(dyfC2Sqqb))/4.  - C2qqN(N)  << endl;
+      cout << cxn << " C2qqp  " << cx(fC2Sqqb)/4.               - C2qqpN(N)  << "  " << cx(dyfC2Sqqb)/4.                  - C2qqpN(N) << endl;
+      cout << cxn << " C2qqb  " << (cx(fC2NSqqb)+cx(fC2Sqqb))/4.- C2qqbN(N)  << "  " << (cx(dyfC2NSqqb)+cx(dyfC2Sqqb))/4. - C2qqbN(N) << endl;
+    }
+  */
+  
+  /*
   for (int m = 0; m < mellinint::mdim; m++)
    {
       int idx = anomalous::index(m,mesq::positive);
@@ -357,7 +408,7 @@ void ccoeff::calc1d()
       cout << mellinint::Np[m] << " C3qqbp " << icoeff::c3qqbp[idx] - C3qqbpN(N) << endl;
     }
   */
-
+  
 /*
   int prec = 8;
   int dist = 2*prec+20;
@@ -617,18 +668,14 @@ void ccoeff::num_calc()
   for (int m = 0; m < mellinint::mdim; m++)
     {
       int idx = anomalous::index(m,mesq::positive);
-      //C1qq[idx] += resconst::C1qqn;
+      C1qq[idx] += resconst::C1qqn;
       C2qq[idx] += resconst::C2qqn;
     }
 
   //Add plus-distribution pieces: the Mellin transform of 1/(1-z)+ is -S1(N-1)
   for (int m = 0; m < mellinint::mdim; m++)
     {
-      fcomplex xn = fcx(mellinint::Np[m]);
-      fcomplex ps0n;
-      psi0_(xn,ps0n);
-      complex <double> s1nm1 = cx(ps0n)+constants::euler;
-      
+      complex <double> s1nm1 = cpsi0(mellinint::Np[m])+constants::euler;
       int idx = anomalous::index(m,mesq::positive);
       C2qq[idx] += (-s1nm1)*resconst::H2qqD0/2.;
     }

@@ -13,6 +13,7 @@ namespace constants
   extern const double zeta4;
   extern const double zeta5;
   extern const double zeta6;
+  extern const double li4half;
   extern const double pi;
   extern const double pi2;
   extern const double pi3;

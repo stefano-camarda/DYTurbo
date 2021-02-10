@@ -42,6 +42,7 @@
      1                   SGI (NDIM), P3I (NDIM), P8I(NDIM), GLI (NDIM)
 !$OMP THREADPRIVATE(/PAINP/)
        COMMON / ORDER  / NPORD
+!$OMP THREADPRIVATE(/ORDER/)
 *
 * ---------------------------------------------------------------------
 *

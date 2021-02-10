@@ -131,7 +131,7 @@ void pdf::init()
   //      bmass=dsqrt(mbsq)
 }
 
-//set value of alphas
+//set value of alphas at the renormalization scale in the fortran common blocks
 void pdf::setalphas()
 {
   //Old LHAPDF interface

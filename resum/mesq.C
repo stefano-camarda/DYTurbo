@@ -54,6 +54,13 @@ double mesq::aem2pi;
 double mesq::aem2pi2;
 double mesq::Q[MAXNF];
 
+//box at 3-loops
+double mesq::gLpgR_sum[MAXNF];
+double mesq::gLmgR_sum[MAXNF];
+double mesq::Q2_sum[MAXNF];
+double mesq::QgZp_sum[MAXNF];
+double mesq::QgZm_sum[MAXNF];
+
 //mass dependent variables
 double mesq::q2;
 double mesq::propZ;
@@ -63,6 +70,9 @@ double mesq::propZG;
 
 complex <double> mesq::mesqij[12];
 complex <double>* mesq::mesqij_expy;
+
+complex <double> mesq::mesqij_NFZ[10];
+complex <double>* mesq::mesqij_expy_NFZ;
 
 //parton mapping for subprocesses
 int mesq::totpch;
@@ -176,6 +186,35 @@ void mesq::init()
   for (int j = 0; j < MAXNF; j++)
     Q[j] = ewcharge_.Q_[j+MAXNF+1];
 
+  //Sum couplings for the NFZ component (virtual box at 3-loops)
+  //Pure Z
+  for (int j = 0; j < MAXNF; j++)
+    {
+      gLpgR_sum[j] = 0.;
+      for (int f = 0; f < MAXNF; f++)
+	gLpgR_sum[j] += gLZ[j]*gLZ[f]+gRZ[j]*gRZ[f];
+      gLmgR_sum[j] = 0.;
+      for (int f = 0; f < MAXNF; f++)
+	gLmgR_sum[j] += gLZ[j]*gLZ[f]-gRZ[j]*gRZ[f];
+    }
+  //gamma*
+  for (int j = 0; j < MAXNF; j++)
+    {
+      Q2_sum[j] = 0.;
+      for (int f = 0; f < MAXNF; f++)
+	Q2_sum[j] += Q[j]*Q[f];
+    }
+  //interference (mixed terms in Q and gZ)
+  for (int j = 0; j < MAXNF; j++)
+    {
+      QgZp_sum[j] = 0.;
+      for (int f = 0; f < MAXNF; f++)
+	QgZp_sum[j] += 1./2.*(Q[j]*(gLZ[f]+gRZ[f])+Q[f]*(gLZ[j]+gRZ[j]));
+      QgZm_sum[j] = 0.;
+      for (int f = 0; f < MAXNF; f++)
+	QgZm_sum[j] += 1./2.*(Q[j]*(gLZ[f]-gRZ[f])+Q[f]*(gLZ[j]-gRZ[j]));
+    }
+  
   q2 = 0;
   propZ = 0;
   propW = 0;
@@ -217,7 +256,9 @@ void mesq::setpropagators(double m)
 void mesq::allocate()
 {
   //allocate memory
-  mesqij_expy = new complex <double> [mellinint::mdim*mellinint::mdim*2*12];
+  mesqij_expy     = new complex <double> [mellinint::mdim*mellinint::mdim*2*12];
+  if (opts.order >= 3)
+    mesqij_expy_NFZ = new complex <double> [mellinint::mdim*mellinint::mdim*2*10];
 }
 
 void mesq::setmesq_expy(int mode, double m, double costh, double y, int helicity)
@@ -297,6 +338,11 @@ void mesq::setmesq_expy(int mode, double m, double costh, double y, int helicity
 	      mesqij_expy[mesq::index(pch, i1, i2, mesq::positive)] = mesqij[pch] * cex1[i1] * cex2p[i2] * mellinint::wn_1[i1] * mellinint::wn_2[i2];
 	      mesqij_expy[mesq::index(pch, i1, i2, mesq::negative)] = mesqij[pch] * cex1[i1] * cex2m[i2] * mellinint::wn_1[i1] * mellinint::wn_2[i2];
 	      //cout << i1 << "  " << i2 << "  " << mesqij[pch] << "  " <<  cex1[i1] << "  " <<  cex2m[i2] << "  " <<  mellinint::wn[i1] << "  " <<  mellinint::wn[i2] << endl;
+	      if (opts.nproc == 3 && opts.order >= 3)
+		{
+		  mesqij_expy_NFZ[mesq::index(pch, i1, i2, mesq::positive)] = mesqij_NFZ[pch] * cex1[i1] * cex2p[i2] * mellinint::wn_1[i1] * mellinint::wn_2[i2];
+		  mesqij_expy_NFZ[mesq::index(pch, i1, i2, mesq::negative)] = mesqij_NFZ[pch] * cex1[i1] * cex2m[i2] * mellinint::wn_1[i1] * mellinint::wn_2[i2];
+		}
 	    }
     }
   else //if mode == 2 or mode == 3 -> rapidity integrated mode
@@ -342,6 +388,11 @@ void mesq::setmesq_expy(int mode, double m, double costh, double y, int helicity
 		complex <double> cexm = exp(-mellinint::Nm[i] * ax)/M_PI * mellinint::CCm/complex <double>(0.,1);
 		mesqij_expy[mesq::index(pch, i, i, mesq::positive)] = mesqij[pch] * cexp * mellinint::wn[i];
 		mesqij_expy[mesq::index(pch, i, i, mesq::negative)] = mesqij[pch] * cexm * conj(mellinint::wn[i]);
+		if (opts.nproc == 3 && opts.order >= 3)
+		  {
+		    mesqij_expy_NFZ[mesq::index(pch, i, i, mesq::positive)] = mesqij_NFZ[pch] * cexp * mellinint::wn[i];
+		    mesqij_expy_NFZ[mesq::index(pch, i, i, mesq::negative)] = mesqij_NFZ[pch] * cexm * conj(mellinint::wn[i]);
+		  }
 	      }
 
 	  /*
@@ -374,15 +425,22 @@ void mesq::setmesq_expy(int mode, double m, double costh, double y, int helicity
 		costh2 = rapint::Ith2p[mellinint::index(i1,i2)];
 		setmesq(one, costh1, costh2);
 		for (int pch = 0; pch < totpch; pch++)
-		  mesqij_expy[mesq::index(pch, i1, i2, mesq::positive)] = mesqij[pch];
-
+		  {
+		    mesqij_expy[mesq::index(pch, i1, i2, mesq::positive)] = mesqij[pch];
+		    if (opts.nproc == 3 && opts.order >= 3)
+		      mesqij_expy_NFZ[mesq::index(pch, i1, i2, mesq::positive)] = mesqij_NFZ[pch];
+		  }
 		//retrieve Ithxp Ithxm negative branch integrals of the x1^-z1 * x2^-z2 piece 
 		one = rapint::Ith0m[mellinint::index(i1,i2)];
 		costh1 = rapint::Ith1m[mellinint::index(i1,i2)];
 		costh2 = rapint::Ith2m[mellinint::index(i1,i2)];
 		setmesq(one, costh1, costh2);
 		for (int pch = 0; pch < totpch; pch++)
-		  mesqij_expy[mesq::index(pch, i1, i2, mesq::negative)] = mesqij[pch];
+		  {
+		    mesqij_expy[mesq::index(pch, i1, i2, mesq::negative)] = mesqij[pch];
+		    if (opts.nproc == 3 && opts.order >= 3)
+		      mesqij_expy_NFZ[mesq::index(pch, i1, i2, mesq::negative)] = mesqij_NFZ[pch];
+		  }
 	      }
 	}
     }
@@ -390,6 +448,8 @@ void mesq::setmesq_expy(int mode, double m, double costh, double y, int helicity
 void mesq::free()
 {
   delete[] mesqij_expy;
+  if (opts.order >= 3)
+    delete[] mesqij_expy_NFZ;
 }
 
 template <class T>
@@ -485,12 +545,23 @@ void mesq::setmesq(T one, T costh1, T costh2)
       mesqij[8]=fac*((propZ*gLpgR[4]*fLpfR + propG*aem2pi2*pow(Q[4],2) - propZG*aem2pi*Q[4]*(gLZ[4]+gRZ[4])*(fLZ+fRZ)) * (one + costh2)
 		     -(propZ*gLmgR[4]*fLmfR                            - propZG*aem2pi*Q[4]*(gLZ[4]-gRZ[4])*(fLZ-fRZ)) * (2.*costh1));
 
+      //!!! bug for flavour decomposition of the Z/gamma* interference !!!
       mesqij[3]=fac*((propZ*gLpgR[0]*fLpfR + propG*aem2pi2*pow(Q[0],2) - propZG*aem2pi*Q[0]*(gLZd+gRZd)*(fLZ+fRZ)) * (one + costh2)
 		     +(propZ*gLmgR[0]*fLmfR                            - propZG*aem2pi*Q[0]*(gLZd-gRZd)*(fLZ-fRZ)) * (2.*costh1));
       mesqij[5]=fac*((propZ*gLpgR[2]*fLpfR + propG*aem2pi2*pow(Q[2],2) - propZG*aem2pi*Q[2]*(gLZd+gRZd)*(fLZ+fRZ)) * (one + costh2)
 		     +(propZ*gLmgR[2]*fLmfR                            - propZG*aem2pi*Q[2]*(gLZd-gRZd)*(fLZ-fRZ)) * (2.*costh1));
       mesqij[9]=fac*((propZ*gLpgR[4]*fLpfR + propG*aem2pi2*pow(Q[4],2) - propZG*aem2pi*Q[4]*(gLZd+gRZd)*(fLZ+fRZ)) * (one + costh2)
 		     +(propZ*gLmgR[4]*fLmfR                            - propZG*aem2pi*Q[4]*(gLZd-gRZd)*(fLZ-fRZ)) * (2.*costh1));
+
+      //this should be correct --> to be tested
+      /*
+      mesqij[3]=fac*((propZ*gLpgR[0]*fLpfR + propG*aem2pi2*pow(Q[0],2) - propZG*aem2pi*Q[0]*(gLZ[0]+gRZ[0])*(fLZ+fRZ)) * (one + costh2)
+		     +(propZ*gLmgR[0]*fLmfR                            - propZG*aem2pi*Q[0]*(gLZ[0]-gRZ[0])*(fLZ-fRZ)) * (2.*costh1));
+      mesqij[5]=fac*((propZ*gLpgR[2]*fLpfR + propG*aem2pi2*pow(Q[2],2) - propZG*aem2pi*Q[2]*(gLZ[2]+gRZ[2])*(fLZ+fRZ)) * (one + costh2)
+		     +(propZ*gLmgR[2]*fLmfR                            - propZG*aem2pi*Q[2]*(gLZ[2]-gRZ[2])*(fLZ-fRZ)) * (2.*costh1));
+      mesqij[9]=fac*((propZ*gLpgR[4]*fLpfR + propG*aem2pi2*pow(Q[4],2) - propZG*aem2pi*Q[4]*(gLZ[4]+gRZ[4])*(fLZ+fRZ)) * (one + costh2)
+		     +(propZ*gLmgR[4]*fLmfR                            - propZG*aem2pi*Q[4]*(gLZ[4]-gRZ[4])*(fLZ-fRZ)) * (2.*costh1));
+      */
       
       /*
       //                           Z                 gamma*                  interference
@@ -512,6 +583,51 @@ void mesq::setmesq(T one, T costh1, T costh2)
       mesqij[5]=mesqij[3];
       mesqij[9]=mesqij[3];
       */
+    }
+
+  //NFZ terms: box contributions at 3-loops
+  if (opts.nproc == 3 && !opts.useGamma && opts.order >= 3)
+    {
+      mesqij_NFZ[0]=fac*propZ*(gLpgR_sum[1]*fLpfR*(one + costh2)-gLmgR_sum[1]*fLmfR*(2.*costh1)); //u-ubar
+      mesqij_NFZ[6]=fac*propZ*(gLpgR_sum[3]*fLpfR*(one + costh2)-gLmgR_sum[3]*fLmfR*(2.*costh1)); //c-cbar
+	    
+      mesqij_NFZ[1]=fac*propZ*(gLpgR_sum[1]*fLpfR*(one + costh2)+gLmgR_sum[1]*fLmfR*(2.*costh1)); //ubar-u
+      mesqij_NFZ[7]=fac*propZ*(gLpgR_sum[3]*fLpfR*(one + costh2)+gLmgR_sum[3]*fLmfR*(2.*costh1)); //cbar-c
+
+      mesqij_NFZ[2]=fac*propZ*(gLpgR_sum[0]*fLpfR*(one + costh2)-gLmgR_sum[0]*fLmfR*(2.*costh1)); //d-dbar
+      mesqij_NFZ[4]=fac*propZ*(gLpgR_sum[2]*fLpfR*(one + costh2)-gLmgR_sum[2]*fLmfR*(2.*costh1)); //s-sbar
+      mesqij_NFZ[8]=fac*propZ*(gLpgR_sum[4]*fLpfR*(one + costh2)-gLmgR_sum[4]*fLmfR*(2.*costh1)); //b-bbar
+
+      mesqij_NFZ[3]=fac*propZ*(gLpgR_sum[0]*fLpfR*(one + costh2)+gLmgR_sum[0]*fLmfR*(2.*costh1)); //dbar-d
+      mesqij_NFZ[5]=fac*propZ*(gLpgR_sum[2]*fLpfR*(one + costh2)+gLmgR_sum[2]*fLmfR*(2.*costh1)); //sbar-s
+      mesqij_NFZ[9]=fac*propZ*(gLpgR_sum[4]*fLpfR*(one + costh2)+gLmgR_sum[4]*fLmfR*(2.*costh1)); //bbar-b
+    }
+  if (opts.nproc == 3 && opts.useGamma && opts.order >= 3)
+    {
+      //                           Z                 gamma*                  interference
+      mesqij_NFZ[0]=fac*(+(propZ*gLpgR_sum[1]*fLpfR + propG*aem2pi2*Q2_sum[1] - propZG*aem2pi*QgZp_sum[1]*(fLZ+fRZ)) * (one + costh2)
+			 -(propZ*gLmgR_sum[1]*fLmfR                           - propZG*aem2pi*QgZm_sum[1]*(fLZ-fRZ)) * (2.*costh1));
+      mesqij_NFZ[6]=fac*(+(propZ*gLpgR_sum[3]*fLpfR + propG*aem2pi2*Q2_sum[3] - propZG*aem2pi*QgZp_sum[3]*(fLZ+fRZ)) * (one + costh2)
+			 -(propZ*gLmgR_sum[3]*fLmfR                           - propZG*aem2pi*QgZm_sum[3]*(fLZ-fRZ)) * (2.*costh1));
+
+      mesqij_NFZ[1]=fac*(+(propZ*gLpgR_sum[1]*fLpfR + propG*aem2pi2*Q2_sum[1] - propZG*aem2pi*QgZp_sum[1]*(fLZ+fRZ)) * (one + costh2)
+			 +(propZ*gLmgR_sum[1]*fLmfR                           - propZG*aem2pi*QgZm_sum[1]*(fLZ-fRZ)) * (2.*costh1));
+      mesqij_NFZ[7]=fac*(+(propZ*gLpgR_sum[3]*fLpfR + propG*aem2pi2*Q2_sum[3] - propZG*aem2pi*QgZp_sum[3]*(fLZ+fRZ)) * (one + costh2)
+			 +(propZ*gLmgR_sum[3]*fLmfR                           - propZG*aem2pi*QgZm_sum[3]*(fLZ-fRZ)) * (2.*costh1));
+
+      mesqij_NFZ[2]=fac*(+(propZ*gLpgR_sum[0]*fLpfR + propG*aem2pi2*Q2_sum[0] - propZG*aem2pi*QgZp_sum[0]*(fLZ+fRZ)) * (one + costh2)
+			 -(propZ*gLmgR_sum[0]*fLmfR                           - propZG*aem2pi*QgZm_sum[0]*(fLZ-fRZ)) * (2.*costh1));
+      mesqij_NFZ[4]=fac*(+(propZ*gLpgR_sum[2]*fLpfR + propG*aem2pi2*Q2_sum[2] - propZG*aem2pi*QgZp_sum[2]*(fLZ+fRZ)) * (one + costh2)
+			 -(propZ*gLmgR_sum[2]*fLmfR                           - propZG*aem2pi*QgZm_sum[2]*(fLZ-fRZ)) * (2.*costh1));
+      mesqij_NFZ[8]=fac*(+(propZ*gLpgR_sum[4]*fLpfR + propG*aem2pi2*Q2_sum[4] - propZG*aem2pi*QgZp_sum[4]*(fLZ+fRZ)) * (one + costh2)
+			 -(propZ*gLmgR_sum[4]*fLmfR                           - propZG*aem2pi*QgZm_sum[4]*(fLZ-fRZ)) * (2.*costh1));
+
+      mesqij_NFZ[3]=fac*(+(propZ*gLpgR_sum[0]*fLpfR + propG*aem2pi2*Q2_sum[0] - propZG*aem2pi*QgZp_sum[0]*(fLZ+fRZ)) * (one + costh2)
+			 +(propZ*gLmgR_sum[0]*fLmfR                           - propZG*aem2pi*QgZm_sum[0]*(fLZ-fRZ)) * (2.*costh1));
+      mesqij_NFZ[5]=fac*(+(propZ*gLpgR_sum[2]*fLpfR + propG*aem2pi2*Q2_sum[2] - propZG*aem2pi*QgZp_sum[2]*(fLZ+fRZ)) * (one + costh2)
+			 +(propZ*gLmgR_sum[2]*fLmfR                           - propZG*aem2pi*QgZm_sum[2]*(fLZ-fRZ)) * (2.*costh1));
+      mesqij_NFZ[9]=fac*(+(propZ*gLpgR_sum[4]*fLpfR + propG*aem2pi2*Q2_sum[4] - propZG*aem2pi*QgZp_sum[4]*(fLZ+fRZ)) * (one + costh2)
+			 +(propZ*gLmgR_sum[4]*fLmfR                           - propZG*aem2pi*QgZm_sum[4]*(fLZ-fRZ)) * (2.*costh1));
     }
 }
 

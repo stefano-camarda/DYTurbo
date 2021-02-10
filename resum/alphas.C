@@ -49,59 +49,71 @@ complex <double> alphas::calc(complex <double> q, int nloop)
   double q0 = scales::res;
   as0 = pdf::alphas(scales::ren);
 
+  /*
   //Runge Kutta evolution
-  if (opts.asrgkt)
-    {
-      rgkt(q, q0, as0);
-      //cout << "as Runge-Kutta C++:     " << asLO << "  " << asNLO << "  " << asNNLO << "  " << asNNNLO << "  " << asNNNNLO << endl;
+  //  if (opts.asrgkt)
+  //    {
+  //q = q0+complex <double>(0.,q0);
+  //q = complex <double>(0.1,10.);
+  rgkt(q, q0, as0);
+  cout << "as Runge-Kutta C++:     " << asLO << "  " << asNLO << "  " << asNNLO << "  " << asNNNLO << "  " << asNNNNLO << endl;
       
-      //double R20  = pow(q0,2);
-      //double R2   = pow(q,2);
-      //double AS0 = as0/4./M_PI;
-      //int nf = 5;
-      //aspar_.naord_ = 0;    asLO = as_(R2, R20, AS0, nf)*4*M_PI;
-      //aspar_.naord_ = 1;   asNLO = as_(R2, R20, AS0, nf)*4*M_PI;
-      //aspar_.naord_ = 2;  asNNLO = as_(R2, R20, AS0, nf)*4*M_PI;
-      //aspar_.naord_ = 3; asNNNLO = as_(R2, R20, AS0, nf)*4*M_PI;
-      //aspar_.naord_  = order_.npord_;
-      //cout << "as Runge-Kutta fortran: " << asLO << "  " << asNLO << "  " << asNNLO << "  " << asNNNLO << endl;
-    }
-  else
-    {
-      //compute asN4LO numerically
-      if (opts.order >= 4)
-	rgkt(q, q0, as0);
+  //double R20  = pow(q0,2);
+  //double R2   = pow(q,2);
+  //double AS0 = as0/4./M_PI;
+  //int nf = 5;
+  //aspar_.naord_ = 0;    asLO = as_(R2, R20, AS0, nf)*4*M_PI;
+  //aspar_.naord_ = 1;   asNLO = as_(R2, R20, AS0, nf)*4*M_PI;
+  //aspar_.naord_ = 2;  asNNLO = as_(R2, R20, AS0, nf)*4*M_PI;
+  //aspar_.naord_ = 3; asNNNLO = as_(R2, R20, AS0, nf)*4*M_PI;
+  //aspar_.naord_  = order_.npord_;
+  //cout << "as Runge-Kutta fortran: " << asLO << "  " << asNLO << "  " << asNNLO << "  " << asNNNLO << endl;
+  //    }
+  */
+  
+  //compute asN4LO numerically
+  if (opts.order >= 4)
+    rgkt(q, q0, as0);
 
-      complex <double> qlog = log(pow(q/q0,2));
+  complex <double> qlog = log(pow(q/q0,2));
 
-      complex <double> lambda = as0*beta0/M_PI*qlog; //-as0*beta0/M_PI*qlog;
-      complex <double> oneplambda = 1. + lambda;
-      complex <double> log1plambda = log(oneplambda);
-      //complex <double> log1plambda = log1p(lambda); //check if this is faster
+  complex <double> lambda = as0*beta0/M_PI*qlog; //-as0*beta0/M_PI*qlog;
+  complex <double> oneplambda = 1. + lambda;
+  complex <double> log1plambda = log(oneplambda);
+  //complex <double> log1plambda = log1p(lambda); //check if this is faster
 
-      /*
-      if (nloop >= 0) //0-loop
-	as = as0;
-      if (nloop >= 1) //1-loop (LO)
-	as = as0/(1.+lambda);
-      if (nloop >= 2) //2-loop (NLO)
-	as += -(pow(as0,2)*beta1*log1plambda)/(beta0*pow(oneplambda,2)*M_PI);
-      if (nloop >= 3) //3-loop (NNLO)
-	as += (pow(as0,3)*((pow(beta1,2) - beta0*beta2)*lambda + pow(beta1,2)*(-1.+log1plambda)*log1plambda))/(pow(beta0,2)*pow(oneplambda,3)*pi2);
-      if (nloop >= 4) //4-loop (NNNLO)
-	as += (pow(as0,4)*(-(lambda*(pow(beta1,3)*lambda - 2.*beta0*beta1*beta2*(oneplambda) + pow(beta0,2)*beta3*(2.+lambda))) + beta1*log1plambda*(-4.*pow(beta1,2)*lambda + 2.*beta0*beta2*(-1.+2.*lambda) + pow(beta1,2)*(5. - 2.*log1plambda)*log1plambda)))/(2.*pow(beta0,3)*pow(oneplambda,4)*pi2*M_PI);
-      */
+  /*
+    if (nloop >= 0) //0-loop
+    as = as0;
+    if (nloop >= 1) //1-loop (LO)
+    as = as0/(1.+lambda);
+    if (nloop >= 2) //2-loop (NLO)
+    as += -(pow(as0,2)*beta1*log1plambda)/(beta0*pow(oneplambda,2)*M_PI);
+    if (nloop >= 3) //3-loop (NNLO)
+    as += (pow(as0,3)*((pow(beta1,2) - beta0*beta2)*lambda + pow(beta1,2)*(-1.+log1plambda)*log1plambda))/(pow(beta0,2)*pow(oneplambda,3)*pi2);
+    if (nloop >= 4) //4-loop (NNNLO)
+    as += (pow(as0,4)*(-(lambda*(pow(beta1,3)*lambda - 2.*beta0*beta1*beta2*(oneplambda) + pow(beta0,2)*beta3*(2.+lambda))) + beta1*log1plambda*(-4.*pow(beta1,2)*lambda + 2.*beta0*beta2*(-1.+2.*lambda) + pow(beta1,2)*(5. - 2.*log1plambda)*log1plambda)))/(2.*pow(beta0,3)*pow(oneplambda,4)*pi2*M_PI);
+  */
       
-      asLO    = as0/(1.+lambda); //Taylor series: asLO = as0*(1.-lambda+pow(lambda,2)-pow(lambda,3)+pow(lambda,4)-pow(lambda,5)+pow(lambda,6));
-      asNLO   = asLO   - (pow(as0,2)*beta1*log1plambda)/(beta0*pow(oneplambda,2)*M_PI);
-      asNNLO  = asNLO  + (pow(as0,3)*((pow(beta1,2) - beta0*beta2)*lambda + pow(beta1,2)*(-1.+log1plambda)*log1plambda))/(pow(beta0,2)*pow(oneplambda,3)*pi2);
-      asNNNLO = asNNLO + (pow(as0,4)*(-(lambda*(pow(beta1,3)*lambda - 2.*beta0*beta1*beta2*(oneplambda) + pow(beta0,2)*beta3*(2.+lambda)))
-      			  + beta1*log1plambda*(-4.*pow(beta1,2)*lambda + 2.*beta0*beta2*(-1.+2.*lambda)
-      					       + pow(beta1,2)*(5. - 2.*log1plambda)*log1plambda)))/(2.*pow(beta0,3)*pow(oneplambda,4)*pi2*M_PI);
+  asLO    = as0/(1.+lambda); //Taylor series: asLO = as0*(1.-lambda+pow(lambda,2)-pow(lambda,3)+pow(lambda,4)-pow(lambda,5)+pow(lambda,6));
+  asNLO   = asLO   - (pow(as0,2)*beta1*log1plambda)/(beta0*pow(oneplambda,2)*M_PI);
+  asNNLO  = asNLO  + (pow(as0,3)*((pow(beta1,2) - beta0*beta2)*lambda + pow(beta1,2)*(-1.+log1plambda)*log1plambda))/(pow(beta0,2)*pow(oneplambda,3)*pi2);
+  asNNNLO = asNNLO + (pow(as0,4)*(-(lambda*(pow(beta1,3)*lambda - 2.*beta0*beta1*beta2*(oneplambda) + pow(beta0,2)*beta3*(2.+lambda)))
+				  + beta1*log1plambda*(-4.*pow(beta1,2)*lambda + 2.*beta0*beta2*(-1.+2.*lambda)
+						       + pow(beta1,2)*(5. - 2.*log1plambda)*log1plambda)))/(2.*pow(beta0,3)*pow(oneplambda,4)*pi2*M_PI);
 
-      //cout << "as analytic    " << asLO << "  " << asNLO << "  " << asNNLO << "  " << asNNNLO << endl;
-    }
+  //cout << "as analytic             " << asLO << "  " << asNLO << "  " << asNNLO << "  " << asNNNLO << endl;
 
+  //Approximate the exact numeric alphas with higher-order iterative analytic solutions setting beta terms to zero
+  //complex <double> asiter;
+  //asiter   = as0/(1.+lambda); //Taylor series: asLO = as0*(1.-lambda+pow(lambda,2)-pow(lambda,3)+pow(lambda,4)-pow(lambda,5)+pow(lambda,6));
+  //asiter   += - (pow(as0,2)*beta1*log1plambda)/(beta0*pow(oneplambda,2)*M_PI);
+  //asiter   += + (pow(as0,3)*((pow(beta1,2))*lambda + pow(beta1,2)*(-1.+log1plambda)*log1plambda))/(pow(beta0,2)*pow(oneplambda,3)*pi2);
+  //asiter   += + (pow(as0,4)*(-(lambda*(pow(beta1,3)*lambda))
+  //				  + beta1*log1plambda*(-4.*pow(beta1,2)*lambda
+  //						       + pow(beta1,2)*(5. - 2.*log1plambda)*log1plambda)))/(2.*pow(beta0,3)*pow(oneplambda,4)*pi2*M_PI);
+  //cout << "as iterative             " << asLO << "  " << asiter << endl;
+  
   complex <double> dasNLO   = asNLO-asLO;
   complex <double> dasNNLO  = asNNLO-asNLO;
   complex <double> dasNNNLO = asNNNLO-asNNLO;
@@ -124,7 +136,7 @@ complex <double> alphas::calc(complex <double> q, int nloop)
   as4_5l = pow(asLO,4)+4.*pow(asLO,3)*dasNLO;
   //alphas truncated powers of 5
   as5_5l = pow(asLO,5);
-  
+
   //QCD coupling scale dependence
 
   //double LQR = log(pow(q0/scales::ren,2));
@@ -135,6 +147,10 @@ complex <double> alphas::calc(complex <double> q, int nloop)
   //if (nloop >= 4) as += -pow(as,4)*LQR*(beta2 - 5./2.*beta0*beta1*LQR + pow(beta0,3)*pow(LQR,2))/(pi2*M_PI);
   //if (nloop >= 5) as += -pow(as,5)*LQR*(beta3 - 3./2.*pow(beta1,2)*LQR - 3.*beta0*beta2*LQR + 13./3.*pow(beta0,2)*beta1*pow(LQR,2) - pow(beta0,4)*pow(LQR,3))/pi4;
 
+  //Runge Kutta evolution
+  if (opts.asrgkt)
+    rgkt(q, q0, as0);
+  
   //Truncate alphas at the exact order
   asNLO    += -as2_2l * beta0/M_PI*LQR;
   asNNLO   += -as2_3l * beta0/M_PI*LQR;
@@ -204,6 +220,16 @@ complex <double> alphas::calc(complex <double> q, int nloop)
   else if (nloop == 4) as = asNNNLO;
   else if (nloop == 5) as = asNNNNLO;
 
+  //do not truncate alphas
+  if (opts.asrgkt)
+    {
+      as1_1l = as1_2l = as1_3l = as1_4l = as1_5l = as;
+      as2_2l = as2_3l = as2_4l = as2_5l = pow(as,2);
+      as3_3l = as3_4l = as3_5l =  pow(as,3);
+      as4_4l = as4_5l =  pow(as,4);
+      as5_5l =  pow(as,5);
+    }
+ 
   return as;
 }
 
@@ -289,28 +315,28 @@ void alphas::rgkt(complex <double> q, double q0, double aass0)
       xk1 = dlr * fbeta1(asNLO+0.5*xk0);
       xk2 = dlr * fbeta1(asNLO+0.5*xk1);
       xk3 = dlr * fbeta1(asNLO+xk2);
-      asNLO += sxth * (xk0+2.*xk1+2.*xk2+xk3);
+      asNLO += (xk0+2.*xk1+2.*xk2+xk3)/6.;
   
       //3-loop
       xk0 = dlr * fbeta2(asNNLO);
       xk1 = dlr * fbeta2(asNNLO + 0.5 * xk0);
       xk2 = dlr * fbeta2(asNNLO + 0.5 * xk1);
       xk3 = dlr * fbeta2(asNNLO + xk2);
-      asNNLO = asNNLO + sxth * (xk0 + 2.* xk1 + 2.* xk2 + xk3);
+      asNNLO = asNNLO + (xk0 + 2.* xk1 + 2.* xk2 + xk3)/6.;
 
       //4-loop
       xk0 = dlr * fbeta3(asNNNLO);
       xk1 = dlr * fbeta3(asNNNLO + 0.5 * xk0);
       xk2 = dlr * fbeta3(asNNNLO + 0.5 * xk1);
       xk3 = dlr * fbeta3(asNNNLO + xk2);
-      asNNNLO = asNNNLO + sxth * (xk0 + 2.* xk1 + 2.* xk2 + xk3);
+      asNNNLO = asNNNLO + (xk0 + 2.* xk1 + 2.* xk2 + xk3)/6.;
 
       //5-loop
       xk0 = dlr * fbeta4(asNNNNLO);
       xk1 = dlr * fbeta4(asNNNNLO + 0.5 * xk0);
       xk2 = dlr * fbeta4(asNNNNLO + 0.5 * xk1);
       xk3 = dlr * fbeta4(asNNNNLO + xk2);
-      asNNNNLO = asNNNNLO + sxth * (xk0 + 2.* xk1 + 2.* xk2 + xk3);
+      asNNNNLO = asNNNNLO + (xk0 + 2.* xk1 + 2.* xk2 + xk3)/6.;
     }
 
   asLO     *= M_PI;

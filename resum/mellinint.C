@@ -62,6 +62,7 @@ complex <double> mellinint::QQN_1;
 complex <double> mellinint::QQN_2;
 complex <double> mellinint::QQPN_1;
 complex <double> mellinint::QQPN_2;
+complex <double> mellinint::QQBN_nfz;
 complex <double> mellinint::QQBPN_1;
 complex <double> mellinint::QQBPN_2;
 complex <double> mellinint::GGN;
@@ -741,6 +742,7 @@ void mellinint::reset()
   QGN_2=0;
 
   //NNLL
+  QQBN_nfz=0;
   GGN=0;
   QQN_1=0;
   QQN_2=0;
@@ -1221,6 +1223,30 @@ void mellinint::pdf_mesq_expy(int i1, int i2, int sign)
 	}
       if (opts.order >= 3)
 	{
+	  complex <double> mesq_uub_nfz = mesq::mesqij_expy_NFZ[mesq::index(0,i1,i2,sign)];
+	  complex <double> mesq_ubu_nfz = mesq::mesqij_expy_NFZ[mesq::index(1,i1,i2,sign)];
+	  complex <double> mesq_ddb_nfz = mesq::mesqij_expy_NFZ[mesq::index(2,i1,i2,sign)];
+	  complex <double> mesq_dbd_nfz = mesq::mesqij_expy_NFZ[mesq::index(3,i1,i2,sign)];
+	  complex <double> mesq_ssb_nfz = mesq::mesqij_expy_NFZ[mesq::index(4,i1,i2,sign)];
+	  complex <double> mesq_sbs_nfz = mesq::mesqij_expy_NFZ[mesq::index(5,i1,i2,sign)];
+	  complex <double> mesq_ccb_nfz = mesq::mesqij_expy_NFZ[mesq::index(6,i1,i2,sign)];
+	  complex <double> mesq_cbc_nfz = mesq::mesqij_expy_NFZ[mesq::index(7,i1,i2,sign)];
+	  complex <double> mesq_bbr_nfz = mesq::mesqij_expy_NFZ[mesq::index(8,i1,i2,sign)];
+	  complex <double> mesq_brb_nfz = mesq::mesqij_expy_NFZ[mesq::index(9,i1,i2,sign)];
+      
+	  //      cout << "pdf_mesq_expy " << i1 << "  " << i2 << "  " << mesq_uub << "  " << fn1[u] << "  " << fn2[ub]  << endl;
+	  //LL part
+	  QQBN_nfz = fn1[u ]*fn2[ub]*mesq_uub_nfz
+	            +fn1[c ]*fn2[cb]*mesq_ccb_nfz
+	            +fn1[d ]*fn2[db]*mesq_ddb_nfz
+	            +fn1[s ]*fn2[sb]*mesq_ssb_nfz
+	            +fn1[b ]*fn2[bb]*mesq_bbr_nfz
+	            +fn1[ub]*fn2[u ]*mesq_ubu_nfz
+	            +fn1[cb]*fn2[c ]*mesq_cbc_nfz
+	            +fn1[db]*fn2[d ]*mesq_dbd_nfz
+	            +fn1[sb]*fn2[s ]*mesq_sbs_nfz
+	            +fn1[bb]*fn2[b ]*mesq_brb_nfz;
+
 	  QBGN_1 = fn1[g]*(fn2[u]*mesq_uub
 			  +fn2[c]*mesq_ccb
 			  +fn2[d]*mesq_ddb
@@ -2814,6 +2840,7 @@ complex <double> mellinint::calc1d()
 	    + (QQBPN_1+QQBPN_2)*(hcoeff::Hqqbp[i]+muf::qqbp[i])*expc::qqbp[idx]
 	    
 	    //contributions starting at NNNLL
+	    + QQBN_nfz         *(hcoeff::Hqqb_nfz             )*expc::qqb[idx]
 	    + (QBGN_1+QBGN_2)  *(hcoeff::Hqbg[i] +muf::qbg[i] )*expc::qbg[idx]
 	    + (QPGN_1+QPGN_2)  *(hcoeff::Hqpg[i] +muf::qpg[i] )*expc::qpg[idx]
 	    + (QBPGN_1+QBPGN_2)*(hcoeff::Hqbpg[i]+muf::qbpg[i])*expc::qbpg[idx];
@@ -2822,11 +2849,12 @@ complex <double> mellinint::calc1d()
 	}
       //if (opts.order == 0)
       //cout << i << " positive " << " QQBN " << QQBN
-      //<< " expc::qqb[idx] " << expc::qqb[idx] << " hcoeff::Hqqb[i] " << hcoeff::Hqqb[i]
-      //<< endl;
+      //	   << " expc::qqb[idx] " << expc::qqb[idx]
+      //	   << " hcoeff::Hqqb[i] " << hcoeff::Hqqb[i]
+      //	   << endl;
       //cout << pdfevol::fn1[u ] << "  " << pdfevol::fn2[ub] << "  "
-      //<< mesq::mesqij_expy[mesq::index(0,i,i,mesq::positive)] << endl;
-	//else
+      //	   << mesq::mesqij_expy[mesq::index(0,i,i,mesq::positive)] << endl;
+      //else
       //	{
       //cout << i << " positive " << setprecision(16) << " QQBN " << QQBN << " Hqqb " << hcoeff::Hqqb[i]+muf::qqb[i] << " expc::qqb[idx] " << expc::qqb[idx] << endl;
       //cout << " QGN_1 " << QGN_1 << " Hqg " << hcoeff::Hqg[i] << " expc::qg[idx] " << expc::qg[idx] << endl;
@@ -2834,6 +2862,9 @@ complex <double> mellinint::calc1d()
       //complex <double> pos = 	    QQBN             *(hcoeff::Hqqb[i]+muf::qqb[i])*expc::qqb[idx]
       //+ (QGN_1+QGN_2)  *(hcoeff::Hqg[i]+muf::qg[i]) *expc::qg[idx]
       //;
+      //cout << " QQBN_nfx " << QQBN_nfz
+      //	   << hcoeff::Hqqb_nfz
+      //	   << endl;
       //Negative branch
       complex <double> neg;
       //if (opts.mellininv == 1 && i == 0)
@@ -2860,6 +2891,7 @@ complex <double> mellinint::calc1d()
 	    + (QQBPN_1+QQBPN_2)*conj(hcoeff::Hqqbp[i]+muf::qqbp[i])*expc::qqbp[idx]
 	    
 	    //contributions starting at NNNLL
+	    + QQBN_nfz         *conj(hcoeff::Hqqb_nfz             )*expc::qqb[idx]
 	    + (QBGN_1+QBGN_2)  *conj(hcoeff::Hqbg[i] +muf::qbg[i] )*expc::qbg[idx]
 	    + (QPGN_1+QPGN_2)  *conj(hcoeff::Hqpg[i] +muf::qpg[i] )*expc::qpg[idx]
 	    + (QBPGN_1+QBPGN_2)*conj(hcoeff::Hqbpg[i]+muf::qbpg[i])*expc::qbpg[idx];
@@ -2924,9 +2956,10 @@ complex <double> mellinint::calc2d()
 		+ QQBPN_1*hcoeff::Hqqbp_1[ii]*expc::qqbp_1[ii] + QQBPN_2*hcoeff::Hqqbp_2[ii]*expc::qqbp_2[ii]
 
 		//contributions starting at NNNLL
+		+ QQBN_nfz*hcoeff::Hqqb_nfz*expc::qqb[ii]
 		+ QBGN_1*hcoeff::Hqbg_1[ii]*expc::qbg_1[ii]+QBGN_2  *hcoeff::Hqbg_2[ii]*expc::qbg_2[ii]
-		+ QPGN_1*hcoeff::Hqbg_1[ii]*expc::qbg_1[ii]+QPGN_2  *hcoeff::Hqpg_2[ii]*expc::qpg_2[ii]
-		+ QBPGN_1*hcoeff::Hqbg_1[ii]*expc::qbg_1[ii]+QBPGN_2*hcoeff::Hqbpg_2[ii]*expc::qbpg_2[ii]
+		+ QPGN_1*hcoeff::Hqpg_1[ii]*expc::qpg_1[ii]+QPGN_2  *hcoeff::Hqpg_2[ii]*expc::qpg_2[ii]   //!!! bug on the first leg qbg->qpg --> fixed
+		+ QBPGN_1*hcoeff::Hqbpg_1[ii]*expc::qbpg_1[ii]+QBPGN_2*hcoeff::Hqbpg_2[ii]*expc::qbpg_2[ii] //!!! bug on the first leg qbg->qbpg --> fixed
 		;
 	    }	  
 	      
@@ -2975,9 +3008,10 @@ complex <double> mellinint::calc2d()
 		+ QQBPN_1*hcoeff::Hqqbp_1[ii]*expc::qqbp_1[ii] + QQBPN_2*hcoeff::Hqqbp_2[ii]*expc::qqbp_2[ii]
 		
 		//contributions starting at NNNLL
-		+ QBGN_1*hcoeff::Hqbg_1[ii]*expc::qbg_1[ii]+QBGN_2  *hcoeff::Hqbg_2[ii]*expc::qbg_2[ii]
-		+ QPGN_1*hcoeff::Hqbg_1[ii]*expc::qbg_1[ii]+QPGN_2  *hcoeff::Hqpg_2[ii]*expc::qpg_2[ii]
-		+ QBPGN_1*hcoeff::Hqbg_1[ii]*expc::qbg_1[ii]+QBPGN_2*hcoeff::Hqbpg_2[ii]*expc::qbpg_2[ii]
+		+ QQBN_nfz*hcoeff::Hqqb_nfz*expc::qqb[ii]
+		+ QBGN_1*hcoeff::Hqbg_1[ii]*expc::qbg_1[ii]+QBGN_2  *hcoeff::Hqbg_2[ii]*expc::qbg_2[ii]    
+		+ QPGN_1*hcoeff::Hqpg_1[ii]*expc::qpg_1[ii]+QPGN_2  *hcoeff::Hqpg_2[ii]*expc::qpg_2[ii]	   //!!! bug on the first leg qbg->qpg  --> fixed
+		+ QBPGN_1*hcoeff::Hqbpg_1[ii]*expc::qbpg_1[ii]+QBPGN_2*hcoeff::Hqbpg_2[ii]*expc::qbpg_2[ii]  //!!! bug on the first leg qbg->qbpg  --> fixed
 		;
 	      
 	    }
@@ -2990,6 +3024,162 @@ complex <double> mellinint::calc2d()
 //		 << " mesq " << mesq::mesqij_expy[mesq::index(0,i1,i2,mesq::negative)]
 //		 << " fn2 " << pdfevol::fn2[ub]
 //		 << endl;
+	}
+    }
+
+  if (opts.bprescription == 0)
+    return -real(fun/2.);
+  else
+    return -fun/2.;
+}  
+
+
+complex <double> mellinint::calc1d_muf()
+{
+  complex <double> fun = 0.;
+  int idx;
+  for (int i = 0; i < mdim; i++)
+    {
+      //Positive branch
+      complex <double> pos = 0.;
+      idx = anomalous::index(i,mesq::positive);
+      pdfevol::retrieve1d_pos(i);
+      pdf_mesq_expy(i,i,mesq::positive);
+
+      //contribution starting at LL
+      pos +=
+	+ QQBN             *(hcoeff::Hqqb[i]+muf::qqb[idx])*expc::qqb[idx];
+
+      //contribution starting at NLL
+      if (opts.order_hcoef >= 1)
+	pos +=
+	  +(QGN_1+QGN_2)  *(hcoeff::Hqg[i]    *expc::qg[idx]   + muf::qg[idx]  *expc::qqb[idx]);
+    
+      //contributions starting at NNLL
+      if (opts.order_hcoef >= 2)
+	pos +=
+	  + GGN              *(hcoeff::Hgg[i]  *expc::gg[idx]   + muf::gg[idx]  *expc::qqb[idx])
+	  + (QQN_1+QQN_2)    *(hcoeff::Hqq[i]  *expc::qq[idx]   + muf::qq[idx]  *expc::qqb[idx])
+	  + (QQPN_1+QQPN_2)  *(hcoeff::Hqqp[i] *expc::qqp[idx]  + muf::qqp[idx] *expc::qqb[idx])
+	  + (QQBPN_1+QQBPN_2)*(hcoeff::Hqqbp[i]*expc::qqbp[idx] + muf::qqbp[idx]*expc::qqb[idx]);
+	    
+      //contributions starting at NNNLL
+      if (opts.order_hcoef >= 3)
+	pos +=
+	  + QQBN_nfz         *hcoeff::Hqqb_nfz *expc::qqb[idx]
+	  + (QBGN_1+QBGN_2)  *(hcoeff::Hqbg[i] *expc::qbg[idx]  + muf::qbg[idx] *expc::qqb[idx])
+	  + (QPGN_1+QPGN_2)  *(hcoeff::Hqpg[i] *expc::qpg[idx]  + muf::qpg[idx] *expc::qqb[idx])
+	  + (QBPGN_1+QBPGN_2)*(hcoeff::Hqbpg[i]*expc::qbpg[idx] + muf::qbpg[idx]*expc::qqb[idx]);
+
+      //Negative branch
+      complex <double> neg = 0.;
+      idx = anomalous::index(i,mesq::negative);
+      pdfevol::retrieve1d_neg();
+      pdf_mesq_expy(i,i,mesq::negative);
+
+      //contribution starting at LL
+      neg +=
+	QQBN               *(conj(hcoeff::Hqqb[i])+muf::qqb[idx])*expc::qqb[idx];
+
+      //contribution starting at NLL
+      if (opts.order >= 1)
+	neg +=
+	  + (QGN_1+QGN_2)    *(conj(hcoeff::Hqg[i]  ) *expc::qg[idx]   + muf::qg[idx]*expc::qqb[idx]);
+
+      //contributions starting at NNLL
+      if (opts.order >= 2)
+	neg +=
+	  + GGN              *(conj(hcoeff::Hgg[i]  )*expc::gg[idx]    + muf::gg[idx]  *expc::qqb[idx])
+	  + (QQN_1+QQN_2)    *(conj(hcoeff::Hqq[i]  )*expc::qq[idx]    + muf::qq[idx]  *expc::qqb[idx])
+	  + (QQPN_1+QQPN_2)  *(conj(hcoeff::Hqqp[i] )*expc::qqp[idx]   + muf::qqp[idx] *expc::qqb[idx])
+	  + (QQBPN_1+QQBPN_2)*(conj(hcoeff::Hqqbp[i])*expc::qqbp[idx]  + muf::qqbp[idx]*expc::qqb[idx]);
+	    
+      //contributions starting at NNNLL
+      if (opts.order >= 3)
+	neg +=
+	  + QQBN_nfz         * conj(hcoeff::Hqqb_nfz)*expc::qqb[idx]
+	  + (QBGN_1+QBGN_2)  *(conj(hcoeff::Hqbg[i] )*expc::qbg[idx]   + muf::qbg[idx] *expc::qqb[idx])
+	  + (QPGN_1+QPGN_2)  *(conj(hcoeff::Hqpg[i] )*expc::qpg[idx]   + muf::qpg[idx] *expc::qqb[idx])
+	  + (QBPGN_1+QBPGN_2)*(conj(hcoeff::Hqbpg[i])*expc::qbpg[idx]  + muf::qbpg[idx]*expc::qqb[idx]);
+
+      fun += pos-neg;
+    }
+
+  if (opts.bprescription == 0)
+    return real(fun/2.);
+  else
+    return fun/2.;
+}
+
+complex <double> mellinint::calc2d_muf()
+{
+  complex <double> fun = 0.;
+  for (int i1 = 0; i1 < mdim; i1++)
+    {
+      pdfevol::retrieve_beam1(i1);
+      for (int i2 = 0; i2 < mdim; i2++)
+	{
+	  //Positive branch
+	  pdfevol::retrieve_beam2_pos(i2);
+	  pdf_mesq_expy(i1,i2,mesq::positive);
+	  int ii = hcoeff::index(i1,i2,mesq::positive);
+
+	  //contribution starting at LL
+	  fun +=
+	    QQBN*(hcoeff::Hqqb[ii]+muf::qqb[ii])*expc::qqb[ii];
+
+	  //contribution starting at NLL
+	  if (opts.order_hcoef >= 1)
+	    fun +=
+	      + QGN_1  *(hcoeff::Hqg_1[ii]*expc::qg_1[ii]    +muf::qg_1[ii]  *expc::qqb[ii]) + QGN_2  *(hcoeff::Hqg_2[ii]  *expc::qg_2[ii]  +muf::qg_2[ii]*expc::qqb[ii]);
+
+	  //contributions starting at NNLL
+	  if (opts.order_hcoef >= 2)
+	    fun +=
+	      + GGN    *(hcoeff::Hgg[ii]    *expc::gg[ii]    +muf::gg[ii]    *expc::qqb[ii])
+	      + QQN_1  *(hcoeff::Hqq_1[ii]  *expc::qq_1[ii]  +muf::qq_1[ii]  *expc::qqb[ii]) + QQN_2  *(hcoeff::Hqq_2[ii]  *expc::qq_2[ii]  +muf::qq_2[ii]  *expc::qqb[ii])
+	      + QQPN_1 *(hcoeff::Hqqp_1[ii] *expc::qqp_1[ii] +muf::qqp_1[ii] *expc::qqb[ii]) + QQPN_2 *(hcoeff::Hqqp_2[ii] *expc::qqp_2[ii] +muf::qqp_2[ii] *expc::qqb[ii])
+	      + QQBPN_1*(hcoeff::Hqqbp_1[ii]*expc::qqbp_1[ii]+muf::qqbp_1[ii]*expc::qqb[ii]) + QQBPN_2*(hcoeff::Hqqbp_2[ii]*expc::qqbp_2[ii]+muf::qqbp_2[ii]*expc::qqb[ii]);
+
+	  //contributions starting at NNNLL
+	  if (opts.order_hcoef >= 3)
+	    fun +=
+	      + QQBN_nfz*hcoeff::Hqqb_nfz*expc::qqb[ii]
+	      + QBGN_1  *(hcoeff::Hqbg_1[ii]*expc::qbg_1[ii] +muf::qbg_1[ii]*expc::qqb[ii])+QBGN_2  *(hcoeff::Hqbg_2[ii] *expc::qbg_2[ii] +muf::qbg_2[ii] *expc::qqb[ii] )
+	      + QPGN_1  *(hcoeff::Hqbg_1[ii]*expc::qpg_1[ii] +muf::qbg_1[ii]*expc::qqb[ii])+QPGN_2  *(hcoeff::Hqpg_2[ii] *expc::qpg_2[ii] +muf::qpg_2[ii] *expc::qqb[ii] )
+	      + QBPGN_1 *(hcoeff::Hqbg_1[ii]*expc::qbpg_1[ii]+muf::qbg_1[ii]*expc::qqb[ii])+QBPGN_2 *(hcoeff::Hqbpg_2[ii]*expc::qbpg_2[ii]+muf::qbpg_2[ii]*expc::qqb[ii])
+	      ;
+	      
+	  //Negative branch
+	  pdfevol::retrieve_beam2_neg();
+	  pdf_mesq_expy(i1,i2,mesq::negative);
+	  ii = hcoeff::index(i1,i2,mesq::negative);
+
+	  //contribution starting at LL
+	  fun -=
+	    QQBN*(hcoeff::Hqqb[ii]+muf::qqb[ii])*expc::qqb[ii];
+
+	  //contribution starting at NLL
+	  if (opts.order_hcoef >= 1)
+	    fun -=
+	      + QGN_1  *(hcoeff::Hqg_1[ii]*expc::qg_1[ii]    +muf::qg_1[ii]  *expc::qqb[ii]) + QGN_2  *(hcoeff::Hqg_2[ii]  *expc::qg_2[ii]  +muf::qg_2[ii]*expc::qqb[ii]);
+    		
+	  //contributions starting at NNLL
+	  if (opts.order_hcoef >= 2)
+	    fun -=
+	      + GGN    *(hcoeff::Hgg[ii]    *expc::gg[ii]    +muf::gg[ii]    *expc::qqb[ii])
+	      + QQN_1  *(hcoeff::Hqq_1[ii]  *expc::qq_1[ii]  +muf::qq_1[ii]  *expc::qqb[ii]) + QQN_2  *(hcoeff::Hqq_2[ii]  *expc::qq_2[ii]  +muf::qq_2[ii]  *expc::qqb[ii])
+	      + QQPN_1 *(hcoeff::Hqqp_1[ii] *expc::qqp_1[ii] +muf::qqp_1[ii] *expc::qqb[ii]) + QQPN_2 *(hcoeff::Hqqp_2[ii] *expc::qqp_2[ii] +muf::qqp_2[ii] *expc::qqb[ii])
+	      + QQBPN_1*(hcoeff::Hqqbp_1[ii]*expc::qqbp_1[ii]+muf::qqbp_1[ii]*expc::qqb[ii]) + QQBPN_2*(hcoeff::Hqqbp_2[ii]*expc::qqbp_2[ii]+muf::qqbp_2[ii]*expc::qqb[ii]);
+
+	  //contributions starting at NNNLL
+	  if (opts.order_hcoef >= 3)
+	    fun -=
+	      + QQBN_nfz*hcoeff::Hqqb_nfz*expc::qqb[ii]
+	      + QBGN_1  *(hcoeff::Hqbg_1[ii]*expc::qbg_1[ii] +muf::qbg_1[ii]*expc::qqb[ii])+QBGN_2  *(hcoeff::Hqbg_2[ii] *expc::qbg_2[ii] +muf::qbg_2[ii] *expc::qqb[ii] )
+	      + QPGN_1  *(hcoeff::Hqbg_1[ii]*expc::qpg_1[ii] +muf::qbg_1[ii]*expc::qqb[ii])+QPGN_2  *(hcoeff::Hqpg_2[ii] *expc::qpg_2[ii] +muf::qpg_2[ii] *expc::qqb[ii] )
+	      + QBPGN_1 *(hcoeff::Hqbg_1[ii]*expc::qbpg_1[ii]+muf::qbg_1[ii]*expc::qqb[ii])+QBPGN_2 *(hcoeff::Hqbpg_2[ii]*expc::qbpg_2[ii]+muf::qbpg_2[ii]*expc::qqb[ii])
+	      ;
 	}
     }
 

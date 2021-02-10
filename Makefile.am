@@ -1,7 +1,7 @@
 ACLOCAL_AMFLAGS=-I m4
 #do not ditribute test directories
 # add cuba to SUBDIRS to ship cuba
-DIST_SUBDIRS = histo user cernlib ancont pegasus cubature dequad bequad polylog sandia smolpack besche bessel minprescription specialfunctions dyres dynnlo mcfm integrands resum counterterm v2j born phasespace vjet src #zeta harmonicsums
+DIST_SUBDIRS = histo user cernlib pegasus cubature dequad bequad polylog sandia smolpack besche bessel minprescription specialfunctions dyres dynnlo mcfm integrands resum counterterm v2j born phasespace vjet src #zeta harmonicsums
 SUBDIRS      = ${DIST_SUBDIRS}
 
 # add test directories if enabled
@@ -46,3 +46,4 @@ distclean-local:
 	rm -rf ceres-solver-$(CERES_VERSION)
 	rm -rf cubature/*.c cubature/*.h cubature/NEWS.md cubature/COPYING cubature/README.md cubature/ChangeLog cubature/doc
 	rm -rf origdyres/*.f origdyres/*.h origdyres/DYRes-v1.0
+	rm -rf ${sharedir}/ccr.bin ${sharedir}/i3.bin ${sharedir}/gr.bin

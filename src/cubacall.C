@@ -792,6 +792,77 @@ void bornintegr2d(vector <double> &res, double &err)
   return;
 }
 
+void bornintegr1d(vector <double> &res, double &err)
+{
+  const int ndim = 1;     //dimensions of the integral
+  const int ncomp = (opts.helicity >= 0 ? 2 : 1);    //components of the integrand
+  void *userdata = NULL;
+  const int nvec = 1;
+  const double epsrel = 0.;
+  const double epsabs = 0.;
+  const char *statefile = "";
+  void *spin=NULL;
+  int neval;
+  int fail;
+  double integral[ncomp];
+  double error[ncomp];
+  double prob[ncomp];
+  const int flags = 0+opts.cubaverbosity;
+  const int mineval = 65+2*65*opts.niterBORN;
+  const int maxeval = 65+2*65*opts.niterBORN;
+  const int key = 13;
+  int nregions;
+
+  if (!opts.pcubature)
+    Cuhre(ndim, ncomp,
+	  (integrand_t) lointegrand1d, userdata, nvec,
+	  epsrel, epsabs,
+	  flags,
+	  mineval, maxeval,
+	  key, statefile, NULL,
+	  &nregions, &neval, &fail,
+	  integral, error, prob);
+  else
+    {
+      const int eval = 0;
+      const double epsrel = opts.relaccuracy;
+      const double epsabs = opts.absaccuracy;
+      double xmin[2] = {0, 0};
+      double xmax[2] = {1, 1};
+      if (opts.cubacores == 0)
+	pcubature(ncomp, lointegrand1d_cubature, userdata, 
+		  ndim, xmin, xmax, 
+		  eval, epsabs, epsrel, ERROR_LINF, integral, error);
+      else
+	pcubature_v(ncomp, lointegrand1d_cubature_v, userdata, 
+		    ndim, xmin, xmax, 
+		    eval, epsabs, epsrel, ERROR_LINF, integral, error);
+
+    }
+  res.clear();
+
+  /*
+  res.push_back(integral[0]);
+  for (int i = 1; i < opts.totpdf; i++)
+    res.push_back(0);
+  err = error[0];
+  */
+
+  if (opts.helicity >= 0)
+    res.push_back(integral[0] != 0? integral[1]/integral[0] : 0);
+  else
+    res.push_back(integral[0]);
+
+  for (int i = 1; i < opts.totpdf; i++)
+    res.push_back(0);
+  
+  if (opts.helicity >= 0)
+    err = integral[0] != 0? error[0]/integral[0]*integral[1]/integral[0] : 0; // error[1]/integral[1]*integral[1]/integral[0]
+  else
+    err = error[0];
+  return;
+}
+
 //Cuba integration of V + 2 jets
 void v2jintegr(vector <double> &res, double &err)
 {

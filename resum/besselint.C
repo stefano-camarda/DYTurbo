@@ -16,6 +16,7 @@
 #include "sudakovff.h"
 #include "npff.h"
 #include "ccoeff.h"
+#include "gint.h"
 #include "scales.h"
 
 #include <LHAPDF/LHAPDF.h>
@@ -150,6 +151,10 @@ complex <double> besselint::bint(complex <double> b)
   
   //The Sudakov is mass and b dependent
 
+  //numerical Sudakov
+  if (opts.numsud || opts.numexpc)
+    gint::calc(b);
+  
   //fortran
   //fcomplex fb = fcx(b);
   //complex <double> sudak=cx(s_(fb));
@@ -315,14 +320,17 @@ complex <double> besselint::bint(complex <double> b)
   
   // Cache the positive and negative branch of coefficients which depend only on one I index
   expc::reset();
+  expc::calc(b);
+  if (opts.mufvar)
+    {
+      muf::reset();
+      muf::calc(b);
+    }
+
+  /*
   if (opts.mellin1d)
     {
-      expc::calc(b);
-      if (opts.mufevol)
-	{
-	  muf::reset();
-	  muf::calc(b);
-	}
+      //if (opts.mufevol)
       //expc::reset();
       //hcoeff::calcb(resint::aass,resint::logmuf2q2,resint::loga,pdfevol::alpq,expc::aexp,expc::aexpB); // --> Need to access aass,logmuf2q2,loga,alpq,aexp,aexpb
     }
@@ -333,11 +341,11 @@ complex <double> besselint::bint(complex <double> b)
       //complex <double> aexp = cx(exponent_.aexp_); //aexp is actually the ratio alphas(a*b0/b)/alphas(muren)
       //hcoefficients::calcb(resint::aass,resint::logmuf2q2,resint::loga,pdfevol::alpq,expc::aexp,expc::aexpB); // --> Need to access aass,logmuf2q2,loga,alpq,aexp,aexpb
 
-      expc::calc(b);
       //expc::reset();
       //hcoefficients::calcb(resint::aass,resint::logmuf2q2,resint::loga,pdfevol::alpq,expc::aexp,expc::aexpB); // --> Need to access aass,logmuf2q2,loga,alpq,aexp,aexpb
     }      
-    
+  */
+  
   //Inverting the HN coefficients from N to z space does not work, because it would miss the convolution with PDFs
   //double q2 = pow(phasespace::m,2);
   //if (opts.mellin1d)
@@ -386,7 +394,10 @@ complex <double> besselint::bint(complex <double> b)
     {
       //1d mellin
       if (opts.mellin1d)
-	fun = mellinint::calc1d();
+	if (opts.mufvar)
+	  fun = mellinint::calc1d_muf();	  
+	else
+	  fun = mellinint::calc1d();
 //	{
 //	  //double q2 = resint::_m*resint::_m;
 //	  //double bjx= q2/pow(opts.sroot,2);
@@ -415,7 +426,10 @@ complex <double> besselint::bint(complex <double> b)
 //	  //cout << "besselint 1d inversion " << fun << endl;
 //          }
       else
-	fun = mellinint::calc2d();
+	if (opts.mufvar)
+	  fun = mellinint::calc2d_muf();
+	else
+	  fun = mellinint::calc2d();
 //	{
 //	  //#pragma omp parallel for reduction(+:fun) num_threads(opts.mellincores) copyin(creno_,mesq::mesqij_expy,hcoefficients::Hqqb,hcoefficients::Hqg_1,hcoefficients::Hqg_2,hcoefficients::Hgg,hcoefficients::Hqq,hcoefficients::Hqq_1,hcoefficients::Hqq_2,hcoefficients::Hqqp_1,hcoefficients::Hqqp_2)
 //	  for (int i1 = 0; i1 < mellinint::mdim; i1++)

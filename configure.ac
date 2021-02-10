@@ -313,7 +313,6 @@ AC_CONFIG_FILES([Makefile
 		 bessel/Makefile
 		 minprescription/Makefile
 		 specialfunctions/Makefile
-		 ancont/Makefile
 		 pegasus/Makefile
 		 cubature/Makefile
 	 	 src/Makefile

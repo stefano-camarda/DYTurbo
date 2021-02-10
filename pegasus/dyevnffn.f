@@ -45,6 +45,7 @@
      1                   P15I (NDIM), P24I(NDIM)
 !$OMP THREADPRIVATE(/HFPAINP/)
        COMMON / ORDER  / NPORD
+!$OMP THREADPRIVATE(/ORDER/)
 *
 * ---------------------------------------------------------------------
 *

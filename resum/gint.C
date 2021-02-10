@@ -15,6 +15,8 @@
 
 complex <double> gint::logS;
 complex <double> gint::logasl;
+complex <double> gint::logasl_pdf;
+complex <double> gint::logasl_expc;
 complex <double> *gint::alogqq;
 complex <double> *gint::alogqg;
 complex <double> *gint::alogqqb;
@@ -29,8 +31,38 @@ void gint::init()
 
 }
 
+void gint::allocate()
+{
+  //allocate memory
+  alogqq   = new complex <double> [mellinint::mdim*2];
+  alogqg   = new complex <double> [mellinint::mdim*2];
+  alogqqb  = new complex <double> [mellinint::mdim*2];
+  alogqqp  = new complex <double> [mellinint::mdim*2];
+  alogqqbp = new complex <double> [mellinint::mdim*2];
+}
+void gint::reset()
+{
+  logS = 0;
+  logasl = 0;
+  logasl_pdf = 0;
+  logasl_expc = 0;
+  fill(alogqq  , alogqq+mellinint::mdim*2, 0);
+  fill(alogqg  , alogqg+mellinint::mdim*2, 0);
+  fill(alogqqb , alogqqb+mellinint::mdim*2, 0);
+  fill(alogqqp , alogqqp+mellinint::mdim*2, 0);
+  fill(alogqqbp, alogqqbp+mellinint::mdim*2, 0);
+}
+void gint::free()
+{
+  delete[] alogqq;
+  delete[] alogqg;
+  delete[] alogqqb;
+  delete[] alogqqp;
+  delete[] alogqqbp;
+}
 
-void gint::intg(complex <double> q, complex <double> jac)
+
+void gint::intg(complex <double> q, complex <double> jac, double blim)
 {
   //Compute: dq^2/q^2 A(as(q^2)) * log(M^2/q^2) + Btilde (as(q^2)) (Eq.19 of https://arxiv.org/pdf/hep-ph/0508068.pdf)
   alphas::calc(q, opts.order+1);
@@ -54,7 +86,6 @@ void gint::intg(complex <double> q, complex <double> jac)
 	bstar = pow(pow(bstartilde,2*opts.p) - pow(b0/Q,2*opts.p),1./opts.p); //to be checked !!!
       
       //undo star
-      double blim = blim::sudakov;
       complex <double> b;
       b = sqrt(1./(1./pow(bstar,2)-1./pow(blim,2)));
 
@@ -83,24 +114,27 @@ void gint::intg(complex <double> q, complex <double> jac)
   double B4qbar = B4q + A4q*resint::LQ;
   
   //Truncate alphas at the exact order
-  if (opts.order == 0) res = A1q*as1_1l * ll;
-  if (opts.order == 1) res = (A1q*as1_2l + A2q*as2_2l) * ll + B1qbar * as1_1l;
-  if (opts.order == 2) res = (A1q*as1_3l + A2q*as2_3l + A3q*as3_3l) * ll + B1qbar * as1_2l + B2qbar * as2_2l;
-  if (opts.order == 3) res = (A1q*as1_4l + A2q*as2_4l + A3q*as3_4l + A4q*as4_4l) * ll + B1qbar*as1_3l + B2qbar*as2_3l + B3qbar*as3_3l;
-  if (opts.order == 4) res = (A1q*as1_5l + A2q*as2_5l + A3q*as3_5l + A4q*as4_5l + A5q*as5_5l) * ll + B1qbar*as1_4l + B2qbar*as2_4l + B3qbar*as3_4l + B4qbar*as4_4l;
+  if (opts.order_sudak == 0) res = A1q*as1_1l * ll;
+  if (opts.order_sudak == 1) res = (A1q*as1_2l + A2q*as2_2l) * ll + B1qbar * as1_1l;
+  if (opts.order_sudak == 2) res = (A1q*as1_3l + A2q*as2_3l + A3q*as3_3l) * ll + B1qbar * as1_2l + B2qbar * as2_2l;
+  if (opts.order_sudak == 3) res = (A1q*as1_4l + A2q*as2_4l + A3q*as3_4l + A4q*as4_4l) * ll + B1qbar*as1_3l + B2qbar*as2_3l + B3qbar*as3_3l;
+  if (opts.order_sudak == 4) res = (A1q*as1_5l + A2q*as2_5l + A3q*as3_5l + A4q*as4_5l + A5q*as5_5l) * ll + B1qbar*as1_4l + B2qbar*as2_4l + B3qbar*as3_4l + B4qbar*as4_4l;
 
   //Truncate alphas approximately
-  //if (opts.order == 0) res = A1q*asLO * ll;
-  //if (opts.order == 1) res = (A1q*asNLO + A2q*pow(asLO,2)) * ll + B1qbar * asLO;
-  //if (opts.order == 2) res = (A1q*asNNLO + A2q*pow(asNLO,2) + A3q*pow(asLO,3)) * ll + B1qbar * asNLO + B2qbar * pow(asLO,2);
-  //if (opts.order == 3) res = (A1q*asNNNLO + A2q*pow(asNNLO,2) + A3q*pow(asNLO,3) + A4q*pow(asLO,4)) * ll + B1qbar * asNNLO + B2qbar * pow(asNLO,2) + B3qbar * pow(asLO,3);
+  //if (opts.order_sudak == 0) res = A1q*asLO * ll;
+  //if (opts.order_sudak == 1) res = (A1q*asNLO + A2q*pow(asLO,2)) * ll + B1qbar * asLO;
+  //if (opts.order_sudak == 2) res = (A1q*asNNLO + A2q*pow(asNLO,2) + A3q*pow(asLO,3)) * ll + B1qbar * asNLO + B2qbar * pow(asLO,2);
+  //if (opts.order_sudak == 3) res = (A1q*asNNNLO + A2q*pow(asNNLO,2) + A3q*pow(asNLO,3) + A4q*pow(asLO,4)) * ll + B1qbar * asNNLO + B2qbar * pow(asNLO,2) + B3qbar * pow(asLO,3);
 
   //Do not truncate alphas
-  //if (opts.order == 0) res = A1q*as * ll;
-  //if (opts.order == 1) res = (A1q*as + A2q*pow(as,2)) * ll + B1qbar * as;
-  //if (opts.order == 2) res = (A1q*as + A2q*pow(as,2) + A3q*pow(as,3)) * ll + B1qbar * as + B2qbar * pow(as,2);
-  //if (opts.order == 3) res = (A1q*as + A2q*pow(as,2) + A3q*pow(as,3) + A4q*pow(as,4)) * ll + B1qbar * as + B2qbar * pow(as,2) + B3qbar * pow(as,3);
-
+  if (opts.asrgkt)
+    {
+      if (opts.order_sudak == 0) res = A1q*as * ll;
+      if (opts.order_sudak == 1) res = (A1q*as + A2q*pow(as,2)) * ll + B1qbar * as;
+      if (opts.order_sudak == 2) res = (A1q*as + A2q*pow(as,2) + A3q*pow(as,3)) * ll + B1qbar * as + B2qbar * pow(as,2);
+      if (opts.order_sudak == 3) res = (A1q*as + A2q*pow(as,2) + A3q*pow(as,3) + A4q*pow(as,4)) * ll + B1qbar * as + B2qbar * pow(as,2) + B3qbar * pow(as,3);
+      if (opts.order_sudak == 4) res = (A1q*as + A2q*pow(as,2) + A3q*pow(as,3) + A4q*pow(as,4) + A5q*pow(as,5)) * ll + B1qbar*as + B2qbar*pow(as,2) + B3qbar*pow(as,3) + B4qbar*pow(as,4);
+    }
 
   res *= 2./qq*jac;
   //res *= 1./pow(qq,2)*jac;
@@ -109,40 +143,9 @@ void gint::intg(complex <double> q, complex <double> jac)
 }
 
 
-void gint::allocate()
-{
-  //allocate memory
-  alogqq   = new complex <double> [mellinint::mdim*2];
-  alogqg   = new complex <double> [mellinint::mdim*2];
-  alogqqb  = new complex <double> [mellinint::mdim*2];
-  alogqqp  = new complex <double> [mellinint::mdim*2];
-  alogqqbp = new complex <double> [mellinint::mdim*2];
-}
-void gint::reset()
-{
-  logS = 0;
-  logasl = 0;
-  fill(alogqq  , alogqq+mellinint::mdim*2, 0);
-  fill(alogqg  , alogqg+mellinint::mdim*2, 0);
-  fill(alogqqb , alogqqb+mellinint::mdim*2, 0);
-  fill(alogqqp , alogqqp+mellinint::mdim*2, 0);
-  fill(alogqqbp, alogqqbp+mellinint::mdim*2, 0);
-}
-void gint::free()
-{
-  delete[] alogqq;
-  delete[] alogqg;
-  delete[] alogqqb;
-  delete[] alogqqp;
-  delete[] alogqqbp;
-}
-
 //void gint::intbeta(double q, double jac)
-void gint::intbeta(complex <double> q, complex <double> jac)
+void gint::intbeta(complex <double> q, complex <double> jac, double blim)
 {
-  //There is a problem in this routine, when b is not on the real axis (minimal prescription),
-  //because the positive and negative branches of alogqg, etc... are identical (they should be different when b is complex
-  
   //Compute: dq^2/q^2 beta(as(q^2)) (Eq.103,105 of https://arxiv.org/pdf/hep-ph/0508068.pdf)
   alphas::calc(q, opts.order+1);
   
@@ -163,7 +166,6 @@ void gint::intbeta(complex <double> q, complex <double> jac)
 	bstar = pow(pow(bstartilde,2*opts.p) - pow(b0/Q,2*opts.p),1./opts.p); //to be checked !!!
       
       //undo star
-      double blim = blim::sudakov;
       complex <double> b;
       b = sqrt(1./(1./pow(bstar,2)-1./pow(blim,2)));
 
@@ -183,13 +185,31 @@ void gint::intbeta(complex <double> q, complex <double> jac)
   
   //Truncate alphas at the exact order
   complex <double> fac = 2./qq*jac;
-  if (opts.order == 1) logasl -= fac*(beta0*as1_1l);
-  if (opts.order == 2) logasl -= fac*(beta0*as1_2l + beta1*as2_2l);
-  if (opts.order == 3) logasl -= fac*(beta0*as1_3l + beta1*as2_3l + beta2*as3_3l);
-  if (opts.order == 4) logasl -= fac*(beta0*as1_4l + beta1*as2_4l + beta2*as3_4l + beta3*as4_4l);
+  if (!opts.asrgkt)
+    {
+      if (opts.order == 1) logasl -= fac*(beta0*as1_1l);
+      if (opts.order == 2) logasl -= fac*(beta0*as1_2l + beta1*as2_2l);
+      if (opts.order == 3) logasl -= fac*(beta0*as1_3l + beta1*as2_3l + beta2*as3_3l);
+      if (opts.order == 4) logasl -= fac*(beta0*as1_4l + beta1*as2_4l + beta2*as3_4l + beta3*as4_4l);
+    }
 
+  //do not truncate alphas
+  if (opts.asrgkt)
+    {
+      if (opts.order == 1) logasl -= fac*(beta0*as);
+      if (opts.order == 2) logasl -= fac*(beta0*as + beta1*pow(as,2));
+      if (opts.order == 3) logasl -= fac*(beta0*as + beta1*pow(as,2) + beta2*pow(as,3));
+      if (opts.order == 4) logasl -= fac*(beta0*as + beta1*pow(as,2) + beta2*pow(as,3) + beta3*pow(as,4));
+    }
+  
   if (opts.expc == 0)
     return;
+}  
+
+void gint::intexpc(complex <double> q, complex <double> jac, double blim)
+{
+  //There is a problem in this routine, when b is not on the real axis (minimal prescription),
+  //because the positive and negative branches of alogqg, etc... are identical (they should be different when b is complex
   
   //Compute: dq^2/q^2 beta(as(q^2)) dln(C~)/dln(as(q^2)) (Eq.105 of https://arxiv.org/pdf/hep-ph/0508068.pdf)
   //beta(as) dln(C)/dln(as) = beta(as) * as * C'/C = (b0*as+b1*as^2+b2*as^3)*as*(C1+2*as*C2+3*as^2*C3)/(delta_qa+as*C1+as^2*C2+as^3*C3)
@@ -197,18 +217,53 @@ void gint::intbeta(complex <double> q, complex <double> jac)
   // ~ +as^2*b0*C1
   //   +as^3*(b1*C1+b0*(2*C2-C1^2)
   //   +as^4*(b2*C1+b1*(2*C2-C1^2)+b0*(3*C3-3*C1*C2+C1^3))
-
+  
   if (!opts.mellin1d)
     {
-      cout << "Error, gint is not implemented for mellin2d" << endl;
+      cout << "Error, gint::intexpc is not implemented for mellin2d" << endl;
       exit(0);
     }
+
+  alphas::calc(q, opts.order+1);
+  
+  //local bstar
+  complex <double> qq;
+  if (opts.bprescription == 4)
+    {
+      complex <double> bstartilde = b0/q;
+    
+      //undo tilde
+      double Q = scales::res;
+      complex <double> bstar;
+      if (opts.modlog)
+	bstar = sqrt(bstartilde*bstartilde - pow(b0/Q,2));
+      else
+	bstar = bstartilde;  //normal sudakov
+      
+      //undo star
+      complex <double> b;
+      b = sqrt(1./(1./pow(bstar,2)-1./pow(blim,2)));
+
+      //recompute tilde
+      complex <double> btilde;
+      if (opts.modlog)
+	btilde = sqrt(pow(b,2) + pow(b0/Q,2)); //modified sudakov
+      else
+	btilde = b;  //normal sudakov
+
+      qq = b0/btilde;
+    }
+  else
+    qq = q;
+  
+  //Truncate alphas at the exact order
+  complex <double> fac = 2./qq*jac;
   
   for (int sign = mesq::positive; sign <= mesq::negative; sign++)
     for (int i = 0; i < mellinint::mdim; i++)
       {
 	int idx = anomalous::index(i,sign);
-	if (opts.order == 2)
+	if (opts.order_expc == 2)
 	  {
 	    if (opts.expc == 1)
 		alogqq[idx]   += fac*(as2_2l*beta0*ccoeff::C1qq_delta);
@@ -233,7 +288,7 @@ void gint::intbeta(complex <double> q, complex <double> jac)
 		alogqqbp[idx] += fac*(as2_2l*beta0*ccoeff::C3qqbp[idx]/ccoeff::C2qqbp[idx]/(1.+as1_1l*ccoeff::C3qqbp[idx]/ccoeff::C2qqbp[idx]));
 	      }
 	  }
-	if (opts.order == 3)
+	if (opts.order_expc == 3)
 	  {
 	    if (opts.expc == 1)
 		alogqq[idx] += fac*(
@@ -374,7 +429,7 @@ void gint::intbeta(complex <double> q, complex <double> jac)
 				     );
 	      }
 	  }
-	if (opts.order == 4)
+	if (opts.order_expc == 4)
 	  {
 	    if (opts.expc == 1)
 		alogqq[idx] += fac*(
@@ -475,21 +530,10 @@ void gint::intbeta(complex <double> q, complex <double> jac)
       }
 }
 
-complex <double> gint::calc(complex <double> b)
+complex <double> btoqmin(complex <double> b, double blim, bool isbstar)
 {
-  //cout << "gint: b = " << b << endl;
-  //Compute: - int _[(b0/b)^2] ^ [Q^2] dq^2/q^2 A(as(q^2)) * log(M^2/q^2) + Btilde (as(q^2)) (Eq.19 of https://arxiv.org/pdf/hep-ph/0508068.pdf)
-
-  //In the global bstar prescription it is:
-  //- int _[(b0/b*(b))^2] ^ [Q^2] dq^2/q^2 A(as(q^2)) * log(M^2/q^2) + Btilde (as(q^2))
-  
-  //In the local bstar prescription it is:
-  //- int _[(b0/b*(b))^2] ^ [Q^2] dq^2/q^2 A(as(q^2)) * log(M^2/q^2) + Btilde (as(q^2))
-
-  double blim = blim::sudakov;
   complex <double> bstar;
-  if (opts.bprescription == 0 || opts.bprescription == 4 || opts.bstar_sudakov)
-  //if (opts.bprescription == 0 || opts.bstar_sudakov) -> fix for local bstar
+  if (opts.bprescription == 0 || opts.bprescription == 4 || isbstar)
     bstar = real(b)/sqrt(1.+pow(real(b)/blim,2));
   else
     bstar = b;
@@ -501,7 +545,7 @@ complex <double> gint::calc(complex <double> b)
   else
     bstartilde = bstar;  //normal sudakov
 
-
+  /*
   complex <double> mubstar = resconst::b0/bstar;
   complex <double> mubstartilde;
   if (opts.modlog)
@@ -512,31 +556,118 @@ complex <double> gint::calc(complex <double> b)
 
   //also could write
   //double mubstartilde = resconst::b0/bstartilde;
+  */
   
-  int rule = 200;
+  return b0/bstartilde;
+}
 
-  // boundaries of integration
-  //double xmax = pow(resint::mures,2);
-  //double xmin = pow(b0/real(bstartilde),2); //should consider complex values for the minimal prescription
+void gint::calc(complex <double> b)
+{
+  //cout << "gint: b = " << b << endl;
+  //Compute: - int _[(b0/b)^2] ^ [Q^2] dq^2/q^2 A(as(q^2)) * log(M^2/q^2) + Btilde (as(q^2)) (Eq.19 of https://arxiv.org/pdf/hep-ph/0508068.pdf)
 
-  double qmax = scales::res;
-  //allow complex values for the minimal prescription
-  complex <double> qmin = b0/bstartilde;
-
-  complex <double> cq = (qmax+qmin)/2.;
-  complex <double> mq = (qmax-qmin)/2.;
-  //cout << "qmin " << sqrt(qmin) << "  " << " qmax " << sqrt(qmax) << endl;
+  //In the global bstar prescription it is:
+  //- int _[(b0/b*(b))^2] ^ [Q^2] dq^2/q^2 A(as(q^2)) * log(M^2/q^2) + Btilde (as(q^2))
   
+  //In the local bstar prescription it is:
+  //- int _[(b0/b*(b))^2] ^ [Q^2] dq^2/q^2 A(as(q^2)) * log(M^2/q^2) + Btilde (as(q^2))
+
   reset();
-  for (int i = 0; i < rule; i++)
+
+  int rule = 100;
+
+  // boundaries of integration (allow complex values for the minimal prescription)
+  complex <double> qmax,qmin,cq,mq;
+  if (opts.bprescription == 2)
+    qmax = scales::res+complex <double>(0.,1.)*imag(qmin);
+  else
+    qmax = scales::res;
+
+  if (opts.numsud)
     {
-      complex <double> q = cq+mq*gr::xxx[rule-1][i];
-      complex <double> jac = mq * gr::www[rule-1][i];
-      intg(q, jac);
-      //intbeta(real(q), real(jac));
-      intbeta(q, jac);
+      qmin = btoqmin(b, blim::sudakov, opts.bstar_sudakov);
+      cq = (qmax+qmin)/2.;
+      mq = (qmax-qmin)/2.;
+      for (int i = 0; i < rule; i++)
+	{
+	  complex <double> q = cq+mq*gr::xxx[rule-1][i];
+	  complex <double> jac = mq * gr::www[rule-1][i];
+	  intg(q, jac, blim::sudakov);
+	}
+
+      qmin = btoqmin(b, blim::pdf, opts.bstar_pdf);
+      cq = (qmax+qmin)/2.;
+      mq = (qmax-qmin)/2.;
+      for (int i = 0; i < rule; i++)
+	{
+	  complex <double> q = cq+mq*gr::xxx[rule-1][i];
+	  complex <double> jac = mq * gr::www[rule-1][i];
+	  intbeta(q, jac, blim::pdf);
+	}
+      logasl_pdf += logasl;
+      logasl = 0.;
+    }
+  
+  if (opts.numexpc)
+    {
+      qmin = btoqmin(b, blim::expc, opts.bstar_expc);
+      cq = (qmax+qmin)/2.;
+      mq = (qmax-qmin)/2.;
+      for (int i = 0; i < rule; i++)
+	{
+	  complex <double> q = cq+mq*gr::xxx[rule-1][i];
+	  complex <double> jac = mq * gr::www[rule-1][i];
+	  intbeta(q, jac, blim::expc);
+	  intexpc(q, jac, blim::expc);
+	}
+      logasl_expc += logasl;
+      logasl = 0.;
     }
 
+  //now the integration among the vertical line
+  if (opts.bprescription == 2)
+    {
+      qmin = qmax;
+      qmax = scales::res;      
+
+      if (opts.numsud)
+	{
+	  cq = (qmax+qmin)/2.;
+	  mq = (qmax-qmin)/2.;
+	  for (int i = 0; i < rule; i++)
+	    {
+	      complex <double> q = cq+mq*gr::xxx[rule-1][i];
+	      complex <double> jac = mq * gr::www[rule-1][i];
+	      intg(q, jac, blim::sudakov);
+	    }
+	  cq = (qmax+qmin)/2.;
+	  mq = (qmax-qmin)/2.;
+	  for (int i = 0; i < rule; i++)
+	    {
+	      complex <double> q = cq+mq*gr::xxx[rule-1][i];
+	      complex <double> jac = mq * gr::www[rule-1][i];
+	      intbeta(q, jac, blim::pdf);
+	    }
+	  logasl_pdf += logasl;
+	  logasl = 0.;
+	}
+      if (opts.numexpc)
+	{
+	  cq = (qmax+qmin)/2.;
+	  mq = (qmax-qmin)/2.;
+	  for (int i = 0; i < rule; i++)
+	    {
+	      complex <double> q = cq+mq*gr::xxx[rule-1][i];
+	      complex <double> jac = mq * gr::www[rule-1][i];
+	      intbeta(q, jac, blim::expc);
+	      intexpc(q, jac, blim::expc);
+	    }
+	  logasl_expc += logasl;
+	  logasl = 0.;
+	}
+    }
+
+  
   //cout << qmin << " " << logasl << " int(beta) " << endl;
   //cout << qmin << " " << alogqq[0] << " gint::alogqq " << endl;
   //cout << qmin << " " << alogqg[0] << " gint::alogqg " << endl;
@@ -554,6 +685,4 @@ complex <double> gint::calc(complex <double> b)
   qmax = Q;
   qmin = mub;
   */
-  
-  return logS;
-}
+}  

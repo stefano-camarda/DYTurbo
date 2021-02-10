@@ -44,7 +44,8 @@ namespace hcoeff
   extern complex <double> *Hqbpg;
   extern complex <double> *Hqbpg_1;
   extern complex <double> *Hqbpg_2;
-#pragma omp threadprivate(Hqqb,Hqg,Hqg_1,Hqg_2,Hqq,Hqq_1,Hqq_2,Hqqp,Hqqp_1,Hqqp_2,Hqqbp,Hqqbp_1,Hqqbp_2,Hgg,Hqbg,Hqbg_1,Hqbg_2,Hqpg,Hqpg_1,Hqpg_2,Hqbpg,Hqbpg_1,Hqbpg_2)
+  extern complex <double> Hqqb_nfz;
+#pragma omp threadprivate(Hqqb,Hqg,Hqg_1,Hqg_2,Hqq,Hqq_1,Hqq_2,Hqqp,Hqqp_1,Hqqp_2,Hqqbp,Hqqbp_1,Hqqbp_2,Hgg,Hqbg,Hqbg_1,Hqbg_2,Hqpg,Hqpg_1,Hqpg_2,Hqbpg,Hqbpg_1,Hqbpg_2,Hqqb_nfz)
   
 //  extern complex <double> *H1stqqb;
 //  extern complex <double> *H1stqg;

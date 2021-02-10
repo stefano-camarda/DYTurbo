@@ -16,6 +16,7 @@ namespace ccoeff
   extern double C1qq_delta;
   extern double C2qq_delta;
   extern double C3qq_delta;
+  extern double C3qq_delta_NFV;
 
   extern complex <double> *C1qg;
   extern complex <double> *C1qq;

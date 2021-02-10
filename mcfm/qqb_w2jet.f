@@ -45,40 +45,40 @@ c--- all momenta are incoming
 c--- we label the amplitudes by helicity (qqb1 ... qqb4)
 c--- and by type of contribution qqb(1) ... qqb(n)
       integer i,j,k,n1,n2
-      logical first
-      data first/.true./
-      save first
+!      logical first
+!      data first/.true./
+!      save first
 
       double complex bosprop
       external bosprop
       
-      if (first) then
-      first=.false.
-        if (Gflag) then
-          write(*,*) 'Using QQGG matrix elements'
-          write(*,*) '[LC is   N ]'
-          write(*,*) '[SLC is 1/N]'
-        endif
-        if (Qflag) then
-          write(*,*) 'Using QQBQQB matrix elements'
-          write(*,*) '[LC is   1 ]'
-          write(*,*) '[SLC is 1/N]'
-        endif
-        if (part .eq. 'lord') then
-          if     (colourchoice .eq. 1) then
-            write(*,*) 'Leading colour only'
-          elseif (colourchoice .eq. 2) then
-            write(*,*) 'Sub-leading colour only'
-          elseif (colourchoice .eq. 0) then
-            write(*,*) 'Total of both colour structures'
-          else
-            write(*,*) 'Bad colourchoice'
-            stop
-          endif
-        else
-          write(*,*) 'Calculating all colour structures in LO'
-        endif
-      endif
+!      if (first) then
+!      first=.false.
+!        if (Gflag) then
+!          write(*,*) 'Using QQGG matrix elements'
+!          write(*,*) '[LC is   N ]'
+!          write(*,*) '[SLC is 1/N]'
+!        endif
+!        if (Qflag) then
+!          write(*,*) 'Using QQBQQB matrix elements'
+!          write(*,*) '[LC is   1 ]'
+!          write(*,*) '[SLC is 1/N]'
+!        endif
+!        if (part .eq. 'lord') then
+!          if     (colourchoice .eq. 1) then
+!            write(*,*) 'Leading colour only'
+!          elseif (colourchoice .eq. 2) then
+!            write(*,*) 'Sub-leading colour only'
+!          elseif (colourchoice .eq. 0) then
+!            write(*,*) 'Total of both colour structures'
+!          else
+!            write(*,*) 'Bad colourchoice'
+!            stop
+!          endif
+!        else
+!          write(*,*) 'Calculating all colour structures in LO'
+!        endif
+!      endif
 
 c--- if we're calculating the REAL or VIRT matrix elements, we
 c--- need all the colour structures, but want to preserve

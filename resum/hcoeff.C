@@ -43,6 +43,7 @@ complex <double> *hcoeff::Hqpg_2;
 complex <double> *hcoeff::Hqbpg;
 complex <double> *hcoeff::Hqbpg_1;
 complex <double> *hcoeff::Hqbpg_2;
+complex <double> hcoeff::Hqqb_nfz;
 
 
 //complex <double> hcoeff::H1stgg;
@@ -74,8 +75,8 @@ using namespace parton;
 //allocate memory
 void hcoeff::allocate()
 {
-  if (opts.order == 0)
-    return;
+  //if (opts.order == 0)
+  //return;
 
   if (opts.mellin1d)
     {
@@ -127,8 +128,8 @@ void hcoeff::allocate()
 
 void hcoeff::free()
 {
-  if (opts.order == 0)
-    return;
+  //if (opts.order == 0)
+  //return;
 
   if (opts.mellin1d)
     {
@@ -165,8 +166,8 @@ void hcoeff::free()
 
 void hcoeff::reset()
 {
-  if (opts.order == 0)
-    return;
+  //if (opts.order == 0)
+  //return;
 
   if (opts.mellin1d)
     {
@@ -199,12 +200,13 @@ void hcoeff::reset()
       fill(Hqbpg_1,Hqbpg_1 + mellinint::mdim*mellinint::mdim*2, 0.);
       fill(Hqbpg_2,Hqbpg_2 + mellinint::mdim*mellinint::mdim*2, 0.);
     }
+  Hqqb_nfz = 0.;
 }
 
 void hcoeff::calc()
 {
-  if (opts.order == 0)
-    return;
+  //if (opts.order == 0)
+  //return;
 
   /**************************************************/
   //LO
@@ -213,7 +215,7 @@ void hcoeff::calc()
   else 
     fill(Hqqb, Hqqb+mellinint::mdim*mellinint::mdim*2, 1.);
   
-  if (opts.order == 0)
+  if (opts.order_hcoef == 0)
     return;
   /**************************************************/
 
@@ -264,7 +266,8 @@ void hcoeff::calc()
 	H1st_qqb += -B1q*LQ -A1q/2.*pow(LQ,2);
 
 	//Factorization scale variations
-	if (!opts.mufevol)
+	//if (!opts.mufevol)
+	if (!opts.mufvar)
 	  {
 	    H1st_qqb += 2.*pmom::gamma1qq[idx]*LQF;
 	    H1st_qg  += pmom::gamma1qg[idx]*LQF;
@@ -277,7 +280,7 @@ void hcoeff::calc()
 	Hqqb[i] += as*H1st_qqb;
 	Hqg[i]  += as*H1st_qg;
 
-	if (opts.order == 1)
+	if (opts.order_hcoef == 1)
 	  continue;
 
 	//NNLO
@@ -297,7 +300,8 @@ void hcoeff::calc()
 	H2st_qg  += -beta0*H1st_qg*LR;
 
 	//Factorization scale variations
-	if (!opts.mufevol)
+	//if (!opts.mufevol)
+	if (!opts.mufvar)
 	  {
 	    H2st_qqb  += LQF*(2.*C1qg[idx]*pmom::gamma1gq[idx] + 2.*pmom::gamma2qq[idx] + pmom::gamma1gq[idx]*pmom::gamma1qg[idx]*LQF + pmom::gamma1qq[idx]*(4.*C1qq[idx] + 2.*pmom::gamma1qq[idx]*LF - 2.*(B1q + pmom::gamma1qq[idx])*LQ - A1q*LQ2 + beta0*(LF + LQ)));
 	    H2st_qq   += ((2.*C1qg[idx]*pmom::gamma1gq[idx] + 2.*pmom::gamma2qqb[idx] + pmom::gamma1gq[idx]*pmom::gamma1qg[idx]*LQF)*LQF)/2.;
@@ -323,7 +327,7 @@ void hcoeff::calc()
 	Hqqbp[i] += as2*H2st_qqbp;
 	Hgg[i]   += as2*H2st_gg;
 
-	if (opts.order == 2)
+	if (opts.order_hcoef == 2)
 	  continue;
 
 	//NNNLO
@@ -336,6 +340,7 @@ void hcoeff::calc()
 	complex <double> H3st_qbg  = (C2qqb[idx]*C1qg[idx]);
 	complex <double> H3st_qpg  = (C2qqp[idx]*C1qg[idx]);
 	complex <double> H3st_qbpg = (C2qqbp[idx]*C1qg[idx]);
+	complex <double> H3st_qqb_nfz  = 2.*C3qq_delta_NFV;
 
 	//Resummation scale variations
 	H3st_qqb += (-B3q*LQ + (-A3q/2. + B1q*B2q - B2q*beta0 - B1q*beta1/2.)*LQ2
@@ -366,7 +371,8 @@ void hcoeff::calc()
 	H3st_gg   += -2*beta0*H2st_gg*LR;
 
 	//Factorization scale variations
-	if (!opts.mufevol)
+	//if (!opts.mufevol)
+	if (!opts.mufvar)
 	  {
 	    double nf = 5.;
 	    H3st_qqb  += 2.*pow(C1qq[idx],2)*pmom::gamma1qq[idx]*LF + 4.*C2qq[idx]*pmom::gamma1qq[idx]*LF + 4.*C1qq[idx]*pmom::gamma2qq[idx]*LF + 2.*pmom::gamma3qq[idx]*LF + 2.*C1qq[idx]*pmom::gamma1gq[idx]*pmom::gamma1qg[idx]*LF2 + beta1*pmom::gamma1qq[idx]*LF2 + 2.*beta0*C1qq[idx]*pmom::gamma1qq[idx]*LF2 + 4.*C1qq[idx]*pow(pmom::gamma1qq[idx],2)*LF2 + 2.*pmom::gamma1qg[idx]*pmom::gamma2gq[idx]*LF2 + 2.*beta0*pmom::gamma2qq[idx]*LF2 + 4.*pmom::gamma1qq[idx]*pmom::gamma2qq[idx]*LF2 + beta0*pmom::gamma1gq[idx]*pmom::gamma1qg[idx]*LF3 + (pmom::gamma1gg[idx]*pmom::gamma1gq[idx]*pmom::gamma1qg[idx]*LF3)/3. + (2.*pow(beta0,2)*pmom::gamma1qq[idx]*LF3)/3. + (5.*pmom::gamma1gq[idx]*pmom::gamma1qg[idx]*pmom::gamma1qq[idx]*LF3)/3. + 2.*beta0*pow(pmom::gamma1qq[idx],2)*LF3 + (4.*pow(pmom::gamma1qq[idx],3)*LF3)/3. + 2.*C2qg[idx]*pmom::gamma1gq[idx]*LQF - 2.*pow(C1qq[idx],2)*pmom::gamma1qq[idx]*LQ - 4.*C2qq[idx]*pmom::gamma1qq[idx]*LQ - 4.*C1qq[idx]*pmom::gamma2qq[idx]*LQ - 2.*pmom::gamma3qq[idx]*LQ - 4.*C1qq[idx]*pmom::gamma1gq[idx]*pmom::gamma1qg[idx]*LF*LQ - 2.*B2q*pmom::gamma1qq[idx]*LF*LQ - 4.*B1q*C1qq[idx]*pmom::gamma1qq[idx]*LF*LQ + 4.*beta0*C1qq[idx]*pmom::gamma1qq[idx]*LF*LQ - 8.*C1qq[idx]*pow(pmom::gamma1qq[idx],2)*LF*LQ - 2.*pmom::gamma1qg[idx]*pmom::gamma2gq[idx]*LF*LQ - 2.*pmom::gamma1gq[idx]*pmom::gamma2qg[idx]*LF*LQ - 2.*B1q*pmom::gamma2qq[idx]*LF*LQ - 8.*pmom::gamma1qq[idx]*pmom::gamma2qq[idx]*LF*LQ - B1q*pmom::gamma1gq[idx]*pmom::gamma1qg[idx]*LF2*LQ - beta0*pmom::gamma1gq[idx]*pmom::gamma1qg[idx]*LF2*LQ - pmom::gamma1gg[idx]*pmom::gamma1gq[idx]*pmom::gamma1qg[idx]*LF2*LQ - B1q*beta0*pmom::gamma1qq[idx]*LF2*LQ - 5.*pmom::gamma1gq[idx]*pmom::gamma1qg[idx]*pmom::gamma1qq[idx]*LF2*LQ - 2.*B1q*pow(pmom::gamma1qq[idx],2)*LF2*LQ - 2.*beta0*pow(pmom::gamma1qq[idx],2)*LF2*LQ - 4.*pow(pmom::gamma1qq[idx],3)*LF2*LQ + 2.*C1qq[idx]*pmom::gamma1gq[idx]*pmom::gamma1qg[idx]*LQ2 + 2.*B2q*pmom::gamma1qq[idx]*LQ2 - beta1*pmom::gamma1qq[idx]*LQ2 + 4.*B1q*C1qq[idx]*pmom::gamma1qq[idx]*LQ2 - 6.*beta0*C1qq[idx]*pmom::gamma1qq[idx]*LQ2 + 4.*C1qq[idx]*pow(pmom::gamma1qq[idx],2)*LQ2 + 2.*pmom::gamma1qg[idx]*pmom::gamma2gq[idx]*LQ2 + 2.*B1q*pmom::gamma2qq[idx]*LQ2 - 2.*beta0*pmom::gamma2qq[idx]*LQ2 + 4.*pmom::gamma1qq[idx]*pmom::gamma2qq[idx]*LQ2 + 2.*B1q*pmom::gamma1gq[idx]*pmom::gamma1qg[idx]*LF*LQ2 - beta0*pmom::gamma1gq[idx]*pmom::gamma1qg[idx]*LF*LQ2 + pmom::gamma1gg[idx]*pmom::gamma1gq[idx]*pmom::gamma1qg[idx]*LF*LQ2 - A2q*pmom::gamma1qq[idx]*LF*LQ2 + pow(B1q,2)*pmom::gamma1qq[idx]*LF*LQ2 - B1q*beta0*pmom::gamma1qq[idx]*LF*LQ2 - 2.*A1q*C1qq[idx]*pmom::gamma1qq[idx]*LF*LQ2 + 5.*pmom::gamma1gq[idx]*pmom::gamma1qg[idx]*pmom::gamma1qq[idx]*LF*LQ2 + 4.*B1q*pow(pmom::gamma1qq[idx],2)*LF*LQ2 - 2.*beta0*pow(pmom::gamma1qq[idx],2)*LF*LQ2 + 4.*pow(pmom::gamma1qq[idx],3)*LF*LQ2 - A1q*pmom::gamma2qq[idx]*LF*LQ2 - (A1q*pmom::gamma1gq[idx]*pmom::gamma1qg[idx]*LF2*LQ2)/2. - (A1q*beta0*pmom::gamma1qq[idx]*LF2*LQ2)/2. - A1q*pow(pmom::gamma1qq[idx],2)*LF2*LQ2 - B1q*pmom::gamma1gq[idx]*pmom::gamma1qg[idx]*LQ3 + beta0*pmom::gamma1gq[idx]*pmom::gamma1qg[idx]*LQ3 - (pmom::gamma1gg[idx]*pmom::gamma1gq[idx]*pmom::gamma1qg[idx]*LQ3)/3. + A2q*pmom::gamma1qq[idx]*LQ3 - pow(B1q,2)*pmom::gamma1qq[idx]*LQ3 + 2.*B1q*beta0*pmom::gamma1qq[idx]*LQ3 - (2.*pow(beta0,2)*pmom::gamma1qq[idx]*LQ3)/3. + 2.*A1q*C1qq[idx]*pmom::gamma1qq[idx]*LQ3 - (5.*pmom::gamma1gq[idx]*pmom::gamma1qg[idx]*pmom::gamma1qq[idx]*LQ3)/3. - 2.*B1q*pow(pmom::gamma1qq[idx],2)*LQ3 + 2.*beta0*pow(pmom::gamma1qq[idx],2)*LQ3 - (4.*pow(pmom::gamma1qq[idx],3)*LQ3)/3. + A1q*pmom::gamma2qq[idx]*LQ3 + A1q*pmom::gamma1gq[idx]*pmom::gamma1qg[idx]*LF*LQ3 + A1q*B1q*pmom::gamma1qq[idx]*LF*LQ3 - (2.*A1q*beta0*pmom::gamma1qq[idx]*LF*LQ3)/3. + 2.*A1q*pow(pmom::gamma1qq[idx],2)*LF*LQ3 - (A1q*pmom::gamma1gq[idx]*pmom::gamma1qg[idx]*LQ4)/2. - A1q*B1q*pmom::gamma1qq[idx]*LQ4 + (7.*A1q*beta0*pmom::gamma1qq[idx]*LQ4)/6. - A1q*pow(pmom::gamma1qq[idx],2)*LQ4 + (pow(A1q,2)*pmom::gamma1qq[idx]*LF*LQ4)/4. - (pow(A1q,2)*pmom::gamma1qq[idx]*LQ5)/4. + C1qg[idx]*LQF*(2.*C1qq[idx]*pmom::gamma1gq[idx] + 2.*pmom::gamma2gq[idx] + pmom::gamma1gq[idx]*(beta0*LF + pmom::gamma1gg[idx]*LF + 3.*pmom::gamma1qq[idx]*LF - 2.*B1q*LQ + 3.*beta0*LQ - pmom::gamma1gg[idx]*LQ - 3.*pmom::gamma1qq[idx]*LQ - A1q*LQ2));
@@ -401,7 +407,7 @@ void hcoeff::calc()
 	Hqbg[i]  += as3*H3st_qbg;
 	Hqpg[i]  += as3*H3st_qpg;
 	Hqbpg[i] += as3*H3st_qbpg;
-
+	Hqqb_nfz += as3*H3st_qqb_nfz;
       }
   else
     //rapidity dependent
@@ -421,7 +427,8 @@ void hcoeff::calc()
 	    H1st_qqb += (-B1q*LQ -A1q/2.*LQ2);
 
 	    //Factorization scale variations
-	    if (!opts.mufevol)
+	    //if (!opts.mufevol)
+	    if (!opts.mufvar)
 	      {
 		H1st_qqb += (pmom::gamma1qq_1[ii1] + pmom::gamma1qq_2[ii2])*LQF ;
 		H1st_qg_1  += pmom::gamma1qg_1[ii1]*LQF;
@@ -433,7 +440,7 @@ void hcoeff::calc()
 	    Hqg_1[idx]  += as*H1st_qg_1;
 	    Hqg_2[idx]  += as*H1st_qg_2;
 	    
-	    if (opts.order == 1)
+	    if (opts.order_hcoef == 1)
 	      continue;
 	    
 	    //NNLO
@@ -460,7 +467,8 @@ void hcoeff::calc()
 	    H2st_qg_2 += - beta0*H1st_qg_2*LR;
 
 	    //Factorization scale variations
-	    if (!opts.mufevol)
+	    //if (!opts.mufevol)
+	    if (!opts.mufvar)
 	      {
 		H2st_qqb += LQF*(C1qg_1[ii1]*pmom::gamma1gq_1[ii1] + C1qq_2[ii2]*pmom::gamma1qq_1[ii1] + C1qg_2[ii2]*pmom::gamma1gq_2[ii2] + C1qq_2[ii2]*pmom::gamma1qq_2[ii2] + C1qq_1[ii1]*(pmom::gamma1qq_1[ii1] + pmom::gamma1qq_2[ii2]) + pmom::gamma2qq_1[ii1] + pmom::gamma2qq_2[ii2] + ((pmom::gamma1gq_1[ii1]*pmom::gamma1qg_1[ii1] + pmom::gamma1gq_2[ii2]*pmom::gamma1qg_2[ii2] + (pmom::gamma1qq_1[ii1] + pmom::gamma1qq_2[ii2])*(beta0 + pmom::gamma1qq_1[ii1] + pmom::gamma1qq_2[ii2]))*LQF)/ 2. - ((pmom::gamma1qq_1[ii1] + pmom::gamma1qq_2[ii2])*LQ*(2.*B1q - 2.*beta0 + A1q*LQ))/2.);
 		H2st_qg_1 += (LQF*(2.*C1qg_1[ii1]*(pmom::gamma1qq_2[ii2] + pmom::gamma1gg_1[ii1]) + 2.*pmom::gamma2qg_1[ii1] + pmom::gamma1qg_1[ii1]*(2.*C1qq_2[ii2] + 2.*C1qq_1[ii1] + (beta0 + 2.*pmom::gamma1qq_2[ii2] + pmom::gamma1gg_1[ii1] + pmom::gamma1qq_1[ii1])*LF - (2.*B1q - beta0 + 2.*pmom::gamma1qq_2[ii2] + pmom::gamma1gg_1[ii1] + pmom::gamma1qq_1[ii1])*LQ - A1q*LQ2)))/2.;
@@ -485,7 +493,7 @@ void hcoeff::calc()
 	    Hqqbp_2[idx] += as2*H2st_qqbp_2;
 	    Hgg[idx]     += as2*H2st_gg;
 	    
-	    if (opts.order == 2)
+	    if (opts.order_hcoef == 2)
 	      continue;
 
 	    //NNNLO
@@ -505,6 +513,7 @@ void hcoeff::calc()
 	    complex <double> H3st_qqp_1 = C3qqbp_1[ii1]+ C1qq_2[ii2]*C2qqbp_1[ii1]; // (=C3qqbp_1+ C1qq_2[ii2]*C2qqp_1[ii1])
 	    complex <double> H3st_qqp_2 = C3qqbp_2[ii2]+ C1qq_1[ii1]*C2qqbp_2[ii2]; // (=C3qqbp_2+ C1qq_1[ii1]*C2qqp_2[ii2])
 	    complex <double> H3st_gg  = C1qg_1[ii1]*C2qg_2[ii2] + C1qg_2[ii2]*C2qg_1[ii1];
+	    complex <double> H3st_qqb_nfz  = 2.*C3qq_delta_NFV;
 
 	    //Resummation scale variations
 	    H3st_qqb += (-B3q*LQ + (-A3q/2. + B1q*B2q - B2q*beta0 - B1q*beta1/2.)*LQ2
@@ -552,8 +561,10 @@ void hcoeff::calc()
 	    H3st_gg     += -2*beta0*H2st_gg*LR;
 
 	    //Factorization scale variations
-	    if (!opts.mufevol)
+	    //if (!opts.mufevol)
+	    if (!opts.mufvar)
 	      {
+		// !!! Need to double check this variations, as there is a difference between mellin1d and mellin2d for muF != Q, when expc is > 1
 		double nf = 5.;
 		H3st_qqb += C1qg_2[ii2]*C1qq_1[ii1]*pmom::gamma1gq_2[ii2]*LF + C2qg_2[ii2]*pmom::gamma1gq_2[ii2]*LF + C1qq_2[ii2]*C1qq_1[ii1]*pmom::gamma1qq_2[ii2]*LF + C2qq_2[ii2]*pmom::gamma1qq_2[ii2]*LF + C2qq_1[ii1]*pmom::gamma1qq_2[ii2]*LF + C1qq_2[ii2]*C1qg_1[ii1]*pmom::gamma1gq_1[ii1]*LF + C2qg_1[ii1]*pmom::gamma1gq_1[ii1]*LF + C1qq_2[ii2]*C1qq_1[ii1]*pmom::gamma1qq_1[ii1]*LF + C2qq_2[ii2]*pmom::gamma1qq_1[ii1]*LF + C2qq_1[ii1]*pmom::gamma1qq_1[ii1]*LF + C1qg_1[ii1]*pmom::gamma2gq_1[ii1]*LF + C1qg_2[ii2]*pmom::gamma2gq_2[ii2]*LF + C1qq_2[ii2]*pmom::gamma2qq_2[ii2]*LF + C1qq_1[ii1]*pmom::gamma2qq_2[ii2]*LF + C1qq_2[ii2]*pmom::gamma2qq_1[ii1]*LF + C1qq_1[ii1]*pmom::gamma2qq_1[ii1]*LF + pmom::gamma3qq_2[ii2]*LF + pmom::gamma3qq_1[ii1]*LF + (beta0*C1qg_2[ii2]*pmom::gamma1gq_2[ii2]*LF2)/2. + (C1qg_2[ii2]*pmom::gamma1gg_2[ii2]*pmom::gamma1gq_2[ii2]*LF2)/2. + (C1qq_2[ii2]*pmom::gamma1gq_2[ii2]*pmom::gamma1qg_2[ii2]*LF2)/ 2. + (C1qq_1[ii1]*pmom::gamma1gq_2[ii2]*pmom::gamma1qg_2[ii2]*LF2)/2. + (beta1*pmom::gamma1qq_2[ii2]*LF2)/2. + (beta0*C1qq_2[ii2]*pmom::gamma1qq_2[ii2]*LF2)/2. + (beta0*C1qq_1[ii1]*pmom::gamma1qq_2[ii2]*LF2)/2. + (C1qg_2[ii2]*pmom::gamma1gq_2[ii2]*pmom::gamma1qq_2[ii2]*LF2)/2. + (C1qq_2[ii2]*pow(pmom::gamma1qq_2[ii2],2)*LF2)/2. + (C1qq_1[ii1]*pow(pmom::gamma1qq_2[ii2],2)*LF2)/2. + (beta0*C1qg_1[ii1]*pmom::gamma1gq_1[ii1]*LF2)/2. + C1qg_1[ii1]*pmom::gamma1qq_2[ii2]*pmom::gamma1gq_1[ii1]*LF2 + (C1qq_2[ii2]*pmom::gamma1gq_1[ii1]*pmom::gamma1qg_1[ii1]*LF2)/2. + (beta1*pmom::gamma1qq_1[ii1]*LF2)/2. + (beta0*C1qq_2[ii2]*pmom::gamma1qq_1[ii1]*LF2)/2. + (beta0*C1qq_1[ii1]*pmom::gamma1qq_1[ii1]*LF2)/2. + C1qg_2[ii2]*pmom::gamma1gq_2[ii2]*pmom::gamma1qq_1[ii1]*LF2 + C1qq_2[ii2]*pmom::gamma1qq_2[ii2]*pmom::gamma1qq_1[ii1]*LF2 + C1qq_1[ii1]*pmom::gamma1qq_2[ii2]*pmom::gamma1qq_1[ii1]*LF2 + (C1qq_2[ii2]*pow(pmom::gamma1qq_1[ii1],2)*LF2)/2. + pmom::gamma1qg_2[ii2]*pmom::gamma2gq_2[ii2]*LF2 + beta0*pmom::gamma2qq_2[ii2]*LF2 + pmom::gamma1qq_2[ii2]*pmom::gamma2qq_2[ii2]*LF2 + pmom::gamma1qq_1[ii1]*pmom::gamma2qq_2[ii2]*LF2 + pmom::gamma1qg_1[ii1]*pmom::gamma2gq_1[ii1]*LF2 + beta0*pmom::gamma2qq_1[ii1]*LF2 + pmom::gamma1qq_2[ii2]*pmom::gamma2qq_1[ii1]*LF2 + pmom::gamma1qq_1[ii1]*pmom::gamma2qq_1[ii1]*LF2 + (beta0*pmom::gamma1gq_2[ii2]*pmom::gamma1qg_2[ii2]*LF3)/2. + (pow(beta0,2)*pmom::gamma1qq_2[ii2]*LF3)/3. + (beta0*pow(pmom::gamma1qq_2[ii2],2)*LF3)/2. + (beta0*pmom::gamma1gq_1[ii1]*pmom::gamma1qg_1[ii1]*LF3)/2. + (pmom::gamma1qq_2[ii2]*pmom::gamma1gq_1[ii1]*pmom::gamma1qg_1[ii1]*LF3)/2. + (pow(beta0,2)*pmom::gamma1qq_1[ii1]*LF3)/3. + (pmom::gamma1gq_2[ii2]*pmom::gamma1qg_2[ii2]*pmom::gamma1qq_1[ii1]*LF3)/2. + beta0*pmom::gamma1qq_2[ii2]*pmom::gamma1qq_1[ii1]* LF3 + (pow(pmom::gamma1qq_2[ii2],2)*pmom::gamma1qq_1[ii1]*LF3)/2. + (beta0*pow(pmom::gamma1qq_1[ii1],2)*LF3)/2. + (pmom::gamma1qq_2[ii2]*pow(pmom::gamma1qq_1[ii1],2)*LF3)/2. + ((pmom::gamma1gg_1[ii1]*pmom::gamma1gq_1[ii1]*pmom::gamma1qg_1[ii1] + 2.*pmom::gamma1gq_1[ii1]*pmom::gamma1qg_1[ii1]*pmom::gamma1qq_1[ii1] + pow(pmom::gamma1qq_1[ii1],3))*LF3)/6. + ((pmom::gamma1gg_2[ii2]*pmom::gamma1gq_2[ii2]*pmom::gamma1qg_2[ii2] + 2.*pmom::gamma1gq_2[ii2]*pmom::gamma1qg_2[ii2]*pmom::gamma1qq_2[ii2] + pow(pmom::gamma1qq_2[ii2],3))*LQF3)/6. - C1qg_2[ii2]*C1qq_1[ii1]*pmom::gamma1gq_2[ii2]*LQ - C2qg_2[ii2]*pmom::gamma1gq_2[ii2]*LQ - C1qq_2[ii2]*C1qq_1[ii1]*pmom::gamma1qq_2[ii2]*LQ - C2qq_2[ii2]*pmom::gamma1qq_2[ii2]*LQ - C2qq_1[ii1]*pmom::gamma1qq_2[ii2]*LQ - C1qq_2[ii2]*C1qg_1[ii1]*pmom::gamma1gq_1[ii1]*LQ - C2qg_1[ii1]*pmom::gamma1gq_1[ii1]*LQ - C1qq_2[ii2]*C1qq_1[ii1]*pmom::gamma1qq_1[ii1]*LQ - C2qq_2[ii2]*pmom::gamma1qq_1[ii1]*LQ - C2qq_1[ii1]*pmom::gamma1qq_1[ii1]*LQ - C1qg_1[ii1]*pmom::gamma2gq_1[ii1]*LQ - C1qg_2[ii2]*pmom::gamma2gq_2[ii2]*LQ - C1qq_2[ii2]*pmom::gamma2qq_2[ii2]*LQ - C1qq_1[ii1]*pmom::gamma2qq_2[ii2]*LQ - C1qq_2[ii2]*pmom::gamma2qq_1[ii1]*LQ - C1qq_1[ii1]*pmom::gamma2qq_1[ii1]*LQ - pmom::gamma3qq_2[ii2]*LQ - pmom::gamma3qq_1[ii1]*LQ - B1q*C1qg_2[ii2]*pmom::gamma1gq_2[ii2]*LF*LQ + beta0*C1qg_2[ii2]*pmom::gamma1gq_2[ii2]*LF*LQ - C1qg_2[ii2]*pmom::gamma1gg_2[ii2]*pmom::gamma1gq_2[ii2]*LF*LQ - C1qq_2[ii2]*pmom::gamma1gq_2[ii2]*pmom::gamma1qg_2[ii2]*LF*LQ - C1qq_1[ii1]*pmom::gamma1gq_2[ii2]*pmom::gamma1qg_2[ii2]*LF*LQ - B2q*pmom::gamma1qq_2[ii2]*LF*LQ - B1q*C1qq_2[ii2]*pmom::gamma1qq_2[ii2]*LF*LQ + beta0*C1qq_2[ii2]*pmom::gamma1qq_2[ii2]*LF*LQ - B1q*C1qq_1[ii1]*pmom::gamma1qq_2[ii2]*LF*LQ + beta0*C1qq_1[ii1]*pmom::gamma1qq_2[ii2]*LF*LQ - C1qg_2[ii2]*pmom::gamma1gq_2[ii2]*pmom::gamma1qq_2[ii2]*LF*LQ - C1qq_2[ii2]*pow(pmom::gamma1qq_2[ii2],2)*LF*LQ - C1qq_1[ii1]*pow(pmom::gamma1qq_2[ii2],2)*LF*LQ - B1q*C1qg_1[ii1]*pmom::gamma1gq_1[ii1]*LF*LQ + beta0*C1qg_1[ii1]*pmom::gamma1gq_1[ii1]*LF*LQ - 2.*C1qg_1[ii1]*pmom::gamma1qq_2[ii2]*pmom::gamma1gq_1[ii1]*LF*LQ - C1qg_1[ii1]*pmom::gamma1gg_1[ii1]*pmom::gamma1gq_1[ii1]*LF*LQ - C1qq_2[ii2]*pmom::gamma1gq_1[ii1]*pmom::gamma1qg_1[ii1]*LF*LQ - C1qq_1[ii1]*pmom::gamma1gq_1[ii1]*pmom::gamma1qg_1[ii1]*LF*LQ - B2q*pmom::gamma1qq_1[ii1]*LF*LQ - B1q*C1qq_2[ii2]*pmom::gamma1qq_1[ii1]*LF*LQ + beta0*C1qq_2[ii2]*pmom::gamma1qq_1[ii1]*LF*LQ - B1q*C1qq_1[ii1]*pmom::gamma1qq_1[ii1]*LF*LQ + beta0*C1qq_1[ii1]*pmom::gamma1qq_1[ii1]*LF*LQ - 2.*C1qg_2[ii2]*pmom::gamma1gq_2[ii2]*pmom::gamma1qq_1[ii1]*LF*LQ - 2.*C1qq_2[ii2]*pmom::gamma1qq_2[ii2]*pmom::gamma1qq_1[ii1]*LF*LQ - 2.*C1qq_1[ii1]*pmom::gamma1qq_2[ii2]*pmom::gamma1qq_1[ii1]*LF* LQ - C1qg_1[ii1]*pmom::gamma1gq_1[ii1]*pmom::gamma1qq_1[ii1]*LF*LQ - C1qq_2[ii2]*pow(pmom::gamma1qq_1[ii1],2)*LF*LQ - C1qq_1[ii1]*pow(pmom::gamma1qq_1[ii1],2)*LF*LQ - pmom::gamma1qg_2[ii2]*pmom::gamma2gq_2[ii2]*LF*LQ - pmom::gamma1gq_2[ii2]*pmom::gamma2qg_2[ii2]*LF*LQ - B1q*pmom::gamma2qq_2[ii2]*LF*LQ - 2.*pmom::gamma1qq_2[ii2]*pmom::gamma2qq_2[ii2]*LF*LQ - 2.*pmom::gamma1qq_1[ii1]*pmom::gamma2qq_2[ii2]*LF*LQ - pmom::gamma1qg_1[ii1]*pmom::gamma2gq_1[ii1]*LF*LQ - pmom::gamma1gq_1[ii1]*pmom::gamma2qg_1[ii1]*LF*LQ - B1q*pmom::gamma2qq_1[ii1]*LF*LQ - 2.*pmom::gamma1qq_2[ii2]*pmom::gamma2qq_1[ii1]*LF*LQ - 2.*pmom::gamma1qq_1[ii1]*pmom::gamma2qq_1[ii1]*LF*LQ - (B1q*pmom::gamma1gq_2[ii2]*pmom::gamma1qg_2[ii2]*LF2*LQ)/2. - (beta0*pmom::gamma1gq_2[ii2]*pmom::gamma1qg_2[ii2]*LF2*LQ)/2. - (B1q*beta0*pmom::gamma1qq_2[ii2]*LF2*LQ)/2. - (B1q*pow(pmom::gamma1qq_2[ii2],2)*LF2*LQ)/2. - (beta0*pow(pmom::gamma1qq_2[ii2],2)*LF2*LQ)/2. - (B1q*pmom::gamma1gq_1[ii1]*pmom::gamma1qg_1[ii1]*LF2*LQ)/2. - (beta0*pmom::gamma1gq_1[ii1]*pmom::gamma1qg_1[ii1]*LF2*LQ)/ 2. - (3.*pmom::gamma1qq_2[ii2]*pmom::gamma1gq_1[ii1]*pmom::gamma1qg_1[ii1]*LF2*LQ)/2. - (B1q*beta0*pmom::gamma1qq_1[ii1]*LF2*LQ)/2. - (3.*pmom::gamma1gq_2[ii2]*pmom::gamma1qg_2[ii2]*pmom::gamma1qq_1[ii1]*LF2*LQ)/2. - B1q*pmom::gamma1qq_2[ii2]*pmom::gamma1qq_1[ii1]*LF2*LQ - beta0*pmom::gamma1qq_2[ii2]*pmom::gamma1qq_1[ii1]*LF2*LQ - (3.*pow(pmom::gamma1qq_2[ii2],2)*pmom::gamma1qq_1[ii1]*LF2*LQ)/2. - (B1q*pow(pmom::gamma1qq_1[ii1],2)*LF2*LQ)/2. - (beta0*pow(pmom::gamma1qq_1[ii1],2)*LF2*LQ)/2. - (3.*pmom::gamma1qq_2[ii2]*pow(pmom::gamma1qq_1[ii1],2)*LF2*LQ)/2. - ((pmom::gamma1gg_1[ii1]*pmom::gamma1gq_1[ii1]*pmom::gamma1qg_1[ii1] + 2.*pmom::gamma1gq_1[ii1]*pmom::gamma1qg_1[ii1]*pmom::gamma1qq_1[ii1] + pow(pmom::gamma1qq_1[ii1],3))*LF2*LQ)/2. + B1q*C1qg_2[ii2]*pmom::gamma1gq_2[ii2]*LQ2 - (3.*beta0*C1qg_2[ii2]*pmom::gamma1gq_2[ii2]*LQ2)/2. + (C1qg_2[ii2]*pmom::gamma1gg_2[ii2]*pmom::gamma1gq_2[ii2]*LQ2)/2. + (C1qq_2[ii2]*pmom::gamma1gq_2[ii2]*pmom::gamma1qg_2[ii2]*LQ2)/2. + (C1qq_1[ii1]*pmom::gamma1gq_2[ii2]*pmom::gamma1qg_2[ii2]*LQ2)/ 2. + B2q*pmom::gamma1qq_2[ii2]*LQ2 - (beta1*pmom::gamma1qq_2[ii2]*LQ2)/2. + B1q*C1qq_2[ii2]*pmom::gamma1qq_2[ii2]*LQ2 - (3.*beta0*C1qq_2[ii2]*pmom::gamma1qq_2[ii2]*LQ2)/2. + B1q*C1qq_1[ii1]*pmom::gamma1qq_2[ii2]*LQ2 - (3.*beta0*C1qq_1[ii1]*pmom::gamma1qq_2[ii2]*LQ2)/2. + (C1qg_2[ii2]*pmom::gamma1gq_2[ii2]*pmom::gamma1qq_2[ii2]*LQ2)/2. + (C1qq_2[ii2]*pow(pmom::gamma1qq_2[ii2],2)*LQ2)/2. + (C1qq_1[ii1]*pow(pmom::gamma1qq_2[ii2],2)*LQ2)/2. + B1q*C1qg_1[ii1]*pmom::gamma1gq_1[ii1]*LQ2 - (3.*beta0*C1qg_1[ii1]*pmom::gamma1gq_1[ii1]*LQ2)/2. + C1qg_1[ii1]*pmom::gamma1qq_2[ii2]*pmom::gamma1gq_1[ii1]*LQ2 + (C1qq_2[ii2]*pmom::gamma1gq_1[ii1]*pmom::gamma1qg_1[ii1]*LQ2)/2. + B2q*pmom::gamma1qq_1[ii1]*LQ2 - (beta1*pmom::gamma1qq_1[ii1]*LQ2)/2. + B1q*C1qq_2[ii2]*pmom::gamma1qq_1[ii1]*LQ2 - (3.*beta0*C1qq_2[ii2]*pmom::gamma1qq_1[ii1]*LQ2)/2. + B1q*C1qq_1[ii1]*pmom::gamma1qq_1[ii1]*LQ2 - (3.*beta0*C1qq_1[ii1]*pmom::gamma1qq_1[ii1]*LQ2)/2. + C1qg_2[ii2]*pmom::gamma1gq_2[ii2]*pmom::gamma1qq_1[ii1]*LQ2 + C1qq_2[ii2]*pmom::gamma1qq_2[ii2]*pmom::gamma1qq_1[ii1]*LQ2 + C1qq_1[ii1]*pmom::gamma1qq_2[ii2]*pmom::gamma1qq_1[ii1]*LQ2 + (C1qq_2[ii2]*pow(pmom::gamma1qq_1[ii1],2)*LQ2)/2. + pmom::gamma1qg_2[ii2]*pmom::gamma2gq_2[ii2]*LQ2 + B1q*pmom::gamma2qq_2[ii2]*LQ2 - beta0*pmom::gamma2qq_2[ii2]*LQ2 + pmom::gamma1qq_2[ii2]*pmom::gamma2qq_2[ii2]*LQ2 + pmom::gamma1qq_1[ii1]*pmom::gamma2qq_2[ii2]*LQ2 + pmom::gamma1qg_1[ii1]*pmom::gamma2gq_1[ii1]*LQ2 + B1q*pmom::gamma2qq_1[ii1]*LQ2 - beta0*pmom::gamma2qq_1[ii1]*LQ2 + pmom::gamma1qq_2[ii2]*pmom::gamma2qq_1[ii1]*LQ2 + pmom::gamma1qq_1[ii1]*pmom::gamma2qq_1[ii1]*LQ2 - (A1q*C1qg_2[ii2]*pmom::gamma1gq_2[ii2]*LF*LQ2)/2. + B1q*pmom::gamma1gq_2[ii2]*pmom::gamma1qg_2[ii2]*LF*LQ2 - (beta0*pmom::gamma1gq_2[ii2]*pmom::gamma1qg_2[ii2]*LF*LQ2)/2. - (A2q*pmom::gamma1qq_2[ii2]*LF*LQ2)/2. + (pow(B1q,2)*pmom::gamma1qq_2[ii2]*LF*LQ2)/2. - (B1q*beta0*pmom::gamma1qq_2[ii2]*LF*LQ2)/2. - (A1q*C1qq_2[ii2]*pmom::gamma1qq_2[ii2]*LF*LQ2)/2. - (A1q*C1qq_1[ii1]*pmom::gamma1qq_2[ii2]*LF*LQ2)/2. + B1q*pow(pmom::gamma1qq_2[ii2],2)*LF*LQ2 - (beta0*pow(pmom::gamma1qq_2[ii2],2)*LF*LQ2)/2. - (A1q*C1qg_1[ii1]*pmom::gamma1gq_1[ii1]*LF*LQ2)/2. + B1q*pmom::gamma1gq_1[ii1]*pmom::gamma1qg_1[ii1]*LF*LQ2 - (beta0*pmom::gamma1gq_1[ii1]*pmom::gamma1qg_1[ii1]*LF*LQ2)/2. + (3.*pmom::gamma1qq_2[ii2]*pmom::gamma1gq_1[ii1]*pmom::gamma1qg_1[ii1]*LF*LQ2)/2. - (A2q*pmom::gamma1qq_1[ii1]*LF*LQ2)/2. + (pow(B1q,2)*pmom::gamma1qq_1[ii1]*LF*LQ2)/2. - (B1q*beta0*pmom::gamma1qq_1[ii1]*LF*LQ2)/2. - (A1q*C1qq_2[ii2]*pmom::gamma1qq_1[ii1]*LF*LQ2)/2. - (A1q*C1qq_1[ii1]*pmom::gamma1qq_1[ii1]*LF*LQ2)/2. + (3.*pmom::gamma1gq_2[ii2]*pmom::gamma1qg_2[ii2]*pmom::gamma1qq_1[ii1]*LF*LQ2)/2. + 2.*B1q*pmom::gamma1qq_2[ii2]*pmom::gamma1qq_1[ii1]*LF*LQ2 - beta0*pmom::gamma1qq_2[ii2]*pmom::gamma1qq_1[ii1]*LF*LQ2 + (3.*pow(pmom::gamma1qq_2[ii2],2)*pmom::gamma1qq_1[ii1]*LF*LQ2)/2. + B1q*pow(pmom::gamma1qq_1[ii1],2)*LF*LQ2 - (beta0*pow(pmom::gamma1qq_1[ii1],2)*LF*LQ2)/2. + (3.*pmom::gamma1qq_2[ii2]*pow(pmom::gamma1qq_1[ii1],2)*LF*LQ2)/2. + ((pmom::gamma1gg_1[ii1]*pmom::gamma1gq_1[ii1]*pmom::gamma1qg_1[ii1] + 2.*pmom::gamma1gq_1[ii1]*pmom::gamma1qg_1[ii1]*pmom::gamma1qq_1[ii1] + pow(pmom::gamma1qq_1[ii1],3))*LF*LQ2)/2. - (A1q*pmom::gamma2qq_2[ii2]*LF*LQ2)/2. - (A1q*pmom::gamma2qq_1[ii1]*LF*LQ2)/2. - (A1q*pmom::gamma1gq_2[ii2]*pmom::gamma1qg_2[ii2]*LF2*LQ2)/4. - (A1q*beta0*pmom::gamma1qq_2[ii2]*LF2*LQ2)/4. - (A1q*pow(pmom::gamma1qq_2[ii2],2)*LF2*LQ2)/4. - (A1q*pmom::gamma1gq_1[ii1]*pmom::gamma1qg_1[ii1]*LF2*LQ2)/4. - (A1q*beta0*pmom::gamma1qq_1[ii1]*LF2*LQ2)/4. - (A1q*pmom::gamma1qq_2[ii2]*pmom::gamma1qq_1[ii1]*LF2*LQ2)/2. - (A1q*pow(pmom::gamma1qq_1[ii1],2)*LF2*LQ2)/4. + (A1q*C1qg_2[ii2]*pmom::gamma1gq_2[ii2]*LQ3)/2. - (B1q*pmom::gamma1gq_2[ii2]*pmom::gamma1qg_2[ii2]*LQ3)/2. + (beta0*pmom::gamma1gq_2[ii2]*pmom::gamma1qg_2[ii2]*LQ3)/2. + (A2q*pmom::gamma1qq_2[ii2]*LQ3)/2. - (pow(B1q,2)*pmom::gamma1qq_2[ii2]*LQ3)/2. + B1q*beta0*pmom::gamma1qq_2[ii2]*LQ3 - (pow(beta0,2)*pmom::gamma1qq_2[ii2]*LQ3)/3. + (A1q*C1qq_2[ii2]*pmom::gamma1qq_2[ii2]*LQ3)/2. + (A1q*C1qq_1[ii1]*pmom::gamma1qq_2[ii2]*LQ3)/2. - (B1q*pow(pmom::gamma1qq_2[ii2],2)*LQ3)/2. + (beta0*pow(pmom::gamma1qq_2[ii2],2)*LQ3)/2. + (A1q*C1qg_1[ii1]*pmom::gamma1gq_1[ii1]*LQ3)/2. - (B1q*pmom::gamma1gq_1[ii1]*pmom::gamma1qg_1[ii1]*LQ3)/2. + (beta0*pmom::gamma1gq_1[ii1]*pmom::gamma1qg_1[ii1]*LQ3)/2. - (pmom::gamma1qq_2[ii2]*pmom::gamma1gq_1[ii1]*pmom::gamma1qg_1[ii1]*LQ3)/2. + (A2q*pmom::gamma1qq_1[ii1]*LQ3)/2. - (pow(B1q,2)*pmom::gamma1qq_1[ii1]*LQ3)/2. + B1q*beta0*pmom::gamma1qq_1[ii1]*LQ3 - (pow(beta0,2)*pmom::gamma1qq_1[ii1]*LQ3)/3. + (A1q*C1qq_2[ii2]*pmom::gamma1qq_1[ii1]*LQ3)/2. + (A1q*C1qq_1[ii1]*pmom::gamma1qq_1[ii1]*LQ3)/2. - (pmom::gamma1gq_2[ii2]*pmom::gamma1qg_2[ii2]*pmom::gamma1qq_1[ii1]*LQ3)/2. - B1q*pmom::gamma1qq_2[ii2]*pmom::gamma1qq_1[ii1]*LQ3 + beta0*pmom::gamma1qq_2[ii2]*pmom::gamma1qq_1[ii1]*LQ3 - (pow(pmom::gamma1qq_2[ii2],2)*pmom::gamma1qq_1[ii1]*LQ3)/2. - (B1q*pow(pmom::gamma1qq_1[ii1],2)*LQ3)/2. + (beta0*pow(pmom::gamma1qq_1[ii1],2)*LQ3)/2. - (pmom::gamma1qq_2[ii2]*pow(pmom::gamma1qq_1[ii1],2)*LQ3)/2. - ((pmom::gamma1gg_1[ii1]*pmom::gamma1gq_1[ii1]*pmom::gamma1qg_1[ii1] + 2.*pmom::gamma1gq_1[ii1]*pmom::gamma1qg_1[ii1]*pmom::gamma1qq_1[ii1] + pow(pmom::gamma1qq_1[ii1],3))*LQ3)/6. + (A1q*pmom::gamma2qq_2[ii2]*LQ3)/2. + (A1q*pmom::gamma2qq_1[ii1]*LQ3)/2. + (A1q*pmom::gamma1gq_2[ii2]*pmom::gamma1qg_2[ii2]*LF*LQ3)/2. + (A1q*B1q*pmom::gamma1qq_2[ii2]*LF*LQ3)/2. - (A1q*beta0*pmom::gamma1qq_2[ii2]*LF*LQ3)/3. + (A1q*pow(pmom::gamma1qq_2[ii2],2)*LF*LQ3)/2. + (A1q*pmom::gamma1gq_1[ii1]*pmom::gamma1qg_1[ii1]*LF*LQ3)/2. + (A1q*B1q*pmom::gamma1qq_1[ii1]*LF*LQ3)/2. - (A1q*beta0*pmom::gamma1qq_1[ii1]*LF*LQ3)/3. + A1q*pmom::gamma1qq_2[ii2]*pmom::gamma1qq_1[ii1]*LF*LQ3 + (A1q*pow(pmom::gamma1qq_1[ii1],2)*LF*LQ3)/2. - (A1q*pmom::gamma1gq_2[ii2]*pmom::gamma1qg_2[ii2]*LQ4)/4. - (A1q*B1q*pmom::gamma1qq_2[ii2]*LQ4)/2. + (7.*A1q*beta0*pmom::gamma1qq_2[ii2]*LQ4)/12. - (A1q*pow(pmom::gamma1qq_2[ii2],2)*LQ4)/4. - (A1q*pmom::gamma1gq_1[ii1]*pmom::gamma1qg_1[ii1]*LQ4)/4. - (A1q*B1q*pmom::gamma1qq_1[ii1]*LQ4)/2. + (7.*A1q*beta0*pmom::gamma1qq_1[ii1]*LQ4)/12. - (A1q*pmom::gamma1qq_2[ii2]*pmom::gamma1qq_1[ii1]*LQ4)/2. - (A1q*pow(pmom::gamma1qq_1[ii1],2)*LQ4)/4. + (pow(A1q,2)*pmom::gamma1qq_2[ii2]*LF*LQ4)/8. + (pow(A1q,2)*pmom::gamma1qq_1[ii1]*LF*LQ4)/8. - (pow(A1q,2)*pmom::gamma1qq_2[ii2]*LQ5)/8. - (pow(A1q,2)*pmom::gamma1qq_1[ii1]*LQ5)/8. + ((C1qg_1[ii1]*pmom::gamma1gq_1[ii1]*(pmom::gamma1gg_1[ii1] + pmom::gamma1qq_1[ii1]) + C1qq_1[ii1]*(pmom::gamma1gq_1[ii1]*pmom::gamma1qg_1[ii1] + pow(pmom::gamma1qq_1[ii1],2)))*(LF2 + LQ2))/2.;
 		H3st_qg_1 += C2qg_1[ii1]*pmom::gamma1qq_2[ii2]*LF + C1qg_1[ii1]*(C1qg_2[ii2]*pmom::gamma1gq_2[ii2] + C1qq_2[ii2]*pmom::gamma1qq_2[ii2])*LF + C2qq_2[ii2]*pmom::gamma1qg_1[ii1]*LF + C1qq_2[ii2]*(C1qg_1[ii1]*pmom::gamma1gg_1[ii1] + C1qq_1[ii1]*pmom::gamma1qg_1[ii1])*LF + C1qg_1[ii1]*pmom::gamma2qq_2[ii2]*LF + C1qq_2[ii2]*pmom::gamma2qg_1[ii1]*LF + (C1qg_1[ii1]*pmom::gamma2gg_1[ii1] + C1qq_1[ii1]*pmom::gamma2qg_1[ii1])*LF + pmom::gamma3qg_1[ii1]*LF + (beta0*C1qg_1[ii1]*pmom::gamma1qq_2[ii2]*LF2)/2. + (C1qg_1[ii1]*(pmom::gamma1gq_2[ii2]*pmom::gamma1qg_2[ii2] + pow(pmom::gamma1qq_2[ii2],2))*LF2)/2. + (beta1*pmom::gamma1qg_1[ii1]*LF2)/2. + (beta0*C1qq_2[ii2]*pmom::gamma1qg_1[ii1]*LF2)/2. + (C1qg_2[ii2]*pmom::gamma1gq_2[ii2] + C1qq_2[ii2]*pmom::gamma1qq_2[ii2])*pmom::gamma1qg_1[ii1]*LF2 + (beta0*(C1qg_1[ii1]*pmom::gamma1gg_1[ii1] + C1qq_1[ii1]*pmom::gamma1qg_1[ii1])*LF2)/2. + pmom::gamma1qq_2[ii2]*(C1qg_1[ii1]*pmom::gamma1gg_1[ii1] + C1qq_1[ii1]*pmom::gamma1qg_1[ii1])*LF2 + (C1qq_2[ii2]*pmom::gamma1qg_1[ii1]*(pmom::gamma1gg_1[ii1] + pmom::gamma1qq_1[ii1])*LF2)/2. + pmom::gamma1qg_1[ii1]*pmom::gamma2qq_2[ii2]*LF2 + beta0*pmom::gamma2qg_1[ii1]*LF2 + pmom::gamma1qq_2[ii2]*pmom::gamma2qg_1[ii1]*LF2 + (pmom::gamma1qg_1[ii1]*pmom::gamma2gg_1[ii1] + pmom::gamma1qq_1[ii1]*pmom::gamma2qg_1[ii1])* LF2 + (pow(beta0,2)*pmom::gamma1qg_1[ii1]*LF3)/3. + beta0*pmom::gamma1qq_2[ii2]*pmom::gamma1qg_1[ii1]*LF3 + ((pmom::gamma1gq_2[ii2]*pmom::gamma1qg_2[ii2] + pow(pmom::gamma1qq_2[ii2],2))*pmom::gamma1qg_1[ii1]*LF3)/2. + (beta0*pmom::gamma1qg_1[ii1]*(pmom::gamma1gg_1[ii1] + pmom::gamma1qq_1[ii1])*LF3)/2. + (pmom::gamma1qq_2[ii2]*pmom::gamma1qg_1[ii1]*(pmom::gamma1gg_1[ii1] + pmom::gamma1qq_1[ii1])*LF3)/2. - C2qg_1[ii1]*pmom::gamma1qq_2[ii2]*LQ - C1qg_1[ii1]*(C1qg_2[ii2]*pmom::gamma1gq_2[ii2] + C1qq_2[ii2]*pmom::gamma1qq_2[ii2])*LQ - C2qq_2[ii2]*pmom::gamma1qg_1[ii1]*LQ - C1qq_2[ii2]*(C1qg_1[ii1]*pmom::gamma1gg_1[ii1] + C1qq_1[ii1]*pmom::gamma1qg_1[ii1])*LQ - C1qg_1[ii1]*pmom::gamma2qq_2[ii2]*LQ - C1qq_2[ii2]*pmom::gamma2qg_1[ii1]*LQ - (C1qg_1[ii1]*pmom::gamma2gg_1[ii1] + C1qq_1[ii1]*pmom::gamma2qg_1[ii1])*LQ - pmom::gamma3qg_1[ii1]*LQ - B1q*C1qg_1[ii1]*pmom::gamma1qq_2[ii2]*LF*LQ + beta0*C1qg_1[ii1]*pmom::gamma1qq_2[ii2]*LF*LQ - C1qg_1[ii1]*(pmom::gamma1gq_2[ii2]*pmom::gamma1qg_2[ii2] + pow(pmom::gamma1qq_2[ii2],2))*LF*LQ - B2q*pmom::gamma1qg_1[ii1]*LF*LQ - B1q*C1qq_2[ii2]*pmom::gamma1qg_1[ii1]*LF*LQ + beta0*C1qq_2[ii2]*pmom::gamma1qg_1[ii1]*LF*LQ - 2.*(C1qg_2[ii2]*pmom::gamma1gq_2[ii2] + C1qq_2[ii2]*pmom::gamma1qq_2[ii2])*pmom::gamma1qg_1[ii1]*LF*LQ - B1q*(C1qg_1[ii1]*pmom::gamma1gg_1[ii1] + C1qq_1[ii1]*pmom::gamma1qg_1[ii1])*LF*LQ + beta0*(C1qg_1[ii1]*pmom::gamma1gg_1[ii1] + C1qq_1[ii1]*pmom::gamma1qg_1[ii1])*LF*LQ - 2.*pmom::gamma1qq_2[ii2]*(C1qg_1[ii1]*pmom::gamma1gg_1[ii1] + C1qq_1[ii1]*pmom::gamma1qg_1[ii1])*LF*LQ - C1qq_2[ii2]*pmom::gamma1qg_1[ii1]*(pmom::gamma1gg_1[ii1] + pmom::gamma1qq_1[ii1])*LF*LQ - 2.*pmom::gamma1qg_1[ii1]*pmom::gamma2qq_2[ii2]*LF*LQ - B1q*pmom::gamma2qg_1[ii1]*LF*LQ - 2.*pmom::gamma1qq_2[ii2]*pmom::gamma2qg_1[ii1]*LF*LQ - (pmom::gamma1qg_1[ii1]*pmom::gamma2gg_1[ii1] + pmom::gamma1qq_1[ii1]*pmom::gamma2qg_1[ii1])*LF*LQ - (B1q*beta0*pmom::gamma1qg_1[ii1]*LF2*LQ)/2. - B1q*pmom::gamma1qq_2[ii2]*pmom::gamma1qg_1[ii1]*LF2*LQ - beta0*pmom::gamma1qq_2[ii2]*pmom::gamma1qg_1[ii1]*LF2*LQ - (3.*(pmom::gamma1gq_2[ii2]*pmom::gamma1qg_2[ii2] + pow(pmom::gamma1qq_2[ii2],2))*pmom::gamma1qg_1[ii1]*LF2*LQ)/2. - (B1q*pmom::gamma1qg_1[ii1]*(pmom::gamma1gg_1[ii1] + pmom::gamma1qq_1[ii1])*LF2*LQ)/2. - (beta0*pmom::gamma1qg_1[ii1]*(pmom::gamma1gg_1[ii1] + pmom::gamma1qq_1[ii1])*LF2*LQ)/2. - (3.*pmom::gamma1qq_2[ii2]*pmom::gamma1qg_1[ii1]*(pmom::gamma1gg_1[ii1] + pmom::gamma1qq_1[ii1])*LF2*LQ)/2. + B1q*C1qg_1[ii1]*pmom::gamma1qq_2[ii2]*LQ2 - (3.*beta0*C1qg_1[ii1]*pmom::gamma1qq_2[ii2]*LQ2)/2. + (C1qg_1[ii1]*(pmom::gamma1gq_2[ii2]*pmom::gamma1qg_2[ii2] + pow(pmom::gamma1qq_2[ii2],2))*LQ2)/2. + B2q*pmom::gamma1qg_1[ii1]*LQ2 - (beta1*pmom::gamma1qg_1[ii1]*LQ2)/2. + B1q*C1qq_2[ii2]*pmom::gamma1qg_1[ii1]*LQ2 - (3.*beta0*C1qq_2[ii2]*pmom::gamma1qg_1[ii1]*LQ2)/2. + (C1qg_2[ii2]*pmom::gamma1gq_2[ii2] + C1qq_2[ii2]*pmom::gamma1qq_2[ii2])* pmom::gamma1qg_1[ii1]*LQ2 + B1q*(C1qg_1[ii1]*pmom::gamma1gg_1[ii1] + C1qq_1[ii1]*pmom::gamma1qg_1[ii1])*LQ2 - (3.*beta0*(C1qg_1[ii1]*pmom::gamma1gg_1[ii1] + C1qq_1[ii1]*pmom::gamma1qg_1[ii1])*LQ2)/2. + pmom::gamma1qq_2[ii2]*(C1qg_1[ii1]*pmom::gamma1gg_1[ii1] + C1qq_1[ii1]*pmom::gamma1qg_1[ii1])*LQ2 + (C1qq_2[ii2]*pmom::gamma1qg_1[ii1]*(pmom::gamma1gg_1[ii1] + pmom::gamma1qq_1[ii1])*LQ2)/2. + pmom::gamma1qg_1[ii1]*pmom::gamma2qq_2[ii2]*LQ2 + B1q*pmom::gamma2qg_1[ii1]*LQ2 - beta0*pmom::gamma2qg_1[ii1]*LQ2 + pmom::gamma1qq_2[ii2]*pmom::gamma2qg_1[ii1]*LQ2 + (pmom::gamma1qg_1[ii1]*pmom::gamma2gg_1[ii1] + pmom::gamma1qq_1[ii1]*pmom::gamma2qg_1[ii1])* LQ2 - (A1q*C1qg_1[ii1]*pmom::gamma1qq_2[ii2]*LF*LQ2)/2. - (A2q*pmom::gamma1qg_1[ii1]*LF*LQ2)/2. + (pow(B1q,2)*pmom::gamma1qg_1[ii1]*LF*LQ2)/2. - (B1q*beta0*pmom::gamma1qg_1[ii1]*LF*LQ2)/2. - (A1q*C1qq_2[ii2]*pmom::gamma1qg_1[ii1]*LF*LQ2)/2. + 2.*B1q*pmom::gamma1qq_2[ii2]*pmom::gamma1qg_1[ii1]*LF*LQ2 - beta0*pmom::gamma1qq_2[ii2]*pmom::gamma1qg_1[ii1]*LF*LQ2 + (3.*(pmom::gamma1gq_2[ii2]*pmom::gamma1qg_2[ii2] + pow(pmom::gamma1qq_2[ii2],2))*pmom::gamma1qg_1[ii1]*LF*LQ2)/2. - (A1q*(C1qg_1[ii1]*pmom::gamma1gg_1[ii1] + C1qq_1[ii1]*pmom::gamma1qg_1[ii1])*LF*LQ2)/2. + B1q*pmom::gamma1qg_1[ii1]*(pmom::gamma1gg_1[ii1] + pmom::gamma1qq_1[ii1])*LF*LQ2 - (beta0*pmom::gamma1qg_1[ii1]*(pmom::gamma1gg_1[ii1] + pmom::gamma1qq_1[ii1])*LF*LQ2)/2. + (3.*pmom::gamma1qq_2[ii2]*pmom::gamma1qg_1[ii1]*(pmom::gamma1gg_1[ii1] + pmom::gamma1qq_1[ii1])*LF*LQ2)/2. - (A1q*pmom::gamma2qg_1[ii1]*LF*LQ2)/2. - (A1q*beta0*pmom::gamma1qg_1[ii1]*LF2*LQ2)/4. - (A1q*pmom::gamma1qq_2[ii2]*pmom::gamma1qg_1[ii1]*LF2*LQ2)/2. - (A1q*pmom::gamma1qg_1[ii1]*(pmom::gamma1gg_1[ii1] + pmom::gamma1qq_1[ii1])*LF2*LQ2)/4. + (A1q*C1qg_1[ii1]*pmom::gamma1qq_2[ii2]*LQ3)/2. + (A2q*pmom::gamma1qg_1[ii1]*LQ3)/2. - (pow(B1q,2)*pmom::gamma1qg_1[ii1]*LQ3)/2. + B1q*beta0*pmom::gamma1qg_1[ii1]*LQ3 - (pow(beta0,2)*pmom::gamma1qg_1[ii1]*LQ3)/3. + (A1q*C1qq_2[ii2]*pmom::gamma1qg_1[ii1]*LQ3)/2. - B1q*pmom::gamma1qq_2[ii2]*pmom::gamma1qg_1[ii1]*LQ3 + beta0*pmom::gamma1qq_2[ii2]*pmom::gamma1qg_1[ii1]*LQ3 - ((pmom::gamma1gq_2[ii2]*pmom::gamma1qg_2[ii2] + pow(pmom::gamma1qq_2[ii2],2))*pmom::gamma1qg_1[ii1]*LQ3)/2. + (A1q*(C1qg_1[ii1]*pmom::gamma1gg_1[ii1] + C1qq_1[ii1]*pmom::gamma1qg_1[ii1])*LQ3)/2. - (B1q*pmom::gamma1qg_1[ii1]*(pmom::gamma1gg_1[ii1] + pmom::gamma1qq_1[ii1])*LQ3)/2. + (beta0*pmom::gamma1qg_1[ii1]*(pmom::gamma1gg_1[ii1] + pmom::gamma1qq_1[ii1])*LQ3)/2. - (pmom::gamma1qq_2[ii2]*pmom::gamma1qg_1[ii1]*(pmom::gamma1gg_1[ii1] + pmom::gamma1qq_1[ii1])*LQ3)/2. + (A1q*pmom::gamma2qg_1[ii1]*LQ3)/2. + (A1q*B1q*pmom::gamma1qg_1[ii1]*LF*LQ3)/2. - (A1q*beta0*pmom::gamma1qg_1[ii1]*LF*LQ3)/3. + A1q*pmom::gamma1qq_2[ii2]*pmom::gamma1qg_1[ii1]*LF*LQ3 + (A1q*pmom::gamma1qg_1[ii1]*(pmom::gamma1gg_1[ii1] + pmom::gamma1qq_1[ii1])*LF*LQ3)/2. - (A1q*B1q*pmom::gamma1qg_1[ii1]*LQ4)/2. + (7.*A1q*beta0*pmom::gamma1qg_1[ii1]*LQ4)/12. - (A1q*pmom::gamma1qq_2[ii2]*pmom::gamma1qg_1[ii1]*LQ4)/2. - (A1q*pmom::gamma1qg_1[ii1]*(pmom::gamma1gg_1[ii1] + pmom::gamma1qq_1[ii1])*LQ4)/4. + (pow(A1q,2)*pmom::gamma1qg_1[ii1]*LF*LQ4)/8. - (pow(A1q,2)*pmom::gamma1qg_1[ii1]*LQ5)/8. + LF*(C2qg_1[ii1]*pmom::gamma1gg_1[ii1] + pmom::gamma1qg_1[ii1]*(C2qq_1[ii1] + C2qqb_1[ii1] + (C2qqbp_1[ii1] + C2qqp_1[ii1])*(-1. + nf))) - LQ*(C2qg_1[ii1]*pmom::gamma1gg_1[ii1] + pmom::gamma1qg_1[ii1]*(C2qq_1[ii1] + C2qqb_1[ii1] + (C2qqbp_1[ii1] + C2qqp_1[ii1])*(-1. + nf))) - LF*LQ*(pmom::gamma1gg_1[ii1]*pmom::gamma2qg_1[ii1] + pmom::gamma1qg_1[ii1]*(pmom::gamma2qq_1[ii1] + pmom::gamma2qqb_1[ii1] + (pmom::gamma2qqbp_1[ii1] + pmom::gamma2qqp_1[ii1])*(-1. + nf))) + (pmom::gamma1qg_1[ii1]*LF3*(pow(pmom::gamma1gg_1[ii1],2) + pmom::gamma1gg_1[ii1]*pmom::gamma1qq_1[ii1] + pow(pmom::gamma1qq_1[ii1],2) + 2.*pmom::gamma1gq_1[ii1]*pmom::gamma1qg_1[ii1]*nf))/6. - (pmom::gamma1qg_1[ii1]*LF2*LQ*(pow(pmom::gamma1gg_1[ii1],2) + pmom::gamma1gg_1[ii1]*pmom::gamma1qq_1[ii1] + pow(pmom::gamma1qq_1[ii1],2) + 2.*pmom::gamma1gq_1[ii1]*pmom::gamma1qg_1[ii1]*nf))/2. + (pmom::gamma1qg_1[ii1]*LF*LQ2*(pow(pmom::gamma1gg_1[ii1],2) + pmom::gamma1gg_1[ii1]*pmom::gamma1qq_1[ii1] + pow(pmom::gamma1qq_1[ii1],2) + 2.*pmom::gamma1gq_1[ii1]*pmom::gamma1qg_1[ii1]*nf))/2. - (pmom::gamma1qg_1[ii1]*LQ3*(pow(pmom::gamma1gg_1[ii1],2) + pmom::gamma1gg_1[ii1]*pmom::gamma1qq_1[ii1] + pow(pmom::gamma1qq_1[ii1],2) + 2.*pmom::gamma1gq_1[ii1]*pmom::gamma1qg_1[ii1]*nf))/6. + (LF2*(C1qq_1[ii1]*pmom::gamma1qg_1[ii1]*(pmom::gamma1gg_1[ii1] + pmom::gamma1qq_1[ii1]) + C1qg_1[ii1]*(pow(pmom::gamma1gg_1[ii1],2) + 2.*pmom::gamma1gq_1[ii1]*pmom::gamma1qg_1[ii1]*nf)))/2. - LF*LQ*(C1qq_1[ii1]*pmom::gamma1qg_1[ii1]*(pmom::gamma1gg_1[ii1] + pmom::gamma1qq_1[ii1]) + C1qg_1[ii1]*(pow(pmom::gamma1gg_1[ii1],2) + 2.*pmom::gamma1gq_1[ii1]*pmom::gamma1qg_1[ii1]*nf)) + (LQ2*(C1qq_1[ii1]*pmom::gamma1qg_1[ii1]*(pmom::gamma1gg_1[ii1] + pmom::gamma1qq_1[ii1]) + C1qg_1[ii1]*(pow(pmom::gamma1gg_1[ii1],2) + 2.*pmom::gamma1gq_1[ii1]*pmom::gamma1qg_1[ii1]*nf)))/2.;
@@ -602,6 +613,7 @@ void hcoeff::calc()
 	    Hqpg_2[idx]  += as3*H3st_qpg_2;
 	    Hqbpg_1[idx] += as3*H3st_qbpg_1;
 	    Hqbpg_2[idx] += as3*H3st_qbpg_2;
+	    Hqqb_nfz += as3*H3st_qqb_nfz;
 	  }
   
   return;
@@ -618,7 +630,7 @@ void hcoeff::calc()
   //All the following coefficients need to be calculated at each resumm iteration only with fixed factorization and renormalization scale (variable logmuf2q2) or
   //with fixed resummation scale (variable loga: a = q2/mu_res). Otherwise they can be computed at initialization
   /*
-  if (opts.order == 0)
+  if (opts.order_hcoef == 0)
     fill(Hqqb, Hqqb+mellinint::mdim, 1.);
   */
   //for (int i = 0; i < mellinint::mdim; i++)
@@ -645,7 +657,7 @@ void hcoeff::calc()
   complex <double> logq2muf22 = pow(logq2muf2,2);
   H1stgg=0;
   */
-//  if (opts.order == 1)
+//  if (opts.order_hcoef == 1)
 //    for (int i = 0; i < mellinint::mdim; i++)
 //      {
 //	int idx = anomalous::index(i,mesq::positive);
@@ -661,7 +673,7 @@ void hcoeff::calc()
 //	Hqg[i] = aass/2.*H1st_qg;
 //      }
 //
-//  if (opts.order >= 2)
+//  if (opts.order_hcoef >= 2)
 //    {
 //      for (int i = 0; i < mellinint::mdim; i++)
 //	{
@@ -1114,7 +1126,7 @@ void hcoeff::invert(double q2)
   Hqqz = 0;
   Hqqpz = 0;
 
-  if (opts.order == 0)
+  if (opts.order_hcoef == 0)
     return;
 
   double bjx= q2/pow(opts.sroot,2);

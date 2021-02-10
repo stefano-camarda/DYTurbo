@@ -76,8 +76,18 @@ public:
 
   //resummation or fixed order switch
   bool fixedorder;
-  int    order;
 
+  //order
+  int    order;       //Main order
+  int    order_sudak; //Order of the Sudakov
+  int    order_hcoef; //Order of the H coefficients
+  int    order_evol;  //Order of the PDF evolution
+  int    order_expc;   //Order of the C exponentiation
+  //  int    order_ford;   //Order of the finite order part
+  //  int    order_alphas; //Order of the alphas running
+
+  bool qbox;
+  
   //Non-perturbative form factor
   int npff;
   double g1,g2,g3; //Gaussian
@@ -174,7 +184,7 @@ public:
 
   //dimension of integration for the born configuration
   int intDimBorn;
-  bool bornint2d, bornintvegas4d, bornintvegas6d;
+  bool bornint1d, bornint2d, bornintvegas4d, bornintvegas6d;
   
   //type of integration for the counterterm
   int intDimCT;
@@ -334,7 +344,10 @@ public:
   int evolmode;
 
   //Evolve PDFs from mufac instead of mures
-  bool mufevol;
+  //bool mufevol;
+
+  //Do not factorize muf variations with expc
+  bool mufvar;
   
   //switches for C exponentiation
   int expc, ntaylor;

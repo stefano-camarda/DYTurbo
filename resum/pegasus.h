@@ -62,6 +62,7 @@ extern "C" {
   extern struct {
     int npord_;
   } order_;
+#pragma omp threadprivate(order_)
 
   extern struct {
     double logfr_;

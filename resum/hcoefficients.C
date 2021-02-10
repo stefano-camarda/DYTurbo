@@ -116,6 +116,7 @@ void hcoefficients::calc(double aass, complex <double> logmuf2q2, complex <doubl
 
   complex <double> LQF = logq2muf2-2.*loga;
   complex <double> LQ2F2 = pow(logq2muf2,2)-4.*pow(loga,2);
+  /*
   if (opts.mufevol)
     {
       //LQF = 0.;
@@ -125,6 +126,7 @@ void hcoefficients::calc(double aass, complex <double> logmuf2q2, complex <doubl
     }
   LQF = 0.;
   LQ2F2 = 0.;
+  */
 
   double aassh=aass/2.;
   double aasshsq = pow(aassh,2);

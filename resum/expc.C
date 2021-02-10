@@ -22,6 +22,22 @@
 
 using namespace polylogarithm;
 
+complex <double> *expc::aexpqq;
+complex <double> *expc::aexpqg;
+complex <double> *expc::aexpqqb;
+complex <double> *expc::aexpqqp;
+complex <double> *expc::aexpqqbp;
+complex <double> *expc::aexpqq_1;
+complex <double> *expc::aexpqg_1;
+complex <double> *expc::aexpqqb_1;
+complex <double> *expc::aexpqqp_1;
+complex <double> *expc::aexpqqbp_1;
+complex <double> *expc::aexpqq_2;
+complex <double> *expc::aexpqg_2;
+complex <double> *expc::aexpqqb_2;
+complex <double> *expc::aexpqqp_2;
+complex <double> *expc::aexpqqbp_2;
+
 complex <double> *expc::qqb;
 complex <double> *expc::qg;
 complex <double> *expc::qg_1;
@@ -61,6 +77,12 @@ void expc::allocate()
   //allocate memory
   if (opts.mellin1d)
     {
+      aexpqq   = new complex <double> [mellinint::mdim*2];
+      aexpqg   = new complex <double> [mellinint::mdim*2];
+      aexpqqb  = new complex <double> [mellinint::mdim*2];
+      aexpqqp  = new complex <double> [mellinint::mdim*2];
+      aexpqqbp = new complex <double> [mellinint::mdim*2];
+      
       qqb  = new complex <double> [mellinint::mdim*2];
       qg   = new complex <double> [mellinint::mdim*2];
       qq   = new complex <double> [mellinint::mdim*2];
@@ -73,6 +95,17 @@ void expc::allocate()
     }
   else
     {
+      aexpqq_1   = new complex <double> [mellinint::mdim*2];
+      aexpqg_1   = new complex <double> [mellinint::mdim*2];
+      aexpqqb_1  = new complex <double> [mellinint::mdim*2];
+      aexpqqp_1  = new complex <double> [mellinint::mdim*2];
+      aexpqqbp_1 = new complex <double> [mellinint::mdim*2];
+      aexpqq_2   = new complex <double> [mellinint::mdim*2];
+      aexpqg_2   = new complex <double> [mellinint::mdim*2];
+      aexpqqb_2  = new complex <double> [mellinint::mdim*2];
+      aexpqqp_2  = new complex <double> [mellinint::mdim*2];
+      aexpqqbp_2 = new complex <double> [mellinint::mdim*2];
+
       qqb    = new complex <double> [mellinint::mdim*mellinint::mdim*2];
       qg_1   = new complex <double> [mellinint::mdim*mellinint::mdim*2];
       qg_2   = new complex <double> [mellinint::mdim*mellinint::mdim*2];
@@ -99,6 +132,11 @@ void expc::free()
 
   if (opts.mellin1d)
     {
+      delete[] aexpqq;
+      delete[] aexpqg;
+      delete[] aexpqqb;
+      delete[] aexpqqp;
+      delete[] aexpqqbp;
       delete[] qqb ;
       delete[] qg  ;
       delete[] qq  ;
@@ -111,6 +149,16 @@ void expc::free()
     }
   else
     {
+      delete[] aexpqq_1;
+      delete[] aexpqg_1;
+      delete[] aexpqqb_1;
+      delete[] aexpqqp_1;
+      delete[] aexpqqbp_1;
+      delete[] aexpqq_2;
+      delete[] aexpqg_2;
+      delete[] aexpqqb_2;
+      delete[] aexpqqp_2;
+      delete[] aexpqqbp_2;
       delete[] qqb   ;
       delete[] qg_1  ;
       delete[] qg_2  ;
@@ -150,6 +198,11 @@ void expc::reset()
       }
     else
       {
+	fill(aexpqq   ,aexpqq   +mellinint::mdim*2, 1.);
+	fill(aexpqg   ,aexpqg   +mellinint::mdim*2, 1.);
+	fill(aexpqqb  ,aexpqqb  +mellinint::mdim*2, 1.);
+	fill(aexpqqp  ,aexpqqp  +mellinint::mdim*2, 1.);
+	fill(aexpqqbp ,aexpqqbp +mellinint::mdim*2, 1.);
 	fill(qqb , qqb+mellinint::mdim*2, 1.);
 	fill(qg  , qg +mellinint::mdim*2, 1.);
 	fill(qq  , qq +mellinint::mdim*2, 1.);
@@ -177,6 +230,16 @@ void expc::reset()
       }
     else
       {
+	fill(aexpqq_1   ,aexpqq_1   +mellinint::mdim*2, 1.);
+	fill(aexpqg_1   ,aexpqg_1   +mellinint::mdim*2, 1.);
+	fill(aexpqqb_1  ,aexpqqb_1  +mellinint::mdim*2, 1.);
+	fill(aexpqqp_1  ,aexpqqp_1  +mellinint::mdim*2, 1.);
+	fill(aexpqqbp_1 ,aexpqqbp_1 +mellinint::mdim*2, 1.);
+	fill(aexpqq_2   ,aexpqq_2   +mellinint::mdim*2, 1.);
+	fill(aexpqg_2   ,aexpqg_2   +mellinint::mdim*2, 1.);
+	fill(aexpqqb_2  ,aexpqqb_2  +mellinint::mdim*2, 1.);
+	fill(aexpqqp_2  ,aexpqqp_2  +mellinint::mdim*2, 1.);
+	fill(aexpqqbp_2 ,aexpqqbp_2 +mellinint::mdim*2, 1.);
 	fill(qqb,    qqb +mellinint::mdim*mellinint::mdim*2, 1.);
 	fill(qg_1,   qg_1+mellinint::mdim*mellinint::mdim*2, 1.);
 	fill(qg_2,   qg_2+mellinint::mdim*mellinint::mdim*2, 1.);
@@ -209,7 +272,7 @@ void expc::calc(complex <double> b)
   //    return;
 
   //LL (no evolution)
-  if (opts.order == 0)
+  if (opts.order_expc == 0)
     return;
 
   double blim = blim::expc;  //better use blim::sudakov?
@@ -259,40 +322,40 @@ void expc::calc(complex <double> b)
   logasl = 0.;
   
   //NLL (LO evolution)
-  if (opts.order >= 1)
+  if (opts.order_expc >= 1)
     logasl += log1xlambda;
 
   //NNLL (NLO evolution)
-  if (opts.order >= 2)
+  if (opts.order_expc >= 2)
     logasl += aass* beta1/beta0*log1xlambda/(1.-xlambda);
 
   //NNNLL (NNLO evolution)
-  if (opts.order >= 3)
+  if (opts.order_expc >= 3)
     logasl += aass2* ((pow(beta1/beta0,2)-beta2/beta0) *xlambda/pow(1.-xlambda,2)
 		      + pow(beta1/beta0,2)             *log1xlambda/pow(1.-xlambda,2)
 		      - pow(beta1/beta0,2)             *pow(log1xlambda,2)/(2.*pow(1.-xlambda,2)));
 
   double LQR = real(logq2mur2-2.*loga);
   //QCD coupling scale dependence
-  if (opts.order >= 2)
+  if (opts.order_expc >= 2)
     logasl += aass*LQR*beta0*xlambda/(1.-xlambda);
 
   //from c3new.txt
-  if (opts.order >= 3)
+  if (opts.order_expc >= 3)
     logasl += aass2*(+LQR*beta1                   *(xlambda-log1xlambda)/pow(1.-xlambda,2)
 		     +LQR*beta1                   *xlambda/(1.-xlambda)                      //missing piece
     		     +0.5*pow(LQR,2)*pow(beta0,2) *xlambda*(xlambda-2.)/pow(1.-xlambda,2));  //missing piece
 
   //from g4 LQR part by replacing B1qbar->beta0 and B2qbar->beta1 (and all An pieces set to zero)
-  //if (opts.order >= 3)
+  //if (opts.order_expc >= 3)
   //  logasl += aass2*(LQR*beta1*(xlambda*(2.-xlambda)-log1xlambda)/pow(1.-xlambda,2)
   //		     +0.5*pow(LQR,2)*pow(beta0,2)*xlambda*(xlambda-2.)/pow(1.-xlambda,2));
   
   //cout << logasl << " logasl" << endl;
   //!!! gint::logasl is evaluated with blim::sudakov, not with blim:expc !!!
   if (opts.numexpc)
-    logasl = gint::logasl;
-  //cout << gint::logasl << " gint logasl" << endl;
+    logasl = gint::logasl_expc;
+  //cout << gint::logasl_expc << " gint logasl" << endl;
 
   if (isnan_ofast(real(logasl)) || isnan_ofast(imag(logasl)))
     {
@@ -388,12 +451,15 @@ void expc::calc(complex <double> b)
   complex <double> aexp2 = pow(aexp,2);
 
   // NLL
-  if (opts.order == 1)
+  if (opts.order_expc == 1)
     if (opts.mellin1d)
       if (opts.sumlogs)
 	fill(qg, qg+mellinint::mdim*2, exp(-logasl+sudakov::logS));
       else
-	fill(qg, qg+mellinint::mdim*2, aexp);
+	{
+	  fill(aexpqg, aexpqg+mellinint::mdim*2, aexp);
+	  fill(qg, qg+mellinint::mdim*2, aexp);
+	}
     else
       if (opts.sumlogs)
 	{
@@ -402,6 +468,8 @@ void expc::calc(complex <double> b)
 	}
       else
 	{
+	  fill(aexpqg_1, aexpqg_1+mellinint::mdim*2, aexp);
+	  fill(aexpqg_2, aexpqg_2+mellinint::mdim*2, aexp);
 	  fill(qg_1, qg_1+mellinint::mdim*mellinint::mdim*2, aexp);
 	  fill(qg_2, qg_2+mellinint::mdim*mellinint::mdim*2, aexp);
 	}
@@ -411,7 +479,7 @@ void expc::calc(complex <double> b)
   //cout << " gint::logasl "   << gint::logasl      << " expc " << logasl      << endl;
   // NNLL
   //complex <double> c1delta = pow(aexpb,aassh*(-2.*C1qqn));
-  if (opts.order == 2)
+  if (opts.order_expc == 2)
     {
       if (opts.mellin1d)
 	{
@@ -421,11 +489,11 @@ void expc::calc(complex <double> b)
 	  complex <double> *alogqqb  = new complex <double> [mellinint::mdim*2];
 	  complex <double> *alogqqp  = new complex <double> [mellinint::mdim*2];
 	  complex <double> *alogqqbp = new complex <double> [mellinint::mdim*2];
-	  complex <double> *aexpqq   = new complex <double> [mellinint::mdim*2];
-	  complex <double> *aexpqg   = new complex <double> [mellinint::mdim*2];
-	  complex <double> *aexpqqb  = new complex <double> [mellinint::mdim*2];
-	  complex <double> *aexpqqp  = new complex <double> [mellinint::mdim*2];
-	  complex <double> *aexpqqbp = new complex <double> [mellinint::mdim*2];
+	  //complex <double> *aexpqq   = new complex <double> [mellinint::mdim*2];
+	  //complex <double> *aexpqg   = new complex <double> [mellinint::mdim*2];
+	  //complex <double> *aexpqqb  = new complex <double> [mellinint::mdim*2];
+	  //complex <double> *aexpqqp  = new complex <double> [mellinint::mdim*2];
+	  //complex <double> *aexpqqbp = new complex <double> [mellinint::mdim*2];
 	  //complex <double> alogqq[mellinint::mdim*2];
 	  //complex <double> alogqg[mellinint::mdim*2];
 	  //complex <double> alogqqb[mellinint::mdim*2];
@@ -678,29 +746,41 @@ void expc::calc(complex <double> b)
 		    gg[ii]  = aexp*aexpqg[idx] * aexp*aexpqg[idx];
 		  }
 	      }
+
 	  delete[] alogqq;
 	  delete[] alogqg;
 	  delete[] alogqqb;
 	  delete[] alogqqp;
 	  delete[] alogqqbp;
-	  delete[] aexpqq;
-	  delete[] aexpqg;
-	  delete[] aexpqqb;
-	  delete[] aexpqqp;
-	  delete[] aexpqqbp;
+
+	  //include aexp into aexpqg and aexpqq,qqp,qqb,qqbp
+	  for (int sign = mesq::positive; sign <= mesq::negative; sign++)
+	    for (int i = 0; i < mellinint::mdim; i++)
+	      {
+		int idx = anomalous::index(i,sign);
+		aexpqg[idx]   *= aexp;
+		aexpqqb[idx]  *= aexp2;
+		aexpqqp[idx]  *= aexp2;
+		aexpqqbp[idx] *= aexp2;
+	      }
+	  //delete[] aexpqq;
+	  //delete[] aexpqg;
+	  //delete[] aexpqqb;
+	  //delete[] aexpqqp;
+	  //delete[] aexpqqbp;
 	}
       else //mellin2d
 	{
-	  complex <double> aexpqq_1[mellinint::mdim*2];
-	  complex <double> aexpqg_1[mellinint::mdim*2];
-	  complex <double> aexpqqb_1[mellinint::mdim*2];
-	  complex <double> aexpqqp_1[mellinint::mdim*2];
-	  complex <double> aexpqqbp_1[mellinint::mdim*2];
-	  complex <double> aexpqq_2[mellinint::mdim*2];
-	  complex <double> aexpqg_2[mellinint::mdim*2];
-	  complex <double> aexpqqb_2[mellinint::mdim*2];
-	  complex <double> aexpqqp_2[mellinint::mdim*2];
-	  complex <double> aexpqqbp_2[mellinint::mdim*2];
+	  //complex <double> aexpqq_1[mellinint::mdim*2];
+	  //complex <double> aexpqg_1[mellinint::mdim*2];
+	  //complex <double> aexpqqb_1[mellinint::mdim*2];
+	  //complex <double> aexpqqp_1[mellinint::mdim*2];
+	  //complex <double> aexpqqbp_1[mellinint::mdim*2];
+	  //complex <double> aexpqq_2[mellinint::mdim*2];
+	  //complex <double> aexpqg_2[mellinint::mdim*2];
+	  //complex <double> aexpqqb_2[mellinint::mdim*2];
+	  //complex <double> aexpqqp_2[mellinint::mdim*2];
+	  //complex <double> aexpqqbp_2[mellinint::mdim*2];
 
 	  //case opts.expc == 0
 	  fill(aexpqq_1, aexpqq_1+mellinint::mdim*2, 1.);
@@ -784,6 +864,19 @@ void expc::calc(complex <double> b)
 		  aexpqqp_2[idx] = pow(aexpB,ccoeff::C3qqp_2[idx]/ccoeff::C2qqp_2[idx]);
 		  aexpqqbp_2[idx] = pow(aexpB,ccoeff::C3qqbp_2[idx]/ccoeff::C2qqbp_2[idx]);
 		}
+
+	  //At order n expand up to terms containing Cn (i.e. expand up to n for D, up to n-1 for OD, and up to n-2 for DOD)
+	  else if (opts.expc == 4)
+	    {
+	      for (int sign = mesq::positive; sign <= mesq::negative; sign++)
+		for (int i = 0; i < mellinint::mdim; i++)
+		  {
+		    int idx = anomalous::index(i,sign);
+		    aexpqq_1[idx] = pow(aexpB,ccoeff::C1qq_1[idx]);
+		    aexpqq_2[idx] = pow(aexpB,ccoeff::C1qq_2[idx]);
+		  }
+	    }
+	  
 	  //Do not expand C at the denominator in the off diagonal and double off diagonal channels
 	  else if (opts.expc == 5)
 	    for (int sign = mesq::positive; sign <= mesq::negative; sign++)
@@ -825,6 +918,21 @@ void expc::calc(complex <double> b)
 		  gg[ii12]   = aexp*aexpqg_1[idx1] * aexp*aexpqg_2[idx2];
 		}
 
+	  //include aexp into aexpqg and aexpqq,qqp,qqb,qqbp
+	  for (int sign = mesq::positive; sign <= mesq::negative; sign++)
+	    for (int i = 0; i < mellinint::mdim; i++)
+	      {
+		int idx = anomalous::index(i,sign);
+		aexpqg_1[idx]   *= aexp;
+		aexpqqb_1[idx]  *= aexp2;
+		aexpqqp_1[idx]  *= aexp2;
+		aexpqqbp_1[idx] *= aexp2;
+		aexpqg_2[idx]   *= aexp;
+		aexpqqb_2[idx]  *= aexp2;
+		aexpqqp_2[idx]  *= aexp2;
+		aexpqqbp_2[idx] *= aexp2;
+	      }
+	  
 	}
       //cout << alogqq[0] << " expc::alogqq " << endl;
       //cout << alogqg[0] << " expc::alogqg " << endl;
@@ -917,7 +1025,7 @@ void expc::calc(complex <double> b)
   //		    + beta0*C3/C2  *Log[Q2/muR2]          *lam*(lam-2)/(1-lam)^2
   //		    );
 
-  if (opts.order == 3)
+  if (opts.order_expc == 3)
     {
       if (opts.mellin1d)
 	{
@@ -927,11 +1035,11 @@ void expc::calc(complex <double> b)
 	  complex <double> *alogqqb  = new complex <double> [mellinint::mdim*2];
 	  complex <double> *alogqqp  = new complex <double> [mellinint::mdim*2];
 	  complex <double> *alogqqbp = new complex <double> [mellinint::mdim*2];
-	  complex <double> *aexpqq   = new complex <double> [mellinint::mdim*2];
-	  complex <double> *aexpqg   = new complex <double> [mellinint::mdim*2];
-	  complex <double> *aexpqqb  = new complex <double> [mellinint::mdim*2];
-	  complex <double> *aexpqqp  = new complex <double> [mellinint::mdim*2];
-	  complex <double> *aexpqqbp = new complex <double> [mellinint::mdim*2];
+	  //complex <double> *aexpqq   = new complex <double> [mellinint::mdim*2];
+	  //complex <double> *aexpqg   = new complex <double> [mellinint::mdim*2];
+	  //complex <double> *aexpqqb  = new complex <double> [mellinint::mdim*2];
+	  //complex <double> *aexpqqp  = new complex <double> [mellinint::mdim*2];
+	  //complex <double> *aexpqqbp = new complex <double> [mellinint::mdim*2];
 
 	  if (opts.expc == 0)
 	    if (opts.sumlogs)
@@ -1597,24 +1705,47 @@ void expc::calc(complex <double> b)
 	  delete[] alogqqb;
 	  delete[] alogqqp;
 	  delete[] alogqqbp;
-	  delete[] aexpqq;
-	  delete[] aexpqg;
-	  delete[] aexpqqb;
-	  delete[] aexpqqp;
-	  delete[] aexpqqbp;
+	  //include aexp into aexpqg and aexpqq,qqp,qqb,qqbp
+	  for (int sign = mesq::positive; sign <= mesq::negative; sign++)
+	    for (int i = 0; i < mellinint::mdim; i++)
+	      {
+		int idx = anomalous::index(i,sign);
+		aexpqg[idx]   *= aexp;
+		aexpqqb[idx]  *= aexp2;
+		aexpqqp[idx]  *= aexp2;
+		aexpqqbp[idx] *= aexp2;
+	      }
+	  //delete[] aexpqq;
+	  //delete[] aexpqg;
+	  //delete[] aexpqqb;
+	  //delete[] aexpqqp;
+	  //delete[] aexpqqbp;
+
+	  //cout << "mellin1d" << endl;
+	  //for (int sign = mesq::positive; sign <= mesq::negative; sign++)
+	  //  for (int i = 0; i < mellinint::mdim; i++)
+	  //    {
+	  //	int idx = anomalous::index(i,sign);
+	  //	cout << i << " " << sign << " aexpqq   " << aexpqq[idx] << endl;
+	  //	cout << i << " " << sign << " aexpqg   " << aexpqg[idx] << endl;
+	  //	//cout << i << " " << sign << " aexpqqb  " << aexpqqb[idx] << endl;
+	  //	//cout << i << " " << sign << " aexpqqp  " << aexpqqp[idx] << endl;
+	  //	//cout << i << " " << sign << " aexpqqbp " << aexpqqbp[idx] << endl;
+	  //    }
+	  
 	}
       else //mellin2d
 	{
-	  complex <double> aexpqq_1[mellinint::mdim*2];
-	  complex <double> aexpqg_1[mellinint::mdim*2];
-	  complex <double> aexpqqb_1[mellinint::mdim*2];
-	  complex <double> aexpqqp_1[mellinint::mdim*2];
-	  complex <double> aexpqqbp_1[mellinint::mdim*2];
-	  complex <double> aexpqq_2[mellinint::mdim*2];
-	  complex <double> aexpqg_2[mellinint::mdim*2];
-	  complex <double> aexpqqb_2[mellinint::mdim*2];
-	  complex <double> aexpqqp_2[mellinint::mdim*2];
-	  complex <double> aexpqqbp_2[mellinint::mdim*2];
+	  //complex <double> aexpqq_1[mellinint::mdim*2];
+	  //complex <double> aexpqg_1[mellinint::mdim*2];
+	  //complex <double> aexpqqb_1[mellinint::mdim*2];
+	  //complex <double> aexpqqp_1[mellinint::mdim*2];
+	  //complex <double> aexpqqbp_1[mellinint::mdim*2];
+	  //complex <double> aexpqq_2[mellinint::mdim*2];
+	  //complex <double> aexpqg_2[mellinint::mdim*2];
+	  //complex <double> aexpqqb_2[mellinint::mdim*2];
+	  //complex <double> aexpqqp_2[mellinint::mdim*2];
+	  //complex <double> aexpqqbp_2[mellinint::mdim*2];
 
 	  //case opts.expc == 0
 	  fill(aexpqq_1, aexpqq_1+mellinint::mdim*2, 1.);
@@ -1860,6 +1991,36 @@ void expc::calc(complex <double> b)
 		  qbpg_1[ii12] = aexp * aexpqg_1[idx1] *aexp2*aexpqqbp_2[idx2];
 		  qbpg_2[ii12] = aexp * aexpqg_2[idx2] *aexp2*aexpqqbp_1[idx1];
 		}
+	  //include aexp into aexpqg and aexpqq,qqp,qqb,qqbp
+	  for (int sign = mesq::positive; sign <= mesq::negative; sign++)
+	    for (int i = 0; i < mellinint::mdim; i++)
+	      {
+		int idx = anomalous::index(i,sign);
+		aexpqg_1[idx]   *= aexp;
+		aexpqqb_1[idx]  *= aexp2;
+		aexpqqp_1[idx]  *= aexp2;
+		aexpqqbp_1[idx] *= aexp2;
+		aexpqg_2[idx]   *= aexp;
+		aexpqqb_2[idx]  *= aexp2;
+		aexpqqp_2[idx]  *= aexp2;
+		aexpqqbp_2[idx] *= aexp2;
+	      }
+	  //cout << "mellin2d" << endl;
+	  //for (int sign = mesq::positive; sign <= mesq::negative; sign++)
+	  //  for (int i = 0; i < mellinint::mdim; i++)
+	  //    {
+	  //	int idx = anomalous::index(i,sign);
+	  //	cout << i << " " << sign << " aexpqq   " << aexpqq_1[idx] << "  " << aexpqq_1[idx] - aexpqq_2[idx] << endl;
+	  //	cout << i << " " << sign << " aexpqg   " << aexpqg_1[idx] << "  " << aexpqg_1[idx] - aexpqg_1[idx] << endl;
+	  //	//cout << i << " " << sign << " aexpqqb_1  " << aexpqqb_1[idx] << endl;
+	  //	//cout << i << " " << sign << " aexpqqp_1  " << aexpqqp_1[idx] << endl;
+	  //	//cout << i << " " << sign << " aexpqqbp_1 " << aexpqqbp_1[idx] << endl;
+	  //	//cout << i << " " << sign << " aexpqqb_2  " << aexpqqb_2[idx] << endl;
+	  //	//cout << i << " " << sign << " aexpqqp_2  " << aexpqqp_2[idx] << endl;
+	  //	//cout << i << " " << sign << " aexpqqbp_2 " << aexpqqbp_2[idx] << endl;
+	  //    }
+	  
+	  
 	}
       //cout << alogqq[0] << " expc::alogqq " << endl;
       //cout << alogqg[0] << " expc::alogqg " << endl;
@@ -1869,7 +2030,7 @@ void expc::calc(complex <double> b)
       //cout << endl;
     }
 
-  if (opts.order >= 4)
+  if (opts.order_expc >= 4)
     {
       if (opts.mellin1d)
 	{
@@ -1878,11 +2039,11 @@ void expc::calc(complex <double> b)
 	  complex <double> alogqqb[mellinint::mdim*2];
 	  complex <double> alogqqp[mellinint::mdim*2];
 	  complex <double> alogqqbp[mellinint::mdim*2];
-	  complex <double> aexpqq[mellinint::mdim*2];
-	  complex <double> aexpqg[mellinint::mdim*2];
-	  complex <double> aexpqqb[mellinint::mdim*2];
-	  complex <double> aexpqqp[mellinint::mdim*2];
-	  complex <double> aexpqqbp[mellinint::mdim*2];
+	  //complex <double> aexpqq[mellinint::mdim*2];
+	  //complex <double> aexpqg[mellinint::mdim*2];
+	  //complex <double> aexpqqb[mellinint::mdim*2];
+	  //complex <double> aexpqqp[mellinint::mdim*2];
+	  //complex <double> aexpqqbp[mellinint::mdim*2];
 
 	  if (opts.expc == 0)
 	    if (opts.sumlogs)
@@ -1957,7 +2118,16 @@ void expc::calc(complex <double> b)
 		    qbpg[ii] = aexp * aexpqg[idx] *aexp2*aexpqqbp[idx];
 		  }
 	      }
-	  
+	  //include aexp into aexpqg and aexpqq,qqp,qqb,qqbp
+	  for (int sign = mesq::positive; sign <= mesq::negative; sign++)
+	    for (int i = 0; i < mellinint::mdim; i++)
+	      {
+		int idx = anomalous::index(i,sign);
+		aexpqg[idx]   *= aexp;
+		aexpqqb[idx]  *= aexp2;
+		aexpqqp[idx]  *= aexp2;
+		aexpqqbp[idx] *= aexp2;
+	      }
 	}
       else //mellin2d
 	{
@@ -2047,5 +2217,3 @@ void expc::calc(complex <double> b)
 	    }
 	}
 }
-
-

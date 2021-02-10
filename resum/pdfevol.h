@@ -109,7 +109,8 @@ namespace pdfevol
   //retrieve moments corresponding to i, and sign from the Fortran common block and store them in fn1 and fn2, to be used with the mellin1d option
   extern void retrieve1d_fortran(int i, int sign);
 
-  extern void retrievemuf(int i);
+  extern void retrievemuf_1d(int i);
+  extern void retrievemuf_2d(int i);
 
   extern void truncate();
   extern void uppertruncate();

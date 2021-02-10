@@ -9,7 +9,6 @@ using namespace resconst;
 
 namespace alphas
 {
-  const double sxth = 0.166666666666666; //1./6.;
   const int nastps = 10;
   
   inline complex <double> fbeta1(complex <double> a) {return -pow(a,2)*(beta0+a*beta1);};

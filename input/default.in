@@ -8,7 +8,14 @@ nproc        = 3    # Process: 1) W+; 2) W-; 3) Z/gamma*
 # fixedorder_only = true   # Evaluate predictions at fixed order
 # fixedorder_only = false  # Evaluate predictions including qt-resummation
 fixedorder_only = false
-order           = 2        # QCD order: 0) LO(+LL), 1) NLO(+NLL), 2) NNLO(+NNLL)
+order           = 2        # QCD order: 0) LO(+LL), 1) NLO(+NLL), 2) NNLO(+NNLL), 3) N3LO(+N3LL)
+order_sudak     = -1
+order_hcoef     = -1
+order_evol      = -1
+order_expc      = -1
+
+# Switch for quark box contribution at N3LO
+qbox = true
 
 # Non-perturbative form factor, S_NP = exp(-npff(b))
 # 0: Gaussian (BLNY)                 npff(b) = (g1 + g2*log(m/Q0) + g3*log(100*m/sqrt(s)))*b^2
@@ -44,7 +51,7 @@ g1_bo = 0.5  # bottom
 g1_gl = 0.5  # gluon
 
 # PDF settings
-LHAPDFset    = CT18nnlo       # PDF set from LHAPDF
+LHAPDFset    = CT18NNLO       # PDF set from LHAPDF
 LHAPDFmember = 0              # PDF member
 PDFerrors    = false	      # Calculate PDF errors
 
@@ -59,7 +66,7 @@ alphaslha = false  # If true, take alphas(mur) from LHAPDF, otherwise alphas is 
 #4: mu^2 = (pT + sqrt(mll^2+pT^2))^2
 fmuren = 1     # Functional form of the renormalisation scale
 fmufac = 1     # Functional form of the factorisation scale
-fmures = 1     # Functional form of the resummation scale (forms 2 and 3 are equivalent to 1)
+fmures = 1     # Functional form of the resummation scale (forms >= 2 are equivalent to 1)
 
 # QCD scale settings
 kmuren = 0.5         # Scale factor for the renormalisation scale
@@ -149,7 +156,7 @@ blim_pdf = 1.1229190    #if not zero, set a different blim for the PDF evolution
 blim_sudakov = 0        #if not zero, set a different blim for the Sudakov form factor
 blim_expc = 0           #if not zero, set a different blim for the exponentiation of the C coefficients
 
-bstar_pdf     = false  #force bstar prescription for the PDF evolution
+bstar_pdf     = true  #force bstar prescription for the PDF evolution
 bstar_sudakov = false  #force bstar prescription for the Sudakov form factor
 bstar_expc    = false  #force bstar prescription for the exponentiation of the C coefficients
 
@@ -178,8 +185,8 @@ pdfrule = 200             # Gaussian rule for the x-to-N Mellin transform
 #4: Pegasus VFN with alphas from DYRES (forward evolution)
 evolmode = 1
 
-# Evolve PDFs from mufac (instead of mures) to b0/b
-mufevol = false
+# Do not factorize muf/Q variations from expc (use false only to reproduce old results)
+mufvar = true
 
 # Settings for the inverse Hankel transform
 bintaccuracy = 1.0e-4  # Accuracy of the integration
@@ -187,17 +194,17 @@ bintaccuracy = 1.0e-4  # Accuracy of the integration
 # Settings for the inverse Mellin integrations
 mellininv = 0       # Strategy for the Mellin inversion (0 Gauss-Legendre, 1 Talbot)
 mellinintervals = 1 # Number of intervals
-mellinrule = 30     # Number of nodes
+mellinrule = 60     # Number of nodes
 
 # Options for the Mellin inversion with Gauss-Legendre integration
 zmax = 2   	    # Upper limit of the contour in the imaginary axis
-ncycle = 15         # Number of pi-cycles in the contour (use 40 for mellin1d = false at high rapidity)
+ncycle = 30         # Number of pi-cycles in the contour (use 40 for mellin1d = false at high rapidity)
 cpoint = 3   	    # Point of intersection of the contour with the real axis (scaled by 1/log(z))
 cshift = 0.5	    # Shift to the right of the point of intersection of the contour with the real axis
 phi = 0.5           # Angle between the real axis and the linear contour in units of pi
 
 mellincores = 1     # Number of parallel threads for the Mellin integration (not yet supported)
-mellin1d = false    # Use 1d (y-integrated) or 2d (y-dependent) Mellin inversion
+mellin1d = true     # Use 1d (y-integrated) or 2d (y-dependent) Mellin inversion
 melup = 2           # Strategy for the update of the contour for the Mellin inversion (0; do not update; 1: update in each bin; 2: update at each phase-space point)
 xspace = false      # Access PDFs in Bjorken-x space, without Mellin inversion (option available only in the LL case where the convolution is trivial)
 
@@ -209,7 +216,7 @@ damp = true
 # 2: Exponential: exp((k*mll)^-qt^2)/(delta*mll)^2
 # 3: Cosine:      cos(PI/(delta*mll)*(qt-k*mll))+1)/2
 dampmode = 1
-dampk = 0.5
+dampk = 0.75
 dampdelta = 0.5
 
 # qt-subtraction cut-off. Both conditions are applied, at least one between qtcut and xqtcut must be > 0

@@ -247,6 +247,20 @@ double besselint_mp_complex_dequad(double x)
   bd = resint::bc + jacd*(x-resint::bc);
   /**********************************************/
 
+  ///*********** smooth the contour at the bisection point **************/
+  //complex <double> jacu, jacd;
+  //complex <double> bu, bd;
+  //double y = x-resint::bc;
+  //double m = tan(M_PI/opts.phibr);
+  //double f = sqrt(1+y*y)-1.;
+  //double df = y/(sqrt(y*y)+1);
+  //bu = resint::bc + complex <double> (y, m*f);
+  //bd = resint::bc + complex <double> (y, -m*f);
+  //jacu = complex <double> (1.,df);
+  //jacd = complex <double> (1.,-df);
+  ///**********************************************/
+
+  
   ///*********** Parallelogram contour **************/
   // //--> make this an option?
   // //Continue parallel to the real axis after the Landau pole at bmax
@@ -575,7 +589,6 @@ void resint::rint(double costh, double m, double qt, double y, int mode, double 
       // -> put all this into mellinint::allocate()
       mellinint::allocate();
       ccoeff::allocate();
-      //pegasus::allocate();
       pmom::allocate();
       mellinint::update();
     }
@@ -608,6 +621,7 @@ void resint::rint(double costh, double m, double qt, double y, int mode, double 
       double ymn = min(max(-ylim, phasespace::ymin),ylim);
       double ymx = max(min(ylim, phasespace::ymax),-ylim);
       rapint::allocate();
+
       if (opts.makecuts)
 	{
 	  //there is a potential issue here, when lepton cuts are applied
@@ -759,31 +773,30 @@ void resint::rint(double costh, double m, double qt, double y, int mode, double 
   expc::allocate();
   if (opts.numsud || opts.numexpc || opts.order >= 4)
     gint::allocate();
+
+  hcoeff::allocate();
+  hcoeff::reset();
+  hcoeff::calc();
+
+  muf::allocate();
+  muf::reset();
+
+  /*
   if (opts.mellin1d)
     {
-      hcoeff::allocate();
-      hcoeff::reset();
-      hcoeff::calc();
 
       //hcoeff_check::allocate();
       //hcoeff_check::reset();
       //hcoeff_check::calc();
-      
-      muf::allocate();
-      muf::reset();
-      //muf::calc();
     }
   else
     {
       //hcoefficients::allocate();
       //hcoefficients::reset();
       //hcoefficients::calc(aass,logmuf2q2,logq2muf2,logq2mur2,loga);
-
-      hcoeff::allocate();
-      hcoeff::reset();
-      hcoeff::calc();
     }
-
+  */
+  
   pdfevol::allocate_fx();
   //*****************************************
 
@@ -949,17 +962,13 @@ void resint::rint(double costh, double m, double qt, double y, int mode, double 
   expc::free();
   if (opts.numsud || opts.numexpc || opts.order >= 4)
     gint::free();
-  if (opts.mellin1d)
-    {
-      hcoeff::free();
-      muf::free();
-      //hcoeff_check::free();
-    }
-  else
-    {
-      //hcoefficients::free();
-      hcoeff::free();
-    }
+  hcoeff::free();
+  muf::free();
+  
+  //if (opts.mellin1d)
+  //  //hcoeff_check::free();
+  //else
+  //  //hcoefficients::free();
 
   if (!(opts.order == 0 && opts.xspace))
     mesq::free();
@@ -968,7 +977,6 @@ void resint::rint(double costh, double m, double qt, double y, int mode, double 
     {
       mellinint::free();
       ccoeff::free();
-      //pegasus::free();
       pmom::free();
     }
 

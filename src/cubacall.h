@@ -19,6 +19,7 @@ void resintegr3d(vector <double> &res, double &err); //(missing Ai)
 void resintegrMC(vector <double> &res, double &err); //missing PDF variations
 
 //fixed order born configuration
+void bornintegr1d(vector <double> &res, double &err);    //Ai as dimensions
 void bornintegr2d(vector <double> &res, double &err);    //Ai as dimensions
 void bornintegrMC4d(vector <double> &res, double &err);  //missing PDF variations
 void bornintegrMC6d(vector <double> &res, double &err);
