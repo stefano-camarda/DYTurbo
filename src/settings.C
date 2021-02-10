@@ -35,7 +35,7 @@ void settings::parse_options(int argc, char* argv[]){
         ("v,verbose"         , "Be verbose"                     )
         ("q,small-stat"      , "Set quick run with small stat." )
         ("p,proc"            , "Set process [z0/wp/wm]"                              , po::value<string>() )
-        ("c,collider"        , "Set beam conditions [tev2/lhc7/lhc8/lhc13/lhc14]"    , po::value<string>() )
+        ("c,collider"        , "Set beam conditions [tev2/lhc5/lhc7/lhc8/lhc13/lhc14]"    , po::value<string>() )
         ("o,order"           , "Set order [0:LO, 1:NLL+NLO, 2:NNLL+NNLO]"            , po::value<int>() )
         ("f,fixedorder"      , "Set fixed order only"              )
         ("e,resummation"     , "Set resummation"                )
@@ -171,8 +171,8 @@ void settings::parse_options(int argc, char* argv[]){
         ToLower(val);
         if        (val == "tev1"  ){ sroot=1.80e3; ih1=1; ih2=-1;
         } else if (val == "tev2"  ){ sroot=1.96e3; ih1=1; ih2=-1;
-        } else if (val == "lhc7"  ){ sroot=7.00e3; ih1=1; ih2=1;
         } else if (val == "lhc5"  ){ sroot=5.00e3; ih1=1; ih2=1;
+        } else if (val == "lhc7"  ){ sroot=7.00e3; ih1=1; ih2=1;
         } else if (val == "lhc8"  ){ sroot=8.00e3; ih1=1; ih2=1;
         } else if (val == "lhc13" ){ sroot=13.0e3; ih1=1; ih2=1;
         } else if (val == "lhc14" ){ sroot=14.0e3; ih1=1; ih2=1;
