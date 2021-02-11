@@ -26,13 +26,13 @@ double blim::calc(double bl, double Q)
   //more precisely, the pole is at lambda = 1 <==> beta0*as*blog = 1
   if (bl < 0)
     {
-      if (opts.modlog == 0)
+      if (!opts.modlog)
 	bmax = resconst::b0/Q * exp(1./(2.*resint::aass*resconst::beta0));
-      else if (opts.modlog == 1)
+      else if (opts.p == 1)
 	//bmax = resconst::b0/Q * (exp(1./(2.*resint::aass*resconst::beta0))-1.);
 	//I think the correct formula is:
 	bmax = resconst::b0/Q * sqrt(exp(1./(resint::aass*resconst::beta0))-1.);
-      else if (opts.modlog == 2)
+      else
 	bmax = resconst::b0/Q * pow(sqrt(exp(opts.p/(resint::aass*resconst::beta0))-1.),1./opts.p);
 
       //scale by factor (-bl)
