@@ -25,7 +25,7 @@ void itilde::init()
 double itilde::besselk(double x, int n)
 {
   //fortran interface
-  xmio_.xmio_ = x;
+  //xmio_.xmio_ = x;
   switch (n)
     {
     case 1: return itilde_(one);   break;
@@ -35,6 +35,21 @@ double itilde::besselk(double x, int n)
     }
   return 0;
 }
+
+////Eq. (136) of https://arxiv.org/pdf/hep-ph/0508068.pdf
+//double itilde::ibar(double x, int n)
+//{
+//  double x2 = pow(x,2);
+//  double lx2 = log(1./x2);
+//  switch (n)
+//    {
+//    case 1: return -1./x2;                       break;
+//    case 2: return -2./x2*lx2;                   break;
+//    case 3: return -3./x2*pow(lx2,2);            break;
+//    case 4: return -4./x2*(pow(lx2,2)-4.*zeta3); break;
+//    }
+//  return 0;
+//}
 
 //Calculate Itilde from the integral expression:
 //Itilde_n(qt/q)=q^2 int_0^inf db b/2 J0(bqt) ln^n(Q^2 b^2 / b0^2 + 1)
@@ -63,11 +78,11 @@ double itilde::integrand(double b)
   double b2 = b*b;
   double val = b/2. * fort_besj0_(qtb);
 
-  if (opts.modlog == 0)
+  if (!opts.modlog)
     val *= pow(log(iq2*b2/ib02),in);
-  else if (opts.modlog == 1)
+  else if (opts.p == 1)
     val *= pow(log(iq2*b2/ib02+1.),in);
-  else if (opts.modlog == 2)
+  else
     val *= pow(1./opts.p*log(pow(iq2*b2/ib02,opts.p)+1.),in);
 
   //cout << " b " << b << " val " << val;
@@ -109,28 +124,38 @@ double itilde::integrand_int(double b)
   double b2 = b*b;
   //double val = 1./2. * fort_besj1_(qtb) * pow(log(iq2*b2/ib02+1.),in);
 
+  double p = opts.p;//1.000001;//;
+  
   double val = 1./2. * fort_besj1_(qtb);
-  if (opts.modlog == 0)
+  if (!opts.modlog)
     val *= pow(log(iq2*b2/ib02),in);
-  else if (opts.modlog == 1)
+  else if (opts.p == 1)
     val *= pow(log(iq2*b2/ib02+1.),in);
-  else if (opts.modlog == 2)
-    val *= pow(1./opts.p*log(pow(iq2*b2/ib02,opts.p)+1.),in);
+  else
+    val *= pow(1./p*log(pow(iq2*b2/ib02,p)+1.),in);
+    //val *= pow(log(pow(pow(iq2*b2/ib02,p)+1.,1./p)),in);
+    //val *= pow(log(p/tanh(p*ib02/iq2/b2)),in);
+    //val *= pow(log(1./pow(tanh(pow(ib02/iq2/b2,1./p)),p) ),in);
+    //val *= pow(log(iq2*b2/ib02+p),in);
+    //val *= pow(log(2./ (1.+exp(-iq2*b2/ib02))),in);
+  
+  //cout << pow(log(iq2*b2/ib02+1.),in) << "  " << pow(1./p*log(pow(iq2*b2/ib02,p)+1.),in) << endl;
 
   /*
   //(Eq. 3.8 of https://arxiv.org/pdf/1805.05916.pdf)
   double jac;
-  //if (opts.modlog == 0)
+  //if (!opts.modlog)
   //  jac = 1.;
-  //else if (opts.modlog == 1)
+  //else if (opts.p == 1)
   //  jac = sqrt(iq2/(iq2+ib02/b2));
-  //else if (opts.modlog == 2)
+  //else
   //  jac = sqrt(pow(iq2*b2/ib02,opts.p)/(1.+pow(iq2*b2/ib02,opts.p)));
-  if (opts.modlog == 0)
+
+  if (!opts.modlog)
     jac = 1.;
-  else if (opts.modlog == 1)
+  else if (opts.p == 1)
     jac = sqrt(iq2)/iqt/(1.+sqrt(iq2)/iqt);
-  else if (opts.modlog == 2)
+  else
     jac = pow(sqrt(iq2)/iqt,opts.p)/(1.+pow(sqrt(iq2)/iqt,opts.p));
   val *= jac;
   */
