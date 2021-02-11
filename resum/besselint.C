@@ -132,21 +132,19 @@ complex <double> besselint::bint(complex <double> b)
 	xj0 = 2.*fort_besj0_(qtb);
     }
   //********************
-  /*
   //(Eq. 3.8 of https://arxiv.org/pdf/1805.05916.pdf)
-  double Q2 = pow(scales::res,2);
-  complex <double> b2 = pow(b,2);
-  double b02 = pow(resconst::b0,2);
-  if (opts.modlog == 1)
-    xj0 *= sqrt(Q2*b2/b02/(Q2*b2/b02+1.));
-  else if (opts.modlog == 2)
-    xj0 *= sqrt(pow(Q2*b2/b02,opts.p)/(1.+pow(Q2*b2/b02,opts.p)));
+  //double Q2 = pow(scales::res,2);
+  //complex <double> b2 = pow(b,2);
+  //double b02 = pow(resconst::b0,2);
+  //if (opts.modlog && opts.p == 1)
+  //  xj0 *= sqrt(Q2*b2/b02/(Q2*b2/b02+1.));
+  //else if (opts.modlog && opts.p > 1)
+  //  xj0 *= sqrt(pow(Q2*b2/b02,opts.p)/(1.+pow(Q2*b2/b02,opts.p)));
 
-  //if (opts.modlog == 1)
+  //if (opts.modlog && opts.p == 1)
   //  xj0 *= scales::res/qt/(1.+scales::res/qt);
-  //else if (opts.modlog == 2)
+  //else if (opts.modlog && opts.p > 1)
   //  xj0 *= pow(scales::res/qt,opts.p)/(1.+pow(scales::res/qt,opts.p));
-  */
   //********************
   
   //The Sudakov is mass and b dependent
