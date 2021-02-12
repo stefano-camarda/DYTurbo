@@ -169,8 +169,8 @@ public:
   double qtcutoff;
 
   //Modified logarithms
-  int modlog;
-  double p;
+  bool modlog;
+  int p;
   
   //qtcut
   double xqtcut, qtcut;
