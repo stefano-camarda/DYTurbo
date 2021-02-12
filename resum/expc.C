@@ -258,11 +258,11 @@ void expc::calc(complex <double> b)
 {
   //Return 1 if b is close to the Landau pole
   double b_L;
-  if (opts.modlog == 0)
+  if (!opts.modlog)
     b_L = b0/scales::res * exp(1./(2.*aass*beta0));
-  else if (opts.modlog == 1)
+  else if (opts.p == 1)
     b_L = b0/scales::res * sqrt(exp(1./(aass*beta0))-1.);
-  else if (opts.modlog == 2)
+  else
     b_L = b0/scales::res * pow(sqrt(exp(opts.p/(aass*beta0))-1.),1./opts.p);
 
   if (fabs(b-b_L) < 1e-8)
@@ -299,11 +299,11 @@ void expc::calc(complex <double> b)
   double aass2 = pow(aass,2);
   
   complex <double> blog;
-  if (opts.modlog == 0)
+  if (!opts.modlog)
     blog = log(pow(Q*bstar/b0,2));   //normal sudakov
-  else if (opts.modlog == 1)
+  else if (opts.p == 1)
     blog = log(pow(Q*bstar/b0,2) + 1.); //modified sudakov
-  else if (opts.modlog == 2)
+  else
     blog = 1./opts.p*log(pow(Q*bstar/b0,2*opts.p) + 1.); //modified sudakov with exponent p
 
   
