@@ -78,10 +78,12 @@ void gint::intg(complex <double> q, complex <double> jac, double blim)
       //undo tilde
       double Q = scales::res;
       complex <double> bstar;
-      if (opts.modlog)
+      if (!opts.modlog)
+	bstar = bstartilde;  //normal sudakov
+      else if (opts.p == 1)
 	bstar = sqrt(bstartilde*bstartilde - pow(b0/Q,2));
       else
-	bstar = bstartilde;  //normal sudakov
+	bstar = pow(pow(bstartilde,2*opts.p) - pow(b0/Q,2*opts.p),1./opts.p); //to be checked !!!
       
       //undo star
       complex <double> b;
@@ -89,10 +91,12 @@ void gint::intg(complex <double> q, complex <double> jac, double blim)
 
       //recompute tilde
       complex <double> btilde;
-      if (opts.modlog)
+      if (!opts.modlog)
+	btilde = b;  //normal sudakov
+      else if (opts.p == 1)
 	btilde = sqrt(pow(b,2) + pow(b0/Q,2)); //modified sudakov
       else
-	btilde = b;  //normal sudakov
+	btilde = pow(pow(b,2*opts.p) + pow(b0/Q,2*opts.p),1./opts.p); //to be checked !!!
 
       qq = b0/btilde;
     }
@@ -154,10 +158,12 @@ void gint::intbeta(complex <double> q, complex <double> jac, double blim)
       //undo tilde
       double Q = scales::res;
       complex <double> bstar;
-      if (opts.modlog)
+      if (!opts.modlog)
+	bstar = bstartilde;  //normal sudakov
+      else if (opts.p == 1)
 	bstar = sqrt(bstartilde*bstartilde - pow(b0/Q,2));
       else
-	bstar = bstartilde;  //normal sudakov
+	bstar = pow(pow(bstartilde,2*opts.p) - pow(b0/Q,2*opts.p),1./opts.p); //to be checked !!!
       
       //undo star
       complex <double> b;
@@ -165,10 +171,12 @@ void gint::intbeta(complex <double> q, complex <double> jac, double blim)
 
       //recompute tilde
       complex <double> btilde;
-      if (opts.modlog)
+      if (!opts.modlog)
+	btilde = b;  //normal sudakov
+      else if (opts.p == 1)
 	btilde = sqrt(pow(b,2) + pow(b0/Q,2)); //modified sudakov
       else
-	btilde = b;  //normal sudakov
+	btilde = pow(pow(b,2*opts.p) + pow(b0/Q,2*opts.p),1./opts.p); //to be checked !!!
 
       qq = b0/btilde;
     }

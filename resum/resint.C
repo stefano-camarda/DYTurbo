@@ -518,15 +518,20 @@ void resint::rint(double costh, double m, double qt, double y, int mode, double 
   f[0] = 0.;
   f[1] = 0.;
 
+  double jac = 1;
+
   /*
   //limit the integration to qt = m
-  double jac = 1;
+  scales::set(m);
+  double Q = m;//2.*scales::res; //m;
   double qtp = qt;
-  if (qtp >= m*0.999)
-    return 0.;
-  else
-    qt = qtp/sqrt(1-pow(qtp/m,2));
-  jac = pow(m/sqrt(m*m-qtp*qtp),3);
+  if (qtp >= Q*0.999999)
+    return;
+
+  //qt = qtp/sqrt(1-pow(qtp/Q,2));
+  //jac = pow(m/sqrt(m*m-qtp*qtp),3);
+  qt = Q*atanh(qtp/Q);
+  jac = 1./(1.-pow(qtp/Q,2));
   */
   
   //point in phase space (should use the phasespace namespace instead of storing them in resint)
@@ -986,7 +991,7 @@ void resint::rint(double costh, double m, double qt, double y, int mode, double 
   pdfevol::free();
   
   pdfevol::free_fx();
-  //res *= jac;//jacobian for the change of variable qt=qtp/sqrt(1-qtp^2/m^2)
+  res *= jac;//jacobian for the change of variable qt=qtp/sqrt(1-qtp^2/m^2)
 
   f[0] = res;
   f[1] = res_m;
@@ -1169,11 +1174,10 @@ double resint::bintegral(double qt)
       intdeo(besselint_dequad, 0.0, qt, awinf, &res, &err);
       if (err < 0)
       	cout << "warning: dequad abnormal termination, pt=" << _qt << " m=" << _m << " y=" << _y << " bint: " << res << " err " << err << endl;
-
       /*
       //test alternative integrations
-      //      cout << endl;
-      //      cout << "dequad result of inverse bessel transform, pt=" << _qt << " m=" << _m << " y=" << _y << " : " << setprecision(16) << res << " +- " << err << endl;
+      cout << endl;
+      cout << "dequad result of inverse bessel transform, pt=" << _qt << " m=" << _m << " y=" << _y << " : " << setprecision(16) << res << " +- " << err << endl;
 
       int bqrule = 20;
       complex <double> h1 = 0;
@@ -1183,15 +1187,15 @@ double resint::bintegral(double qt)
 	{
 	  bb = complex <double> {0,bq::xxx[bqrule-1][i]/qt};
 	  h1 += 2./M_PI/qt * bq::www[bqrule-1][i] * besselint::bint(bb);
-	  //	  cout << "bb " << bb << " h1  " << h1 << endl;
+	  //cout << "bb " << bb << " h1  " << h1 << endl;
 	  bb = complex <double> {0,-bq::xxx[bqrule-1][i]/qt};
 	  h2 += 2./M_PI/qt * bq::www[bqrule-1][i] * besselint::bint(bb);
-	  //	  cout << "bb " << bb << " h2  " << h2 << endl;
+	  //cout << "bb " << bb << " h2  " << h2 << endl;
 	}
       res = real(1./2.*(h1+h2));
 
-      //      cout << "bequad result " << res << endl;
-      //      cout.precision(6); cout.unsetf(ios_base::floatfield);
+      cout << "bequad result " << res << endl;
+      cout.precision(6); cout.unsetf(ios_base::floatfield);
       /*
      hankel::init(0,0,0.1);
      hankel::transform(besselint_hankel, qt, res, err);
@@ -1345,7 +1349,6 @@ double resint::bintegral(double qt)
       res += resdequad;
       
       //cout << "Total bp = 2 " << res << endl;
-
       /*
       //test alternative integrations
       //      cout << endl;
@@ -1369,7 +1372,6 @@ double resint::bintegral(double qt)
       //      cout << "bequad result " << res << endl;
       //      cout.precision(6); cout.unsetf(ios_base::floatfield);
       */
-      
     }
   //Minimal prescription along the real axis, crossing the Landau singularity
   else if (opts.bprescription == 3)
@@ -1404,7 +1406,25 @@ double resint::bintegral(double qt)
       
       //cout << "Total bp = 3 " << res << endl;
     }
-      
+
+  //Bessel quadrature rule
+  else if (opts.bprescription == 5)
+    {
+      int bqrule = 40;
+      complex <double> h1 = 0;
+      complex <double> h2 = 0;
+      complex <double> bb;
+      for (int i = 0; i < bqrule; i++)
+       {
+	 bb = complex <double> {0,bq::xxx[bqrule-1][i]/qt};
+	 h1 += 2./M_PI/qt * bq::www[bqrule-1][i] * besselint::bint(bb);
+	 //	 cout << "bb " << bb << " h1  " << h1 << endl;
+	 bb = complex <double> {0,-bq::xxx[bqrule-1][i]/qt};
+	 h2 += 2./M_PI/qt * bq::www[bqrule-1][i] * besselint::bint(bb);
+	 //	 cout << "bb " << bb << " h2  " << h2 << endl;
+       }
+      res = real(1./2.*(h1+h2));
+    }
   //  //vfn integration --> Not correct!!!
   //  //split the integral above and below the b and c masses
   //
@@ -1510,31 +1530,38 @@ double resint::bintegral(double qt)
   cout << "}" << endl;
   */
 
-  /*
-  cout << "{" << endl;
-  cout << "TGraph *g = new TGraph();" << endl;
-  double bmax = bc/opts.bcf;
-  cout << "//bmax = " << bmax << endl;
-  for (int i = 0; i < 1000; i++)
-    {
-      double x = i/1000. * bmax * 2;
-      complex <double> b;
-      //      double b = b_mb*0.95+i*(b_mb*1.05 -b_mb*0.95)/100.;
-      //double b = 0.+i*(b_mb*5 -0)/1000.;
-      if (x < resint::bc)
-	b = x;
-      else
-	{
-	  complex <double> jacu = complex <double> (1.,tan(M_PI/opts.phibr));
-	  b = resint::bc + jacu*(x-resint::bc);
-	}
-      //      cout << b << "  " << b_mb << "  " << besselint::bint(b) << endl;;
-      //cout << "g->SetPoint(g->GetN(), " << b/bmax << ", " << besselint::bint(b) << ");" << endl;
-      cout << "g->SetPoint(g->GetN(), " << real(b)/bmax << ", " << real(besselint::bint(b)) << ");" << endl;
-    }
-  cout << "g->Draw();" << endl;
-  cout << "}" << endl;
-  exit(0);  
-  */  
+//  double bl;
+//  bl = resconst::b0/scales::res * exp(1./(2.*resint::aass*resconst::beta0));
+//
+//  ofstream bf("bline.C");
+//  bf << "{" << endl;
+//  bf << "TGraph *g = new TGraph();" << endl;
+//  //double bmax = bc/opts.bcf;
+//  //double bmax = bc/100.;
+//  double bmax = bl;
+//  bf << "//bmax = " << bmax << endl;
+//  for (int i = 0; i < 1000; i++)
+//    {
+//      //double x = i/1000. * bmax * 2;
+//      double x = exp(-log(bmax)*i/200);
+//      complex <double> b;
+//      //      double b = b_mb*0.95+i*(b_mb*1.05 -b_mb*0.95)/100.;
+//      //double b = 0.+i*(b_mb*5 -0)/1000.;
+//      if (x < resint::bc)
+//	b = x;
+//      else
+//	{
+//	  complex <double> jacu = complex <double> (1.,tan(M_PI/opts.phibr));
+//	  b = resint::bc + jacu*(x-resint::bc);
+//	}
+//      //      cout << b << "  " << b_mb << "  " << besselint::bint(b) << endl;;
+//      //bf << "g->SetPoint(g->GetN(), " << b/bmax << ", " << besselint::bint(b) << ");" << endl;
+//      //bf << "g->SetPoint(g->GetN(), " << real(b)/bmax << ", " << real(besselint::bint(b)) << ");" << endl;
+//      bf << "g->SetPoint(g->GetN(), " << real(b) << ", " << real(besselint::bint(b)) << ");" << endl;
+//    }
+//  bf << "g->Draw();" << endl;
+//  bf << "}" << endl;
+//  exit(0);
+  
   return res;
 }

@@ -118,9 +118,9 @@ useGamma = true
 # Resummation parameters
 qtcutoff = 0.02   # Resummation cutoff in GeV
 
-# modlog = true  # Modified logarithms in the Sudakov L~ = log( (Q*b/b0)^2 + 1)
-# modlog = false # Canonical logarithms in the Sudakov L = log( (Q*b/b0)^2 )
+# Resum canonical logarithms L = log( (Q*b/b0)^2 ) or modified logarithms L~ = 1/p*log( (Q*b/b0)^2*p + 1)
 modlog = true
+p = 1
 
 # Switches for exponentiation of C coefficients
 #0: Switch off all C coefficients in the exponentiation

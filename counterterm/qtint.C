@@ -74,12 +74,21 @@ void qtint::calc(double m, double qtmin, double qtmax, int mode)
       itilde::calc(qt,m/a_param_.a_param_,4);
       //<< " C++ itilde(4) " << itilde::calc(qt,m/a_param_.a_param_,4)
       */
-      
-      double LL1 = itilde_(one)/pow(q2,2)*pow(a_param_.a_param_,2)*swtch;
-      double LL2 = itilde_(two)/pow(q2,2)*pow(a_param_.a_param_,2)*swtch;
-      double LL3 = itilde_(three)/pow(q2,2)*pow(a_param_.a_param_,2)*swtch;
-      double LL4 = itilde_(four)/pow(q2,2)*pow(a_param_.a_param_,2)*swtch;
 
+      double LL1,LL2,LL3,LL4;
+      
+      //LL1 = itilde_(one)  /pow(q2,2)*pow(a_param_.a_param_,2)*swtch;
+      //LL2 = itilde_(two)  /pow(q2,2)*pow(a_param_.a_param_,2)*swtch;
+      //LL3 = itilde_(three)/pow(q2,2)*pow(a_param_.a_param_,2)*swtch;
+      //LL4 = itilde_(four) /pow(q2,2)*pow(a_param_.a_param_,2)*swtch;
+      
+      double Q = scales::res;
+      double x = qt/Q;
+      LL1 = itilde::besselk(x,1)/pow(Q,2)/q2*swtch;
+      LL2 = itilde::besselk(x,2)/pow(Q,2)/q2*swtch;
+      LL3 = itilde::besselk(x,3)/pow(Q,2)/q2*swtch;
+      LL4 = itilde::besselk(x,4)/pow(Q,2)/q2*swtch;
+      
       for (int sp = 0; sp < mesq::totpch; sp++)
 	{
 	  LL1_mesqij[sp] = LL1*real(mesq::mesqij[sp]);
@@ -109,11 +118,18 @@ void qtint::calc(double m, double qtmin, double qtmax, int mode)
   //int_qtcut^inf dqt Itilde_n(qt/Q) = Q^2*qtcut/2 int_0^inf db J1(b*qtcut) ln^n(Q^2 b^2 / b0^2 + 1)
   if (opts.fixedorder)
     {
-      double LL1int = -2.*qtmin*itilde::integral(qtmin,m/a_param_.a_param_,1)/pow(q2,2)*pow(a_param_.a_param_,2);
-      double LL2int = -2.*qtmin*itilde::integral(qtmin,m/a_param_.a_param_,2)/pow(q2,2)*pow(a_param_.a_param_,2);
-      double LL3int = -2.*qtmin*itilde::integral(qtmin,m/a_param_.a_param_,3)/pow(q2,2)*pow(a_param_.a_param_,2);
-      double LL4int = -2.*qtmin*itilde::integral(qtmin,m/a_param_.a_param_,4)/pow(q2,2)*pow(a_param_.a_param_,2);
+      double LL1int, LL2int, LL3int, LL4int;
+      //LL1int = -2.*qtmin*itilde::integral(qtmin,m/a_param_.a_param_,1)/pow(q2,2)*pow(a_param_.a_param_,2);
+      //LL2int = -2.*qtmin*itilde::integral(qtmin,m/a_param_.a_param_,2)/pow(q2,2)*pow(a_param_.a_param_,2);
+      //LL3int = -2.*qtmin*itilde::integral(qtmin,m/a_param_.a_param_,3)/pow(q2,2)*pow(a_param_.a_param_,2);
+      //LL4int = -2.*qtmin*itilde::integral(qtmin,m/a_param_.a_param_,4)/pow(q2,2)*pow(a_param_.a_param_,2);
 
+      double Q = scales::res;
+      LL1int = -2.*qtmin*itilde::integral(qtmin,Q,1)/pow(Q,2)/q2;
+      LL2int = -2.*qtmin*itilde::integral(qtmin,Q,2)/pow(Q,2)/q2;
+      LL3int = -2.*qtmin*itilde::integral(qtmin,Q,3)/pow(Q,2)/q2;
+      LL4int = -2.*qtmin*itilde::integral(qtmin,Q,4)/pow(Q,2)/q2;
+      
       //loop on born subprocesses, i.e. born incoming partons ij
       for (int sp = 0; sp < mesq::totpch; sp++)
 	{
@@ -144,7 +160,43 @@ void qtint::calc(double m, double qtmin, double qtmax, int mode)
     }
   */
 
+
+  //modlog with p > 1
+  if (!opts.makecuts && opts.p > 1)
+    {
+      double LL1int = 2.*(qtmax*itilde::integral(qtmax,m/a_param_.a_param_,1) - qtmin*itilde::integral(qtmin,m/a_param_.a_param_,1))/pow(q2,2)*pow(a_param_.a_param_,2);
+      double LL2int = 2.*(qtmax*itilde::integral(qtmax,m/a_param_.a_param_,2) - qtmin*itilde::integral(qtmin,m/a_param_.a_param_,2))/pow(q2,2)*pow(a_param_.a_param_,2);
+      double LL3int = 2.*(qtmax*itilde::integral(qtmax,m/a_param_.a_param_,3) - qtmin*itilde::integral(qtmin,m/a_param_.a_param_,3))/pow(q2,2)*pow(a_param_.a_param_,2);
+      double LL4int = 2.*(qtmax*itilde::integral(qtmax,m/a_param_.a_param_,4) - qtmin*itilde::integral(qtmin,m/a_param_.a_param_,4))/pow(q2,2)*pow(a_param_.a_param_,2);
+
+      //loop on born subprocesses, i.e. born incoming partons ij
+      for (int sp = 0; sp < mesq::totpch; sp++)
+	{
+	  LL1_mesqij[sp] += LL1int*real(mesq::mesqij[sp]);
+	  LL2_mesqij[sp] += LL2int*real(mesq::mesqij[sp]);
+	  LL3_mesqij[sp] += LL3int*real(mesq::mesqij[sp]);
+	  LL4_mesqij[sp] += LL4int*real(mesq::mesqij[sp]);
+	}
+      return;
+    }
+  
   //In the general case (resummation, either with cuts or at high pT) use a gaussian quadrature integration
+
+  /*
+  //limit the integration to qt = m
+  double Q = m;//2.*scales::res; //m;
+  if (qtmin >= Q*0.999999)
+    return;
+  else
+    //qtmin = qtmin/sqrt(1-pow(qtmin/Q,2));
+    qtmin = Q*atanh(qtmin/Q);
+  if (qtmax >= Q*0.999999)
+    qtmax = 1e10; //ctlimit
+  else
+    //qtmax = qtmax/sqrt(1-pow(qtmax/Q,2));
+    qtmax = Q*atanh(qtmax/Q);
+  */
+  
   double qtmin2 = pow(qtmin,2);
   double qtmax2 = pow(qtmax,2);
   double tiny = 1e-5; //be carefull, if qtmin^2 < tiny the phase space generation is screwed up

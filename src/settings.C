@@ -355,7 +355,8 @@ void settings::readfromfile(const string fname){
     dampdelta      = in.GetNumber ( "dampdelta"      );
     dampmode       = in.GetNumber ( "dampmode"       );
     qtcutoff       = in.GetNumber ( "qtcutoff"       );
-    modlog         = in.GetBool   ( "modlog"       );
+    modlog         = in.GetBool ( "modlog"       );
+    p              = in.GetNumber ( "p"       );
     xqtcut         = in.GetNumber ( "xqtcut"         );
     qtcut          = in.GetNumber ( "qtcut"          );
     intDimRes      = in.GetNumber ( "intDimRes"      );
@@ -876,6 +877,7 @@ void settings::dumpAll(){
         dumpI("dampmode",       dampmode     );
 	dumpD("qtcutoff",       qtcutoff     );
 	dumpB("modlog",         modlog     );
+	dumpI("p",         p     );
 	dumpD("xqtcut",       xqtcut     );
 	dumpD("qtcut",       qtcut     );
         dumpB("useGamma          ", useGamma            );

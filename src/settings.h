@@ -170,6 +170,7 @@ public:
 
   //Modified logarithms
   bool modlog;
+  int p;
   
   //qtcut
   double xqtcut, qtcut;
