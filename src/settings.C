@@ -355,7 +355,7 @@ void settings::readfromfile(const string fname){
     dampdelta      = in.GetNumber ( "dampdelta"      );
     dampmode       = in.GetNumber ( "dampmode"       );
     qtcutoff       = in.GetNumber ( "qtcutoff"       );
-    modlog         = in.GetNumber ( "modlog"       );
+    modlog         = in.GetBool ( "modlog"       );
     p              = in.GetNumber ( "p"       );
     xqtcut         = in.GetNumber ( "xqtcut"         );
     qtcut          = in.GetNumber ( "qtcut"          );
@@ -566,7 +566,7 @@ void settings::check_consistency(){
     //minimal b prescription in the complex plain available only for evolmode 0
     //real axix minimal presxription works only at LL
 
-    //with modlog = 0 can run only the resummation term
+    //with modlog = false can run only the resummation term
     
     if (PDFerrors == true && LHAPDFmember != 0)
       {
@@ -876,8 +876,8 @@ void settings::dumpAll(){
         dumpD("dampdelta",     dampdelta      );
         dumpI("dampmode",       dampmode     );
 	dumpD("qtcutoff",       qtcutoff     );
-	dumpI("modlog",         modlog     );
-	dumpD("p",         p     );
+	dumpB("modlog",         modlog     );
+	dumpI("p",         p     );
 	dumpD("xqtcut",       xqtcut     );
 	dumpD("qtcut",       qtcut     );
         dumpB("useGamma          ", useGamma            );
