@@ -3082,12 +3082,12 @@ complex <double> mellinint::calc1d_muf()
 	QQBN               *(conj(hcoeff::Hqqb[i])+muf::qqb[idx])*expc::qqb[idx];
 
       //contribution starting at NLL
-      if (opts.order >= 1)
+      if (opts.order_hcoef >= 1)
 	neg +=
 	  + (QGN_1+QGN_2)    *(conj(hcoeff::Hqg[i]  ) *expc::qg[idx]   + muf::qg[idx]*expc::qqb[idx]);
 
       //contributions starting at NNLL
-      if (opts.order >= 2)
+      if (opts.order_hcoef >= 2)
 	neg +=
 	  + GGN              *(conj(hcoeff::Hgg[i]  )*expc::gg[idx]    + muf::gg[idx]  *expc::qqb[idx])
 	  + (QQN_1+QQN_2)    *(conj(hcoeff::Hqq[i]  )*expc::qq[idx]    + muf::qq[idx]  *expc::qqb[idx])
@@ -3095,7 +3095,7 @@ complex <double> mellinint::calc1d_muf()
 	  + (QQBPN_1+QQBPN_2)*(conj(hcoeff::Hqqbp[i])*expc::qqbp[idx]  + muf::qqbp[idx]*expc::qqb[idx]);
 	    
       //contributions starting at NNNLL
-      if (opts.order >= 3)
+      if (opts.order_hcoef >= 3)
 	neg +=
 	  + QQBN_nfz         * conj(hcoeff::Hqqb_nfz)*expc::qqb[idx]
 	  + (QBGN_1+QBGN_2)  *(conj(hcoeff::Hqbg[i] )*expc::qbg[idx]   + muf::qbg[idx] *expc::qqb[idx])
