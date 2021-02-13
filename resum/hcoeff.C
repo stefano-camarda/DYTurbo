@@ -247,6 +247,9 @@ void hcoeff::calc()
   double as = aass;
   double as2 = pow(aass,2);
   double as3 = pow(aass,3);
+
+  if (opts.order_hcoef >= 3)
+    Hqqb_nfz     = as3*2.*C3qq_delta_NFV;
   
   if (opts.mellin1d)
     //rapidity integrated
@@ -340,7 +343,6 @@ void hcoeff::calc()
 	complex <double> H3st_qbg  = (C2qqb[idx]*C1qg[idx]);
 	complex <double> H3st_qpg  = (C2qqp[idx]*C1qg[idx]);
 	complex <double> H3st_qbpg = (C2qqbp[idx]*C1qg[idx]);
-	complex <double> H3st_qqb_nfz  = 2.*C3qq_delta_NFV;
 
 	//Resummation scale variations
 	H3st_qqb += (-B3q*LQ + (-A3q/2. + B1q*B2q - B2q*beta0 - B1q*beta1/2.)*LQ2
@@ -407,7 +409,6 @@ void hcoeff::calc()
 	Hqbg[i]  += as3*H3st_qbg;
 	Hqpg[i]  += as3*H3st_qpg;
 	Hqbpg[i] += as3*H3st_qbpg;
-	Hqqb_nfz += as3*H3st_qqb_nfz;
       }
   else
     //rapidity dependent
@@ -513,7 +514,6 @@ void hcoeff::calc()
 	    complex <double> H3st_qqp_1 = C3qqbp_1[ii1]+ C1qq_2[ii2]*C2qqbp_1[ii1]; // (=C3qqbp_1+ C1qq_2[ii2]*C2qqp_1[ii1])
 	    complex <double> H3st_qqp_2 = C3qqbp_2[ii2]+ C1qq_1[ii1]*C2qqbp_2[ii2]; // (=C3qqbp_2+ C1qq_1[ii1]*C2qqp_2[ii2])
 	    complex <double> H3st_gg  = C1qg_1[ii1]*C2qg_2[ii2] + C1qg_2[ii2]*C2qg_1[ii1];
-	    complex <double> H3st_qqb_nfz  = 2.*C3qq_delta_NFV;
 
 	    //Resummation scale variations
 	    H3st_qqb += (-B3q*LQ + (-A3q/2. + B1q*B2q - B2q*beta0 - B1q*beta1/2.)*LQ2
@@ -613,7 +613,6 @@ void hcoeff::calc()
 	    Hqpg_2[idx]  += as3*H3st_qpg_2;
 	    Hqbpg_1[idx] += as3*H3st_qbpg_1;
 	    Hqbpg_2[idx] += as3*H3st_qbpg_2;
-	    Hqqb_nfz += as3*H3st_qqb_nfz;
 	  }
   
   return;
