@@ -319,11 +319,10 @@ complex <double> besselint::bint(complex <double> b)
   // Cache the positive and negative branch of coefficients which depend only on one I index
   expc::reset();
   expc::calc(b);
-  if (opts.mufvar)
-    {
-      muf::reset();
-      muf::calc(b);
-    }
+  muf::reset();
+  if (opts.mufvar
+      && (opts.kmufac != opts.kmures))     //Save expensive muf b-dependent scale variations when not needed
+    muf::calc(b);
 
   /*
   if (opts.mellin1d)
