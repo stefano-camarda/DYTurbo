@@ -559,10 +559,6 @@ void settings::check_consistency(){
     //	exit (-1);
     //  }
 
-    //Save expensive muf b-dependent scale variations when not needed
-    if (opts.kmufac == opts.kmures)
-      mufvar = false;
-    
     //minimal b prescription in the complex plain available only for evolmode 0
     //real axix minimal presxription works only at LL
 
