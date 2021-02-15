@@ -577,17 +577,18 @@ void gint::calc(complex <double> b)
   int rule = 100;
 
   // boundaries of integration (allow complex values for the minimal prescription)
-  complex <double> qmax,qmin,cq,mq;
-  if (opts.bprescription == 2)
-    qmax = scales::res+complex <double>(0.,1.)*imag(qmin);
-  else
-    qmax = scales::res;
-
+  complex <double> qmax_sud,qmin_sud;
+  complex <double> qmax_pdf,qmin_pdf;
+  complex <double> qmax_expc,qmin_expc;
+  qmax_sud = qmax_pdf = qmax_expc = scales::res;
+  complex <double> cq,mq;
   if (opts.numsud)
     {
-      qmin = btoqmin(b, blim::sudakov, opts.bstar_sudakov);
-      cq = (qmax+qmin)/2.;
-      mq = (qmax-qmin)/2.;
+      qmin_sud = btoqmin(b, blim::sudakov, opts.bstar_sudakov);
+      if (opts.bprescription == 2 && !opts.bstar_sudakov)
+	qmax_sud = scales::res+complex <double>(0.,1.)*imag(qmin_sud);
+      cq = (qmax_sud+qmin_sud)/2.;
+      mq = (qmax_sud-qmin_sud)/2.;
       for (int i = 0; i < rule; i++)
 	{
 	  complex <double> q = cq+mq*gr::xxx[rule-1][i];
@@ -595,9 +596,11 @@ void gint::calc(complex <double> b)
 	  intg(q, jac, blim::sudakov);
 	}
 
-      qmin = btoqmin(b, blim::pdf, opts.bstar_pdf);
-      cq = (qmax+qmin)/2.;
-      mq = (qmax-qmin)/2.;
+      qmin_pdf = btoqmin(b, blim::pdf, opts.bstar_pdf);
+      if (opts.bprescription == 2 && !opts.bstar_pdf)
+	qmax_pdf = scales::res+complex <double>(0.,1.)*imag(qmin_pdf);
+      cq = (qmax_pdf+qmin_pdf)/2.;
+      mq = (qmax_pdf-qmin_pdf)/2.;
       for (int i = 0; i < rule; i++)
 	{
 	  complex <double> q = cq+mq*gr::xxx[rule-1][i];
@@ -610,9 +613,11 @@ void gint::calc(complex <double> b)
   
   if (opts.numexpc)
     {
-      qmin = btoqmin(b, blim::expc, opts.bstar_expc);
-      cq = (qmax+qmin)/2.;
-      mq = (qmax-qmin)/2.;
+      qmin_expc = btoqmin(b, blim::expc, opts.bstar_expc);
+      if (opts.bprescription == 2 && !opts.bstar_expc)
+	qmax_expc = scales::res+complex <double>(0.,1.)*imag(qmin_expc);
+      cq = (qmax_expc+qmin_expc)/2.;
+      mq = (qmax_expc-qmin_expc)/2.;
       for (int i = 0; i < rule; i++)
 	{
 	  complex <double> q = cq+mq*gr::xxx[rule-1][i];
@@ -627,34 +632,42 @@ void gint::calc(complex <double> b)
   //now the integration among the vertical line
   if (opts.bprescription == 2)
     {
-      qmin = qmax;
-      qmax = scales::res;      
+      complex <double> qmax = scales::res;
 
       if (opts.numsud)
 	{
-	  cq = (qmax+qmin)/2.;
-	  mq = (qmax-qmin)/2.;
-	  for (int i = 0; i < rule; i++)
+	  if (!opts.bstar_sudakov)
 	    {
-	      complex <double> q = cq+mq*gr::xxx[rule-1][i];
-	      complex <double> jac = mq * gr::www[rule-1][i];
-	      intg(q, jac, blim::sudakov);
+	      qmin_sud = qmax_sud;
+	      cq = (qmax+qmin_sud)/2.;
+	      mq = (qmax-qmin_sud)/2.;
+	      for (int i = 0; i < rule; i++)
+		{
+		  complex <double> q = cq+mq*gr::xxx[rule-1][i];
+		  complex <double> jac = mq * gr::www[rule-1][i];
+		  intg(q, jac, blim::sudakov);
+		}
 	    }
-	  cq = (qmax+qmin)/2.;
-	  mq = (qmax-qmin)/2.;
-	  for (int i = 0; i < rule; i++)
+	  if (!opts.bstar_pdf)
 	    {
-	      complex <double> q = cq+mq*gr::xxx[rule-1][i];
-	      complex <double> jac = mq * gr::www[rule-1][i];
-	      intbeta(q, jac, blim::pdf);
+	      qmin_pdf = qmax_pdf;
+	      cq = (qmax+qmin_pdf)/2.;
+	      mq = (qmax-qmin_pdf)/2.;
+	      for (int i = 0; i < rule; i++)
+		{
+		  complex <double> q = cq+mq*gr::xxx[rule-1][i];
+		  complex <double> jac = mq * gr::www[rule-1][i];
+		  intbeta(q, jac, blim::pdf);
+		}
+	      logasl_pdf += logasl;
+	      logasl = 0.;
 	    }
-	  logasl_pdf += logasl;
-	  logasl = 0.;
 	}
-      if (opts.numexpc)
+      if (opts.numexpc && !opts.bstar_expc)
 	{
-	  cq = (qmax+qmin)/2.;
-	  mq = (qmax-qmin)/2.;
+	  qmin_expc = qmax_expc;
+	  cq = (qmax+qmin_expc)/2.;
+	  mq = (qmax-qmin_expc)/2.;
 	  for (int i = 0; i < rule; i++)
 	    {
 	      complex <double> q = cq+mq*gr::xxx[rule-1][i];
