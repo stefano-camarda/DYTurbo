@@ -1,4 +1,5 @@
-image: docker.cern.ch/linuxsupport/cc7-base:latest
+#image: docker.cern.ch/linuxsupport/cc7-base:latest
+image: gitlab-registry.cern.ch/ci-tools/ci-worker:cc7
 
 before_script:
   - yum install -y tar wget make
