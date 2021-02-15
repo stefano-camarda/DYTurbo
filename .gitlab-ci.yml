@@ -7,7 +7,7 @@ before_script:
 #  - yum install -y python python-devel
 #  - yum install -y boost-devel
   - yum install -y autoconf automake libtool
-  - yum install -y root root-physics root-multiproc
+#  - yum install -y root root-physics root-multiproc
 
 stages:
     - build
@@ -55,8 +55,8 @@ build-with-root:
         - export PATH=/cvmfs/sft.cern.ch/lcg/releases/MCGenerators/lhapdf/6.2.3-0ff65/x86_64-slc6-gcc49-opt/bin:$PATH
         - export LHAPDF_DATA_PATH=/cvmfs/sft.cern.ch/lcg/external/lhapdfsets/current/
         - export LHAPATH=/cvmfs/sft.cern.ch/lcg/external/lhapdfsets/current/
-        - . /cvmfs/sft.cern.ch/lcg/contrib/gcc/4.9.3/x86_64-cc7-gcc49-opt/setup.sh
-#        - . /cvmfs/sft.cern.ch/lcg/app/releases/ROOT/6.06.08/x86_64-centos7-gcc49-opt/root/bin/thisroot.sh
+        - set +e && . /cvmfs/sft.cern.ch/lcg/contrib/gcc/4.9.3/x86_64-cc7-gcc49-opt/setup.sh; set -e
+        - set +e && . /cvmfs/sft.cern.ch/lcg/app/releases/ROOT/6.06.08/x86_64-centos7-gcc49-opt/root/bin/thisroot.sh; set -e
         - autoreconf -i
         - ./configure --enable-root --enable-test #--enable-Ofast
         - make check
