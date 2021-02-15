@@ -19,13 +19,13 @@ build:
         - cvmfs
 #        - docker
     script:
-        - g++ -o hello test/hello.cxx
-        - ./hello
         - export PATH=/cvmfs/sft.cern.ch/lcg/releases/MCGenerators/lhapdf/6.2.3-0ff65/x86_64-slc6-gcc49-opt/bin:$PATH
         - export LHAPDF_DATA_PATH=/cvmfs/sft.cern.ch/lcg/external/lhapdfsets/current/
         - export LHAPATH=/cvmfs/sft.cern.ch/lcg/external/lhapdfsets/current/
         - set +e && . /cvmfs/sft.cern.ch/lcg/contrib/gcc/4.9.3/x86_64-cc7-gcc49-opt/setup.sh; set -e
         - set +e && . /cvmfs/sft.cern.ch/lcg/app/releases/ROOT/6.06.08/x86_64-centos7-gcc49-opt/root/bin/thisroot.sh; set -e
+        - g++ -o hello test/hello.cxx
+        - ./hello
         - autoreconf -i
         - ./configure --enable-root --enable-Ofast #--enable-test
         - make check
