@@ -1,74 +1,34 @@
-#image: docker.cern.ch/linuxsupport/cc7-base:latest
 image: gitlab-registry.cern.ch/ci-tools/ci-worker:cc7
 
 before_script:
-  - yum install -y tar wget make
-  - yum install -y gcc gcc-c++ gcc-gfortran
-#  - yum install -y python python-devel
-#  - yum install -y boost-devel
-  - yum install -y autoconf automake libtool
+#  - yum install -y tar wget make
+#  - yum install -y gcc gcc-c++ gcc-gfortran
+#  - yum install -y python python-devel boost-devel
+#  - yum install -y autoconf automake libtool
 #  - yum install -y root root-physics root-multiproc
-
+  - yum install -y libtool
+  
 stages:
     - build
     - deploy
     - test
 
-#  pages:
-#      tags:
-#          - cvmfs
-#          - docker
-#      stage : build
-#      script:
-#          - cd $CI_PROJECT_DIR/doxy
-#          - doxygen
-#          - cd -
-#          - mkdir public
-#          - cp -r $CI_PROJECT_DIR/doxy/html/* public/
-#      artifacts:
-#          # Upload the public/ directory as artifact. The web generated will be attached to the build
-#          paths:
-#              - public
-#  
-#  # Deploy the pages generated to DFS
-#  dfsdeploy:
-#      # Executed during the deploy stage
-#      stage: deploy
-#      # Custom docker image providing the needed tools to deploy in DFS
-#      image: gitlab-registry.cern.ch/ci-tools/ci-web-deployer:latest
-#      script:
-#          # Script that performs the deploy to DFS. Makes use of the variables defined in the project
-#          # It will not sync the generated content with the folder in DFS (risk of deleting DFS management files)
-#          # It will just override the contents of DFS or copy new files
-#          - deploy-dfs
-
-
-build-with-root:
+build:
     stage: test
     tags:
         - cvmfs
-        - docker
+#        - docker
     script:
         - g++ -o hello test/hello.cxx
         - ./hello
-#        - export DYTURBOROOT=`pwd -P`
         - export PATH=/cvmfs/sft.cern.ch/lcg/releases/MCGenerators/lhapdf/6.2.3-0ff65/x86_64-slc6-gcc49-opt/bin:$PATH
         - export LHAPDF_DATA_PATH=/cvmfs/sft.cern.ch/lcg/external/lhapdfsets/current/
         - export LHAPATH=/cvmfs/sft.cern.ch/lcg/external/lhapdfsets/current/
         - set +e && . /cvmfs/sft.cern.ch/lcg/contrib/gcc/4.9.3/x86_64-cc7-gcc49-opt/setup.sh; set -e
         - set +e && . /cvmfs/sft.cern.ch/lcg/app/releases/ROOT/6.06.08/x86_64-centos7-gcc49-opt/root/bin/thisroot.sh; set -e
         - autoreconf -i
-        - ./configure --enable-root --enable-test #--enable-Ofast
+        - ./configure --enable-root --enable-Ofast #--enable-test
         - make check
-
-
-#        - export ATLAS_LOCAL_ROOT_BASE=/cvmfs/atlas.cern.ch/repo/ATLASLocalRootBase
-#        - ls -la ${ATLAS_LOCAL_ROOT_BASE}/user/atlasLocalSetup.sh
-#        - source ${ATLAS_LOCAL_ROOT_BASE}/user/atlasLocalSetup.sh
-#        - lsetup root
-#        - lsetup  "sft releases/Boost/1.55.0_python2.7-dcbb8"
-#        - export BOOST_ROOT=$SFT_HOME_Boost
-
 
 #with-stl:
 #    script:
