@@ -1,11 +1,6 @@
 image: gitlab-registry.cern.ch/ci-tools/ci-worker:cc7
 
 before_script:
-#  - yum install -y tar wget make
-#  - yum install -y gcc gcc-c++ gcc-gfortran
-#  - yum install -y python python-devel boost-devel
-#  - yum install -y autoconf automake libtool
-#  - yum install -y root root-physics root-multiproc
   - yum install -y libtool
   
 stages:
@@ -17,7 +12,7 @@ build:
     stage: test
     tags:
         - cvmfs
-#        - docker
+        - docker
     script:
         - export PATH=/cvmfs/sft.cern.ch/lcg/releases/MCGenerators/lhapdf/6.2.3-0ff65/x86_64-slc6-gcc49-opt/bin:$PATH
         - export LHAPDF_DATA_PATH=/cvmfs/sft.cern.ch/lcg/external/lhapdfsets/current/
@@ -29,17 +24,3 @@ build:
         - autoreconf -i
         - ./configure --enable-root --enable-Ofast #--enable-test
         - make check
-
-#with-stl:
-#    script:
-#        - ./configure --enable-Ofast --enable-test
-#        - make check
-
-testdevel:
-  script:
-    - autoreconf -i
-#    - ./configure --enable-root --enable-Ofast --enable-test
-    - ./configure --enable-test --enable-Ofast
-    - make check
-  only:
-    - devel
