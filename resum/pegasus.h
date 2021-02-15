@@ -248,9 +248,12 @@ extern "C" {
 #pragma omp threadprivate(pns0_,psg0_,pns1_,psg1_,pns2_,psg2_)
 
   extern struct {
+    fcomplex a2ns_[ndim];
+  } ans2_;
+  extern struct {
     fcomplex a2sg_[2][2][ndim];
   } asg2_;
-#pragma omp threadprivate(asg2_)
+#pragma omp threadprivate(ans2_,asg2_)
 
   extern struct {
     fcomplex sschlp_[ndim];
