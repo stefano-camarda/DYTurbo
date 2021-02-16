@@ -70,7 +70,7 @@ void lomellin::lint(double costh, double m, double y, int mode, double f[2])
   //scales::mcfm();
   //double muf = scales::fac;
   //double mur = scales::ren;
-  resint::LQ = 2.*log(m/scales::res);
+  resint::LQ = 0.;//2.*log(m/scales::res);
   resint::LF = 2.*log(m/scales::fac);
   resint::LR = 2.*log(m/scales::ren);
 
@@ -142,21 +142,20 @@ void lomellin::lint(double costh, double m, double y, int mode, double f[2])
   hcoeff::reset();
   hcoeff::calc();
 
-  if (opts.mellin1d)
-    {
-      muf::allocate();
-      muf::reset();
-    }  
   mellinint::reset();
   
   expc::allocate();
   expc::reset();
 
+  muf::allocate();
+  muf::reset();
+  muf::calc(0.);
+
   complex <double> xmsq = 0.;
   if (opts.mellin1d)
-    xmsq = mellinint::calc1d();
+    xmsq = mellinint::calc1d_muf();
   else
-    xmsq = mellinint::calc2d();
+    xmsq = mellinint::calc2d_muf();
 
   xmsq = xmsq * 3./8. /2./M_PI;
 
@@ -169,8 +168,7 @@ void lomellin::lint(double costh, double m, double y, int mode, double f[2])
   
   expc::free();
   hcoeff::free();
-  if (opts.mellin1d)
-    muf::free();
+  muf::free();
   mesq::free();
 
   if (opts.melup == 2)
