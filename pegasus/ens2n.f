@@ -27,9 +27,9 @@
        IMPLICIT DOUBLE COMPLEX (A - Z)
        INTEGER KN, NF, NSMIN, NSMAX, NDIM, NFMIN, NFMAX, NUMAX, NUORD, 
      1         IMODE, KO, K1
-       PARAMETER (NDIM = 144, NFMIN = 3, NFMAX = 6, NUMAX = 20)
-       DOUBLE PRECISION BETA0 (NFMIN:NFMAX), BETA1 (NFMIN:NFMAX),
-     1                  BETA2 (NFMIN:NFMAX), BETA3 (NFMIN:NFMAX)
+       PARAMETER (NDIM = 512, NFMIN = 3, NFMAX = 6, NUMAX = 20)
+       DOUBLE PRECISION PGBETA0 (NFMIN:NFMAX), PGBETA1 (NFMIN:NFMAX),
+     1                  PGBETA2 (NFMIN:NFMAX), PGBETA3 (NFMIN:NFMAX)
        DOUBLE PRECISION ASI, ASF, S, LOGFR, AFI1, AFI2, ASIO, ASFO
        DIMENSION ENS(3), UNSF(NUMAX), UNSI(NUMAX)
        PARAMETER ( ONE = (1.D0, 0.D0) )
@@ -38,7 +38,7 @@
 *
 * ..Input common-blocks 
 *
-       COMMON / BETA   / BETA0, BETA1, BETA2, BETA3
+       COMMON / PGBETA   / PGBETA0, PGBETA1, PGBETA2, PGBETA3
        COMMON / PNS0   / P0NS (NDIM, NFMIN:NFMAX)
        COMMON / U2NS   / UNS2(NUMAX, NDIM, NFMIN:NFMAX, 3)
        COMMON / EVMOD  / IMODE
@@ -48,7 +48,7 @@
 *
 * ..The LO evolution operator 
 *
-       LNS = EXP (S * P0NS(KN,NF) / BETA0(NF))
+       LNS = EXP (S * P0NS(KN,NF) / PGBETA0(NF))
 *
 * ---------------------------------------------------------------------
 *

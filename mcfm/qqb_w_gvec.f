@@ -84,6 +84,10 @@ c   contracted with the vector n(mu)
       integer j1,j2,j3,j4,j5
       double precision p(mxpart,4),n(4),nDn,prop,
      .                 nDp1,nDp2,nDp3,nDp4,nDp5
+
+      double complex bosprop
+      external bosprop
+      
       j3=3
       j4=4
       nDp1=n(4)*p(j1,4)-n(3)*p(j1,3)-n(2)*p(j1,2)-n(1)*p(j1,1)
@@ -105,7 +109,8 @@ C         stop
       endif
 
 c---calculate the propagator
-      prop=((s(j3,j4)-wmass**2)**2+(wmass*wwidth)**2)
+c      prop=((s(j3,j4)-wmass**2)**2+(wmass*wwidth)**2)
+      prop=s(j3,j4)**2/cdabs(bosprop(s(j3,j4)))**2
 
       w1jetn=(nDp1*s(j2,j3)/s(j1,j5)-nDp2*s(j1,j4)/s(j2,j5))**2
      . +(s(j2,j3)*nDp1/s(j1,j5)-s(j1,j4)*nDp2/s(j2,j5))

@@ -6,6 +6,7 @@ namespace anomalous
 {
 
   extern void init();
+  extern void release();
   extern complex <double> *ans,*am,*ap,*al,*be,*ab;
   extern complex <double> *rmin,*rplus,*rqq,*rqg,*rgq,*rgg;
   extern complex <double> *RMMQQ,*RMMQG,*RMMGQ,*RMMGG,*RMPQQ,*RMPQG,*RMPGQ,*RMPGG,*RPMQQ,*RPMQG,*RPMGQ,*RPMGG,*RPPQQ,*RPPQG,*RPPGQ,*RPPGG;

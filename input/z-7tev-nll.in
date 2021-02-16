@@ -49,7 +49,7 @@ vegasncallsREAL  = 0 # only for real 10d vegas integration
 vegasncallsVIRT  = 0 # only for virt 8d vegas integration
 
 # total or with lepton cuts
-makelepcuts = true
+makecuts = true
 
 # integration types and settings for costh phi_lep phase space
 cubaint   = false   # integration with Cuba Suave

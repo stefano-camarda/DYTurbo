@@ -32,7 +32,6 @@ c      xx(2)=dsqrt(tau)*dexp(-y)
       xx(1)=dsqrt(tau)*expy
       xx(2)=dsqrt(tau)/expy
 
-
       if   ((xx(1) .gt. 1d0) 
      & .or. (xx(2) .gt. 1d0)
      & .or. (xx(1) .lt. xmin)
@@ -58,7 +57,6 @@ c      xx(2)=dsqrt(tau)*dexp(-y)
       p(4,nu)=p4(nu)
       p(5,nu)=p5(nu)
       p(6,nu)=p6(nu)
-      p(7,nu)=0d0
 
       enddo 
 

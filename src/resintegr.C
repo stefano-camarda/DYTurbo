@@ -3,17 +3,137 @@
 #include "phasespace.h"
 #include "settings.h"
 #include "interface.h"
+#include "dyres_interface.h"
 #include "switch.h"
 #include "resint.h"
 #include "rapint.h"
-//#include "plotter.h"
 #include "cubacall.h"
 #include "isnan.h"
+#include "scales.h"
+#include "pdfevol.h"
 
 #include <math.h>
 #include <iomanip>
 #include <iostream>
 #include <omp.h>
+
+#include "KinematicCuts.h"
+
+int resintegrand1d_cubature_v(unsigned ndim, long unsigned npts, const double x[], void *data, unsigned ncomp, double f[])
+{
+#pragma omp parallel for num_threads(opts.cubacores) copyin(a_param_,rlogs_,resint::a,resint::loga,resint::rloga,pdfevol::UVP,pdfevol::DVP,pdfevol::USP,pdfevol::DSP,pdfevol::SSP,pdfevol::GLP,pdfevol::CHP,pdfevol::BOP,pdfevol::SIP,pdfevol::NS3P,pdfevol::NS8P,pdfevol::NS15P,pdfevol::NS24P,pdfevol::NS35P)
+  
+  for (unsigned i = 0; i < npts; i++)
+    {
+      // evaluate the integrand for npts points
+      double xi[ndim];
+      double fi[ncomp];
+      for (unsigned j = 0; j < ndim; j++)
+	xi[j] = x[i*ndim + j];
+
+      resintegrand1d(ndim, xi, ncomp, fi);
+      
+      for (unsigned k = 0; k < ncomp; ++k)
+	f[i*ncomp + k] = fi[k];
+    }
+  return 0;
+}
+
+int resintegrand1d_cubature(unsigned ndim, const double x[], void *data, unsigned ncomp, double f[])
+{
+  resintegrand1d(ndim, x, ncomp, f);
+  return 0;
+}
+
+//This integration works only without cuts (!opts.makecuts)
+integrand_t resintegrand1d(const int &ndim, const double x[], const int &ncomp, double f[])
+{
+  tell_to_grid_we_are_alive();
+  clock_t begin_time, end_time;
+
+  begin_time = clock();
+
+  //Jacobian of the change of variables from the segment [0,1] to qt boundaries
+  double jac = 1.;
+  bool status = true;
+
+  //Generate the boson invariant mass between the integration boundaries
+  //kinematic limit from the relation x(1,2) < 1 ==> exp(fabs(y)) < sqrt(s)/m
+  //There is also a lower limit from the switching: m > qtmin/opts.dampk
+  double absymn;
+  if (phasespace::ymin*phasespace::ymax <= 0.)
+    absymn = 0.;
+  else
+    absymn = min(fabs(phasespace::ymin),fabs(phasespace::ymax));
+  double mlim = opts.sroot/exp(absymn);
+  double r1 = {x[0]};
+  status = phasespace::gen_m(r1, jac, mlim, false, true);
+  if (!status)
+    {
+      f[0] = 0.;
+      return 0;
+    }
+
+  //Limit the y boundaries to the kinematic limit in y
+  double ylim = 0.5*log(pow(opts.sroot,2)/phasespace::m2);
+  double ymn = min(max(-ylim, phasespace::ymin),ylim);
+  double ymx = max(min(ylim, phasespace::ymax),-ylim);
+  if (ymn >= ymx)
+    {
+      f[0]=0.;
+      return 0;
+    }
+
+  phasespace::set_phiV(0);
+
+  //Dynamic scale --> is this still needed? probably it is for the fortran version of the code
+  //if (opts.dynamicscale)
+  //scaleset_(phasespace::m2);
+  scales::set(phasespace::m);
+  scales::mcfm();
+
+  clock_t ybt, yet;
+  ybt = clock();
+  if (!opts.mellin1d)
+    {
+      rapint::allocate();
+      rapint::integrate(ymn,ymx,phasespace::m);
+    }
+  yet = clock();
+  
+  //switching cannot be applied because we integrate analitically in pt
+  //double swtch = switching::swtch(phasespace::qt, phasespace::m);
+  
+  //Call the resummed cross section
+  double costh = 0;
+  double y = 0.5*(ymx+ymn); //needed to get the correct IFIT index of the approximate PDF
+  double qt = 0.5*(phasespace::qtmax+phasespace::qtmin); //not needed
+  int mode = 3;
+
+  clock_t rbt = clock();
+  f[0]=resint::rint(costh,phasespace::m,qt,y,mode)/(8./3.);
+  clock_t ret = clock();
+
+  //  cout << "resummation " << f[0] << " m " << phasespace::m  << " jac " << jac << endl;
+  
+  if (isnan_ofast(f[0]))
+    f[0]=0.;  //avoid nans
+  f[0] = f[0]*jac;
+
+  end_time = clock();
+  if (opts.timeprofile)
+    cout << setw (3) << "m" << setw(10) << phasespace::m << setw(4) << "qt" << setw(10) <<  qt
+	 << setw(8) << "result" << setw(10) << f[0]
+	 << setw(10) << "tot time" << setw(10) << float( end_time - begin_time ) /  CLOCKS_PER_SEC
+	 << setw(10) << "rapint"  << setw(10) << float( yet - ybt ) /  CLOCKS_PER_SEC
+	 << setw(10) << "resumm"  << setw(10) << float( ret - rbt ) /  CLOCKS_PER_SEC
+	 << endl;
+
+  if (!opts.mellin1d)
+      rapint::free();
+
+  return 0;
+}
 
 int resintegrand2d_cubature_v(unsigned ndim, long unsigned npts, const double x[], void *data, unsigned ncomp, double f[])
 {
@@ -23,7 +143,8 @@ int resintegrand2d_cubature_v(unsigned ndim, long unsigned npts, const double x[
   
   //  cout << "parallel " << npts << endl;
 
-#pragma omp parallel for num_threads(opts.cubacores) copyin(a_param_,rlogs_,resint::a,resint::loga,resint::rloga)
+#pragma omp parallel for num_threads(opts.cubacores) copyin(a_param_,rlogs_,resint::a,resint::loga,resint::rloga,pdfevol::UVP,pdfevol::DVP,pdfevol::USP,pdfevol::DSP,pdfevol::SSP,pdfevol::GLP,pdfevol::CHP,pdfevol::BOP,pdfevol::SIP,pdfevol::NS3P,pdfevol::NS8P,pdfevol::NS15P,pdfevol::NS24P,pdfevol::NS35P)
+
   for (unsigned i = 0; i < npts; i++)
     {
       //      int nThreads = omp_get_num_threads();
@@ -81,18 +202,20 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
   phasespace::set_phiV(0);
 
   //Dynamic scale --> is this still needed? probably it is for the fortran version of the code
-  if (opts.dynamicscale)
-    scaleset_(phasespace::m2);
+  //if (opts.dynamicscale)
+  //scaleset_(phasespace::m2);
+  scales::set(phasespace::m);
+  scales::mcfm();
 
   //Perform quadrature rule integration in rapidity and semi-analitical costh, phi_lep integration
-  int nocuts = !opts.makelepcuts;
+  int nocuts = !opts.makecuts;
 
   clock_t ybt, yet;
   ybt = clock();
   //there is a potential issue here, when lepton cuts are applied
   //the rapidity dependent exponential are cached assuming integration between ymin and ymax
   //for consistency, has to keep the integration between ymin and ymax
-  if (opts.makelepcuts)
+  if (opts.makecuts)
     {
       if (opts.resumcpp)
 	{
@@ -109,8 +232,11 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
       if (opts.resumcpp)
 	{
 	  //C++ rewritten resum
-	  rapint::allocate();
-	  rapint::integrate(ymn,ymx,phasespace::m);
+	  if (!opts.mellin1d)
+	    {
+	      rapint::allocate();
+	      rapint::integrate(ymn,ymx,phasespace::m);
+	    }
 	  //end C++ resum
 	}
       else
@@ -169,7 +295,8 @@ integrand_t resintegrand2d(const int &ndim, const double x[], const int &ncomp, 
 	 << setw(10) << "resumm"  << setw(10) << float( ret - rbt ) /  CLOCKS_PER_SEC
 	 << endl;
   if (opts.resumcpp)
-    rapint::free();
+    if (!opts.mellin1d)
+      rapint::free();
   return 0;
 }
 
@@ -220,8 +347,11 @@ integrand_t resintegrand3d(const int &ndim, const double x[], const int &ncomp, 
   */
 
   //Dynamic scale
-  if (opts.dynamicscale)
-    scaleset_(phasespace::m2);
+  //if (opts.dynamicscale)
+  //scaleset_(phasespace::m2);
+  scales::set(phasespace::m);
+  scales::mcfm();
+
 
   //evaluate the resummed cross section
   if (opts.resumcpp)
@@ -286,11 +416,12 @@ integrand_t resintegrandMC(const int &ndim, const double x[], const int &ncomp, 
   
   double r2[2] = {x[3], x[4]};
   phasespace::gen_costhphi(r2, jac);
+  phasespace::calcphilep();
   phasespace::genl4p();
 
   //apply lepton cuts
-  if (opts.makelepcuts)
-    if (!cuts::lep(phasespace::p3, phasespace::p4))
+  if (opts.makecuts)
+    if (!Kinematics::Cuts::KeepThisEvent(phasespace::p3, phasespace::p4))
       {
 	f[0]=0.;
 	return 0;
@@ -309,8 +440,10 @@ integrand_t resintegrandMC(const int &ndim, const double x[], const int &ncomp, 
   double y = phasespace::y;
 
   //Dynamic scale
-  if (opts.dynamicscale)
-    scaleset_(phasespace::m2);
+  //if (opts.dynamicscale)
+  //scaleset_(phasespace::m2);
+  scales::set(phasespace::m);
+  scales::mcfm();
   
   double psfac = 3./8./2./M_PI;
   

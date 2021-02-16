@@ -1,5 +1,6 @@
 Cuba-4.2/
 lhapdf6/
+chaplin-1.2/
 origdyres/*.f
 origdyres/*.h
 origdyres/DYRes-v1.0
@@ -44,6 +45,7 @@ GRID*
 run_dir
 run_dir2
 share
+*.tar.gz
 
 ar-lib
 config.guess
@@ -57,3 +59,12 @@ dyturbo-config
 .deps/
 *.in
 *line.C
+gmock/
+
+cubature/COPYING
+cubature/ChangeLog
+cubature/NEWS.md
+cubature/README.md
+cubature/doc
+cubature/*.h
+cubature/*.c

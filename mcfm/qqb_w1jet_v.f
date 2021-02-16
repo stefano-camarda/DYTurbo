@@ -28,6 +28,9 @@ c---
       data iqbgqb/5,1,3,4,2/
       data igqbqb/5,2,3,4,1/
 
+      double complex bosprop
+      external bosprop
+      
 c--set msq=0 to initialize
       do j=-nf,nf
       do k=-nf,nf
@@ -56,7 +59,8 @@ c--- at MS bar scheme.
 
 c--- calculate propagator
       sw=s(3,4)
-      prop=sw**2/((sw-wmass**2)**2+(wmass*wwidth)**2)
+c     prop=sw**2/((sw-wmass**2)**2+(wmass*wwidth)**2)
+      prop=cdabs(bosprop(sw))**2
 
       fac=2d0*cf*xnsq*gwsq**2*gsq*prop
 

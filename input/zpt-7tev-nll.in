@@ -122,7 +122,7 @@ vegasncallsREAL  = 100 #000000 # only for real 10d vegas integration
 vegasncallsVIRT  = 100 #00000 # only for virt 8d vegas integration
 
 # total or with lepton cuts
-makelepcuts = false
+makecuts = false
 lptcut = 20
 lycut = 2.5
 l1ptcut = 0

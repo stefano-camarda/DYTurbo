@@ -1,4 +1,4 @@
-AC_INIT([dyturbo], [0.9.10], [stefano.camarda@cern.ch,jakub.cuth@cern.ch])
+AC_INIT([dyturbo], [0.99], [stefano.camarda@cern.ch])
 AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE([foreign -Wall -Werror])
 
@@ -45,6 +45,13 @@ AC_ARG_ENABLE([Ofast],
 
 #older compilers needs c++0x instead
 CXXFLAGS="${CXXFLAGS} -std=c++0x"
+#allows usage of complex numbers as x+yi
+CXXFLAGS="${CXXFLAGS} -fext-numeric-literals"
+#obsolete fortran do statements
+#FFLAGS="${FFLAGS} -std=legacy"
+
+#allows use of save statements (but causes issues with parallelisation)
+#FFLAGS="${FFLAGS} -fno-automatic"
 
 #use intel compilers
 #AC_ARG_ENABLE([ifort],
@@ -78,6 +85,10 @@ if test x$lhapdf_config == x; then
    ${srcdir}/install-lhapdf
   #AC_MSG_ERROR([Unable to find lhapdf-config.])
   lhapdf_config=`ls ${PWD}/lhapdf6/bin/lhapdf-config`
+  if test x$lhapdf_config == x; then
+   # if the installation fails, exit
+   AC_MSG_ERROR([Failed to install lhapdf.])
+  fi
  fi
 fi
 
@@ -103,8 +114,13 @@ AC_SEARCH_LIBS([vegas],[cuba],[
   	   AC_MSG_RESULT([Install Cuba ${CUBA_VERSION}])
 	   ${srcdir}/install-cuba
 	fi
+	cubalib=`ls ${PWD}/Cuba-${CUBA_VERSION}/libcuba.a`
+	if test x$cubalib == x; then
+  	   AC_MSG_ERROR([Failed to install Cuba ${CUBA_VERSION}.])
+	fi
+	
         CUBA_LDFLAGS="-L${PWD}/Cuba-${CUBA_VERSION} -lcuba"
-	CUBA_CPPFLAGS="-I${PWD}/Cuba-4.2"
+	CUBA_CPPFLAGS="-I${PWD}/Cuba-${CUBA_VERSION}"
 	AC_MSG_RESULT([Using -lcuba from local installation ${PWD}/Cuba-${CUBA_VERSION}])
         ])
 
@@ -118,6 +134,41 @@ AC_SEARCH_LIBS([vegas],[cuba],[
 
 AC_SUBST(CUBA_CPPFLAGS)
 AC_SUBST(CUBA_LDFLAGS)
+
+## check for Chaplin installation, and install it if missing
+#AC_MSG_CHECKING([for chaplin library installation])
+#AC_SEARCH_LIBS([hpl2],[hpl3],[
+#	AC_MSG_RESULT([Using -lchaplin from system installation])
+#        CHAPLIN_LDFLAGS=-lchaplin],
+#        [
+#	CHAPLIN_VERSION=1.2
+#	AC_SUBST(CHAPLIN_VERSION)
+#	# search for local istallation of chaplin-1.2
+#	chaplinlib=`ls ${PWD}/chaplin-${CHAPLIN_VERSION}/lib/libchaplin.a`
+#	if test x$chaplinlib == x; then
+#          # if not found, install it
+#  	   AC_MSG_RESULT([Install chaplin ${CHAPLIN_VERSION}])
+#	   ${srcdir}/install-chaplin
+#	fi
+#	chaplinlib=`ls ${PWD}/chaplin-${CHAPLIN_VERSION}/lib/libchaplin.a`
+#	if test x$chaplinlib == x; then
+#  	   AC_MSG_ERROR([Failed to install chaplin ${CHAPLIN_VERSION}.])
+#	fi
+#	
+#        CHAPLIN_LDFLAGS="-L${PWD}/chaplin-${CHAPLIN_VERSION}/lib -lchaplin"
+#	AC_MSG_RESULT([Using -lchaplin from local installation ${PWD}/chaplin-${CHAPLIN_VERSION}])
+#        ])
+#
+#AC_SUBST(CHAPLIN_LDFLAGS)
+
+# check for cubature installation, and install it if missing
+AC_MSG_CHECKING([for cubature source code])
+${srcdir}/install-cubature
+
+cubasrc=`ls ${PWD}/cubature/pcubature.c`
+if test x$cubasrc == x; then
+   AC_MSG_ERROR([Failed to install cubature.])
+fi
 
 # check for DYRES installation
 AC_ARG_ENABLE([dyres], AC_HELP_STRING(--enable-dyres, [Install and link original DYRes code, Available only in git (default=no)]))
@@ -136,9 +187,23 @@ AM_CONDITIONAL([HAVE_DYRES],test "x$enable_dyres" = "xyes")
 # enable test programs
 AC_ARG_ENABLE([test], AC_HELP_STRING(--enable-test, [Compile test programs, Available only in git (default=no)]))
 AS_IF([test "x$enable_test" = "xyes"], [
-  AC_MSG_CHECKING([Compile test programs])
+  GMOCK_OFILE="${PWD}/gmock/googlemock/make/gmock_main.a"
+  AC_MSG_CHECKING([for GMock installation])
+  gmockinst=`ls ${GMOCK_OFILE}  2> /dev/null`
+  AS_IF([test "x$gmockinst" = x], [
+         # if not found, install it
+         AC_MSG_RESULT([ Gmock not found.. installing])
+         [ ! test -d ${srcdir}/gmock/googlemock/make ] && git clone https://github.com/google/googletest.git ${srcdir}/gmock;
+         cd ${srcdir}/gmock/googlemock/make && make ;
+         cd -;
+         ])
+  GMOCK_CPPFLAGS="-pthread -isystem ${PWD}/gmock/googletest/include -isystem ${PWD}/gmock/googlemock/include"
+  GMOCK_LDFLAGS="-lpthread ${GMOCK_OFILE}"
+  AC_MSG_RESULT([ compiling test. Using gmock in ${GMOCK_OFILE}])
 ])
 AM_CONDITIONAL([HAVE_TEST],test "x$enable_test" = "xyes")
+AC_SUBST(GMOCK_CPPFLAGS)
+AC_SUBST(GMOCK_LDFLAGS)
 
 # Set --enable-root option, for linking histograms
 AC_ARG_ENABLE([root],
@@ -186,23 +251,31 @@ AS_IF([test "x$enable_checkBounds" = "xyes"], [
 
 
 AC_CONFIG_FILES([Makefile 
-	 	 src/Makefile
+		 user/Makefile
+		 histo/Makefile
  	 	 resum/Makefile
 		 counterterm/Makefile
-		 vjfo/Makefile
+		 vjet/Makefile
 		 v2j/Makefile
-		 eba/Makefile
+		 born/Makefile
 		 phasespace/Makefile
 		 integrands/Makefile
 		 dyres/Makefile
 		 dynnlo/Makefile
-		 dyqt/Makefile
 		 mcfm/Makefile
 		 cernlib/Makefile
 		 dequad/Makefile
+		 bequad/Makefile
+		 sandia/Makefile
+		 smolpack/Makefile
+		 besche/Makefile
+		 bessel/Makefile
+		 minprescription/Makefile
+		 specialfunctions/Makefile
 		 ancont/Makefile
 		 pegasus/Makefile
 		 cubature/Makefile
+	 	 src/Makefile
 		 dyturbo-config])
 
 

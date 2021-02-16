@@ -1,17 +1,23 @@
 #include "config.h"
 
-#include "init.h"
+#include "dyturbo.h"
 #include "omegaintegr.h"
-#include "phasespace.h"
 #include "settings.h"
 #include "interface.h"
+#include "phasespace.h"
 #include "resintegr.h"
 #include "ctintegr.h"
 #include "finintegr.h"
+#include "bornintegr.h"
 #include "finitemapping.h"
-#include "printsettings.h"
 #include "resint.h"
 #include "rapint.h"
+#include "ctint.h"
+#include "qtint.h"
+#include "vjint.h"
+#include "loint.h"
+#include "scales.h"
+#include "sudakovff.h"
 
 #include <iostream>
 #include <iomanip>
@@ -30,7 +36,7 @@ int main( int argc , char * argv[])
   /***********************************/
   //Initialization
   try {
-      dyturboinit(argc,argv);
+      DYTurbo::Init(argc,argv);
   } catch (QuitProgram &e) {
       // print help and die
       printf("%s \n",e.what());
@@ -43,7 +49,7 @@ int main( int argc , char * argv[])
   ///@todo: print out EW parameters and other settings
   // just a check
   opts.dumpAll();
-  printsettings();
+  DYTurbo::PrintTable::Settings();
   /***********************************/
 
   double costh, m, qt, y;
@@ -71,6 +77,8 @@ int main( int argc , char * argv[])
   cout << "To match the numbers between fortran and C++ set:" << endl;
   cout << "mellinrule = 64     #number of nodes" << endl;
   cout << "zmax = 27.          #upper" << endl;
+  cout << "cpoint = 1          " << endl;
+  cout << "mellin1d = false          " << endl;
   cout << "bintaccuracy = 1.0e-2  #accuracy" << endl;
   cout << endl;
   //  std::cout << std::setprecision(15);
@@ -99,12 +107,58 @@ int main( int argc , char * argv[])
   costh = 0.1; m = 91; qt = 5; y = 0.2;
   test_ct_speed(costh,m,qt,y,mode);
 
+  double f[2];
+  costh = 0.; m = opts.rmass; qt = 0; y = 0.; mode = 1;
+  loint::lint(costh, m, y, mode, f);
+  cout << "born cross section at m = " << m << " y = " << y << ": " << setprecision(12) << f[0]*2*M_PI*2*m/1000. << " pb" << endl;
+
+  costh = 0.; m = opts.rmass; qt = 0; y = 2.4; mode = 1;
+  loint::lint(costh, m, y, mode, f);
+  cout << "born cross section at m = " << m << " y = " << y << ": " << setprecision(12) << f[0]*2*M_PI*2*m/1000. << " pb" << endl;
+
+  costh = 0.; m = opts.rmass; qt = 0; y = 0; mode = 3;
+  opts.mellin1d = true;
+  //bool modlog = opts.modlog;
+  //int evmode = opts.evolmode;
+  //opts.modlog = true;
+  //opts.evolmode = 0;
+  f[0] = resint::rint(costh, m, qt, y, mode);
+  cout << "born cross section at m = " << m << ": " << f[0]/(8./3.)*2*m/1000. << endl;
+  //opts.modlog = modlog;
+  //opts.evolmode = evmode;
+
+  cout << endl << endl;
+  cout << "#qt" << "\t" << "dsigma / dqT" << endl;
+
+  double qtarr[52] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,
+	       45,50,55,60,65,70,75,80,85,90,95,100};
+  scales::set(phasespace::m);
+  scales::mcfm();
+  opts.mellin1d = false;
+  for (int i = 0; i < 52; i++)
+    {
+      costh = 0.; m = opts.rmass; qt = qtarr[i]; y = 0; mode = 1;
+      double value = resint::rint(costh,m,qt,y,mode)/(8./3.)*2*m/1000;
+      cout << qt << "\t" << value << endl;
+    }
+
+//  cout << endl;
+//  cout << "#b" << "\t" << "S(b)" << endl;
+//  double value = resint::rint(costh,m,qt,y,mode)/(8./3.)*2*m/1000;
+//  for (int i = 1; i <= 200; i++)
+//    {
+//      complex <double> bb = 2*double(i)/200.;
+//      complex <double> sudak=sudakov::sff(bb);
+//      cout << real(bb) << "\t" << real(sudak) << endl;
+//    }
+  
   //costhline();
   //ptline();
+  //ptomline();
   //yline();
   //mline();
   //mlinebw();
-  xline();
+  //xline();
   //ptavar();
   //ptgvar();
 
@@ -132,6 +186,7 @@ int main( int argc , char * argv[])
   beta = 0.1;
   alpha = 0.1;
 
+  return 0;
   //call function wrappers, which map the variables into the unity hypercube of the vegas integration
   cout << " check phase space mapping " << endl;
   dyreal(m, y, qt, phicm, phiZ, costh, zcth, mjj, costhjj, phijj);

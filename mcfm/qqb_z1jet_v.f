@@ -41,6 +41,9 @@
       data igqqLL/2,5,3,4,1/,igqqRR/5,2,4,3,1/
       data igqqRL/5,2,3,4,1/,igqqLR/2,5,4,3,1/
 
+      double complex bosprop
+      external bosprop
+
       scheme='dred'
 c--set msq=0 to initialize
       do j=-nf,nf
@@ -64,7 +67,8 @@ c----at MS bar scheme.
 
 c--   calculate propagator
       sz=s(3,4)
-      prop=sz/dcmplx((sz-zmass**2),zmass*zwidth)
+c      prop=sz/dcmplx((sz-zmass**2),zmass*zwidth)
+      prop=bosprop(sz)
 
       fac=8d0*cf*xnsq*esq**2*gsq
 

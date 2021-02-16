@@ -9,7 +9,7 @@ C     March 2015: Bug in muf dependence corrected
       include 'masses.f'
       include 'limits.f'
       include 'npart.f'
-      include 'vegas_common.f'
+      include 'mxdim.f'
       include 'sprods_com.f'
       include 'scale.f'
       include 'facscale.f'
@@ -65,7 +65,7 @@ CC
       common/BrnRat/BrnRat
      
 
-      data p/48*0d0/
+      data p/pdim*0d0/
 
       logical binner
       external binner
@@ -119,7 +119,8 @@ C     Compute Q2
 
 C     Dynamic scale
 
-      if(dynamicscale) call scaleset(q2)
+      call scaleset_mcfm(sqrt(q2), 0d0, 0d0)
+c      if(dynamicscale) call scaleset(q2)
 
       LF=dlog(q2/facscale**2)
       LR=dlog(q2/scale**2)

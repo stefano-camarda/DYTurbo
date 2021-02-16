@@ -18,16 +18,23 @@ c---
       double precision msq(-nf:nf,-nf:nf),p(mxpart,4),fac
       double complex prop
       double precision AqqbZg2(2,2),AqbqZg2(2,2),AqgZq2(2,2),
-     .               AqbgZqb2(2,2),AgqbZqb2(2,2),AgqZq2(2,2)
+     .     AqbgZqb2(2,2),AgqbZqb2(2,2),AgqZq2(2,2)
+      double precision dot
       data swap/2,1/
       save swap
 
-      do j=-nf,nf
-      do k=-nf,nf
-      msq(j,k)=0d0
-      enddo
-      enddo
+      double complex bosprop
+      external bosprop
       
+      msq=0d0
+c      do j=-nf,nf
+c      do k=-nf,nf
+c      msq(j,k)=0d0
+c      enddo
+c      enddo
+      
+c      call dotem(5,p,s)
+      s(3,4)=2*dot(p,3,4)
       call spinoru(5,p,za,zb)
       
 c---protect from soft and collinear singularities
@@ -36,7 +43,8 @@ c      if  ((-s(1,5) .lt. cutoff) .or. (-s(2,5) .lt. cutoff)) return
 C-----Protect from photon pole by cutting off at some value about 10 GeV
 c      if (s(3,4) .lt. 4d0*mbsq) return
 
-      prop=s(3,4)/Dcmplx((s(3,4)-zmass**2),zmass*zwidth)
+c     prop=s(3,4)/Dcmplx((s(3,4)-zmass**2),zmass*zwidth)
+      prop=bosprop(s(3,4))
       fac=4d0*V*esq**2*gsq
 
 c      qqbZg= +aveqq*s(3,4)**2*fac*z1jet(1,2,3,4,5)
@@ -61,54 +69,105 @@ c      call zgamps2(2,1,3,4,5,za,zb,AqbqZg2)
 c      call zgamps2(5,1,3,4,2,za,zb,AqbgZqb2)
 c      call zgamps2(5,2,3,4,1,za,zb,AgqbZqb2)
  
-      do j=-nf,nf
-      do k=-nf,nf
+c      do j=-nf,nf
+c      do k=-nf,nf
+c
+c      if( (j .ne. 0) .and. (k .ne. 0) .and. (j .ne. -k)) goto 20
+c
+c      if     ((j .eq. 0) .and. (k .eq. 0)) then
+c          msq(j,k)=0d0
+c      elseif ((j .gt. 0) .and. (k .lt. 0)) then
+c          msq(j,k)=cdabs(Q(j)*q1+L(j)*l1*prop)**2*AqqbZg2(1,1)
+c     .            +cdabs(Q(j)*q1+L(j)*r1*prop)**2*AqqbZg2(1,2)
+c     .            +cdabs(Q(j)*q1+R(j)*l1*prop)**2*AqqbZg2(2,1)
+c     .            +cdabs(Q(j)*q1+R(j)*r1*prop)**2*AqqbZg2(2,2)
+c          msq(j,k)=msq(j,k)*aveqq*fac/s(3,4)**2
+c      elseif ((j .lt. 0) .and. (k .gt. 0)) then
+c          msq(j,k)=cdabs(Q(k)*q1+L(k)*l1*prop)**2*AqbqZg2(1,1)
+c     .            +cdabs(Q(k)*q1+L(k)*r1*prop)**2*AqbqZg2(1,2)
+c     .            +cdabs(Q(k)*q1+R(k)*l1*prop)**2*AqbqZg2(2,1)
+c     .            +cdabs(Q(k)*q1+R(k)*r1*prop)**2*AqbqZg2(2,2)
+c          msq(j,k)=msq(j,k)*aveqq*fac/s(3,4)**2
+c      elseif ((j .gt. 0) .and. (k .eq. 0)) then
+c          msq(j,k)=cdabs(Q(j)*q1+L(j)*l1*prop)**2*AqgZq2(1,1)
+c     .            +cdabs(Q(j)*q1+L(j)*r1*prop)**2*AqgZq2(1,2)
+c     .            +cdabs(Q(j)*q1+R(j)*l1*prop)**2*AqgZq2(2,1)
+c     .            +cdabs(Q(j)*q1+R(j)*r1*prop)**2*AqgZq2(2,2)
+c          msq(j,k)=msq(j,k)*aveqg*fac/s(3,4)**2
+c      elseif ((j .lt. 0) .and. (k .eq. 0)) then
+c          msq(j,k)=cdabs(Q(-j)*q1+L(-j)*l1*prop)**2*AqbgZqb2(1,1)
+c     .            +cdabs(Q(-j)*q1+L(-j)*r1*prop)**2*AqbgZqb2(1,2)
+c     .            +cdabs(Q(-j)*q1+R(-j)*l1*prop)**2*AqbgZqb2(2,1)
+c     .            +cdabs(Q(-j)*q1+R(-j)*r1*prop)**2*AqbgZqb2(2,2)
+c          msq(j,k)=msq(j,k)*aveqg*fac/s(3,4)**2
+c      elseif ((j .eq. 0) .and. (k .gt. 0)) then
+c          msq(j,k)=cdabs(Q(k)*q1+L(k)*l1*prop)**2*AgqZq2(1,1)
+c     .            +cdabs(Q(k)*q1+L(k)*r1*prop)**2*AgqZq2(1,2)
+c     .            +cdabs(Q(k)*q1+R(k)*l1*prop)**2*AgqZq2(2,1)
+c     .            +cdabs(Q(k)*q1+R(k)*r1*prop)**2*AgqZq2(2,2)
+c          msq(j,k)=msq(j,k)*aveqg*fac/s(3,4)**2
+c      elseif ((j .eq. 0) .and. (k .lt. 0)) then
+c          msq(j,k)=cdabs(Q(-k)*q1+L(-k)*l1*prop)**2*AgqbZqb2(1,1)
+c     .            +cdabs(Q(-k)*q1+L(-k)*r1*prop)**2*AgqbZqb2(1,2)
+c     .            +cdabs(Q(-k)*q1+R(-k)*l1*prop)**2*AgqbZqb2(2,1)
+c     .            +cdabs(Q(-k)*q1+R(-k)*r1*prop)**2*AgqbZqb2(2,2)
+c          msq(j,k)=msq(j,k)*aveqg*fac/s(3,4)**2
+c       endif
+c       
+c 20   continue
+c      enddo
+c      enddo
 
-      if( (j .ne. 0) .and. (k .ne. 0) .and. (j .ne. -k)) goto 20
-
-      if     ((j .eq. 0) .and. (k .eq. 0)) then
-          msq(j,k)=0d0
-      elseif ((j .gt. 0) .and. (k .lt. 0)) then
-          msq(j,k)=cdabs(Q(j)*q1+L(j)*l1*prop)**2*AqqbZg2(1,1)
-     .            +cdabs(Q(j)*q1+L(j)*r1*prop)**2*AqqbZg2(1,2)
-     .            +cdabs(Q(j)*q1+R(j)*l1*prop)**2*AqqbZg2(2,1)
-     .            +cdabs(Q(j)*q1+R(j)*r1*prop)**2*AqqbZg2(2,2)
-          msq(j,k)=msq(j,k)*aveqq*fac/s(3,4)**2
-      elseif ((j .lt. 0) .and. (k .gt. 0)) then
-          msq(j,k)=cdabs(Q(k)*q1+L(k)*l1*prop)**2*AqbqZg2(1,1)
-     .            +cdabs(Q(k)*q1+L(k)*r1*prop)**2*AqbqZg2(1,2)
-     .            +cdabs(Q(k)*q1+R(k)*l1*prop)**2*AqbqZg2(2,1)
-     .            +cdabs(Q(k)*q1+R(k)*r1*prop)**2*AqbqZg2(2,2)
-          msq(j,k)=msq(j,k)*aveqq*fac/s(3,4)**2
-      elseif ((j .gt. 0) .and. (k .eq. 0)) then
-          msq(j,k)=cdabs(Q(j)*q1+L(j)*l1*prop)**2*AqgZq2(1,1)
-     .            +cdabs(Q(j)*q1+L(j)*r1*prop)**2*AqgZq2(1,2)
-     .            +cdabs(Q(j)*q1+R(j)*l1*prop)**2*AqgZq2(2,1)
-     .            +cdabs(Q(j)*q1+R(j)*r1*prop)**2*AqgZq2(2,2)
-          msq(j,k)=msq(j,k)*aveqg*fac/s(3,4)**2
-      elseif ((j .lt. 0) .and. (k .eq. 0)) then
-          msq(j,k)=cdabs(Q(-j)*q1+L(-j)*l1*prop)**2*AqbgZqb2(1,1)
-     .            +cdabs(Q(-j)*q1+L(-j)*r1*prop)**2*AqbgZqb2(1,2)
-     .            +cdabs(Q(-j)*q1+R(-j)*l1*prop)**2*AqbgZqb2(2,1)
-     .            +cdabs(Q(-j)*q1+R(-j)*r1*prop)**2*AqbgZqb2(2,2)
-          msq(j,k)=msq(j,k)*aveqg*fac/s(3,4)**2
-      elseif ((j .eq. 0) .and. (k .gt. 0)) then
-          msq(j,k)=cdabs(Q(k)*q1+L(k)*l1*prop)**2*AgqZq2(1,1)
-     .            +cdabs(Q(k)*q1+L(k)*r1*prop)**2*AgqZq2(1,2)
-     .            +cdabs(Q(k)*q1+R(k)*l1*prop)**2*AgqZq2(2,1)
-     .            +cdabs(Q(k)*q1+R(k)*r1*prop)**2*AgqZq2(2,2)
-          msq(j,k)=msq(j,k)*aveqg*fac/s(3,4)**2
-      elseif ((j .eq. 0) .and. (k .lt. 0)) then
-          msq(j,k)=cdabs(Q(-k)*q1+L(-k)*l1*prop)**2*AgqbZqb2(1,1)
-     .            +cdabs(Q(-k)*q1+L(-k)*r1*prop)**2*AgqbZqb2(1,2)
-     .            +cdabs(Q(-k)*q1+R(-k)*l1*prop)**2*AgqbZqb2(2,1)
-     .            +cdabs(Q(-k)*q1+R(-k)*r1*prop)**2*AgqbZqb2(2,2)
-          msq(j,k)=msq(j,k)*aveqg*fac/s(3,4)**2
-      endif
-
- 20   continue
+      do j=1,nf
+         k=-j
+         msq(j,k)=cdabs(Q(j)*q1+L(j)*l1*prop)**2*AqqbZg2(1,1)
+     .           +cdabs(Q(j)*q1+L(j)*r1*prop)**2*AqqbZg2(1,2)
+     .           +cdabs(Q(j)*q1+R(j)*l1*prop)**2*AqqbZg2(2,1)
+     .           +cdabs(Q(j)*q1+R(j)*r1*prop)**2*AqqbZg2(2,2)
+         msq(j,k)=msq(j,k)*aveqq*fac/s(3,4)**2
       enddo
+      do j=-nf,-1
+         k=-j
+         msq(j,k)=cdabs(Q(k)*q1+L(k)*l1*prop)**2*AqbqZg2(1,1)
+     .           +cdabs(Q(k)*q1+L(k)*r1*prop)**2*AqbqZg2(1,2)
+     .           +cdabs(Q(k)*q1+R(k)*l1*prop)**2*AqbqZg2(2,1)
+     .           +cdabs(Q(k)*q1+R(k)*r1*prop)**2*AqbqZg2(2,2)
+         msq(j,k)=msq(j,k)*aveqq*fac/s(3,4)**2
       enddo
+       
+      k=0
+      do j=1,nf
+         msq(j,k)=cdabs(Q(j)*q1+L(j)*l1*prop)**2*AqgZq2(1,1)
+     .           +cdabs(Q(j)*q1+L(j)*r1*prop)**2*AqgZq2(1,2)
+     .           +cdabs(Q(j)*q1+R(j)*l1*prop)**2*AqgZq2(2,1)
+     .           +cdabs(Q(j)*q1+R(j)*r1*prop)**2*AqgZq2(2,2)
+         msq(j,k)=msq(j,k)*aveqg*fac/s(3,4)**2
+      enddo
+      do j=-nf,-1
+         msq(j,k)=cdabs(Q(-j)*q1+L(-j)*l1*prop)**2*AqbgZqb2(1,1)
+     .           +cdabs(Q(-j)*q1+L(-j)*r1*prop)**2*AqbgZqb2(1,2)
+     .           +cdabs(Q(-j)*q1+R(-j)*l1*prop)**2*AqbgZqb2(2,1)
+     .           +cdabs(Q(-j)*q1+R(-j)*r1*prop)**2*AqbgZqb2(2,2)
+         msq(j,k)=msq(j,k)*aveqg*fac/s(3,4)**2
+      enddo
+      
+      j=0
+      do k=1,nf
+         msq(j,k)=cdabs(Q(k)*q1+L(k)*l1*prop)**2*AgqZq2(1,1)
+     .           +cdabs(Q(k)*q1+L(k)*r1*prop)**2*AgqZq2(1,2)
+     .           +cdabs(Q(k)*q1+R(k)*l1*prop)**2*AgqZq2(2,1)
+     .           +cdabs(Q(k)*q1+R(k)*r1*prop)**2*AgqZq2(2,2)
+         msq(j,k)=msq(j,k)*aveqg*fac/s(3,4)**2
+      enddo
+      do k=-nf,-1
+         msq(j,k)=cdabs(Q(-k)*q1+L(-k)*l1*prop)**2*AgqbZqb2(1,1)
+     .           +cdabs(Q(-k)*q1+L(-k)*r1*prop)**2*AgqbZqb2(1,2)
+     .           +cdabs(Q(-k)*q1+R(-k)*l1*prop)**2*AgqbZqb2(2,1)
+     .           +cdabs(Q(-k)*q1+R(-k)*r1*prop)**2*AgqbZqb2(2,2)
+         msq(j,k)=msq(j,k)*aveqg*fac/s(3,4)**2
+      enddo
+
+      
       return
       end
  

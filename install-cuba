@@ -15,5 +15,6 @@ fi
 
 cd ${cuba}
 sed -i "s/MINSLICE 10/MINSLICE 1/" src/common/Parallel.c
+export CFLAGS="-fPIC"
 ./configure
 make

@@ -27,6 +27,12 @@ void rapint::init()
   cfmy = new complex <double>[mellinint::mdim*mellinint::mdim*ydim];
 }
 
+void rapint::release()
+{
+  delete[] cfpy;
+  delete[] cfmy;
+}
+
 void rapint::cache(double ymin, double ymax)
 {
   //cache the rapidity dependent exponentials
@@ -46,7 +52,7 @@ void rapint::cache(double ymin, double ymax)
 		complex <double> diffnpp = mellinint::Np[i1]-mellinint::Np[i2];
 		complex <double> diffnpm = mellinint::Np[i1]-mellinint::Nm[i2];
 		cfpy[index(i,j,i1,i2)]=exp(-diffnpp*y)*mellinint::wn[i1]*mellinint::wn[i2]*gr::www[opts.yrule-1][j]*xm;
-		cfmy[index(i,j,i1,i2)]=exp(-diffnpm*y)*mellinint::wn[i1]*mellinint::wn[i2]*gr::www[opts.yrule-1][j]*xm;
+		cfmy[index(i,j,i1,i2)]=exp(-diffnpm*y)*mellinint::wn[i1]*conj(mellinint::wn[i2])*gr::www[opts.yrule-1][j]*xm;
 	      }
 	}
     }
@@ -91,7 +97,7 @@ void rapint::integrate(double ymin, double ymax, double m)
 
   //If there are no cuts on the leptons, calculate the integrals analitically
   //Int_ymin^ymax (CCp/M_PI)^2 * exp(Np(i1)*ax1) * exp(Np(i2)*ax2)
-  if (!opts.makelepcuts)
+  if (!opts.makecuts)
     //Analytical integration
     for (int i1 = 0; i1 < mellinint::mdim; i1++)
       for (int i2 = 0; i2 < mellinint::mdim; i2++)
@@ -114,19 +120,20 @@ void rapint::integrate(double ymin, double ymax, double m)
 
 	      complex <double> sumnpm = mellinint::Np[i1]+mellinint::Nm[i2];
 	      complex <double> diffnpm = mellinint::Np[i1]-mellinint::Nm[i2];
-	      //if (Np(I1) == Nm(I2)) // this never happens
-	      //yintm=(mellinint::CCp/M_PI)*(mellinint::CCm/M_PI)*exp(-(Np(I1)+Nm(I2))*ax/2.)*(ymx-ymn);
-	      //else
-	      yintm=1./(-diffnpm)*(mellinint::CCp/M_PI)*(mellinint::CCm/M_PI)*exp(-sumnpm*ax/2.)*(exp(-diffnpm*ymx)-exp(-diffnpm*ymn));
+	      //if (mellinint::Np[i1] == mellinint::Nm[i2]) // this never happens --> It happens for Talbot!
+	      if (i1 == 0 && i2 == 0 && opts.mellininv == 1)
+		yintm=(mellinint::CCp/M_PI)*(mellinint::CCm/M_PI)*exp(-sumnpm*ax/2.)*(ymx-ymn);
+	      else
+		yintm=1./(-diffnpm)*(mellinint::CCp/M_PI)*(mellinint::CCm/M_PI)*exp(-sumnpm*ax/2.)*(exp(-diffnpm*ymx)-exp(-diffnpm*ymn));
 
 	      double cthmom0, cthmom1, cthmom2;
 	      omegaintegr::cthmoments(cthmom0,cthmom1,cthmom2);
 	      Ith0p[mellinint::index(i1,i2)] = cthmom0*yintp*mellinint::wn[i1]*mellinint::wn[i2];
 	      Ith1p[mellinint::index(i1,i2)] = cthmom1*yintp*mellinint::wn[i1]*mellinint::wn[i2];
 	      Ith2p[mellinint::index(i1,i2)] = cthmom2*yintp*mellinint::wn[i1]*mellinint::wn[i2];
-	      Ith0m[mellinint::index(i1,i2)] = cthmom0*yintm*mellinint::wn[i1]*mellinint::wn[i2];
-	      Ith1m[mellinint::index(i1,i2)] = cthmom1*yintm*mellinint::wn[i1]*mellinint::wn[i2];
-	      Ith2m[mellinint::index(i1,i2)] = cthmom2*yintm*mellinint::wn[i1]*mellinint::wn[i2];
+	      Ith0m[mellinint::index(i1,i2)] = cthmom0*yintm*mellinint::wn[i1]*conj(mellinint::wn[i2]);
+	      Ith1m[mellinint::index(i1,i2)] = cthmom1*yintm*mellinint::wn[i1]*conj(mellinint::wn[i2]);
+	      Ith2m[mellinint::index(i1,i2)] = cthmom2*yintm*mellinint::wn[i1]*conj(mellinint::wn[i2]);
 	    }
 
 	  ymn = max(0., ymin);
@@ -143,19 +150,19 @@ void rapint::integrate(double ymin, double ymax, double m)
 	      
 	      complex <double> sumnpm = mellinint::Np[i1]+mellinint::Nm[i2];
 	      complex <double> diffnpm = mellinint::Np[i1]-mellinint::Nm[i2];
-	      //if (Np(I1) == Nm(I2)) // this never happens
-	      //yintm=(mellinint::CCp/M_PI)*(mellinint::CCm/M_PI)*exp(-(Np(I1)+Nm(I2))*ax/2.)*(ymx-ymn);
-	      //else
-	      yintm=1./(-diffnpm)*(mellinint::CCp/M_PI)*(mellinint::CCm/M_PI)*exp(-sumnpm*ax/2.)*(exp(-diffnpm*ymx)-exp(-diffnpm*ymn));
+	      if (i1 == 0 && i2 == 0 && opts.mellininv == 1)
+		yintm=(mellinint::CCp/M_PI)*(mellinint::CCm/M_PI)*exp(-sumnpm*ax/2.)*(ymx-ymn);
+	      else
+		yintm=1./(-diffnpm)*(mellinint::CCp/M_PI)*(mellinint::CCm/M_PI)*exp(-sumnpm*ax/2.)*(exp(-diffnpm*ymx)-exp(-diffnpm*ymn));
 
 	      double cthmom0, cthmom1, cthmom2;
 	      omegaintegr::cthmoments(cthmom0,cthmom1,cthmom2);
 	      Ith0p[mellinint::index(i1,i2)] += cthmom0*yintp*mellinint::wn[i1]*mellinint::wn[i2];
 	      Ith1p[mellinint::index(i1,i2)] += cthmom1*yintp*mellinint::wn[i1]*mellinint::wn[i2];
 	      Ith2p[mellinint::index(i1,i2)] += cthmom2*yintp*mellinint::wn[i1]*mellinint::wn[i2];
-	      Ith0m[mellinint::index(i1,i2)] += cthmom0*yintm*mellinint::wn[i1]*mellinint::wn[i2];
-	      Ith1m[mellinint::index(i1,i2)] += cthmom1*yintm*mellinint::wn[i1]*mellinint::wn[i2];
-	      Ith2m[mellinint::index(i1,i2)] += cthmom2*yintm*mellinint::wn[i1]*mellinint::wn[i2];
+	      Ith0m[mellinint::index(i1,i2)] += cthmom0*yintm*mellinint::wn[i1]*conj(mellinint::wn[i2]);
+	      Ith1m[mellinint::index(i1,i2)] += cthmom1*yintm*mellinint::wn[i1]*conj(mellinint::wn[i2]);
+	      Ith2m[mellinint::index(i1,i2)] += cthmom2*yintm*mellinint::wn[i1]*conj(mellinint::wn[i2]);
 	    }
 	}
   else //Numerical integration
@@ -235,6 +242,9 @@ void rapint::integrate(double ymin, double ymax, double m)
       //	for (int i2 = 0; i2 < 3; i2++)
       //	  cout << i1 << "  " << i2 << "  " << Ith1p[mellinint::index(i1,i2)] << "  " << cfpm[i1][i2] << endl;
     }
+  //for (int i1 = 0; i1 < 3; i1++)
+  //for (int i2 = 0; i2 < 3; i2++)
+  //cout << i1 << "  " << i2 << "  " << Ith0p[mellinint::index(i1,i2)] << "  " << Ith0m[mellinint::index(i1,i2)] << endl;
 }
 
 void rapint::free()

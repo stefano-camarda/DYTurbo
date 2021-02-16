@@ -1,6 +1,9 @@
       function alphasl(nq2)
 c.....reference scale is factorization scale: muf2=muf**2
-      implicit real*8(a-h,o-z)
+      implicit none
+c     implicit real*8(a-h,o-z)
+      double precision blim
+      integer xlp
       double complex xlambda,aa1,all,alphasl,qq,t,xlt,bstar,b,blog
       double complex log1xlambda
       double complex nq2,aa2
@@ -106,7 +109,7 @@ c****************************
 c mass dependence in blim
       blim=cblim
 
-c     In reading these formulas, notice that L = q*bstar/b0p = (q/a_param)*bstar/b0 = Q * bstar/b0, according to Eq. (13) and (17) of hep-ph/0508068.
+c     In reading these formulas, notice that blog is L = log(q*bstar/b0p) = log[(q/a_param)*bstar/b0] = log[Q * bstar/b0], according to Eq. (13) and (17) of hep-ph/0508068.
       
       bstar=b
 c.....choose bstar (b) for real axis (complex plane) integration
@@ -128,29 +131,30 @@ c mass dependence in f0(y), f1(y), f2(y)
          S=exp(blog*f0(y)+f1(y)+aass*f2(y))
       endif
 !
-      if(DBLE(S).gt.1d2) then
+      if ((flagrealcomplex.eq.0).and.(DBLE(S).gt.1d2)) then
       write(*,*) "WARNING! LARGE SUDAKOV, S(b)=",S,"; for bstar=",bstar
       S=cmplx(0d0,0d0)
       endif
 !
-      S=S*exp(-g*b**2)
+c      S=S*exp(-g*b**2)
 
       return
 c****************************
       end
       
       
-c.....Soft-gluon-Resummation of LL
+c.....Soft-gluon-Resummation of LL (Eq.22 of arXiv:hep-ph/0508068)
       function f0(y)
       implicit none
       complex *16 f0,y
       include 'const.h'
       include 'sudakov_inc.f'
       f0=(A1q/beta0)*(y+log1y)/(y)
+!      f0 = 0d0
       return
       end
       
-c.....Soft-gluon-Resummation of NLL
+c.....Soft-gluon-Resummation of NLL (Eq.23 of arXiv:hep-ph/0508068)
 c.....Now we have mu_r dependence!
       function f1(y)
       implicit none
@@ -161,13 +165,15 @@ c.....Now we have mu_r dependence!
      \     (y)/(1-y)+log1y/(1-y)) -
      \     (A2q/(beta0**2))*(log1y+(y)/(1-y)) + 
      \     (B1q/beta0)*log1y +
-     \     (A1q/beta0)*(y/(1-y)+log1y)*rlogq2mur2
+     \     (A1q/beta0)*(y/(1-y)+log1y)*rlogq2mur2 !!! should be rlogq2mur2 -> log(mures^2/mur^2) = (logq2mur2-2.*loga) (is this a bug in DYRES?) (--> no see a dependence below)
 c    a dependence      
-      f1=f1-2*rloga*A1q/beta0*y/(1-y)
+      f1=f1-2*rloga*A1q/beta0*y/(1-y) !!! (Here is missing the term log1y in (y/(1-y)+log1y) ???)
+!     \     (A1q/beta0)*(y/(1-y)+log1y)*(rlogq2mur2-2.*rloga)
+!      f1 = 0d0
       return
       end
 
-c.....Soft-gluon-Resummation of NNLL
+c.....Soft-gluon-Resummation of NNLL (Eq.24 of arXiv:hep-ph/0508068)
 c.....Now we have mu_r dependence!
       function f2(y)
       implicit none
@@ -186,7 +192,7 @@ c.....Now we have mu_r dependence!
 c    \     beta1**4/beta0**4/(1-y)) +
      \     (y)/(2*beta0**4*(1-y)*(1-y))*
      \     (beta0*beta2*(2d0-3*y)+beta1**2*y)) -
-     \     (A1q/2)*(y)*(y)/(1-y)/(1-y)*rlogq2mur2*rlogq2mur2 +
+     \     (A1q/2)*(y)*(y)/(1-y)/(1-y)*rlogq2mur2*rlogq2mur2 + !!! should be rlogq2mur2 -> log(mures^2/mur^2) = (logmur2q2-2.*loga) (is this a bug in DYRES?)
      \     rlogq2mur2*(B1q*y/(1-y)+A2q/beta0*y*y/(1-y)/(1-y)+
      \     A1q*beta1/beta0**2*(y/(1-y)+(1-2*y)/(1-y)/(1-y)*log1y)) 
      \     +2d0*C1qqn*((y)/(1-y))
@@ -196,5 +202,6 @@ c    a dependence (now without constant term)
      \ -2*A1q*beta1/beta0**2*y*log1y/(1-y)**2)
 !
      \ + A1q*rloga*rlogq2mur2*y*2d0/(1-y)**2   
+!      f2 = 0d0
       return
       end

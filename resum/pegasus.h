@@ -11,6 +11,7 @@ namespace pegasus
  
   extern void init();
   extern void evolve();
+  extern double alphas(double M2, double R2, double &ASI, int &NF);
 
   extern int nff;
   extern int ivfns;
@@ -18,7 +19,7 @@ namespace pegasus
 
 
 //fortran interface to pegasus common blocks and functions
-const int ndim = 144; //maximum dimension of the moments array
+const int ndim = 512; //maximum dimension of the moments array
 
 extern "C" {
 

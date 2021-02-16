@@ -68,8 +68,12 @@ c---calculate the propagator
       integer j1,j2,j3,j4,j5
       double precision prop
 
-      prop=((s(3,4)-wmass**2)**2+(wmass*wwidth)**2)
-
+      double complex bosprop
+      external bosprop
+      
+c      prop=((s(3,4)-wmass**2)**2+(wmass*wwidth)**2)
+      prop=s(3,4)**2/cdabs(bosprop(s(3,4)))**2
+      
       w1jet=(s(j1,j4)**2+s(j2,j3)**2)*s(j3,j4)/(s(j1,j5)*s(j2,j5)*prop)
 
       return

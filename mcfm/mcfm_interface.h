@@ -1,10 +1,10 @@
 #ifndef mcfm_interface_h
 #define mcfm_interface_h
 
+#include "parton.h"
 #include "fcomplex.h"
 
-#define MAXNF 5
-
+const int mxpart=6;
 extern "C"
 {
   //interface to MCFM fortran functions and common blocks
@@ -14,11 +14,12 @@ extern "C"
   void branch_(double& brwen, double& brzee, double& brtau, double& brtop);
   void ckmfill_(int& nwz);
   void scaleset_(double& q2);
-  void qqb_z_(double p[4][12], double msqc[11][11]);
-  void qqb_w_(double p[4][12], double msqc[11][11]);
-  void qqb_z_g_(double p[4][12], double msqc[11][11]);
-  void qqb_w_g_(double p[4][12], double msqc[11][11]);
-  void spinoru_(int &N, double p[4][12], fcomplex za[12][12], fcomplex zb[12][12]);
+  void qqb_z_(double p[4][mxpart], double msqc[11][11]);
+  void qqb_w_(double p[4][mxpart], double msqc[11][11]);
+  void qqb_z_g_(double p[4][mxpart], double msqc[11][11]);
+  void qqb_z1jet_(double p[4][mxpart], double msqc[11][11]);
+  void qqb_w_g_(double p[4][mxpart], double msqc[11][11]);
+  void spinoru_(int &N, double p[4][mxpart], fcomplex za[mxpart][mxpart], fcomplex zb[mxpart][mxpart]);
   
   //Catani-Seymour subtraction cut-offs for initial-initial, initial-final, final-initial, and final-final dipoles
   extern struct {
@@ -90,6 +91,7 @@ extern "C"
   } dymasses_;
 
   // ewinput
+  /*
   extern struct {
     double Gf_inp_;
     double aemmz_inp_;
@@ -97,11 +99,7 @@ extern "C"
     double wmass_inp_;
     double zmass_inp_;
   } ewinput_;
-
-  //EW scheme
-  extern struct {
-    int ewscheme_;
-  } ewscheme_;
+  */
 
   // ewcouple
   extern struct {
@@ -201,9 +199,9 @@ extern "C"
     int nproc_;
   }  nproc_;
 
-  extern struct {
-    int dynamicscale_;
-  } dynamicscale_;
+  //  extern struct {
+  //    int dynamicscale_;
+  //  } dynamicscale_;
 
   extern struct {
     double scale_;
@@ -296,9 +294,11 @@ extern "C"
     double cutoff_;
   } cutoff_;
 }  
+#pragma omp threadprivate(scale_,facscale_,qcdcouple_) //!!! Should probably add dipscale_ !!!
 
 namespace mcfm
 {
   void init();
+  void set_mass_bounds();
 }
 #endif

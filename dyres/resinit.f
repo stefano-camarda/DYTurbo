@@ -13,23 +13,26 @@ c     outputs rmin, rplus, rqq, rgg same as above
       SUBROUTINE CACHEANOM
 c       IMPLICIT DOUBLE PRECISION (A-I,L-Z)
       IMPLICIT none
+      INTEGER NMX
+      PARAMETER (NMX = 512)
+      
 c     Input from INITO and INITOFIT
       COMPLEX*16 CCp,CCm, Np(136),Nm(136),XNN
       COMMON / MOMS2    / Np,Nm,CCP,CCm
-      COMPLEX*16 QQIP(136),QGFP(136), GQIP(136), GGIP(136), GGFP(136),
-     1     NS1MIP(136), NS1PIP(136), NS1FP(136),QQ1FP(136), 
-     2     QG1FP(136), GQ1IP(136), GQ1FP(136), GG1IP(136), GG1FP(136) 
-      COMPLEX*16 QQIM(136),QGFM(136), GQIM(136), GGIM(136), GGFM(136),
-     1     NS1MIM(136), NS1PIM(136), NS1FM(136),QQ1FM(136), 
-     2     QG1FM(136), GQ1IM(136), GQ1FM(136), GG1IM(136), GG1FM(136)
+      COMPLEX*16 QQIP(NMX),QGFP(NMX), GQIP(NMX), GGIP(NMX), GGFP(NMX),
+     1     NS1MIP(NMX), NS1PIP(NMX), NS1FP(NMX),QQ1FP(NMX), 
+     2     QG1FP(NMX), GQ1IP(NMX), GQ1FP(NMX), GG1IP(NMX), GG1FP(NMX) 
+      COMPLEX*16 QQIM(NMX),QGFM(NMX), GQIM(NMX), GGIM(NMX), GGFM(NMX),
+     1     NS1MIM(NMX), NS1PIM(NMX), NS1FM(NMX),QQ1FM(NMX), 
+     2     QG1FM(NMX), GQ1IM(NMX), GQ1FM(NMX), GG1IM(NMX), GG1FM(NMX)
       COMMON / ANOMP/QQIp, QGFp, GQIp, GGIp, GGFp, NS1MIp, NS1PIp, 
      1     NS1Fp, QQ1Fp, QG1Fp, GQ1Ip, GQ1Fp, GG1Ip, GG1Fp
       COMMON / ANOMM/QQIm, QGFm, GQIm, GGIm, GGFm, NS1MIm, NS1PIm, 
      1     NS1Fm, QQ1Fm, QG1Fm, GQ1Im, GQ1Fm, GG1Im, GG1Fm
-      COMPLEX*16 C2qgMp(136),C2NSqqMp(136),C2SqqbMp(136),
-     1     C2NSqqbMp(136)
-      COMPLEX*16 C2qgMm(136),C2NSqqMm(136),C2SqqbMm(136),
-     1     C2NSqqbMm(136)
+      COMPLEX*16 C2qgMp(NMX),C2NSqqMp(NMX),C2SqqbMp(NMX),
+     1     C2NSqqbMp(NMX)
+      COMPLEX*16 C2qgMm(NMX),C2NSqqMm(NMX),C2SqqbMm(NMX),
+     1     C2NSqqbMm(NMX)
       COMMON / H2COEF /C2qgMp,C2NSqqMp,C2SqqbMp,C2NSqqbMp,
      1     C2qgMm,C2NSqqMm,C2SqqbMm,C2NSqqbMm
 
@@ -469,7 +472,7 @@ c All these constants must be initialised only once
 c      include 'ewcouple.f' 
       double precision gGf,ggw,xw,gwsq,esq,vevsq
       common/ewcouple/gGf,ggw,xw,gwsq,esq,vevsq
-cc******************************************
+ccc******************************************
       pi=dacos(-1d0)!Expensive way of calculating pi?
       pisq329=2d0*pi**2/3d0-16/3d0
       nf=5
@@ -496,7 +499,7 @@ C
 c.....quark coefficients
       A1q=Cf
       A2q=Cf/2d0*(67/6d0-(pi**2)/2d0-5/9d0*nf)
-      A3q=Cf*(13.81-2.15*nf-nf**2/108d0)            ! 
+      A3q=Cf*(13.81d0-2.15d0*nf-nf**2/108d0)            ! 
      /+Cf*(CA*(29.9259d0-28d0*Z3)-8.2963d0*nf/2d0)  ! 
      /*2d0*(beta0*4d0)/64d0                         ! A3 from Becher & Neubert
       B1q=-(3d0*Cf)/2d0
@@ -505,7 +508,7 @@ c.....quark coefficients
      /        CA*Cf*(11*pi**2/36d0-193/48d0+3*Z3/2d0)+
      /        Cf*nf*(17/24d0-pi**2/18d0)
        C1qqn=Cf/2d0*(pi**2/2d0-4d0)! Only delta(1-z) part, i.e. N independent part
-c**************************************
+cc**************************************
 
 
 c******************************************

@@ -26,9 +26,9 @@
        IMPLICIT DOUBLE COMPLEX (A - Z)
        INTEGER NMAX, NDIM, NFMIN, NFMAX, NFLOW, NFHIGH, NUMAX, IMODE, 
      1         KN, NF, J1, J2, KO, K1, K2
-       PARAMETER (NDIM = 144, NFMIN = 3, NFMAX = 6, NUMAX = 20)
-       DOUBLE PRECISION BETA0 (NFMIN:NFMAX), BETA1 (NFMIN:NFMAX),
-     1                  BETA2 (NFMIN:NFMAX), BETA3 (NFMIN:NFMAX)
+       PARAMETER (NDIM = 512, NFMIN = 3, NFMAX = 6, NUMAX = 20)
+       DOUBLE PRECISION PGBETA0 (NFMIN:NFMAX), PGBETA1 (NFMIN:NFMAX),
+     1                  PGBETA2 (NFMIN:NFMAX), PGBETA3 (NFMIN:NFMAX)
        DOUBLE PRECISION B10
        DIMENSION EM(2,2), EP(2,2), RH(NUMAX,2,2), RT(NUMAX,2,2)
 *
@@ -39,7 +39,7 @@
        COMMON / NNUSED / NMAX
        COMMON / NFUSED / NFLOW, NFHIGH
        COMMON / EVMOD  / IMODE
-       COMMON / BETA   / BETA0, BETA1, BETA2, BETA3
+       COMMON / PGBETA   / PGBETA0, PGBETA1, PGBETA2, PGBETA3
        COMMON / LSG    / R(NDIM, NFMIN:NFMAX, 2),
      1                   E(NDIM, NFMIN:NFMAX, 2, 2, 2)  
        COMMON / U1SG   / U1(NDIM, NFMIN:NFMAX, 2, 2)
@@ -58,7 +58,7 @@
 *
 * ..Some abbreviations for LO and NLO quantities computed before
 *
-       B10 = BETA1(NF) / BETA0(NF)
+       B10 = PGBETA1(NF) / PGBETA0(NF)
        RDIFF = R(KN,NF,1) - R(KN,NF,2)
 *
        DO 11 J1 = 1, 2

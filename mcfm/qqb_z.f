@@ -16,7 +16,9 @@ c---
       double precision msq(-nf:nf,-nf:nf),p(mxpart,4),s,fac,s34
       double complex prop,qqb,qbq
 
-            
+      double complex bosprop
+      external bosprop
+      
 c---statement function
       s(j,k)=2*(p(j,4)*p(k,4)-p(j,1)*p(k,1)-p(j,2)*p(k,2)-p(j,3)*p(k,3))
 
@@ -34,7 +36,8 @@ c      if (s34 .lt. 4d0*mbsq) return
 
 c--   calculate propagators
       fac=aveqq*fac/s34**2
-      prop=s34/Dcmplx((s34-zmass**2),zmass*zwidth)
+c      prop=s34/Dcmplx((s34-zmass**2),zmass*zwidth)
+      prop=bosprop(s34)
 
       call spinoru(4,p,za,zb)
 

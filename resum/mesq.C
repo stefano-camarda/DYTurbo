@@ -1,10 +1,15 @@
 #include "mesq.h"
 #include "settings.h"
-#include "interface.h"
+#include "dyres_interface.h"
 #include "coupling.h"
 #include "omegaintegr.h"
 #include "rapint.h"
 #include "parton.h"
+#include "codata.h"
+#include "clenshawcurtisrules.h"
+#include "gaussrules.h"
+#include "propagator.h"
+#include "pdf.h"
 #include <iostream>
 #include <cmath>
 
@@ -14,14 +19,6 @@ using namespace parton;
 const double eequ =2./3.;
 const double eeqd = -1./3.;
 //const double gevfb = 3.8937966e11;
-
-//evaluate (h/2pi)^2
-//values from CODATA 2014 (arXiv:1507.07956)
-double cc = 299792458; // speed of light [m*s^-1]
-double e = 1.6021766208e-19; //elementary charge [C]
-double h = 6.626070040e-34; //planck constant [j*s^-1]
-const double gevfb = pow(cc*h/e/2./M_PI,2) * 1e-18 * 1e43; //[GeV^-2 * fb]
-//const double gevfb = 3.893793656596451e+11;
 
 double mesq::fac;
 //Z couplings
@@ -51,6 +48,7 @@ double mesq::gLmgR[MAXNF];
 double mesq::mW2;
 double mesq::wW2;
 double mesq::gLWfLW;
+
 //gamma* coupling
 double mesq::aem2pi;
 double mesq::aem2pi2;
@@ -66,6 +64,29 @@ double mesq::propZG;
 complex <double> mesq::mesqij[12];
 complex <double>* mesq::mesqij_expy;
 
+//parton mapping for subprocesses
+int mesq::totpch;
+
+//parton id in x space (PDG convention)
+pdgid *mesq::pid1;
+pdgid *mesq::pid2;
+pdgid p1Z[10] = {U,Ub,D,Db,S,Sb,C,Cb,B,Bb};
+pdgid p2Z[10] = {Ub,U,Db,D,Sb,S,Cb,C,Bb,B};
+pdgid p1Wp[12] = {U,Db,U,Sb,U,Bb,C,Sb,C,Db,C,Bb};
+pdgid p2Wp[12] = {Db,U,Sb,U,Bb,U,Sb,C,Db,C,Bb,C};
+pdgid p1Wm[12] = {D,Ub,S,Ub,B,Ub,S,Cb,D,Cb,B,Cb};
+pdgid p2Wm[12] = {Ub,D,Ub,S,Ub,B,Cb,S,Cb,D,Cb,B};
+
+//parton id in N space (DYRES convention)
+partid *mesq::pidn1;
+partid *mesq::pidn2;
+partid p1Zn[10] = {u,ub,d,db,s,sb,c,cb,b,bb};
+partid p2Zn[10] = {ub,u,db,d,sb,s,cb,c,bb,b};
+partid p1Wpn[12] = {u,db,u,sb,u,bb,c,sb,c,db,c,bb};
+partid p2Wpn[12] = {db,u,sb,u,bb,u,sb,c,db,c,bb,c};
+partid p1Wmn[12] = {d,ub,s,ub,b,ub,s,cb,d,cb,b,cb};
+partid p2Wmn[12] = {ub,d,ub,s,ub,b,cb,s,cb,d,cb,b};
+
 //fortran interface
 void setmesq_expy_(int& mode, double& m, double& costh, double& y)
 {
@@ -74,10 +95,38 @@ void setmesq_expy_(int& mode, double& m, double& costh, double& y)
 
 void mesq::init()
 {
+  //Number of partonic channels
+  if (opts.nproc == 3)
+    totpch = 10; //only 4 partonic channels are actually needed
+  else
+    totpch = 12;
+
+  if (opts.nproc == 3)
+    {
+      pid1 = p1Z;
+      pid2 = p2Z;
+      pidn1 = p1Zn;
+      pidn2 = p2Zn;
+    }
+  else if (opts.nproc == 1)
+    {
+      pid1 = p1Wp;
+      pid2 = p2Wp;
+      pidn1 = p1Wpn;
+      pidn2 = p2Wpn;
+    }
+  else if (opts.nproc == 2)
+    {
+      pid1 = p1Wm;
+      pid2 = p2Wm;
+      pidn1 = p1Wmn;
+      pidn2 = p2Wmn;
+    }
+
   mZ2 = pow(coupling::zmass, 2);
-  wZ2 = pow(dymasses_.zwidth_,2);
   mW2 = pow(coupling::wmass, 2);
-  wW2 = pow(dymasses_.wwidth_,2);
+  wZ2 = pow(coupling::zwidth,2);
+  wW2 = pow(coupling::wwidth,2);
 
   double gZ=sqrt(sqrt(2.)*coupling::Gf*mZ2);
   double gW=sqrt(4.*sqrt(2.)*coupling::Gf*mW2);
@@ -126,7 +175,7 @@ void mesq::init()
   aem2pi2 = pow(aem2pi,2);
   for (int j = 0; j < MAXNF; j++)
     Q[j] = ewcharge_.Q_[j+MAXNF+1];
-      
+
   q2 = 0;
   propZ = 0;
   propW = 0;
@@ -137,6 +186,17 @@ void mesq::init()
 void mesq::setpropagators(double m)
 {
   q2 = pow(m,2);
+
+  prop::set(q2);
+  //prop::set_real(q2);
+  //prop::set_offset(q2);
+  propW = prop::W;
+  propZ = prop::Z;
+  propG = prop::G;
+  propZG = prop::ZG;
+  
+  /*
+  //fixed width propagators
   if (opts.nproc == 3)
     propZ = q2/(pow(q2-mZ2,2)+mZ2*wZ2);
   else
@@ -146,6 +206,12 @@ void mesq::setpropagators(double m)
       propG = 1./q2;
       propZG = (q2-mZ2)/(pow(q2-mZ2,2)+mZ2*wZ2);
     }
+  */
+
+  //flat propagators, for tests
+  //propZ = 1./m*(8./3.)*pow(opts.sroot,2)/2/(1./9./M_PI*gevfb);
+  //propW = 1./m*(8./3.)*pow(opts.sroot,2)/2/(1./9./M_PI*gevfb);
+  //propG = 1./m*(8./3.)*pow(opts.sroot,2)/2/(1./9./M_PI*gevfb);
 }
 
 void mesq::allocate()
@@ -156,25 +222,8 @@ void mesq::allocate()
 
 void mesq::setmesq_expy(int mode, double m, double costh, double y)
 {
-  //Number of partonic channels
-  int totpch;
-  if (opts.nproc == 3)
-    totpch = 10; //only 4 partonic channels are actually needed
-  else
-    totpch = 12;
-
   //mass dependent part
-  q2 = pow(m,2);
-  if (opts.nproc == 3)
-    propZ = q2/(pow(q2-mZ2,2)+mZ2*wZ2);
-  else
-    propW = q2/(pow(q2-mW2,2)+mW2*wW2);
-  if (opts.useGamma)
-    {
-      propG = 1./q2;
-      propZG = (q2-mZ2)/(pow(q2-mZ2,2)+mZ2*wZ2);
-    }
-  //setpropagators(m);
+  setpropagators(m);
   
   if (mode < 2)
     {
@@ -191,6 +240,7 @@ void mesq::setmesq_expy(int mode, double m, double costh, double y)
 	  //retrieve cos theta moments
 	  double cthmom0, cthmom1, cthmom2;
 	  cthmoments_(cthmom0, cthmom1, cthmom2);
+	  //omegaintegr::cthmoments(cthmom0, cthmom1, cthmom2);
 	  one = cthmom0;
 	  costh1 = cthmom1;
 	  costh2 = cthmom2;
@@ -219,31 +269,70 @@ void mesq::setmesq_expy(int mode, double m, double costh, double y)
 	    {
 	      mesqij_expy[mesq::index(pch, i1, i2, mesq::positive)] = mesqij[pch] * cex1[i1] * cex2p[i2] * mellinint::wn[i1] * mellinint::wn[i2];
 	      mesqij_expy[mesq::index(pch, i1, i2, mesq::negative)] = mesqij[pch] * cex1[i1] * cex2m[i2] * mellinint::wn[i1] * mellinint::wn[i2];
+	      //cout << i1 << "  " << i2 << "  " << mesqij[pch] << "  " <<  cex1[i1] << "  " <<  cex2m[i2] << "  " <<  mellinint::wn[i1] << "  " <<  mellinint::wn[i2] << endl;
 	    }
     }
-  else //if mode == 2 -> rapidity integrated mode
+  else //if mode == 2 or mode == 3 -> rapidity integrated mode
     {
-      for (int i1 = 0; i1 < mellinint::mdim; i1++)
-	for (int i2 = 0; i2 < mellinint::mdim; i2++)
-	  {
-	    complex <double> one, costh1, costh2;
+      //1D mellin
+      if (opts.mellin1d)
+	{
+	  double cthmom0, cthmom1, cthmom2;
+	  omegaintegr::cthmoments(cthmom0,cthmom1,cthmom2);
+	  setmesq(cthmom0, cthmom1, cthmom2);
+	  double bjx= q2/pow(opts.sroot,2);
+	  double ax = log(bjx);
 
-	    //retrieve Ithxp Ithxm positive branch integrals of the x1^-z1 * x2^-z2 piece 
-	    one = rapint::Ith0p[mellinint::index(i1,i2)];
-	    costh1 = rapint::Ith1p[mellinint::index(i1,i2)];
-	    costh2 = rapint::Ith2p[mellinint::index(i1,i2)];
-	    setmesq(one, costh1, costh2);
+	  for (int i = 0; i < mellinint::mdim; i++)
 	    for (int pch = 0; pch < totpch; pch++)
-	      mesqij_expy[mesq::index(pch, i1, i2, mesq::positive)] = mesqij[pch];
+	      {
+		complex <double> cexp = exp(-mellinint::Np[i] * ax)/M_PI * mellinint::CCp/complex <double>(0.,1);
+		complex <double> cexm = exp(-mellinint::Nm[i] * ax)/M_PI * mellinint::CCm/complex <double>(0.,1);
+		mesqij_expy[mesq::index(pch, i, i, mesq::positive)] = mesqij[pch] * cexp * mellinint::wn[i];
+		mesqij_expy[mesq::index(pch, i, i, mesq::negative)] = mesqij[pch] * cexm * mellinint::wn[i];
+	      }
 
-	    //retrieve Ithxp Ithxm positive branch integrals of the x1^-z1 * x2^-z2 piece 
-	    one = rapint::Ith0m[mellinint::index(i1,i2)];
-	    costh1 = rapint::Ith1m[mellinint::index(i1,i2)];
-	    costh2 = rapint::Ith2m[mellinint::index(i1,i2)];
-	    setmesq(one, costh1, costh2);
+	  /*
+	  //clenshaw-curtis with weight functions
+	  double m = 0.5;
+	  double jac = opts.zmax;
+	  cc::setw(ax*jac*m);
+	  for (int i = 0; i < mellinint::mdim; i++)
 	    for (int pch = 0; pch < totpch; pch++)
-	      mesqij_expy[mesq::index(pch, i1, i2, mesq::negative)] = mesqij[pch];
-	  }
+	      {
+		complex <double> cexp = exp(-ax*(opts.cpoint+1.+complex <double>(0.,1)*jac*m))/M_PI * mellinint::CCp/complex <double>(0.,1);
+		complex <double> cexm = exp(-ax*(opts.cpoint+1.+complex <double>(0.,1)*jac*m))/M_PI * mellinint::CCm/complex <double>(0.,1);
+		mesqij_expy[mesq::index(pch, i, i, mesq::positive)] = mesqij[pch] * cexp * (cc::cosw[opts.mellinrule-1][i] - complex<double>(0.,1)*cc::sinw[opts.mellinrule-1][i])*m*jac;
+		mesqij_expy[mesq::index(pch, i, i, mesq::negative)] = mesqij[pch] * cexm * (cc::cosw[opts.mellinrule-1][i] + complex<double>(0.,1)*cc::sinw[opts.mellinrule-1][i])*m*jac;
+	      }
+	  */
+
+	  
+	}
+      else
+	{
+	  for (int i1 = 0; i1 < mellinint::mdim; i1++)
+	    for (int i2 = 0; i2 < mellinint::mdim; i2++)
+	      {
+		complex <double> one, costh1, costh2;
+
+		//retrieve Ithxp Ithxm positive branch integrals of the x1^-z1 * x2^-z2 piece 
+		one = rapint::Ith0p[mellinint::index(i1,i2)];
+		costh1 = rapint::Ith1p[mellinint::index(i1,i2)];
+		costh2 = rapint::Ith2p[mellinint::index(i1,i2)];
+		setmesq(one, costh1, costh2);
+		for (int pch = 0; pch < totpch; pch++)
+		  mesqij_expy[mesq::index(pch, i1, i2, mesq::positive)] = mesqij[pch];
+
+		//retrieve Ithxp Ithxm negative branch integrals of the x1^-z1 * x2^-z2 piece 
+		one = rapint::Ith0m[mellinint::index(i1,i2)];
+		costh1 = rapint::Ith1m[mellinint::index(i1,i2)];
+		costh2 = rapint::Ith2m[mellinint::index(i1,i2)];
+		setmesq(one, costh1, costh2);
+		for (int pch = 0; pch < totpch; pch++)
+		  mesqij_expy[mesq::index(pch, i1, i2, mesq::negative)] = mesqij[pch];
+	      }
+	}
     }
 }
 void mesq::free()
@@ -430,4 +519,51 @@ void initsigma_cpp_(double &m, double &cthmom0, double &cthmom1, double &cthmom2
       sigmaij_.sigmaij_[cb][b ] = real(mesq::mesqij[10]);
       sigmaij_.sigmaij_[b ][cb] = real(mesq::mesqij[11]);
     }
+}
+
+//rapidity differential
+double mesq::loxs(double x1, double x2, double muf)
+{
+  double xs = 0.;
+
+  //PDFs
+  double fx1[2*MAXNF+1],fx2[2*MAXNF+1];
+  fdist_(opts.ih1,x1,muf,fx1);
+  fdist_(opts.ih2,x2,muf,fx2);
+	  
+  for (int sp = 0; sp < totpch; sp++)
+    xs += fx1[pid1[sp]]*fx2[pid2[sp]]*real(mesqij[sp]);
+
+  return xs;
+}
+  
+ //rapidity integrated
+double mesq::loxs(double tau, double muf)
+{
+  double xs = 0.;
+
+  double fx1[2*MAXNF+1],fx2[2*MAXNF+1];
+  for (int i=0; i < opts.yintervals; i++)
+    {
+      double ya = phasespace::ymin+(phasespace::ymax-phasespace::ymin)*i/opts.yintervals;
+      double yb = phasespace::ymin+(phasespace::ymax-phasespace::ymin)*(i+1)/opts.yintervals;
+      double xc = 0.5*(ya+yb);
+      double xm = 0.5*(yb-ya);
+      for (int j=0; j < opts.yrule; j++)
+	{
+	  double y = xc+xm*gr::xxx[opts.yrule-1][j];
+	  double exppy = exp(y);
+	  double expmy = 1./exppy;
+	  double x1 = tau*exppy;
+	  double x2 = tau*expmy;
+		      
+	  //PDFs
+	  fdist_(opts.ih1,x1,muf,fx1);
+	  fdist_(opts.ih2,x2,muf,fx2);
+		      
+	  for (int sp = 0; sp < totpch; sp++)
+	    xs += fx1[pid1[sp]]*fx2[pid2[sp]]*real(mesqij[sp])*gr::www[opts.yrule-1][j]*xm;;
+	}
+    }
+  return xs;
 }

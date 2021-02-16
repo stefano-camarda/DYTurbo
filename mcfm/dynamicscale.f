@@ -1,2 +1,2 @@
-      logical dynamicscale
-      common/dynamicscale/dynamicscale
+!      logical dynamicscale
+!      common/dynamicscale/dynamicscale

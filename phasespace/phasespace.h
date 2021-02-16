@@ -22,6 +22,7 @@ extern "C" {
   void rotate_(double vin[3], double& c, double& s, double ax[3], double vout[3]);
   void genp_(double& costh, double& phi, double& m, double p[4]);
   void qtweight_(double& x,double& qtmin,double& qtmax,double& qt,double& jac);
+  void qtweight_lo_(double& x,double& qtmin,double& qtmax,double& q2,double& qt,double& jac);
   void qtweight_res_(double& x,double& qtmin,double& qtmax,double& qt,double& jac);
   void qt2weight_(double& x,double& qt2min,double& qt2max,double& qt2,double& jac);
   void qtweight_flat_(double& x,double& qtmin,double& qtmax,double& qt,double& jac);
@@ -29,6 +30,12 @@ extern "C" {
   void mweight_flat_(double& x,double& mmin,double& mmax,double& m,double& jac);
 }
 
+/** @brief Interface between calculation and user input.
+ *
+ * This namespace is used to provide values of kinematic parameters to integral
+ * boundaries and integrands.
+ *
+ */
 namespace phasespace
 {
   enum restframeid {CS=0, naive=1, kt0=2};
@@ -57,7 +64,10 @@ namespace phasespace
   extern double x1, x2;
 #pragma omp threadprivate(x1,x2)
 
-
+  //cached values of cos and sin of phi_lep
+  extern double cosphi_lep, sinphi_lep;
+#pragma omp threadprivate(cosphi_lep,sinphi_lep)
+  
   //sign flip the costh boundaries according to y
   //inline double getcthmin() {return cthmin;};
   //inline double getcthmax() {return cthmax;};
@@ -76,11 +86,14 @@ namespace phasespace
   extern void set_y(double Y);
   extern void set_phiV(double PhiV);
   
-  extern void set_cth(double Costh);
-  extern void set_philep(double Phi_lep);
+  inline void set_cth(double Costh) {costh = Costh;};
+  inline void set_philep(double Phi_lep) {phi_lep = Phi_lep;};
 
   inline void calcexpy() {exppy = exp(phasespace::y); expmy=1./exppy;};
   inline void calcmt() {mt2 = m2+qt2; mt = sqrt(mt2);};
+
+  inline void calcphilep() {cosphi_lep = cos(phi_lep-M_PI); sinphi_lep = sin(phi_lep-M_PI);};
+  //inline void calcphilep() {cosphi_lep = cos(phi_lep-M_PI); sinphi_lep = sqrt(max(0.,1.-pow(cosphi_lep,2)))*((phi_lep-M_PI)>0 ? 1 : -1);}; //-> this is not necessarily faster, as cos and sin are probably calculated together with optimisation flags
   
   //generation of phase space variables from unitary (hyper)cubes
   extern bool gen_m(double x, double& jac, double mlim, bool qtcut = false, bool qtswitching = false);
@@ -95,7 +108,7 @@ namespace phasespace
   extern void gen_costhphi(const double x[2], double& jac);
   extern void gen_costh(const double x, double& jac);
   extern void gen_phi(const double x, double& jac);
-  extern void gen_x2(const double x, double& jac);
+  extern bool gen_x2(const double x, double& jac);
 
   //generation of particles
   //Vector boson 4-momentum and boost
@@ -131,9 +144,18 @@ namespace phasespace
   extern double xax[3];
   extern double yax[3];
   extern double zax[3];
+#pragma omp threadprivate(kap1,xax,yax,zax)
+
   extern void genRFaxes(restframeid RF);
   
   extern void genl4p();
+
+  //cached phi_lep rotation
+  extern double rot1[3];
+  extern double r2ax[3];
+#pragma omp threadprivate(rot1,r2ax)
+  extern void genl4p_phirot();
+  extern void genl4p_phifix();
 
   extern double p1[4];
   extern double p2[4];
@@ -152,6 +174,16 @@ namespace phasespace
     vout[0]=(c+ax[0]*ax[0]*(1-c))      *vin[0] + (ax[0]*ax[1]*(1-c)-ax[2]*s)*vin[1] + (ax[0]*ax[2]*(1-c)+ax[1]*s)*vin[2];
     vout[1]=(ax[1]*ax[0]*(1-c)+ax[2]*s)*vin[0] + (c+ax[1]*ax[1]*(1-c))      *vin[1] + (ax[1]*ax[2]*(1-c)-ax[0]*s)*vin[2];
     vout[2]=(ax[2]*ax[0]*(1-c)-ax[1]*s)*vin[0] + (ax[2]*ax[1]*(1-c)+ax[0]*s)*vin[1] + (c+ax[2]*ax[2]*(1-c))      *vin[2];
+  }
+
+  inline void boost(double gamma, double beta[3], double pin[4], double pout[])
+  {
+    //boost 4-momentum pin into 4-momentum pout
+    double bdotp=pin[0]*beta[0]+pin[1]*beta[1]+pin[2]*beta[2];
+    pout[3]=gamma*(pin[3]-bdotp);
+    pout[0]=pin[0]+gamma*beta[0]*(gamma/(gamma+1.)*bdotp-pin[3]);
+    pout[1]=pin[1]+gamma*beta[1]*(gamma/(gamma+1.)*bdotp-pin[3]);
+    pout[2]=pin[2]+gamma*beta[2]*(gamma/(gamma+1.)*bdotp-pin[3]);
   }
 }
 
