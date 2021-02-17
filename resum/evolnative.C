@@ -105,35 +105,35 @@ void evolnative::allocate_pdfs()
 //allocate evolution engine
 void evolnative::allocate_engine()
 {
-  ans = new complex <double>[ndim];
-  am = new complex <double> [ndim];
-  ap = new complex <double> [ndim];
-  al = new complex <double> [ndim];
-  be = new complex <double> [ndim];
-  ab = new complex <double> [ndim];
-  rmin = new complex <double> [ndim];
-  rplus = new complex <double> [ndim];
-  rqq = new complex <double> [ndim];
-  rqg = new complex <double> [ndim];
-  rgq = new complex <double> [ndim];
-  rgg = new complex <double> [ndim];
+  ans   = new complex <double> [ndim*2];
+  am    = new complex <double> [ndim*2];
+  ap    = new complex <double> [ndim*2];
+  al    = new complex <double> [ndim*2];
+  be    = new complex <double> [ndim*2];
+  ab    = new complex <double> [ndim*2];
+  rmin  = new complex <double> [ndim*2];
+  rplus = new complex <double> [ndim*2];
+  rqq   = new complex <double> [ndim*2];
+  rqg   = new complex <double> [ndim*2];
+  rgq   = new complex <double> [ndim*2];
+  rgg   = new complex <double> [ndim*2];
 
-  rmmqq = new complex <double> [ndim];
-  rmmqg = new complex <double> [ndim];
-  rmmgq = new complex <double> [ndim];
-  rmmgg = new complex <double> [ndim];
-  rmpqq = new complex <double> [ndim];
-  rmpqg = new complex <double> [ndim];
-  rmpgq = new complex <double> [ndim];
-  rmpgg = new complex <double> [ndim];
-  rpmqq = new complex <double> [ndim];
-  rpmqg = new complex <double> [ndim];
-  rpmgq = new complex <double> [ndim];
-  rpmgg = new complex <double> [ndim];
-  rppqq = new complex <double> [ndim];
-  rppqg = new complex <double> [ndim];
-  rppgq = new complex <double> [ndim];
-  rppgg = new complex <double> [ndim];
+  rmmqq = new complex <double> [ndim*2];
+  rmmqg = new complex <double> [ndim*2];
+  rmmgq = new complex <double> [ndim*2];
+  rmmgg = new complex <double> [ndim*2];
+  rmpqq = new complex <double> [ndim*2];
+  rmpqg = new complex <double> [ndim*2];
+  rmpgq = new complex <double> [ndim*2];
+  rmpgg = new complex <double> [ndim*2];
+  rpmqq = new complex <double> [ndim*2];
+  rpmqg = new complex <double> [ndim*2];
+  rpmgq = new complex <double> [ndim*2];
+  rpmgg = new complex <double> [ndim*2];
+  rppqq = new complex <double> [ndim*2];
+  rppqg = new complex <double> [ndim*2];
+  rppgq = new complex <double> [ndim*2];
+  rppgg = new complex <double> [ndim*2];
 }
   
 void evolnative::allocate()
@@ -574,23 +574,41 @@ void evolnative::update_engine()
   fcomplex C2QI;// = 0.; //unused dummy input --> check
   fcomplex C2GF;// = 0.; //unused dummy input --> check
   complex <double> AC,NMP,NPM,DMQQ,DMQG,DMGQ,DMGG,DPQQ,DPQG,DPGQ,DPGG ;
-  for (int i = 0; i < mellinint::mdim; i++)
+
+  complex <double> cxn[ndim*2] = {0.};
+  if (opts.mellin1d)
+    for (int sign = mesq::positive; sign <= mesq::negative; sign++)
+      for (int i = 0; i < mellinint::mdim; i++)
+	{
+	  int idx = index(i,sign);
+	  if (sign == mesq::positive)
+	    cxn[idx] = mellinint::Np[i];
+	  else
+	    cxn[idx] = mellinint::Nm[i];
+	  //cout << idx << "  " << cxn[idx] << endl;
+	}
+  else
+    for (int sign = mesq::positive; sign <= mesq::negative; sign++)
+      for (int beam = 1; beam <= 2; beam++)
+	for (int i = 0; i < mellinint::mdim; i++)
+	  {
+	    int idx = index(i,beam,sign);
+	    if (beam == 1)
+	      if (sign == mesq::positive)
+		cxn[idx] = mellinint::Np_1[i];
+	      else
+		cxn[idx] = mellinint::Nm_1[i];
+	    else
+	      if (sign == mesq::positive)
+		cxn[idx] = mellinint::Np_2[i];
+	      else
+		cxn[idx] = mellinint::Nm_2[i];
+	  }
+
+  for (int i = 0; i < ndim*2; i++)
     {
-      fcomplex fxn; //input of ancalc
-      complex <double> cxn;
-      if (opts.mellin1d)
-	{
-	  fxn.real = real(mellinint::Np[i]);
-	  fxn.imag = imag(mellinint::Np[i]);
-	  cxn = mellinint::Np[i];
-	}
-      else
-	{
-	  fxn.real = real(mellinint::Np_1[i]);
-	  fxn.imag = imag(mellinint::Np_1[i]);
-	  cxn = mellinint::Np_1[i];
-	}
-	  
+      fcomplex fxn = fcx(cxn[i]);
+      
       //input: fxn
       //output: QQI, QGF, GQI, GGI, GGF, NS1MI, NS1PI, NS1F, QQ1F, QG1F, GQ1I, GQ1F, GG1I, GG1F;
       ancalc_(QQI, QGF, GQI, GGI, GGF, NS1MI, NS1PI, NS1F, QQ1F, QG1F, GQ1I, GQ1F, GG1I, GG1F, fxn);
@@ -601,25 +619,23 @@ void evolnative::update_engine()
 	    fxn, nf, QQI, QGF, GQI, GGI, GGF, NS1MI, NS1PI, NS1F, QQ1F, QG1F, GQ1I, GQ1F, GG1I, GG1F, C2QI, C2GF, CDYQI, CDYGI);
 
       complex <double> Ans, Am, Ap, Al, Be, Ab, Rmin, Rplus, Rqq, Rqg, Rgq, Rgg; //output of anom
-      anom(cxn, Ans, Am, Ap, Al, Be, Ab, Rmin, Rplus, Rqq, Rqg, Rgq, Rgg);
+      anom(cxn[i], Ans, Am, Ap, Al, Be, Ab, Rmin, Rplus, Rqq, Rqg, Rgq, Rgg);
 
-      /*
-      cout << endl;
-      cout << " N " << mellinint::Np[i] << endl;
-      
-      cout << "  " << Ans   - cx(ANS) << endl;
-      cout << "  " << Am    - cx(AM) << endl;
-      cout << "  " << Ap    - cx(AP) << endl; 
-      cout << "  " << Al    - cx(AL) << endl;
-      cout << "  " << Be    - cx(BE) << endl;
-      cout << "  " << Ab    - cx(AB) << endl;
-      cout << "  " << Rmin  - cx(RMIN) << endl;
-      cout << "  " << Rplus - cx(RPLUS) << endl;
-      cout << "  " << Rqq   - cx(RQQ) << endl;
-      cout << "  " << Rqg   - cx(RQG) << endl;
-      cout << "  " << Rgq   - cx(RGQ) << endl;
-      cout << "  " << Rgg   - cx(RGG) << endl;
-      */
+      //cout << endl;
+      //cout << " N " << cxn[i] << endl;
+      //
+      //cout << "  " << Ans   - cx(ANS) << endl;
+      //cout << "  " << Am    - cx(AM) << endl;
+      //cout << "  " << Ap    - cx(AP) << endl; 
+      //cout << "  " << Al    - cx(AL) << endl;
+      //cout << "  " << Be    - cx(BE) << endl;
+      //cout << "  " << Ab    - cx(AB) << endl;
+      //cout << "  " << Rmin  - cx(RMIN) << endl;
+      //cout << "  " << Rplus - cx(RPLUS) << endl;
+      //cout << "  " << Rqq   - cx(RQQ) << endl;
+      //cout << "  " << Rqg   - cx(RQG) << endl;
+      //cout << "  " << Rgq   - cx(RGQ) << endl;
+      //cout << "  " << Rgg   - cx(RGG) << endl;
       
       ans[i] = cx(ANS);
       am[i] = cx(AM);
@@ -664,57 +680,57 @@ void evolnative::update_engine()
       rppgq[i]=    AC   * DPGQ-cx(AB)*DPGG;
       rppgg[i]= -cx(BE) * DPGQ+cx(AL)*DPGG;
 
-      if (opts.mellin1d)
-	continue;
-
-      fxn.real = real(mellinint::Np_2[i]);
-      fxn.imag = imag(mellinint::Np_2[i]);
-
-      ancalc_(QQI, QGF, GQI, GGI, GGF, NS1MI, NS1PI, NS1F, QQ1F, QG1F, GQ1I, GQ1F, GG1I, GG1F, fxn);
-      anom_(ANS, AM, AP, AL, BE, AB, RMIN, RPLUS, RQQ, RQG,RGQ, RGG, C2Q, C2G, CDYQ, CDYG,
-	    fxn, nf, QQI, QGF, GQI, GGI, GGF, NS1MI, NS1PI, NS1F, QQ1F, QG1F, GQ1I, GQ1F, GG1I, GG1F, C2QI, C2GF, CDYQI, CDYGI);
-
-      ans[i+mellinint::mdim] = cx(ANS);
-      am[i+mellinint::mdim] = cx(AM);
-      ap[i+mellinint::mdim] = cx(AP); 
-      al[i+mellinint::mdim] = cx(AL);
-      be[i+mellinint::mdim] = cx(BE);
-      ab[i+mellinint::mdim] =  cx(AB);
-      rmin[i+mellinint::mdim] = cx(RMIN);
-      rplus[i+mellinint::mdim] = cx(RPLUS);
-      rqq[i+mellinint::mdim] = cx(RQQ);
-      rqg[i+mellinint::mdim] = cx(RQG);
-      rgq[i+mellinint::mdim] = cx(RGQ);
-      rgg[i+mellinint::mdim] = cx(RGG);
-      
-      AC   = 1.- cx(AL);
-      NMP  = 1.- cx(AM) + cx(AP);
-      NPM  = 1.- cx(AP) + cx(AM);
-      DMQQ =  cx(AL) *  cx(RQQ) + cx(BE) * cx(RGQ);
-      DMQG =  cx(AL) *  cx(RQG) + cx(BE) * cx(RGG);
-      DMGQ =  cx(AB) *  cx(RQQ) +    AC  * cx(RGQ);
-      DMGG =  cx(AB) *  cx(RQG) +    AC  * cx(RGG);
-      DPQQ =     AC  *  cx(RQQ) - cx(BE) * cx(RGQ);
-      DPQG =     AC  *  cx(RQG) - cx(BE) * cx(RGG);
-      DPGQ = -cx(AB) *  cx(RQQ) + cx(AL) * cx(RGQ);
-      DPGG = -cx(AB) *  cx(RQG) + cx(AL) * cx(RGG);
-
-      rmmqq[i+mellinint::mdim]=  cx(AL) * DMQQ+cx(AB)*DMQG;
-      rmmqg[i+mellinint::mdim]=  cx(BE) * DMQQ+  AC  *DMQG;
-      rmmgq[i+mellinint::mdim]=  cx(AL) * DMGQ+cx(AB)*DMGG;
-      rmmgg[i+mellinint::mdim]=  cx(BE) * DMGQ+  AC  *DMGG;
-      rmpqq[i+mellinint::mdim]= (  AC   * DMQQ-cx(AB)*DMQG)/NMP;
-      rmpqg[i+mellinint::mdim]=(-cx(BE) * DMQQ+cx(AL)*DMQG)/NMP;
-      rmpgq[i+mellinint::mdim]= (  AC   * DMGQ-cx(AB)*DMGG)/NMP;
-      rmpgg[i+mellinint::mdim]=(-cx(BE) * DMGQ+cx(AL)*DMGG)/NMP;
-      rpmqq[i+mellinint::mdim]= (cx(AL) * DPQQ+cx(AB)*DPQG)/NPM;
-      rpmqg[i+mellinint::mdim]= (cx(BE) * DPQQ+  AC  *DPQG)/NPM;
-      rpmgq[i+mellinint::mdim]= (cx(AL) * DPGQ+cx(AB)*DPGG)/NPM;
-      rpmgg[i+mellinint::mdim]= (cx(BE) * DPGQ+  AC  *DPGG)/NPM;
-      rppqq[i+mellinint::mdim]=    AC   * DPQQ-cx(AB)*DPQG;
-      rppqg[i+mellinint::mdim]= -cx(BE) * DPQQ+cx(AL)*DPQG;
-      rppgq[i+mellinint::mdim]=    AC   * DPGQ-cx(AB)*DPGG;
-      rppgg[i+mellinint::mdim]= -cx(BE) * DPGQ+cx(AL)*DPGG;
+//      if (opts.mellin1d)
+//	continue;
+//
+//      fxn.real = real(mellinint::Np_2[i]);
+//      fxn.imag = imag(mellinint::Np_2[i]);
+//
+//      ancalc_(QQI, QGF, GQI, GGI, GGF, NS1MI, NS1PI, NS1F, QQ1F, QG1F, GQ1I, GQ1F, GG1I, GG1F, fxn);
+//      anom_(ANS, AM, AP, AL, BE, AB, RMIN, RPLUS, RQQ, RQG,RGQ, RGG, C2Q, C2G, CDYQ, CDYG,
+//	    fxn, nf, QQI, QGF, GQI, GGI, GGF, NS1MI, NS1PI, NS1F, QQ1F, QG1F, GQ1I, GQ1F, GG1I, GG1F, C2QI, C2GF, CDYQI, CDYGI);
+//
+//      ans[i+mellinint::mdim] = cx(ANS);
+//      am[i+mellinint::mdim] = cx(AM);
+//      ap[i+mellinint::mdim] = cx(AP); 
+//      al[i+mellinint::mdim] = cx(AL);
+//      be[i+mellinint::mdim] = cx(BE);
+//      ab[i+mellinint::mdim] =  cx(AB);
+//      rmin[i+mellinint::mdim] = cx(RMIN);
+//      rplus[i+mellinint::mdim] = cx(RPLUS);
+//      rqq[i+mellinint::mdim] = cx(RQQ);
+//      rqg[i+mellinint::mdim] = cx(RQG);
+//      rgq[i+mellinint::mdim] = cx(RGQ);
+//      rgg[i+mellinint::mdim] = cx(RGG);
+//      
+//      AC   = 1.- cx(AL);
+//      NMP  = 1.- cx(AM) + cx(AP);
+//      NPM  = 1.- cx(AP) + cx(AM);
+//      DMQQ =  cx(AL) *  cx(RQQ) + cx(BE) * cx(RGQ);
+//      DMQG =  cx(AL) *  cx(RQG) + cx(BE) * cx(RGG);
+//      DMGQ =  cx(AB) *  cx(RQQ) +    AC  * cx(RGQ);
+//      DMGG =  cx(AB) *  cx(RQG) +    AC  * cx(RGG);
+//      DPQQ =     AC  *  cx(RQQ) - cx(BE) * cx(RGQ);
+//      DPQG =     AC  *  cx(RQG) - cx(BE) * cx(RGG);
+//      DPGQ = -cx(AB) *  cx(RQQ) + cx(AL) * cx(RGQ);
+//      DPGG = -cx(AB) *  cx(RQG) + cx(AL) * cx(RGG);
+//
+//      rmmqq[i+mellinint::mdim]=  cx(AL) * DMQQ+cx(AB)*DMQG;
+//      rmmqg[i+mellinint::mdim]=  cx(BE) * DMQQ+  AC  *DMQG;
+//      rmmgq[i+mellinint::mdim]=  cx(AL) * DMGQ+cx(AB)*DMGG;
+//      rmmgg[i+mellinint::mdim]=  cx(BE) * DMGQ+  AC  *DMGG;
+//      rmpqq[i+mellinint::mdim]= (  AC   * DMQQ-cx(AB)*DMQG)/NMP;
+//      rmpqg[i+mellinint::mdim]=(-cx(BE) * DMQQ+cx(AL)*DMQG)/NMP;
+//      rmpgq[i+mellinint::mdim]= (  AC   * DMGQ-cx(AB)*DMGG)/NMP;
+//      rmpgg[i+mellinint::mdim]=(-cx(BE) * DMGQ+cx(AL)*DMGG)/NMP;
+//      rpmqq[i+mellinint::mdim]= (cx(AL) * DPQQ+cx(AB)*DPQG)/NPM;
+//      rpmqg[i+mellinint::mdim]= (cx(BE) * DPQQ+  AC  *DPQG)/NPM;
+//      rpmgq[i+mellinint::mdim]= (cx(AL) * DPGQ+cx(AB)*DPGG)/NPM;
+//      rpmgg[i+mellinint::mdim]= (cx(BE) * DPGQ+  AC  *DPGG)/NPM;
+//      rppqq[i+mellinint::mdim]=    AC   * DPQQ-cx(AB)*DPQG;
+//      rppqg[i+mellinint::mdim]= -cx(BE) * DPQQ+cx(AL)*DPQG;
+//      rppgq[i+mellinint::mdim]=    AC   * DPGQ-cx(AB)*DPGG;
+//      rppgg[i+mellinint::mdim]= -cx(BE) * DPGQ+cx(AL)*DPGG;
     } 
 }
 void evolnative::update()
@@ -912,179 +928,195 @@ void evolnative::evolve()
     }
   
   //i is the index of the complex mellin moment in the z-space for the gaussian quadrature used for the mellin inversion
-  for (int i = 0; i < ndim; i++)
-    {
-      // Singlet/non-singlet decomposition at the starting scale (factorisation scale)
-      complex <double> UVN   = UVP[i];
-      complex <double> DVN   = DVP[i];
-      complex <double> GLN   = GLP[i];
-      complex <double> SIN   = SIP[i];
-      complex <double> NS3N  = NS3P[i];
-      complex <double> NS8N  = NS8P[i];
-      complex <double> NS15N = NS15P[i];
-      complex <double> NS24N = NS24P[i];
-      complex <double> NS35N = NS35P[i];
+  for (int sign = mesq::positive; sign <= mesq::negative; sign++)
+    for (int n = 0; n < ndim; n++)
+      {
+	// Singlet/non-singlet decomposition at the starting scale (factorisation scale)
+	complex <double> UVN,DVN,GLN,SIN,NS3N,NS8N,NS15N,NS24N,NS35N;
+	if (sign == mesq::positive)
+	  {
+	    UVN   = UVP[n];
+	    DVN   = DVP[n];
+	    GLN   = GLP[n];
+	    SIN   = SIP[n];
+	    NS3N  = NS3P[n];
+	    NS8N  = NS8P[n];
+	    NS15N = NS15P[n];
+	    NS24N = NS24P[n];
+	    NS35N = NS35P[n];
+	  }
+	else
+	  {
+	    UVN   = conj(UVP[n]);
+	    DVN   = conj(DVP[n]);
+	    GLN   = conj(GLP[n]);
+	    SIN   = conj(SIP[n]);
+	    NS3N  = conj(NS3P[n]);
+	    NS8N  = conj(NS8P[n]);
+	    NS15N = conj(NS15P[n]);
+	    NS24N = conj(NS24P[n]);
+	    NS35N = conj(NS35P[n]);
+	  }
+	int i = index(n,sign);
+	complex <double> SG = SIN;
+	complex <double> GL = GLN;
 
-      complex <double> SG = SIN;
-      complex <double> GL = GLN;
+	// retrieved values cached in anomalous.C --> can move here to this module, and drop anomalous
+	complex <double> ANS = ans[i];
+	complex <double> AM = am[i];
+	complex <double> AP = ap[i];
+	complex <double> AL = al[i];
+	complex <double> BE = be[i];
+	complex <double> AB = ab[i];
+	complex <double> AC  = 1. -AL;
+	complex <double> RMIN = rmin[i];
+	complex <double> RPLUS = rplus[i];
+	complex <double> RMMQQ = rmmqq[i];
+	complex <double> RMMQG = rmmqg[i];
+	complex <double> RMMGQ = rmmgq[i];
+	complex <double> RMMGG = rmmgg[i];
+	complex <double> RMPQQ = rmpqq[i];
+	complex <double> RMPQG = rmpqg[i];
+	complex <double> RMPGQ = rmpgq[i];
+	complex <double> RMPGG = rmpgg[i];
+	complex <double> RPMQQ = rpmqq[i];
+	complex <double> RPMQG = rpmqg[i];
+	complex <double> RPMGQ = rpmgq[i];
+	complex <double> RPMGG = rpmgg[i];
+	complex <double> RPPQQ = rppqq[i];
+	complex <double> RPPQG = rppqg[i];
+	complex <double> RPPGQ = rppgq[i];
+	complex <double> RPPGG = rppgg[i];
+	// **************************************
 
-
-      // retrieved values cached in anomalous.C --> can move here to this module, and drop anomalous
-      complex <double> ANS = ans[i];
-      complex <double> AM = am[i];
-      complex <double> AP = ap[i];
-      complex <double> AL = al[i];
-      complex <double> BE = be[i];
-      complex <double> AB = ab[i];
-      complex <double> AC  = 1. -AL;
-      complex <double> RMIN = rmin[i];
-      complex <double> RPLUS = rplus[i];
-      complex <double> RMMQQ = rmmqq[i];
-      complex <double> RMMQG = rmmqg[i];
-      complex <double> RMMGQ = rmmgq[i];
-      complex <double> RMMGG = rmmgg[i];
-      complex <double> RMPQQ = rmpqq[i];
-      complex <double> RMPQG = rmpqg[i];
-      complex <double> RMPGQ = rmpgq[i];
-      complex <double> RMPGG = rmpgg[i];
-      complex <double> RPMQQ = rpmqq[i];
-      complex <double> RPMQG = rpmqg[i];
-      complex <double> RPMGQ = rpmgq[i];
-      complex <double> RPMGG = rpmgg[i];
-      complex <double> RPPQQ = rppqq[i];
-      complex <double> RPPQG = rppqg[i];
-      complex <double> RPPGQ = rppgq[i];
-      complex <double> RPPGG = rppgg[i];
-      // **************************************
-
-      // **************************************
-      //     b-dependence
-      //resummation scale
-      //  complex <double> XL = 1./cx(alphasl_(fcx(scale2)));
-      //  complex <double> XL1 = 1.- XL;
-      //  complex <double> SALP = log(XL);
-      //--> SALP ~ log[alphas(Q)/alphas(b0/b)]
+	// **************************************
+	//     b-dependence
+	//resummation scale
+	//  complex <double> XL = 1./cx(alphasl_(fcx(scale2)));
+	//  complex <double> XL1 = 1.- XL;
+	//  complex <double> SALP = log(XL);
+	//--> SALP ~ log[alphas(Q)/alphas(b0/b)]
   
-      complex <double> S = SALP;
-      //  cout << S << "  " << <<alpr <<  endl;
+	complex <double> S = SALP;
+	//  cout << S << "  " << <<alpr <<  endl;
 
-      complex <double> ENS = exp(-ANS*S);
-      complex <double> EM  = exp(-AM*S);
-      complex <double> EP  = exp(-AP*S);
-      complex <double> EMP = EM/EP;
-      complex <double> EPM = EP/EM;
+	complex <double> ENS = exp(-ANS*S);
+	complex <double> EM  = exp(-AM*S);
+	complex <double> EP  = exp(-AP*S);
+	complex <double> EMP = EM/EP;
+	complex <double> EPM = EP/EM;
 
-      //...EVOLUTION OF LIGHT PARTON DENSITIES
-      //double q2s = q2/pow(resint::a,2);                //resummation scale
-      //double alpqf = dyalphas_lhapdf_(sqrt(q2s))/4./M_PI; //alphas at the resummation scale
-      //complex <double> alpq = alpqf * alphasl(scale2);              //alphas at the resummation scale times alphas at 1/b
-      //complex <double> alpr= alpq * 1 *(opts.order-1);
-      //--> alpr = 0 at NLL; alpr = alphas(Q) * alphasl ~ alphas(b0/b) at NNLL
+	//...EVOLUTION OF LIGHT PARTON DENSITIES
+	//double q2s = q2/pow(resint::a,2);                //resummation scale
+	//double alpqf = dyalphas_lhapdf_(sqrt(q2s))/4./M_PI; //alphas at the resummation scale
+	//complex <double> alpq = alpqf * alphasl(scale2);              //alphas at the resummation scale times alphas at 1/b
+	//complex <double> alpr= alpq * 1 *(opts.order-1);
+	//--> alpr = 0 at NLL; alpr = alphas(Q) * alphasl ~ alphas(b0/b) at NNLL
 
-      if (opts.order_evol == 1)
-	{
-	  UVN  = UVN  * ENS;
-	  DVN  = DVN  * ENS;
-	  NS3N = NS3N * ENS;
-	  NS8N = NS8N * ENS;
-	  
-	  SIN = EM * (AL*SG + BE*GL) + EP * (AC*SG - BE*GL);
-	  GLN = EM * (AB*SG + AC*GL) + EP * (-AB*SG + AL*GL);
+	if (opts.order_evol == 1)
+	  {
+	    UVN  = UVN  * ENS;
+	    DVN  = DVN  * ENS;
+	    NS3N = NS3N * ENS;
+	    NS8N = NS8N * ENS;
+	    
+	    SIN = EM * (AL*SG + BE*GL) + EP * (AC*SG - BE*GL);
+	    GLN = EM * (AB*SG + AC*GL) + EP * (-AB*SG + AL*GL);
+	    
+	    NS15N = NS15N * ENS;
+	    NS24N = NS24N * ENS;
+	  }
+	else if (opts.order_evol == 2)
+	  {
+	    UVN  = UVN  * ENS * (1.+  alpr * XL1 * RMIN);
+	    DVN  = DVN  * ENS * (1.+  alpr * XL1 * RMIN);
+	    NS3N = NS3N * ENS * (1.+  alpr * XL1 * RPLUS);
+	    NS8N = NS8N * ENS * (1.+  alpr * XL1 * RPLUS);
+	    
+	    SIN = EM * ((AL + alpr * (RMMQQ*XL1 + RMPQQ*(EPM-XL)))* SG + (BE + alpr * (RMMQG*XL1 + RMPQG*(EPM-XL))) * GL)
+	      + EP * ((AC + alpr * (RPPQQ*XL1 + RPMQQ*(EMP-XL)))* SG + (-BE + alpr * (RPPQG*XL1 + RPMQG*(EMP-XL))) * GL);
+	    GLN = EM * ((AB + alpr * (RMMGQ*XL1 + RMPGQ*(EPM-XL)))* SG + (AC + alpr * (RMMGG*XL1 + RMPGG*(EPM-XL))) * GL)
+	      + EP *((-AB + alpr * (RPPGQ*XL1 + RPMGQ*(EMP-XL)))* SG + (AL + alpr * (RPPGG*XL1 + RPMGG*(EMP-XL))) * GL);
   
-	  NS15N = NS15N * ENS;
-	  NS24N = NS24N * ENS;
-	}
-      else if (opts.order_evol == 2)
-	{
-	  UVN  = UVN  * ENS * (1.+  alpr * XL1 * RMIN);
-	  DVN  = DVN  * ENS * (1.+  alpr * XL1 * RMIN);
-	  NS3N = NS3N * ENS * (1.+  alpr * XL1 * RPLUS);
-	  NS8N = NS8N * ENS * (1.+  alpr * XL1 * RPLUS);
-	  
-	  SIN = EM * ((AL + alpr * (RMMQQ*XL1 + RMPQQ*(EPM-XL)))* SG + (BE + alpr * (RMMQG*XL1 + RMPQG*(EPM-XL))) * GL)
-	    + EP * ((AC + alpr * (RPPQQ*XL1 + RPMQQ*(EMP-XL)))* SG + (-BE + alpr * (RPPQG*XL1 + RPMQG*(EMP-XL))) * GL);
-	  GLN = EM * ((AB + alpr * (RMMGQ*XL1 + RMPGQ*(EPM-XL)))* SG + (AC + alpr * (RMMGG*XL1 + RMPGG*(EPM-XL))) * GL)
-	    + EP *((-AB + alpr * (RPPGQ*XL1 + RPMGQ*(EMP-XL)))* SG + (AL + alpr * (RPPGG*XL1 + RPMGG*(EMP-XL))) * GL);
-  
-	  NS15N = NS15N * ENS * (1.+  alpr * XL1 * RPLUS);
-	  NS24N = NS24N * ENS * (1.+  alpr * XL1 * RPLUS);
-	}
+	    NS15N = NS15N * ENS * (1.+  alpr * XL1 * RPLUS);
+	    NS24N = NS24N * ENS * (1.+  alpr * XL1 * RPLUS);
+	  }
 
       
-      NS35N = SIN;
+	NS35N = SIN;
 
-      //...  FLAVOUR DECOMPOSITION OF THE QUARK SEA :
-      complex <double> SSN, DSN, USN, CHN, BON;
-      SSN = (10.* SIN + 2.* NS35N + 3.* NS24N + 5.* NS15N - 20.* NS8N) / 120.;
-      DSN = (10.* SIN + 2.* NS35N + 3.* NS24N + 5.* NS15N + 10.* NS8N - 30.* NS3N - 60.* DVN) / 120.;
-      USN = (10.* SIN + 2.* NS35N + 3.* NS24N + 5.* NS15N + 10.* NS8N + 30.* NS3N - 60.* UVN) / 120.;
+	//...  FLAVOUR DECOMPOSITION OF THE QUARK SEA :
+	complex <double> SSN, DSN, USN, CHN, BON;
+	SSN = (10.* SIN + 2.* NS35N + 3.* NS24N + 5.* NS15N - 20.* NS8N) / 120.;
+	DSN = (10.* SIN + 2.* NS35N + 3.* NS24N + 5.* NS15N + 10.* NS8N - 30.* NS3N - 60.* DVN) / 120.;
+	USN = (10.* SIN + 2.* NS35N + 3.* NS24N + 5.* NS15N + 10.* NS8N + 30.* NS3N - 60.* UVN) / 120.;
       
-      CHN = (UVN + DVN + 2.*USN + 2.*DSN + 2.*SSN - NS15N)/6.;
-      BON = (UVN + DVN + 2.*USN + 2.*DSN + 2.*SSN + 2.*CHN - NS24N)/8.;
-      //equivalent to:
-      //CHN = (10.* SIN + 2. *NS35N + 3.* NS24N - 15.* NS15N) / 120.;
-      //BON = (10.* SIN + 2. *NS35N - 12.* NS24N) / 120.;
+	CHN = (UVN + DVN + 2.*USN + 2.*DSN + 2.*SSN - NS15N)/6.;
+	BON = (UVN + DVN + 2.*USN + 2.*DSN + 2.*SSN + 2.*CHN - NS24N)/8.;
+	//equivalent to:
+	//CHN = (10.* SIN + 2. *NS35N + 3.* NS24N - 15.* NS15N) / 120.;
+	//BON = (10.* SIN + 2. *NS35N - 12.* NS24N) / 120.;
 
-      if (nf == 3) //GRV
-	{
-	  SSN= (20.* SIN - 20.* NS8N)/120.;
-	  DSN = (20.* SIN + 10.* NS8N - 30.* NS3N - 60.* DVN) / 120.;
-	  USN = (20.* SIN + 10.* NS8N + 30.* NS3N - 60.* UVN) / 120.;
-	  CHN=0.;
-	  BON=0.;
-	}
+	if (nf == 3) //GRV
+	  {
+	    SSN= (20.* SIN - 20.* NS8N)/120.;
+	    DSN = (20.* SIN + 10.* NS8N - 30.* NS3N - 60.* DVN) / 120.;
+	    USN = (20.* SIN + 10.* NS8N + 30.* NS3N - 60.* UVN) / 120.;
+	    CHN=0.;
+	    BON=0.;
+	  }
 
-      //if (fabs(bstarscale) < LHAPDF::getThreshold(4))
-      //    CHN *= exp(-pow((LHAPDF::getThreshold(4)-fabs(bstarscale)),2)/pow((LHAPDF::getThreshold(4)/10.) ,2)); //=0
-      //  double delta = 1./5.;
-      //  if (fabs(bstarscale) < LHAPDF::getThreshold(5)*(1+delta/2.))
-      //    BON *= exp(-pow((LHAPDF::getThreshold(5)*(1+delta/2.)-fabs(bstarscale)),2)/pow((LHAPDF::getThreshold(5)*delta),2)); //=0
+	//if (fabs(bstarscale) < LHAPDF::getThreshold(4))
+	//    CHN *= exp(-pow((LHAPDF::getThreshold(4)-fabs(bstarscale)),2)/pow((LHAPDF::getThreshold(4)/10.) ,2)); //=0
+	//  double delta = 1./5.;
+	//  if (fabs(bstarscale) < LHAPDF::getThreshold(5)*(1+delta/2.))
+	//    BON *= exp(-pow((LHAPDF::getThreshold(5)*(1+delta/2.)-fabs(bstarscale)),2)/pow((LHAPDF::getThreshold(5)*delta),2)); //=0
 
-      // **************************************
+	// **************************************
 
-      // output:
-      // bbar cbar sbar dbar ubar gluon  u   d   s   c   b
-      // -5    -4   -3   -2   -1    0    1   2   3   4   5
+	// output:
+	// bbar cbar sbar dbar ubar gluon  u   d   s   c   b
+	// -5    -4   -3   -2   -1    0    1   2   3   4   5
 
-      fx[0+MAXNF] = GLN;
-      fx[1+MAXNF] = UVN + USN;
-      fx[-1+MAXNF] = USN;
-      fx[2+MAXNF] = DVN + DSN;
-      fx[-2+MAXNF] = DSN;
-      fx[3+MAXNF] = SSN;
-      fx[-3+MAXNF] = SSN;
-      if (nf >= 4)
-	{
-	  fx[4+MAXNF] = CHN;
-	  fx[-4+MAXNF] = CHN;
-	}
-      else
-	{
-	  fx[4+MAXNF] = 0.;
-	  fx[-4+MAXNF] = 0.;
-	}
+	fx[0+MAXNF] = GLN;
+	fx[1+MAXNF] = UVN + USN;
+	fx[-1+MAXNF] = USN;
+	fx[2+MAXNF] = DVN + DSN;
+	fx[-2+MAXNF] = DSN;
+	fx[3+MAXNF] = SSN;
+	fx[-3+MAXNF] = SSN;
+	if (nf >= 4)
+	  {
+	    fx[4+MAXNF] = CHN;
+	    fx[-4+MAXNF] = CHN;
+	  }
+	else
+	  {
+	    fx[4+MAXNF] = 0.;
+	    fx[-4+MAXNF] = 0.;
+	  }
   
-      if (nf >= 5)
-	{
-	  fx[5+MAXNF] = BON;
-	  fx[-5+MAXNF] = BON;
-	}
-      else
-	{
-	  fx[5+MAXNF] = 0.;
-	  fx[-5+MAXNF] = 0.;
-	}
+	if (nf >= 5)
+	  {
+	    fx[5+MAXNF] = BON;
+	    fx[-5+MAXNF] = BON;
+	  }
+	else
+	  {
+	    fx[5+MAXNF] = 0.;
+	    fx[-5+MAXNF] = 0.;
+	  }
 
-      if (opts.mellin1d)
-	pdfevol::storemoments(i, fx);
-      else
-	{
-	  if (i < mellinint::mdim)
-	    pdfevol::storemoments_1(i, fx);
-	  else
-	    pdfevol::storemoments_2(i-mellinint::mdim, fx);
-	}
-    }
+	if (opts.mellin1d)
+	  pdfevol::storemoments(n, sign, fx);
+	else
+	  {
+	    if (n < mellinint::mdim)
+	      pdfevol::storemoments_1(n, sign, fx);
+	    else
+	      pdfevol::storemoments_2(n-mellinint::mdim, sign, fx);
+	  }
+      }
 }
 
 

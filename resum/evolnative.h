@@ -1,6 +1,8 @@
 #ifndef evolnative_h
 #define evolnative_h
 
+#include "mellinint.h"
+
 #include <complex>
 using namespace std;
 
@@ -63,6 +65,9 @@ namespace evolnative
   extern void free_engine();
   extern void release();
 
+  inline int index(int i, int beam, int sign)  {return i + mellinint::mdim*((beam-1) + 2*sign);};
+  inline int index(int i, int sign)            {return i + ndim*sign;};
+  
   //obsolete
   extern void init_fortran();
 }
