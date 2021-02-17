@@ -22,6 +22,7 @@
 #include "scales.h"
 #include "psi.h"
 #include "phasespace.h"
+#include "mesq.h"
 
 #include "LHAPDF/LHAPDF.h"
 
@@ -78,17 +79,17 @@ void pegasus::init_const()
 //Allocate PDF moments at the starting scale
 void pegasus::allocate()
 {
-  gli = new complex <double> [dim];
-  vai = new complex <double> [dim];
-  m3i = new complex <double> [dim];
-  m8i = new complex <double> [dim];
-  m15i = new complex <double> [dim];
-  m24i = new complex <double> [dim];
-  sgi = new complex <double> [dim];
-  p3i = new complex <double> [dim];
-  p8i = new complex <double> [dim];
-  p15i = new complex <double> [dim];
-  p24i = new complex <double> [dim];
+  gli  = new complex <double> [2*dim];
+  vai  = new complex <double> [2*dim];
+  m3i  = new complex <double> [2*dim];
+  m8i  = new complex <double> [2*dim];
+  m15i = new complex <double> [2*dim];
+  m24i = new complex <double> [2*dim];
+  sgi  = new complex <double> [2*dim];
+  p3i  = new complex <double> [2*dim];
+  p8i  = new complex <double> [2*dim];
+  p15i = new complex <double> [2*dim];
+  p24i = new complex <double> [2*dim];
 }
 
 void pegasus::free()
@@ -110,8 +111,8 @@ void pegasus::free()
 
 void pegasus::release()
 {
-  //if (opts.melup <= 1)
-  //free();
+  if (opts.melup <= 1)
+    free();
 }
 
 void pegasus::init_alphas()
@@ -190,21 +191,50 @@ void pegasus::calc_mellin()
 
   //Location of the Mellin inversion contour in the complex N plane 
   //Support points NA(K) for the gauss integration
-  for (int i = 0; i < dim; i++)
+  complex <double> cxn[dim*2] = {0.};
+  if (opts.mellin1d)
+    for (int sign = mesq::positive; sign <= mesq::negative; sign++)
+      for (int i = 0; i < mellinint::mdim; i++)
+	{
+	  int idx = index(i,sign);
+	  if (sign == mesq::positive)
+	    cxn[idx] = mellinint::Np[i];
+	  else
+	    cxn[idx] = mellinint::Nm[i];
+	}
+  else
+    for (int sign = mesq::positive; sign <= mesq::negative; sign++)
+      for (int beam = 1; beam <= 2; beam++)
+	for (int i = 0; i < mellinint::mdim; i++)
+	  {
+	    int idx = index(i,beam,sign);
+	    if (beam == 1)
+	      if (sign == mesq::positive)
+		cxn[idx] = mellinint::Np_1[i];
+	      else
+		cxn[idx] = mellinint::Nm_1[i];
+	    else
+	      if (sign == mesq::positive)
+		cxn[idx] = mellinint::Np_2[i];
+	      else
+		cxn[idx] = mellinint::Nm_2[i];
+	  }
+
+  for (int i = 0; i < dim*2; i++)
     {
-      complex <double> cxn;
-      if (opts.mellin1d)
-	cxn = mellinint::Np[i];
-      else
-	if (i < mellinint::mdim)
-	  cxn = mellinint::Np_1[i];
-	else
-	  cxn = mellinint::Np_2[i-mellinint::mdim];
+//complex <double> cxn;
+//if (opts.mellin1d)
+//	cxn = mellinint::Np[i];
+//else
+//	if (i < mellinint::mdim)
+//	  cxn = mellinint::Np_1[i];
+//	else
+//	  cxn = mellinint::Np_2[i-mellinint::mdim];
 	  
-      moms_.na_[i] = fcx(cxn);
+      moms_.na_[i] = fcx(cxn[i]);
 
       //The lowest simple harmonic sums on the support points
-      fcomplex N1 = fcx(cxn + 1.);
+      fcomplex N1 = fcx(cxn[i] + 1.);
       int one = 1;
       int two = 2;
       int three = 3;
@@ -313,55 +343,57 @@ void pegasus::init_pdf()
       
       complex <double> qp[5];
       complex <double> qm[5];
-      for (int i = 0; i < dim; i++)
-	{
-	  if (opts.mellin1d)
-	    {
-	      //gluon
-	      painp_.gli_[i] = fcx(mellinpdf::GL[i]);
+      for (int sign = mesq::positive; sign <= mesq::negative; sign++)
+	for (int n = 0; n < dim; n++)
+	  {
+	    int i = index(n,sign);
+	    if (opts.mellin1d)
+	      {
+		//gluon
+	      painp_.gli_[i] = fcx(mellinpdf::GL[n]);
       
 	      //Arrays of non-singlet and singlet quark combinations for N_f = 3 (and 4 and 5)
 	      //defined as in Eq. (2.16) of hep-ph/0408244
-	      qp[0] = mellinpdf::UP[i] + mellinpdf::UB[i];
-	      qp[1] = mellinpdf::DO[i] + mellinpdf::DB[i];
-	      qp[2] = mellinpdf::ST[i] + mellinpdf::SB[i];
-	      qp[3] = mellinpdf::CH[i] + mellinpdf::CB[i];
-	      qp[4] = mellinpdf::BO[i] + mellinpdf::BB[i];
+	      qp[0] = mellinpdf::UP[n] + mellinpdf::UB[n];
+	      qp[1] = mellinpdf::DO[n] + mellinpdf::DB[n];
+	      qp[2] = mellinpdf::ST[n] + mellinpdf::SB[n];
+	      qp[3] = mellinpdf::CH[n] + mellinpdf::CB[n];
+	      qp[4] = mellinpdf::BO[n] + mellinpdf::BB[n];
 	      
-	      qm[0] = mellinpdf::UP[i] - mellinpdf::UB[i];
-	      qm[1] = mellinpdf::DO[i] - mellinpdf::DB[i];
-	      qm[2] = mellinpdf::ST[i] - mellinpdf::SB[i];
-	      qm[3] = mellinpdf::CH[i] - mellinpdf::CB[i];
-	      qm[4] = mellinpdf::BO[i] - mellinpdf::BB[i];
+	      qm[0] = mellinpdf::UP[n] - mellinpdf::UB[n];
+	      qm[1] = mellinpdf::DO[n] - mellinpdf::DB[n];
+	      qm[2] = mellinpdf::ST[n] - mellinpdf::SB[n];
+	      qm[3] = mellinpdf::CH[n] - mellinpdf::CB[n];
+	      qm[4] = mellinpdf::BO[n] - mellinpdf::BB[n];
 	    }
 	  else
-	    if (i < mellinint::mdim)
+	    if (n < mellinint::mdim)
 	      {
-		painp_.gli_[i] = fcx(mellinpdf::GL_1[i]);
-		qp[0] = mellinpdf::UP_1[i] + mellinpdf::UB_1[i];
-		qp[1] = mellinpdf::DO_1[i] + mellinpdf::DB_1[i];
-		qp[2] = mellinpdf::ST_1[i] + mellinpdf::SB_1[i];
-		qp[3] = mellinpdf::CH_1[i] + mellinpdf::CB_1[i];
-		qp[4] = mellinpdf::BO_1[i] + mellinpdf::BB_1[i];
-		qm[0] = mellinpdf::UP_1[i] - mellinpdf::UB_1[i];
-		qm[1] = mellinpdf::DO_1[i] - mellinpdf::DB_1[i];
-		qm[2] = mellinpdf::ST_1[i] - mellinpdf::SB_1[i];
-		qm[3] = mellinpdf::CH_1[i] - mellinpdf::CB_1[i];
-		qm[4] = mellinpdf::BO_1[i] - mellinpdf::BB_1[i];
+		painp_.gli_[i] = fcx(mellinpdf::GL_1[n]);
+		qp[0] = mellinpdf::UP_1[n] + mellinpdf::UB_1[n];
+		qp[1] = mellinpdf::DO_1[n] + mellinpdf::DB_1[n];
+		qp[2] = mellinpdf::ST_1[n] + mellinpdf::SB_1[n];
+		qp[3] = mellinpdf::CH_1[n] + mellinpdf::CB_1[n];
+		qp[4] = mellinpdf::BO_1[n] + mellinpdf::BB_1[n];
+		qm[0] = mellinpdf::UP_1[n] - mellinpdf::UB_1[n];
+		qm[1] = mellinpdf::DO_1[n] - mellinpdf::DB_1[n];
+		qm[2] = mellinpdf::ST_1[n] - mellinpdf::SB_1[n];
+		qm[3] = mellinpdf::CH_1[n] - mellinpdf::CB_1[n];
+		qm[4] = mellinpdf::BO_1[n] - mellinpdf::BB_1[n];
 	      }
 	    else
 	      {
-		painp_.gli_[i] = fcx(mellinpdf::GL_2[i-mellinint::mdim]);
-		qp[0] = mellinpdf::UP_2[i-mellinint::mdim] + mellinpdf::UB_2[i-mellinint::mdim];
-		qp[1] = mellinpdf::DO_2[i-mellinint::mdim] + mellinpdf::DB_2[i-mellinint::mdim];
-		qp[2] = mellinpdf::ST_2[i-mellinint::mdim] + mellinpdf::SB_2[i-mellinint::mdim];
-		qp[3] = mellinpdf::CH_2[i-mellinint::mdim] + mellinpdf::CB_2[i-mellinint::mdim];
-		qp[4] = mellinpdf::BO_2[i-mellinint::mdim] + mellinpdf::BB_2[i-mellinint::mdim];
-		qm[0] = mellinpdf::UP_2[i-mellinint::mdim] - mellinpdf::UB_2[i-mellinint::mdim];
-		qm[1] = mellinpdf::DO_2[i-mellinint::mdim] - mellinpdf::DB_2[i-mellinint::mdim];
-		qm[2] = mellinpdf::ST_2[i-mellinint::mdim] - mellinpdf::SB_2[i-mellinint::mdim];
-		qm[3] = mellinpdf::CH_2[i-mellinint::mdim] - mellinpdf::CB_2[i-mellinint::mdim];
-		qm[4] = mellinpdf::BO_2[i-mellinint::mdim] - mellinpdf::BB_2[i-mellinint::mdim];
+		painp_.gli_[i] = fcx(mellinpdf::GL_2[n-mellinint::mdim]);
+		qp[0] = mellinpdf::UP_2[n-mellinint::mdim] + mellinpdf::UB_2[n-mellinint::mdim];
+		qp[1] = mellinpdf::DO_2[n-mellinint::mdim] + mellinpdf::DB_2[n-mellinint::mdim];
+		qp[2] = mellinpdf::ST_2[n-mellinint::mdim] + mellinpdf::SB_2[n-mellinint::mdim];
+		qp[3] = mellinpdf::CH_2[n-mellinint::mdim] + mellinpdf::CB_2[n-mellinint::mdim];
+		qp[4] = mellinpdf::BO_2[n-mellinint::mdim] + mellinpdf::BB_2[n-mellinint::mdim];
+		qm[0] = mellinpdf::UP_2[n-mellinint::mdim] - mellinpdf::UB_2[n-mellinint::mdim];
+		qm[1] = mellinpdf::DO_2[n-mellinint::mdim] - mellinpdf::DB_2[n-mellinint::mdim];
+		qm[2] = mellinpdf::ST_2[n-mellinint::mdim] - mellinpdf::SB_2[n-mellinint::mdim];
+		qm[3] = mellinpdf::CH_2[n-mellinint::mdim] - mellinpdf::CB_2[n-mellinint::mdim];
+		qm[4] = mellinpdf::BO_2[n-mellinint::mdim] - mellinpdf::BB_2[n-mellinint::mdim];
 	      }
 
 	  int nf = 3;
@@ -396,7 +428,7 @@ void pegasus::init_pdf()
 	}
       //store();
 
-      //Perform explicit Mellin transform at each threshold
+      //Perform explicit Mellin transform at each threshold --> not supported
       if (threval)
 	{
 	  //c threshold
@@ -566,7 +598,7 @@ void pegasus::init()
   else
     dim = 2*mellinint::mdim;
 
-  nnused_.nmax_ = dim;
+  nnused_.nmax_ = 2*dim;
   
   //if (opts.melup <= 1)
   //allocate();
@@ -732,7 +764,11 @@ void pegasus::init()
   //
 
   if (opts.melup <= 1)
-    init_pdf();
+    {
+    //init_pdf();
+      allocate();
+      update();
+    }
 }
 
 //update PDFs at the starting scale
@@ -752,86 +788,134 @@ void pegasus::update()
     facscale = sqrt(asinp_.m20_);
   
   //Assume the following was already called
-  //      pdfevol::allocate();
-  //      scales::set(opts.rmass);
-  //      pdfevol::update();
+  //pdfevol::allocate();
+  //scales::set(opts.rmass);
+  //pdfevol::update();
   mellinpdf::allocate();
   mellinpdf::evalpdfs(facscale, phasespace::m, phasespace::y);
   mellinpdf::update_mellin();
   mellinpdf::transform();
 
-  for (int i = 0; i < dim; i++)
-    {
-      complex <double> qp[5];
-      complex <double> qm[5];
-      if (opts.mellin1d)
-	{
-	  //gluon
-	  painp_.gli_[i] = fcx(mellinpdf::GL[i]);
-      
-	  //Arrays of non-singlet and singlet quark combinations for N_f = 3 (and 4 and 5)
-	  //defined as in Eq. (2.16) of hep-ph/0408244
-	  qp[0] = mellinpdf::UP[i] + mellinpdf::UB[i];
-	  qp[1] = mellinpdf::DO[i] + mellinpdf::DB[i];
-	  qp[2] = mellinpdf::ST[i] + mellinpdf::SB[i];
-	  qp[3] = mellinpdf::CH[i] + mellinpdf::CB[i];
-	  qp[4] = mellinpdf::BO[i] + mellinpdf::BB[i];
-	  
-	  qm[0] = mellinpdf::UP[i] - mellinpdf::UB[i];
-	  qm[1] = mellinpdf::DO[i] - mellinpdf::DB[i];
-	  qm[2] = mellinpdf::ST[i] - mellinpdf::SB[i];
-	  qm[3] = mellinpdf::CH[i] - mellinpdf::CB[i];
-	  qm[4] = mellinpdf::BO[i] - mellinpdf::BB[i];
-	  
-	  //Force symmetric s-sbar,c-cbar,b-bbar
-	  //qp[2] = 2.*pdfevol::SSP[i];
-	  //qp[3] = 2.*pdfevol::CHP[i];
-	  //qp[4] = 2.*pdfevol::BOP[i];
-	  //qm[2] = 0.;
-	  //qm[3] = 0.;
-	  //qm[4] = 0.;
-	}
-      else
-	if (i < mellinint::mdim)
-	  {
-	    painp_.gli_[i] = fcx(mellinpdf::GL_1[i]);
-	    qp[0] = mellinpdf::UP_1[i] + mellinpdf::UB_1[i];
-	    qp[1] = mellinpdf::DO_1[i] + mellinpdf::DB_1[i];
-	    qp[2] = mellinpdf::ST_1[i] + mellinpdf::SB_1[i];
-	    qp[3] = mellinpdf::CH_1[i] + mellinpdf::CB_1[i];
-	    qp[4] = mellinpdf::BO_1[i] + mellinpdf::BB_1[i];
-	    qm[0] = mellinpdf::UP_1[i] - mellinpdf::UB_1[i];
-	    qm[1] = mellinpdf::DO_1[i] - mellinpdf::DB_1[i];
-	    qm[2] = mellinpdf::ST_1[i] - mellinpdf::SB_1[i];
-	    qm[3] = mellinpdf::CH_1[i] - mellinpdf::CB_1[i];
-	    qm[4] = mellinpdf::BO_1[i] - mellinpdf::BB_1[i];
-	  }
+  complex <double> qp[5];
+  complex <double> qm[5];
+  complex <double> gl;
+  for (int sign = mesq::positive; sign <= mesq::negative; sign++)
+    for (int n = 0; n < dim; n++)
+      {
+	int nn;
+	if (opts.mellin1d)
+	  nn = n;
 	else
-	  {
-	    painp_.gli_[i] = fcx(mellinpdf::GL_2[i-mellinint::mdim]);
-	    qp[0] = mellinpdf::UP_2[i-mellinint::mdim] + mellinpdf::UB_2[i-mellinint::mdim];
-	    qp[1] = mellinpdf::DO_2[i-mellinint::mdim] + mellinpdf::DB_2[i-mellinint::mdim];
-	    qp[2] = mellinpdf::ST_2[i-mellinint::mdim] + mellinpdf::SB_2[i-mellinint::mdim];
-	    qp[3] = mellinpdf::CH_2[i-mellinint::mdim] + mellinpdf::CB_2[i-mellinint::mdim];
-	    qp[4] = mellinpdf::BO_2[i-mellinint::mdim] + mellinpdf::BB_2[i-mellinint::mdim];
-	    qm[0] = mellinpdf::UP_2[i-mellinint::mdim] - mellinpdf::UB_2[i-mellinint::mdim];
-	    qm[1] = mellinpdf::DO_2[i-mellinint::mdim] - mellinpdf::DB_2[i-mellinint::mdim];
-	    qm[2] = mellinpdf::ST_2[i-mellinint::mdim] - mellinpdf::SB_2[i-mellinint::mdim];
-	    qm[3] = mellinpdf::CH_2[i-mellinint::mdim] - mellinpdf::CB_2[i-mellinint::mdim];
-	    qm[4] = mellinpdf::BO_2[i-mellinint::mdim] - mellinpdf::BB_2[i-mellinint::mdim];
-	  }		
-      painp_.vai_[i] = fcx(qm[0]+qm[1]+qm[2]+qm[3]+qm[4]);
-      painp_.m3i_[i] = fcx(qm[0]-qm[1]);
-      painp_.m8i_[i] = fcx(qm[0]+qm[1]-2.*qm[2]);
-      hfpainp_.m15i_[i] = fcx(qm[0]+qm[1]+qm[2]-3.*qm[3]);
-      hfpainp_.m24i_[i] = fcx(qm[0]+qm[1]+qm[2]+qm[3]-4.*qm[4]);
-  
-      painp_.sgi_[i] = fcx(qp[0]+qp[1]+qp[2]+qp[3]+qp[4]);
-      painp_.p3i_[i] = fcx(qp[0]-qp[1]);
-      painp_.p8i_[i] = fcx(qp[0]+qp[1]-2.*qp[2]);
-      hfpainp_.p15i_[i] = fcx(qp[0]+qp[1]+qp[2]-3.*qp[3]);
-      hfpainp_.p24i_[i] = fcx(qp[0]+qp[1]+qp[2]+qp[3]-4.*qp[4]);
-    }
+	  if (n < mellinint::mdim)
+	    nn = n;
+	  else
+	    nn = n-mellinint::mdim;
+	
+	if (opts.mellin1d)
+	  if (sign == mesq::positive)
+	    {
+	      gl    = mellinpdf::GL[nn];
+	      qp[0] = mellinpdf::UP[nn] + mellinpdf::UB[nn];
+	      qp[1] = mellinpdf::DO[nn] + mellinpdf::DB[nn];
+	      qp[2] = mellinpdf::ST[nn] + mellinpdf::SB[nn];
+	      qp[3] = mellinpdf::CH[nn] + mellinpdf::CB[nn];
+	      qp[4] = mellinpdf::BO[nn] + mellinpdf::BB[nn];
+	      qm[0] = mellinpdf::UP[nn] - mellinpdf::UB[nn];
+	      qm[1] = mellinpdf::DO[nn] - mellinpdf::DB[nn];
+	      qm[2] = mellinpdf::ST[nn] - mellinpdf::SB[nn];
+	      qm[3] = mellinpdf::CH[nn] - mellinpdf::CB[nn];
+	      qm[4] = mellinpdf::BO[nn] - mellinpdf::BB[nn];
+	    }
+	  else
+	    {
+	      gl    = conj(mellinpdf::GL[nn]);
+	      qp[0] = conj(mellinpdf::UP[nn] + mellinpdf::UB[nn]);
+	      qp[1] = conj(mellinpdf::DO[nn] + mellinpdf::DB[nn]);
+	      qp[2] = conj(mellinpdf::ST[nn] + mellinpdf::SB[nn]);
+	      qp[3] = conj(mellinpdf::CH[nn] + mellinpdf::CB[nn]);
+	      qp[4] = conj(mellinpdf::BO[nn] + mellinpdf::BB[nn]);
+	      qm[0] = conj(mellinpdf::UP[nn] - mellinpdf::UB[nn]);
+	      qm[1] = conj(mellinpdf::DO[nn] - mellinpdf::DB[nn]);
+	      qm[2] = conj(mellinpdf::ST[nn] - mellinpdf::SB[nn]);
+	      qm[3] = conj(mellinpdf::CH[nn] - mellinpdf::CB[nn]);
+	      qm[4] = conj(mellinpdf::BO[nn] - mellinpdf::BB[nn]);
+	    }
+	else
+	  if (n < mellinint::mdim)
+	    if (sign == mesq::positive)
+	      {
+		gl    = mellinpdf::GL_1[nn];
+		qp[0] = mellinpdf::UP_1[nn] + mellinpdf::UB_1[nn];
+		qp[1] = mellinpdf::DO_1[nn] + mellinpdf::DB_1[nn];
+		qp[2] = mellinpdf::ST_1[nn] + mellinpdf::SB_1[nn];
+		qp[3] = mellinpdf::CH_1[nn] + mellinpdf::CB_1[nn];
+		qp[4] = mellinpdf::BO_1[nn] + mellinpdf::BB_1[nn];
+		qm[0] = mellinpdf::UP_1[nn] - mellinpdf::UB_1[nn];
+		qm[1] = mellinpdf::DO_1[nn] - mellinpdf::DB_1[nn];
+		qm[2] = mellinpdf::ST_1[nn] - mellinpdf::SB_1[nn];
+		qm[3] = mellinpdf::CH_1[nn] - mellinpdf::CB_1[nn];
+		qm[4] = mellinpdf::BO_1[nn] - mellinpdf::BB_1[nn];
+	      }
+	    else
+	      {
+		gl    = conj(mellinpdf::GL_1[nn]);
+		qp[0] = conj(mellinpdf::UP_1[nn] + mellinpdf::UB_1[nn]);
+		qp[1] = conj(mellinpdf::DO_1[nn] + mellinpdf::DB_1[nn]);
+		qp[2] = conj(mellinpdf::ST_1[nn] + mellinpdf::SB_1[nn]);
+		qp[3] = conj(mellinpdf::CH_1[nn] + mellinpdf::CB_1[nn]);
+		qp[4] = conj(mellinpdf::BO_1[nn] + mellinpdf::BB_1[nn]);
+		qm[0] = conj(mellinpdf::UP_1[nn] - mellinpdf::UB_1[nn]);
+		qm[1] = conj(mellinpdf::DO_1[nn] - mellinpdf::DB_1[nn]);
+		qm[2] = conj(mellinpdf::ST_1[nn] - mellinpdf::SB_1[nn]);
+		qm[3] = conj(mellinpdf::CH_1[nn] - mellinpdf::CB_1[nn]);
+		qm[4] = conj(mellinpdf::BO_1[nn] - mellinpdf::BB_1[nn]);
+	      }
+	  else
+	    if (sign == mesq::positive)
+	      {
+		gl    = mellinpdf::GL_2[nn];
+		qp[0] = mellinpdf::UP_2[nn] + mellinpdf::UB_2[nn];
+		qp[1] = mellinpdf::DO_2[nn] + mellinpdf::DB_2[nn];
+		qp[2] = mellinpdf::ST_2[nn] + mellinpdf::SB_2[nn];
+		qp[3] = mellinpdf::CH_2[nn] + mellinpdf::CB_2[nn];
+		qp[4] = mellinpdf::BO_2[nn] + mellinpdf::BB_2[nn];
+		qm[0] = mellinpdf::UP_2[nn] - mellinpdf::UB_2[nn];
+		qm[1] = mellinpdf::DO_2[nn] - mellinpdf::DB_2[nn];
+		qm[2] = mellinpdf::ST_2[nn] - mellinpdf::SB_2[nn];
+		qm[3] = mellinpdf::CH_2[nn] - mellinpdf::CB_2[nn];
+		qm[4] = mellinpdf::BO_2[nn] - mellinpdf::BB_2[nn];
+	      }
+	    else
+	      {
+		gl    = conj(mellinpdf::GL_2[nn]);
+		qp[0] = conj(mellinpdf::UP_2[nn] + mellinpdf::UB_2[nn]);
+		qp[1] = conj(mellinpdf::DO_2[nn] + mellinpdf::DB_2[nn]);
+		qp[2] = conj(mellinpdf::ST_2[nn] + mellinpdf::SB_2[nn]);
+		qp[3] = conj(mellinpdf::CH_2[nn] + mellinpdf::CB_2[nn]);
+		qp[4] = conj(mellinpdf::BO_2[nn] + mellinpdf::BB_2[nn]);
+		qm[0] = conj(mellinpdf::UP_2[nn] - mellinpdf::UB_2[nn]);
+		qm[1] = conj(mellinpdf::DO_2[nn] - mellinpdf::DB_2[nn]);
+		qm[2] = conj(mellinpdf::ST_2[nn] - mellinpdf::SB_2[nn]);
+		qm[3] = conj(mellinpdf::CH_2[nn] - mellinpdf::CB_2[nn]);
+		qm[4] = conj(mellinpdf::BO_2[nn] - mellinpdf::BB_2[nn]);
+	      }
+	
+	//arrays of non-singlet and singlet quark combinations for N_f = 3 (and 4 and 5)
+	//defined as in Eq. (2.16) of hep-ph/0408244
+	int i = index(n,sign);
+	painp_.gli_[i] = fcx(gl);	
+	painp_.vai_[i] = fcx(qm[0]+qm[1]+qm[2]+qm[3]+qm[4]);
+	painp_.m3i_[i] = fcx(qm[0]-qm[1]);
+	painp_.m8i_[i] = fcx(qm[0]+qm[1]-2.*qm[2]);
+	hfpainp_.m15i_[i] = fcx(qm[0]+qm[1]+qm[2]-3.*qm[3]);
+	hfpainp_.m24i_[i] = fcx(qm[0]+qm[1]+qm[2]+qm[3]-4.*qm[4]);
+	
+	painp_.sgi_[i] = fcx(qp[0]+qp[1]+qp[2]+qp[3]+qp[4]);
+	painp_.p3i_[i] = fcx(qp[0]-qp[1]);
+	painp_.p8i_[i] = fcx(qp[0]+qp[1]-2.*qp[2]);
+	hfpainp_.p15i_[i] = fcx(qp[0]+qp[1]+qp[2]-3.*qp[3]);
+	hfpainp_.p24i_[i] = fcx(qp[0]+qp[1]+qp[2]+qp[3]-4.*qp[4]);
+      }
   mellinpdf::free();
   if (opts.evolmode == 3)
     store();
@@ -844,7 +928,7 @@ void pegasus::update()
 //store PDFs at the starting scale
 void pegasus::store()
 {
-  for (int i = 0; i < dim; i++)
+  for (int i = 0; i < 2*dim; i++)
     {
       gli[i]  = cx(painp_.gli_[i]);
       vai[i]  = cx(painp_.vai_[i]);
@@ -863,7 +947,7 @@ void pegasus::store()
 //retrieve PDFs at the starting scale
 void pegasus::retrieve()
 {
-  for (int i = 0; i < dim; i++)
+  for (int i = 0; i < 2*dim; i++)
     {
       painp_.gli_[i]    = fcx(gli[i]);
       painp_.vai_[i]    = fcx(vai[i]);
@@ -951,26 +1035,28 @@ void pegasus::evolve()
 
   //  R2 = R2 * resint::mures2 / resint::muren2;
     
-  double ASI, ASF;
+  double asi;
+  complex <double> asf;
   int NF;
 
+  
   //DYRES evolution: fixed number of flavours = 5 evolution from the factorisation scale downward
   if (opts.evolmode == 1)
     {
       NF  = nff;
       //set the factorisation scale as initial scale for the evolution 
-      //ASI = asinp_.as0_;
+      //asi = asinp_.as0_;
 
       //set the resummation scale as initial scale for the evolution 
-      ASI = resint::alpqres;
+      asi = resint::alpqres;
       //if (opts.mufevol)
-      //ASI = resint::alpqfac;
+      //asi = resint::alpqfac;
 
       //to set muf as initial scale, ASF should be multiplied by an additional alphas(muf)/alphas(mures) factor (i.e. change alpqres to alpqfac also in ASF)
       //-> consider to do it so that ASF is a valid final scale for the VFN evolution
       
       //set the factorisation scale as initial scale for the evolution 
-      //ASI = resint::alpqfac;
+      //asi = resint::alpqfac;
 
       /*
       //calculate alphas at the final scale with pegasus, including the modification alpha(mures) -> alpha(muren)
@@ -983,7 +1069,7 @@ void pegasus::evolve()
       M2 = M2prime;
       R2 = R2prime;
       //alphas from Pegasus (it is identical to the DYRES alphas at LO/LL running, but differs at low scales at NLO/NLL running)
-      ASF = as_(R2, R20, AS0, NF)/resint::alpqren * resint::alpqres;
+      asf = as_(R2, R20, AS0, NF)/resint::alpqren * resint::alpqres;
       */
   
       //calculate alphas at the final scale with DYRES (which has the modification L -> L~)
@@ -991,18 +1077,19 @@ void pegasus::evolve()
 
       //Fortran
       //fcomplex scale2 = fcx(pow(pdfevol::bscale,2));
-      //ASF = fabs(cx(alphasl_(scale2))) * resint::alpqres; //DYRES LL(NLL) running of alphas
+      //asf = fabs(cx(alphasl_(scale2))) * resint::alpqres; //DYRES LL(NLL) running of alphas
 
       //C++
       complex <double> b = resconst::b0/pdfevol::bcomplex;
       /*
       if (!opts.mufevol)
-	ASF = fabs(pdfevol::asl)*resint::alpqres;
+	asf = fabs(pdfevol::asl)*resint::alpqres;
       else
-	ASF = fabs(pdfevol::asl)*resint::alpqfac;
+	asf = fabs(pdfevol::asl)*resint::alpqfac;
       */
 
-      ASF = fabs(pdfevol::asl)*resint::alpqres;
+      //asf = fabs(pdfevol::asl)*resint::alpqres;
+      asf = pdfevol::asl*resint::alpqres;
 
       //---> Pegasus and DYRES running of alphas are identical only at LO/LL. At NLO/NLL DYRES evolution is different (it is not a Runge-Kutta solution),
       //and has dependences on the resummation and renormalisation scales
@@ -1012,7 +1099,7 @@ void pegasus::evolve()
       //      cout << pdfevol::bscale << " dyres " << fabs(cx(alphasl_(scale2))) * resint::alpqres << " pegasus " << as_(R2, R20, AS0, NF)/resint::alpqren * resint::alpqres << endl;
       
       //      cout << pdfevol::bscale << "  " << resint::_m << "  " <<  as_(R2, R20, asinp_.as0_, NF) << "  " << fabs(cx(alphasl_(scale2))) * resint::alpqres << "  " << LHAPDF::alphasPDF(sqrt(M2)) / (4.* M_PI) << endl;
-      //      cout << pdfevol::qbstar << "  " << pdfevol::SALP << "  " << log(ASI/ASF) << endl;
+      //      cout << pdfevol::qbstar << "  " << pdfevol::SALP << "  " << log(asi/asf) << endl;
       //      cout << "pegasus blog: " << pdfevol::bscale << "  " << resconst::beta0*resint::alpqres*4.*log(resint::mures2/M2tilde) << endl;
     }
 
@@ -1025,37 +1112,37 @@ void pegasus::evolve()
       //M2 = M2prime;
       //R2 = R2prime;
 
-      //ASF = alphas(M2, R2, ASI, NF); // --> alphas from Pegasus
-      ASF = pdf::alphas(sqrt(M2))/(4.* M_PI);     // --> alphas from LHAPDF
-      //      ASF = ASF/resint::alpqren * resint::alpqfac; //--> this is very crude
+      //asf = alphas(M2, R2, asi, NF); // --> alphas from Pegasus
+      asf = pdf::alphas(sqrt(M2))/(4.* M_PI);     // --> alphas from LHAPDF
+      //      asf = asf/resint::alpqren * resint::alpqfac; //--> this is very crude
       
       //In the forward evolution need to rescale the final alphas ASF to account for the fact that the backward PDF evolution
       //is done from Qres to b0/b starting from PDFs at muf, while the residual evolution
       //from muf to Qres is factorised in the (H?) coefficients
-      //ASF = ASF/resint::alpqres * resint::alpqfac; // --> not needed for mufevol = true
+      //asf = asf/resint::alpqres * resint::alpqfac; // --> not needed for mufevol = true
 
       //cout << "scale " << sqrt(M2) << endl;
       
-      //As a consequence of the ASF rescaling, recompute NF and ASI
-      if (ASF < asfthr_.ast_)
+      //As a consequence of the ASF rescaling, recompute NF and asi
+      if (real(asf) < asfthr_.ast_)
 	{
 	  NF = 6;
-	  ASI = asfthr_.ast_;
+	  asi = asfthr_.ast_;
 	}
-      else if (ASF < asfthr_.asb_)
+      else if (real(asf) < asfthr_.asb_)
 	{
 	  NF = 5;
-	  ASI = asfthr_.asb_;
+	  asi = asfthr_.asb_;
 	}
-      else if (ASF < asfthr_.asc_ || asinp_.m20_ > (asfthr_.m2c_-1e-3))  //if the starting is above mcharm never switch to 3 flavour (intrinsic charm)
+      else if (real(asf) < asfthr_.asc_ || asinp_.m20_ > (asfthr_.m2c_-1e-3))  //if the starting is above mcharm never switch to 3 flavour (intrinsic charm)
 	{
 	  NF = 4;
-	  ASI = asfthr_.asc_;
+	  asi = asfthr_.asc_;
 	}
       else if (asinp_.m20_ < (asfthr_.m2c_-1e-3))
 	{
 	  NF = 3;
-	  ASI = asinp_.as0_;
+	  asi = asinp_.as0_;
 	}
     }
   
@@ -1065,39 +1152,39 @@ void pegasus::evolve()
       //calculate alphas at the final scale with DYRES (which has the modification L -> L~)
       //DYRES also has a different solution for the running of alphas beyond 1-loop
       fcomplex scale2 = fcx(pow(pdfevol::bscale,2));
-      ASF = fabs(cx(alphasl_(scale2))) * resint::alpqres; //DYRES LL(NLL) running of alphas
+      asf = fabs(cx(alphasl_(scale2))) * resint::alpqres; //DYRES LL(NLL) running of alphas
       
       //cout << pdfevol::bscale << " dyres " << fabs(cx(alphasl_(scale2))) << endl;
       //cout << pdfevol::bscale << " dyres " << fabs(cx(alphasl_(scale2))) * resint::alpqfac << " LHAPDF " << resint::alpqfac << endl;
 
       //Rescale the final alphas ASF for the fact that the PDF evolution is done from Qres to b0/b
       //starting from PDFs at muf, while the residual evolution from muf to Qres is factorised in the (H?) coefficients
-      ASF = ASF/resint::alpqres * resint::alpqfac; 
-      if (ASF < asfthr_.ast_) //If M2 = M2tilde than the scale is frozen at muf, and never goes above the top
+      asf = asf/resint::alpqres * resint::alpqfac; 
+      if (real(asf) < asfthr_.ast_) //If M2 = M2tilde than the scale is frozen at muf, and never goes above the top
 	{
 	  NF = 6;
-	  ASI = asfthr_.ast_;
+	  asi = asfthr_.ast_;
 	}
-      else if (ASF < asfthr_.asb_)
+      else if (real(asf) < asfthr_.asb_)
 	{
 	  NF = 5;
-	  ASI = asfthr_.asb_;
+	  asi = asfthr_.asb_;
 	}
-      else if (ASF < asfthr_.asc_)
+      else if (real(asf) < asfthr_.asc_)
 	{
 	  NF = 4;
-	  ASI = asfthr_.asc_;
+	  asi = asfthr_.asc_;
 	}
       else
 	{
 	  NF = 3;
-	  ASI = asinp_.as0_;
+	  asi = asinp_.as0_;
 	}
     }
   
   //Calculation of the moments of the parton densities and output
   int nlow = 1;
-  int nhigh = dim;
+  int nhigh = 2*dim;
   int IPSTD = 1; //IPSTD = 1 return PDFN as valence sea, IPSTD = = return PDFN as q, qb (as in LHAPDF but with u and d inverted)
   fcomplex PDFN[13][ndim];
 
@@ -1105,6 +1192,12 @@ void pegasus::evolve()
   //cout << " alphas " << ASF << " qbstar " << pdfevol::qbstar << endl;
   //if (real(ASF) > real(ASI) || fabs(pdfevol::qbstar) < sqrt(asinp_.m20_))
   //ASF = ASI;
+
+  fcomplex ASI = fcx(asi);
+  fcomplex ASF = fcx(asf);
+
+  //  double ASIR = asi;
+  //  double ASFR = real(asf);
 
   if (ivfns == 0)
     dyevnffn_(PDFN, ASI, ASF, NF, nlow, nhigh, IPSTD); //modified ffn evolution with charm and bottom at the starting scale
@@ -1155,8 +1248,8 @@ void pegasus::evolve()
 	logas += as2*(+LQR*beta1                   *(xlambda-log1xlambda)/pow(1.-xlambda,2)
 		       +LQR*beta1                   *xlambda/(1.-xlambda)                      //missing piece
 		       +0.5*pow(LQR,2)*pow(beta0,2) *xlambda*(xlambda-2.)/pow(1.-xlambda,2));  //missing piece
-      ASI = resint::alpqres;
-      ASF = exp(-logas)*ASI;
+      ASI = fcx(resint::alpqres);
+      ASF = fcx(exp(-logas)*resint::alpqres);
       
       //double FR2 = pow(scales::ren/scales::fac,2);//ratio of muren2/mufac2
       //frrat_.logfr_ = log(FR2);
@@ -1167,7 +1260,7 @@ void pegasus::evolve()
       //while pegasus::evolve is called at each value of b inside the Bessel inversion      
       //allocate();
       //store();
-      for (int i = 0; i < dim; i++)
+      for (int i = 0; i < 2*dim; i++)
 	{
 	  //gluon
 	  painp_.gli_[i] = PDFN[6][i];
@@ -1219,17 +1312,19 @@ void pegasus::evolve()
   
 
   complex <double> fx[11];
-  for (int i = 0; i < dim; i++)
+  for (int sign = mesq::positive; sign <= mesq::negative; sign++)
+    for (int n = 0; n < dim; n++)
     {
+      int i = index(n,sign);
       for (int p = -MAXNF; p <= MAXNF; p++)
 	fx[p+MAXNF] = cx(PDFN[p+6][i]);
       if (opts.mellin1d)
-	pdfevol::storemoments(i, fx);
+	pdfevol::storemoments(n, sign, fx);
       else
-	if (i < mellinint::mdim)
-	  pdfevol::storemoments_1(i, fx);
+	if (n < mellinint::mdim)
+	  pdfevol::storemoments_1(n, sign, fx);
 	else
-	  pdfevol::storemoments_2(i-mellinint::mdim, fx);
+	  pdfevol::storemoments_2(n-mellinint::mdim, sign, fx);
     }
 
   /*
