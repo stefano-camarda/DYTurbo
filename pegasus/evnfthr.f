@@ -34,6 +34,9 @@
        DOUBLE PRECISION MC2, MB2, MT2, M20, M2C, M2B, M2T, R20, R2C, 
      1                  R2B, R2T, AS, ASNF1, AS0, ASC, ASB, AST, ASC2, 
      2                  ASB2, AST2, ASC3, ASB4, AST5, LOGFR, SC, SB, ST
+c       DOUBLE PRECISION MC2, MB2, MT2, M20, M2C, M2B, M2T
+c       DOUBLE PRECISION R20, R2C, R2B, R2T
+       DOUBLE COMPLEX ASI,ASF,ALPS
        DIMENSION ESG(2,2), ENS(3)
 *
 * ---------------------------------------------------------------------
@@ -123,14 +126,17 @@
 *
 * ..The kernels for the evolution from M20 to M2C
 *
+          ASI = CMPLX(AS0,0d0)
+          ASF = CMPLX(ASC3,0d0)
+          ALPS = CMPLX(SC,0d0)
        IF (NPORD .EQ. 0) THEN
-         CALL ENSG0N (ENS, ESG, AS0, ASC3, SC, KN, 3)
+         CALL ENSG0N (ENS, ESG, ASI, ASF, ALPS, KN, 3)
        ELSE IF (NPORD .EQ. 1) THEN
-         CALL ENS1N (ENS, AS0, ASC3, SC, KN, 3)
-         CALL ESG1N (ESG, AS0, ASC3, SC, KN, 3)
+         CALL ENS1N (ENS, ASI, ASF, ALPS, KN, 3)
+         CALL ESG1N (ESG, ASI, ASF, ALPS, KN, 3)
        ELSE
-         CALL ENS2N (ENS, AS0, ASC3, SC, KN, 3, 1, 3)
-         CALL ESG2N (ESG, AS0, ASC3, SC, KN, 3)
+         CALL ENS2N (ENS, ASI, ASF, ALPS, KN, 3, 1, 3)
+         CALL ESG2N (ESG, ASI, ASF, ALPS, KN, 3)
        END IF
 
        IF (M2C > M20-1D-3) THEN
@@ -171,14 +177,17 @@
 *
        SC   = LOG (AS0 / ASC)
          
+          ASI = CMPLX(AS0,0d0)
+          ASF = CMPLX(ASC,0d0)
+          ALPS = CMPLX(SC,0d0)
        IF (NPORD .EQ. 0) THEN
-         CALL ENSG0N (ENS, ESG, AS0, ASC, SC, KN, 4)
+         CALL ENSG0N (ENS, ESG, ASI, ASF, ALPS, KN, 4)
        ELSE IF (NPORD .EQ. 1) THEN
-         CALL ENS1N (ENS, AS0, ASC, SC, KN, 4)
-         CALL ESG1N (ESG, AS0, ASC, SC, KN, 4)
+         CALL ENS1N (ENS, ASI, ASF, ALPS, KN, 4)
+         CALL ESG1N (ESG, ASI, ASF, ALPS, KN, 4)
        ELSE
-         CALL ENS2N (ENS, AS0, ASC, SC, KN, 4, 1, 3)
-         CALL ESG2N (ESG, AS0, ASC, SC, KN, 4)
+         CALL ENS2N (ENS, ASI, ASF, ALPS, KN, 4, 1, 3)
+         CALL ESG2N (ESG, ASI, ASF, ALPS, KN, 4)
        END IF
        
 * ..The N_f=4 parton distributions at the four-flavour threshold
@@ -201,15 +210,18 @@
 *
 * ..The kernels for the evolution from M2C to M2B
 *
+      ASI = CMPLX(ASC,0d0)
+      ASF = CMPLX(ASB4,0d0)
+      ALPS = CMPLX(SB,0d0)
        IF (MB2 .GT. 1.D10) GO TO 1
        IF (NPORD .EQ. 0) THEN
-         CALL ENSG0N (ENS, ESG, ASC, ASB4, SB, KN, 4)
+         CALL ENSG0N (ENS, ESG, ASI, ASF, ALPS, KN, 4)
        ELSE IF (NPORD .EQ. 1) THEN
-         CALL ENS1N (ENS, ASC, ASB4, SB, KN, 4)
-         CALL ESG1N (ESG, ASC, ASB4, SB, KN, 4)
+         CALL ENS1N (ENS, ASI, ASF, ALPS, KN, 4)
+         CALL ESG1N (ESG, ASI, ASF, ALPS, KN, 4)
        ELSE
-         CALL ENS2N (ENS, ASC, ASB4, SB, KN, 4, 1, 3)
-         CALL ESG2N (ESG, ASC, ASB4, SB, KN, 4)
+         CALL ENS2N (ENS, ASI, ASF, ALPS, KN, 4, 1, 3)
+         CALL ESG2N (ESG, ASI, ASF, ALPS, KN, 4)
        END IF
 *
 * ..The N_f=4 parton distributions at the five-flavour threshold
@@ -250,15 +262,18 @@
 *
 * ..The kernels for the evolution from M2B to M2T
 *
+      ASI = CMPLX(ASB,0d0)
+      ASF = CMPLX(AST5,0d0)
+      ALPS = CMPLX(ST,0d0)
        IF (MT2 .GT. 1.D10) GO TO 1
        IF (NPORD .EQ. 0) THEN
-         CALL ENSG0N (ENS, ESG, ASB, AST5, ST, KN, 5)
+         CALL ENSG0N (ENS, ESG,ASI, ASF, ALPS, KN, 5)
        ELSE IF (NPORD .EQ. 1) THEN
-         CALL ENS1N (ENS, ASB, AST5, ST, KN, 5)
-         CALL ESG1N (ESG, ASB, AST5, ST, KN, 5)
+         CALL ENS1N (ENS,ASI, ASF, ALPS, KN, 5)
+         CALL ESG1N (ESG,ASI, ASF, ALPS, KN, 5)
        ELSE
-         CALL ENS2N (ENS, ASB, AST5, ST, KN, 5, 1, 3)
-         CALL ESG2N (ESG, ASB, AST5, ST, KN, 5)
+         CALL ENS2N (ENS,ASI, ASF, ALPS, KN, 5, 1, 3)
+         CALL ESG2N (ESG,ASI, ASF, ALPS, KN, 5)
        END IF
 *
 * ..The N_f=5 parton distributions at the six-flavour threshold

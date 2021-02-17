@@ -30,7 +30,8 @@
        IMPLICIT DOUBLE COMPLEX (A - Z)
        INTEGER NF, NLOW, NHIGH, NPORD, IPSTD, KN
        include 'dimensions.f'
-       DOUBLE PRECISION ASI, ASF, S, THRD
+       DOUBLE COMPLEX ASI, ASF, S
+       DOUBLE PRECISION THRD
        PARAMETER ( THRD = 1.D0/3.D0 )
        DIMENSION PDFN (NDIM, -6:6), ESG(2,2), ENS(3)
 *

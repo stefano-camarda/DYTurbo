@@ -26,7 +26,8 @@
        INTEGER K1, K2
        DOUBLE PRECISION PGBETA0 (NFMIN:NFMAX), PGBETA1 (NFMIN:NFMAX),
      1                  PGBETA2 (NFMIN:NFMAX), PGBETA3 (NFMIN:NFMAX)
-       DOUBLE PRECISION ASI, ASF, S
+c       DOUBLE PRECISION ASI, ASF, S
+       DOUBLE COMPLEX ASI, ASF, S
        DIMENSION ENS(3), ESG(2,2), ER(2)
 *
 * ---------------------------------------------------------------------
