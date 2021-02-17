@@ -340,7 +340,8 @@ void pdfevol::allocate()
     evolnative::allocate();
 
   if (opts.evolmode == 1 || opts.evolmode == 3)
-    pegasus::allocate();
+    if (opts.melup == 2)
+      pegasus::allocate();
 }
 
 void pdfevol::free()
@@ -349,7 +350,8 @@ void pdfevol::free()
     evolnative::free();
 
   if (opts.evolmode == 1 || opts.evolmode == 3)
-    pegasus::free();
+    if (opts.melup == 2)
+      pegasus::free();
 }
 
 
@@ -415,6 +417,178 @@ void pdfevol::update()
   mellinpdf::free();
   */
 }
+
+//Save the evolved PDFs into the fx1 and fx2 arrays --> signed version
+void pdfevol::storemoments(int i, int sign, complex <double> fx[11])
+{
+  int nf = 2*MAXNF+1;
+  if (sign == mesq::positive)
+    {
+      copy(fx, fx+nf, fx1+i*nf);
+      copy(fx, fx+nf, fx2+i*nf);
+      if (opts.ih1 == -1)
+	{
+	  fx1[i*nf+bb] = fx[b ];
+	  fx1[i*nf+cb] = fx[c ];
+	  fx1[i*nf+sb] = fx[s ];
+	  fx1[i*nf+db] = fx[d ];
+	  fx1[i*nf+ub] = fx[u ];
+	  fx1[i*nf+u ] = fx[ub];
+	  fx1[i*nf+d ] = fx[db];
+	  fx1[i*nf+s ] = fx[sb];
+	  fx1[i*nf+c ] = fx[cb];
+	  fx1[i*nf+b ] = fx[bb];
+	}
+      if (opts.ih2 == -1)
+	{
+	  fx2[i*nf+bb] = fx[b ];
+	  fx2[i*nf+cb] = fx[c ];
+	  fx2[i*nf+sb] = fx[s ];
+	  fx2[i*nf+db] = fx[d ];
+	  fx2[i*nf+ub] = fx[u ];
+	  fx2[i*nf+u ] = fx[ub];
+	  fx2[i*nf+d ] = fx[db];
+	  fx2[i*nf+s ] = fx[sb];
+	  fx2[i*nf+c ] = fx[cb];
+	  fx2[i*nf+b ] = fx[bb];
+	}
+    }
+  else
+    {
+      //return;
+      int negidx = mellinint::mdim*11;
+      copy(fx, fx+nf, fx1+negidx+i*nf);
+      copy(fx, fx+nf, fx2+negidx+i*nf);
+      //fx1[negidx+i*nf+bb] = fx[bb];
+      //fx1[negidx+i*nf+cb] = fx[cb];
+      //fx1[negidx+i*nf+sb] = fx[sb];
+      //fx1[negidx+i*nf+db] = fx[db];
+      //fx1[negidx+i*nf+ub] = fx[ub];
+      //fx1[negidx+i*nf+u ] = fx[u ];
+      //fx1[negidx+i*nf+d ] = fx[d ];
+      //fx1[negidx+i*nf+s ] = fx[s ];
+      //fx1[negidx+i*nf+c ] = fx[c ];
+      //fx1[negidx+i*nf+b ] = fx[b ];
+      //
+      //fx2[negidx+i*nf+bb] = fx[bb];
+      //fx2[negidx+i*nf+cb] = fx[cb];
+      //fx2[negidx+i*nf+sb] = fx[sb];
+      //fx2[negidx+i*nf+db] = fx[db];
+      //fx2[negidx+i*nf+ub] = fx[ub];
+      //fx2[negidx+i*nf+u ] = fx[u ];
+      //fx2[negidx+i*nf+d ] = fx[d ];
+      //fx2[negidx+i*nf+s ] = fx[s ];
+      //fx2[negidx+i*nf+c ] = fx[c ];
+      //fx2[negidx+i*nf+b ] = fx[b ];
+
+      if (opts.ih1 == -1)
+	{
+	  fx1[negidx+i*nf+bb] = fx[bb];
+	  fx1[negidx+i*nf+cb] = fx[cb];
+	  fx1[negidx+i*nf+sb] = fx[sb];
+	  fx1[negidx+i*nf+db] = fx[db];
+	  fx1[negidx+i*nf+ub] = fx[ub];
+	  fx1[negidx+i*nf+u ] = fx[u ];
+	  fx1[negidx+i*nf+d ] = fx[d ];
+	  fx1[negidx+i*nf+s ] = fx[s ];
+	  fx1[negidx+i*nf+c ] = fx[c ];
+	  fx1[negidx+i*nf+b ] = fx[b ];
+	}
+      if (opts.ih2 == -1)
+	{
+	  fx2[negidx+i*nf+bb] = fx[b ];
+	  fx2[negidx+i*nf+cb] = fx[c ];
+	  fx2[negidx+i*nf+sb] = fx[s ];
+	  fx2[negidx+i*nf+db] = fx[d ];
+	  fx2[negidx+i*nf+ub] = fx[u ];
+	  fx2[negidx+i*nf+u ] = fx[ub];
+	  fx2[negidx+i*nf+d ] = fx[db];
+	  fx2[negidx+i*nf+s ] = fx[sb];
+	  fx2[negidx+i*nf+c ] = fx[cb];
+	  fx2[negidx+i*nf+b ] = fx[bb];
+	}
+    }      
+}
+void pdfevol::storemoments_1(int i, int sign, complex <double> fx[11])
+{
+  int nf = 2*MAXNF+1;
+  if (sign == mesq::positive)
+    {
+      copy(fx, fx+nf, fx1+i*nf);
+      if (opts.ih1 == -1)
+	{
+	  fx1[i*nf+bb] = fx[b ];
+	  fx1[i*nf+cb] = fx[c ];
+	  fx1[i*nf+sb] = fx[s ];
+	  fx1[i*nf+db] = fx[d ];
+	  fx1[i*nf+ub] = fx[u ];
+	  fx1[i*nf+u ] = fx[ub];
+	  fx1[i*nf+d ] = fx[db];
+	  fx1[i*nf+s ] = fx[sb];
+	  fx1[i*nf+c ] = fx[cb];
+	  fx1[i*nf+b ] = fx[bb];
+	}
+    }
+  else
+    {
+      int negidx = mellinint::mdim*11;
+      copy(fx, fx+nf, fx1+negidx+i*nf);
+      if (opts.ih1 == -1)
+	{
+	  fx1[negidx+i*nf+bb] = fx[bb];
+	  fx1[negidx+i*nf+cb] = fx[cb];
+	  fx1[negidx+i*nf+sb] = fx[sb];
+	  fx1[negidx+i*nf+db] = fx[db];
+	  fx1[negidx+i*nf+ub] = fx[ub];
+	  fx1[negidx+i*nf+u ] = fx[u ];
+	  fx1[negidx+i*nf+d ] = fx[d ];
+	  fx1[negidx+i*nf+s ] = fx[s ];
+	  fx1[negidx+i*nf+c ] = fx[c ];
+	  fx1[negidx+i*nf+b ] = fx[b ];
+	}
+    }
+}  
+void pdfevol::storemoments_2(int i, int sign, complex <double> fx[11])
+{
+  int nf = 2*MAXNF+1;
+  if (sign == mesq::positive)
+    {
+      copy(fx, fx+nf, fx2+i*nf);
+      if (opts.ih1 == -1)
+	{
+	  fx2[i*nf+bb] = fx[b ];
+	  fx2[i*nf+cb] = fx[c ];
+	  fx2[i*nf+sb] = fx[s ];
+	  fx2[i*nf+db] = fx[d ];
+	  fx2[i*nf+ub] = fx[u ];
+	  fx2[i*nf+u ] = fx[ub];
+	  fx2[i*nf+d ] = fx[db];
+	  fx2[i*nf+s ] = fx[sb];
+	  fx2[i*nf+c ] = fx[cb];
+	  fx2[i*nf+b ] = fx[bb];
+	}
+    }
+  else
+    {
+      int negidx = mellinint::mdim*11;
+      copy(fx, fx+nf, fx2+negidx+i*nf);
+      if (opts.ih1 == -1)
+	{
+	  fx2[negidx+i*nf+bb] = fx[bb];
+	  fx2[negidx+i*nf+cb] = fx[cb];
+	  fx2[negidx+i*nf+sb] = fx[sb];
+	  fx2[negidx+i*nf+db] = fx[db];
+	  fx2[negidx+i*nf+ub] = fx[ub];
+	  fx2[negidx+i*nf+u ] = fx[u ];
+	  fx2[negidx+i*nf+d ] = fx[d ];
+	  fx2[negidx+i*nf+s ] = fx[s ];
+	  fx2[negidx+i*nf+c ] = fx[c ];
+	  fx2[negidx+i*nf+b ] = fx[b ];
+	}
+    }
+}  
+
+
 
 void pdfevol::storemoments(int i, complex <double> fx[11])
 {

@@ -86,6 +86,10 @@ namespace pdfevol
   extern void storemoments(int i, complex <double> fx[11]);
   extern void storemoments_1(int i, complex <double> fx[11]);
   extern void storemoments_2(int i, complex <double> fx[11]);
+  //signed version
+  extern void storemoments(int i, int sign, complex <double> fx[11]);
+  extern void storemoments_1(int i, int sign, complex <double> fx[11]);
+  extern void storemoments_2(int i, int sign, complex <double> fx[11]);
   //store the moments in the Fortran common block
   extern void storemoments_fortran(int i, complex <double> fx[11]);
   //retrieve moments corresponding to i1, i2, and sign from the fx1 and fx2 arrays and store them in fn1 and fn2
