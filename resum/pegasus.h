@@ -2,6 +2,7 @@
 #define pegasus_h
 
 #include "interface.h"
+#include "mellinint.h"
 
 namespace pegasus
 {
@@ -31,6 +32,9 @@ namespace pegasus
   extern int nff;
   extern int ivfns;
   extern int dim;
+
+  inline int index(int i, int beam, int sign)  {return i + mellinint::mdim*((beam-1) + 2*sign);};
+  inline int index(int i, int sign)            {return i + dim*sign;};
 
   //Decomposed PDFs at the starting scale
   extern complex <double> *gli;
@@ -155,9 +159,9 @@ extern "C" {
   
   extern void evnfthr_(double &MC2, double &MB2, double &MT2);
   extern void evnasthr_(double &MC2, double &MB2, double &MT2);
-  extern void evnvfn_(fcomplex PDFN[13][ndim], double &ASI, double &ASF, int &NF, int &NLOW, int &NHIGH, int &IPSTD);
+  extern void evnvfn_(fcomplex PDFN[13][ndim], fcomplex &ASI, fcomplex &ASF, int &NF, int &NLOW, int &NHIGH, int &IPSTD);
   extern void evnffn_(fcomplex PDFN[13][ndim],  double &ASI,  double &ASF, int &NF, int &NLOW, int &NHIGH, int &IPSTD);
-  extern void dyevnffn_(fcomplex PDFN[13][ndim],  double &ASI,  double &ASF, int &NF, int &NLOW, int &NHIGH, int &IPSTD);
+  extern void dyevnffn_(fcomplex PDFN[13][ndim],  fcomplex &ASI,  fcomplex &ASF, int &NF, int &NLOW, int &NHIGH, int &IPSTD);
 
   extern struct {
     fcomplex vai_[ndim];
