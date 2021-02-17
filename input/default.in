@@ -130,15 +130,11 @@ p = 1
 expc = 3
 ntaylor = 5
 
-# Sum all logs before exponentiation (helpful with bprescription = 0, but create issues with bprescription = 2)
-sumlogs = false
-
-# Integrate the Sudakov form factor numerically (otherwise use the analytical solution)
-numsud = false
-# Integrate the C exponentiation numerically (otherwise use the analytical solution)
-numexpc = false
-# Use a numerical solution for the running of alphas
-asrgkt = false
+# Technical settings for the Sudakov form factor
+sumlogs = false  # Sum all logs before exponentiation (helpful with bprescription = 0, but create issues with bprescription = 2)
+numsud  = false  # Integrate the Sudakov form factor numerically (otherwise use the analytical solution)
+numexpc = false  # Integrate the C exponentiation numerically (otherwise use the analytical solution)
+asrgkt  = false  # Use a numerical solution for the running of alphas (otherwise use the approximate iterative analytical solution)
 
 # Prescription to avoid the Landau pole in the Bessel inverse transform
 # 0: bstar prescription, which freezes b at bmax: b -> bstar = b/sqrt(1+b^2/bmax^2)
@@ -148,14 +144,15 @@ asrgkt = false
 # 4: Local bstar prescription (can be used only with numsud = true)
 bprescription = 0
 
-blim = 3                #blim for the bstar prescription, applies to bprescription = 0. A positive value set a fixed bmax=blim, a negative values sets bmax=b_L/(-blim), where b_L is the Landau singularity.
-blim_pdf = 1.1229190    #if not zero, set a different blim for the PDF evolution
-blim_sudakov = 0        #if not zero, set a different blim for the Sudakov form factor
-blim_expc = 0           #if not zero, set a different blim for the exponentiation of the C coefficients
+#Value of blim for the bstar prescription. Positive values set a fixed bmax=blim, a negative values sets bmax=b_L/(-blim), where b_L is the Landau singularity.
+blim         = 3  # Main blim setting
+blim_pdf     = 0  # If not zero, set a different blim for the PDF evolution
+blim_sudakov = 0  # If not zero, set a different blim for the Sudakov form factor
+blim_expc    = 0  # If not zero, set a different blim for the exponentiation of the C coefficients
 
-bstar_pdf     = true  #force bstar prescription for the PDF evolution
-bstar_sudakov = false  #force bstar prescription for the Sudakov form factor
-bstar_expc    = false  #force bstar prescription for the exponentiation of the C coefficients
+bstar_pdf     = false  # Force bstar prescription for the PDF evolution
+bstar_sudakov = false  # Force bstar prescription for the Sudakov form factor
+bstar_expc    = false  # Force bstar prescription for the exponentiation of the C coefficients
 
 phibr = 4.        #set arg(z) as phib = pi/phibr  for the integration contour in the complex plane for bprescription = 2 (should be set phibr > 4. )
 bcf = 0.5         #select the point bc = bcf * b_L, where the integration contour is bended in the complex plane, as a fraction of the Landau singularity b_L. Applies to bprescription = 2 or 3
