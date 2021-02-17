@@ -201,9 +201,6 @@ void gint::intbeta(complex <double> q, complex <double> jac, double blim)
       if (opts.order == 3) logasl -= fac*(beta0*as + beta1*pow(as,2) + beta2*pow(as,3));
       if (opts.order == 4) logasl -= fac*(beta0*as + beta1*pow(as,2) + beta2*pow(as,3) + beta3*pow(as,4));
     }
-  
-  if (opts.expc == 0)
-    return;
 }  
 
 void gint::intexpc(complex <double> q, complex <double> jac, double blim)
