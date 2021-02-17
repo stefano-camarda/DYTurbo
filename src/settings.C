@@ -596,6 +596,17 @@ void settings::check_consistency(){
       else
 	intDimRes = 4;
 
+    //Add some safety cuts on mll and yll, when makecuts is true
+    //if (opts.makecuts)
+    //  {
+    //	if (opts.proc == 1 || opts.proc == 2)
+    //	  mmin = max(mmin,opts.mtcut);
+    // also, mmin should not be zero!
+    //	ymax = max(ymax,eta1,eta2);
+    //	ymin = min(ymin,-eta1,-eta2);
+    //	    
+    //  }
+    
     bool fullrap = true;
     double ylim = log(opts.sroot/bins.mbins.front());
     if (bins.ybins.front() >= -ylim || bins.ybins.back() <= ylim)
