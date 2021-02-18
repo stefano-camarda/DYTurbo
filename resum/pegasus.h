@@ -53,7 +53,7 @@ namespace pegasus
 
 
 //fortran interface to pegasus common blocks and functions //--> move inside the namespace
-const int ndim = 128; //512; //maximum dimension of the moments array
+const int ndim = 256; //512; //maximum dimension of the moments array --> synchronise with NDIM in pegasus/dimensions.h
 const int nfl = pegasus::NFMAX-pegasus::NFMIN+1;    //= 4: values of nf (3,4,5,6)
 const int numax = 20;
 
