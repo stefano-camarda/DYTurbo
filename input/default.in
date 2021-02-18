@@ -1,5 +1,5 @@
 # Process settings
-sroot        = 13e3  # Center-of-mass energy
+sroot        = 13e3 # Center-of-mass energy
 ih1          = 1    # Hadron 1: 1 for proton, -1 for antiproton
 ih2          = 1    # Hadron 2: 1 for proton, -1 for antiproton
 nproc        = 3    # Process: 1) W+; 2) W-; 3) Z/gamma*
@@ -86,10 +86,10 @@ kmut          = 1.        # Scale factor for the top matching scale
 ewscheme = 1
 
 # EW parameters
-Gf = 1.1663787e-5            # G-Fermi
+Gf    = 1.1663787e-5         # G-Fermi
 zmass = 91.1876              # Mass of the Z boson
 wmass = 80.385               # Mass of the W boson
-xw = 0.23153                 # Weak-mixing angle    (not used in the Gmu scheme)
+xw    = 0.23153              # Weak-mixing angle    (not used in the Gmu scheme)
 aemmz = 7.7585538055706e-03  # alpha_EM(MZ)         (not used in the Gmu scheme)
 
 # W and Z total widths used in the propagator are determined by the following inputs
@@ -127,7 +127,9 @@ p = 1
 #1: Keep only delta terms of Cnqq coefficients in the exponentiation
 #2: Taylor expansion of the N-dependent coefficients up to order ntaylor
 #3: Full exponentiation 
-expc = 3
+#4: Do not expand the denominator in the exponentiation, keep only terms up to C<order-1>
+#5: Do not expand the denominator in the exponentiation
+expc = 5
 ntaylor = 5
 
 # Technical settings for the Sudakov form factor
@@ -157,6 +159,9 @@ bstar_expc    = false  # Force bstar prescription for the exponentiation of the 
 phibr = 4.        #set arg(z) as phib = pi/phibr  for the integration contour in the complex plane for bprescription = 2 (should be set phibr > 4. )
 bcf = 0.5         #select the point bc = bcf * b_L, where the integration contour is bended in the complex plane, as a fraction of the Landau singularity b_L. Applies to bprescription = 2 or 3
 
+# Settings for the inverse Hankel transform
+bintaccuracy = 1.0e-4  # Accuracy of the integration
+
 # Strategy for the direct Mellin transform of PDFs at the factorization scale
 #0: Numerical integration with Gauss-Legendre quadrature
 #1: Approximation in x-space with Laguerre polynomials
@@ -172,18 +177,15 @@ opts_pdfintervals = 100   # Number of intervals for integration of PDF moments
 pdfrule = 200             # Gaussian rule for the x-to-N Mellin transform
 
 # Type of PDF evolution
-#0: DYRES (backward evolution)
-#1: Pegasus as DYRES (backward evolution)
-#2: Mellin transform (forward evolution)
-#3: Pegasus VFN (forward evolution)
-#4: Pegasus VFN with alphas from DYRES (forward evolution)
+#0: FFN five-flavour backward evolution
+#1: FFN five-flavour backward evolution with Pegasus-QCD
+#2: VFN direct Mellin transform from LHAPDF
+#3: VFN Pegasus-QCD with alphas from LHAPDF
+#4: VFN Pegasus-QCD with five-flavour alphas
 evolmode = 1
 
 # Do not factorize muf/Q variations from expc (use false only to reproduce old results)
 mufvar = true
-
-# Settings for the inverse Hankel transform
-bintaccuracy = 1.0e-4  # Accuracy of the integration
 
 # Settings for the inverse Mellin integrations
 mellininv = 0       # Strategy for the Mellin inversion (0 Gauss-Legendre, 1 Talbot)
@@ -256,7 +258,7 @@ vegasncallsCT     = 100000   # only for 6d and 8d vegas integration of the count
 vegasncallsVJLO   = 10000000 # only for lo 7d vegas integration
 vegasncallsVJREAL = 10000000 # only for real 10d vegas integration
 vegasncallsVJVIRT = 1000000  # only for virt 8d vegas integration
-vegascollect      = false    # collect points from all the vegas iterations (true) or only from the last iteration (false)
+vegascollect      = true    # collect points from all the vegas iterations (true) or only from the last iteration (false)
 
 # cubature settings
 pcubature = true   # Use Cuhre (false ) or pcubature (true) integration in quadrature mode
@@ -342,7 +344,7 @@ verbose     = false  # debug and time profile costh phi_lep integration
 
 # Output settings
 output_filename = results  # output filename
-texttable   = true         # dump result table to text file (including pdf variations)
+texttable   = true         # dump result table to text file
 redirect    = false        # redirect stdout and stderr to log file (except for gridverbose output)
 unicode     = false        # use unicode characters for the table formatting
 silent      = false        # no output on screen (except for gridverbose output)
