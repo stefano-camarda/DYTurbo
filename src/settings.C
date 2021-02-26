@@ -637,7 +637,7 @@ void settings::check_consistency(){
 	intDimVJ = 7;
 
     //cannot update mellin support points at every phase-space point when rapidity integrals are calculated numerically
-    if (makecuts && intDimRes == 2)
+    if (makecuts && (intDimRes <= 2 || intDimBorn == 1))
       if (melup == 2)
 	melup = 1;
           
