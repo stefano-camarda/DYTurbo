@@ -22,6 +22,16 @@ complex <double> *gint::alogqg;
 complex <double> *gint::alogqqb;
 complex <double> *gint::alogqqp;
 complex <double> *gint::alogqqbp;
+complex <double> *gint::alogqq_1;
+complex <double> *gint::alogqg_1;
+complex <double> *gint::alogqqb_1;
+complex <double> *gint::alogqqp_1;
+complex <double> *gint::alogqqbp_1;
+complex <double> *gint::alogqq_2;
+complex <double> *gint::alogqg_2;
+complex <double> *gint::alogqqb_2;
+complex <double> *gint::alogqqp_2;
+complex <double> *gint::alogqqbp_2;
 
 using namespace resconst;
 using namespace alphas;
@@ -34,11 +44,27 @@ void gint::init()
 void gint::allocate()
 {
   //allocate memory
-  alogqq   = new complex <double> [mellinint::mdim*2];
-  alogqg   = new complex <double> [mellinint::mdim*2];
-  alogqqb  = new complex <double> [mellinint::mdim*2];
-  alogqqp  = new complex <double> [mellinint::mdim*2];
-  alogqqbp = new complex <double> [mellinint::mdim*2];
+  if (opts.mellin1d)
+    {
+      alogqq   = new complex <double> [mellinint::mdim*2];
+      alogqg   = new complex <double> [mellinint::mdim*2];
+      alogqqb  = new complex <double> [mellinint::mdim*2];
+      alogqqp  = new complex <double> [mellinint::mdim*2];
+      alogqqbp = new complex <double> [mellinint::mdim*2];
+    }
+  else
+    {
+      alogqq_1   = new complex <double> [mellinint::mdim*2];
+      alogqg_1   = new complex <double> [mellinint::mdim*2];
+      alogqqb_1  = new complex <double> [mellinint::mdim*2];
+      alogqqp_1  = new complex <double> [mellinint::mdim*2];
+      alogqqbp_1 = new complex <double> [mellinint::mdim*2];
+      alogqq_2   = new complex <double> [mellinint::mdim*2];
+      alogqg_2   = new complex <double> [mellinint::mdim*2];
+      alogqqb_2  = new complex <double> [mellinint::mdim*2];
+      alogqqp_2  = new complex <double> [mellinint::mdim*2];
+      alogqqbp_2 = new complex <double> [mellinint::mdim*2];
+    }
 }
 void gint::reset()
 {
@@ -46,19 +72,51 @@ void gint::reset()
   logasl = 0;
   logasl_pdf = 0;
   logasl_expc = 0;
-  fill(alogqq  , alogqq+mellinint::mdim*2, 0);
-  fill(alogqg  , alogqg+mellinint::mdim*2, 0);
-  fill(alogqqb , alogqqb+mellinint::mdim*2, 0);
-  fill(alogqqp , alogqqp+mellinint::mdim*2, 0);
-  fill(alogqqbp, alogqqbp+mellinint::mdim*2, 0);
+  if (opts.mellin1d)
+    {
+      fill(alogqq  , alogqq+mellinint::mdim*2, 0);
+      fill(alogqg  , alogqg+mellinint::mdim*2, 0);
+      fill(alogqqb , alogqqb+mellinint::mdim*2, 0);
+      fill(alogqqp , alogqqp+mellinint::mdim*2, 0);
+      fill(alogqqbp, alogqqbp+mellinint::mdim*2, 0);
+    }
+  else
+    {
+      fill(alogqq_1  , alogqq_1+mellinint::mdim*2, 0);
+      fill(alogqg_1  , alogqg_1+mellinint::mdim*2, 0);
+      fill(alogqqb_1 , alogqqb_1+mellinint::mdim*2, 0);
+      fill(alogqqp_1 , alogqqp_1+mellinint::mdim*2, 0);
+      fill(alogqqbp_1, alogqqbp_1+mellinint::mdim*2, 0);
+      fill(alogqq_2  , alogqq_2+mellinint::mdim*2, 0);
+      fill(alogqg_2  , alogqg_2+mellinint::mdim*2, 0);
+      fill(alogqqb_2 , alogqqb_2+mellinint::mdim*2, 0);
+      fill(alogqqp_2 , alogqqp_2+mellinint::mdim*2, 0);
+      fill(alogqqbp_2, alogqqbp_2+mellinint::mdim*2, 0);
+    }
 }
 void gint::free()
 {
-  delete[] alogqq;
-  delete[] alogqg;
-  delete[] alogqqb;
-  delete[] alogqqp;
-  delete[] alogqqbp;
+  if (opts.mellin1d)
+    {
+      delete[] alogqq;
+      delete[] alogqg;
+      delete[] alogqqb;
+      delete[] alogqqp;
+      delete[] alogqqbp;
+    }
+  else
+    {
+      delete[] alogqq_1;
+      delete[] alogqg_1;
+      delete[] alogqqb_1;
+      delete[] alogqqp_1;
+      delete[] alogqqbp_1;
+      delete[] alogqq_2;
+      delete[] alogqg_2;
+      delete[] alogqqb_2;
+      delete[] alogqqp_2;
+      delete[] alogqqbp_2;
+    }
 }
 
 
@@ -215,10 +273,10 @@ void gint::intexpc(complex <double> q, complex <double> jac, double blim)
   //   +as^3*(b1*C1+b0*(2*C2-C1^2)
   //   +as^4*(b2*C1+b1*(2*C2-C1^2)+b0*(3*C3-3*C1*C2+C1^3))
   
-  if (!opts.mellin1d)
+  if (!opts.mellin1d && opts.expc > 0)
     {
-      cout << "Error, gint::intexpc is not implemented for mellin2d" << endl;
-      exit(0);
+      //cout << "Error, gint::intexpc is not implemented for mellin2d" << endl;
+      //exit(0);
     }
 
   alphas::calc(q, opts.order+1);
@@ -263,172 +321,178 @@ void gint::intexpc(complex <double> q, complex <double> jac, double blim)
 	if (opts.order_expc == 2)
 	  {
 	    if (opts.expc == 1)
+	      if (opts.mellin1d)
 		alogqq[idx]   += fac*(as2_2l*beta0*ccoeff::C1qq_delta);
+	      else
+		{
+		  alogqq_1[idx]   += fac*(as2_2l*beta0*ccoeff::C1qq_delta);
+		  alogqq_2[idx]   += fac*(as2_2l*beta0*ccoeff::C1qq_delta);
+		}
 	    else if (opts.expc == 3)
-	      {
+		{
+		  alogqq[idx]   += fac*(as2_2l*beta0*ccoeff::C1qq[idx]);
+		  alogqg[idx]   += fac*(as2_2l*beta0*ccoeff::C2qg[idx]/ccoeff::C1qg[idx]);
+		  alogqqb[idx]  += fac*(as2_2l*beta0*ccoeff::C3qqb[idx]/ccoeff::C2qqb[idx]);
+		  alogqqp[idx]  += fac*(as2_2l*beta0*ccoeff::C3qqp[idx]/ccoeff::C2qqp[idx]);
+		  alogqqbp[idx] += fac*(as2_2l*beta0*ccoeff::C3qqbp[idx]/ccoeff::C2qqbp[idx]);
+		}
+	      else if (opts.expc == 4)
 		alogqq[idx]   += fac*(as2_2l*beta0*ccoeff::C1qq[idx]);
-		alogqg[idx]   += fac*(as2_2l*beta0*ccoeff::C2qg[idx]/ccoeff::C1qg[idx]);
-		alogqqb[idx]  += fac*(as2_2l*beta0*ccoeff::C3qqb[idx]/ccoeff::C2qqb[idx]);
-		alogqqp[idx]  += fac*(as2_2l*beta0*ccoeff::C3qqp[idx]/ccoeff::C2qqp[idx]);
-		alogqqbp[idx] += fac*(as2_2l*beta0*ccoeff::C3qqbp[idx]/ccoeff::C2qqbp[idx]);
-	      }
-	    else if (opts.expc == 4)
-	      alogqq[idx]   += fac*(as2_2l*beta0*ccoeff::C1qq[idx]);
-	    else if (opts.expc == 5)
-	      {
-		//Do not expand the C function at the denominator in the OD and DOD channels
-		//2*C2/C1*beta0*as^2/(1+C2/C1*as) + beta0*as/(1+C2/C1*as) - beta0*as = C2/C1*beta0*as^2/(1+C2/C1*as)
-		alogqq[idx]   += fac*(as2_2l*beta0*ccoeff::C1qq[idx]);
-		alogqg[idx]   += fac*(as2_2l*beta0*ccoeff::C2qg[idx]  /ccoeff::C1qg[idx]  /(1.+as1_1l*ccoeff::C2qg[idx]  /ccoeff::C1qg[idx]  ));
-		alogqqb[idx]  += fac*(as2_2l*beta0*ccoeff::C3qqb[idx] /ccoeff::C2qqb[idx] /(1.+as1_1l*ccoeff::C3qqb[idx] /ccoeff::C2qqb[idx] ));
-		alogqqp[idx]  += fac*(as2_2l*beta0*ccoeff::C3qqp[idx] /ccoeff::C2qqp[idx] /(1.+as1_1l*ccoeff::C3qqp[idx] /ccoeff::C2qqp[idx] ));
-		alogqqbp[idx] += fac*(as2_2l*beta0*ccoeff::C3qqbp[idx]/ccoeff::C2qqbp[idx]/(1.+as1_1l*ccoeff::C3qqbp[idx]/ccoeff::C2qqbp[idx]));
-	      }
-	  }
-	if (opts.order_expc == 3)
-	  {
-	    if (opts.expc == 1)
+	      else if (opts.expc == 5)
+		{
+		  //Do not expand the C function at the denominator in the OD and DOD channels
+		  //2*C2/C1*beta0*as^2/(1+C2/C1*as) + beta0*as/(1+C2/C1*as) - beta0*as = C2/C1*beta0*as^2/(1+C2/C1*as)
+		  alogqq[idx]   += fac*(as2_2l*beta0*ccoeff::C1qq[idx]);
+		  alogqg[idx]   += fac*(as2_2l*beta0*ccoeff::C2qg[idx]  /ccoeff::C1qg[idx]  /(1.+as1_1l*ccoeff::C2qg[idx]  /ccoeff::C1qg[idx]  ));
+		  alogqqb[idx]  += fac*(as2_2l*beta0*ccoeff::C3qqb[idx] /ccoeff::C2qqb[idx] /(1.+as1_1l*ccoeff::C3qqb[idx] /ccoeff::C2qqb[idx] ));
+		  alogqqp[idx]  += fac*(as2_2l*beta0*ccoeff::C3qqp[idx] /ccoeff::C2qqp[idx] /(1.+as1_1l*ccoeff::C3qqp[idx] /ccoeff::C2qqp[idx] ));
+		  alogqqbp[idx] += fac*(as2_2l*beta0*ccoeff::C3qqbp[idx]/ccoeff::C2qqbp[idx]/(1.+as1_1l*ccoeff::C3qqbp[idx]/ccoeff::C2qqbp[idx]));
+		}
+	    }
+	  if (opts.order_expc == 3)
+	    {
+	      if (opts.expc == 1)
 		alogqq[idx] += fac*(
 				    +as2_3l*beta0*ccoeff::C1qq_delta
 				    +as3_3l*(beta1*ccoeff::C1qq_delta+beta0*(2.*ccoeff::C2qq_delta-pow(ccoeff::C1qq_delta,2)))
 				    );
-	    else if (opts.expc == 3)
-	      {
-		alogqq[idx] += fac*(+ as2_3l*beta0*ccoeff::C1qq[idx]
-				    + as3_3l*(0.
-					      + beta1*ccoeff::C1qq[idx]
-					      - beta0*pow(ccoeff::C1qq[idx],2)
-					      + 2.*beta0*ccoeff::C2qq[idx]
-					      )
-				    );
-		alogqg[idx] += fac*(+ as2_3l*beta0*ccoeff::C2qg[idx]/ccoeff::C1qg[idx]
-				    + as3_3l*(
-					      + beta1*ccoeff::C2qg[idx]/ccoeff::C1qg[idx]
-					      - beta0*pow(ccoeff::C2qg[idx]/ccoeff::C1qg[idx],2)
-					      + 2.*beta0*ccoeff::C3qg[idx]/ccoeff::C1qg[idx]
-					      )
-				    );
-		
-		alogqqb[idx]  += fac*(+ as2_3l*beta0*ccoeff::C3qqb[idx]/ccoeff::C2qqb[idx]
+	      else if (opts.expc == 3)
+		{
+		  alogqq[idx] += fac*(+ as2_3l*beta0*ccoeff::C1qq[idx]
+				      + as3_3l*(0.
+						+ beta1*ccoeff::C1qq[idx]
+						- beta0*pow(ccoeff::C1qq[idx],2)
+						+ 2.*beta0*ccoeff::C2qq[idx]
+						)
+				      );
+		  alogqg[idx] += fac*(+ as2_3l*beta0*ccoeff::C2qg[idx]/ccoeff::C1qg[idx]
 				      + as3_3l*(
-						+ beta1*ccoeff::C3qqb[idx]/ccoeff::C2qqb[idx]
-						- beta0*pow(ccoeff::C3qqb[idx]/ccoeff::C2qqb[idx],2)
-						//+ 2.*beta0*C4/C2)
-						));
+						+ beta1*ccoeff::C2qg[idx]/ccoeff::C1qg[idx]
+						- beta0*pow(ccoeff::C2qg[idx]/ccoeff::C1qg[idx],2)
+						+ 2.*beta0*ccoeff::C3qg[idx]/ccoeff::C1qg[idx]
+						)
+				      );
 		
-		alogqqp[idx]  += fac*(+ as2_3l*beta0*ccoeff::C3qqp[idx]/ccoeff::C2qqp[idx]
-				      + as3_3l*(
-						+ beta1*ccoeff::C3qqp[idx]/ccoeff::C2qqp[idx]
-						- beta0*pow(ccoeff::C3qqp[idx]/ccoeff::C2qqp[idx],2)
-						//+ 2.*beta0*C4/C2)
-						));
+		  alogqqb[idx]  += fac*(+ as2_3l*beta0*ccoeff::C3qqb[idx]/ccoeff::C2qqb[idx]
+					+ as3_3l*(
+						  + beta1*ccoeff::C3qqb[idx]/ccoeff::C2qqb[idx]
+						  - beta0*pow(ccoeff::C3qqb[idx]/ccoeff::C2qqb[idx],2)
+						  //+ 2.*beta0*C4/C2)
+						  ));
 		
-		alogqqbp[idx] += fac*(+ as2_3l*beta0*ccoeff::C3qqbp[idx]/ccoeff::C2qqbp[idx]
-				      + as3_3l*(
-						+ beta1*ccoeff::C3qqbp[idx]/ccoeff::C2qqbp[idx]
-						- beta0*pow(ccoeff::C3qqbp[idx]/ccoeff::C2qqbp[idx],2)
-						//+ 2.*beta0*C4/C2)
-						));
-	      }
-	    else if (opts.expc == 4)
-	      {
-		//At order n expand up to terms containing Cn (i.e. expand up to n for D, up to n-1 for OD, and up to n-2 for DOD)
-		alogqq[idx] += fac*(+ as2_3l*beta0*ccoeff::C1qq[idx]
-				    + as3_3l*(0.
-					      + beta1*ccoeff::C1qq[idx]
-					      - beta0*pow(ccoeff::C1qq[idx],2)
-					      + 2.*beta0*ccoeff::C2qq[idx]
-					      )
-				    );
-		alogqg[idx]   += fac*(as2_2l*beta0*ccoeff::C2qg[idx]  /ccoeff::C1qg[idx]  /(1.+as1_1l*ccoeff::C2qg[idx]  /ccoeff::C1qg[idx]  ));
-	      }
-	    else if (opts.expc == 5)
-	      {
-		//Do not expand the C function at the denominator in the OD and DOD channels
-		/*
-		//extended formulas:
-		N2LL =
-		+ 2*C2/C1*beta0*asLO^2 /(1 + C2/C1*asLO)
-		+ beta0*asLO	     /(1 + C2/C1*asLO)
-		- beta0*asLO
-		;
+		  alogqqp[idx]  += fac*(+ as2_3l*beta0*ccoeff::C3qqp[idx]/ccoeff::C2qqp[idx]
+					+ as3_3l*(
+						  + beta1*ccoeff::C3qqp[idx]/ccoeff::C2qqp[idx]
+						  - beta0*pow(ccoeff::C3qqp[idx]/ccoeff::C2qqp[idx],2)
+						  //+ 2.*beta0*C4/C2)
+						  ));
+		
+		  alogqqbp[idx] += fac*(+ as2_3l*beta0*ccoeff::C3qqbp[idx]/ccoeff::C2qqbp[idx]
+					+ as3_3l*(
+						  + beta1*ccoeff::C3qqbp[idx]/ccoeff::C2qqbp[idx]
+						  - beta0*pow(ccoeff::C3qqbp[idx]/ccoeff::C2qqbp[idx],2)
+						  //+ 2.*beta0*C4/C2)
+						  ));
+		}
+	      else if (opts.expc == 4)
+		{
+		  //At order n expand up to terms containing Cn (i.e. expand up to n for D, up to n-1 for OD, and up to n-2 for DOD)
+		  alogqq[idx] += fac*(+ as2_3l*beta0*ccoeff::C1qq[idx]
+				      + as3_3l*(0.
+						+ beta1*ccoeff::C1qq[idx]
+						- beta0*pow(ccoeff::C1qq[idx],2)
+						+ 2.*beta0*ccoeff::C2qq[idx]
+						)
+				      );
+		  alogqg[idx]   += fac*(as2_2l*beta0*ccoeff::C2qg[idx]  /ccoeff::C1qg[idx]  /(1.+as1_1l*ccoeff::C2qg[idx]  /ccoeff::C1qg[idx]  ));
+		}
+	      else if (opts.expc == 5)
+		{
+		  //Do not expand the C function at the denominator in the OD and DOD channels
+		  /*
+		  //extended formulas:
+		  N2LL =
+		  + 2*C2/C1*beta0*asLO^2 /(1 + C2/C1*asLO)
+		  + beta0*asLO	     /(1 + C2/C1*asLO)
+		  - beta0*asLO
+		  ;
 	      
-		N3LL =
-		+ 3*C3/C1*beta0*asLO^3 /(1 + C3/C1*asLO^2)
-		+ 2*C2/C1*beta1*asLO^3 /(1 + C2/C1*asLO)
-		+ 2*C2/C1*beta0*asLO^2 /(1 + C2/C1*asLO)
-		+ beta1*asLO^2	     /(1 + C2/C1*asLO)
-		+ beta0*asLO	     /(1 + C2/C1*asLO + C3/C1*asLO^2)
-		- beta0*asLO
-		- beta1*asLO^2
-		- N2LL
-		;
+		  N3LL =
+		  + 3*C3/C1*beta0*asLO^3 /(1 + C3/C1*asLO^2)
+		  + 2*C2/C1*beta1*asLO^3 /(1 + C2/C1*asLO)
+		  + 2*C2/C1*beta0*asLO^2 /(1 + C2/C1*asLO)
+		  + beta1*asLO^2	     /(1 + C2/C1*asLO)
+		  + beta0*asLO	     /(1 + C2/C1*asLO + C3/C1*asLO^2)
+		  - beta0*asLO
+		  - beta1*asLO^2
+		  - N2LL
+		  ;
 
-		N3LLb =
-		+ 2*C2/C1*beta0*(2.*dasNLO*asLO) /(1 + C2/C1*asLO)
-		+ beta0*(2*dasNLO)               /(1 + C2/C1*asLO)
-		- beta0*(2*dasNLO)
-		;
+		  N3LLb =
+		  + 2*C2/C1*beta0*(2.*dasNLO*asLO) /(1 + C2/C1*asLO)
+		  + beta0*(2*dasNLO)               /(1 + C2/C1*asLO)
+		  - beta0*(2*dasNLO)
+		  ;
 
-		N3LLmur =
-		+ 2*C2/C1*beta0*(2.*dmuR*asLO) /(1 + C2/C1*asLO)
-		+ beta0*(2*dmuR)               /(1 + C2/C1*asLO)
-		- beta0*(2*dmuR)
-		;
+		  N3LLmur =
+		  + 2*C2/C1*beta0*(2.*dmuR*asLO) /(1 + C2/C1*asLO)
+		  + beta0*(2*dmuR)               /(1 + C2/C1*asLO)
+		  - beta0*(2*dmuR)
+		  ;
 
-		//simplified formulas:
-		N2LL = C2/C1*beta0*asLO^2/(1+C2/C1*asLO);
-		N3LL = 2*C3/C1*beta0*asLO^3/(1+C2/C1*asLO+C3/C1*asLO^2)
-		+C2/C1*beta1*asLO^3 /(1+C2/C1*asLO);
-		N3LLb = C2/C1*beta0*2*asLO*dasNLO/(1+C2/C1*asLO);
-		N3LLmur = C2/C1*beta0*2*asLO*dmuR/(1+C2/C1*asLO);
-		*/
+		  //simplified formulas:
+		  N2LL = C2/C1*beta0*asLO^2/(1+C2/C1*asLO);
+		  N3LL = 2*C3/C1*beta0*asLO^3/(1+C2/C1*asLO+C3/C1*asLO^2)
+		  +C2/C1*beta1*asLO^3 /(1+C2/C1*asLO);
+		  N3LLb = C2/C1*beta0*2*asLO*dasNLO/(1+C2/C1*asLO);
+		  N3LLmur = C2/C1*beta0*2*asLO*dmuR/(1+C2/C1*asLO);
+		  */
 		
-		alogqq[idx] += fac*(+ as2_3l*beta0*ccoeff::C1qq[idx]
-				    + as3_3l*(0.
-					      + beta1*ccoeff::C1qq[idx]
-					      - beta0*pow(ccoeff::C1qq[idx],2)
-					      + 2.*beta0*ccoeff::C2qq[idx]
-					      )
-				    );
+		  alogqq[idx] += fac*(+ as2_3l*beta0*ccoeff::C1qq[idx]
+				      + as3_3l*(0.
+						+ beta1*ccoeff::C1qq[idx]
+						- beta0*pow(ccoeff::C1qq[idx],2)
+						+ 2.*beta0*ccoeff::C2qq[idx]
+						)
+				      );
 		
-		alogqg[idx] += fac*(
-				    + ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*beta0*as2_3l    /(1. + ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*as1_1l)
-				    + 2.*ccoeff::C3qg[idx]/ccoeff::C1qg[idx]*beta0*as3_3l /(1. + ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*as1_1l + ccoeff::C3qg[idx]/ccoeff::C1qg[idx]*as2_2l)
-				    + ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*beta1*as3_3l    /(1. + ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*as1_1l)
-				    );
+		  alogqg[idx] += fac*(
+				      + ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*beta0*as2_3l    /(1. + ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*as1_1l)
+				      + 2.*ccoeff::C3qg[idx]/ccoeff::C1qg[idx]*beta0*as3_3l /(1. + ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*as1_1l + ccoeff::C3qg[idx]/ccoeff::C1qg[idx]*as2_2l)
+				      + ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*beta1*as3_3l    /(1. + ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*as1_1l)
+				      );
 
-		//complex <double> N2LL = fac * ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*beta0*as2_2l /(1. + ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*as1_1l);
-		//complex <double> N3LL = fac*(
-		//			     + 2.*ccoeff::C3qg[idx]/ccoeff::C1qg[idx]*beta0*as3_3l /(1. + ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*as1_1l + ccoeff::C3qg[idx]/ccoeff::C1qg[idx]*as2_2l)
-		//			     + ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*beta1*as3_3l    /(1. + ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*as1_1l)
-		//			     );
-		//complex <double> N3LLb = fac*(ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*beta0*(as2_3l-as2_2l) /(1. + ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*as1_1l));
-		//
-		//alogqg[idx] += N2LL;
-		//alogqg[idx] += N3LL;
-		//alogqg[idx] += N3LLb;
+		  //complex <double> N2LL = fac * ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*beta0*as2_2l /(1. + ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*as1_1l);
+		  //complex <double> N3LL = fac*(
+		  //			     + 2.*ccoeff::C3qg[idx]/ccoeff::C1qg[idx]*beta0*as3_3l /(1. + ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*as1_1l + ccoeff::C3qg[idx]/ccoeff::C1qg[idx]*as2_2l)
+		  //			     + ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*beta1*as3_3l    /(1. + ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*as1_1l)
+		  //			     );
+		  //complex <double> N3LLb = fac*(ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*beta0*(as2_3l-as2_2l) /(1. + ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*as1_1l));
+		  //
+		  //alogqg[idx] += N2LL;
+		  //alogqg[idx] += N3LL;
+		  //alogqg[idx] += N3LLb;
 
-		alogqqb[idx] += fac*(
-				     + ccoeff::C3qqb[idx]/ccoeff::C2qqb[idx]*beta0*as2_3l    /(1. + ccoeff::C3qqb[idx]/ccoeff::C2qqb[idx]*as1_1l)
-				     //+ 2*C4/C2*beta0*as3/(1+C3/C2*as1+C4/C2*as2)
-				     + ccoeff::C3qqb[idx]/ccoeff::C2qqb[idx]*beta1*as3_3l    /(1. + ccoeff::C3qqb[idx]/ccoeff::C2qqb[idx]*as1_1l)
-				     );
-		alogqqp[idx] += fac*(
-				     + ccoeff::C3qqp[idx]/ccoeff::C2qqp[idx]*beta0*as2_3l    /(1. + ccoeff::C3qqp[idx]/ccoeff::C2qqp[idx]*as1_1l)
-				     //+ 2*C4/C2*beta0*as3/(1+C3/C2*as1+C4/C2*as2)
-				     + ccoeff::C3qqp[idx]/ccoeff::C2qqp[idx]*beta1*as3_3l    /(1. + ccoeff::C3qqp[idx]/ccoeff::C2qqp[idx]*as1_1l)
-				     );
-		alogqqbp[idx] += fac*(
-				     + ccoeff::C3qqbp[idx]/ccoeff::C2qqbp[idx]*beta0*as2_3l    /(1. + ccoeff::C3qqbp[idx]/ccoeff::C2qqbp[idx]*as1_1l)
-				     //+ 2*C4/C2*beta0*as3/(1+C3/C2*as1+C4/C2*as2)
-				     + ccoeff::C3qqbp[idx]/ccoeff::C2qqbp[idx]*beta1*as3_3l    /(1. + ccoeff::C3qqbp[idx]/ccoeff::C2qqbp[idx]*as1_1l)
-				     );
-	      }
-	  }
-	if (opts.order_expc == 4)
-	  {
-	    if (opts.expc == 1)
+		  alogqqb[idx] += fac*(
+				       + ccoeff::C3qqb[idx]/ccoeff::C2qqb[idx]*beta0*as2_3l    /(1. + ccoeff::C3qqb[idx]/ccoeff::C2qqb[idx]*as1_1l)
+				       //+ 2*C4/C2*beta0*as3/(1+C3/C2*as1+C4/C2*as2)
+				       + ccoeff::C3qqb[idx]/ccoeff::C2qqb[idx]*beta1*as3_3l    /(1. + ccoeff::C3qqb[idx]/ccoeff::C2qqb[idx]*as1_1l)
+				       );
+		  alogqqp[idx] += fac*(
+				       + ccoeff::C3qqp[idx]/ccoeff::C2qqp[idx]*beta0*as2_3l    /(1. + ccoeff::C3qqp[idx]/ccoeff::C2qqp[idx]*as1_1l)
+				       //+ 2*C4/C2*beta0*as3/(1+C3/C2*as1+C4/C2*as2)
+				       + ccoeff::C3qqp[idx]/ccoeff::C2qqp[idx]*beta1*as3_3l    /(1. + ccoeff::C3qqp[idx]/ccoeff::C2qqp[idx]*as1_1l)
+				       );
+		  alogqqbp[idx] += fac*(
+					+ ccoeff::C3qqbp[idx]/ccoeff::C2qqbp[idx]*beta0*as2_3l    /(1. + ccoeff::C3qqbp[idx]/ccoeff::C2qqbp[idx]*as1_1l)
+					//+ 2*C4/C2*beta0*as3/(1+C3/C2*as1+C4/C2*as2)
+					+ ccoeff::C3qqbp[idx]/ccoeff::C2qqbp[idx]*beta1*as3_3l    /(1. + ccoeff::C3qqbp[idx]/ccoeff::C2qqbp[idx]*as1_1l)
+					);
+		}
+	    }
+	  if (opts.order_expc == 4)
+	    {
+	      if (opts.expc == 1)
 		alogqq[idx] += fac*(
 				    +as2_4l*beta0*ccoeff::C1qq_delta
 				    +as3_4l*(beta1*ccoeff::C1qq_delta+beta0*(2.*ccoeff::C2qq_delta-pow(ccoeff::C1qq_delta,2)))
@@ -442,88 +506,184 @@ void gint::intexpc(complex <double> q, complex <double> jac, double blim)
 						     )
 					     )
 				    );
-	    else if (opts.expc == 3)
-	      {
-		alogqq[idx] += fac*(+ as2_4l*beta0*ccoeff::C1qq[idx]
-				    + as3_4l*(beta1*ccoeff::C1qq[idx]+beta0*(2.*ccoeff::C2qq[idx]-pow(ccoeff::C1qq[idx],2)))
-				    + as4_4l*(
-					      +beta2*ccoeff::C1qq[idx]
-					      +beta1*(2.*ccoeff::C2qq[idx]-pow(ccoeff::C1qq[idx],2))
-					      +beta0*(3.*ccoeff::C3qq[idx]-3.*ccoeff::C1qq[idx]*ccoeff::C2qq[idx]+pow(ccoeff::C1qq[idx],3))
-					      )
-				    );
-		//...
+	      else if (opts.expc == 3)
+		{
+		  alogqq[idx] += fac*(+ as2_4l*beta0*ccoeff::C1qq[idx]
+				      + as3_4l*(beta1*ccoeff::C1qq[idx]+beta0*(2.*ccoeff::C2qq[idx]-pow(ccoeff::C1qq[idx],2)))
+				      + as4_4l*(
+						+beta2*ccoeff::C1qq[idx]
+						+beta1*(2.*ccoeff::C2qq[idx]-pow(ccoeff::C1qq[idx],2))
+						+beta0*(3.*ccoeff::C3qq[idx]-3.*ccoeff::C1qq[idx]*ccoeff::C2qq[idx]+pow(ccoeff::C1qq[idx],3))
+						)
+				      );
+		  //...
 		
-	      }
-	    else if (opts.expc = 4)
-	      {
-		alogqq[idx] += fac*(+ as2_4l*beta0*ccoeff::C1qq[idx]
-				    + as3_4l*(beta1*ccoeff::C1qq[idx]+beta0*(2.*ccoeff::C2qq[idx]-pow(ccoeff::C1qq[idx],2)))
-				    + as4_4l*(
-					      +beta2*ccoeff::C1qq[idx]
-					      +beta1*(2.*ccoeff::C2qq[idx]-pow(ccoeff::C1qq[idx],2))
-					      +beta0*(3.*ccoeff::C3qq[idx]-3.*ccoeff::C1qq[idx]*ccoeff::C2qq[idx]+pow(ccoeff::C1qq[idx],3))
-					      )
-				    );
-		alogqg[idx] += fac*(
-				    + ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*beta0*as2_3l    /(1. + ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*as1_1l)
-				    + 2.*ccoeff::C3qg[idx]/ccoeff::C1qg[idx]*beta0*as3_3l /(1. + ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*as1_1l + ccoeff::C3qg[idx]/ccoeff::C1qg[idx]*as2_2l)
-				    + ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*beta1*as3_3l    /(1. + ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*as1_1l)
-				    );
-		alogqqb[idx]  += fac*(as2_2l*beta0*ccoeff::C3qqb[idx] /ccoeff::C2qqb[idx] /(1.+as1_1l*ccoeff::C3qqb[idx] /ccoeff::C2qqb[idx] ));
-		alogqqp[idx]  += fac*(as2_2l*beta0*ccoeff::C3qqp[idx] /ccoeff::C2qqp[idx] /(1.+as1_1l*ccoeff::C3qqp[idx] /ccoeff::C2qqp[idx] ));
-		alogqqbp[idx] += fac*(as2_2l*beta0*ccoeff::C3qqbp[idx]/ccoeff::C2qqbp[idx]/(1.+as1_1l*ccoeff::C3qqbp[idx]/ccoeff::C2qqbp[idx]));
-	      }
-	    else if (opts.expc = 5)
-	      {
-		alogqq[idx] += fac*(+ as2_4l*beta0*ccoeff::C1qq[idx]
-				    + as3_4l*(beta1*ccoeff::C1qq[idx]+beta0*(2.*ccoeff::C2qq[idx]-pow(ccoeff::C1qq[idx],2)))
-				    + as4_4l*(
-					      +beta2*ccoeff::C1qq[idx]
-					      +beta1*(2.*ccoeff::C2qq[idx]-pow(ccoeff::C1qq[idx],2))
-					      +beta0*(
-						      +3.*ccoeff::C3qq[idx]
-						      -3.*ccoeff::C1qq[idx]*ccoeff::C2qq[idx]
-						      +pow(ccoeff::C1qq[idx],3)
-						      )
-					      )
-				    );
-		alogqg[idx] += fac*(
-				    + ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*beta0*as2_4l    /(1. + ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*as1_2l + ccoeff::C3qg[idx]/ccoeff::C1qg[idx]*as2_2l)
-				    + 2.*ccoeff::C3qg[idx]/ccoeff::C1qg[idx]*beta0*as3_4l /(1. + ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*as1_1l + ccoeff::C3qg[idx]/ccoeff::C1qg[idx]*as2_2l)
-				    + ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*beta1*as3_4l    /(1. + ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*as1_1l)
-				    + ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*beta2*as4_4l    /(1. + ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*as1_1l)
-				    + 2.*ccoeff::C3qg[idx]/ccoeff::C1qg[idx]*beta1*as4_4l /(1. + ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*as1_1l + ccoeff::C3qg[idx]/ccoeff::C1qg[idx]*as2_2l)
-				    //+ 3*C4/C1*beta0*as4 /(1+C2/C1*as1+C3/C1*as2+C4/C1*as3)
-				    );
-		alogqqb[idx] += fac*(
-				     + ccoeff::C3qqb[idx]/ccoeff::C2qqb[idx]*beta0*as2_4l    /(1. + ccoeff::C3qqb[idx]/ccoeff::C2qqb[idx]*as1_2l)// + C4/C2*as2)
-				     //+ 2*C4/C2*beta0*as3/(1+C3/C2*as1+C4/C2*as2)
-				     + ccoeff::C3qqb[idx]/ccoeff::C2qqb[idx]*beta1*as3_4l    /(1. + ccoeff::C3qqb[idx]/ccoeff::C2qqb[idx]*as1_1l)
-				     + ccoeff::C3qqb[idx]/ccoeff::C2qqb[idx]*beta2*as4_4l    /(1. + ccoeff::C3qqb[idx]/ccoeff::C2qqb[idx]*as1_1l)
-				     //+ 2.*C4/C2*beta1*as4 /(1+C3/C2*as1+C4/C2*as2)
-				     //+ 3*C5/C2*beta0*as4 /(1+C3/C2*as1+C4/C2*as2+C5/C2*as3)
-				     );
-		alogqqp[idx] += fac*(
-				     + ccoeff::C3qqp[idx]/ccoeff::C2qqp[idx]*beta0*as2_4l    /(1. + ccoeff::C3qqp[idx]/ccoeff::C2qqp[idx]*as1_2l)// + C4/C2*as2)
-				     //+ 2*C4/C2*beta0*as3/(1+C3/C2*as1+C4/C2*as2)
-				     + ccoeff::C3qqp[idx]/ccoeff::C2qqp[idx]*beta1*as3_4l    /(1. + ccoeff::C3qqp[idx]/ccoeff::C2qqp[idx]*as1_1l)
-				     + ccoeff::C3qqp[idx]/ccoeff::C2qqp[idx]*beta2*as4_4l    /(1. + ccoeff::C3qqp[idx]/ccoeff::C2qqp[idx]*as1_1l)
-				     //+ 2.*C4/C2*beta1*as4 /(1+C3/C2*as1+C4/C2*as2)
-				     //+ 3*C5/C2*beta0*as4 /(1+C3/C2*as1+C4/C2*as2+C5/C2*as3)
-				     );
-		alogqqbp[idx] += fac*(
-				     + ccoeff::C3qqbp[idx]/ccoeff::C2qqbp[idx]*beta0*as2_4l    /(1. + ccoeff::C3qqbp[idx]/ccoeff::C2qqbp[idx]*as1_2l)// + C4/C2*as2)
-				     //+ 2*C4/C2*beta0*as3/(1+C3/C2*as1+C4/C2*as2)
-				     + ccoeff::C3qqbp[idx]/ccoeff::C2qqbp[idx]*beta1*as3_4l    /(1. + ccoeff::C3qqbp[idx]/ccoeff::C2qqbp[idx]*as1_1l)
-				     + ccoeff::C3qqbp[idx]/ccoeff::C2qqbp[idx]*beta2*as4_4l    /(1. + ccoeff::C3qqbp[idx]/ccoeff::C2qqbp[idx]*as1_1l)
-				     //+ 2.*C4/C2*beta1*as4 /(1+C3/C2*as1+C4/C2*as2)
-				     //+ 3*C5/C2*beta0*as4 /(1+C3/C2*as1+C4/C2*as2+C5/C2*as3)
-				     );
+		}
+	      else if (opts.expc == 4)
+		{
+		  alogqq[idx] += fac*(+ as2_4l*beta0*ccoeff::C1qq[idx]
+				      + as3_4l*(beta1*ccoeff::C1qq[idx]+beta0*(2.*ccoeff::C2qq[idx]-pow(ccoeff::C1qq[idx],2)))
+				      + as4_4l*(
+						+beta2*ccoeff::C1qq[idx]
+						+beta1*(2.*ccoeff::C2qq[idx]-pow(ccoeff::C1qq[idx],2))
+						+beta0*(3.*ccoeff::C3qq[idx]-3.*ccoeff::C1qq[idx]*ccoeff::C2qq[idx]+pow(ccoeff::C1qq[idx],3))
+						)
+				      );
+		  alogqg[idx] += fac*(
+				      + ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*beta0*as2_3l    /(1. + ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*as1_1l)
+				      + 2.*ccoeff::C3qg[idx]/ccoeff::C1qg[idx]*beta0*as3_3l /(1. + ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*as1_1l + ccoeff::C3qg[idx]/ccoeff::C1qg[idx]*as2_2l)
+				      + ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*beta1*as3_3l    /(1. + ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*as1_1l)
+				      );
+		  alogqqb[idx]  += fac*(as2_2l*beta0*ccoeff::C3qqb[idx] /ccoeff::C2qqb[idx] /(1.+as1_1l*ccoeff::C3qqb[idx] /ccoeff::C2qqb[idx] ));
+		  alogqqp[idx]  += fac*(as2_2l*beta0*ccoeff::C3qqp[idx] /ccoeff::C2qqp[idx] /(1.+as1_1l*ccoeff::C3qqp[idx] /ccoeff::C2qqp[idx] ));
+		  alogqqbp[idx] += fac*(as2_2l*beta0*ccoeff::C3qqbp[idx]/ccoeff::C2qqbp[idx]/(1.+as1_1l*ccoeff::C3qqbp[idx]/ccoeff::C2qqbp[idx]));
+		}
+	      else if (opts.expc == 5)
+		{
+		  if (opts.mellin1d)
+		    {
+		      alogqq[idx] += fac*(+ as2_4l*beta0*ccoeff::C1qq[idx]
+					  + as3_4l*(beta1*ccoeff::C1qq[idx]+beta0*(2.*ccoeff::C2qq[idx]-pow(ccoeff::C1qq[idx],2)))
+					  + as4_4l*(
+						    +beta2*ccoeff::C1qq[idx]
+						    +beta1*(2.*ccoeff::C2qq[idx]-pow(ccoeff::C1qq[idx],2))
+						    +beta0*(
+							    +3.*ccoeff::C3qq[idx]
+							    -3.*ccoeff::C1qq[idx]*ccoeff::C2qq[idx]
+							    +pow(ccoeff::C1qq[idx],3)
+							    )
+						    )
+					  );
+		      alogqg[idx] += fac*(
+					  + ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*beta0*as2_4l    /(1. + ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*as1_2l + ccoeff::C3qg[idx]/ccoeff::C1qg[idx]*as2_2l)
+					  + 2.*ccoeff::C3qg[idx]/ccoeff::C1qg[idx]*beta0*as3_4l /(1. + ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*as1_1l + ccoeff::C3qg[idx]/ccoeff::C1qg[idx]*as2_2l)
+					  + ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*beta1*as3_4l    /(1. + ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*as1_1l)
+					  + ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*beta2*as4_4l    /(1. + ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*as1_1l)
+					  + 2.*ccoeff::C3qg[idx]/ccoeff::C1qg[idx]*beta1*as4_4l /(1. + ccoeff::C2qg[idx]/ccoeff::C1qg[idx]*as1_1l + ccoeff::C3qg[idx]/ccoeff::C1qg[idx]*as2_2l)
+					  //+ 3*C4/C1*beta0*as4 /(1+C2/C1*as1+C3/C1*as2+C4/C1*as3)
+					  );
+		      alogqqb[idx] += fac*(
+					   + ccoeff::C3qqb[idx]/ccoeff::C2qqb[idx]*beta0*as2_4l    /(1. + ccoeff::C3qqb[idx]/ccoeff::C2qqb[idx]*as1_2l)// + C4/C2*as2)
+					   //+ 2*C4/C2*beta0*as3/(1+C3/C2*as1+C4/C2*as2)
+					   + ccoeff::C3qqb[idx]/ccoeff::C2qqb[idx]*beta1*as3_4l    /(1. + ccoeff::C3qqb[idx]/ccoeff::C2qqb[idx]*as1_1l)
+					   + ccoeff::C3qqb[idx]/ccoeff::C2qqb[idx]*beta2*as4_4l    /(1. + ccoeff::C3qqb[idx]/ccoeff::C2qqb[idx]*as1_1l)
+					   //+ 2.*C4/C2*beta1*as4 /(1+C3/C2*as1+C4/C2*as2)
+					   //+ 3*C5/C2*beta0*as4 /(1+C3/C2*as1+C4/C2*as2+C5/C2*as3)
+					   );
+		      alogqqp[idx] += fac*(
+					   + ccoeff::C3qqp[idx]/ccoeff::C2qqp[idx]*beta0*as2_4l    /(1. + ccoeff::C3qqp[idx]/ccoeff::C2qqp[idx]*as1_2l)// + C4/C2*as2)
+					   //+ 2*C4/C2*beta0*as3/(1+C3/C2*as1+C4/C2*as2)
+					   + ccoeff::C3qqp[idx]/ccoeff::C2qqp[idx]*beta1*as3_4l    /(1. + ccoeff::C3qqp[idx]/ccoeff::C2qqp[idx]*as1_1l)
+					   + ccoeff::C3qqp[idx]/ccoeff::C2qqp[idx]*beta2*as4_4l    /(1. + ccoeff::C3qqp[idx]/ccoeff::C2qqp[idx]*as1_1l)
+					   //+ 2.*C4/C2*beta1*as4 /(1+C3/C2*as1+C4/C2*as2)
+					   //+ 3*C5/C2*beta0*as4 /(1+C3/C2*as1+C4/C2*as2+C5/C2*as3)
+					   );
+		      alogqqbp[idx] += fac*(
+					    + ccoeff::C3qqbp[idx]/ccoeff::C2qqbp[idx]*beta0*as2_4l    /(1. + ccoeff::C3qqbp[idx]/ccoeff::C2qqbp[idx]*as1_2l)// + C4/C2*as2)
+					    //+ 2*C4/C2*beta0*as3/(1+C3/C2*as1+C4/C2*as2)
+					    + ccoeff::C3qqbp[idx]/ccoeff::C2qqbp[idx]*beta1*as3_4l    /(1. + ccoeff::C3qqbp[idx]/ccoeff::C2qqbp[idx]*as1_1l)
+					    + ccoeff::C3qqbp[idx]/ccoeff::C2qqbp[idx]*beta2*as4_4l    /(1. + ccoeff::C3qqbp[idx]/ccoeff::C2qqbp[idx]*as1_1l)
+					    //+ 2.*C4/C2*beta1*as4 /(1+C3/C2*as1+C4/C2*as2)
+					    //+ 3*C5/C2*beta0*as4 /(1+C3/C2*as1+C4/C2*as2+C5/C2*as3)
+					    );
 		
-	      }
+		    }
+		  else
+		    {
+		      alogqq_1[idx] += fac*(+ as2_4l*beta0*ccoeff::C1qq_1[idx]
+					  + as3_4l*(beta1*ccoeff::C1qq_1[idx]+beta0*(2.*ccoeff::C2qq_1[idx]-pow(ccoeff::C1qq_1[idx],2)))
+					  + as4_4l*(
+						    +beta2*ccoeff::C1qq_1[idx]
+						    +beta1*(2.*ccoeff::C2qq_1[idx]-pow(ccoeff::C1qq_1[idx],2))
+						    +beta0*(
+							    +3.*ccoeff::C3qq_1[idx]
+							    -3.*ccoeff::C1qq_1[idx]*ccoeff::C2qq_1[idx]
+							    +pow(ccoeff::C1qq_1[idx],3)
+							    )
+						    )
+					  );
+		      alogqg_1[idx] += fac*(
+					  + ccoeff::C2qg_1[idx]/ccoeff::C1qg_1[idx]*beta0*as2_4l    /(1. + ccoeff::C2qg_1[idx]/ccoeff::C1qg_1[idx]*as1_2l + ccoeff::C3qg_1[idx]/ccoeff::C1qg_1[idx]*as2_2l)
+					  + 2.*ccoeff::C3qg_1[idx]/ccoeff::C1qg_1[idx]*beta0*as3_4l /(1. + ccoeff::C2qg_1[idx]/ccoeff::C1qg_1[idx]*as1_1l + ccoeff::C3qg_1[idx]/ccoeff::C1qg_1[idx]*as2_2l)
+					  + ccoeff::C2qg_1[idx]/ccoeff::C1qg_1[idx]*beta1*as3_4l    /(1. + ccoeff::C2qg_1[idx]/ccoeff::C1qg_1[idx]*as1_1l)
+					  + ccoeff::C2qg_1[idx]/ccoeff::C1qg_1[idx]*beta2*as4_4l    /(1. + ccoeff::C2qg_1[idx]/ccoeff::C1qg_1[idx]*as1_1l)
+					  + 2.*ccoeff::C3qg_1[idx]/ccoeff::C1qg_1[idx]*beta1*as4_4l /(1. + ccoeff::C2qg_1[idx]/ccoeff::C1qg_1[idx]*as1_1l + ccoeff::C3qg_1[idx]/ccoeff::C1qg_1[idx]*as2_2l)
+					  //+ 3*C4/C1*beta0*as4 /(1+C2/C1*as1+C3/C1*as2+C4/C1*as3)
+					  );
+		      alogqqb_1[idx] += fac*(
+					   + ccoeff::C3qqb_1[idx]/ccoeff::C2qqb_1[idx]*beta0*as2_4l    /(1. + ccoeff::C3qqb_1[idx]/ccoeff::C2qqb_1[idx]*as1_2l)// + C4/C2*as2)
+					   //+ 2*C4/C2*beta0*as3/(1+C3/C2*as1+C4/C2*as2)
+					   + ccoeff::C3qqb_1[idx]/ccoeff::C2qqb_1[idx]*beta1*as3_4l    /(1. + ccoeff::C3qqb_1[idx]/ccoeff::C2qqb_1[idx]*as1_1l)
+					   + ccoeff::C3qqb_1[idx]/ccoeff::C2qqb_1[idx]*beta2*as4_4l    /(1. + ccoeff::C3qqb_1[idx]/ccoeff::C2qqb_1[idx]*as1_1l)
+					   //+ 2.*C4/C2*beta1*as4 /(1+C3/C2*as1+C4/C2*as2)
+					   //+ 3*C5/C2*beta0*as4 /(1+C3/C2*as1+C4/C2*as2+C5/C2*as3)
+					   );
+		      alogqqp_1[idx] += fac*(
+					   + ccoeff::C3qqp_1[idx]/ccoeff::C2qqp_1[idx]*beta0*as2_4l    /(1. + ccoeff::C3qqp_1[idx]/ccoeff::C2qqp_1[idx]*as1_2l)// + C4/C2*as2)
+					   //+ 2*C4/C2*beta0*as3/(1+C3/C2*as1+C4/C2*as2)
+					   + ccoeff::C3qqp_1[idx]/ccoeff::C2qqp_1[idx]*beta1*as3_4l    /(1. + ccoeff::C3qqp_1[idx]/ccoeff::C2qqp_1[idx]*as1_1l)
+					   + ccoeff::C3qqp_1[idx]/ccoeff::C2qqp_1[idx]*beta2*as4_4l    /(1. + ccoeff::C3qqp_1[idx]/ccoeff::C2qqp_1[idx]*as1_1l)
+					   //+ 2.*C4/C2*beta1*as4 /(1+C3/C2*as1+C4/C2*as2)
+					   //+ 3*C5/C2*beta0*as4 /(1+C3/C2*as1+C4/C2*as2+C5/C2*as3)
+					   );
+		      alogqqbp_1[idx] += fac*(
+					    + ccoeff::C3qqbp_1[idx]/ccoeff::C2qqbp_1[idx]*beta0*as2_4l    /(1. + ccoeff::C3qqbp_1[idx]/ccoeff::C2qqbp_1[idx]*as1_2l)// + C4/C2*as2)
+					    //+ 2*C4/C2*beta0*as3/(1+C3/C2*as1+C4/C2*as2)
+					    + ccoeff::C3qqbp_1[idx]/ccoeff::C2qqbp_1[idx]*beta1*as3_4l    /(1. + ccoeff::C3qqbp_1[idx]/ccoeff::C2qqbp_1[idx]*as1_1l)
+					    + ccoeff::C3qqbp_1[idx]/ccoeff::C2qqbp_1[idx]*beta2*as4_4l    /(1. + ccoeff::C3qqbp_1[idx]/ccoeff::C2qqbp_1[idx]*as1_1l)
+					    //+ 2.*C4/C2*beta1*as4 /(1+C3/C2*as1+C4/C2*as2)
+					    //+ 3*C5/C2*beta0*as4 /(1+C3/C2*as1+C4/C2*as2+C5/C2*as3)
+					    );
+		      alogqq_2[idx] += fac*(+ as2_4l*beta0*ccoeff::C1qq_2[idx]
+					  + as3_4l*(beta1*ccoeff::C1qq_2[idx]+beta0*(2.*ccoeff::C2qq_2[idx]-pow(ccoeff::C1qq_2[idx],2)))
+					  + as4_4l*(
+						    +beta2*ccoeff::C1qq_2[idx]
+						    +beta1*(2.*ccoeff::C2qq_2[idx]-pow(ccoeff::C1qq_2[idx],2))
+						    +beta0*(
+							    +3.*ccoeff::C3qq_2[idx]
+							    -3.*ccoeff::C1qq_2[idx]*ccoeff::C2qq_2[idx]
+							    +pow(ccoeff::C1qq_2[idx],3)
+							    )
+						    )
+					  );
+		      alogqg_2[idx] += fac*(
+					  + ccoeff::C2qg_2[idx]/ccoeff::C1qg_2[idx]*beta0*as2_4l    /(1. + ccoeff::C2qg_2[idx]/ccoeff::C1qg_2[idx]*as1_2l + ccoeff::C3qg_2[idx]/ccoeff::C1qg_2[idx]*as2_2l)
+					  + 2.*ccoeff::C3qg_2[idx]/ccoeff::C1qg_2[idx]*beta0*as3_4l /(1. + ccoeff::C2qg_2[idx]/ccoeff::C1qg_2[idx]*as1_2l + ccoeff::C3qg_2[idx]/ccoeff::C1qg_2[idx]*as2_2l)
+					  + ccoeff::C2qg_2[idx]/ccoeff::C1qg_2[idx]*beta1*as3_4l    /(1. + ccoeff::C2qg_2[idx]/ccoeff::C1qg_2[idx]*as1_2l)
+					  + ccoeff::C2qg_2[idx]/ccoeff::C1qg_2[idx]*beta2*as4_4l    /(1. + ccoeff::C2qg_2[idx]/ccoeff::C1qg_2[idx]*as1_2l)
+					  + 2.*ccoeff::C3qg_2[idx]/ccoeff::C1qg_2[idx]*beta1*as4_4l /(1. + ccoeff::C2qg_2[idx]/ccoeff::C1qg_2[idx]*as1_2l + ccoeff::C3qg_2[idx]/ccoeff::C1qg_2[idx]*as2_2l)
+					  //+ 3*C4/C1*beta0*as4 /(1+C2/C1*as1+C3/C1*as2+C4/C1*as3)
+					  );
+		      alogqqb_2[idx] += fac*(
+					   + ccoeff::C3qqb_2[idx]/ccoeff::C2qqb_2[idx]*beta0*as2_4l    /(1. + ccoeff::C3qqb_2[idx]/ccoeff::C2qqb_2[idx]*as1_2l)// + C4/C2*as2)
+					   //+ 2*C4/C2*beta0*as3/(1+C3/C2*as1+C4/C2*as2)
+					   + ccoeff::C3qqb_2[idx]/ccoeff::C2qqb_2[idx]*beta1*as3_4l    /(1. + ccoeff::C3qqb_2[idx]/ccoeff::C2qqb_2[idx]*as1_2l)
+					   + ccoeff::C3qqb_2[idx]/ccoeff::C2qqb_2[idx]*beta2*as4_4l    /(1. + ccoeff::C3qqb_2[idx]/ccoeff::C2qqb_2[idx]*as1_2l)
+					   //+ 2.*C4/C2*beta1*as4 /(1+C3/C2*as1+C4/C2*as2)
+					   //+ 3*C5/C2*beta0*as4 /(1+C3/C2*as1+C4/C2*as2+C5/C2*as3)
+					   );
+		      alogqqp_2[idx] += fac*(
+					   + ccoeff::C3qqp_2[idx]/ccoeff::C2qqp_2[idx]*beta0*as2_4l    /(1. + ccoeff::C3qqp_2[idx]/ccoeff::C2qqp_2[idx]*as1_2l)// + C4/C2*as2)
+					   //+ 2*C4/C2*beta0*as3/(1+C3/C2*as1+C4/C2*as2)
+					   + ccoeff::C3qqp_2[idx]/ccoeff::C2qqp_2[idx]*beta1*as3_4l    /(1. + ccoeff::C3qqp_2[idx]/ccoeff::C2qqp_2[idx]*as1_2l)
+					   + ccoeff::C3qqp_2[idx]/ccoeff::C2qqp_2[idx]*beta2*as4_4l    /(1. + ccoeff::C3qqp_2[idx]/ccoeff::C2qqp_2[idx]*as1_2l)
+					   //+ 2.*C4/C2*beta1*as4 /(1+C3/C2*as1+C4/C2*as2)
+					   //+ 3*C5/C2*beta0*as4 /(1+C3/C2*as1+C4/C2*as2+C5/C2*as3)
+					   );
+		      alogqqbp_2[idx] += fac*(
+					    + ccoeff::C3qqbp_2[idx]/ccoeff::C2qqbp_2[idx]*beta0*as2_4l    /(1. + ccoeff::C3qqbp_2[idx]/ccoeff::C2qqbp_2[idx]*as1_2l)// + C4/C2*as2)
+					    //+ 2*C4/C2*beta0*as3/(1+C3/C2*as1+C4/C2*as2)
+					    + ccoeff::C3qqbp_2[idx]/ccoeff::C2qqbp_2[idx]*beta1*as3_4l    /(1. + ccoeff::C3qqbp_2[idx]/ccoeff::C2qqbp_2[idx]*as1_2l)
+					    + ccoeff::C3qqbp_2[idx]/ccoeff::C2qqbp_2[idx]*beta2*as4_4l    /(1. + ccoeff::C3qqbp_2[idx]/ccoeff::C2qqbp_2[idx]*as1_2l)
+					    //+ 2.*C4/C2*beta1*as4 /(1+C3/C2*as1+C4/C2*as2)
+					    //+ 3*C5/C2*beta0*as4 /(1+C3/C2*as1+C4/C2*as2+C5/C2*as3)
+					    );
+		      
+		      
+		    }
+		}
 	    
-	  }
+	    }
       }
 }
 

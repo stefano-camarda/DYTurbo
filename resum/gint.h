@@ -27,6 +27,17 @@ namespace gint
   extern complex <double> *alogqqp;
   extern complex <double> *alogqqbp;
 #pragma omp threadprivate(logS,logasl,logasl_pdf,logasl_expc,alogqq,alogqg,alogqqb,alogqqp,alogqqbp)
+  extern complex <double> *alogqq_1;
+  extern complex <double> *alogqg_1;
+  extern complex <double> *alogqqb_1;
+  extern complex <double> *alogqqp_1;
+  extern complex <double> *alogqqbp_1;
+  extern complex <double> *alogqq_2;
+  extern complex <double> *alogqg_2;
+  extern complex <double> *alogqqb_2;
+  extern complex <double> *alogqqp_2;
+  extern complex <double> *alogqqbp_2;
+#pragma omp threadprivate(alogqq_1,alogqg_1,alogqqb_1,alogqqp_1,alogqqbp_1,alogqq_2,alogqg_2,alogqqb_2,alogqqp_2,alogqqbp_2)
 }
 
 #endif
