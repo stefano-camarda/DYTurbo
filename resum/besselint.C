@@ -377,7 +377,7 @@ complex <double> besselint::bint(complex <double> b)
       if (opts.evolmode == 0 || opts.evolmode == 1)
 	muf = resint::mufac;
       else
-	muf = real(pdfevol::bstartilde);
+	muf = real(pdfevol::mubstartilde);
 
 
       if (resint::_mode < 2 || resint::_mode == 4) //rapidity differential
