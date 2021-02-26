@@ -2131,6 +2131,37 @@ void expc::calc(complex <double> b)
 	}
       else //mellin2d
 	{
+	  if (opts.expc == 0)
+	    {
+	      fill(aexpqq_1, aexpqq_1+mellinint::mdim*2, 1.);
+	      fill(aexpqg_1, aexpqg_1+mellinint::mdim*2, 1.);
+	      fill(aexpqqb_1, aexpqqb_1+mellinint::mdim*2, 1.);
+	      fill(aexpqqp_1, aexpqqp_1+mellinint::mdim*2, 1.);
+	      fill(aexpqqbp_1, aexpqqbp_1+mellinint::mdim*2, 1.);
+	      fill(aexpqq_2, aexpqq_2+mellinint::mdim*2, 1.);
+	      fill(aexpqg_2, aexpqg_2+mellinint::mdim*2, 1.);
+	      fill(aexpqqb_2, aexpqqb_2+mellinint::mdim*2, 1.);
+	      fill(aexpqqp_2, aexpqqp_2+mellinint::mdim*2, 1.);
+	      fill(aexpqqbp_2, aexpqqbp_2+mellinint::mdim*2, 1.);
+	    }
+
+	  if (opts.numexpc)
+	    for (int sign = mesq::positive; sign <= mesq::negative; sign++)
+	      for (int i = 0; i < mellinint::mdim; i++)
+		{
+		  int idx = anomalous::index(i,sign);
+		  
+		  aexpqq_1[idx]   = exp(gint::alogqq_1[idx]);  
+		  aexpqg_1[idx]   = exp(gint::alogqg_1[idx]);  
+		  aexpqqb_1[idx]  = exp(gint::alogqqb_1[idx]); 
+		  aexpqqp_1[idx]  = exp(gint::alogqqp_1[idx]); 
+		  aexpqqbp_1[idx] = exp(gint::alogqqbp_1[idx]);
+		  aexpqq_2[idx]   = exp(gint::alogqq_2[idx]);  
+		  aexpqg_2[idx]   = exp(gint::alogqg_2[idx]);  
+		  aexpqqb_2[idx]  = exp(gint::alogqqb_2[idx]); 
+		  aexpqqp_2[idx]  = exp(gint::alogqqp_2[idx]); 
+		  aexpqqbp_2[idx] = exp(gint::alogqqbp_2[idx]);
+		}
 	}
     }
 
