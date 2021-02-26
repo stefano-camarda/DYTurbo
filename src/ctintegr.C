@@ -583,7 +583,7 @@ integrand_t ctintegrand1d(const int &ndim, const double x[], const int &ncomp, d
   //This integration currently works only for the full y range, so the mass limit is sqrt(s)
   double mlim = opts.sroot;
   double r1 = {x[0]};
-  status = phasespace::gen_m(r1, jac, mlim, true, true); //qtcut = true, qtswitching = true
+  status = phasespace::gen_m(r1, jac, mlim, true, !opts.fixedorder); //qtcut = true, qtswitching = true
   if (!status)
     {
       f[0] = 0.;
