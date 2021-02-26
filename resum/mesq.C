@@ -263,6 +263,12 @@ void mesq::allocate()
 
 void mesq::setmesq_expy(int mode, double m, double costh, double y, int helicity)
 {
+  //mode 0: differential
+  //mode 1: integrated in costh
+  //mode 2: integrated in costh and y
+  //mode 3: integrated in costh, y, and pt
+  //mode 4: integrated in costh and pt
+
   //mass dependent part
   setpropagators(m);
   
