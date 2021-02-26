@@ -133,7 +133,11 @@ void ctmellin::calc(double m, double f[])
   double B1qN = resconst::B1q*2.;
   double B2qN = resconst::B2q*4.;
       
-  double asopi = qcdcouple_.ason2pi_*2.;
+  double asopi;
+  if (opts.alphaslha)
+    asopi = pdf::alphas(scales::ren)/M_PI;
+  else
+    asopi = pdf::rgktalphas(scales::ren)/M_PI;
 
   double bjx = m2/pow(opts.sroot,2);
   double ax = log(bjx);
@@ -286,7 +290,7 @@ void ctmellin::calc(double m, double f[])
   
   f[0] = xmsq;
 
-  //cout << "xmsq " << xmsq << endl;
+  //cout << "xmsq " << xmsq << "  " << asopi << endl;
 
   if (opts.melup == 2)
     {

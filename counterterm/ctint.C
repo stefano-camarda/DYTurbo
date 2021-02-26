@@ -226,7 +226,11 @@ void ctint::calc(double costh, double m, double qt, double y, int mode, double f
 	  }
 	   
       // Start calculation
-      double asopi = qcdcouple_.ason2pi_*2.;
+      double asopi;
+      if (opts.alphaslha)
+	asopi = pdf::alphas(scales::ren)/M_PI;
+      else
+	asopi = pdf::rgktalphas(scales::ren)/M_PI;
   
       //loop on born subprocesses, i.e. born incoming partons ij
       //double lumi[mesq::totpch];
