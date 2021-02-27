@@ -76,7 +76,7 @@ integrand_t ctintegrandMC(const int &ndim, const double x[], const int &ncomp, d
   bool status = true;
 
   double r1[2] = {x[0], x[1]};
-  status = phasespace::gen_my(r1, jac, true, !opts.fixedorder);  //qtcut = true, qtswitching = true
+  status = phasespace::gen_my(r1, jac, !opts.fixedorder, !opts.fixedorder);  //qtcut = !opts.fixedorder, qtswitching = !opts.fixedorder
   if (!status)
     {
       f[0] = 0.;
@@ -261,7 +261,7 @@ integrand_t ctintegrand3d(const int &ndim, const double x[], const int &ncomp, d
   bool status = true;
 
   double r2[2] = {x[0], x[1]};
-  status = phasespace::gen_my(r2, jac, true, !opts.fixedorder);  //qtcut = true, qtswitching = true
+  status = phasespace::gen_my(r2, jac, !opts.fixedorder, !opts.fixedorder);  //qtcut = !opts.fixedorder, qtswitching = !opts.fixedorder
   if (!status)
     {
       f[0] = 0.;
@@ -418,7 +418,7 @@ integrand_t ctintegrand2d(const int &ndim, const double x[], const int &ncomp, d
   bool status = true;
 
   double r2[2] = {x[0], x[1]};
-  status = phasespace::gen_my(r2, jac, true, !opts.fixedorder);  //qtcut = true, qtswitching = true
+  status = phasespace::gen_my(r2, jac, !opts.fixedorder, !opts.fixedorder);  //qtcut = !opts.fixedorder, qtswitching = !opts.fixedorder
   if (!status)
     {
       f[0] = 0.;
@@ -565,7 +565,6 @@ integrand_t ctintegrand1d(const int &ndim, const double x[], const int &ncomp, d
   clock_t begin_time, end_time;
 
   begin_time = clock();
-
   if (opts.fixedorder && phasespace::qtmin > 0)
     {
       f[0]=0.;
@@ -583,7 +582,7 @@ integrand_t ctintegrand1d(const int &ndim, const double x[], const int &ncomp, d
   //This integration currently works only for the full y range, so the mass limit is sqrt(s)
   double mlim = opts.sroot;
   double r1 = {x[0]};
-  status = phasespace::gen_m(r1, jac, mlim, true, !opts.fixedorder); //qtcut = true, qtswitching = true
+  status = phasespace::gen_m(r1, jac, mlim, !opts.fixedorder, !opts.fixedorder); //qtcut = !opts.fixedorder, qtswitching = !opts.fixedorder
   if (!status)
     {
       f[0] = 0.;
