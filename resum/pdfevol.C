@@ -183,6 +183,7 @@ void pdfevol::alphasl(complex <double> b)
   //    - aS/Pi*(beta1*Log[1 - lam] + beta0^2*lam*Log[Q2/muR2])/(beta0*(1 - lam))
   //    + aS^2/Pi^2*(-2*beta1^2*lam + 2*beta0*beta2*lam - 2*beta1^2*Log[1 - lam] + beta1^2*Log[1 - lam]^2 - 2*beta0^2*beta1*lam*Log[Q2/muR2] + 2*beta0^2*beta1*Log[1 - lam]*Log[Q2/muR2])/(2*beta0^2*(-1 + lam)^2)
 
+  //opts.order should be opts.order_evol?
   //LL (no evolution)
   logasl = 0.;
   
@@ -241,8 +242,16 @@ void pdfevol::scales(complex <double> b)
   mub = resconst::b0/b;
   
   double blim = blim::pdf; //1.1229190 -->hard-coded!! --> should allow a different blim in the PDF evolution as a setting
-  bstar = real(b)/sqrt(1.+(pow(real(b)/blim,2)));
 
+  //bstar = real(b)/sqrt(1.+(pow(real(b)/blim,2)));
+
+  //Set b according to bstar or other prescriptions
+  complex <double> bstar;
+  if (opts.bprescription == 0 || opts.bprescription == 4 || opts.bstar_pdf)
+    bstar = real(b)/sqrt(1.+pow(real(b)/blim,2));
+  else
+    bstar = b;
+  
   //mubstar_a = a*b0/bstar is the final scale used for the PDF evolution (previously called bstarscale)
   mubstar_a  = resconst::b0*resint::a/bstar; //bstarscale = resconst::b0*resint::a/bstar;
   
