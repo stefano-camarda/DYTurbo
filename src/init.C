@@ -23,6 +23,7 @@
 #include "rapint.h"
 #include "resint.h"
 #include "pegasus.h"
+#include "alphas.h"
 #include "anomalous.h"
 #include "pmom.h"
 #include "ccoeff.h"
@@ -82,6 +83,7 @@ void DYTurbo::init_const()
   resconst::init();         //calculate beta, A and B coefficients
   rescinit_();              //Resummation coefficients (fortran common blocks, still used in the Sudakov)
   pegasus::init_const();    //initialisation of constants in Pegasus QCD
+  alphas::init();           //beta function
   
   //Output initialisation (depends on unicode setting)
   //PrintTable::Init();
