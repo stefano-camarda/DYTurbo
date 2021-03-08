@@ -505,7 +505,7 @@ namespace DYTurbo {
 	    
             cout << Col4( "Strong coupling"  , "alpha_s(MZ) ="   , pdf::alphas(coupling::zmass)                 , ""      );
 	    //            cout << Col4( ""                 , "alpha_s(mur) ="  , qcdcouple_.as_               , ""      );
-	    if (!opts.lhaalphas)
+	    if (!opts.alphaslha)
 	      cout << Col4( ""                 , "running order =" , (opts.order+1) , "-loop" );
 	    else
 	      //cout << Col4( ""                 , "running order =" , (LHAPDF::getOrderAlphaS()+1) , "-loop" );
