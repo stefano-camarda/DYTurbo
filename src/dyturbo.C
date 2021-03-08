@@ -68,12 +68,20 @@ namespace DYTurbo
     else
       integrate(last_int,err);
     //
-    if (opts.ptbinwidth) {last_int[0] /= (phasespace::qtmax-phasespace::qtmin); err /=  (phasespace::qtmax-phasespace::qtmin);}
-    if (opts.ybinwidth)  {last_int[0] /= (phasespace::ymax-phasespace::ymin); err /=  (phasespace::ymax-phasespace::ymin);}
-    if (opts.mbinwidth)  {last_int[0] /= (phasespace::mmax-phasespace::mmin); err /=  (phasespace::mmax-phasespace::mmin);}
+    last_err2 = err*err;
     last_time = clock_real()-last_time;
-    last_err2 += err*err;
-    // save results to histograms
+
+    // cumulate (before binwidth normalisation)
+    total_time+=last_time;
+    total_int+=last_int[0];
+    total_err2+=last_err2;
+
+    // cumulate integral to subtotal
+    subtotal.total_int   += last_int[0];
+    // cumulate error to subtotal
+    subtotal.total_err2  += last_err2;
+
+    // save results to histograms (before binwidth normalisation) --> Do this also with Vegas, if there are only "integrable" observables
     if (!isVegas)
       {
 	if (opts.makehistos)
@@ -83,17 +91,17 @@ namespace DYTurbo
 	      HistoHandler::FillResult(last_int[ivar],sqrt(last_err2));
 	    }
       }
-    // cumulate
-    total_time+=last_time;
-    total_int+=last_int[0];
-    total_err2+=last_err2;
+    
+    if (opts.ptbinwidth) {last_int[0] /= (phasespace::qtmax-phasespace::qtmin); err /=  (phasespace::qtmax-phasespace::qtmin);}
+    if (opts.ybinwidth)  {last_int[0] /= (phasespace::ymax-phasespace::ymin); err /=  (phasespace::ymax-phasespace::ymin);}
+    if (opts.mbinwidth)  {last_int[0] /= (phasespace::mmax-phasespace::mmin); err /=  (phasespace::mmax-phasespace::mmin);}
+    last_err2 = err*err;
+
     // cumulate integral to subtotal
     subtotal.last_int[0] += last_int[0];
-    subtotal.total_int   += last_int[0];
     // cumulate error to subtotal
     subtotal.last_err2   += last_err2;
-    subtotal.total_err2  += last_err2;
-
+    
     //// cumulate integral to bintotal
     //bintotal.last_int[0] += bin_int[0];
     //bintotal.total_int   += last_int[0];
