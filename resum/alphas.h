@@ -1,21 +1,38 @@
 #ifndef alphas_h
 #define alphas_h
 
-#include "resconst.h"
+//#include "resconst.h"
 
 #include <complex>
 using namespace std;
-using namespace resconst;
+//using namespace resconst;
 
 namespace alphas
 {
   const int nastps = 10;
+
+  const int NFMIN = 3;
+  const int NFMAX = 6;
+
+  extern double bet0[NFMAX-NFMIN+1];
+  extern double bet1[NFMAX-NFMIN+1];
+  extern double bet2[NFMAX-NFMIN+1];
+  extern double bet3[NFMAX-NFMIN+1];
+  extern double bet4[NFMAX-NFMIN+1];
+
+  //NF = 5 beta function
+  //extern double beta0;
+  //extern double beta1;
+  //extern double beta2;
+  //extern double beta3;
+  //extern double beta4;
   
-  inline complex <double> fbeta1(complex <double> a) {return -pow(a,2)*(beta0+a*beta1);};
-  inline complex <double> fbeta2(complex <double> a) {return -pow(a,2)*(beta0+a*beta1+pow(a,2)*beta2);};
-  inline complex <double> fbeta3(complex <double> a) {return -pow(a,2)*(beta0+a*beta1+pow(a,2)*beta2+pow(a,3)*beta3);};
-  inline complex <double> fbeta4(complex <double> a) {return -pow(a,2)*(beta0+a*beta1+pow(a,2)*beta2+pow(a,3)*beta3+pow(a,4)*beta4);};
-  extern void rgkt(complex <double> q, double q0, double aass0);
+  inline complex <double> fbeta1(complex <double> a, int nf) {return -pow(a,2)*(bet0[nf-NFMIN]+a*bet1[nf-NFMIN]);};
+  inline complex <double> fbeta2(complex <double> a, int nf) {return -pow(a,2)*(bet0[nf-NFMIN]+a*bet1[nf-NFMIN]+pow(a,2)*bet2[nf-NFMIN]);};
+  inline complex <double> fbeta3(complex <double> a, int nf) {return -pow(a,2)*(bet0[nf-NFMIN]+a*bet1[nf-NFMIN]+pow(a,2)*bet2[nf-NFMIN]+pow(a,3)*bet3[nf-NFMIN]);};
+  inline complex <double> fbeta4(complex <double> a, int nf) {return -pow(a,2)*(bet0[nf-NFMIN]+a*bet1[nf-NFMIN]+pow(a,2)*bet2[nf-NFMIN]+pow(a,3)*bet3[nf-NFMIN]+pow(a,4)*bet4[nf-NFMIN]);};
+  extern void rgkt(complex <double> q, double q0, double aass0, int nf = 5);
+  extern void iter(complex <double> q, double q0, double aass0, int nf = 5);
 
   //alphas at order nloop
   extern complex <double> as;
@@ -48,6 +65,7 @@ namespace alphas
   extern complex <double> as5_5l; //alphas truncated powers of 5 at 5-loop
 #pragma omp threadprivate(as1_1l,as1_2l,as1_3l,as1_4l,as1_5l,as2_2l,as2_3l,as2_4l,as2_5l,as3_3l,as3_4l,as3_5l,as4_4l,as4_5l,as5_5l)
 
+  extern void init();
   extern complex <double> calc(complex <double> q, int nloop);
 }
 
