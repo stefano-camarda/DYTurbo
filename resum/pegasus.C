@@ -26,6 +26,9 @@
 
 #include "LHAPDF/LHAPDF.h"
 
+using namespace constants;
+using namespace resconst;
+
 int pegasus::nff;
 int pegasus::ivfns;
 int pegasus::dim;
@@ -69,7 +72,7 @@ void pegasus::init_const()
       pgbeta_.pgbeta0_[nf-NFMIN] = 4.  * (33.-2.*nf)/12.;
       pgbeta_.pgbeta1_[nf-NFMIN] = 16. * (153.-19.*nf)/24.;
       pgbeta_.pgbeta2_[nf-NFMIN] = 64. * (2857./128.-5033.*nf/1152.+325.*(nf*nf)/3456.);
-      pgbeta_.pgbeta3_[nf-NFMIN] = 256.* ((149753./6. + 3564.*Z3 + nf*(-1078361./162.-6508./27.*Z3)+(nf*nf)*(50065./162.+6472./81.*Z3)+1093./729.*(nf*nf*nf))/256.);
+      pgbeta_.pgbeta3_[nf-NFMIN] = 256.* ((149753./6. + 3564.*zeta3 + nf*(-1078361./162.-6508./27.*zeta3)+(nf*nf)*(50065./162.+6472./81.*zeta3)+1093./729.*(nf*nf*nf))/256.);
     }
   
   //number of steps for the Runge-Kutta integration of alphas beyond LO  
@@ -300,7 +303,7 @@ void pegasus::calc_mellin()
 
 void pegasus::init_pdf()
 {
-  //evolmode = 3 -> Pegasus forward evolution: input PDFs at the starting scale, with 3 flavours
+  //evolmode = 3,4 -> Pegasus forward evolution: input PDFs at the starting scale, with 3 flavours
   //evolmode = 1 -> reproduce DYRES evolution: input PDFs at the factorisation scale, with 5 flavours
   
   // --> change to the new code for the mellin moments (which allows asymmetric charm and bottom)
@@ -648,7 +651,7 @@ void pegasus::init()
       ivfns = 1; //VFN evolution (read from LHAPDF)
       nff = 4;   //in FFN evolution, number of flavours  --> should read from LHAPDF
       order_.npord_ = pdf::order; //order of evolution read from LHAPDF
-      evmod_.imodev_ = 1; //reproduces evolution in x-space
+      evmod_.imodev_ = 1; //reproduces evolution in x-space --> actually for NNPDF options 3 or 4 may be better
     }
   
   double FR2 = 1.;//ratio of muren2/mufac2
@@ -784,7 +787,7 @@ void pegasus::update()
   double facscale;
   if (opts.evolmode == 1)
     facscale = scales::fac;
-  else if (opts.evolmode == 3)
+  else if (opts.evolmode == 3 || opts.evolmode == 4)
     facscale = sqrt(asinp_.m20_);
   
   //Assume the following was already called
@@ -917,7 +920,7 @@ void pegasus::update()
 	hfpainp_.p24i_[i] = fcx(qp[0]+qp[1]+qp[2]+qp[3]-4.*qp[4]);
       }
   mellinpdf::free();
-  if (opts.evolmode == 3)
+  if (opts.evolmode == 3 || opts.evolmode == 4)
     store();
 
   //In VFN evolution calculate PDFs at the mc, mb, mt thresholds
@@ -966,7 +969,7 @@ void pegasus::retrieve()
 
 void pegasus::evolve()
 {
-  if (opts.evolmode == 3)
+  if (opts.evolmode == 3 || opts.evolmode == 4)
     retrieve();
 
   //--> this part is not working, should avoid evolmode 1 at LL, could automatically switch to evolmode 0
@@ -1112,9 +1115,66 @@ void pegasus::evolve()
       //M2 = M2prime;
       //R2 = R2prime;
 
-      //asf = alphas(M2, R2, asi, NF); // --> alphas from Pegasus
-      asf = pdf::alphas(sqrt(M2))/(4.* M_PI);     // --> alphas from LHAPDF
-      //      asf = asf/resint::alpqren * resint::alpqfac; //--> this is very crude
+      //At Q0 lhapdf and pegasus alphas are equal by construction
+      //cout << pdf::alphas(sqrt(asinp_.m20_))/(4.* M_PI) << "  " << alphas(asinp_.m20_, asinp_.m20_, asi, NF) << endl;
+
+      //asf = alphas(pdfevol::mubstartilde, asi, NF);  // --> evolve alphas with Pegasus Runge-Kutta (allow complex scales)
+      //asf = pdf::alphas(sqrt(M2))/(4.* M_PI);        // --> evolve alphas with the LHAPDF interpolation
+
+      if  (M2 >= asinp_.m20_)
+      	asf = pdf::alphas(sqrt(M2))/(4.* M_PI);// --> above Q0 evolve alphas with the LHAPDF interpolation
+      else
+	{
+	  //asf = alphas(pdfevol::mubstartilde, asi, NF);  // --> below Q0 evolve alphas with Pegasus Runge-Kutta (allow complex scales)
+	  // --> below Q0 use the iterative solution for alphas
+	  double Q;
+	  if (asinp_.m20_ > asfthr_.m2b_)
+	    {
+	      NF = 5;
+	      asi = asfthr_.asb_;
+	      Q = sqrt(asfthr_.m2b_);
+	    }	      
+	  else if (asinp_.m20_ > (asfthr_.m2c_-1e-3))
+	    {
+	      NF = 4;
+	      asi = asfthr_.asc_;
+	      Q = sqrt(asfthr_.m2c_);
+	    }
+	  else
+	    {
+	      NF = 3;
+	      asi = asinp_.as0_;
+	      Q = sqrt(asinp_.m20_);
+	    }
+	  //double QR = scales::ren/scales::res;
+	  //double LQR = log(pow(QR,2));
+	  //Q *= QR;
+	  complex <double> blog = log(pow(Q/pdfevol::mubstartilde,2));
+	  double as = asi;
+	  double as2 = as*as;
+	  complex <double> xlambda = alphas::bet0[NF-NFMIN]*as*blog;
+	  complex <double> log1xlambda = log(1.-xlambda);
+	  complex <double> logas = 0.;
+	  //opts.order should be opts.order_evol?
+	  if (opts.order >= 1)
+	    logas += log1xlambda;
+	  if (opts.order >= 2)
+	    logas += as* alphas::bet1[NF-NFMIN]/alphas::bet0[NF-NFMIN]*log1xlambda/(1.-xlambda);
+	  if (opts.order >= 3)
+	    logas += as2* ((pow(alphas::bet1[NF-NFMIN]/alphas::bet0[NF-NFMIN],2)-alphas::bet2[NF-NFMIN]/alphas::bet0[NF-NFMIN]) *xlambda/pow(1.-xlambda,2)
+			   + pow(alphas::bet1[NF-NFMIN]/alphas::bet0[NF-NFMIN],2)             *log1xlambda/pow(1.-xlambda,2)
+			   - pow(alphas::bet1[NF-NFMIN]/alphas::bet0[NF-NFMIN],2)             *pow(log1xlambda,2)/(2.*pow(1.-xlambda,2)));
+	  //if (opts.order >= 2)
+	  //	logas += as*(LQR)
+	  //	  *alphas::bet0[NF-NFMIN]*xlambda/(1.-xlambda);
+	  //if (opts.order >= 3)
+	  //	logas += as2*(+LQR*alphas::bet1[NF-NFMIN]                   *(xlambda-log1xlambda)/pow(1.-xlambda,2)
+	  //		      +LQR*alphas::bet1[NF-NFMIN]                   *xlambda/(1.-xlambda)                      //missing piece
+	  //		      +0.5*pow(LQR,2)*pow(alphas::bet0[NF-NFMIN],2) *xlambda*(xlambda-2.)/pow(1.-xlambda,2));  //missing piece
+	  asf = exp(-logas)*asi;
+	}
+      
+      //asf = asf/resint::alpqren * resint::alpqfac; //--> this is very crude
       
       //In the forward evolution need to rescale the final alphas ASF to account for the fact that the backward PDF evolution
       //is done from Qres to b0/b starting from PDFs at muf, while the residual evolution
@@ -1122,28 +1182,29 @@ void pegasus::evolve()
       //asf = asf/resint::alpqres * resint::alpqfac; // --> not needed for mufevol = true
 
       //cout << "scale " << sqrt(M2) << endl;
-      
-      //As a consequence of the ASF rescaling, recompute NF and asi
-      if (real(asf) < asfthr_.ast_)
-	{
-	  NF = 6;
-	  asi = asfthr_.ast_;
-	}
-      else if (real(asf) < asfthr_.asb_)
-	{
-	  NF = 5;
-	  asi = asfthr_.asb_;
-	}
-      else if (real(asf) < asfthr_.asc_ || asinp_.m20_ > (asfthr_.m2c_-1e-3))  //if the starting is above mcharm never switch to 3 flavour (intrinsic charm)
-	{
-	  NF = 4;
-	  asi = asfthr_.asc_;
-	}
-      else if (asinp_.m20_ < (asfthr_.m2c_-1e-3))
-	{
-	  NF = 3;
-	  asi = asinp_.as0_;
-	}
+
+      //when alphas is evolved with LHAPDF, recompute NF and asi based on the values of ASF
+      if  (M2 >= asinp_.m20_)
+	if (real(asf) < asfthr_.ast_)
+	  {
+	    NF = 6;
+	    asi = asfthr_.ast_;
+	  }
+	else if (real(asf) < asfthr_.asb_)
+	  {
+	    NF = 5;
+	    asi = asfthr_.asb_;
+	  }
+	else if (real(asf) < asfthr_.asc_ || asinp_.m20_ > (asfthr_.m2c_-1e-3))  //if the starting is above mcharm never switch to 3 flavour (intrinsic charm)
+	  {
+	    NF = 4;
+	    asi = asfthr_.asc_;
+	  }
+	else if (asinp_.m20_ < (asfthr_.m2c_-1e-3))
+	  {
+	    NF = 3;
+	    asi = asinp_.as0_;
+	  }
     }
   
   //VFN forward evolution mode in which ASF is evaluated by DYRES
@@ -1233,6 +1294,7 @@ void pegasus::evolve()
       double xlambda = beta0*as*blog;
       double log1xlambda = log(1.-xlambda);
       double logas = 0.;
+      //opts.order should be opts.order_evol?
       if (opts.order >= 1)
 	logas += log1xlambda;
       if (opts.order >= 2)
@@ -1385,38 +1447,77 @@ void pegasus::evolve()
 }
 
 //interface to the VFN alphas of pegasus
-double pegasus::alphas(double M2, double R2, double &ASI, int &NF)
+//double pegasus::alphas(double M2, double R2, double &ASI, int &NF)
+complex <double> pegasus::alphas(complex <double> m, double &ASI, int &NF)
 {
-  double ASF = 0.;
+  complex <double> ASF = 0.;
+  //double QR2 = pow(scales::res/scales::ren,2);
+  double QR2 = 1.;
+  complex <double> r = m;//*scales::res/scales::ren;
 
+  double M2 = pow(real(m),2);
+  double R2 = pow(real(r),2);
+  
   if (M2 > asfthr_.m2t_) //If M2 = M2tilde than the scale is frozen at muf, and never goes above the top
     {
       NF = 6;
-      double R2T = asfthr_.m2t_ * R2/M2;
+      double R2T = asfthr_.m2t_ * QR2;//R2/M2;;
       ASI = asfthr_.ast_;
       ASF = as_(R2, R2T, asfthr_.ast_, NF);
     }
   else if (M2 > asfthr_.m2b_)
     {
       NF = 5;
-      double R2B = asfthr_.m2b_ * R2/M2;
+      double R2B = asfthr_.m2b_ * QR2;//R2/M2;;
       ASI = asfthr_.asb_;
       ASF =  as_(R2, R2B, asfthr_.asb_, NF);
     }
-  else if (M2 > asfthr_.m2c_)
+  else if (M2 > asfthr_.m2c_ || asinp_.m20_ > (asfthr_.m2c_-1e-3))   //if the starting scale is above mcharm never switch to 3 flavour (intrinsic charm)
     {
       NF = 4;
-      double R2C = asfthr_.m2c_ * R2/M2;
+      double R2C = asfthr_.m2c_ * QR2;//R2/M2;;
       ASI = asfthr_.asc_;
-      ASF =  as_(R2, R2C, asfthr_.asc_, NF);
+      //ASF =  as_(R2, R2C, asfthr_.asc_, NF);
+
+      //alphas::rgkt(r, sqrt(R2C), asfthr_.asc_*4*M_PI, NF);
+      alphas::iter(r, sqrt(R2C), asfthr_.asc_*4*M_PI, NF);
+      if (aspar_.naord_ == 0)
+	ASF = alphas::asLO/4./M_PI;
+      else if (aspar_.naord_ == 1)
+	ASF = alphas::asNLO/4./M_PI;
+      else if (aspar_.naord_ == 2)
+	ASF = alphas::asNNLO/4./M_PI;
     }
   else
     {
       NF = 3;
-      double R20 = asinp_.m20_ * R2/M2;
+      double R20 = asinp_.m20_ * QR2;//R2/M2;;
       ASI = asinp_.as0_;
-      ASF =  as_(R2, R20, asinp_.as0_, NF);
+      
+      //ASF =  as_(R2, R20, asinp_.as0_, NF);
+
+      //alphas::rgkt(r, sqrt(R20), asinp_.as0_*4*M_PI, NF);
+      alphas::iter(r, sqrt(R20), asinp_.as0_*4*M_PI, NF);
+      if (aspar_.naord_ == 0)
+	ASF = alphas::asLO/4./M_PI;
+      else if (aspar_.naord_ == 1)
+	ASF = alphas::asNLO/4./M_PI;
+      else if (aspar_.naord_ == 2)
+	ASF = alphas::asNNLO/4./M_PI;
     }
+
+  ////QCD coupling scale dependence
+  //double LQR = -log(QR2); //log(pow(scales::ren/scales::res,2));
+  //if (aspar_.naord_ >= 1)  
+  //  ASF += 1/4./M_PI*(-pow(ASI*4*M_PI,2)*alphas::bet0[NF-NFMIN]/M_PI*LQR);
+  //if (aspar_.naord_ >= 2)  
+  //  ASF += 1/4./M_PI*(-pow(ASI*4*M_PI,3)*LQR*(alphas::bet1[NF-NFMIN] - pow(alphas::bet0[NF-NFMIN],2)*LQR)/pi2);
+  //if (aspar_.naord_ >= 3)
+  //  ASF += 1/4./M_PI*(-pow(ASI*4*M_PI,4)*LQR*(alphas::bet2[NF-NFMIN] - 5./2.*alphas::bet0[NF-NFMIN]*alphas::bet1[NF-NFMIN]*LQR + pow(alphas::bet0[NF-NFMIN],3)*pow(LQR,2))/(pi2*M_PI));
+  //if (aspar_.naord_ >= 4)
+  //  ASF += 1/4./M_PI*(-pow(ASI*4*M_PI,5)*LQR*(alphas::bet3[NF-NFMIN] - 3./2.*pow(alphas::bet1[NF-NFMIN],2)*LQR - 3.*alphas::bet0[NF-NFMIN]*alphas::bet2[NF-NFMIN]*LQR + 13./3.*pow(alphas::bet0[NF-NFMIN],2)*alphas::bet1[NF-NFMIN]*pow(LQR,2) - pow(alphas::bet0[NF-NFMIN],4)*pow(LQR,3))/pi4);
+
+  //cout << "m " << m << " as " << ASF << endl;
   
   //above the bottom mass, calculate alphas at the final scale with DYRES (which has the modification L -> L~)
   //	  fcomplex fscale2 = fcx(pow(pdfevol::bscale,2));
