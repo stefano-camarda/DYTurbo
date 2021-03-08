@@ -112,8 +112,7 @@ void resconst::init()
   A4q = A4q_th
     + (3*beta0*4*D3q + 2*beta1*16*D2q)/256.; //formula from Eq. (71) of https://arxiv.org/pdf/1007.4005.pdf with 4^4 normalisation.
 
-  double A5q_th = 0.42441*0.5*pow(M_PI,5); //from Eq. (3.8) of https://arxiv.org/pdf/1912.12920.pdf
-  A5q = 0.;//A5q_th + (4*beta0*4*D4q+3*beta1*16*D3q+2*beta2*64*D2q);
+  A5q = 0.;
   
   B1q=-(3.*CF)/2.;                                                                                //-2;
   B2q=CF*CF*(pi2/4.-3./16.-3.*Z3)+CA*CF*(11.*pi2/36.-193./48.+3.*Z3/2.)+CF*NF*(17./24.-pi2/18.);  //B2q=4./9.*(pi2-3./4.-12.*Z3)+(11./9.*pi2-193./12.+6.*Z3)+NF/6.*(17./3.-4./9.*pi2);
@@ -122,7 +121,6 @@ void resconst::init()
   //B3q=-116.685/8. // from https://arxiv.org/pdf/1705.09127.pdf, but does not look OK
   B3q=(7358.86 -721.516*NF + 20.5951* nf2)/64.; // from https://arxiv.org/pdf/1604.01404.pdf, Eq.(13)
 
-  //In Eqs.(10-12) of https://arxiv.org/pdf/1912.12920.pdf there is the B4q DIS coefficient
   B4q = 0.;
   
   C1qqn=CF/2.*(pi2/2.-4.);          // Only delta(1-z) part, i.e. N independent part
