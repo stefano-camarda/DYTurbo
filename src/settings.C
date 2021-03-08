@@ -532,9 +532,10 @@ void settings::check_consistency(){
     if (blim_expc == 0)
       blim_expc = blim;
 
-    if (bcf < 0 || bcf > 1)
+    //if (bcf < 0 || bcf > 1)
+    if (bcf > 1)
       {
-	cout << "bcf should be between 0 and 1" << endl;
+	cout << "bcf should be between 0 and 1 (or negative)" << endl;
 	exit (-1);
       }
       
@@ -765,6 +766,8 @@ void settings::check_consistency(){
 	resintvegas = true;
       }
 
+    //disable ptbinwidth, mbinwidth, ybinwidth options if there non-integrable observables
+    
     // -- binning
     // check bins size
     if ( bins.qtbins .size() < 2) throw QuitProgram("Option `qtbins` needs at least 2 items ");
