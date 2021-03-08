@@ -27,7 +27,7 @@ namespace pegasus
   extern void store();
   extern void retrieve();
   extern void evolve();
-  extern double alphas(double M2, double R2, double &ASI, int &NF);
+  extern complex <double> alphas(complex <double> M, double &ASI, int &NF);
 
   extern int nff;
   extern int ivfns;
