@@ -138,13 +138,17 @@ int main( int argc , char * argv[])
   double qtarr[52] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,
 	       45,50,55,60,65,70,75,80,85,90,95,100};
 
-  /*
   cout << endl << endl;
   cout << "#qt" << "\t" << "dsigma / dqT" << endl;
+  std::cout << std::setprecision(15);
   //opts.mellin1d = false;
+  if (opts.mellin1d)
+    mode = 2;
+  else
+    mode = 1;
   for (int i = 0; i < 52; i++)
     {
-      costh = 0.; m = opts.rmass; qt = qtarr[i]; y = 0; mode = 1;
+      costh = 0.; m = opts.rmass; qt = qtarr[i]; y = 0;
       phasespace::set_m(m);
       phasespace::set_y(y);
       phasespace::set_qt(qt);
@@ -156,7 +160,6 @@ int main( int argc , char * argv[])
       double value = f[0]/(8./3.)*2*m/1000;
       cout << qt << "\t" << value << endl;
     }
-  */
 
   /*
   cout << endl << endl;
@@ -213,7 +216,7 @@ int main( int argc , char * argv[])
   
   
   //costhline();
-  ptline();
+  //ptline();
   //ptomline();
   //yline();
   //mline();
