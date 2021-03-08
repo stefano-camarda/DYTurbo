@@ -476,8 +476,8 @@ void settings::readfromfile(const string fname){
 void settings::check_consistency(){
 
     // additional conditions
-  //    if (order != 0 && order != 1 && order != 2 && order != 3)
-  //      throw invalid_argument("Invalid order, please select 0 (LL) 1 (NLL) 2 (NNLL) or 3 (NNNLL)");
+    if (order != 0 && order != 1 && order != 2 && order != 3)
+      throw invalid_argument("Invalid order, please select 0 (LL) 1 (NLL) 2 (NNLL) or 3 (NNNLL)");
     if (nproc != 1 && nproc != 2 && nproc != 3)
       throw invalid_argument("Wrong process, please select nproc = 1 (W+), 2 (W-), or 3(Z)");
 
