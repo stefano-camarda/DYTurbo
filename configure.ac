@@ -1,4 +1,4 @@
-AC_INIT([dyturbo], [0.99], [stefano.camarda@cern.ch])
+AC_INIT([dyturbo], [1.0], [stefano.camarda@cern.ch])
 AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE([foreign -Wall -Werror])
 
