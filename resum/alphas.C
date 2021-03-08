@@ -36,6 +36,43 @@ complex <double> alphas::as4_4l;
 complex <double> alphas::as4_5l;
 complex <double> alphas::as5_5l;
 
+double alphas::bet0[NFMAX-NFMIN+1];
+double alphas::bet1[NFMAX-NFMIN+1];
+double alphas::bet2[NFMAX-NFMIN+1];
+double alphas::bet3[NFMAX-NFMIN+1];
+double alphas::bet4[NFMAX-NFMIN+1];
+
+//double alphas::beta0;
+//double alphas::beta1;
+//double alphas::beta2;
+//double alphas::beta3;
+//double alphas::beta4;
+
+void alphas::init()
+{
+  for (int nf = NFMIN; nf <= NFMAX; nf++)
+    {
+      bet0[nf-NFMIN] = (33.-2.*nf)/12.;
+      bet1[nf-NFMIN] = (153.-19.*nf)/24.;
+      bet2[nf-NFMIN] = 2857./128.-5033.*nf/1152.+325.*nf*nf/3456.;
+      bet3[nf-NFMIN] = (149753./6. + 3564.*zeta3
+			 + nf*(-1078361./162.-6508./27.*zeta3)
+			 + nf*nf*(50065./162.+6472./81.*zeta3)
+			 + nf*nf*nf*1093./729.)/256.; //from https://arxiv.org/pdf/1701.01404.pdf Eq.(3.6), with a 4^4=256 normalisation factor
+      bet4[nf-NFMIN] = (8157455./16. + 621885./2.*zeta3 - 88209./2.*zeta4 - 288090.*zeta5
+	     +nf* (-336460813./1944. - 4811164./81.*zeta3 + 33935./6.*zeta4 + 1358995./27.*zeta5)
+	     +nf*nf*(25960913./1944. + 698531./81.*zeta3 - 10526./9.*zeta4 - 381760./81.*zeta5)
+	     +nf*nf*nf*(-630559./5832. - 48722./243.*zeta3 + 1618./27.*zeta4 + 460./9.*zeta5)
+	     +nf*nf*nf*nf*(1205./2916. - 152./81.*zeta3))/1024.;  //from https://arxiv.org/pdf/1701.01404.pdf Eq.(3.7), with a 4^5=1024 normalisation factor
+    }
+
+  //beta0 = bet0[5-NFMIN];
+  //beta1 = bet0[5-NFMIN];
+  //beta2 = bet0[5-NFMIN];
+  //beta3 = bet0[5-NFMIN];
+  //beta4 = bet0[5-NFMIN];
+}
+
 //Truncated solution for the running of alphas up to N3LO
 complex <double> alphas::calc(complex <double> q, int nloop)
 {
@@ -295,12 +332,12 @@ complex <double> alphas::calc(complex <double> q, int nloop)
 //
 // =====================================================================
 
-void alphas::rgkt(complex <double> q, double q0, double aass0)
+void alphas::rgkt(complex <double> q, double q0, double aass0, int nf)
 {
   complex <double> lrrat = log(pow(q/q0,2));
   complex <double> dlr = lrrat / double(nastps);
 
-  asLO     = aass0/M_PI / (1.+ beta0*aass0/M_PI*lrrat);
+  asLO     = aass0/M_PI / (1.+ bet0[nf-NFMIN]*aass0/M_PI*lrrat);
   asNLO    = aass0/M_PI;
   asNNLO   = aass0/M_PI;
   asNNNLO  = aass0/M_PI;
@@ -311,31 +348,31 @@ void alphas::rgkt(complex <double> q, double q0, double aass0)
   for (int k1 = 1; k1 <= nastps; k1++)
     {
       //2-loop
-      xk0 = dlr * fbeta1(asNLO);
-      xk1 = dlr * fbeta1(asNLO+0.5*xk0);
-      xk2 = dlr * fbeta1(asNLO+0.5*xk1);
-      xk3 = dlr * fbeta1(asNLO+xk2);
+      xk0 = dlr * fbeta1(asNLO,nf);
+      xk1 = dlr * fbeta1(asNLO+0.5*xk0,nf);
+      xk2 = dlr * fbeta1(asNLO+0.5*xk1,nf);
+      xk3 = dlr * fbeta1(asNLO+xk2,nf);
       asNLO += (xk0+2.*xk1+2.*xk2+xk3)/6.;
-  
+
       //3-loop
-      xk0 = dlr * fbeta2(asNNLO);
-      xk1 = dlr * fbeta2(asNNLO + 0.5 * xk0);
-      xk2 = dlr * fbeta2(asNNLO + 0.5 * xk1);
-      xk3 = dlr * fbeta2(asNNLO + xk2);
+      xk0 = dlr * fbeta2(asNNLO,nf);
+      xk1 = dlr * fbeta2(asNNLO + 0.5 * xk0,nf);
+      xk2 = dlr * fbeta2(asNNLO + 0.5 * xk1,nf);
+      xk3 = dlr * fbeta2(asNNLO + xk2,nf);
       asNNLO = asNNLO + (xk0 + 2.* xk1 + 2.* xk2 + xk3)/6.;
 
       //4-loop
-      xk0 = dlr * fbeta3(asNNNLO);
-      xk1 = dlr * fbeta3(asNNNLO + 0.5 * xk0);
-      xk2 = dlr * fbeta3(asNNNLO + 0.5 * xk1);
-      xk3 = dlr * fbeta3(asNNNLO + xk2);
+      xk0 = dlr * fbeta3(asNNNLO,nf);
+      xk1 = dlr * fbeta3(asNNNLO + 0.5 * xk0,nf);
+      xk2 = dlr * fbeta3(asNNNLO + 0.5 * xk1,nf);
+      xk3 = dlr * fbeta3(asNNNLO + xk2,nf);
       asNNNLO = asNNNLO + (xk0 + 2.* xk1 + 2.* xk2 + xk3)/6.;
 
       //5-loop
-      xk0 = dlr * fbeta4(asNNNNLO);
-      xk1 = dlr * fbeta4(asNNNNLO + 0.5 * xk0);
-      xk2 = dlr * fbeta4(asNNNNLO + 0.5 * xk1);
-      xk3 = dlr * fbeta4(asNNNNLO + xk2);
+      xk0 = dlr * fbeta4(asNNNNLO,nf);
+      xk1 = dlr * fbeta4(asNNNNLO + 0.5 * xk0,nf);
+      xk2 = dlr * fbeta4(asNNNNLO + 0.5 * xk1,nf);
+      xk3 = dlr * fbeta4(asNNNNLO + xk2,nf);
       asNNNNLO = asNNNNLO + (xk0 + 2.* xk1 + 2.* xk2 + xk3)/6.;
     }
 
@@ -344,4 +381,20 @@ void alphas::rgkt(complex <double> q, double q0, double aass0)
   asNNLO   *= M_PI;
   asNNNLO  *= M_PI;
   asNNNNLO *= M_PI;
+}
+
+void alphas::iter(complex <double> q, double q0, double aass0, int nf)
+{
+  complex <double> qlog = log(pow(q/q0,2));
+
+  complex <double> lambda = aass0*bet0[nf-NFMIN]/M_PI*qlog;
+  complex <double> oneplambda = 1. + lambda;
+  complex <double> log1plambda = log(oneplambda);
+
+  asLO    = aass0/(1.+lambda);
+  asNLO   = asLO   - (pow(aass0,2)*bet1[nf-NFMIN]*log1plambda)/(bet0[nf-NFMIN]*pow(oneplambda,2)*M_PI);
+  asNNLO  = asNLO  + (pow(aass0,3)*((pow(bet1[nf-NFMIN],2) - bet0[nf-NFMIN]*bet2[nf-NFMIN])*lambda + pow(bet1[nf-NFMIN],2)*(-1.+log1plambda)*log1plambda))/(pow(bet0[nf-NFMIN],2)*pow(oneplambda,3)*pi2);
+  asNNNLO = asNNLO + (pow(aass0,4)*(-(lambda*(pow(bet1[nf-NFMIN],3)*lambda - 2.*bet0[nf-NFMIN]*bet1[nf-NFMIN]*bet2[nf-NFMIN]*(oneplambda) + pow(bet0[nf-NFMIN],2)*bet3[nf-NFMIN]*(2.+lambda)))
+				  + bet1[nf-NFMIN]*log1plambda*(-4.*pow(bet1[nf-NFMIN],2)*lambda + 2.*bet0[nf-NFMIN]*bet2[nf-NFMIN]*(-1.+2.*lambda)
+						       + pow(bet1[nf-NFMIN],2)*(5. - 2.*log1plambda)*log1plambda)))/(2.*pow(bet0[nf-NFMIN],3)*pow(oneplambda,4)*pi2*M_PI);
 }
