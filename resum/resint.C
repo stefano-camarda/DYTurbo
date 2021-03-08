@@ -29,6 +29,7 @@
 #include "bequad.h"
 #include "ccoeff.h"
 #include "pegasus.h"
+#include "alphas.h"
 #include "pmom.h"
 #include <iostream>
 
@@ -221,7 +222,60 @@ double besselint_mp_complex_dequad(double x)
   */
 
 
-  /*********** Butterfly contour **************/
+  ///*********** Butterfly contour **************/
+  ////Straight line from 0 to bc
+  //if (x < resint::bc)
+  //  {
+  //    double bb = x;
+  //    double qtb = bb*resint::_qt;
+  //    complex <double> bint = besselint::bint(bb);
+  //    double JN, YN;
+  //    if (resint::_mode == 3 || resint::_mode == 4)
+  //	JN = fort_besj1_(qtb);
+  //    else
+  //	JN = fort_besj0_(qtb);
+  //    
+  //    return real(bint)*JN;
+  //  }
+  ////Move away from real axis from bc to blim::sudakov
+  //complex <double> jacu, jacd;
+  //complex <double> bu, bd;
+  //jacu = complex <double> (1.,tan(M_PI/opts.phibr));
+  //jacd = complex <double> (1.,-tan(M_PI/opts.phibr));
+  //bu = resint::bc + jacu*(x-resint::bc);
+  //bd = resint::bc + jacd*(x-resint::bc);
+  ///**********************************************/
+
+  ///*********** Butterfly contour with smoothing at the bisection point **************/
+  ////Straight line from 0 to bc
+  //if (x < resint::bc)
+  //  {
+  //    double bb = x;
+  //    double qtb = bb*resint::_qt;
+  //    complex <double> bint = besselint::bint(bb);
+  //    double JN, YN;
+  //    if (resint::_mode == 3 || resint::_mode == 4)
+  //	JN = fort_besj1_(qtb);
+  //    else
+  //	JN = fort_besj0_(qtb);
+  //    
+  //    return real(bint)*JN;
+  //  }
+  ////Move away from real axis from bc to blim::sudakov
+  //complex <double> jacu, jacd;
+  //complex <double> bu, bd;
+  //double y = x-resint::bc;
+  //double m = tan(M_PI/opts.phibr);
+  //double f = sqrt(1+y*y)-1.;
+  //double df = y/(sqrt(y*y)+1);
+  //bu = resint::bc + complex <double> (y, m*f);
+  //bd = resint::bc + complex <double> (y, -m*f);
+  //jacu = complex <double> (1.,df);
+  //jacd = complex <double> (1.,-df);
+  ///**********************************************/
+
+  
+  //*********** Parallelogram contour **************/  //--> make this an option?
   //Straight line from 0 to bc
   if (x < resint::bc)
     {
@@ -236,8 +290,6 @@ double besselint_mp_complex_dequad(double x)
       
       return real(bint)*JN;
     }
-  
-  
   //Move away from real axis from bc to blim::sudakov
   complex <double> jacu, jacd;
   complex <double> bu, bd;
@@ -245,72 +297,75 @@ double besselint_mp_complex_dequad(double x)
   jacd = complex <double> (1.,-tan(M_PI/opts.phibr));
   bu = resint::bc + jacu*(x-resint::bc);
   bd = resint::bc + jacd*(x-resint::bc);
+  //Continue parallel to the real axis after the Landau pole at bmax
+  double bmax;
+  if (opts.modlog)
+    bmax = resconst::b0/scales::res * sqrt(exp(1./(resint::aass*resconst::beta0))-1.);
+  else
+    bmax = resconst::b0/scales::res * exp(1./(2.*resint::aass*resconst::beta0));
+   
+  double pole = resint::bc + tan(M_PI/opts.phibr)*(bmax-resint::bc);
+  //double pole = 0.;//resint::bc + tan(M_PI/opts.phibr)*(blim::sudakov-resint::bc);
+  if (x > pole)
+    {
+      jacu = 1.;
+      jacd = 1.;
+      bu = bmax + (x-pole) + complex <double> (0., (bmax-resint::bc)*tan(M_PI/opts.phibr));
+      bd = bmax + (x-pole) + complex <double> (0.,-(bmax-resint::bc)*tan(M_PI/opts.phibr));
+    }
   /**********************************************/
 
-  ///*********** smooth the contour at the bisection point **************/
+  ///*********** Triangular contour **************/
+  ////Straight line from 0 to bc
+  //if (x < resint::bc)
+  //  {
+  //    double bb = x;
+  //    double qtb = bb*resint::_qt;
+  //    complex <double> bint = besselint::bint(bb);
+  //    double JN, YN;
+  //    if (resint::_mode == 3 || resint::_mode == 4)
+  //	JN = fort_besj1_(qtb);
+  //    else
+  //	JN = fort_besj0_(qtb);
+  //    
+  //    return real(bint)*JN;
+  //  }
+  ////Move away from real axis from bc to blim::sudakov
   //complex <double> jacu, jacd;
   //complex <double> bu, bd;
-  //double y = x-resint::bc;
-  //double m = tan(M_PI/opts.phibr);
-  //double f = sqrt(1+y*y)-1.;
-  //double df = y/(sqrt(y*y)+1);
-  //bu = resint::bc + complex <double> (y, m*f);
-  //bd = resint::bc + complex <double> (y, -m*f);
-  //jacu = complex <double> (1.,df);
-  //jacd = complex <double> (1.,-df);
-  ///**********************************************/
-
-  
-  ///*********** Parallelogram contour **************/
-  // //--> make this an option?
-  // //Continue parallel to the real axis after the Landau pole at bmax
-  // double bmax;
-  // if (opts.modlog)
-  //   bmax = resconst::b0/scales::res * sqrt(exp(1./(resint::aass*resconst::beta0))-1.);
-  // else
-  //   bmax = resconst::b0/scales::res * exp(1./(2.*resint::aass*resconst::beta0));
+  //jacu = complex <double> (1.,tan(M_PI/opts.phibr));
+  //jacd = complex <double> (1.,-tan(M_PI/opts.phibr));
+  //bu = resint::bc + jacu*(x-resint::bc);
+  //bd = resint::bc + jacd*(x-resint::bc);
+  ////Go back to the real axis after the Landau pole at bmax
+  //double bmax;
+  //if (opts.modlog)
+  //  bmax = resconst::b0/scales::res * sqrt(exp(1./(resint::aass*resconst::beta0))-1.);
+  //else
+  //  bmax = resconst::b0/scales::res * exp(1./(2.*resint::aass*resconst::beta0));
   // 
-  // double pole = resint::bc + tan(M_PI/opts.phibr)*(bmax-resint::bc);
-  // //double pole = 0.;//resint::bc + tan(M_PI/opts.phibr)*(blim::sudakov-resint::bc);
-  // if (x > pole)
-  //   {
-  //     jacu = 1.;
-  //     jacd = 1.;
-  //     bu = bmax + (x-pole) + complex <double> (0., (bmax-resint::bc)*tan(M_PI/opts.phibr));
-  //     bd = bmax + (x-pole) + complex <double> (0.,-(bmax-resint::bc)*tan(M_PI/opts.phibr));
-  //   }
-  ///**********************************************/
-
-  /*********** Triangular contour **************/
-  // //Go back to the real axis after the Landau pole at bmax
-  // double bmax;
-  // if (opts.modlog)
-  //   bmax = resconst::b0/scales::res * sqrt(exp(1./(resint::aass*resconst::beta0))-1.);
-  // else
-  //   bmax = resconst::b0/scales::res * exp(1./(2.*resint::aass*resconst::beta0));
+  //if (x > bmax)
+  //  {
+  //    jacu = complex <double> (1.,-tan(M_PI/opts.phibr));
+  //    jacd = complex <double> (1.,+tan(M_PI/opts.phibr));
+  //    bu = x + complex <double> (0., (bmax-resint::bc)*tan(M_PI/opts.phibr)) + jacu*(x-bmax);
+  //    bd = x + complex <double> (0.,-(bmax-resint::bc)*tan(M_PI/opts.phibr)) + jacd*(x-bmax);
+  //  }
   // 
-  // if (x > bmax)
-  //   {
-  //     jacu = complex <double> (1.,-tan(M_PI/opts.phibr));
-  //     jacd = complex <double> (1.,+tan(M_PI/opts.phibr));
-  //     bu = x + complex <double> (0., (bmax-resint::bc)*tan(M_PI/opts.phibr)) + jacu*(x-bmax);
-  //     bd = x + complex <double> (0.,-(bmax-resint::bc)*tan(M_PI/opts.phibr)) + jacd*(x-bmax);
-  //   }
-  // 
-  // if (x > bmax+(bmax-resint::bc))
-  //   {
-  //     double bb = x;
-  //     double qtb = bb*resint::_qt;
-  //     complex <double> bint = besselint::bint(bb);
-  //     double JN, YN;
-  //     if (resint::_mode == 3 || resint::_mode == 4)
+  //if (x > bmax+(bmax-resint::bc))
+  //  {
+  //    double bb = x;
+  //    double qtb = bb*resint::_qt;
+  //    complex <double> bint = besselint::bint(bb);
+  //    double JN, YN;
+  //    if (resint::_mode == 3 || resint::_mode == 4)
   // 	JN = fort_besj1_(qtb);
-  //     else
+  //    else
   // 	JN = fort_besj0_(qtb);
   //     
-  //     return real(bint)*JN;
-  //   }
-  // /**********************************************/
+  //    return real(bint)*JN;
+  //  }
+  ///**********************************************/
 
   /*********** Rectangular contour **************/
   // //Straight line from 0 to bc
@@ -1263,10 +1318,27 @@ double resint::bintegral(double qt)
       else
 	bmax = resconst::b0/scales::res * exp(1./(2.*resint::aass*resconst::beta0));
 
+      //if (opts.evolmode == 3)
+      //	{
+      //	  int nf;
+      //	  if (asinp_.m20_ > asfthr_.m2b_)
+      //	    nf = 5;
+      //	  else if (asinp_.m20_ > (asfthr_.m2c_-1e-3))
+      //	    nf = 4;
+      //	  else
+      //	    nf = 3;
+      //	  double bmaxnf = resconst::b0 * sqrt(asinp_.m20_)* sqrt(exp(1./((asinp_.as0_*4)*alphas::bet0[nf-3]))-1.);
+      //	  //cout << bmax << "  " << bmaxnf << endl;
+      //	  bmax = min (bmax,bmaxnf);
+      //	}
+      
       //Empirically seems that this adjustment is needed:
       //bmax *= scales::res/scales::ren;
 
-      bc =  opts.bcf*bmax;
+      if (opts.bcf > 0)
+	bc = opts.bcf*bmax;
+      else
+	bc = -opts.bcf;
 
       /*
       //set bc so that the branching point is at lambda = opts.bcf
