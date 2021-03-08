@@ -21,7 +21,6 @@ qbox = true
 # 0: Gaussian (BLNY)                 npff(b) = (g1 + g2*log(m/Q0) + g3*log(100*m/sqrt(s)))*b^2
 # 1: Exponential                     npff(b) = e*b
 # 2: Collins-Rogers                  npff(b) = g0*(1-exp(-(Cf*alphas(b0/bstar))*b^2)/(PI*g0*blim^2))*ln((m/Q0)^2)
-# 3: Dokshitzer-Marchesini-Webber    npff(b) = exp(-(a2 * (log(m)+1.) - a2p) * b^2/2);
 npff = 0 
 
 # Gaussian options (npff = 0)
@@ -35,10 +34,6 @@ e = 0.0
 
 # Collins-Rogers options (npff = 2)
 g0 = 0.3
-
-# Dokshitzer-Marchesini-Webber options (npff = 3)
-a2 = 0.2
-a2p = 0
 
 flavour_kt   = false       # Flavour-dependent g1 parameters
 g1_uv = 0.5  # u-valence

@@ -303,8 +303,8 @@ void settings::readfromfile(const string fname){
     e              = in.GetNumber ( "e"          );
     g0             = in.GetNumber ( "g0"          );
     Q0             = in.GetNumber ( "Q0"          );
-    a2             = in.GetNumber ( "a2"          );
-    a2p            = in.GetNumber ( "a2p"         );
+    //a2             = in.GetNumber ( "a2"          );
+    //a2p            = in.GetNumber ( "a2p"         );
     flavour_kt     = in.GetBool   ( "flavour_kt"     );
     g1_uv          = in.GetNumber ( "g1_uv"          );
     g1_us          = in.GetNumber ( "g1_us"          );
@@ -522,6 +522,12 @@ void settings::check_consistency(){
 	fmures = 1;
       }
 
+    if (npff != 0 && npff != 1 && npff != 2)
+      {
+	cout << "Invalid option for npff, should be between 0 and 2" << endl;
+	exit (-1);
+      }	
+    
     //If default values of blim for pdfs, sudakov and expc are not set, take blim as default
     if (blim_pdf == 0)
       blim_pdf = blim;

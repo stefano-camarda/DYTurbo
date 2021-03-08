@@ -50,6 +50,10 @@ complex <double> npff::S(complex <double> b, double m, double x1, double x2)
     }
 
   //Dispersive approach (DMW) https://arxiv.org/abs/hep-ph/9512336  https://iopscience.iop.org/article/10.1088/1126-6708/1999/07/012/pdf
+  //# 3: Dokshitzer-Marchesini-Webber    npff(b) = exp(-(a2 * (log(m)+1.) - a2p) * b^2/2);
+  //# Dokshitzer-Marchesini-Webber options (npff = 3)
+  //a2 = 0.2
+  //a2p = 0
   if (opts.npff == 3)
     ff = exp(-(opts.a2 * (log(m)+1.) - opts.a2p) * pow(real(b),2)/2. * 2.); //one factor for each leg -> multiply by 2
   
