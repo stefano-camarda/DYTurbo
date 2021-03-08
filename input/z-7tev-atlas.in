@@ -78,8 +78,7 @@ blim         = 3
 #0: FFN five-flavour backward evolution
 #1: FFN five-flavour backward evolution with Pegasus-QCD
 #2: VFN direct Mellin transform from LHAPDF
-#3: VFN Pegasus-QCD with alphas from LHAPDF
-#4: VFN Pegasus-QCD with five-flavour alphas
+#3: VFN Pegasus-QCD
 evolmode = 3
 
 # Resummation damping
