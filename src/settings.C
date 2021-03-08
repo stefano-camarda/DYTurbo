@@ -577,23 +577,6 @@ void settings::check_consistency(){
 	exit (-1);
       }
 
-    //Determine if the integration range in rapidity is from -inf to +inf
-    double mmin = bins.mbins.front();
-    double ylim = 0.5*log(pow(opts.sroot,2)/mmin);
-    double y0 = bins.ybins.front();
-    double y1 = bins.ybins.back();
-    bool yinf = false;
-
-    if (-y0 > ylim && y1 > ylim && bins.ybins.size() == 2)
-      yinf = true;
-
-    //Do not use mellin1d if yrange is below ymax or when makecuts is true
-    if ((!yinf || makecuts) && mellin1d)
-      {
-	cout << "Cannot use mellin1d when yrange is below ymax or makecuts is true" << endl;
-	exit (-1);
-      }
-
     //Automatic selector of integration type
     if (intDimBorn < 0)
       if (BORNquad)
@@ -625,6 +608,7 @@ void settings::check_consistency(){
     //	    
     //  }
     
+    //Determine wether the integration range in rapidity is larger than [-ymax,ymax]
     bool fullrap = true;
     double ylim = log(opts.sroot/bins.mbins.front());
     if (bins.ybins.front() >= -ylim || bins.ybins.back() <= ylim)
