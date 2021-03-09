@@ -164,7 +164,7 @@ cthCSmin = -1
 cthCSmax = +1
 
 # Output settings
-output_filename = results  # output filename
+output_filename = z-7tev-atlas  # output filename
 texttable   = true         # dump result table to text file (including pdf variations)
 redirect    = false        # redirect stdout and stderr to log file (except for gridverbose output)
 unicode     = true         # use unicode characters for the table formatting

@@ -1,4 +1,4 @@
-# Process settings for https://arxiv.org/abs/1909.04133
+# Process settings
 sroot        = 13e3  # Center-of-mass energy
 ih1          = 1    # Hadron 1: 1 for proton, -1 for antiproton
 ih2          = 1    # Hadron 2: 1 for proton, -1 for antiproton
@@ -8,7 +8,7 @@ nproc        = 3    # Process: 1) W+; 2) W-; 3) Z/gamma*
 # fixedorder_only = true   # Evaluate predictions at fixed order
 # fixedorder_only = false  # Evaluate predictions including qt-resummation
 fixedorder_only = false
-order           = 3        # QCD order: 0) LO(+LL), 1) NLO(+NLL), 2) NNLO(+NNLL), 3) N3LO(+N3LL)
+order           = 1        # QCD order: 0) LO(+LL), 1) NLO(+NLL), 2) NNLO(+NNLL), 3) N3LO(+N3LL)
 
 # Non-perturbative form factor, S_NP = exp(-npff(b))
 # 0: Gaussian (BLNY)                 npff(b) = (g1 + g2*log(m/Q0) + g3*log(100*m/sqrt(s)))*b^2
@@ -79,7 +79,7 @@ blim         = 3
 #1: FFN five-flavour backward evolution with Pegasus-QCD
 #2: VFN direct Mellin transform from LHAPDF
 #3: VFN Pegasus-QCD
-evolmode = 3
+evolmode = 1
 
 # Resummation damping
 damp = true
@@ -110,7 +110,7 @@ doVJVIRT = true
 # Integration type: true -> quadrature, false -> vegas
 BORNquad = true
 CTquad   = true
-VJquad   = false
+VJquad   = true
 
 # Multithreading parallelisation
 cores         = 0   # Number of parallel threads (0 for turning off parallelisation)
@@ -130,12 +130,12 @@ vegasncallsVJREAL = 10000000 # only for real 10d vegas integration
 vegasncallsVJVIRT = 1000000  # only for virt 8d vegas integration
 
 # cubature settings
-relaccuracy = 1e-3 # target relative uncertainty of each term
+relaccuracy = 1e-4 # target relative uncertainty of each term
 absaccuracy = 0    # target absolute uncertainty of each term in fb
 
 # Lepton cuts
 # Total cross section or with lepton cuts
-makecuts = true
+makecuts = false
 
 # charged leptons cuts
 lptcut = 25
@@ -164,7 +164,7 @@ cthCSmin = -1
 cthCSmax = +1
 
 # Output settings
-output_filename = z-13tev-cms  # output filename
+output_filename = example  # output filename
 texttable   = true         # dump result table to text file (including pdf variations)
 redirect    = false        # redirect stdout and stderr to log file (except for gridverbose output)
 unicode     = true         # use unicode characters for the table formatting
@@ -175,12 +175,11 @@ gridverbose = false        # printout number of events to keep job alive when ru
 # binning
 
 # normalise cross sections by bin width
-ptbinwidth = true
+ptbinwidth = false
 ybinwidth  = false
 mbinwidth  = false
 
 # qt, y, m bins
-qt_bins =  [ 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 16 18 20 22 25 28 32 37 43 52 65 85 120 160 190 220 250 300 400 500 800 1500 ]
-y_bins = [ -2.4  2.4 ]
-m_bins = [ 76.1876 106.1876 ]
-
+qt_bins =  [ 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 ]
+y_bins = [ -6  6 ]
+m_bins = [ 80 100 ]
